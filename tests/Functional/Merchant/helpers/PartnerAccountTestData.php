@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant\Account;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Account\Constants;
 
 return [
     // completely filled request
@@ -93,8 +94,12 @@ return [
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
-                            'type' => 'company_pan',
+                            'type'                  => 'company_pan',
                             'identification_number' => 'apsdf1234a',
+                        ],
+                        [
+                            'type'                  => 'gstin',
+                            'identification_number' => '27APIPM9598J1ZW',
                         ],
                     ],
                 ],
@@ -217,18 +222,21 @@ return [
                             'type' => 'company_pan',
                             'identification_number' => 'apsdf1234a',
                         ],
+                        [
+                            'type'                  => 'gstin',
+                            'identification_number' => '27APIPM9598J1ZW',
+                        ],
                     ],
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => false,
+                    'international'  => true,
                 ],
                 'settlement' => [
                     'fund_accounts' => [
                         [
                             'bank_account' => [
                                 'ifsc'           => 'ICIC0000031',
-                                'bank_name'      => 'ICICI Bank',
                                 'name'           => 'Ratnalal Account Name',
                                 'account_number' => '1200012391',
                             ],
@@ -245,6 +253,7 @@ return [
             ],
         ],
     ],
+
     // thin request
     'testCreateAccountForThinRequest' => [
         'request'  => [
@@ -593,7 +602,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => false,
+                    'international'  => true,
                 ],
                 'tnc'        => [
                     'accepted'   => 1,
@@ -822,6 +831,36 @@ return [
         ],
     ],
 
+    'testSimulateActivationForPartner' => [
+        'request'  => [
+            'url'    => '/partner/merchant/{id}/activation/status',
+            'method' => 'PATCH',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testSimulateUpdate' => [
+        'request'  => [
+            'url'    => '/partner/merchant/{id}/activation/update',
+            'method' => 'PUT',
+            'content' => [
+                'business_name' => 'New Ratnalal Jewellers',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_name' => 'New Ratnalal Jewellers',
+            ],
+        ],
+    ],
+
     'testEnableAccountAction' => [
         'request'  => [
             'url'    => '/accounts/{accountId}/enable',
@@ -835,6 +874,895 @@ return [
                         'payment_enabled'    => true,
                         'settlement_enabled' => true,
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'submitKyc' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'updateClarificationReason' => [
+        'request'  => [
+            'content' => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'address_proof_url' => [[
+                                         'reason_type' => 'predefined',
+                                         'field_type'  => 'document',
+                                         'reason_code' => 'unable_to_validate_acc_number',
+                                     ]],
+                    ],
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'address_proof_url' => [[
+                                         'reason_type' => 'predefined',
+                                         'field_type'  => 'document',
+                                         'reason_code' => 'unable_to_validate_acc_number',
+                                     ]],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'changeActivationStatus' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'needs_clarification',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'needs_clarification',
+            ],
+        ],
+    ],
+
+    'testCreateAccountCompletelyFilledRequestWithKycNotHandled' => [
+        'request'  => [
+            'url'     => '/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'entity'          => 'account',
+                'business_entity' => 'llp',
+                'managed'         => 1,
+                'email'           => 'testcreateAccountAAA@razorpay.com',
+                'notes'           => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                        [
+                            'type'          => 'operation',
+                            'line1'         => 'operation',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'description'       => 'This is a test business',
+                    'business_model'    => 'B2B',
+                    'mcc'               => 7011,
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => 'FF5733',
+                    ],
+                    'dashboard_display' => 'Ratnalal',
+                    'website'           => 'https://medium.com',
+                    'apps'              => [
+                        [
+                            'name'  => 'Ratnalal Shopping App',
+                            'links' => [
+                                'android' => 'https://playstore.google.com/appId/122',
+                                'ios'     => 'https://appstore.com/appId/122',
+                            ],
+                        ],
+                    ],
+                    'support'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type'                  => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                        [
+                            'type'                  => 'gstin',
+                            'identification_number' => '27APIPM9598J1ZW',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                                'notes'          => [
+                                    'key1' => 'value1',
+                                    'key2' => 'value2',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tnc' => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                    'url'        => 'https://rtll.com/tnc',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'managed' => 1,
+                'notes'   => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'business_entity' => 'llp',
+                'email'           => 'testcreateaccountaaa@razorpay.com',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => null,
+                        'payment_enabled'    => false,
+                        'settlement_enabled' => false,
+                    ],
+                    'requirements' => [
+                        'businesses' => [
+                            'fields'    => [],
+                            'documents' => [
+                                [
+                                    'type' => 'address_proof_url',
+                                ],
+                                [
+                                    'type' => 'business_pan_url',
+                                ],
+                                [
+                                    'type' => 'business_proof_url',
+                                ],
+                                [
+                                    'type' => 'promoter_address_url',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                        [
+                            'type'          => 'operation',
+                            'line1'         => 'operation',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'description'       => 'This is a test business',
+                    'business_model'    => 'B2B',
+                    'mcc'               => 7011,
+                    'dashboard_display' => 'Ratnalal',
+                    'website'           => 'https://medium.com',
+                    'billing_label'     => 'Ratnalal',
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => '#FF5733',
+                    ],
+                    'apps'              => [
+                        [
+                            'name'  => 'Ratnalal Shopping App',
+                            'links' => [
+                                'android' => 'https://playstore.google.com/appId/122',
+                                'ios'     => 'https://appstore.com/appId/122',
+                            ],
+                        ],
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'support'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                        [
+                            'type'                  => 'gstin',
+                            'identification_number' => '27APIPM9598J1ZW',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                                'notes'          => [
+                                    'key1' => 'value1',
+                                    'key2' => 'value2',
+                                ],
+                            ],
+                            'status' => 'pending_verification',
+                        ],
+                    ],
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => false,
+                ],
+                'tnc'        => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                    'url'        => 'https://rtll.com/tnc',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateAccountForThinRequestWithKycNotHandled' => [
+        'request'  => [
+            'url'     => '/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'entity'          => 'account',
+                'business_entity' => 'ngo',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'mcc'               => 7011,
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type'                  => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'account',
+                'email'           => 'test@razorpay.com',
+                'business_entity' => 'ngo',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => null,
+                        'payment_enabled'    => false,
+                        'settlement_enabled' => false,
+                    ],
+                    'requirements' => [
+                        'businesses' => [
+                            'fields'    => [
+                                [
+                                    'field_name' => 'business_operation_address',
+                                    'reason'     => Constants::REQUIRED_FIELD_MISSING,
+                                ],
+                                [
+                                    'field_name' => 'business_operation_city',
+                                ],
+                                [
+                                    'field_name' => 'business_operation_pin',
+                                ],
+                                [
+                                    'field_name' => 'business_operation_state',
+                                ],
+                            ],
+                            'documents' => [
+                                [
+                                    'type' => 'address_proof_url',
+                                    'reason'     => Constants::REQUIRED_DOCUMENT_MISSING,
+                                ],
+                                [
+                                    'type' => 'business_pan_url',
+                                ],
+                                [
+                                    'type' => 'business_proof_url',
+                                ],
+                                [
+                                    'type' => 'promoter_address_url',
+                                ],
+                                [
+                                    'type' => 'form_12a_url',
+                                ],
+                                [
+                                    'type' => 'form_80g_url',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                    ],
+                    'name'           => 'Ratnalal Jewellers',
+                    'description'    => null,
+                    'mcc'            => 7011,
+                    'business_model' => null,
+                    'brand' => [
+                        'icon'  => null,
+                        'logo'  => null,
+                        'color' => null,
+                    ],
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                            ],
+                        ],
+                    ],
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => false,
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAccountForKycNotHandledAndNeedsClarification' => [
+        'request'  => [
+            'url'    => '/accounts/{accountId}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'managed' => 1,
+                'notes'   => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'business_entity' => 'llp',
+                'email'           => 'testcreateaccountaaa@razorpay.com',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => 'needs_clarification',
+                        'payment_enabled'    => false,
+                        'settlement_enabled' => false,
+                    ],
+                    'requirements' => [
+                        'businesses' => [
+                            'documents' => [
+                                [
+                                    'field_name' => 'address_proof_url',
+                                    'reason'     => 'unable_to_validate_acc_number',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                        [
+                            'type'          => 'operation',
+                            'line1'         => 'operation',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'description'       => 'This is a test business',
+                    'business_model'    => 'B2B',
+                    'mcc'               => 7011,
+                    'dashboard_display' => 'Ratnalal',
+                    'website'           => 'https://medium.com',
+                    'billing_label'     => 'Ratnalal',
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => '#FF5733',
+                    ],
+                    'apps'              => [
+                        [
+                            'name'  => 'Ratnalal Shopping App',
+                            'links' => [
+                                'android' => 'https://playstore.google.com/appId/122',
+                                'ios'     => 'https://appstore.com/appId/122',
+                            ],
+                        ],
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'support'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => false,
+                ],
+                'tnc'        => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                    'url'        => 'https://rtll.com/tnc',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+    ],
+
+    'testAddAccountUnderLegalEntityWithKycNotHandled' => [
+        'request'  => [
+            'url'     => '/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'entity'          => 'account',
+                'business_entity' => 'llp',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                        [
+                            'type'          => 'operation',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'mcc'               => 7011,
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type'                  => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                                'notes'          => [
+                                    'key1' => 'value1',
+                                    'key2' => 'value2',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'account',
+                'email'           => 'test@razorpay.com',
+                'business_entity' => 'llp',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => 'under_review',
+                        'payment_enabled'    => false,
+                        'settlement_enabled' => false,
+                    ],
+                    'requirements' => [],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                    ],
+                    'name'           => 'Ratnalal Jewellers',
+                    'description'    => null,
+                    'mcc'            => 7011,
+                    'business_model' => null,
+                    'brand' => [
+                        'icon'  => null,
+                        'logo'  => null,
+                        'color' => null,
+                    ],
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => false,
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAccountWitKycNotHandledAfterActivation' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'managed' => 1,
+                'notes'   => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'business_entity' => 'llp',
+                'email'           => 'testcreateaccountaaa@razorpay.com',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => 'activated',
+                        'payment_enabled'    => true,
+                        'settlement_enabled' => true,
+                    ],
+                    'requirements' => [],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                        [
+                            'type'          => 'operation',
+                            'line1'         => 'operation',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'country'       => 'India',
+                            'pin'           => '560032',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'description'       => 'This is a test business',
+                    'business_model'    => 'B2B',
+                    'mcc'               => 7011,
+                    'dashboard_display' => 'Ratnalal',
+                    'website'           => 'https://medium.com',
+                    'billing_label'     => 'Ratnalal',
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => '#FF5733',
+                    ],
+                    'identification'    => [
+                        [
+                            'type'                  => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                        [
+                            'type'                  => 'gstin',
+                            'identification_number' => '27APIPM9598J1ZW',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                            ],
+                        ],
+                    ],
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => true,
                 ],
             ],
         ],

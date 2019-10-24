@@ -36,6 +36,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Org\Entity as Org;
@@ -108,12 +109,23 @@ class Core extends Base\Core
 
         $this->syncHeimdallRelatedEntities($merchant, $input, true);
 
+        $this->upsertLegalEntity($merchant, []);
+
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
+    }
+
+    public function upsertLegalEntity(Entity $merchant, array $input)
+    {
+        $legalEntity = (new LegalEntity\Core)->upsert($merchant, $input);
+
+        $merchant->legalEntity()->associate($legalEntity);
+
+        $this->repo->saveOrFail($merchant);
     }
 
     /**
@@ -182,6 +194,8 @@ class Core extends Base\Core
         $this->addMerchantSupportingEntities($subMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
+
+        $this->upsertLegalEntity($subMerchant, []);
 
         return $subMerchant;
     }
@@ -388,8 +402,11 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
+            $merchantDetailCore = new Detail\Core;
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
-            (new Detail\Core)->syncToMerchantDetailFields($merchant, $input);
+            $merchantDetailCore->syncToMerchantDetailFields($merchant, $input);
+
+            $merchantDetailCore->updateLegalEntity($input, $merchant);
 
             $this->saveAndNotify($merchant);
         });
@@ -2629,5 +2646,19 @@ class Core extends Base\Core
                 ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
                 ($isUnregisteredBusiness === true) and
                 ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode)));
+    }
+
+    public function getAllMerchantsMappedToMerchantLegalEntity(Merchant\Entity $merchant): Base\PublicCollection
+    {
+        $legalEntityId = $merchant->getLegalEntityId();
+
+        if (empty($legalEntityId) === false)
+        {
+            $legalEntity = $this->repo->legal_entity->findOrFailPublic($legalEntityId);
+
+            return $legalEntity->merchants;
+        }
+
+        return new Base\PublicCollection;
     }
 }

@@ -7,6 +7,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 class DocumentType
 {
     const COMPANY_PAN = 'company_pan';
+    const OWNER_PAN   = 'owner_pan';
+    const GSTIN       = 'gstin';
 
     /**
      * @param string $type
