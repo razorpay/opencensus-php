@@ -24,6 +24,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
@@ -941,7 +942,7 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         // Validate if customer is fee bearer then only move forward
-        if ($this->merchant->isFeeBearerCustomerOrDynamic() === false)
+        if ($this->merchant->isFeeBearerCustomer() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -969,15 +970,6 @@ class Processor
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-
-        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
-        {
-            $fee = 0;
-
-            $tax = 0;
-        }
-
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -1677,6 +1669,24 @@ class Processor
 
             $notifier->trigger(Payment\Event::FAILED);
         }
+
+        //TODO: Remove this later
+        try
+        {
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $this->payment->toArray(),
+                    'code'                => $code,
+                    'internal_code'       => $internalCode,
+                    'error'               => $e->getMessage()
+                ]
+            );
+        }
     }
 
     /**
@@ -2011,7 +2021,7 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -2197,8 +2207,6 @@ class Processor
                     'calculated_fee'    => $payment->getFee(),
                 ]);
         }
-
-        $payment->setFeeBearer($this->payment->getFeeBearer());
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity

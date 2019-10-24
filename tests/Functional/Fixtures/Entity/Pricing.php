@@ -43,8 +43,10 @@ class Pricing extends Base
         return $pricing;
     }
 
-    protected function getDefultPlanArray($pricingPlanId = self::DEFAULT_PRICING_PLAN_ID)
+    public function createDefaultPlan()
     {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
         $rows = [
             [
                 'id'                  => '1nvp2XPMmaRLxb',
@@ -407,21 +409,7 @@ class Pricing extends Base
             ],
         ];
 
-        return $rows;
-    }
-
-    public function createDefaultPlan()
-    {
-        $rows = $this->getDefultPlanArray();
-
         $this->addPricingRulesToDb($rows);
-    }
-
-    public function editDefaultPlan($attributes = [])
-    {
-        $rows = $this->getDefultPlanArray();
-
-        $this->editPricingPlan($rows, $attributes);
     }
 
     public function createDefaultBankingPlan()
@@ -730,7 +718,7 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
-    protected function getDefaultCommissionPlanArray()
+    public function createDefaultCommissionPlan()
     {
         $rows = [
             [
@@ -757,21 +745,7 @@ class Pricing extends Base
             ],
         ];
 
-        return $rows;
-    }
-
-    public function createDefaultCommissionPlan()
-    {
-        $rows = $this->getDefaultCommissionPlanArray();
-
         $this->addPricingRulesToDb($rows);
-    }
-
-    public function editDefaultCommissionPlan($attributes = [])
-    {
-        $rows = $this->getDefaultCommissionPlanArray();
-
-        $this->editPricingPlan($rows, $attributes);
     }
 
     public function createPricingPlanForDifferentOrg($orgId)
@@ -941,7 +915,7 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
-    protected function getTwoPercentPricingPlanArray($attributes = [])
+    public function createTwoPercentPricingPlan($attributes = [])
     {
         $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
 
@@ -959,24 +933,8 @@ class Pricing extends Base
             ],
         ];
 
-        return $rows;
-    }
-
-    public function createTwoPercentPricingPlan($attributes = [])
-    {
-
-        $rows = $this->getTwoPercentPricingPlanArray($attributes);
-
         $this->addPricingRulesToDb($rows);
     }
-
-    public function  editTwoPercentPricingPlan($attributes = [])
-    {
-        $rows = $this->getTwoPercentPricingPlanArray();
-
-        $this->editPricingPlan($rows, $attributes);
-    }
-
 
     public function createImplicitPartnerPricingPlan($attributes = [])
     {
@@ -1031,13 +989,5 @@ class Pricing extends Base
         }
 
         return $accountType;
-    }
-
-    protected function editPricingPlan($rows, $attributes)
-    {
-        foreach ($rows as $row)
-        {
-            $this->edit($row['id'], array_merge($attributes, $row));
-        }
     }
 }
