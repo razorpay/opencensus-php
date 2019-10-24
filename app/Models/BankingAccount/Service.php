@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
+        $this->core->notifyMerchantAboutUpdatedStatus($account);
+
         return $account->toArrayPublic();
     }
 
@@ -43,6 +45,8 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
+        $previousStatus = $bankingAccount->getStatus();
+
         $channel = $bankingAccount->getChannel();
 
         $this->trace->info(
@@ -56,6 +60,13 @@ class Service extends Base\Service
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
+
+        $currentStatus = $bankingAccount->getStatus();
+
+        if ($this->core->statusHasChanged($previousStatus, $currentStatus) === true)
+        {
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        }
 
         return $account->toArrayPublic();
     }
