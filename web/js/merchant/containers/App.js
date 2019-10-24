@@ -238,9 +238,16 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
+  /**
+   * @param {number} live_transaction_done
+   * @param {string} id
+   * live_transaction_done (possible values: 0,1,2)
+   * if (live_transaction_done == 0 || live_transaction_done == 2)
+   *  // do nothing
+   * else if (live_transaction_done == 1)
+   *  // fire GA once and increase value to 2
+   */
   updateGA({ live_transaction_done, id }) {
-    // live_transaction_done (possible values: 0,1,2)
-    // 0 ->
     if (live_transaction_done != undefined && live_transaction_done === 1) {
       merchantFetch({
         url: 'merchant_mtu_update',
@@ -269,7 +276,7 @@ export default class App extends Component {
         method: 'post',
         data: {
           id: id,
-          live_transaction_done: 2,
+          live_transaction_done: 1,
         },
       })
         .then(resp => {
