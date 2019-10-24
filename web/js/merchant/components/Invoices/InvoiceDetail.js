@@ -136,6 +136,8 @@ export default props => {
   const isRemindersEnabled =
     invoice.reminder_status && !(invoice.reminder_status === 'disabled');
 
+  const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -297,7 +299,7 @@ export default props => {
                       name="auto_reminders"
                       fieldLabel="Send auto reminders"
                       checked={isRemindersEnabled}
-                      disabled={isAutoRemindersUpdating}
+                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
                       onChange={onChangeSendAutoReminder}
                       autoRender
                     />
@@ -306,7 +308,8 @@ export default props => {
                       list={getRemindersStepperData(
                         isRemindersEnabled,
                         nextReminders,
-                        isAutoRemindersUpdating
+                        isAutoRemindersUpdating,
+                        isPaymentLinkClosed
                       )}
                     />
                   </EntityDetailRow>
@@ -395,33 +398,41 @@ export default props => {
 const getRemindersStepperData = (
   isRemindersEnabled,
   reminders,
-  isAutoRemindersUpdating
+  isAutoRemindersUpdating,
+  isPaymentLinkClosed
 ) => {
-  return reminders.map(reminder => {
-    const currDate = moment(undefined),
-      reminderDate = moment(reminder * 1000);
+  return reminders
+    .map(reminder => {
+      const currDate = moment(undefined),
+        reminderDate = moment(reminder * 1000),
+        isPendingState = reminderDate.diff(currDate, 'days');
 
-    const newReminder = {
-      status: !isRemindersEnabled
-        ? 'disabled'
-        : reminderDate.diff(currDate, 'days') > 0 ? 'pending' : 'completed',
-      time_to_sent: reminder,
-    };
+      if (isPaymentLinkClosed && isPendingState) {
+        return null;
+      }
 
-    return {
-      status: newReminder.status,
-      type: (
-        <i
-          class={`i i-${
-            newReminder.status === 'completed' ? 'check-circle' : 'bullet'
-          }`}
-        />
-      ),
-      label: isAutoRemindersUpdating ? (
-        <PlaceholderLoader />
-      ) : (
-        moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
-      ),
-    };
-  });
+      const newReminder = {
+        status: !isRemindersEnabled
+          ? 'disabled'
+          : isPendingState > 0 ? 'pending' : 'completed',
+        time_to_sent: reminder,
+      };
+
+      return {
+        status: newReminder.status,
+        type: (
+          <i
+            class={`i i-${
+              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
+            }`}
+          />
+        ),
+        label: isAutoRemindersUpdating ? (
+          <PlaceholderLoader />
+        ) : (
+          moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
+        ),
+      };
+    })
+    .filter(ele => ele !== null);
 };
