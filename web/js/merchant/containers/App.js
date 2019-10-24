@@ -253,7 +253,7 @@ export default class App extends Component {
         url: 'merchant_mtu_update',
         method: 'post',
         data: {
-          id: id,
+          merchants: [id],
           live_transaction_done: 2,
         },
       })
@@ -275,7 +275,7 @@ export default class App extends Component {
         url: 'merchant_mtu_update',
         method: 'post',
         data: {
-          id: id,
+          merchants: [id],
           live_transaction_done: 1,
         },
       })
