@@ -353,6 +353,15 @@ const registrationDetails = [
       },
       className: 'Input--vTop Input--capitalize',
       _disabledWhen: isActivatedIndividual,
+      checkValidityFromAPI: activation => {
+        const { poi_verification_status } = activation.props.data;
+        if (poi_verification_status === 'incorrect_details') {
+          return 'Incorrect PAN number';
+        } else if (poi_verification_status === 'not_matched') {
+          return 'PAN number not found in central database';
+        }
+        return '';
+      },
     },
     {
       // label: 'PAN Owner Name',
@@ -369,6 +378,26 @@ const registrationDetails = [
         return 'We verify the details with the central PAN database. Please ensure you enter the correct details';
       },
       _disabledWhen: isActivatedIndividual,
+      _when: activation => {
+        console.log('user indiv', _showForIndiv);
+        console.log(
+          'user l1',
+          activation.props.user.instantActivation.isL1Submitted
+        );
+        return (
+          _showForIndiv(activation) ||
+          activation.props.user.instantActivation.isL1Submitted
+        ); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
+      },
+      checkValidityFromAPI: activation => {
+        const { poi_verification_status } = activation.props.data;
+        if (poi_verification_status === 'incorrect_details') {
+          return 'Incorrect PAN name';
+        } else if (poi_verification_status === 'not_matched') {
+          return 'No PAN was found with this name';
+        }
+        return '';
+      },
     },
   ],
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
