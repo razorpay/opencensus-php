@@ -122,7 +122,6 @@ export default class CreditPullModal extends Component {
   };
 
   verifyMobile = token => {
-    console.log(token);
     this.props.openModal({
       component: (
         <AskMobileNumber
