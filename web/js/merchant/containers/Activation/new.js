@@ -321,6 +321,31 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
+  deleteFile = name => {
+    const { showNotification, data } = this.props;
+    const documents = data.documents;
+    if (documents && Object.keys(documents).length && documents[name].length) {
+      const curDoc = documents[name][0];
+      return merchantFetch({
+        url: `merchant/documents/doc_${curDoc.id}`,
+        method: 'delete',
+        mode: 'live',
+      })
+        .then(res => {
+          showNotification({
+            type: 'success',
+            message: 'File deleted successfully',
+          });
+        })
+        .catch(err => {
+          showNotification({
+            type: 'error',
+            message: 'File Not Found!',
+          });
+        });
+    }
+  };
+
   // Fetch state_code and city to auto populate business_*_state and business_*_city fields in form
   getPincodeDetails(pincode) {
     return merchantFetch(`pincodes/${pincode}`)
@@ -416,6 +441,7 @@ export default class ActivationContainer extends React.Component {
           getPincodeDetails={this.getPincodeDetails}
           defaultMsg={this.props.defaultMsg}
           handleUIUpdate={this.handleUIUpdate}
+          deleteFile={this.deleteFile}
         />
       );
     }

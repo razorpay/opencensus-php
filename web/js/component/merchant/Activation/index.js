@@ -158,7 +158,7 @@ export default class ActivationWizard extends React.Component {
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
     callingL1Api: false,
-    address_proof: null,
+    address_proof: 'aadhar',
   };
   constructor(props) {
     super(props);
@@ -1670,7 +1670,27 @@ function ActivationField(field) {
 
   if (rest.dynamicName) {
     rest.name = rest.getName(this);
+    key = rest.name;
   }
+
+  if (rest._type == 'address_proof_upload_doc') {
+    const { documents } = this.props.data;
+    defaultValue =
+      (documents &&
+        documents[`${rest.name}`] &&
+        documents[`${rest.name}`][0]['id']) ||
+      null;
+  }
+
+  if (rest.isDeletable) {
+    rest.onCloseClick = () => {
+      this.props.deleteFile(rest.name);
+    };
+  }
+
+  // if(rest.propagateOnChange) {
+  //   rest.onChange = (e) => this.handleFormFieldChange(e);
+  // }
 
   return (
     <Component

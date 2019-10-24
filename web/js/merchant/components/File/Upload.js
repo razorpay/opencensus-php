@@ -173,7 +173,10 @@ export default class FileUpload extends React.Component {
     }
 
     if (this.state.isDocPreUploaded) {
-      this.setState({ isDocPreUploaded: false });
+      this.setState(
+        { isDocPreUploaded: false },
+        _ => this.props.onCloseClick && this.props.onCloseClick()
+      );
 
       return;
     }
