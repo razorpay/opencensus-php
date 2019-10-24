@@ -805,7 +805,7 @@ class Core extends Base\Core
 
         if (empty($ftaFailureReason) === true)
         {
-            $ftaFailureReason = ErrorCodeMapping::getErrorMessageFromBankResponseCode($ftaBankStatusCode);
+            $ftaFailureReason = ErrorCodeMapping::getErrorMessageFromBankResponseCode($payout, $ftaBankStatusCode);
         }
 
         return $ftaFailureReason;
