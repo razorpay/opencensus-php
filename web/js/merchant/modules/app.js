@@ -1,4 +1,5 @@
 import { set } from 'rzp/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
