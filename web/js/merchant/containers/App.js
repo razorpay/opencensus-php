@@ -238,16 +238,7 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
-  /**
-   * @param {number} live_transaction_done
-   * @param {string} id
-   * live_transaction_done: Has user done any live transaction (possible values: 0,1,2)
-   * if (live_transaction_done == 0 || live_transaction_done == 2)
-   *  // do nothing
-   * else if (live_transaction_done == 1)
-   *  // fire GA once and increase value to 2
-   */
-  setLiveTransactionDone({ live_transaction_done, id }) {
+  setLiveTransactionDone = ({ live_transaction_done, id }) => {
     if (live_transaction_done != undefined && live_transaction_done === 1) {
       merchantFetch({
         url: 'merchant_mtu_update',
@@ -266,18 +257,16 @@ export default class App extends Component {
             })();
           }
         })
-        .catch(err => {
-          console.log('err:', err);
-        });
+        .catch(err => {});
     }
-  }
+  };
 
   fetchUser() {
     let user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
-      this.setLiveTransactionDone(user);
+      setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
