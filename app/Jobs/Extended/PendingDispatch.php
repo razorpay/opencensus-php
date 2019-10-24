@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs\Extended;
 
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
 /**
@@ -28,6 +29,11 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     protected $queueConfigExtra = [];
 
     /**
+     * Metric constants
+     */
+    const JOB_DISPATCH_FAILED   = 'job_dispatch_failed';
+
+    /**
      * Overrides
      * {@inheritDoc}
      */
@@ -41,7 +47,19 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         }
         catch (\Throwable $e)
         {
-            app('trace')->traceException($e, Trace::CRITICAL);
+            $traceData = [
+                'command_name'  => get_class($this->job),
+                'command'       => is_object($this->job) ? serialize(clone $this->job) : $this->job,
+            ];
+
+            app('trace')->traceException($e, Trace::CRITICAL, TraceCode::QUEUE_DISPATCH_JOB_FAILURE, $traceData);
+
+            $dimensions = [
+                'queue_name'    => $this->getQueue(),
+                'mode'          => app('rzp.mode'),
+            ];
+
+            app('trace')->count(self::JOB_DISPATCH_FAILED, $dimensions);
         }
     }
 

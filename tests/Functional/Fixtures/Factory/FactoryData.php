@@ -916,9 +916,10 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Workflow\Entity::class, [
-            'id'        => $faker->uniqueid,
-            'org_id'    => '100000razorpay',
-            'name'      => $faker->name,
+            'id'            => $faker->uniqueid,
+            'merchant_id'   => '10000000000000',
+            'org_id'        => '100000razorpay',
+            'name'          => $faker->name,
         ]);
 
         $factory(\RZP\Models\Workflow\Step\Entity::class,[
@@ -1146,5 +1147,16 @@ final class FactoryData
         $factory(\RZP\Models\Mpan\Entity::class, [
 
         ]);
+
+        $factory(\RZP\Models\Workflow\PayoutAmountRules\Entity::class,[
+            'id'                => 12345,
+            'merchant_id'       => '10000000000000',
+            'condition'         => null,
+            'min_amount'        => 250,
+            'max_amount'        => 1000000,
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
     }
 }

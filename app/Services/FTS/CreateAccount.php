@@ -2,13 +2,20 @@
 
 namespace RZP\Services\FTS;
 
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Vpa;
+use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
 use RZP\Models\BankingAccount;
 use RZP\Constants\IndianStates;
+use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use RZP\Jobs\FTS\CreateAccount as Account;
 
 class CreateAccount extends Base
 {
@@ -16,17 +23,21 @@ class CreateAccount extends Base
 
     protected $vpaCore;
 
+    protected $product;
+
+    protected $cardCore;
+
     protected $bankAccountCore;
 
     protected $bankingAccountCore;
-
-    protected $product;
 
     public function __construct($app)
     {
         parent::__construct($app);
 
         $this->vpaCore = new Vpa\Core;
+
+        $this->cardCore = new Card\Core;
 
         $this->bankAccountCore = new BankAccount\Core;
 
@@ -80,13 +91,14 @@ class CreateAccount extends Base
      *
      * @param string $id
      * @param string $type
+     * @param string $product
      * @return mixed
      * @throws LogicException
      */
     public function makeRequestUsingType(string $id, string $type, string $product)
     {
         // ToDo need to confirm this before merging
-        $request[Constants::DEFAULT_CHANNEL] = 'ICICI';
+        $request[Constants::DEFAULT_CHANNEL] = Channel::YESBANK;
 
         $request[Constants::PRODUCT] = $product;
 
@@ -116,6 +128,13 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::CARD:
+                $this->account = $this->cardCore->getCardEntity($id);
+
+                $request[Constants::CARD] = $this->getCardDetails($this->account);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $type);
         }
@@ -136,7 +155,7 @@ class CreateAccount extends Base
     {
         return [
             Constants::IFSC_CODE                  => $ba->getIfscCode(),
-            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType() ?? Constants::SAVING,
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
@@ -164,6 +183,16 @@ class CreateAccount extends Base
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
             Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode(strtolower($ba->getBeneficiaryCountry())),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
+        ];
+    }
+
+    public function getCardDetails(Card\Entity $card)
+    {
+        return [
+            Constants::NAME         => $card->getName(),
+            Constants::ISSUER_BANK  => $this->getIssuer($card),
+            Constants::VAULT_TOKEN  => $this->getCardVaultToken($card),
+            Constants::NETWORK_CODE => $card->getNetworkCode(),
         ];
     }
 
@@ -226,5 +255,69 @@ class CreateAccount extends Base
         ];
 
         return $request;
+    }
+
+
+    public function callFtsCreateAccount(PublicEntity $account, string $product)
+    {
+        try
+        {
+            Account::dispatch($this->mode, $account->getId(), $account->getEntityName(), $product);
+
+            $this->trace->info(
+                TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,
+                [
+                    'product'      => $product,
+                    'account_type' => $account->getEntityName(),
+                    'account_id'   => $account->getId(),
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_CREATE_ACCOUNT_DISPATCH_FAILED,
+                [
+                    'product'      => $product,
+                    'account_type' => $account->getEntityName(),
+                    'account_id'   => $account->getId(),
+                ]);
+        }
+    }
+
+    protected function getCardVaultToken(Card\Entity $card)
+    {
+        $token = $card->getCardVaultToken();
+
+        if ($token === null)
+        {
+            $this->trace->error(
+                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
+                [
+                    'card_id' => $card->getId()
+                ]);
+
+            (new SlackNotification())->send(
+                'Vault token missing',
+                [
+                    'card_id' => $card->getId()
+                ],
+                null, 1, 'fts_alerts');
+        }
+
+        return $token;
+    }
+
+    protected function getIssuer(Card\Entity $card)
+    {
+        $iin = $card->iinRelation;
+
+        if (empty($iin) === true)
+        {
+            throw new BadRequestValidationFailureException("iin is not valid mode for issuer");
+        }
+
+        return $iin->getIssuer();
     }
 }

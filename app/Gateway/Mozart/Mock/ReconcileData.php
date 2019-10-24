@@ -161,6 +161,15 @@ class ReconcileData extends Base\Mock\Server
             );
         }
 
+        if (isset($entities['reconRequest']['meta_data']['currency_missmatch'])){
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
+                '',
+                '',
+                ['message' => 'Currency Missmatch']
+            );
+        }
+
         $response = [
             'data' =>
                 [
@@ -169,17 +178,32 @@ class ReconcileData extends Base\Mock\Server
                             'Response' =>
                                 [
                                     'Amount' => '1.00',
-                                    'PayPal_Charges' => '0.04',
                                     'Custom_Id' => 'DJEN97tL54dTIN',
                                     'Gateway_Merchant_ID'=> 'SPSZR25DLBKN6',
                                     'Gateway_Transaction_ID'=> '74X988560K9095031',
                                     'Method'=> 'PAYPAL',
+                                    'PayPal_Charges' => '0.04',
+                                    'Payment_Initiation_Time' => '2019-10-04T12:52:36+00:00',
                                     'RZP_Transaction_ID'=> 'DJEN97tL54dTIN',
                                     'Type'=> 'PAYMENT',
                                     'currency_code'=> 'USD',
-                                    'Payment_Initiation_Time' => '2019-10-04T12:52:36+00:00'
                                 ]
-                        ]
+                        ],
+                        [
+                            'Response' =>
+                                [
+                                    'Amount'=> '1.00',
+                                    'Custom_Id'=> 'DJET5t3wjBaQI1',
+                                    'Gateway_Merchant_ID'=> 'SPSZR25DLBKN6',
+                                    'Gateway_Transaction_ID'=> '4E238155FF697490G',
+                                    'Method'=> 'PAYPAL',
+                                    'PayPal_Charges'=> '-0.05',
+                                    'Payment_Initiation_Time'=> '2019-09-17T12:12:54+00:00',
+                                    'RZP_Transaction_ID'=> 'DJGIIHMST4i8G4',
+                                    'Type'=> 'REFUND',
+                                    'currency_code'=> 'USD',
+                                ]
+                        ],
                     ],
                     'status' => 'recon_successful',
                     '_raw' => '',

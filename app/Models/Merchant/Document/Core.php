@@ -112,7 +112,9 @@ class Core extends Base\Core
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
-        $documentsResponse = $this->documentResponse($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $documentsResponse = $this->documentResponse($merchant);
 
         $detailService = new Detail\Service();
 
@@ -146,16 +148,25 @@ class Core extends Base\Core
         }
     }
 
-    /** R
-     * @param string $merchantId
+    /**
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
-    public function documentResponse(string $merchantId): array
+    public function documentResponse(Merchant\Entity $merchant): array
     {
-        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantId);
-
         $documentsResponse = [];
+
+        $merchants = (new Merchant\Core)->getAllMerchantsMappedToMerchantLegalEntity($merchant);
+
+        if ($merchants->isEmpty() === false)
+        {
+            $documents = $this->repo->merchant_document->findDocumentsForMerchantIds($merchants->getIds());
+        }
+        else
+        {
+            $documents = $merchant->merchantDocuments;
+        }
 
         foreach ($documents as $document)
         {

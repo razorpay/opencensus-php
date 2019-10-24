@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\paypal;
+namespace RZP\Reconciliator\Paypal;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
@@ -10,15 +10,15 @@ class Reconciliate extends Base\Reconciliate
 {
     protected $columnHeaders = [
         ReconFields::AMOUNT ,
-        ReconFields::CHARGES,
         ReconFields::ACTION_ID,
         ReconFields::PAYPAL_MERCHANT_ID,
         ReconFields::TRANSACTION_ID,
         ReconFields::GATEWAY,
+        ReconFields::CHARGES,
+        ReconFields::TIME,
         ReconFields::PAY_ID,
         ReconFields::TYPE,
         ReconFields::CURRENCY,
-        ReconFields::TIME,
     ];
 
     public function getColumnHeadersForType($type)
@@ -28,7 +28,7 @@ class Reconciliate extends Base\Reconciliate
 
     protected function getTypeName($fileName)
     {
-        return self::PAYMENT;
+        return self::COMBINED;
     }
 
     public function getNumLinesToSkip(array $fileDetails)

@@ -39,6 +39,7 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';

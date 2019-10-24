@@ -310,6 +310,13 @@ class AdminFetch
                 ],
             ],
 
+            // Service: Stork
+            Entity::STORK_WEBHOOK => [
+                'owner_id' => [
+                    Fetch::LABEL => 'Owner id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 
@@ -1358,6 +1365,10 @@ class AdminFetch
                 'receipt_email_enabled' => [
                     Fetch::LABEL  => 'Receipt Email_enabled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'legal_entity_id' => [
+                    Fetch::LABEL  => 'Legal Entity Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'fee_bearer' => [
                     Fetch::LABEL  => 'Fee Bearer',

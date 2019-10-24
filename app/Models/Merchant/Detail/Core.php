@@ -26,7 +26,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -54,74 +54,122 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm();
+        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
-        $merchantDetails->edit($input);
-
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $originProduct)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant, $originProduct)
         {
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
-
-            $this->repo->saveOrFail($merchantDetails);
+            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
 
             $response = $this->createResponse($merchantDetails);
 
-            $eventAttributes = $merchant->toArrayEvent();
-
             if ($this->canSubmit($input, $response) === true)
             {
-                $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
-
-                // If a merchant does not have website or app, we would need to activate them
-                // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
-                // should be set to true only if one submits website details, there by will be able to
-                // generate/access keys.
-                $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
-
-                $this->markSubmittedAndLock($merchantDetails);
-
-                $this->updateActivationSource($merchant, $originProduct);
-
-                $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
-
-                $activationStatusData = [
-                    Entity::ACTIVATION_STATUS => $statusToBeUpdated
-                ];
-
-                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
-
-                $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+                $response = $this->submitActivationForm($merchant, $originProduct);
             }
-
-            // Sync few input fields to merchant entity
-            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
-
-            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
-
-            $response = $this->createResponse($merchantDetails);
-
-            $activationProgress = $response['verification']['activation_progress'];
-
-            $merchantDetails->setActivationProgress($activationProgress);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            if ($this->canSubmit($input, $response) === true)
+            else
             {
-                $this->fireActivationTrigger($merchantDetails, $merchant);
+                $response = $this->updateActivationProgress($merchant);
             }
-
-            $response['auto_activated'] = $autoActivated;
-
-            $eventAttributes['activation_progress'] = $activationProgress;
-
-            $this->app['eventManager']
-                ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
+    }
+
+    public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
+    {
+        $this->repo->assertTransactionActive();
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+        
+        $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
+
+        // If a merchant does not have website or app, we would need to activate them
+        // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
+        // should be set to true only if one submits website details, there by will be able to
+        // generate/access keys.
+        $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
+
+        $this->markSubmittedAndLock($merchantDetails);
+
+        $this->updateActivationSource($merchant, $originProduct);
+
+        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => $statusToBeUpdated,
+        ];
+
+        $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+
+        $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
+
+        $response = $this->updateActivationProgress($merchant);
+
+        $response['auto_activated'] = $autoActivated;
+
+        $this->fireActivationTrigger($merchantDetails, $merchant);
+
+        $eventAttributes = $merchant->toArrayEvent();
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+
+        return $response;
+    }
+
+    public function updateActivationProgress(Merchant\Entity $merchant): array
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $response = $this->createResponse($merchantDetails);
+
+        $activationProgress = $response['verification']['activation_progress'];
+
+        $merchantDetails->setActivationProgress($activationProgress);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        $eventAttributes = $merchant->toArrayEvent();
+
+        $eventAttributes['activation_progress'] = $response['verification']['activation_progress'];
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+
+        return $response;
+    }
+
+    public function updateLegalEntity(array $input, Merchant\Entity $merchant)
+    {
+        $legalEntityInput = [];
+
+        if (isset($input[Entity::BUSINESS_TYPE]) === true)
+        {
+            $legalEntityInput[LegalEntity\Entity::BUSINESS_TYPE] = $input[Entity::BUSINESS_TYPE];
+        }
+
+        if (isset($input[Entity::BUSINESS_CATEGORY]) === true)
+        {
+            $legalEntityInput[LegalEntity\Entity::MCC]                  = $merchant->getCategory();
+            $legalEntityInput[LegalEntity\Entity::BUSINESS_CATEGORY]    = $input[Entity::BUSINESS_CATEGORY];
+
+            if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === true)
+            {
+                $legalEntityInput[LegalEntity\Entity::BUSINESS_SUBCATEGORY] = $input[Entity::BUSINESS_SUBCATEGORY];
+            }
+        }
+
+        if (isset($input[Merchant\Entity::CATEGORY]) === true)
+        {
+            $legalEntityInput[LegalEntity\Entity::MCC] = $input[Merchant\Entity::CATEGORY];
+        }
+
+        if (empty($legalEntityInput) === true)
+        {
+            return;
+        }
+
+        (new Merchant\Core)->upsertLegalEntity($merchant, $legalEntityInput);
     }
 
     /**
@@ -137,7 +185,7 @@ class Core extends Base\Core
             return;
         }
 
-        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantDetails->getMerchantId());
+        $documents = $merchant->merchantDocuments;
 
         $isOcrVerified = false;
 
@@ -305,6 +353,8 @@ class Core extends Base\Core
             // do pan validation
             $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
 
+            $this->updateLegalEntity($input, $merchant);
+
             $this->repo->saveOrFail($merchantDetails);
 
             $merchantCore = new Merchant\Core();
@@ -316,15 +366,14 @@ class Core extends Base\Core
                 if ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::VERIFIED)
                 {
                     // in case of unregistered business if pan is verified then instantly activate merchant
-                    (new Detail\ActivationFlow\Whitelist())->process($merchantDetails);
+                    (new Detail\ActivationFlow\Whitelist())->process($merchant);
                 }
             }
             else
             {
                 // $activationFlow will be an instance of the ActivationFlowInterface
                 $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
-                $activationFlow->process($merchantDetails);
-
+                $activationFlow->process($merchant);
             }
 
             $response = $this->createResponse($merchantDetails);
@@ -423,6 +472,9 @@ class Core extends Base\Core
                 [ 'merchant_id'    => $merchant->getId() ]);
 
             $merchantDetails = $this->createMerchantDetails($merchant, $input);
+
+            // if merchant details are created, load relation in $merchant
+            $merchant->load('merchantDetail');
         }
 
         return $merchantDetails;
@@ -431,19 +483,23 @@ class Core extends Base\Core
     /**
      * This function is used to patch merchant details fields
      *
-     * @param Entity $merchantDetails
+     * @param Merchant\Entity $merchant
      * @param array  $input
      *
      * @return Entity
      * @throws \RZP\Exception\BadRequestException
      */
-    public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
+    public function patchMerchantDetails(Merchant\Entity $merchant, array $input): Entity
     {
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
 
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
-        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+        $this->updateLegalEntity($input, $merchant);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -485,15 +541,9 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    /**
-     * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
-     * @return Entity
-     */
     public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
     {
-        $merchantDetail = $this->getMerchantDetails($merchant);
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         if (isset($input[Entity::REVIEWER_ID]) === true)
         {
@@ -505,14 +555,23 @@ class Core extends Base\Core
 
             $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
 
-            $merchantDetail->reviewer()->associate($reviewer);
+            $merchantDetails->reviewer()->associate($reviewer);
         }
 
-        $merchantDetail->edit($input);
+        $merchantDetails->edit($input);
 
-        $this->repo->saveOrFail($merchantDetail);
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-        return $merchantDetail;
+        $this->repo->saveOrFail($merchantDetails);
+
+        $this->updateLegalEntity($input, $merchant);
+
+        // Sync few input fields to merchant entity
+        (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchantDetails;
     }
 
 
@@ -769,14 +828,18 @@ class Core extends Base\Core
 
     /**
      * This function is used for updating merchant activation status
-     * @param Entity $merchantDetails
-     * @param array $input
-     * @param PublicEntity $maker [can be one of Admin\Admin\Entity or Merchant\Entity]
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param PublicEntity    $maker [can be one of Admin\Admin\Entity or Merchant\Entity]
      *
      * @return Entity
+     * @throws \Throwable
      */
-    public function updateActivationStatus(Entity $merchantDetails, array $input, PublicEntity $maker): Entity
+    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker): Entity
     {
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
@@ -811,10 +874,10 @@ class Core extends Base\Core
                                                             $newMerchantDetails,
                                                             $input,
                                                             $rejectionReasons,
-                                                            $maker)
+                                                            $maker, $merchant)
         {
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
-                ($merchantDetails->merchant->isLinkedAccount() === false))
+                ($merchant->isLinkedAccount() === false))
             {
                 /*
                  * Setup workflow for activation_status change in merchantDetail entity,
@@ -825,7 +888,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchantDetails->merchant, $merchantDetails);
+                (new Merchant\Activate)->activate($merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -866,7 +929,7 @@ class Core extends Base\Core
 
         $customProperties['activation_status'] = $currentActivationStatus;
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS, $this->merchant, null, $customProperties);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS, $merchant, null, $customProperties);
 
         $this->trace->count(
             Metric::MERCHANT_ACTIVATION_STATE_TRANSITION,
@@ -877,14 +940,14 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    public function setBankAccountForMerchant(Entity $merchantDetails)
+    public function setBankAccountForMerchant(Merchant\Entity $merchant)
     {
         $bankCore = (new BankAccount\Core);
 
         // Build the input array for the merchant's bank account creation
-        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant->merchantDetail);
 
-        $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
+        $bankCore->createOrChangeBankAccount($bankData, $merchant);
     }
 
     /**
@@ -965,15 +1028,14 @@ class Core extends Base\Core
     }
 
     /**
-     * Checks and auto activates the merchant if possible, after form submission
-     *
-     * @param Entity $merchantDetails
+     * @param Merchant\Entity $merchant
      *
      * @return bool
+     * @throws \RZP\Exception\BadRequestException
      */
-    protected function autoActivateMerchantIfApplicable(Entity $merchantDetails): bool
+    protected function autoActivateMerchantIfApplicable(Merchant\Entity $merchant): bool
     {
-        $merchant = $merchantDetails->merchant;
+        $merchantDetails = $this->getMerchantDetails($merchant);
 
         //
         // Auto-activation is attempted if the following conditions are met
@@ -994,7 +1056,7 @@ class Core extends Base\Core
                 Entity::ACTIVATION_STATUS => Status::ACTIVATED,
             ];
 
-            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+            $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -1067,6 +1129,12 @@ class Core extends Base\Core
 
         [$validationFields, $validationDocumentFields] = $this->getValidationFields($merchantDetails);
 
+        //
+        // refreshing the merchant relation here as createResponse is called at many places
+        // just after updating the merchant entity
+        //
+        $merchantDetails->load('merchant');
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -1095,7 +1163,7 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields) + count($validationDocumentFields);
 
-        $documentsResponse = (new Document\Core())->documentResponse($merchant->getId());
+        $documentsResponse = (new Document\Core())->documentResponse($merchant);
 
         $response['documents'] = $documentsResponse;
 
