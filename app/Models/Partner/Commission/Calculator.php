@@ -535,7 +535,7 @@ class Calculator extends Base\Core
      */
     protected function isCustomerFeeBearer(): bool
     {
-        return ($this->getSubMerchant()->isFeeBearerCustomer() === true);
+        return ($this->getSubMerchant()->isFeeBearerCustomerOrDynamic() === true);
     }
 
     /**
