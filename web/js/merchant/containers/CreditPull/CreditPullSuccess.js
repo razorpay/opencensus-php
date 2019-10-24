@@ -5,12 +5,16 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import { Bar } from 'react-chartjs-2';
 import AsyncButton from 'react-async-button';
 import Amount from 'ui/Amount';
-import CreditPullScoreBreakdown from './CreditPullScoreBreakdown';
 import CreditPullAdditionalReport from './CreditPullAdditionalReport';
+import { showNotification } from 'rzp/modules/notifications';
+import CloseReasons from '../../components/CloseReasons';
+import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
+import ajax from '../../../merchantLA/utils/ajax';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
   openModal,
+  showNotification,
 })
 export default class CreditPullSuccess extends Component {
   constructor(props) {
@@ -75,7 +79,53 @@ export default class CreditPullSuccess extends Component {
     return <span>Credit Report</span>;
   };
 
+  handleInterest = (reportId, consent) => {
+    if (consent === 0) {
+      this.props.closeModal();
+      this.props.openModal({
+        component: (
+          <CloseReasons
+            eventCategory="Dashboard - D2C"
+            eventAction="Reason- Not Interested"
+            closeReasons={CLOSE_OPTIONS}
+          />
+        ),
+        size: 'small',
+      });
+      return;
+    }
+    const payload = {
+      consent,
+    };
+    ajax(
+      {
+        url: `d2c_bureau_report/${reportId}`,
+        method: 'patch',
+        data: payload,
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(success => {
+        this.props.closeModal();
+        this.props.showNotification({
+          type: 'success',
+          message: 'Recorded your feedback',
+          hidePrevious: true,
+        });
+      })
+      .catch(error => {
+        this.props.closeModal();
+        this.props.showNotification({
+          type: 'error',
+          message: 'Failed to record feeback',
+          hidePrevious: true,
+        });
+      });
+  };
+
   render() {
+    const { reportId } = this.props;
     return (
       <div className="credit-pull-success-container">
         <ModalHeader
@@ -112,8 +162,16 @@ export default class CreditPullSuccess extends Component {
               </div>
             )}
             <div className="report-actions">
-              <AsyncButton class="btn btn-primary" text="Yes I'm interested" />
-              <AsyncButton class="btn btn-secondary" text="No, I'm not" />
+              <AsyncButton
+                class="btn btn-primary"
+                text="Yes I'm interested"
+                onClick={() => this.handleInterest(reportId, 1)}
+              />
+              <AsyncButton
+                class="btn btn-secondary"
+                text="No, I'm not"
+                onClick={() => this.handleInterest(reportId, 0)}
+              />
             </div>
           </div>
 

@@ -82,16 +82,16 @@ export default class CreditPullModal extends Component {
   };
 
   save = props => {
-    this.setState({
-      merchantData: props,
-      isLoading: true,
-    });
     let saveProps = { ...props };
     if (props.date_of_birth.hasOwnProperty('_isAMomentObject')) {
       saveProps['date_of_birth'] = props.date_of_birth.format(
         this.dateFormatType
       );
     }
+    this.setState({
+      merchantData: saveProps,
+      isLoading: true,
+    });
     this.saveAndProceed(saveProps, props.contact_mobile);
   };
 
@@ -152,9 +152,16 @@ export default class CreditPullModal extends Component {
               tokenStuff,
               merchantId
             )
-              .then(({ data: { report, score, max_loan_amount } }) => {
-                this.openReportScreen(report, score, max_loan_amount);
-              })
+              .then(
+                ({ data: { report, score, max_loan_amount, reportId } }) => {
+                  this.openReportScreen(
+                    report,
+                    score,
+                    max_loan_amount,
+                    reportId
+                  );
+                }
+              )
               .catch(error => {
                 throw error;
               });
@@ -183,10 +190,15 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = (report, score, maxLoan) => {
+  openReportScreen = (report, score, maxLoan, reportId) => {
     this.props.openModal({
       component: (
-        <CreditPullSuccess score={score} report={report} maxLoan={maxLoan} />
+        <CreditPullSuccess
+          score={score}
+          report={report}
+          maxLoan={maxLoan}
+          reportId={reportId}
+        />
       ),
       size: 'large',
     });
@@ -212,6 +224,7 @@ export default class CreditPullModal extends Component {
   initialAlign = () => {
     //Hate doing this unfortunately the library doesn't provide any other way to do this.
     if (
+      this.props.initialValues &&
       !this.props.initialValues.hasOwnProperty('date_of_birth') &&
       this.dateContainer
     ) {
