@@ -3350,7 +3350,7 @@ trait Authorize
 
         $payment->emiPlan()->associate($emiPlan);
 
-        return $emiPlan;
+        return $emiPlan->toArray();
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
