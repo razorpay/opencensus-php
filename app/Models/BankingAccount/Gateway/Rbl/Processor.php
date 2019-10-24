@@ -46,7 +46,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected $mozartErrorInformation = ['UserID or Password Not Correct '];
 
-    public function processActivation(Entity $bankingAccount, array $input)
+    public function processActivation(Entity $bankingAccount, array $input): Entity
     {
         $this->fetchAndVerifyBalance($bankingAccount);
 
@@ -74,32 +74,13 @@ class Processor extends BankingAccount\Gateway\Processor
                 ]);
         }
 
-        //
-        // This is in a transaction because, BankingAccount entity update
-        // and Balance entity creation, both should succeed or fail
-        //
-        $this->repo->transaction(function () use ($bankingAccount)
-        {
-            $merchant = $bankingAccount->merchant;
+        $input = [
+            Entity::STATUS  => BankingAccount\Status::ACTIVATED,
+        ];
 
-            $mode = $this->app['rzp.mode'];
+        $bankingAccount->fill($input);
 
-            $balanceInfo = $this->getBalanceAttributesToSave($bankingAccount);
-
-            $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
-
-            $input = [
-                Entity::STATUS  => BankingAccount\Status::ACTIVATED,
-            ];
-
-            (new BankingAccount\Core)->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
-
-            $bankingAccount->fill($input);
-
-            $bankingAccount->balance()->associate($balance);
-
-            $this->repo->saveOrFail($bankingAccount);
-        });
+        return $bankingAccount;
     }
 
     public function preProcessAccountInfoNotification(array $input)
@@ -215,7 +196,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
     {
-        $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
+        $rblConfig = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
         $credentials = [
             Fields::USERNAME                  => $bankingAccount->getUsername(),
@@ -229,7 +210,7 @@ class Processor extends BankingAccount\Gateway\Processor
             FTS\Constants::BENEFICIARY_REQUIRED     => false,
         ];
 
-        $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
+        $mozartIdentifier = $rblConfig[Fields::MOZART_IDENTIFIER];
 
         $body = [
             FTS\Constants::CREDENTIALS       => $credentials,
@@ -238,17 +219,6 @@ class Processor extends BankingAccount\Gateway\Processor
         ];
 
         return $body;
-    }
-
-    public function getBalanceAttributesToSave(BankingAccount\Entity $bankingAccount)
-    {
-        $attributes = [
-            Balance\Entity::ACCOUNT_TYPE        => Balance\AccountType::DIRECT,
-            Balance\Entity::CHANNEL             => Balance\Channel::RBL,
-            Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
-        ];
-
-        return $attributes;
     }
 
     public function validateAccountDetails(array $input)

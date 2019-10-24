@@ -274,7 +274,7 @@ class Core extends Base\Core
                 if (in_array($bankingAccount->getStatus(), Status::$allowedStatusForDetails, true) === false)
                 {
                     throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR,
+                        ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_DETAILS_UPDATE_NOT_ALLOWED_ON_CURRENT_STATUS,
                         null,
                         [
                             BankingAccountDetail\Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId(),
@@ -283,7 +283,7 @@ class Core extends Base\Core
                         'Account Details cannot be saved for given account status');
                 }
 
-                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input, $bankingAccount, $processor);
+                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input[Entity::DETAILS], $bankingAccount, $processor);
             }
         });
 
@@ -369,11 +369,36 @@ class Core extends Base\Core
 
     public function activate(Entity $bankingAccount, array $input)
     {
-        $channel = $bankingAccount->getChannel();
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
-        $processor = $this->getProcessor($channel);
+        //
+        // This is in a transaction because, BankingAccount entity update
+        // and Balance entity creation, both should succeed or fail
+        //
+        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input)
+        {
+            $channel = $bankingAccount->getChannel();
 
-        $processor->activate($bankingAccount, $input);
+            $processor = $this->getProcessor($channel);
+
+            $bankingAccount = $processor->activate($bankingAccount, $input);
+
+            $merchant = $bankingAccount->merchant;
+
+            $mode = $this->app['rzp.mode'];
+
+            $balanceInfo = $this->getBalanceAttributesToSave($bankingAccount);
+
+            $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+
+            $bankingAccount->balance()->associate($balance);
+
+            $this->repo->saveOrFail($bankingAccount);
+
+            return $bankingAccount;
+        });
+
+        return $bankingAccount;
     }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
@@ -448,6 +473,17 @@ class Core extends Base\Core
         return $response;
     }
 
+    protected function getBalanceAttributesToSave(Entity $bankingAccount)
+    {
+        $attributes = [
+            Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
+            Merchant\Balance\Entity::CHANNEL             => Merchant\Balance\Channel::RBL,
+            Merchant\Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
+        ];
+
+        return $attributes;
+    }
+
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
      * the status of current account to activated. This to avoid cases of manual error by Bizops.
@@ -457,7 +493,7 @@ class Core extends Base\Core
      *
      * @throws BadRequestValidationFailureException
      */
-    public function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
         $this->redactSecrets($input);
 

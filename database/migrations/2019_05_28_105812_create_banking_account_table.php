@@ -104,6 +104,9 @@ class CreateBankingAccountTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable();
+
             $table->string(Entity::INTERNAL_COMMENT, 255)
                   ->nullable();
 

@@ -101,14 +101,14 @@ class Fields
     public static function getClientId(Entity $bankingAccount)
     {
         return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-                                                      Fields::CLIENT_ID)
+                                                               Fields::CLIENT_ID)
                                                        ->value(Detail\Entity::GATEWAY_VALUE);
     }
 
     public static function getClientSecret(Entity $bankingAccount)
     {
         return $bankingAccount->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY,
-                                                      Fields::CLIENT_SECRET)
+                                                               Fields::CLIENT_SECRET)
                                                        ->value(Detail\Entity::GATEWAY_VALUE);
     }
 }

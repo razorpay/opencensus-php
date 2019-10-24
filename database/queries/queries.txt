@@ -5411,3 +5411,6 @@ ALTER TABLE merchants
 
 ALTER TABLE bank_accounts
     ADD COLUMN `notes` text DEFAULT NULL AFTER `virtual`;
+
+ALTER TABLE banking_accounts
+    ADD COLUMN deleted_at INTEGER UNSIGNED AFTER updated_at;

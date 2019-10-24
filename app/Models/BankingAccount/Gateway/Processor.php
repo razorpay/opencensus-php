@@ -79,8 +79,9 @@ abstract class Processor extends Base\Core
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
-            ['id' => $bankingAccount->getId()]
-        );
+            [
+                'id' => $bankingAccount->getId()
+            ]);
 
         $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
 
@@ -100,11 +101,11 @@ abstract class Processor extends Base\Core
         return $bankingAccount;
     }
 
-    public function activate(Entity $bankingAccount, array $input)
+    public function activate(Entity $bankingAccount, array $input): Entity
     {
         $this->validateBeforeActivation($bankingAccount, $input);
 
-        $this->processActivation($bankingAccount, $input);
+        return $this->processActivation($bankingAccount, $input);
     }
 
     protected function createOrFetchFtsFundAccountForMerchant(Entity $bankingAccount)
@@ -190,8 +191,10 @@ abstract class Processor extends Base\Core
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST,
-            ['id' => $id, 'fts_id' => $ftsAccountId]
-        );
+            [
+                'id' => $id,
+                'fts_id' => $ftsAccountId
+            ]);
 
         /** @var FTS\CreateAccount $ftsService */
         $ftsService = app('fts_create_account');
@@ -200,21 +203,24 @@ abstract class Processor extends Base\Core
         {
             try
             {
-                $response = $ftsService->createSourceAccount(
-                    $id,
-                    $ftsAccountId,
-                    $content,
-                    $product,
-                    $channel);
+                $response = $ftsService->createSourceAccount($id,
+                                                             $ftsAccountId,
+                                                             $content,
+                                                             $product,
+                                                             $channel);
 
                 return $this->checkSourceAccountResponseForError($response);
 
             }
             catch (RecordAlreadyExists $e)
             {
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT,
-                    ['channel' => $channel, 'id' => $id, 'fts_id' => $ftsAccountId]
-                );
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT,
+                    [
+                        'banking_account_id'    => $id,
+                        'channel'               => $channel,
+                        'fts_id'                => $ftsAccountId
+                    ]);
 
                 return null;
             }
@@ -308,9 +314,11 @@ abstract class Processor extends Base\Core
         return (bool) $isAvailable;
     }
 
+    abstract public function formatAccountDetails(array $input);
+
     abstract protected function validateBeforeActivation(Entity $bankingAccount, array $input);
 
-    abstract protected function processActivation(Entity $bankingAccount, array $input);
+    abstract protected function processActivation(Entity $bankingAccount, array $input): Entity;
 
     abstract protected function validateInputForAccountCreation(array $input);
 

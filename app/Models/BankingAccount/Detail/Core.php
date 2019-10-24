@@ -19,10 +19,6 @@ class Core extends Base\Core
                 'channel' => $bankingAccount->getChannel(),
             ]);
 
-        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_EDIT, $input);
-
-        $input = $input[BankingAccount\Entity::DETAILS];
-
         $processor->validateAccountDetails($input);
 
         $input = $processor->formatAccountDetails($input);

@@ -75,8 +75,11 @@ class CreateAccount extends Base
         return $response;
     }
 
-    public function createSourceAccount(string $id, string $ftsAccountId, array $content,
-                                        string $product, string $channel = 'ICICI')
+    public function createSourceAccount(string $id,
+                                        string $ftsAccountId,
+                                        array $content,
+                                        string $product,
+                                        string $channel = 'ICICI')
     {
         $input = $this->getSourceAccountRequestBody($product, $ftsAccountId, $channel, $content);
 
@@ -243,7 +246,10 @@ class CreateAccount extends Base
         }
     }
 
-    protected function getSourceAccountRequestBody(string $product, string $fundAccountId, string $channel, array $content)
+    protected function getSourceAccountRequestBody(string $product,
+                                                   string $fundAccountId,
+                                                   string $channel,
+                                                   array $content)
     {
         $request = [
             Constants::PRODUCT              => $product,
@@ -256,7 +262,6 @@ class CreateAccount extends Base
 
         return $request;
     }
-
 
     public function callFtsCreateAccount(PublicEntity $account, string $product)
     {
