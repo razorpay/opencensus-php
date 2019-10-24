@@ -109,7 +109,7 @@ class DownstreamProcessor
     {
         $mid = $merchant->getId();
 
-        $iciciMids = (new AdminService())->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
+        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
 
         return (in_array($mid, $iciciMids, true) === true);
     }
@@ -118,7 +118,7 @@ class DownstreamProcessor
     {
         $mid = $merchant->getId();
 
-        $citiMids = (new AdminService())->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
+        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
 
         return (in_array($mid, $citiMids, true) === true);
     }
