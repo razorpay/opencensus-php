@@ -630,7 +630,7 @@ const uploadFields = [
   },
   {
     label: 'First Page',
-    name: 'front',
+    name: 'address_proof_front',
     dynamicLabel: true,
     dynamicName: true,
     getLabel: activation => {
@@ -645,16 +645,21 @@ const uploadFields = [
     },
     _cmp: Input.File,
     destinationUrl: 'merchant/documents/upload',
-    _when: activation => {
-      return null !== activation.state.address_proof;
-    },
+    // _when: activation => {
+    //   return _showForIndiv(activation) && null !== activation.state.address_proof && _showForIndiv;
+    // },
+    _when: _showForIndiv,
+    _type: 'address_proof_upload_doc',
+    isDeletable: true,
   },
   {
     label: 'Last Page',
-    name: 'back',
+    name: 'address_proof_back',
     dynamicLabel: true,
     dynamicName: true,
     getLabel: activation => {
+      // if (!activation.state.address_proof)
+      //   return ADDRESS_PROOF_TYPES.aadhar.label + ' ' + 'Last Page';
       return (
         ADDRESS_PROOF_TYPES[activation.state.address_proof].label +
         ' ' +
@@ -662,16 +667,21 @@ const uploadFields = [
       );
     },
     getName: activation => {
+      // if (!activation.state.address_proof)
+      //   return ADDRESS_PROOF_TYPES.aadhar.value + '_' + 'back';
       return activation.state.address_proof + '_' + 'back';
     },
     _cmp: Input.File,
     destinationUrl: 'merchant/documents/upload',
-    _when: activation => {
-      return (
-        null !== activation.state.address_proof &&
-        ADDRESS_PROOF_TYPES[activation.state.address_proof].back
-      );
-    },
+    // _when: activation => {
+    //   return (
+    //     _showForIndiv(activation) && null !== activation.state.address_proof &&
+    //     ADDRESS_PROOF_TYPES[activation.state.address_proof].back
+    //   );
+    // },
+    _when: _showForIndiv,
+    _type: 'address_proof_upload_doc',
+    isDeletable: true,
   },
 ];
 
