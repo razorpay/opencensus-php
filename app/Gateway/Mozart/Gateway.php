@@ -270,6 +270,11 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true)
+        {
+            return true;
+        }
+
         return false;
     }
 
