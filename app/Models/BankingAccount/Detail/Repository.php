@@ -28,5 +28,7 @@ class Repository extends Base\Repository
                     'count'                     => count($details),
                 ]);
         }
+
+        return $details->first();
     }
 }
