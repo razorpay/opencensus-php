@@ -58,7 +58,7 @@ class AccountVerificationRazorpayX extends Base\Mailable
     protected function addMailData()
     {
         $data = [
-            'token'       => $this->token,
+            'token' => $this->token,
         ];
 
         $this->with($data);
@@ -68,7 +68,7 @@ class AccountVerificationRazorpayX extends Base\Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.account_verification_razorpay_x');
+        $this->view('emails.user.razorpayx.account_verification');
 
         return $this;
     }
