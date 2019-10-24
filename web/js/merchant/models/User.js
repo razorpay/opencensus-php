@@ -400,6 +400,10 @@ export default class User {
       : this.isAllowedEdit('team');
   }
 
+  get isPaymentLinkBatchEnabledForSellerAppRole() {
+    return this.getExpStatus('sellerapp_PL_batch_upload');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
