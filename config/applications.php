@@ -359,6 +359,11 @@ return [
         'password'  => env('SMART_ROUTING_PASSWORD')
     ],
 
+    'doppler' => [
+        'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
+    ],
+
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
     ],
