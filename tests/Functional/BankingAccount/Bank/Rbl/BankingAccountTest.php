@@ -705,7 +705,7 @@ class BankingAccountTest extends TestCase
             ],
             [
                 'gateway_key'   => 'client_id',
-                'gateway_value' => 'YXBpX2tleQ==',
+                'gateway_value' => 'api_key',
             ]
         ];
 
@@ -731,7 +731,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
 
-        $this->assertEquals(base64_encode('api_key_two'), $bankingAccountDetails['gateway_value']);
+        $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
     }
 
     protected function setMozartMockResponse($mockedResponse)
