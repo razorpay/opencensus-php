@@ -2105,6 +2105,35 @@ class BankTransferTest extends TestCase
         $this->assertNull($payment['order_id']);
     }
 
+    public function testBankTransferWithDynamicFeeBearer()
+    {
+        $this->fixtures->merchant->enableDynamicFeeModel('10000000000000');
+
+        // In the below scenario Virtual Account doesn't have any order associated.
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        // To make sure payment is created with fee even when
+        // virtual account did not have any associated order.
+        $this->assertNotNull($payment['fee']);
+        $this->assertNull($payment['order_id']);
+    }
+
     public function testBankTransferProcessWithPayerBankAccountOf4Chars()
     {
         $accountNumber = $this->bankAccount['account_number'];
