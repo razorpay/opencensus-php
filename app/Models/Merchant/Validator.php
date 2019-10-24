@@ -47,6 +47,7 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
+        Constants::PARTNER_INTENT           => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -291,6 +292,14 @@ class Validator extends Base\Validator
     protected static $suspendedMerchantRemoveRules = [
         'skip'  => 'sometimes|integer',
         'limit' => 'sometimes|integer',
+    ];
+
+    protected static $updatePartnerIntentRules = [
+        Constants::PARTNER_INTENT       => 'required|boolean',
+    ];
+
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
     ];
 
     protected static $preferencesRules = [
@@ -1322,6 +1331,23 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+
         }
     }
 }

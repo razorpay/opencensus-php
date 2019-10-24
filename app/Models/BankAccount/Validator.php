@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|numeric|digits_between:10,12',
+        Entity::NOTES                           => 'sometimes|notes',
     ];
 
     protected static $editRules = [

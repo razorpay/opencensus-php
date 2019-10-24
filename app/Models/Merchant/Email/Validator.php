@@ -59,4 +59,16 @@ class Validator extends Base\Validator
             $this->validateInput('email', [Entity::EMAIL => $email]);
         }
     }
+
+    /**
+     * @param array $types
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateTypes(array $types)
+    {
+        foreach ($types as $type)
+        {
+            $this->validateType(Entity::TYPE, $type);
+        }
+    }
 }

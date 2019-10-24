@@ -82,7 +82,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'               => 'Linked Account 1',
+                'name'               => 'Acme solutions',
                 'email'              => 'linked1@account.com',
                 'entity'             => 'account',
                 'live'               => true,

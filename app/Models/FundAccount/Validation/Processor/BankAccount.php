@@ -213,7 +213,7 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaProcessed(array $input)
     {
-        $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE, $input[Validation::UTR]);
 
         if ($this->validation->getRegisteredName() === null)
         {
@@ -239,7 +239,7 @@ class BankAccount extends Base
     {
         if ($input['internal_error'] === false)
         {
-            $this->markValidationAsCompleted(AccountStatus::INVALID);
+            $this->markValidationAsCompleted(AccountStatus::INVALID, $input[Validation::UTR]);
 
             return;
         }

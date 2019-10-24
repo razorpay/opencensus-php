@@ -137,6 +137,11 @@ trait AuthorizeFailed
             $response['acquirer'][Entity::VPA] = $gatewayPayment->getVpa();
         }
 
+        if (method_exists($gatewayPayment, 'getNpciReferenceId') === true)
+        {
+            $response['acquirer'][Entity::REFERENCE16] = $gatewayPayment->getNpciReferenceId();
+        }
+
         return $response;
     }
 }

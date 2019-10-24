@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public function verify(array $input): array
+    public function verify(array $input)
     {
         parent::verify($input);
 

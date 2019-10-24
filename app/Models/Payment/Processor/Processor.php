@@ -24,6 +24,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
@@ -1625,6 +1626,8 @@ class Processor
             'status'                => $status
         ];
 
+        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
         if ($status !== Status::CREATED)
@@ -2317,8 +2320,12 @@ class Processor
 
         if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
         {
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            $payment->setNotes($invoice->getNotes()->toArray());
+            if (empty($paymentNotes) === true)
+            {
+                $payment->setNotes($invoice->getNotes()->toArray());
+            }
         }
     }
 

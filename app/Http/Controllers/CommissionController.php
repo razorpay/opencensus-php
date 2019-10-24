@@ -39,6 +39,17 @@ class CommissionController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function bulkCaptureByPartner()
+    {
+        $input = Request::all();
+
+        $count = $this->service()->bulkCaptureByPartner($input);
+
+        $response = ['count' => $count];
+
+        return ApiResponse::json($response);
+    }
+
     public function clearOnHoldForPartner(string $partnerId)
     {
         $input = Request::all();

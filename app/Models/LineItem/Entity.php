@@ -106,8 +106,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         self::ITEM_ID,
-        // self::REF_ID,
-        // self::REF_TYPE,
+        self::REF_ID,
+        self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -254,6 +254,11 @@ class Entity extends Base\PublicEntity
     public function getDescriptionElseName(): string
     {
         return $this->getDescription() ?: $this->getName();
+    }
+
+    public function getRefType()
+    {
+        return $this->getAttribute(self::REF_TYPE);
     }
 
     // -------------------------- Getters Ends -----------------------
