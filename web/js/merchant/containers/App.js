@@ -24,7 +24,10 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
-import { resizeWindow } from 'merchant/modules/app';
+import {
+  resizeWindow,
+  updateMerchantLiveTransactionFlag,
+} from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
@@ -240,14 +243,7 @@ export default class App extends Component {
 
   setLiveTransactionDone = ({ live_transaction_done, id }) => {
     if (live_transaction_done != undefined && live_transaction_done === 1) {
-      merchantFetch({
-        url: 'merchant_mtu_update',
-        method: 'post',
-        data: {
-          merchants: [id],
-          live_transaction_done: 2,
-        },
-      })
+      updateMerchantLiveTransactionFlag(id)
         .then(resp => {
           if (resp.success) {
             setTrackData({

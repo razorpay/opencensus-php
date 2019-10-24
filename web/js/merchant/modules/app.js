@@ -16,6 +16,17 @@ const isMobileResolution = width => {
   return width <= 768;
 };
 
+export const updateMerchantLiveTransactionFlag = id => {
+  return merchantFetch({
+    url: 'merchant_mtu_update',
+    method: 'post',
+    data: {
+      merchants: [id],
+      live_transaction_done: 2,
+    },
+  });
+};
+
 let initialState = {
   luminateRowId: null,
   windowWidth: window.innerWidth,
