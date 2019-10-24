@@ -182,7 +182,6 @@ export default class PaymentPagesV3Entity extends React.Component {
       toggleManualActivation,
       reActivateLink,
       reportConfigs,
-      isPPV3ReportsEnabled,
     } = this.props;
 
     // paymentPageEntity = dummyEntityData;
@@ -402,7 +401,7 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
             ))}
 
-            {isPPV3ReportsEnabled && (
+            {this.props.user.isPPV3ReportsEnabled && (
               <div className="btn-toolbar pull-right">
                 <button
                   type="button"
