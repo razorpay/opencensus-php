@@ -24,10 +24,7 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
-import {
-  resizeWindow,
-  updateGAForFirstLiveTransaction,
-} from 'merchant/modules/app';
+import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
@@ -241,12 +238,17 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
-  updateGA({ live_transaction_done }) {
+  updateGA({ live_transaction_done, id }) {
+    // live_transaction_done (possible values: 0,1,2)
+    // 0 ->
     if (live_transaction_done != undefined && live_transaction_done === 1) {
       merchantFetch({
-        url: '/account/config',
-        method: 'put',
-        data: { live_transaction_done: 2 },
+        url: 'merchant_mtu_update',
+        method: 'post',
+        data: {
+          id: id,
+          live_transaction_done: 2,
+        },
       })
         .then(resp => {
           if (resp.success) {
@@ -263,9 +265,12 @@ export default class App extends Component {
     } else if (live_transaction_done === 0) {
       console.log('live_transaction_done found as:', live_transaction_done);
       merchantFetch({
-        url: 'account/config',
-        method: 'put',
-        data: { live_transaction_done: 1 },
+        url: 'merchant_mtu_update',
+        method: 'post',
+        data: {
+          id: id,
+          live_transaction_done: 2,
+        },
       })
         .then(resp => {
           if (resp.success) {
