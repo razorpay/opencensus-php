@@ -360,8 +360,8 @@ class PublicEntity extends UniqueIdEntity
     {
         //
         // If you're not getting relations data here,
-        // Add the relation as the visible array in the Entity as snake cased
-        // Eg: bankingAccountDetails
+        // Add the relation as the visible array in the Entity as camel cased
+        // Eg: bankingAccountDetails in $visible of BankingAccount\Detail\Entity
         //
         $relations = $this->getArrayableRelations();
 

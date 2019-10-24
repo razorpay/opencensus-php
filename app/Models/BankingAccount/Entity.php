@@ -75,6 +75,9 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH             = 40;
     const ACCOUNT_IFSC_LENGTH               = 11;
 
+    // TODO: move username, password, reference1 to banking_account_details
+    // JIRA ticket: https://razorpay.atlassian.net/browse/RX-608
+
     // for rbl this is ldap id
     const USERNAME                          = 'username';
     // for rbl this is ldap password
@@ -168,6 +171,14 @@ class Entity extends Base\PublicEntity
         self::MERCHANT,
         self::INTERNAL_COMMENT,
         self::BANKING_ACCOUNT_DETAILS,
+        //
+        // This has been added so that banking_account_details
+        // relations can be fetched on admin auth.
+        // For some reason admin auth expects the relations to be
+        // present in visible array as camel cased.
+        // For proxy auth this is not required, having snake cased
+        // 'banking_account_details' works fine
+        //
         'bankingAccountDetails',
     ];
 
