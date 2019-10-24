@@ -96,16 +96,16 @@ class Repository extends Transaction\Repository
      * TODO : https://razorpay.atlassian.net/browse/RX-536
 
      * @param $merchantId
-     * @param $channel
+     * @param $accountNumber
      * @param $fromDate
      * @param $toDate
      * @return mixed
      */
-    public function getStatementsInRange($merchantId, $channel, $fromDate, $toDate)
+    public function getStatementsInRange($merchantId, $accountNumber, $fromDate, $toDate)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->get();

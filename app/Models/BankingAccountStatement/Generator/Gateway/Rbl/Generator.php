@@ -65,7 +65,7 @@ abstract class Generator extends Base
         $bankAccountStatements = $this->repo
                                       ->statement
                                       ->getStatementsInRange($bankingAccount->getMerchantId(),
-                                                             $bankingAccount->getChannel(),
+                                                             $bankingAccount->getAccountNumber(),
                                                              $this->fromDate,
                                                              $this->toDate);
 
