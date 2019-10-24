@@ -62,10 +62,14 @@ abstract class Generator extends Base
 
     protected function getAccountSummaryAndTransactions(BankingAccountEntity $bankingAccount)
     {
+        $balanceId = $this->repo
+                          ->balance
+                          ->getBalanceIdByAccountNumberOrFail($bankingAccount->getAccountNumber());
+
         $bankAccountStatements = $this->repo
                                       ->statement
                                       ->getStatementsInRange($bankingAccount->getMerchantId(),
-                                                             $bankingAccount->getAccountNumber(),
+                                                             $balanceId,
                                                              $this->fromDate,
                                                              $this->toDate);
 

@@ -101,11 +101,11 @@ class Repository extends Transaction\Repository
      * @param $toDate
      * @return mixed
      */
-    public function getStatementsInRange($merchantId, $accountNumber, $fromDate, $toDate)
+    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::BALANCE_ID, $balanceId)
                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
                     ->orderBy(Entity::CREATED_AT, 'asc')
                     ->get();
