@@ -241,13 +241,13 @@ export default class App extends Component {
   /**
    * @param {number} live_transaction_done
    * @param {string} id
-   * live_transaction_done (possible values: 0,1,2)
+   * live_transaction_done: Has user done any live transaction (possible values: 0,1,2)
    * if (live_transaction_done == 0 || live_transaction_done == 2)
    *  // do nothing
    * else if (live_transaction_done == 1)
    *  // fire GA once and increase value to 2
    */
-  updateGA({ live_transaction_done, id }) {
+  setLiveTransactionDone({ live_transaction_done, id }) {
     if (live_transaction_done != undefined && live_transaction_done === 1) {
       merchantFetch({
         url: 'merchant_mtu_update',
@@ -259,40 +259,16 @@ export default class App extends Component {
       })
         .then(resp => {
           if (resp.success) {
-            console.log('fireeeee GA 11111');
             setTrackData({
-              eventCategory: 'Dashboard - live_transaction_done',
-              eventAction: 'Show - live_transaction_done',
+              eventCategory: 'Dashboard - Instant Activations Live',
+              eventAction: 'Login',
+              eventLabel: 'MTU',
             })();
           }
         })
         .catch(err => {
-          console.log('erororororororor:', err);
+          console.log('err:', err);
         });
-    } else if (live_transaction_done === 0) {
-      console.log('live_transaction_done found as:', live_transaction_done);
-      merchantFetch({
-        url: 'merchant_mtu_update',
-        method: 'post',
-        data: {
-          merchants: [id],
-          live_transaction_done: 1,
-        },
-      })
-        .then(resp => {
-          if (resp.success) {
-            console.log('fireeeee GA 11111');
-            setTrackData({
-              eventCategory: 'Dashboard - live_transaction_done',
-              eventAction: 'Show - live_transaction_done',
-            })();
-          }
-        })
-        .catch(err => {
-          console.log('erororororororor:', err);
-        });
-    } else {
-      console.log('live_transaction_done not found!!!!', live_transaction_done);
     }
   }
 
@@ -301,8 +277,7 @@ export default class App extends Component {
 
     if (user) {
       this.props.updateSession({ user });
-      this.updateGA(user);
-      console.log('userrrrr:', user);
+      this.setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
