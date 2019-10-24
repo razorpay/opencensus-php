@@ -1626,8 +1626,6 @@ class Processor
             'status'                => $status
         ];
 
-        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
         if ($status !== Status::CREATED)
@@ -1670,6 +1668,24 @@ class Processor
             $notifier = new Notify($this->payment);
 
             $notifier->trigger(Payment\Event::FAILED);
+        }
+
+        //TODO: Remove this later
+        try
+        {
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $this->payment->toArray(),
+                    'code'                => $code,
+                    'internal_code'       => $internalCode,
+                    'error'               => $e->getMessage()
+                ]
+            );
         }
     }
 
