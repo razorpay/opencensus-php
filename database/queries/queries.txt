@@ -5327,6 +5327,12 @@ ALTER table terminals
     ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
     ADD INDEX terminals_req_rrn_index (`req_rrn`);
 
+ALTER TABLE  merchant_banks
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
+ALTER TABLE  terminals
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
