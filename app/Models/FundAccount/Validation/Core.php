@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -204,6 +205,13 @@ class Core extends Base\Core
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
             $validation->associateFundAccount($fundAccount);
+
+            if (($validation->fundAccount->getAccountType() === FundAccount\Type::VPA) and
+                (($input['amount'] !== null) or ($input['amount'] !== 0)))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Invalid amount: '. $input['amount'] . '. only 0 allowed for vpa.');
+            }
 
             $processor = Processor\Factory::get($validation);
 
