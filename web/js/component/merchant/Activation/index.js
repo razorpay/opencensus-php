@@ -1692,6 +1692,12 @@ function ActivationField(field) {
   //   rest.onChange = (e) => this.handleFormFieldChange(e);
   // }
 
+  if (rest.checkValidityFromAPI) {
+    const error = rest.checkValidityFromAPI(this);
+    if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
+    else rest.propagatedError = '';
+  }
+
   return (
     <Component
       key={key}
