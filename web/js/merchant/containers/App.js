@@ -262,7 +262,7 @@ export default class App extends Component {
 
     if (user) {
       this.props.updateSession({ user });
-      setLiveTransactionDone(user);
+      this.setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
