@@ -16,16 +16,22 @@ class Entity extends PublicEntity
 
     protected $entity = 'banking_account_detail';
 
+    //
+    // TODO: Need to add capability to hide some fields
+    // https://razorpay.atlassian.net/browse/RX-610
+    //
     protected $visible = [
         self::GATEWAY_KEY,
         self::GATEWAY_VALUE,
         self::MERCHANT_ID,
+        self::BANKING_ACCOUNT_ID,
     ];
 
     protected $public = [
         self::GATEWAY_VALUE,
         self::GATEWAY_KEY,
         self::MERCHANT_ID,
+        self::BANKING_ACCOUNT_ID,
     ];
 
     // --------------------------- Relations ---------------------------------- //

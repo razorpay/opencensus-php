@@ -69,6 +69,7 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BENEFICIARY_MOBILE   => 'required|string',
         BankingAccount\Entity::BENEFICIARY_STATE    => 'required|string',
         BankingAccount\Entity::BENEFICIARY_COUNTRY  => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_ADDRESS1 => 'required|string',
         BankingAccount\Entity::ACCOUNT_TYPE         => 'required|string',
         Fields::CLIENT_ID                           => 'required|string',
         Fields::CLIENT_SECRET                       => 'required|string',

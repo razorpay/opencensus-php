@@ -686,7 +686,7 @@ class BankingAccountTest extends TestCase
             'url'       => '/admin/banking_account/' . 'bacc_' . $bankingAccount->getId(),
             'method'    => 'GET',
             'content'   => [
-                'expand' => ['merchant', 'merchant.merchantDetail', 'banking_account_details'],
+                'expand' => ['banking_account_details'],
             ]
         ];
 
@@ -759,6 +759,7 @@ class BankingAccountTest extends TestCase
             'beneficiary_name'      => 'abc',
             'beneficiary_mobile'    => '9999999999',
             'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_address1'  => 'blr1',
             'beneficiary_state'     => 'karnataka',
             'beneficiary_country'   => 'india',
             'username'              => 'MERCHANT_1234',

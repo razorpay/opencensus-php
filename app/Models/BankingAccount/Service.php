@@ -65,6 +65,15 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
             ['id'=> $id]);
 
+        //
+        // This route is to be used via Admin auth only.
+        // Don't use this on proxy auth
+        //
+        if ($this->auth->isAdminAuth() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 

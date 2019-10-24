@@ -400,7 +400,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountDetailsAttribute(array & $array)
     {
-        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        if (app('basicauth')->isAdminAuth() === false)
         {
             unset($array[self::BANKING_ACCOUNT_DETAILS]);
         }
