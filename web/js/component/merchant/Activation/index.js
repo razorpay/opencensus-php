@@ -210,10 +210,10 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      console.log('props.user', props.user.instantActivation);
-      console.log('props.user', props.user.instantActivation.isL1Submitted);
-
-      if (!props.user.instantActivation.isL1Submitted) {
+      if (
+        !props.user.instantActivation.isL1Submitted ||
+        props.user.instantActivation.isBlacklistFlow
+      ) {
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
@@ -228,6 +228,7 @@ export default class ActivationWizard extends React.Component {
         }))
       );
     }
+
     DOCUMENT_UPLOAD_STEP &&
       SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
@@ -448,8 +449,9 @@ export default class ActivationWizard extends React.Component {
   goto = async (newActiveTab, cb) => {
     if (
       this.state.activeTab == 2 &&
-      (!this.props.user.instantActivation.isL1Submitted &&
-        newActiveTab === null)
+      newActiveTab === null &&
+      (this.props.user.instantActivation.isBlacklistFlow ||
+        !this.props.user.instantActivation.isL1Submitted)
     ) {
       await this.submitL1(this.state.activeTab);
     }
@@ -1524,7 +1526,8 @@ export default class ActivationWizard extends React.Component {
                 {/* Action Button 4 */}
                 {isLastTab &&
                   !isFormSubmitted &&
-                  this.props.user.instantActivation.isL1Submitted && (
+                  this.props.user.instantActivation.isL1Submitted &&
+                  !this.props.user.instantActivation.isBlacklistFlow && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
