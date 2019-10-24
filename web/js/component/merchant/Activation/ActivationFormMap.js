@@ -145,7 +145,8 @@ const businessModel = [
         // return !!activation.props.user.showInstantActivation; TODO: Confirm with aseem about this condition
         return (
           activation.props.user.instantActivation.isL1Submitted &&
-          !!activation.props.user.showInstantActivation
+          !!activation.props.user.showInstantActivation &&
+          !activation.props.user.instantActivation.isBlacklistFlow
         );
       },
     },
@@ -217,7 +218,8 @@ const businessModel = [
         // return !!form.props.user.showInstantActivation; // TODO: change along with business_category
         return (
           activation.props.user.instantActivation.isL1Submitted &&
-          !!activation.props.user.showInstantActivation
+          !!activation.props.user.showInstantActivation &&
+          !activation.props.user.instantActivation.isBlacklistFlow
         );
       },
     },
