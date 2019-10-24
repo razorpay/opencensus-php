@@ -772,12 +772,14 @@ class BankingAccountTest extends TestCase
                 'banking_account_id' => $bankingAccount->getId(),
                 'gateway_key'        => 'client_id',
                 'gateway_value'      => '123zz',
+                'merchant_id'        => '10000000000000',
             ],
             [
                 'id'                 => 'badetail000001',
                 'banking_account_id' => $bankingAccount->getId(),
                 'gateway_key'        => 'client_secret',
                 'gateway_value'      => '123zz',
+                'merchant_id'        => '10000000000000',
             ]
         ];
 
