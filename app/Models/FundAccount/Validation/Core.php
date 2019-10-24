@@ -222,6 +222,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($validation);
             }
+
+            return $validation;
         });
 
         return $validation;

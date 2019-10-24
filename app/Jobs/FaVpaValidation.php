@@ -61,7 +61,7 @@ class FaVpaValidation extends Job
                 throw new LogicException("Invalid fund account type");
             }
 
-            $vpa = array("vpa" => $fundAccount->account->getAddress());
+            $vpa = [ 'vpa' => $fundAccount->account->getAddress() ];
 
             $data = $this->getVpaValidateResponse($vpa);
 
@@ -103,16 +103,16 @@ class FaVpaValidation extends Job
      */
     protected function getVpaValidateResponse(array $vpa) : array
     {
-        $data = array();
+        $data = [];
 
         try {
             $paymentService = new PaymentService();
 
             $response = $paymentService->validateVpa($vpa);
 
-            if ($response === null
-                OR $response['customer_name'] === null
-                OR $response['success'] === null)
+            if (($response === null) or
+                ($response['customer_name'] === null) or
+                ($response['success'] === null))
             {
                 throw new LogicException("Mismatch in expected and returned array in vpa validate");
             }
