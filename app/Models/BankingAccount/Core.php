@@ -95,11 +95,6 @@ class Core extends Base\Core
             $virtualAccount->balance);
     }
 
-    public function statusHasChanged(string $previousStatus, string $newStatus): bool
-    {
-        return $previousStatus !== $newStatus;
-    }
-
     public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
     {
         try
