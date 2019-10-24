@@ -1462,7 +1462,7 @@ class PaymentCreateTest extends TestCase
         $gateway->shouldReceive('call')
             ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
                 Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
-            (function ($gateway,$action,$input,$mode)
+            (function ($gateway, $action, $input, $mode)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
             });
