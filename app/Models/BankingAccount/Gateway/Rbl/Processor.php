@@ -217,16 +217,12 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
-        $clientId = Fields::getClientId($bankingAccount);
-
-        $clientSecret = Fields::getClientSecret($bankingAccount);
-
         $credentials = [
             Fields::USERNAME                  => $bankingAccount->getUsername(),
             Fields::PASSWORD                  => $bankingAccount->getPassword(),
             Fields::CORP_ID                   => $bankingAccount->getReference1(),
-            Fields::CLIENT_ID                 => $clientId,
-            Fields::CLIENT_SECRET             => $clientSecret,
+            Fields::CLIENT_ID                 => Fields::getClientId($bankingAccount),
+            Fields::CLIENT_SECRET             => Fields::getClientSecret($bankingAccount),
         ];
 
         $config = [
@@ -387,10 +383,6 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount)
     {
-        $clientId = Fields::getClientId($bankingAccount);
-
-        $clientSecret = Fields::getClientSecret($bankingAccount);
-
         $data = [
             Fields::SOURCE_ACCOUNT => [
                 Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
@@ -399,8 +391,8 @@ class Processor extends BankingAccount\Gateway\Processor
                     Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
                     Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
                     Fields::CORP_ID                 => $bankingAccount->getReference1(),
-                    Fields::CLIENT_ID               => $clientId,
-                    Fields::CLIENT_SECRET           => $clientSecret,
+                    Fields::CLIENT_ID               => Fields::getClientId($bankingAccount),
+                    Fields::CLIENT_SECRET           => Fields::getClientSecret($bankingAccount),
                 ],
             ],
         ];

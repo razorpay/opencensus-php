@@ -764,8 +764,6 @@ class BankingAccountTest extends TestCase
             'username'              => 'MERCHANT_1234',
             'password'              => 'RANDOM_STRING',
             'reference1'            => 'MERCHANT_SUB_CORP',
-            'reference2'            => 'RANDOM_STRING',
-            'reference3'            => 'RANDOM_STRING',
         ]);
 
         $attributes = [

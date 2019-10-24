@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount\Detail;
 
+use RZP\Models\Merchant;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
 
@@ -18,11 +19,13 @@ class Entity extends PublicEntity
     protected $visible = [
         self::GATEWAY_KEY,
         self::GATEWAY_VALUE,
+        self::MERCHANT_ID,
     ];
 
     protected $public = [
         self::GATEWAY_VALUE,
         self::GATEWAY_KEY,
+        self::MERCHANT_ID,
     ];
 
     // --------------------------- Relations ---------------------------------- //
@@ -30,6 +33,11 @@ class Entity extends PublicEntity
     public function bankingAccount()
     {
         return $this->belongsTo(BankingAccount\Entity::class);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     // ---------------------------- Setters ----------------------------------- //

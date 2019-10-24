@@ -43,6 +43,8 @@ class Core extends Base\Core
 
             $bankingAccountDetail->bankingAccount()->associate($bankingAccount);
 
+            $bankingAccountDetail->merchant()->associate($bankingAccount->merchant);
+
             $bankingAccountDetail->setGatewayKey($key);
 
             $bankingAccountDetail->setGatewayValue($value);

@@ -2528,7 +2528,7 @@ final class Route
         'merchant_actions'                         => '*',
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                    => Permission::EDIT_MERCHANT_DISABLE_LIVE,
-        'admin_fetch_entity_by_id'                 => '*', //Permission::VIEW_ALL_ENTITY,
+        'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'merchant_activation_update'               => '*', // permission handled in code
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,

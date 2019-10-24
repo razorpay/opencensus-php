@@ -891,7 +891,6 @@ class PublicErrorDescription
 
     // Banking Accounts
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED            = 'Operation could not be completed. Please try again';
-    const BAD_REQUEST_BANKING_ACCOUNT_DATA_MISSING_FOR_ACTIVATION                   = 'Account cannot be activated due to missing data';
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED                       = 'Operation could not be completed. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';

@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Detail\Entity;
 
@@ -24,6 +25,8 @@ class CreateBankingAccountDetails extends Migration
 
             $table->char(Entity::BANKING_ACCOUNT_ID, BankingAccount\Entity::ID_LENGTH);
 
+            $table->char(Entity::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
+
             $table->string(Entity::GATEWAY_KEY);
 
             $table->string(Entity::GATEWAY_VALUE)
@@ -34,6 +37,8 @@ class CreateBankingAccountDetails extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::BANKING_ACCOUNT_ID);
+
+            $table->index(Entity::MERCHANT_ID);
 
             $table->index(Entity::CREATED_AT);
 
