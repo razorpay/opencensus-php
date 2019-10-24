@@ -63,7 +63,7 @@ class Service extends Base\Service
 
         $currentStatus = $bankingAccount->getStatus();
 
-        if ($this->core->statusHasChanged($previousStatus, $currentStatus) === true)
+        if ($previousStatus !== $currentStatus)
         {
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
         }

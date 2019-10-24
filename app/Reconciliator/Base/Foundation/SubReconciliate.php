@@ -34,7 +34,7 @@ class SubReconciliate extends Base\Core
     const RECON_STATUS          = 'recon_status';
     const ALREADY_RECONCILED_AT = 'already_reconciled_at';
     const RECON_ERROR_MSG       = 'recon_error_msg';
-    const MERCHANT_ID           = 'merchant_id';
+    const RZP_MERCHANT_ID       = 'rzp_merchant_id';
     const PROCESSED_AT          = 'processed_at';
     const BATCH_ID              = 'batch_id';
     const ATTEMPT_NUMBER        = 'attempt_number';
@@ -274,7 +274,7 @@ class SubReconciliate extends Base\Core
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
-        $row[self::MERCHANT_ID]             = '';
+        $row[self::RZP_MERCHANT_ID]         = '';
         $row[self::PROCESSED_AT]            = $processed_at;
         $row[self::BATCH_ID]                = '';
         $row[self::ATTEMPT_NUMBER]          = '';
@@ -569,7 +569,7 @@ class SubReconciliate extends Base\Core
 
     protected function setMerchantIdInOutput(string $merchantId)
     {
-        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID] = $merchantId;
     }
 
     protected function setBatchIdInOutput($batchId)

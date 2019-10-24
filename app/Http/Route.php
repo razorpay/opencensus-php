@@ -1293,6 +1293,9 @@ final class Route
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
+
+        //route for updating merchant mtu
+        'merchant_mtu_update'                     => ['post',       'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
     ];
 
     public static $public = [
@@ -1748,6 +1751,7 @@ final class Route
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
         'transfer_process',
+        'merchant_mtu_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3359,6 +3363,11 @@ final class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
+        ],
+
+        'mtu_lambda' => [
+            // Accessing this route from lambda for updating merchant mtu
+            'merchant_mtu_update',
         ],
     ];
 
