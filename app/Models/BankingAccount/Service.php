@@ -71,7 +71,6 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
-
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
