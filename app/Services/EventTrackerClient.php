@@ -226,7 +226,9 @@ class EventTrackerClient extends AbstractEventClient
 
             $merchant = $payment->merchant;
 
-            $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
+            $properties['merchant_fee_bearer'] = $merchant->getFeeBearer();
+
+            $properties['payment_fee_bearer'] = $payment->getFeeBearer();
 
             return $properties;
         }

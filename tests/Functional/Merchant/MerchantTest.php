@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -370,9 +371,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -410,13 +411,13 @@ class MerchantTest extends TestCase
     public function testMerchant2faEnable()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+                MerchantEntity::SECOND_FACTOR_AUTH      => 0,
             ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
                 UserEntity::PASSWORD                => 'hello123',
             ], 'owner');
 
@@ -443,13 +444,13 @@ class MerchantTest extends TestCase
     public function testFailedMerchant2faEnableInvalidPass()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
+                MerchantEntity::SECOND_FACTOR_AUTH      => 0,
             ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+                UserEntity::CONTACT_MOBILE          => '9999999999',
                 UserEntity::PASSWORD                => 'hello123',
             ], 'owner');
 
@@ -476,13 +477,13 @@ class MerchantTest extends TestCase
     public function testMerchant2faDisable()
     {
         $merchant = $this->fixtures->create('merchant', [
-            MerchantEntity::SECOND_FACTOR_AUTH      =>  1,
+            MerchantEntity::SECOND_FACTOR_AUTH      => 1,
               ]);
 
          $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9999999999',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
             UserEntity::PASSWORD                => 'hello123',
         ], 'owner');
 
@@ -510,9 +511,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotPresent()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -552,9 +553,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotVerified()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -598,15 +599,15 @@ class MerchantTest extends TestCase
         ]);
 
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -666,9 +667,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -872,6 +873,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedDomains()
     {
         $this->createMerchant();
 
@@ -2019,8 +2029,8 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
-            'issuer'      => 'ALL',]);
-
+            'issuer'      => 'ALL',
+        ]);
 
         $this->startTest();
     }
@@ -2342,7 +2352,7 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithContactDetails()
     {
         $this->fixtures->create('contact', [
-            'id' => "ABCD123321DCBA",
+            'id' => 'ABCD123321DCBA',
         ]);
 
         $this->fixtures->create('fund_account', [
@@ -3623,7 +3633,7 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode='test')
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode = 'test')
     {
         DB::connection($mode)->table('merchant_users')
             ->insert([
@@ -4373,7 +4383,7 @@ class MerchantTest extends TestCase
     {
         Queue::fake();
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4390,7 +4400,7 @@ class MerchantTest extends TestCase
     {
         $this->createEsMockAndSetExpectations(__FUNCTION__, 'bulkUpdate');
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4402,7 +4412,7 @@ class MerchantTest extends TestCase
      *
      * @return array
      */
-    private function CreateBalanceEntities(): array
+    private function createBalanceEntities(): array
     {
         Carbon::setTestNow(Carbon::now()->addHours(25));
 
@@ -4466,7 +4476,7 @@ class MerchantTest extends TestCase
         $expectedBalance = [
             'type'             => 'banking',
             'account_type'     => 'shared',
-            'channel'          =>  null,
+            'channel'          => null,
             'merchant_id'      => '10000000000000',
         ];
 
@@ -4670,7 +4680,7 @@ class MerchantTest extends TestCase
         $merchantId = 10000000000000;
 
         $admin = $this->ba->getAdmin();
-        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
 
@@ -4707,7 +4717,7 @@ class MerchantTest extends TestCase
         $request = [
             'url'       => '/merchants/beneficiary/api/yesbank',
             'method'    => 'post',
-            'content'   =>  [
+            'content'   => [
                 'duration'   => 1200,
                 'send_email' => false,
             ]
@@ -4980,7 +4990,6 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
-
         $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
@@ -5001,6 +5010,74 @@ class MerchantTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntent()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentForMerchantWithoutPartnerIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentTrue()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentNull()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

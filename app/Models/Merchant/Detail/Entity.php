@@ -450,8 +450,8 @@ class Entity extends Base\PublicEntity
 
     public function hasBankAccountDetails(): bool
     {
-        $ifscCode      = $this->getAttribute(self::BANK_BRANCH_IFSC);
-        $accountNumber = $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+        $ifscCode      = $this->getBankBranchIfsc();
+        $accountNumber = $this->getBankAccountNumber();
 
         return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
     }
@@ -480,6 +480,21 @@ class Entity extends Base\PublicEntity
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);
+    }
+
+    public function getBankAccountName()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NAME);
+    }
+
+    public function getBankAccountNumber()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+    }
+
+    public function getBankBranchIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
     }
 
     public function getCompanyCin()
@@ -665,6 +680,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
     }
 
+    public function setContactName($name)
+    {
+        $this->setAttribute(self::CONTACT_NAME, $name);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -675,9 +695,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
 
+    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    {
+        $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
+    }
+
     public function getPoaVerificationStatus()
     {
         return $this->getAttribute(self::POA_VERIFICATION_STATUS);
+    }
+
+    public function isPoaVerified() : bool
+    {
+        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isBankDetailStatusVerified() : bool
+    {
+        return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
 
     public function getActivationFlow()
@@ -750,6 +785,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
@@ -767,7 +807,12 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessType()
     {
-        return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
+        return BusinessType::getKeyFromIndex($this->getBusinessTypeValue());
+    }
+
+    public function getBusinessTypeValue()
+    {
+        return $this->getAttribute(self::BUSINESS_TYPE);
     }
 
     public function isUnregisteredBusiness(): bool

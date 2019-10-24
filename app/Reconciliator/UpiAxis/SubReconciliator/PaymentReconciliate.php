@@ -26,12 +26,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_CUST_NAME       = 'account_cust_name';
     const COLUMN_PAYMENT_ID       = ['order_id', 'orderid'];
     const COLUMN_TRANSACTION_DATE = ['transaction_date', 'txn_date'];
+    const COLUMN_MOBILE_NO        = 'mobile_no';
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
     const ACCOUNT_DETAILS_NAME  = 'name';
 
     const SUCCESS = 'Success';
+
+    const BLACKLISTED_COLUMNS = [
+        self::ACCOUNT_CUST_NAME,
+        self::VPA,
+        self::COLUMN_MOBILE_NO,
+    ];
 
     protected function getPaymentId(array $row)
     {
@@ -40,10 +47,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // Id as null so that such rows don't get processed.
         //
 
-        $paymentId = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
+        $paymentIdColumn = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
         {
             return (isset($row[$pid]) === true);
         });
+
+        $paymentId = $row[$paymentIdColumn] ?? null;
 
         if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
         {
@@ -60,14 +69,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        if (UniqueIdEntity::verifyUniqueId($row[$paymentId], false) === false)
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
-                    'row'        => $row,
-                    'payment_id' => $row[$paymentId],
+                    'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
 
@@ -80,7 +88,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        return $row[$paymentId] ?? null;
+        return $paymentId;
     }
 
     protected function getReferenceNumber($row)

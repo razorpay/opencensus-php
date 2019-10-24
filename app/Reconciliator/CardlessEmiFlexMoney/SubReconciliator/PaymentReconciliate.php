@@ -14,6 +14,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const TRANSACTION_AMOUNT        = 'transaction_amount';
     const TRANSACTION_DATE          = 'transaction_date';
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[self::PAYMENT_ID]) === false)

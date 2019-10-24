@@ -41,7 +41,10 @@ class Entity extends Base\PublicEntity
     const TYPE               = 'type';
     const TEMPLATE_TYPE      = 'template_type';
 
-    const PAYMENT_PAGE_ITEMS = 'payment_page_items';
+    const PAYMENT_PAGE_ITEMS   = 'payment_page_items';
+    const PAYMENT_PAGE_ITEM_ID = 'payment_page_item_id';
+    const LINE_ITEMS           = 'line_items';
+    const ORDER                = 'order';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined
@@ -206,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL,
         self::TERMS,
         self::TYPE,
+        self::PAYMENT_PAGE_ITEMS,
     ];
 
     protected $casts = [
@@ -370,6 +374,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UDF_JSONSCHEMA_ID);
     }
 
+    public function getVersion(): string
+    {
+        return $this->getSettings()[Entity::VERSION] ?? Version::V1;
+    }
+
     public function isActive(): bool
     {
         return ($this->getStatus() === Status::ACTIVE);
@@ -408,8 +417,25 @@ class Entity extends Base\PublicEntity
 
     public function isTimesPayableExhausted(): bool
     {
-        return (($this->getTimesPayable() !== null) and
+        $isNewPage = (new Core)->isPaymentPageV3Enabled();
+
+        if (($this->getVersion() === Version::V1) and ($isNewPage === false))
+        {
+            return (($this->getTimesPayable() !== null) and
                 ($this->getTimesPayable() === $this->getTimesPaid()));
+        }
+
+        $paymentPageItems = $this->paymentPageItems()->get();
+
+        foreach ($paymentPageItems as $paymentPageItem)
+        {
+            if ($paymentPageItem->isStockLeft() === true)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

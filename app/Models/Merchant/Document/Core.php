@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Merchant\Document;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\FileStore\Core as FileStoreCore;
+use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 
 class Core extends Base\Core
 {
@@ -80,7 +81,7 @@ class Core extends Base\Core
 
         $document->setEntityType();
 
-        $this->repo->transaction(function() use ($document, $merchant, $input)
+        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails)
         {
             $this->repo->saveOrFail($document);
 
@@ -91,7 +92,15 @@ class Core extends Base\Core
             $param = (new Detail\Service())->storeActivationFile($document, $param);
 
             $this->storeInMerchantDocument($merchant, $param, $document);
+
+            $this->handleAndPerformOcrForUnRegisteredBusinessType(
+                $merchantDetails,
+                $document,
+                $merchant);
+
+            $this->repo->saveOrFail($document);
         });
+
 
         return $merchantDetailCore->createResponse($merchantDetails);
     }
@@ -103,7 +112,9 @@ class Core extends Base\Core
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
-        $documentsResponse = $this->documentResponse($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $documentsResponse = $this->documentResponse($merchant);
 
         $detailService = new Detail\Service();
 
@@ -137,16 +148,25 @@ class Core extends Base\Core
         }
     }
 
-    /** R
-     * @param string $merchantId
+    /**
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
-    public function documentResponse(string $merchantId): array
+    public function documentResponse(Merchant\Entity $merchant): array
     {
-        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantId);
-
         $documentsResponse = [];
+
+        $merchants = (new Merchant\Core)->getAllMerchantsMappedToMerchantLegalEntity($merchant);
+
+        if ($merchants->isEmpty() === false)
+        {
+            $documents = $this->repo->merchant_document->findDocumentsForMerchantIds($merchants->getIds());
+        }
+        else
+        {
+            $documents = $merchant->merchantDocuments;
+        }
 
         foreach ($documents as $document)
         {
@@ -164,5 +184,94 @@ class Core extends Base\Core
         }
 
         return $documentsResponse;
+    }
+
+    protected function handleAndPerformOcrForUnRegisteredBusinessType(
+        Merchant\Detail\Entity $merchantDetails,
+        Entity $document,
+        Merchant\Entity $merchant)
+    {
+        $merchantCore = new Merchant\Core();
+
+        if ((Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false) or
+            ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false))
+        {
+            return;
+        }
+
+        $ocrResponse = $this->performOcr($document);
+
+        $ocrDetails = $this->extractDetailFromOcrResponse($ocrResponse);
+
+        $promoterPanName = $merchantDetails->getPromoterPanName();
+
+        $ocrMatchingPercentage = 0;
+
+        if ((isset($ocrDetails[Constants::NAME]) === true) and
+            empty($promoterPanName) === false)
+        {
+            $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);
+        }
+
+        $this->setOcrVerificationStatus($document, $ocrMatchingPercentage);
+    }
+
+
+    protected function extractDetailFromOcrResponse($ocrResponse): array
+    {
+        if ((empty($ocrResponse) === true) or
+            (($ocrResponse instanceof Detail\Verifiers\PoaVerifierResponse) === false))
+        {
+            return [];
+        }
+
+        $ocrDetails = [
+            Constants::NAME => $ocrResponse->getOcrName()
+        ];
+
+        return $ocrDetails;
+    }
+
+    protected function performOcr(Entity $document)
+    {
+        $signedUrl = (new FileStoreCore)->getSignedUrl(
+            $document->getFileStoreId(),
+            $document->getMerchantId()
+        );
+
+        $input = [
+            DetailConstant::SIGNED_URL => $signedUrl
+        ];
+
+        try
+        {
+            $verifier = FactoryVerifier::getPoaVerifier($input);
+
+            return $verifier->verifyDetails();
+        }
+        catch (\Throwable $exception)
+        {
+            $data = [
+                Entity::FILE_STORE_ID => $document->getFileStoreId(),
+            ];
+
+            $this->trace->traceException($exception,
+                                         null,
+                                         TraceCode::MERCHANT_POA_VERIFICATION_FAILED,
+                                         $data);
+
+            return null;
+        }
+    }
+
+    protected function setOcrVerificationStatus(Entity $document, $percent)
+    {
+        $ocrVerifiedStatus = OcrVerificationStatus::FAILED;
+
+        if ($percent >= OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD)
+        {
+            $ocrVerifiedStatus = OcrVerificationStatus::VERIFIED;
+        }
+        $document->setOcrVerify($ocrVerifiedStatus);
     }
 }

@@ -27,6 +27,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -35,6 +36,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Models\Transaction;
@@ -50,7 +52,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -203,6 +204,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
             return null;
         }
 
@@ -265,6 +268,9 @@ trait Authorize
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
+            $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
+
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
@@ -336,11 +342,37 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
+                // Payment Authentication failed for the gateway.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or,
+                // mpi_blade in case terminal is authorization terminals like Hitachi.
+
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
                 {
                     continue;
+                }
+
+                $errorCode = $e->getError()->getPublicErrorCode();
+
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+                //TODO: Remove this later
+                try
+                {
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'code'                => $errorCode,
+                            'internal_code'       => $internalErrorCode,
+                            'error'               => $e->getMessage()
+                        ]
+                    );
                 }
 
                 // An error occurred on gateway due to user or gateway.
@@ -351,8 +383,6 @@ trait Authorize
                 $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
@@ -1472,7 +1502,7 @@ trait Authorize
         }
 
         // Customer fee bearer is not allowed on netbanking recurring
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed. Please contact the merchant for further assistance.',
@@ -2197,7 +2227,7 @@ trait Authorize
 
     protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
     {
-        $data = ['payment' => $payment->toArray()];
+        $data = ['payment' => $payment->toArrayGateway()];
 
         if ($payment->getGlobalOrLocalTokenEntity() !== null)
         {
@@ -2284,14 +2314,14 @@ trait Authorize
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
             if (($merchant->convertOnApi() === null) or
-                ($merchant->isFeeBearerCustomer() === true))
+                ($merchant->isFeeBearerCustomerOrDynamic() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                     null,
                     [
                         'convert_on_api'        => $merchant->convertOnApi(),
-                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomer(),
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
                         'payment_id'            => $payment->getId(),
                         'currency'              => $currency,
                     ]);
@@ -5458,6 +5488,22 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
+            //TODO: Remove this later
+            try
+            {
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $payment->toArray(),
+                        'error'               => $e->getMessage()
+                    ]
+                );
+            }
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
@@ -6110,5 +6156,27 @@ trait Authorize
         }
 
         $gatewayInput['order']['account_number'] = $accountNumber;
+    }
+
+    public function validateAndSaveBillingAddressIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === false)
+        {
+            return;
+        }
+
+        $billingAddressFromInput = $input[Payment\Entity::BILLING_ADDRESS];
+
+        $billingAddressFromInput['type'] = Address\Type::BILLING_ADDRESS;
+
+        if (isset($billingAddressFromInput['postal_code']) === true)
+        {
+            // address entity stores zip code as "zipcode"
+            // in input, we get zip code as "postal_code"
+            $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
+
+            unset($billingAddressFromInput['postal_code']);
+        }
+        (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }

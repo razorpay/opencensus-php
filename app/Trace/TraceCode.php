@@ -531,6 +531,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
 
+    const RX_LOW_BALANCE_EMAIL_ALERT_FAILED                     = 'RX_LOW_BALANCE_EMAIL_ALERT_FAILED';
+    const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
+
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                                = 'INVOICE_PDF_GEN_FAILED';
@@ -620,7 +623,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
-    const PAYMENT_PROCESSING_ERROR                              = 'PAYMENT_PROCESSING_ERROR';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
@@ -878,6 +880,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET           = 'FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET';
     const FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT             = 'FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT';
     const SETTLEMENT_TRANSFER_DISABLED                          = 'SETTLEMENT_TRANSFER_DISABLED';
+    const SETTLEMENT_TRANSACTION_FETCH                          = 'SETTLEMENT_TRANSACTION_FETCH';
 
     const VPA_CREATE_REQUEST                                    = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                                           = 'VPA_CREATED';
@@ -993,6 +996,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_VERIFY_POA                                   = 'MERCHANT_VERIFY_POA';
     const MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA             = 'MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA';
     const MERCHANT_MARK_HAS_KEY_ACCESS                          = 'MERCHANT_MARK_HAS_KEY_ACCESS';
     const MERCHANT_UPDATE_ACTIVATION_STATUS                     = 'MERCHANT_UPDATE_ACTIVATION_STATUS';
@@ -1047,6 +1051,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
     const PAYOUT_QUEUED                                         = 'PAYOUT_QUEUED';
     const PAYOUT_METRIC_PUSH_EXCEPTION                          = 'PAYOUT_METRIC_PUSH_EXCEPTION';
+    const PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED        = 'PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED';
+    const PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE     = 'PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1100,6 +1106,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORTING_SERVICE_FILTERED_CONFIGS                    = 'REPORTING_SERVICE_FILTERED_CONFIGS';
 
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
+    const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
 
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
@@ -1222,7 +1229,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
-    const RECON_BATCH_OUTPUT_FILE                               = 'RECON_BATCH_OUTPUT_FILE';
     const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
 
     //Trace code for Transaction Migration
@@ -1642,6 +1648,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Account codes
     const ACCOUNT_CREATED                                       = 'ACCOUNT_CREATED';
 
+    const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
+    const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
+
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
@@ -1674,6 +1683,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_CREATE_ACCESS_MAP_REQUEST                     = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST                     = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT             = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT                 = 'SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT';
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
 
@@ -1750,6 +1760,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Instant activation traces
     const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS              = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
     const MERCHANT_POI_VERIFICATION_FAILED                      = 'MERCHANT_POI_VERIFICATION_FAILED';
+
+    const MERCHANT_POA_VERIFICATION_FAILED                      = 'MERCHANT_POA_VERIFICATION_FAILED';
 
     const FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED            = 'FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED';
     const FUND_TRANSFER_INITIATION_FAILED                       = 'FUND_TRANSFER_INITIATION_FAILED';
@@ -1887,6 +1899,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE         = 'COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE';
     const COMMISSION_EXPLICIT_FEE_BREAKUP_CREATE_FAILED         = 'COMMISSION_EXPLICIT_FEE_BREAKUP_CREATE_FAILED';
     const COMMISSION_TRANSACTION_CREATE_REQUEST                 = 'COMMISSION_TRANSACTION_CREATE_REQUEST';
+    const COMMISSION_CAPTURE_BY_PARTNER_REQUEST                 = 'COMMISSION_CAPTURE_BY_PARTNER_REQUEST';
     const COMMISSION_TRANSACTION_CREATED                        = 'COMMISSION_TRANSACTION_CREATED';
     const COMMISSION_TRANSACTION_CREATE_FAILED                  = 'COMMISSION_TRANSACTION_CREATE_FAILED';
     const COMMISSION_TRANSACTION_JOB_ERROR                      = 'COMMISSION_TRANSACTION_JOB_ERROR';
@@ -1935,6 +1948,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_REGISTER_ACCOUNT_FAILED                           = 'FTS_REGISTER_ACCOUNT_FAILED';
     const FTS_CREATE_ACCOUNT_COMPLETE                           = 'FTS_CREATE_ACCOUNT_COMPLETE';
     const FTS_TRANSFER_ACTION_COMPLETE                          = 'FTS_TRANSFER_ACTION_COMPLETE';
+    const FTS_FUND_TRANSFER_NOT_ALLOWED                         = 'FTS_FUND_TRANSFER_NOT_ALLOWED';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
     const FTS_FUND_TRANSFER_JOB_DISPATCHED                      = 'FTS_FUND_TRANSFER_JOB_DISPATCHED';
@@ -2049,6 +2063,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID        = 'BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID';
     const DUPLICATE_ACCOUNT_INFO_WEBHOOK                        = 'DUPLICATE_ACCOUNT_INFO_WEBHOOK';
     const BANKING_ACCOUNT_ENTITY_CREATED                        = 'BANKING_ACCOUNT_ENTITY_CREATED';
+    const BANKING_ACCOUNT_UPDATE_NOTIFICATION                   = 'BANKING_ACCOUNT_UPDATE_NOTIFICATION';
+    const BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED            = 'BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED';
     const BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE                 = 'BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE';
     const BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST           = 'BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST';
     const BANKING_ACCOUNT_YESBANK_CREATE_FAILED                 = 'BANKING_ACCOUNT_YESBANK_CREATE_FAILED';
@@ -2107,6 +2123,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
 
+    //Express service
+    const EXPRESS_SERVICE_REQUEST                               = 'EXPRESS_SERVICE_REQUEST';
+    const EXPRESS_SERVICE_RESPONSE                              = 'EXPRESS_SERVICE_RESPONSE';
+    const EXPRESS_INTEGRATION_ERROR                             = 'EXPRESS_INTEGRATION_ERROR';
+
     // Stork service
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
@@ -2137,11 +2158,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
 
+    // Doppler service
+    const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
+
     /*
      * Trace codes for PowerWallet
      */
-    const PAYMENT_POWER_WALLET_INITIATED            = 'PAYMENT_POWER_WALLET_INITIATED';
-    const PAYMENT_POWER_WALLET_TOPUP                = 'PAYMENT_POWER_WALLET_TOPUP';
+    const PAYMENT_POWER_WALLET_INITIATED                        = 'PAYMENT_POWER_WALLET_INITIATED';
+    const PAYMENT_POWER_WALLET_TOPUP                            = 'PAYMENT_POWER_WALLET_TOPUP';
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
     const PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY                 = 'PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY';

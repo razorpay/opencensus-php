@@ -13,6 +13,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
+    const BLACKLISTED_COLUMNS = [
+        Constants::COLUMN_CUSTOMER_EMAIL,
+    ];
+
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);
@@ -25,7 +29,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
-                    'payment_id' => $row[Constants::BANK_PAYMENT_ID] ?? $row[Constants::COLUMN_PAYMENT_ID] ?? null,
+                    'payment_id' => $row[Constants::COLUMN_PAYMENT_ID] ?? $row[Constants::BANK_PAYMENT_ID] ?? null,
                     'gateway'    => $this->gateway
                 ]);
 

@@ -4,11 +4,12 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Constants\Entity as E;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
@@ -78,6 +79,13 @@ class Gateway extends Base\Gateway
     public function reconcile(array $input)
     {
         parent::action($input, Action::RECONCILE);
+
+        //Create a mapping if there are more gateways for which migration from api to mozart is done with api based reconciliation.
+        if ($input['gateway'] === 'netbanking_bob_v2')
+        {
+            $input['gateway'] = 'netbanking_bob';
+            $input['payment']['gateway'] = 'netbanking_bob';
+        }
 
         $request = $this->getMozartReconcileRequestArray($input);
 
@@ -495,7 +503,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function getMozartRequestArray($input)
+    protected function getMozartRequestArray($input, $mode = null)
     {
         if (($input['terminal'] instanceof TerminalEntity) === true)
         {
@@ -519,9 +527,9 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
-        $url = $this->getUrlForMozartRequest($input, 'payments');
+        $url = $this->getUrlForMozartRequest($input, 'payments', $mode);
 
-        return $this->getAuthenticatedMozartRequestArray($url, $content);
+        return $this->getAuthenticatedMozartRequestArray($url, $content, $mode);
     }
 
     protected function getTerminalOnboardingMozartRequestArray($input)
@@ -538,9 +546,11 @@ class Gateway extends Base\Gateway
         return $this->getAuthenticatedMozartRequestArray($url, $content);
     }
 
-    protected function getUrlForMozartRequest($input, $prefix)
-    {        
-        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+    protected function getUrlForMozartRequest($input, $prefix, $mode = null)
+    {
+        $mode = $this->mode ?? $mode;
+
+        $urlConfig = 'applications.mozart.' . $mode . '.url';
 
         $baseUrl = $this->app['config']->get($urlConfig);
 
@@ -558,9 +568,11 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function getAuthenticatedMozartRequestArray($url, $content)
+    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null)
     {
-        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+        $mode = $this->mode ?? $mode;
+
+        $passwordConfig = 'applications.mozart.' . $mode . '.password';
 
         $authentication = [
             'api',
@@ -939,7 +951,7 @@ class Gateway extends Base\Gateway
 
         $content['terminal']['gateway_secure_secret'] = $this->config['netbanking_yesb']['gateway_secure_secret'];
 
-        $request = $this->getMozartRequestArray($content);
+        $request = $this->getMozartRequestArray($content, Mode::LIVE);
 
         $response = $this->sendGatewayRequest($request);
 

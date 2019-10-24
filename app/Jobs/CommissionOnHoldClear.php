@@ -128,6 +128,8 @@ class CommissionOnHoldClear extends Job
 
                 (new Transaction\Core)->dispatchForSettlementBucketing($txn, $settledAt);
             }
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {

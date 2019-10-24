@@ -11,14 +11,7 @@ use RZP\Gateway\Netbanking\Sbi\ReconFields\PaymentReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    protected $netbankingRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getPaymentId(array $row)
     {

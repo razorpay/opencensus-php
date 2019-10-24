@@ -127,7 +127,6 @@ class Type
     const BATCH_VALIDATED                       = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
     const BATCH_SERVICE                         = 'batch_service';
-    const RECONCILIATION_BATCH_OUTPUT           = 'reconciliation_batch_output';
     const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
@@ -166,6 +165,13 @@ class Type
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
+    const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
+    const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_PASSPORT_BACK                = 'passport_back';
+    const MERCHANT_PASSPORT_FRONT               = 'passport_front';
+    const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
+    const MERCHANT_VOTER_ID_BACK                = 'voter_id_back';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -276,7 +282,6 @@ class Type
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
             self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
@@ -290,6 +295,13 @@ class Type
             self::MERCHANT_PROMOTER_ADDRESS_URL,
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
+            self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_AADHAR_FRONT,
+            self::MERCHANT_AADHAR_BACK,
+            self::MERCHANT_PASSPORT_FRONT,
+            self::MERCHANT_PASSPORT_BACK,
+            self::MERCHANT_VOTER_ID_FRONT,
+            self::MERCHANT_VOTER_ID_BACK,
         ],
 
         Constants\Entity::INVOICE => [
@@ -315,7 +327,6 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
-        self::RECONCILIATION_BATCH_OUTPUT,
         self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
@@ -479,7 +490,6 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::ANALYTICS_BUCKET_CONFIG => [

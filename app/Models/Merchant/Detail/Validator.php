@@ -815,10 +815,12 @@ class Validator extends Base\Validator
      * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
      * no detail will be save in db and validation exception will be thrown
      *
+     * @param Merchant\Entity $merchant
+     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function validateFullActivationForm()
+    public function validateFullActivationForm(Merchant\Entity $merchant)
     {
         $this->validateIsNotLocked();
 
@@ -826,7 +828,7 @@ class Validator extends Base\Validator
         {
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
 
-            $activationFlowImpl->validateFullActivationForm($this->entity);
+            $activationFlowImpl->validateFullActivationForm($merchant);
         }
     }
 

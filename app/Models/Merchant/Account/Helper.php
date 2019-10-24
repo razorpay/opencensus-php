@@ -5,15 +5,22 @@ namespace RZP\Models\Merchant\Account;
 use RZP\Models\Merchant;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Helper
 {
     public static function getSubMerchantCreateInput(array $input): array
     {
-        return [
-            Merchant\Entity::EMAIL       => $input[Constants::EMAIL],
-            Merchant\Entity::NAME        => $input[Constants::PROFILE][Constants::NAME],
+        $data = [
+            Merchant\Entity::NAME => $input[Constants::PROFILE][Constants::NAME],
         ];
+
+        if (empty($input[Constants::EMAIL]) === false)
+        {
+            $data[Merchant\Entity::EMAIL] = $input[Constants::EMAIL];
+        }
+
+        return $data;
     }
 
     public static function getSubMerchantInput(array $input): array
@@ -63,6 +70,13 @@ class Helper
             $detailInput[Detail\Entity::TRANSACTION_REPORT_EMAIL] = $input[Constants::EMAIL];
         }
 
+        if (isset($input[Constants::CONTACT_INFO]) === true)
+        {
+            $detailInput[Detail\Entity::CONTACT_EMAIL]  = $input[Constants::CONTACT_INFO][Constants::EMAIL];
+            $detailInput[Detail\Entity::CONTACT_NAME]   = $input[Constants::CONTACT_INFO][Constants::NAME];
+            $detailInput[Detail\Entity::CONTACT_MOBILE] = $input[Constants::CONTACT_INFO][Constants::PHONE];
+        }
+
         if (isset($input[Constants::PHONE]) === true)
         {
             $detailInput[Detail\Entity::CONTACT_MOBILE] = $input[Constants::PHONE];
@@ -110,10 +124,19 @@ class Helper
                 $categoryData = Detail\BusinessSubCategoryMetaData::fetchCategoryAndSubCategoryByMccCode($mccCode);
             }
 
+            $ownerInfo = [];
+
+            if (isset($input[Constants::PROFILE][Constants::OWNER_INFO]) === true)
+            {
+                $ownerInfo[Detail\Entity::PROMOTER_PAN]      = $input[Constants::PROFILE][Constants::OWNER_INFO][Constants::IDENTIFICATION][0][Constants::IDENTIFICATION_NUMBER];
+                $ownerInfo[Detail\Entity::PROMOTER_PAN_NAME] = $input[Constants::PROFILE][Constants::OWNER_INFO][Constants::NAME];
+            }
+
             $detailInput = array_merge(
                 $detailInput,
                 self::getDocumentDetailsFromInput($input),
                 $categoryData,
+                $ownerInfo,
                 ...self::getAddressesFromInput($input)
             );
         }
@@ -121,6 +144,68 @@ class Helper
         $detailInput = array_merge($detailInput, self::getBankAccountFromInput($input));
 
         return $detailInput;
+    }
+
+    public static function validateCreateInputForKyc(Merchant\Entity $partner, array $input)
+    {
+        if ($partner->isKycHandledByPartner() === false)
+        {
+            self::validateCreateInputWithKycNotHandledByPartner($partner, $input);
+        }
+        else
+        {
+            self::validateCreateInputWithKycHandledByPartner($partner, $input);
+        }
+    }
+
+    protected static function validateCreateInputWithKycHandledByPartner(Merchant\Entity $partner, array $input)
+    {
+        $partner->getValidator()->validateMerchantEmailUnique($input[Constants::EMAIL], $partner->getOrgId());
+
+        if (empty($input[Constants::PHONE]) === true)
+        {
+            throw new BadRequestValidationFailureException(Constants::PHONE . ' is required');
+        }
+
+        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
+        {
+            if (empty($address[Constants::DISTRICT_NAME]) === true)
+            {
+                throw new BadRequestValidationFailureException(Constants::DISTRICT_NAME . ' is required');
+            }
+        }
+    }
+
+    protected static function validateCreateInputWithKycNotHandledByPartner(Merchant\Entity $partner, array $input)
+    {
+        // TODO: move to validator later if more code gets added here
+        if (empty($input[Constants::BUSINESS_ENTITY]) === true)
+        {
+            throw new BadRequestValidationFailureException(Constants::BUSINESS_ENTITY . ' is required');
+        }
+
+        if (empty($input[Constants::CONTACT_INFO]) === true)
+        {
+            throw new BadRequestValidationFailureException(Constants::CONTACT_INFO . ' is required');
+        }
+
+        if ((empty($input[Constants::EMAIL]) === true) and ($partner->hasOptionalSubmerchantEmailFeature() === false))
+        {
+            throw new BadRequestValidationFailureException(Constants::EMAIL . ' is required');
+        }
+
+        if (isset($input[Constants::PROFILE]) === true)
+        {
+            if (empty($input[Constants::PROFILE][Constants::IDENTIFICATION]) === true)
+            {
+                throw new BadRequestValidationFailureException(Constants::IDENTIFICATION . ' is required');
+            }
+
+            if (empty($input[Constants::PROFILE][Constants::OWNER_INFO]) === true)
+            {
+                throw new BadRequestValidationFailureException(Constants::OWNER_INFO . ' is required');
+            }
+        }
     }
 
     private static function getCustomFieldsFromInput(array $input): array
@@ -223,6 +308,10 @@ class Helper
                 case DocumentType::COMPANY_PAN:
                     $details[Detail\Entity::COMPANY_PAN] = $document[Constants::IDENTIFICATION_NUMBER];
                     break;
+
+                case DocumentType::GSTIN:
+                    $details[Detail\Entity::GSTIN] = $document[Constants::IDENTIFICATION_NUMBER];
+                    break;
             }
         }
 
@@ -244,5 +333,18 @@ class Helper
             Detail\Entity::BANK_BRANCH_IFSC            => $bankAccount[Constants::IFSC],
             Detail\Entity::BANK_ACCOUNT_NUMBER         => $bankAccount[Constants::ACCOUNT_NUMBER],
         ];
+    }
+
+    public static function getBankAccountNotesFromInput(array $input)
+    {
+        if ((isset($input[Constants::SETTLEMENT]) === false) or
+            (isset($input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT])) === false)
+        {
+            return [];
+        }
+
+        $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT];
+
+        return $bankAccount[Constants::NOTES] ?? [];
     }
 }

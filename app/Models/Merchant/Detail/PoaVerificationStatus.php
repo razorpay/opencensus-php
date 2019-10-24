@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Detail;
 
 class PoaVerificationStatus
 {
-
     const VERIFIED = 'verified';
 
     const FAILED = 'failed';
@@ -20,5 +19,4 @@ class PoaVerificationStatus
     const ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING = [
         self::FAILED => [self::VERIFIED],
     ];
-
 }

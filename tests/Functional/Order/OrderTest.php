@@ -6,9 +6,12 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
@@ -43,6 +46,50 @@ class OrderTest extends TestCase
 
     public function testCreateOrder()
     {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessLessThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
         $order = $this->startTest();
 
         return $order;
@@ -478,6 +525,8 @@ class OrderTest extends TestCase
     public function testAutoCaptureFeeBearerCustomer()
     {
         $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();

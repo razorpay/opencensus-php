@@ -1525,4 +1525,259 @@ return [
             ],
         ],
     ],
+
+    'testDashboardSummary' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+                'bacc_ABCde1234ABCde' => [
+                    'queued' =>  [
+                        'balance' =>  10000000,
+                        'count' => 1,
+                        'total_amount' => 20000099,
+                        'total_fees' =>  1770,
+                    ],
+                    'pending' => [
+                        'count' => 1,
+                        'total_amount' =>54321,
+                    ]
+                ],
+                'bacc_DEcba4321DEcba' => [
+                    'queued' =>  [
+                        'balance' => 10000000,
+                        'count' => 1,
+                        'total_amount' => 30000099,
+                        'total_fees' =>  0,
+                    ],
+                    'pending' => [
+                        'count' => 1,
+                        'total_amount' =>12345,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForVpaFundAccountId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000003fa',
+                'mode'            => 'vpa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+        ],
+    ],
+
+    'testCreatePayoutForIciciToBankAccountViaNEFT' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+        ],
+    ],
+
+    'testCreatePayoutToBankAccountViaIMPS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+//                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateQueuedPayoutWithModeSet' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000001,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'IMPS',
+                'queue_if_low_balance'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForCitiToCardViaNEFT' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 1000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'mode'                  => 'NEFT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000002fa',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'utr'             => null,
+                'mode'            => 'NEFT',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutForIciciToCardViaNEFT' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 1000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000002fa',
+                'mode'                  => 'NEFT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+        ],
+    ],
+
+    'testCreatePayoutWithModeNotSet' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_MODE_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_REQUIRED,
+        ],
+    ],
 ];

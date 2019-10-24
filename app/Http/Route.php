@@ -599,7 +599,10 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        'payment_page_item_update'                 => ['patch',    'payment_links/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
+        'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
+        'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -807,7 +810,6 @@ final class Route
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
-        'payouts_queued_amount'                    => ['get',      'payouts/queued/amount',                          'PayoutController@getQueuedPayoutsSummary'                          ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
@@ -949,7 +951,7 @@ final class Route
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
-        'dispute_poc_mails'                        => ['get',      'disputes/poc-emails',                            'DisputeController@getDefaultCreationEmails'                        ],
+        'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -1088,6 +1090,9 @@ final class Route
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
+        'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
+        'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
+        'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
@@ -1098,6 +1103,7 @@ final class Route
         'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
         'commissions_get_aggregates'               => ['get',      'commissions/partner/{id}/aggregate',             'CommissionController@fetchAggregateCommissionDetails'              ],
         'commissions_capture_by_partner'           => ['post',     'commissions/partner/{id}/capture',               'CommissionController@captureByPartner'                             ],
+        'commissions_bulk_capture_by_partner'      => ['post',     'commissions/partner/capture/bulk',               'CommissionController@bulkCaptureByPartner'                         ],
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
@@ -1280,6 +1286,10 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+
+        //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
+        'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
+        'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
     ];
 
     public static $public = [
@@ -1442,6 +1452,7 @@ final class Route
         'setl_fetch_multiple',
         'setl_combined_report',
         'setl_combined_recon',
+        'setl_fetch_transactions',
         'customer_create',
         'customer_update',
         'customer_create_token',
@@ -1571,6 +1582,9 @@ final class Route
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
+
+        'merchant_activation_update_partner',
+        'merchant_activation_status_partner',
     ];
 
     // Only routes defined in internalApps go here
@@ -1663,6 +1677,7 @@ final class Route
         'subscriptions_charge_invoices',
         'subscriptions_expire',
         'subscriptions_retry',
+        'payment_page_items_migrate',
         'user_change_password',
         'user_2fa_change_setting',
         'user_confirm_by_data',
@@ -1764,7 +1779,21 @@ final class Route
         'invoice_cancel',
     ];
 
+    // The below routes can be used with partner credentials without X-Razorpay-Account header, 
+    // in which case, partner will be able to make request on his own behalf, just like private auth
+    public static $partnerCredentialsWithoutSubmerchantIdWhitelist = [
+        'account_create',
+        'account_list',
+        'account_fetch',
+        'account_edit',
+        'account_action',
+        'merchant_activation_status_partner',
+        'merchant_activation_update_partner',
+    ];    
+
     public static $proxy = [
+        'fetch_partner_intent',
+        'update_partner_intent',
         'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
@@ -1772,7 +1801,6 @@ final class Route
         'get_scheduled_es_pricing_merchant',
         'merchant_edit_config_la',
         'merchant_fetch_users',
-        'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
@@ -1919,6 +1947,7 @@ final class Route
         'payment_link_deactivate',
         'payment_link_activate',
         'payment_link_slug_exists',
+        'payment_page_item_update',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
@@ -1952,7 +1981,6 @@ final class Route
         'payout_reject',
         'payouts_summary',
         'payouts_workflow_summary',
-        'payouts_queued_amount',
         'payment_link_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
@@ -1972,6 +2000,7 @@ final class Route
         'user_update_contact',
         'user_update_contact_merchant',
         'user_account_unlock',
+        'update_partner_type',
     ];
 
     //
@@ -2419,6 +2448,7 @@ final class Route
 
         'commissions_capture',
         'commissions_capture_by_partner',
+        'commissions_bulk_capture_by_partner',
         'commissions_get_aggregates',
         'commissions_mark_for_settlement',
 
@@ -2928,6 +2958,7 @@ final class Route
 
         'commissions_capture'                      => Permission::COMMISSION_CAPTURE,
         'commissions_capture_by_partner'           => Permission::COMMISSION_CAPTURE,
+        'commissions_bulk_capture_by_partner'      => Permission::COMMISSION_CAPTURE,
         'commissions_get_aggregates'               => '*',
         'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
 
@@ -3007,6 +3038,8 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
+        'payment_page_create_order',
+        'payment_page_create_order_option',
     ];
 
     /**
@@ -3136,6 +3169,7 @@ final class Route
             'subscriptions_retry',
             'subscriptions_expire',
             'subscription_cancel_due',
+            'payment_page_items_migrate',
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'currency_update_rates',
@@ -3418,6 +3452,8 @@ final class Route
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
+        'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
+        'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
     ];
 
     /*
@@ -3664,7 +3700,10 @@ final class Route
             }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        // OR case happens for mock gateways in s2s redirect flow, when we receive rediret/authorize.
+        // we don't set the partner auth, hence there is a check on account id
+        else if ((($key === '') and ($this->ba->isPartnerAuth() === true)) or
+                  (($key === '') and ($this->ba->isDirectAuth() === true) and (empty($this->ba->authCreds->creds['account_id']) === false)))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
             // Todo: For bc there is another explode attempt, to be removed soon after this deploy.
@@ -3673,6 +3712,7 @@ final class Route
             $key                         = $parts[0];
             $parameters['account_id']    = $this->ba->getAccountId();
         }
+
         // Else continue with the key_id flow
         else if ($key === '')
         {

@@ -11,4 +11,9 @@ class Constants
     const INCORRECT_DETAILS = 'incorrect_details';
     const SUCCESS           = 'success';
     const FAILURE           = 'failure';
+
+    const SIGNED_URL        = 'signed_url';
+    const PASSPORT_FRONT    = 'passport_front';
+    const AADHAR_FRONT      = 'aadhar_front';
+    const VOTER_ID_FRONT    = 'voter_id_front';
 }

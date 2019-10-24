@@ -53,6 +53,7 @@ class Gateway
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_BOB_V2      = 'netbanking_bob_v2';
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CUB         = 'netbanking_cub';

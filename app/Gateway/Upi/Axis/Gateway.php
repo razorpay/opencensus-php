@@ -62,6 +62,8 @@ class Gateway extends Base\Gateway
         Fields::W_COLLECT_TXN_ID        => Entity::NPCI_TXN_ID,
         Entity::MERCHANT_REFERENCE      => Entity::MERCHANT_REFERENCE,
         Fields::CALLBACK_MERCHANT_ID    => Entity::GATEWAY_MERCHANT_ID,
+        Fields::CHECK_STATUS_REF_ID     => Entity::NPCI_REFERENCE_ID,
+        Fields::CHECK_STATUS_DEBIT_VPA  => Entity::VPA
     ];
 
     /**
@@ -817,9 +819,26 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $content[Entity::RECEIVED] = 1;
+        $entity[Entity::RECEIVED] = 1;
 
-        $this->updateGatewayPaymentEntity($verify->payment, $content);
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_DEBIT_VPA]))
+        {
+            $entity[Entity::VPA] = $content[Fields::DATA][0][Fields::CHECK_STATUS_DEBIT_VPA];
+        }
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_REF_ID]))
+        {
+            $entity[Entity::NPCI_REFERENCE_ID] = $content[Fields::DATA][0][Fields::CHECK_STATUS_REF_ID];
+        }
+        if (isset($content[Fields::DATA][0][Fields::CHECK_STATUS_TXN_ID]))
+        {
+            $entity[Entity::NPCI_TXN_ID] = $content[Fields::DATA][0][Fields::CHECK_STATUS_TXN_ID];
+        }
+
+        // This will set the Provide and Bank
+        $verify->payment->generatePspData($entity);
+
+        // This will update VPA, NPCI_REFERENCE_ID(RRN) and RECEIVED on the entity.
+        $this->updateGatewayPaymentEntity($verify->payment, $entity, false);
     }
 
     private function checkGatewaySuccess(Verify $verify)

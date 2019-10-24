@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Config;
+use RZP\Constants\Mode;
+use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Detail\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -69,6 +73,7 @@ class MerchantDocumentTest Extends TestCase
             'merchant_detail',
             [
                 'merchant_id' => '1cXSLlUU8V9sXl',
+                'promoter_pan_name' => 'XYZ',
             ]);
 
         $this->updateUploadDocumentData(__FUNCTION__);
@@ -129,6 +134,107 @@ class MerchantDocumentTest Extends TestCase
         $this->updateUploadXLSXDocument(__FUNCTION__);
 
         $this->startTest();
+    }
+
+    public function testDocumentUploadAndCheckOcrVerificationStatusSuccess()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'promoter_pan_name' => 'ABCDE FGHIJ',
+                'business_type'     => 2,
+            ]);
+
+        $ocrResponseTypes = [
+            Constants::PASSPORT_FRONT,
+            Constants::AADHAR_FRONT,
+            Constants::VOTER_ID_FRONT,
+        ];
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $documentType = Constants::VOTER_ID_FRONT;
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        foreach ($ocrResponseTypes as $ocrResponseType)
+        {
+            Config::set('applications.mozart.poa_ocr_response_type', $ocrResponseType);
+
+            $testData = &$this->testData[__FUNCTION__];
+
+            $testData['request']['content']['document_type'] = $documentType;
+
+            $testData['response']['content']['documents'][$documentType] = [];
+
+            $response = $this->startTest($testData);
+
+            $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
+
+            $this->assertEquals($merchantDocumentDb['ocr_verify'], 'verified');
+        }
+    }
+
+    public function testDocumentUploadAndCheckOcrVerificationStatusFailedForException()
+    {
+
+        $testDataKeyName = 'testDocumentUploadAndCheckOcrVerificationStatusSuccess';
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'promoter_pan_name' => 'ABCDE FGHIJ',
+                'business_type'     => 2,
+            ]);
+
+        $this->mockRazorX($testDataKeyName, 'non_registered_onboarding', 'on');
+
+        $this->updateUploadDocumentData($testDataKeyName);
+
+        Config::set('applications.mozart.poa_ocr_response_type', Constants::FAILURE);
+
+        $testData = &$this->testData[$testDataKeyName];
+
+        $documentType = Constants::VOTER_ID_FRONT;
+
+        $testData['request']['content']['document_type'] = $documentType;
+
+        $testData['response']['content']['documents'][$documentType] = [];
+
+        $response = $this->startTest($testData);
+
+        $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
+
+        $this->assertEquals($merchantDocumentDb['ocr_verify'], 'failed');
+    }
+
+    public function testDocumentUploadAndCheckOcrVerificationStatusFailed()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'promoter_pan_name' => 'XYZ',
+                'business_type'     => 11,
+            ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $response = $this->startTest();
+
+        $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents']['aadhar_front'][0]['id']);
+
+        $this->assertEquals($merchantDocumentDb['ocr_verify'], 'failed');
     }
 
     protected function updateUploadDocumentData(string $callee)
@@ -201,5 +307,14 @@ class MerchantDocumentTest Extends TestCase
         ]);
 
         return [$document, $fileStore];
+    }
+
+    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    {
+        $testData = &$this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000', $featureName, Mode::TEST);
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }
 }

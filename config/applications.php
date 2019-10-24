@@ -84,6 +84,12 @@ return [
         ]
     ],
 
+    'express' => [
+        'mock'      => env('EXPRESS_MOCK', false),
+        'url'       => env('EXPRESS_URL'),
+        'password'  => env('EXPRESS_PASSWORD'),
+    ],
+
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
@@ -351,6 +357,11 @@ return [
         'mock'      => env('SMART_ROUTING_MOCK',false),
         'username'  => env('SMART_ROUTING_USERNAME'),
         'password'  => env('SMART_ROUTING_PASSWORD')
+    ],
+
+    'doppler' => [
+        'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
     ],
 
     'non_blocking_http' => [

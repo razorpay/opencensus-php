@@ -518,15 +518,19 @@ class Core extends Base\Core
     {
         $emails = [];
 
-        $disputeEmails = (new MerchantEmail\Service)
-                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::DISPUTE);
+        $emailTypes = [
+            MerchantEmail\Type::DISPUTE,
+            MerchantEmail\Type::CHARGEBACK,
+        ];
 
-        $emails = array_merge($emails, $disputeEmails);
+        $pocEmails = (new MerchantEmail\Service)->fetchEmailByTypes($merchant->getId(), $emailTypes);
 
-        $chargebackEmails = (new MerchantEmail\Service)
-                            ->fetchAllEmailsForMerchantAndType($merchant->getId(), MerchantEmail\Type::CHARGEBACK);
+        foreach ($pocEmails as $pocEmail)
+        {
+            $emailArray = array_map('trim', explode(',', $pocEmail['email']));
 
-        $emails = array_merge($emails, $chargebackEmails);
+            $emails = array_merge($emails, $emailArray);
+        }
 
         if (empty($emails) === true)
         {
