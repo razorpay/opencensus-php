@@ -1139,6 +1139,7 @@ final class FactoryData
         $factory(\RZP\Models\BankingAccount\Detail\Entity::class, [
             'id'                 => 1,
             'banking_account_id' => '01234567890123',
+            'merchant_id'        => '10000000000000',
             'gateway_key'        => 'client_id',
             'gateway_value'      => '123',
             'updated_at'         => $faker->timestamp,
