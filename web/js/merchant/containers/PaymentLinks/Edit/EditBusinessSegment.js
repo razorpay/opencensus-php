@@ -1,4 +1,5 @@
 import Input from 'component/Input';
+import { getOptions } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
 
 export default class EditBusinessSegment extends React.Component {
   state = this.resetState();
@@ -46,21 +47,7 @@ export default class EditBusinessSegment extends React.Component {
           onChange={this.saveAndUpdate}
           defaultValue={this.state.notes}
           disabled={this.state.isUpdating}
-          options={[
-            { label: 'Select A Value', value: '' },
-            {
-              label: 'New Accounts - NA',
-              value: 'New Accounts - NA',
-            },
-            {
-              label: 'Renewals - RNW',
-              value: 'Renewals - RNW',
-            },
-            {
-              label: 'Addon to policy - POL',
-              value: 'Addon to policy - POL',
-            },
-          ]}
+          options={getOptions(this.props.id)}
         />
       </React.Fragment>
     );

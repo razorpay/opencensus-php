@@ -534,6 +534,11 @@ export default class CreateNewContainer extends React.Component {
         );
       }
 
+      let options = f.options;
+      if (typeof options === 'function') {
+        f.options = options(this);
+      }
+
       return WizardFields.call(this, f);
     });
   }

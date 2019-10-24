@@ -361,6 +361,7 @@ export default props => {
                       editFn={editPaymentLink}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                       entityId={invoice.id}
+                      id={user.current}
                       trackerFn={trackDetailViewEdits}
                     />
                   </EntityDetailRow>
