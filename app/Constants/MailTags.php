@@ -109,6 +109,7 @@ class MailTags
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
+    const RX_LOW_BALANCE_ALERT             = 'rx_low_balance_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
@@ -167,6 +168,8 @@ class MailTags
 
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
+
+    const BANKING_ACCOUNT_STATUS_UPDATED = 'banking_account_status_updated';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

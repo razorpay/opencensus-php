@@ -831,6 +831,36 @@ return [
         ],
     ],
 
+    'testSimulateActivationForPartner' => [
+        'request'  => [
+            'url'    => '/partner/merchant/{id}/activation/status',
+            'method' => 'PATCH',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testSimulateUpdate' => [
+        'request'  => [
+            'url'    => '/partner/merchant/{id}/activation/update',
+            'method' => 'PUT',
+            'content' => [
+                'business_name' => 'New Ratnalal Jewellers',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_name' => 'New Ratnalal Jewellers',
+            ],
+        ],
+    ],
+
     'testEnableAccountAction' => [
         'request'  => [
             'url'    => '/accounts/{accountId}/enable',
