@@ -1502,7 +1502,7 @@ trait Authorize
         }
 
         // Customer fee bearer is not allowed on netbanking recurring
-        if ($payment->isFeeBearerCustomer() === true)
+        if ($payment->merchant->isFeeBearerCustomer() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed. Please contact the merchant for further assistance.',
@@ -2314,14 +2314,14 @@ trait Authorize
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
             if (($merchant->convertOnApi() === null) or
-                ($merchant->isFeeBearerCustomerOrDynamic() === true))
+                ($merchant->isFeeBearerCustomer() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                     null,
                     [
                         'convert_on_api'        => $merchant->convertOnApi(),
-                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomer(),
                         'payment_id'            => $payment->getId(),
                         'currency'              => $currency,
                     ]);
