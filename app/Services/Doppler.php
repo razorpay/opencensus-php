@@ -106,7 +106,7 @@ class Doppler
             $terminalType = $terminal->isShared() ? TerminalEntity::SHARED : TerminalEntity::DIRECT;
         }
 
-        $paymentAnalytics = $payment->getMetadata("payment_analytics");
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === false)
         {
