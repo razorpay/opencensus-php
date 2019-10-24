@@ -19,7 +19,7 @@ class L2SubmissionWhitelist extends Mailable
 
     const TEMPLATE_PATH  = 'emails.merchant.razorpayx.l2_submission_whitelisted';
 
-    protected $bankingAccount = null;
+    protected $bankingAccount;
 
     protected $config;
 
@@ -60,7 +60,6 @@ class L2SubmissionWhitelist extends Mailable
 
     protected function addMailData()
     {
-
         $data = [
             'learn_more_url'                       => self::LEARN_MORE_URL,
             'support_url'                          => self::SUPPORT_URL,

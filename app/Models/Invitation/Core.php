@@ -255,7 +255,7 @@ class Core extends Base\Core
                 'email'         => $invitation->getEmail(),
                 'name'          => $this->merchant->getName(),
                 'user_id'       => $invitation->getUserId(),
-                'product'     => $product,
+                'product'       => $product,
             ]);
 
         if ($product === Product::PRIMARY)

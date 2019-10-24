@@ -24,13 +24,14 @@ class InstantActivation extends Mailable
 
     const SUBJECT              = 'One step away from starting transactions on RazorpayX';
 
-    protected $bankingAccount = null;
+    protected $bankingAccount;
 
     protected $config;
 
     /**
      * InstantActivation constructor.
-     * @param string $merchant
+     * @param string $merchantId
+     * @throws BadRequestException
      */
     public function __construct(string $merchantId)
     {

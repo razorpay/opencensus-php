@@ -8,17 +8,19 @@ use RZP\Mail\Base\Constants;
 
 class Invite extends Mailable
 {
-    const SUPPORT_URL   = '';
+    const SUPPORT_URL        = '';
 
-    const SUBJECT       = 'Invitation to join %s | RazorpayX';
+    const SUBJECT            = 'Invitation to join %s | RazorpayX';
 
-    const TEMPLATE_PATH = 'emails.invitation.razorpayx.invite';
+    const TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite';
 
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
     protected $invitation;
 
     protected $senderName;
+
+    protected $businessName;
 
     protected $config;
 
@@ -31,6 +33,11 @@ class Invite extends Mailable
         $this->invitation = $app['repo']->invitation->find($invitationId);
 
         $this->config = $app['config'];
+
+        $this->businessName = $this->invitation
+                                   ->merchant
+                                   ->merchantDetail
+                                   ->getBusinessName();
 
         $this->senderName = (is_null($senderName) === true) ? $this->invitation->merchant->getName() : $senderName;
     }
@@ -53,7 +60,6 @@ class Invite extends Mailable
 
     protected function addRecipients()
     {
-
         $this->to($this->invitation->getEmail());
 
         return $this;
@@ -61,24 +67,20 @@ class Invite extends Mailable
 
     protected function addSubject()
     {
-        $businessName = $this->invitation->merchant->merchantDetail->getBusinessName();
-
-        $this->subject(sprintf(self::SUBJECT, $businessName));
+        $this->subject(sprintf(self::SUBJECT, $this->businessName));
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $businessName = $this->invitation->merchant->merchantDetail->getBusinessName();
-
         $bankingUrl = $this->config['application.banking_service_url'];
 
         $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $this->invitation->getToken());
 
         $this->with(
             [
-                'business_name' => $businessName,
+                'business_name' => $this->businessName,
                 'sender_name'   => $this->senderName,
                 'role'          => $this->invitation->getRole(),
                 'invite_link'   => $inviteLink,

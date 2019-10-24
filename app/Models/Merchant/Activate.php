@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -28,9 +29,13 @@ class Activate extends Base\Core
     /**
      * This function is used for activating merchant
      *
-     * @param Entity        $merchant
+     * @param Entity $merchant
      *
      * @return Detail\Entity
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function activate(Entity $merchant): Detail\Entity
     {
@@ -51,8 +56,9 @@ class Activate extends Base\Core
      * @param Entity        $merchant
      *
      * @return Detail\Entity
+     *
      * @throws Exception\BadRequestException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function activateAndMarkKycVerified(Entity $merchant): Detail\Entity
     {
@@ -122,12 +128,14 @@ class Activate extends Base\Core
     }
 
     /**
-     * @param Entity        $merchant
+     * @param Entity $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return array
+     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
@@ -189,7 +197,7 @@ class Activate extends Base\Core
      * @return Detail\Entity
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function markKycVerified(Entity $merchant): Detail\Entity
     {
@@ -484,7 +492,7 @@ class Activate extends Base\Core
     protected function sendMerchantActivationNotification(Entity $merchant)
     {
         Mail::queue(
-            new AccountActivationConfirmation($merchant)
+            new AccountActivationConfirmation($merchant->getId())
         );
     }
 

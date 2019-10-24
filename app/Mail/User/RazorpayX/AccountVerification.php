@@ -1,11 +1,10 @@
 <?php
 
-namespace RZP\Mail\User;
+namespace RZP\Mail\User\RazorpayX;
 
-use RZP\Mail\Base;
-use RZP\Constants\Product;
+use RZP\Mail\Base\Mailable;
 
-class AccountVerificationRazorpayX extends Base\Mailable
+class AccountVerification extends Mailable
 {
     protected $org;
 
@@ -73,3 +72,4 @@ class AccountVerificationRazorpayX extends Base\Mailable
         return $this;
     }
 }
+

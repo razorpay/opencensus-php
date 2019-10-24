@@ -3,9 +3,11 @@
 namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant\Entity;
+use RZP\Exception\BadRequestException;
 
 class AccountActivationConfirmation extends Mailable
 {
@@ -46,6 +48,15 @@ class AccountActivationConfirmation extends Mailable
         {
             $this->bankingAccount = $bankingAccounts[0];
         }
+        else
+        {
+            throw new BadRequestException(TraceCode::FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
+                                          null,
+                                          [
+                                              'merchant_id' => $merchantId
+                                          ],
+                                          'No Banking Account found for the merchant: ' . $merchantId);
+        }
     }
 
     protected function addSender()
@@ -58,10 +69,7 @@ class AccountActivationConfirmation extends Mailable
 
     protected function addRecipients()
     {
-        if ( empty($this->bankingAccount) === false )
-        {
-            $this->to($this->bankingAccount->getBeneficiaryEmail());
-        }
+        $this->to($this->bankingAccount->getBeneficiaryEmail());
 
         return $this;
     }

@@ -5,7 +5,10 @@ namespace RZP\Models\Merchant\Detail;
 use Mail;
 use Queue;
 use Config;
+
 use Carbon\Carbon;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Diag\EventCode;
@@ -26,7 +29,6 @@ use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -62,28 +64,30 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function () use (
-            $input,
-            $merchantDetails,
-            $merchant,
-            $originProduct
-        )
-        {
-            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+        return $this->repo
+                    ->transactionOnLiveAndTest(
+                        function () use (
+                            $input,
+                            $merchantDetails,
+                            $merchant,
+                            $originProduct
+                        )
+                        {
+                            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
 
-            $response = $this->createResponse($merchantDetails);
+                            $response = $this->createResponse($merchantDetails);
 
-            if ($this->canSubmit($input, $response) === true)
-            {
-                $response = $this->submitActivationForm($merchant, $originProduct);
-            }
-            else
-            {
-                $response = $this->updateActivationProgress($merchant);
-            }
+                            if ($this->canSubmit($input, $response) === true)
+                            {
+                                $response = $this->submitActivationForm($merchant, $originProduct);
+                            }
+                            else
+                            {
+                                $response = $this->updateActivationProgress($merchant);
+                            }
 
-            return $response;
-        });
+                            return $response;
+                        });
     }
 
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
@@ -91,7 +95,7 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
-        
+
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
         // If a merchant does not have website or app, we would need to activate them
@@ -285,7 +289,10 @@ class Core extends Base\Core
                                 $international_activation_metric_dimensions);
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS,
+                                                 $this->merchant,
+                                                 null,
+                                                 $eventAttributes);
     }
 
     /**
@@ -487,7 +494,9 @@ class Core extends Base\Core
      * @param                 $activationProgress
      * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant,
+                                                     $activationProgress,
+                                                     string $activationFlow = null)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
@@ -495,7 +504,7 @@ class Core extends Base\Core
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
-        $eventAttributes['activation_flow'] = $activationFlow ;
+        $eventAttributes['activation_flow'] = $activationFlow;
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }
@@ -963,12 +972,14 @@ class Core extends Base\Core
 
                 $this->app['events']->fire($event, $eventPayload);
             }
-
         });
 
         $customProperties['activation_status'] = $currentActivationStatus;
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS, $merchant, null, $customProperties);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
+                                                 $merchant,
+                                                 null,
+                                                 $customProperties);
 
         $this->trace->count(
             Metric::MERCHANT_ACTIVATION_STATE_TRANSITION,
@@ -1278,14 +1289,18 @@ class Core extends Base\Core
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
-        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-            $merchant->getId(),
-            Product::BANKING,
-            Merchant\Balance\AccountType::SHARED);
+        $balance = $this->repo
+                        ->balance
+                        ->getMerchantBalanceByTypeAndAccountType(
+                            $merchant->getId(),
+                            Product::BANKING,
+                            Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
-            $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+            $bankAccount = $this->repo
+                                ->bank_account
+                                ->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
 
             $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
                                                                           Merchant\Balance\Entity::CURRENCY]);
@@ -1376,13 +1391,15 @@ class Core extends Base\Core
      *
      * @param string $previous_status
      * @param string $updated_status
-     * @param array  $extra
+     * @param array $extra
      *
      * @return array
      *
      */
 
-    protected function fetchActivationStatusTransitionMetricDimensions(string $updated_status,string $previous_status = null, array $extra = []): array
+    protected function fetchActivationStatusTransitionMetricDimensions(string $updated_status,
+                                                                       string $previous_status = null,
+                                                                       array $extra = []): array
     {
         return $extra + [
                 Metric::PREVIOUS_ACTIVATION_STATUS => $previous_status,
@@ -1477,7 +1494,9 @@ class Core extends Base\Core
      * @param $documentsResponse
      * @param $requiredFields
      */
-    protected function calculateRequiredDocumentFields($validationDocumentFields, $documentsResponse, &$requiredFields): void
+    protected function calculateRequiredDocumentFields($validationDocumentFields,
+                                                       $documentsResponse,
+                                                       &$requiredFields): void
     {
         foreach ($validationDocumentFields as $requiredDocumentField => $documentGroups)
         {

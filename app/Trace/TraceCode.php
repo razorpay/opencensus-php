@@ -1698,6 +1698,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const L2_SUBMISSION_WHITELIST_EMAIL_FAILED                  = 'L2_SUBMISSION_WHITELIST_EMAIL_FAILED';
     const INSTANT_ACTIVATION_EMAIL_FAILED                       = 'INSTANT_ACTIVATION_EMAIL_FAILED';
 
+    const FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED                 = 'FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED';
+
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                          = 'SUBSCRIPTION_SERVICE_REQUEST';
     const PAYMENT_MDR_UPDATE_ERROR                              = 'PAYMENT_MDR_UPDATE_ERROR';
