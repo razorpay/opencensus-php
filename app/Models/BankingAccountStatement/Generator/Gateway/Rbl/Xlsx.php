@@ -177,13 +177,13 @@ class Xlsx extends Generator
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
 
         $this->summaryKeyMap[XLSXHeaders::DEBIT_COUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
 
         $this->summaryKeyMap[XLSXHeaders::CREDIT_COUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
 
         $this->summaryKeyMap[XLSXHeaders::LIEN_AMOUNT] =
-            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'C' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
 
         $this->summaryDataMap[StatementSummary::OPENING_BALANCE] =
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
@@ -198,13 +198,13 @@ class Xlsx extends Generator
             'B' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 4);
 
         $this->summaryDataMap[StatementSummary::DEBIT_COUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 1);
 
         $this->summaryDataMap[StatementSummary::CREDIT_COUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 2);
 
         $this->summaryDataMap[StatementSummary::LIEN_AMOUNT] =
-            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
+            'D' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount + 3);
     }
 
     protected function createTableView(): Spreadsheet
