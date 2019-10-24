@@ -970,16 +970,6 @@ class PricingTest extends TestCase
         $this->assertNotEmpty($response);
     }
 
-    protected function setDefaultMerchantMethods()
-    {
-        // Disable all methods and only enable card.
-        // The default pricing plan has only card enabled
-
-        $this->fixtures->merchant->disableAllMethods();
-
-        $this->fixtures->merchant->enableCard();
-    }
-
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
@@ -987,31 +977,6 @@ class PricingTest extends TestCase
         $this->setDefaultMerchantMethods();
 
         return $this->merchantAssignPricingPlan($id, '10000000000000');
-    }
-
-    protected function createPricingPlan($pricingPlan = [])
-    {
-        $defaultPricingPlan = [
-            'plan_name'           => 'TestPlan1',
-            'payment_method'      => 'card',
-            'payment_method_type' => 'credit',
-            'payment_network'     => 'DICL',
-            'payment_issuer'      => 'HDFC',
-            'percent_rate'        => 1000,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-        ];
-
-        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
-
-        $plan = $this->fixtures->create('pricing', $pricingPlan);
-
-        $plan = $plan->toArray();
-
-        $plan['id'] = $plan['plan_id'];
-
-        return $plan;
     }
 
     protected function createCommissionPlan($pricingPlan = [])
