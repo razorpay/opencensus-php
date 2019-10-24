@@ -246,6 +246,8 @@ export default class CreateNewContainer extends React.Component {
             contact: data.customer_details.contact,
             expire_by,
             notes: defaultValueNotes,
+            reminder_enable:
+              data.reminder_status && !(data.reminder_status === 'disabled'),
           },
           _name: {
             hasNoExpiry: expire_by ? '0' : '1',
