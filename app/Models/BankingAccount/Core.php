@@ -111,9 +111,9 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
                 [
-                    'Banking Account ID' => $bankingAccount->getId(),
-                    'Merchant ID'        => $bankingAccount->merchant->getId(),
-                    'Status'             => $bankingAccount->getStatus(),
+                    'banking_account_id' => $bankingAccount->getId(),
+                    'merchant_id'        => $bankingAccount->merchant->getId(),
+                    'status'             => $bankingAccount->getStatus(),
                     'message'            => 'Mail Sent'
                 ]);
         }
@@ -124,10 +124,10 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
                 [
-                    'Banking Account ID' => $bankingAccount->getId(),
-                    'Merchant ID'        => $bankingAccount->merchant->getId(),
-                    'Status'             => $bankingAccount->getStatus(),
-                    'Error'              => $e->getMessage(),
+                    'banking_account_id' => $bankingAccount->getId(),
+                    'merchant_id'        => $bankingAccount->merchant->getId(),
+                    'status'             => $bankingAccount->getStatus(),
+                    'error'              => $e->getMessage(),
                 ]);
         }
     }

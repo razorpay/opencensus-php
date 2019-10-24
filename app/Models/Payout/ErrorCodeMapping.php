@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Trace\TraceCode;
+
 class ErrorCodeMapping
 {
     protected static $failureReasonMapping = [
@@ -100,8 +102,21 @@ class ErrorCodeMapping
         'YB_NPCI_E30'               => 'Payout failed. Contact support for help',
     ];
 
-    public static function getErrorMessageFromBankResponseCode(string $bankStatusCode = null)
+    public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
     {
-        return self::$failureReasonMapping[$bankStatusCode] ?? 'Payout failed. Contact support for help';
+        $errorMessage = self::$failureReasonMapping[$bankStatusCode] ?? null;
+
+        if (is_null($errorMessage) === true)
+        {
+            app('trace')->error(TraceCode::PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE,
+                [
+                    'bank_status_code'  => $bankStatusCode,
+                    'payout_id'         => $payout->getId(),
+                ]);
+
+            $errorMessage = 'Payout failed. Contact support for help';
+        }
+
+        return $errorMessage;
     }
 }
