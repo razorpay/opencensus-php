@@ -446,6 +446,11 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
+                    if ((new Helper)->isOwner($currentMerchant))
+                    {
+                        $data['partner_intent'] = $merchantService->getPartnerIntent();
+                    }
+
                     $data = $this->updateExperiments($data);
 
                     $data['current'] = $currentMerchantId;
@@ -517,18 +522,11 @@ class Service extends Base\Service
 
             // for non-registered check if pre_signup_complete done or not;
 
-            if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+            if ($this->isPartnerIntentTrue($data) or $this->isExperimentOnAndIsUnregisteredBusinessType($data))
             {
-                // check business_type
-
-                $businessType = $data['pre_signup']['business_type'] ?? null;
-
-                if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+                if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
                 {
-                    if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
-                    {
-                        $data['pre_signup_complete'] = true;
-                    }
+                    $data['pre_signup_complete'] = true;
                 }
             }
 
@@ -866,7 +864,10 @@ class Service extends Base\Service
             'sellerapp_plus',
             'second_factor_auth',
             'disable-view-reports',
-            'mobile_hotjar_survey'
+            'mobile_hotjar_survey',
+            'paymentpages_v3',
+            'paymentpages_v3_reports',
+            'show_commission_balance'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
@@ -878,5 +879,30 @@ class Service extends Base\Service
 
 
         return $data;
+    }
+
+    protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
+    {
+        if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
+        {
+            // check business_type
+
+            $businessType = $data['pre_signup']['business_type'] ?? null;
+
+            if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isPartnerIntentTrue(array $data): bool
+    {
+        return (
+            isset($data['partner_intent']) and
+            $data['partner_intent'] === true
+        );
     }
 }

@@ -330,18 +330,6 @@ export default class User {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
 
-  get showEarlySettlementAnnouncement() {
-    return (
-      this.activated &&
-      this.findTag('announcement_early_settlements') &&
-      !LocalStorageService.getItem(
-        `early-settlement-requested-${this.current}`
-      ) &&
-      !this.findTag('es_automatic') &&
-      !this.isFeatureEnabled('es_on_demand')
-    );
-  }
-
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
@@ -394,8 +382,20 @@ export default class User {
     return this.getExpStatus('sellerapp_plus');
   }
 
+  get isPPV3Enabled() {
+    return this.getExpStatus('paymentpages_v3');
+  }
+
+  get isPPV3ReportsEnabled() {
+    return this.getExpStatus('paymentpages_v3_reports');
+  }
+
   get isMobileHotjarSurveyEnabled() {
     return this.getExpStatus('mobile_hotjar_survey');
+  }
+
+  get isShowCommissionBalanceEnabled() {
+    return this.getExpStatus('show_commission_balance');
   }
 
   get isAllowedTeamManagement() {

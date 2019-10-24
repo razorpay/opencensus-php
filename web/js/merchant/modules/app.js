@@ -1,4 +1,5 @@
 import { set } from 'rzp/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
@@ -14,6 +15,17 @@ const RESIZE_WINDOW = 'RESIZE_WINDOW';
 
 const isMobileResolution = width => {
   return width <= 768;
+};
+
+export const updateMerchantLiveTransactionFlag = id => {
+  return merchantFetch({
+    url: 'merchant_mtu_update',
+    method: 'post',
+    data: {
+      merchants: [id],
+      live_transaction_done: 2,
+    },
+  });
 };
 
 let initialState = {

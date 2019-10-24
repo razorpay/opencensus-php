@@ -23,11 +23,11 @@
             site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
           </div>
           <div class="auth-subtext">
-            By signing up you agree to our <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> <span ng-if="!isOrgRZP">privacy policy</span> and
-            <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>
+            By signing up you agree to our <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/privacy/" ng-click="onPrivacyClick()">privacy policy</a> <span ng-if="!isOrgRZP">privacy policy</span> and
+            <a ng-if="isOrgRZP" class="highlight" target="_blank" href="https://razorpay.com/terms/" ng-click="onTermsClick()">terms of use</a>
             <span ng-if="!isOrgRZP">terms of use</span>.
           </div>
-          <button tabindex=3 override-tab class="btn btn-primary form-control " type="submit" ng-disabled="signup.submissionDisabled">
+          <button tabindex=3 override-tab class="btn btn-primary form-control " type="submit" ng-disabled="signup.submissionDisabled" ng-click="onCreateClick()">
             Create Account
           </button>
           <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>

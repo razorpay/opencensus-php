@@ -8,13 +8,20 @@ const SECONDARY_COLOR = className => classList(className, 'Button--secondary');
 
 export default class Button extends React.PureComponent {
   render() {
-    let { iconBefore, iconAfter, children, onClick, ...props } = this.props;
+    let {
+      iconBefore,
+      iconAfter,
+      children,
+      onClick,
+      className,
+      ...restProps
+    } = this.props;
 
     return (
       <button
-        {...props}
-        onClick={props.disabled ? undefined : onClick}
-        class={classList(props.className, 'Button')}
+        {...restProps}
+        onClick={restProps.disabled ? undefined : onClick}
+        class={classList(className, 'Button')}
       >
         {iconBefore && (
           <i class={'Button-icon Button-icon--before i-' + iconBefore} />

@@ -46,4 +46,10 @@ export default class Commission extends GenericEntity {
       return response;
     });
   };
+
+  fetchCommissionBalances = () => {
+    return this.makeGenericAjaxCall({
+      url: 'balances',
+    });
+  };
 }
