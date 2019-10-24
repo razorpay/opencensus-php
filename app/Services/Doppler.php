@@ -138,7 +138,7 @@ class Doppler
             $upi['vpa'] = $payment->getVpa();
             $upi['psp'] = $payment->getPspFromVpa();
             $upi['bank'] = $payment->getBankName();
-            $upi['type'] = $payment->getMetadata("flow");;
+            $upi['type'] = $payment->getMetadata('flow');
         }
 
         $reqObj = [
