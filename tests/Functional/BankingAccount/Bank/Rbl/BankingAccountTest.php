@@ -656,7 +656,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/bacc_' . $bankingAccount['id'],
                 'method'  => 'PATCH',
             ],
         ];
@@ -686,7 +686,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/bacc_' . $bankingAccount['id'],
                 'method'  => 'PATCH',
             ],
         ];
@@ -716,7 +716,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/bacc_' . $bankingAccount['id'],
                 'method'  => 'PATCH',
             ],
         ];
