@@ -374,6 +374,8 @@ class Core extends Base\Core
         $processor = $this->getProcessor($channel);
 
         $processor->activate($bankingAccount, $input);
+
+        return $bankingAccount;
     }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)

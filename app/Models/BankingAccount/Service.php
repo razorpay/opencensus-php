@@ -73,8 +73,11 @@ class Service extends Base\Service
 
     public function activate(string $id, array $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
-            ['id'=> $id]);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
+            [
+                'id'=> $id
+            ]);
 
         //
         // This route is to be used via Admin auth only.
@@ -93,7 +96,7 @@ class Service extends Base\Service
 
         $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-        $this->core->activate($bankingAccount, $input);
+        $bankingAccount = $this->core->activate($bankingAccount, $input);
 
         return $bankingAccount->toArrayPublic();
     }

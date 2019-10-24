@@ -79,8 +79,9 @@ abstract class Processor extends Base\Core
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
-            ['id' => $bankingAccount->getId()]
-        );
+            [
+                'id' => $bankingAccount->getId()
+            ]);
 
         $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
 
@@ -190,8 +191,10 @@ abstract class Processor extends Base\Core
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST,
-            ['id' => $id, 'fts_id' => $ftsAccountId]
-        );
+            [
+                'id' => $id,
+                'fts_id' => $ftsAccountId
+            ]);
 
         /** @var FTS\CreateAccount $ftsService */
         $ftsService = app('fts_create_account');
@@ -200,21 +203,24 @@ abstract class Processor extends Base\Core
         {
             try
             {
-                $response = $ftsService->createSourceAccount(
-                    $id,
-                    $ftsAccountId,
-                    $content,
-                    $product,
-                    $channel);
+                $response = $ftsService->createSourceAccount($id,
+                                                             $ftsAccountId,
+                                                             $content,
+                                                             $product,
+                                                             $channel);
 
                 return $this->checkSourceAccountResponseForError($response);
 
             }
             catch (RecordAlreadyExists $e)
             {
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT,
-                    ['channel' => $channel, 'id' => $id, 'fts_id' => $ftsAccountId]
-                );
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT,
+                    [
+                        'banking_account_id'    => $id,
+                        'channel'               => $channel,
+                        'fts_id'                => $ftsAccountId
+                    ]);
 
                 return null;
             }

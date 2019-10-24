@@ -215,7 +215,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
     {
-        $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
+        $rblConfig = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
         $credentials = [
             Fields::USERNAME                  => $bankingAccount->getUsername(),
@@ -229,7 +229,7 @@ class Processor extends BankingAccount\Gateway\Processor
             FTS\Constants::BENEFICIARY_REQUIRED     => false,
         ];
 
-        $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
+        $mozartIdentifier = $rblConfig[Fields::MOZART_IDENTIFIER];
 
         $body = [
             FTS\Constants::CREDENTIALS       => $credentials,
