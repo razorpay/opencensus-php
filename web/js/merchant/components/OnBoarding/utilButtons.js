@@ -48,6 +48,10 @@ class NextButton extends React.PureComponent {
       eventAction: `Page ${props.page} - Next CTA`,
     });
 
+    window.rzpQ
+      .onbr()
+      .success(`${props.feature}.onboarding.introduction_next.success`);
+
     props.onClick && props.onClick(args);
   };
 
@@ -74,6 +78,10 @@ class SkipAndGetStartedButton extends React.PureComponent {
       eventCategory: `Product Introduction (${props.feature})`,
       eventAction: `Page ${props.page} - Skip and Get Started`,
     });
+
+    window.rzpQ
+      .onbr()
+      .initiated(`${props.feature}.onboarding.get_started.initiated`);
 
     props.onClick && props.onClick(args);
   };

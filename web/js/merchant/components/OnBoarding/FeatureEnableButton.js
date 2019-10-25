@@ -69,6 +69,10 @@ export default class FeatureEnableButton extends React.Component {
 
     return saveOnboarding
       .then(res => {
+        window.rzpQ
+          .onbr()
+          .success(`${this.props.feature}.onboarding.get_started.success`);
+
         return this.props.fetchUser();
       })
       .then(res => {
@@ -79,6 +83,10 @@ export default class FeatureEnableButton extends React.Component {
         this.props.onClick && this.props.onClick(res);
       })
       .catch(err => {
+        window.rzpQ
+          .onbr()
+          .failed(`${this.props.feature}.onboarding.get_started.failed`);
+
         this.props.showNotification({
           type: 'error',
           message: err.errors,

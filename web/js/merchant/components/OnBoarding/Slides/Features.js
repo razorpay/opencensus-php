@@ -92,6 +92,10 @@ const FeatureLink = ({ ga, url, page, label, feature }) => (
         eventAction: `Page ${page} - ${ga}`,
       });
 
+      window.rzpQ
+        .onbr()
+        .success(`${props.feature}.onboarding.features_hyperlink.success`);
+
       window.open(url);
     }}
   >
