@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -885,6 +886,8 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
+        RuntimeManager::setMemoryLimit('1024M');
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
