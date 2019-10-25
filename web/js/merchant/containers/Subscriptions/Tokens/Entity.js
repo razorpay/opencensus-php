@@ -184,20 +184,16 @@ export default class TokenEntityContainer extends Component {
                       </ShowWhen>
                     )}
 
-                    {this.isNACHMethod &&
-                      entity.is_nach_form_uploaded && (
-                        <EntityDetailRow label="NACH Form">
-                          <NACHDetails
-                            downloadSignedNACHFile={
-                              entity.is_nach_form_uploaded &&
-                              this.downloadSignedNACHFile
-                            }
-                            trackClickDownloadNACHForm={
-                              this.trackClickDownloadNACHForm
-                            }
-                          />
-                        </EntityDetailRow>
-                      )}
+                    {this.isNACHMethod && (
+                      <EntityDetailRow label="NACH Form">
+                        <NACHDetails
+                          downloadSignedNACHFile={this.downloadSignedNACHFile}
+                          trackClickDownloadNACHForm={
+                            this.trackClickDownloadNACHForm
+                          }
+                        />
+                      </EntityDetailRow>
+                    )}
 
                     <EntityDetailRow label="Customer Details">
                       <CustomerDetails customer={entity.customer} />
