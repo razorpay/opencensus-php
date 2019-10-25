@@ -4,6 +4,7 @@ namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant\Entity;
@@ -50,7 +51,7 @@ class AccountActivationConfirmation extends Mailable
         }
         else
         {
-            throw new BadRequestException(TraceCode::FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
+            throw new BadRequestException(ErrorCode::FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
                                           null,
                                           [
                                               'merchant_id' => $merchantId
