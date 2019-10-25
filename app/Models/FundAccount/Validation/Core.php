@@ -206,12 +206,7 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            if (($validation->fundAccount->getAccountType() === FundAccount\Type::VPA) and
-                (($input['amount'] !== null) or ($input['amount'] !== 0)))
-            {
-                throw new BadRequestValidationFailureException(
-                    'Invalid amount: '. $input['amount'] . '. only 0 allowed for vpa.');
-            }
+            $this->validateAmount($fundAccount, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -278,6 +273,32 @@ class Core extends Base\Core
         }
 
         return $txn;
+    }
+
+    /**
+     * @param FundAccount\Entity $fundAccount
+     * @param array              $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateAmount(FundAccount\Entity $fundAccount, array $input)
+    {
+        if ($fundAccount->getAccountType() === FundAccount\Type::VPA)
+        {
+            if (isset($input['amount']) and ($input['amount'] > 0))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Invalid amount: '. $input['amount'] . '. only 0 allowed.');
+            }
+        }
+        else
+        {
+            if (isset($input['amount']) and $input['amount'] < 100)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Invalid amount: '. $input['amount'] . '. Amount should be greater than 100');
+            }
+        }
     }
 
     /**

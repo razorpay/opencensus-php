@@ -513,10 +513,12 @@ return [
             'method'  => 'post',
             'content' => [
                 FundAccount::ACCOUNT_NUMBER => '2224440041626905',
-                Validation::FUND_ACCOUNT => [
+                Validation::FUND_ACCOUNT    => [
                     FundAccount::ID => '',
                 ],
-                Validation::NOTES        => [],
+                Validation::AMOUNT          => 0,
+                Validation::CURRENCY        => 'INR',
+                Validation::NOTES           => [],
             ],
         ],
         'response' => [
