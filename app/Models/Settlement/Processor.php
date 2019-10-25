@@ -183,10 +183,11 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,
             [
-                'timestamp'   => $this->setlTime,
-                'time'        => time(),
-                'using_queue' => $useQueue,
-                'params'      => $params,
+                'timestamp'    => $this->setlTime,
+                'time'         => time(),
+                'using_queue'  => $useQueue,
+                'params'       => $params,
+                'merchant_ids' => $merchantIds,
             ]);
 
         $response = [];
@@ -491,8 +492,12 @@ class Processor extends Base\Core
 
             $balance = $this->merchants[$merchantId]->getBalanceByTypeOrFail($balanceType);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner, $balance, $params);
-
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns(
+                $txns,
+                $channel,
+                $merchantSettleToPartner,
+                $balance,
+                $params);
 
             if ($setl !== null)
             {
@@ -885,6 +890,10 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        $balanceId = ($balance === null) ? null : $balance->getId();
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction

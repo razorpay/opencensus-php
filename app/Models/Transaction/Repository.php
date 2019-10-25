@@ -1530,13 +1530,13 @@ class Repository extends Base\Repository
     /**
      * @param string $mid
      * @param string $channel
-     * @param string $balanceType
+     * @param string $balanceId
      * @param array $params
      *
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel,string $balanceType, array $params = []): Base\PublicCollection
+        string $mid, string $channel,string $balanceId = null, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1549,30 +1549,23 @@ class Repository extends Base\Repository
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
-        $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
-        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
-
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceId)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT);
 
-        if ($balanceType === Balance\Type::PRIMARY)
+        if ($balanceId === null)
         {
-            $query->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn) {
-                $query->whereNull($transactionBalanceId)
-                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
-            });
+            $query->whereNull($transactionBalanceId);
         }
         else
         {
-            $query->where($balanceTypeColumn, $balanceType);
+            $query->where($transactionBalanceId, $balanceId);
         }
 
         $query = $this->addSettlementFilters($query, $timestamp, $params);
@@ -1587,7 +1580,7 @@ class Repository extends Base\Repository
                 'merchant_id'  => $mid,
                 'settled_at'   => $timestamp,
                 'params'       => $params,
-                'balance_type' => $balanceType,
+                'balance_type' => $balanceId,
             ]);
 
         return $results;
