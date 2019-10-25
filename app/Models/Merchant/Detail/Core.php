@@ -424,7 +424,7 @@ class Core extends Base\Core
 
     protected function sendL2FormSubmissionEmail(Merchant\Entity $merchant)
     {
-        $activationFlow = $merchant->merchantDetail()->get()->getActivationFlow();
+        $activationFlow = $merchant->merchantDetail->getActivationFlow();
 
         $mailer = null;
 

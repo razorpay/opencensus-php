@@ -42,7 +42,7 @@ class L2SubmissionWhitelist extends Mailable
          */
         $bankingAccounts = $merchant->bankingAccounts()->get();
 
-        if (empty($bankingAccounts) === false)
+        if ($bankingAccounts->count() !== 0)
         {
             $this->bankingAccount = $bankingAccounts[0];
         }
