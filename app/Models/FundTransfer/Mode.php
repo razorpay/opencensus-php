@@ -186,6 +186,11 @@ class Mode
         return array_keys(self::$issuerModeMap);
     }
 
+    public static function getSupportedModesMap(): array
+    {
+        return self::$issuerModeMap;
+    }
+
     /**
      *  if the network exists in issuer mode map then consider the mode given for the same
      *  else consider default

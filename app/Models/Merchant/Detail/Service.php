@@ -361,11 +361,11 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
 
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetailCore = new Core;
-
-        $merchantDetails = $merchantDetailCore->editMerchantDetailFields($merchant, $input);
+        $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -493,9 +493,11 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
 
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $partnerMerchant);
+        $merchantDetails = $this->core()->updateActivationStatus($merchant, $input, $partnerMerchant);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -836,6 +838,17 @@ class Service extends Base\Service
         $reviewerId = $input[Entity::REVIEWER_ID];
 
         return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
+    }
+
+    public function merchantsMtuUpdate(array $input)
+    {
+        (new Validator)->validateInput('merchant_mtu_update', $input);
+
+        $merchants = $input[Entity::MERCHANTS];
+
+        $value = $input[Entity::LIVE_TRANSACTION_DONE];
+
+        return (new Core)->merchantsMtuUpdate($merchants, $value);
     }
 
     public function getMerchantActivationReviewers()

@@ -106,6 +106,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::EMANDATE)
                   ->default(0);
 
+            $table->tinyInteger(Methods::NACH)
+                  ->default(0);
+
             $table->tinyInteger(Methods::CARDLESS_EMI)
                   ->default(0);
 

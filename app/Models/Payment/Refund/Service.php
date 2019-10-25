@@ -2570,15 +2570,15 @@ class Service extends Base\Service
 
             $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
 
-            $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+            $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
 
             if ((in_array($scroogeResponseCode, [200, 201, 204], true) === false) or
-                (isset($scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
+                (isset($scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
             {
                 throw new Exception\RuntimeException('Unexpected response received from scrooge service');
             }
 
-            $speedChangeTime = $scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
+            $speedChangeTime = $scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
 
             if ($speedChangeTime !== null)
             {

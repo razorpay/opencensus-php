@@ -373,4 +373,8 @@ return [
         'url'      => env('HUBSPOT_URL'),
         'secret'   => env('HUBSPOT_SECRET'),
     ],
+
+    'mtu_lambda' => [
+        'secret'        => env('MTU_LAMBDA_SECRET'),
+    ],
 ];
