@@ -16,8 +16,6 @@ use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
 
 class FaVpaValidation extends Job
 {
-    protected $queueConfigKey = 'fa_vpa_validation';
-
     /**
      * @var string
      */
