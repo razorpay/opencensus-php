@@ -1369,6 +1369,44 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function merchantsMtuUpdate(array $merchants, int $value): array
+    {
+        $success = 0;
+
+        $failedItems = [];
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->editMerchantDetailFields($merchant, [Entity::LIVE_TRANSACTION_DONE => $value]);
+
+                $success++;
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_SUCCESS,['id' => $merchantId]);
+            }
+            catch(\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    'error'             => $e->getMessage()
+                ];
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_FAILURE,['id' => $merchantId]);
+            }
+        }
+
+        $response = [
+            'success'       => $success,
+            'failed'        => count($failedItems),
+            'failedItems'   => $failedItems,
+        ];
+
+        return $response;
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *

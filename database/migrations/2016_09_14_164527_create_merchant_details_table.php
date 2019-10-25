@@ -296,6 +296,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::INTERNATIONAL_ACTIVATION_FLOW)
                   ->nullable();
 
+            $table->string(MerchantDetail::LIVE_TRANSACTION_DONE)
+                 ->nullable();
+
             $table->json(MerchantDetail::KYC_CLARIFICATION_REASONS)
                   ->nullable();
 

@@ -116,6 +116,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -139,7 +140,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($useLimit === true)
         {
@@ -1548,6 +1550,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -1561,7 +1564,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($balanceType === Balance\Type::PRIMARY)
         {
@@ -1801,7 +1805,7 @@ class Repository extends Base\Repository
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
-        if(isset($params[Entity::CREATED_AT]) === false and isset($params[Entity::SETTLED_AT]) === false)
+        if((isset($params[Entity::CREATED_AT]) === false) and (isset($params[Entity::SETTLED_AT]) === false))
         {
             $query->where($transactionSettledAt, '<=', $timestamp);
         }
@@ -1811,11 +1815,13 @@ class Repository extends Base\Repository
             {
                 $query->where($transactionSettledAt, '<=', $params[Entity::SETTLED_AT]);
             }
+
             if(isset($params[Entity::CREATED_AT]) === true)
             {
                 $query->where($transactionCreatedAt, '<=', $params[Entity::CREATED_AT]);
             }
         }
+
         return $query;
     }
 

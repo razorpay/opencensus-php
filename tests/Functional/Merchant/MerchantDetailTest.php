@@ -728,6 +728,36 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantsMtuUpdateSuccess()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('1', $testMerchant->merchantDetail->getLiveTransactionDone());
+
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('1', $liveMerchant->merchantDetail->getLiveTransactionDone());
+    }
+
+    public function testMerchantsMtuUpdateIdFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateLiveTransactionFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testBulkEditMerchantAttributes()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
