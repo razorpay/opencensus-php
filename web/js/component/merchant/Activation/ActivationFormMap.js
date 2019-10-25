@@ -89,12 +89,6 @@ const businessModel = [
     _when: excludeFor_Indiv,
   },
   {
-    label: 'Billing Label',
-    name: 'business_dba',
-    info:
-      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
-  },
-  {
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
@@ -224,6 +218,12 @@ const businessModel = [
       },
     },
   ],
+  {
+    label: 'Billing Label',
+    name: 'business_dba',
+    info:
+      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
+  },
   [
     {
       label: 'Website/App URL',
@@ -357,12 +357,9 @@ const registrationDetails = [
       _disabledWhen: isActivatedIndividual,
       checkValidityFromAPI: activation => {
         const { poi_verification_status } = activation.props.data;
-        if (poi_verification_status === 'incorrect_details') {
-          return 'Incorrect PAN number';
-        } else if (poi_verification_status === 'not_matched') {
-          return 'PAN number not found in central database';
-        }
-        return '';
+        return poi_verification_status === 'incorrect_details'
+          ? 'The number entered doesn’t exist in the PAN database. Please verify and enter again'
+          : '';
       },
     },
     {
@@ -393,12 +390,9 @@ const registrationDetails = [
       },
       checkValidityFromAPI: activation => {
         const { poi_verification_status } = activation.props.data;
-        if (poi_verification_status === 'incorrect_details') {
-          return 'Incorrect PAN name';
-        } else if (poi_verification_status === 'not_matched') {
-          return 'No PAN was found with this name';
-        }
-        return '';
+        return poi_verification_status === 'not_matched'
+          ? 'Please ensure you are entering the same spelling as on your PAN card'
+          : '';
       },
     },
   ],
