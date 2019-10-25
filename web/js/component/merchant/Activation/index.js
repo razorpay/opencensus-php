@@ -221,7 +221,7 @@ export default class ActivationWizard extends React.Component {
       }
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
-      FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
+      FORM_TABS_CONTENT[1][2][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
           label: props.categories[c].description,
