@@ -404,8 +404,8 @@ export default class User {
   }
 
   get isUnregBizFlowEnabled() {
-    return true;
-    // return this.getExpStatus('non_registered_onboarding');
+    // return true;
+    return this.getExpStatus('non_registered_onboarding');
   }
 
   get isAllowedTeamManagement() {
