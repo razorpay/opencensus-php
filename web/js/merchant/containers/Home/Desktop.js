@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
@@ -26,6 +27,7 @@ import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 
 import {
   trackPresetChange,
@@ -35,6 +37,7 @@ import {
   trackSettleNow,
 } from './ga';
 
+@withRouter
 @connect(state => ({ user: state.session.user, config: state.config }), {
   openModal,
 })
@@ -48,6 +51,27 @@ class AnalyticsDesktop extends Component {
       this
     );
   }
+
+  popupCredit = () => {
+    if (this.props.location.hash === '#creditscore') {
+      this.resetHash();
+      this.props.openModal({
+        component: <CreditPullModal fromWhere="Announcements" />,
+        size: 'regular',
+      });
+    }
+  };
+
+  componentDidUpdate() {
+    this.popupCredit();
+  }
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
+  };
 
   showOndemandSettlementForm() {
     trackSettleNow();
