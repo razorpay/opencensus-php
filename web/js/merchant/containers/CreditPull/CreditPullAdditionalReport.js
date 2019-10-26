@@ -77,7 +77,18 @@ export default class CreditPullAdditionalReport extends Component {
         <div className="col-md-8 foot-box">
           <div className="mod-faq">
             Finding it difficult to understand the Report or terms?{' '}
-            <a>Show FAQ</a>
+            <a
+              target="_blank"
+              href="https://razorpay.com/capital/credit-report-faq"
+              onClick={() => {
+                window.rzpAnalytics({
+                  eventCategory: 'Dashboard - D2C',
+                  eventAction: 'Show FAQs',
+                });
+              }}
+            >
+              Show FAQ
+            </a>
           </div>
         </div>
         <div className="col-md-12 foot-box">

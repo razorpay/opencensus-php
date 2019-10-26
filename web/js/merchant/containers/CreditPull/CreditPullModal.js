@@ -13,6 +13,8 @@ import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/modules/b-merchants';
 import * as ModalActions from 'rzp/modules/modals';
 import bMerchantReducer from 'merchant/modules/b-merchants';
+import { objectDiff } from 'rzp/utils/rzp-utils';
+import { isEmpty } from 'lodash';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
 import {
   VerifyOtp,
@@ -73,7 +75,16 @@ export default class CreditPullModal extends Component {
 
   componentWillMount() {
     this.props.fetchBMerchant();
+    this.fireGAEvent({
+      eventAction: `Click - Check credit score`,
+      eventLabel: this.props.fromWhere,
+    });
   }
+
+  fireGAEvent = eventPayload => {
+    eventPayload['eventCategory'] = 'Dashboard - D2C';
+    window.rzpAnalytics(eventPayload);
+  };
 
   savePhone = newNumber => {
     let saveProps = { ...this.state.merchantData };
@@ -224,8 +235,7 @@ export default class CreditPullModal extends Component {
   initialAlign = () => {
     //Hate doing this unfortunately the library doesn't provide any other way to do this.
     if (
-      this.props.initialValues &&
-      !this.props.initialValues.hasOwnProperty('date_of_birth') &&
+      this.props.initialValues['date_of_birth'] == null &&
       this.dateContainer
     ) {
       this.dateContainer.current.querySelector('div .rdtPrev span').click();
@@ -262,9 +272,7 @@ export default class CreditPullModal extends Component {
       <>
         <ModalHeader
           title={'Business Details'}
-          onCloseClick={() => {
-            this.props.closeModal();
-          }}
+          onCloseClick={handleSubmit(this.close)}
         />
         <form className="form-horizontal bureau-merchant-form">
           <div className="modal-body">
@@ -493,7 +501,7 @@ export default class CreditPullModal extends Component {
             <button
               type="button"
               className="btn btn-default"
-              onClick={this.props.closeModal}
+              onClick={this.close}
             >
               Cancel
             </button>
@@ -509,6 +517,24 @@ export default class CreditPullModal extends Component {
         </form>
       </>
     );
+  };
+
+  close = formProps => {
+    let diffObject = objectDiff(this.props.initialValues, formProps);
+    if (isEmpty(diffObject)) {
+      this.fireGAEvent({
+        eventAction: `Close`,
+        eventLabel: `No changes`,
+      });
+    } else {
+      this.fireGAEvent({
+        eventAction: `Close`,
+        eventLabel: `Closed after modifying: ${Object.keys(diffObject).join(
+          ','
+        )}`,
+      });
+    }
+    this.props.closeModal();
   };
 
   handleCheckboxChange = event => {

@@ -80,6 +80,10 @@ export default class CreditPullSuccess extends Component {
   };
 
   handleInterest = (reportId, consent) => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - D2C',
+      eventAction: consent === 0 ? 'Not Interested' : 'Interested',
+    });
     if (consent === 0) {
       this.props.closeModal();
       this.props.openModal({
@@ -131,6 +135,10 @@ export default class CreditPullSuccess extends Component {
         <ModalHeader
           title={this.titleGenerator()}
           onCloseClick={() => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - D2C',
+              eventAction: 'Closed from Score Screen w/o Interest',
+            });
             this.props.closeModal();
           }}
         />
