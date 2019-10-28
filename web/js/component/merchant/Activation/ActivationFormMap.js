@@ -541,14 +541,22 @@ const bankAccountFields = [
     info: function() {
       const currentBusinessType =
         this.state.dirty.business_type || this.props.data.business_type;
+      if (isUnregisteredBusiness(this)) {
+        return 'Please ensure that the spelling is the same as your bank account';
+      } else {
+        let text = 'Company';
 
-      let text = 'Company';
+        if (currentBusinessType == LLP) {
+          text = 'Individual';
+        }
 
-      if ([LLP, INDIVIDUAL].indexOf(Number(currentBusinessType)) !== -1) {
-        text = 'Individual';
+        return `The beneficiary name should be same as ${text} name`;
       }
-
-      return `The beneficiary name should be same as ${text} name`;
+    },
+    description: activation => {
+      return isUnregisteredBusiness(activation)
+        ? 'We will deposit a small amount of money in your account to verify the account.'
+        : '';
     },
   },
 ];
@@ -735,11 +743,13 @@ function differentAddress(activation) {
 
 /* Return true IF NOT 'Individual/Not registered' business type */
 export function excludeFor_Indiv(activation) {
-  const currentBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
+  return !isUnregisteredBusiness(activation);
+}
 
+function isUnregisteredBusiness(activation) {
   return (
-    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
+    UNREGISTERED_TYPES[Number(activation.state.dirty['business_type'])] ||
+    UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
   );
 }
 
