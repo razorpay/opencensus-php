@@ -309,7 +309,7 @@ const businessModel = [
   ],
 ];
 
-const registrationDetails = [
+const businessDetails = [
   {
     label: 'CIN',
     name: 'company_cin',
@@ -792,7 +792,7 @@ function isActivatedIndividual(activation) {
 export const mainFormTabs = [
   'Contact Info',
   'Business Overview',
-  'Registration Details',
+  'Business Details',
   'Bank Account',
   'Documents Upload',
 ];
@@ -801,7 +801,7 @@ export const mainFormTabs = [
 const tabsData = [
   contactFields,
   businessModel,
-  registrationDetails,
+  businessDetails,
   bankAccountFields,
   uploadFields,
 ];
