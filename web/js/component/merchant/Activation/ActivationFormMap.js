@@ -261,32 +261,46 @@ const businessModel = [
       description: (
         <React.Fragment>
           The entered App/Website should contain:
-          <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-              target="_blank"
-            >
-              Privacy Policy
-            </a>
-          </b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-              target="_blank"
-            >
-              Terms & Conditions
-            </a>
-          </b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-              target="_blank"
-            >
-              Cancellation/Refund Policy
-            </a>
-          </b>{' '}
-          & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
+          <div className="bullet-list-container">
+            <ul className="bullet-list bullet-list--left">
+              <li class="bullet-list-item shallow"> About Us</li>
+              <li class="bullet-list-item shallow"> Contact Us</li>
+              <li class="bullet-list-item shallow"> Pricing</li>
+            </ul>
+            <ul className="bullet-list bullet-list--right">
+              <li>
+                <b class="shallow">
+                  <a
+                    href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                    target="_blank"
+                  >
+                    Privacy Policy
+                  </a>
+                </b>
+              </li>
+              <li>
+                <b class="shallow">
+                  <a
+                    href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                    target="_blank"
+                  >
+                    Terms & Conditions
+                  </a>
+                </b>
+              </li>
+
+              <li>
+                <b class="shallow">
+                  <a
+                    href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                    target="_blank"
+                  >
+                    Cancellation/Refund Policy
+                  </a>
+                </b>
+              </li>
+            </ul>
+          </div>
         </React.Fragment>
       ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
