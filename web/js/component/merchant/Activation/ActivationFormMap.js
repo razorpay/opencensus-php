@@ -387,8 +387,12 @@ const registrationDetails = [
           : 'PAN Owner Name';
       },
       name: 'promoter_pan_name',
-      description: () => {
-        return 'We verify the details with the central PAN database. Please ensure you enter the correct details';
+      description: activation => {
+        const { poi_verification_status } = activation.props.data;
+        return poi_verification_status == 'incorrect_details' ||
+          poi_verification_status == 'not_matched'
+          ? ''
+          : 'We verify the details with the central PAN database. Please ensure you enter the correct details';
       },
       _disabledWhen: isActivatedIndividual,
       _when: activation => {
