@@ -158,7 +158,7 @@ export default class CreditPullSuccess extends Component {
             </div>
           </div>
 
-          <div className="col-md-8 rep-container">
+          <div className="col-md-8 rep-container background-col">
             <div className="report-header">Congratulations</div>
             <div className="report-body">
               Based on your credit history, You may be eligible for a loan upto
