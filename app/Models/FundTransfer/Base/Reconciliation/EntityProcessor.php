@@ -68,7 +68,6 @@ abstract class EntityProcessor extends Base\Core
      * Returns an array with the following 2 keys
      * - entity
      * - fire_webhook
-     *
      */
     public function process(): array
     {

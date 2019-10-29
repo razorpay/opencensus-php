@@ -451,7 +451,6 @@ class Status extends BaseStatus
         return [
             self::BENEFICIARY_NOT_ACCEPTED      => [],
             self::INVALID_BENEFICIARY_DETAILS   => [],
-            self::BENEFICIARY_NOT_ACCEPTED      => [],
             self::BENE_ACCOUNT_BLOCKED          => [],
             self::IMPS_NOT_ENABLED_FOR_BENE     => [],
         ];

@@ -1766,11 +1766,13 @@ class Entity extends Base\PublicEntity
         }
         else
         {
+            $this->setHoldFundsReason();
+
             $this->fireEventWithMerchantPayload('api.account.funds_unhold');
         }
     }
 
-    public function setHoldFundsReason(string $reason)
+    public function setHoldFundsReason(string $reason = null)
     {
         $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
     }
