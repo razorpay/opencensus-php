@@ -43,9 +43,9 @@ class LowBalanceAlert extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::X_SUPPORT];
 
-        $header = Constants::HEADERS[Constants::SUPPORT];
+        $header = Constants::HEADERS[Constants::X_SUPPORT];
 
         $this->replyTo($email, $header);
 
