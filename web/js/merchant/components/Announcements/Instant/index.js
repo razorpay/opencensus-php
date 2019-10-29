@@ -1,12 +1,32 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-import { activationDuration } from 'common/data';
 import Announcement from 'merchant/components/Announcement';
 
+import { submitL1Form } from 'merchant/modules/activationWizard';
+import { updateSession } from 'merchant/modules/session';
+import { showNotification } from 'rzp/modules/notifications';
+
+import { handlePANTryAgain } from './AnnouncementActions';
+
+import { activationDuration } from 'common/data';
+
+@connect(
+  state => ({
+    session: state.session,
+    user: state.session.user,
+  }),
+  {
+    showNotification,
+    updateSession,
+    submitL1Form,
+  }
+)
 export default class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);
+    this.handlePANTryAgain = handlePANTryAgain.bind(this);
   }
 
   render() {
@@ -17,7 +37,56 @@ export default class InstantActivationAnnouncements extends Component {
       content;
 
     if (!user.isSubmitted) {
-      if (mode !== 'live' || payments.loading || payments.items.length === 0) {
+      if (payments && payments.items.length > 0 && !user.isAccepted) {
+        title = 'Enable Settlements';
+        content = (
+          <span>
+            Your settlements are on hold. You will need to fill the KYC Form to
+            receive your payments in your bank account.
+            <span className="big-dot-separator" />
+            <Link to="/activation">Fill KYC Form</Link>
+          </span>
+        );
+      } else if (user.business_type == 11) {
+        if (
+          user.isActivated &&
+          user.bank_details_verification_status == 'failed'
+        ) {
+          theme = 'danger';
+          title = 'Bank Verification Failed';
+          content =
+            'We were unable to verify your bank account. Please upload bank account proof.';
+        } else if (
+          user.isActivated &&
+          user.poi_verification_status == 'verified'
+        ) {
+          theme = 'success';
+          title = 'Account Activated';
+          content =
+            'PAN verification successful. You can start accepting domestic payments.';
+        } else if (user.poi_verification_status == 'failed') {
+          theme = 'danger';
+          title = 'Unable To Verify PAN';
+          content = (
+            <span>
+              The central databse seems to be down, we couldn't verify you PAN
+              details. <span onClick={this.handlePANTryAgain}>Try Again</span>.
+            </span>
+          );
+        } else if (
+          user.poi_verification_status == 'incorrect_details' ||
+          user.poi_verification_status == 'not_matched'
+        ) {
+          theme = 'danger';
+          title = 'PAN Verification Failed';
+          content = (
+            <span>
+              Your PAN details did not match with the government database.{' '}
+              <Link to="/activation">Please review</Link> your details.
+            </span>
+          );
+        } else return null;
+      } else {
         return null;
       }
 
