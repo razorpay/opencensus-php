@@ -35,15 +35,38 @@ const UNREGISTERED_TYPES = {
   2: true,
 };
 const ADDRESS_PROOF_TYPES = {
-  none: { value: null, label: '--Select--', front: false, back: false },
-  aadhar: { value: 'aadhar', label: 'Aadhar', front: true, back: true },
-  passport: { value: 'passport', label: 'Passport', front: true, back: true },
-  voter_id: { value: 'voter_id', label: 'Voter Id', front: true, back: true },
+  // none: { value: null, label: '--Select--', front: false, back: false },
+  aadhar: {
+    value: 'aadhar',
+    label: 'Aadhar',
+    front: true,
+    back: true,
+    frontView: 'Front',
+    backView: 'Back',
+  },
+  passport: {
+    value: 'passport',
+    label: 'Passport',
+    front: true,
+    back: true,
+    frontView: 'First Page',
+    backView: 'Last Page',
+  },
+  voter_id: {
+    value: 'voter_id',
+    label: 'Voter Id',
+    front: true,
+    back: true,
+    frontView: 'Front',
+    backView: 'Back',
+  },
   driver_license: {
     value: 'driver_license',
     label: "Driver's License",
     front: true,
     back: false,
+    frontView: 'Front',
+    backView: 'Back',
   },
 };
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
@@ -685,13 +708,15 @@ const uploadFields = [
     dynamicLabel: true,
     dynamicName: true,
     getLabel: activation => {
-      return (
-        ADDRESS_PROOF_TYPES[activation.state.address_proof].label +
-        ' ' +
-        'First Page'
-      );
+      // if (!activation.state.address_proof)
+      //   return ADDRESS_PROOF_TYPES.aadhar.label + ' ' + 'Front';
+      const { address_proof } = activation.state;
+      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
+      return addressProofType.label + ' ' + addressProofType.frontView;
     },
     getName: activation => {
+      // if (!activation.state.address_proof)
+      //   return ADDRESS_PROOF_TYPES.aadhar.value + '_' + 'front';
       return activation.state.address_proof + '_' + 'front';
     },
     _cmp: Input.File,
@@ -711,11 +736,9 @@ const uploadFields = [
     getLabel: activation => {
       // if (!activation.state.address_proof)
       //   return ADDRESS_PROOF_TYPES.aadhar.label + ' ' + 'Last Page';
-      return (
-        ADDRESS_PROOF_TYPES[activation.state.address_proof].label +
-        ' ' +
-        'Last Page'
-      );
+      const { address_proof } = activation.state;
+      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
+      return addressProofType.label + ' ' + addressProofType.backView;
     },
     getName: activation => {
       // if (!activation.state.address_proof)
