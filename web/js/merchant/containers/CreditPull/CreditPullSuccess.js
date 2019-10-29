@@ -9,7 +9,6 @@ import CreditPullAdditionalReport from './CreditPullAdditionalReport';
 import { showNotification } from 'rzp/modules/notifications';
 import CloseReasons from '../../components/CloseReasons';
 import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
-import ajax from '../../../merchantLA/utils/ajax';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,

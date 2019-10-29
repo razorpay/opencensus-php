@@ -62,9 +62,19 @@ const validate = values => {
 export default class CreditPullModal extends Component {
   constructor(props) {
     super(props);
-
     this.SMALL_MODAL = 'small';
     this.dateFormatType = 'YYYY-MM-DD';
+    this.errorMessages = {
+      error_wrong_otp: 'Verification failed because of incorrect OTP.',
+      error_wrong_phone:
+        'Looks like your phone number could not be found in our existing database. Please check your phone number',
+      error_wrong_merchant:
+        'Sorry We could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.',
+      error_max_attempts:
+        'OTP verification failed because attempt threshold has been reached',
+      error_otp_required: 'The otp field is required.',
+      error_otp_length: 'The otp must be at least 4 characters.',
+    };
     this.dateContainer = React.createRef();
     this.state = {
       errors: null,
@@ -166,8 +176,47 @@ export default class CreditPullModal extends Component {
               .then(({ data: { report, score, max_loan_amount } }) => {
                 this.openReportScreen(report, score, max_loan_amount);
               })
-              .catch(error => {
-                throw error;
+              .catch(errorResponse => {
+                let {
+                  error_wrong_otp,
+                  error_wrong_phone,
+                  error_wrong_merchant,
+                  error_max_attempts,
+                  error_otp_required,
+                  error_otp_length,
+                } = this.errorMessages;
+                const error = (errorResponse.errors || [])[0];
+                let gaPayload = {
+                  eventAction: `Error`,
+                  eventLabel: `${error} ? ${error} : "Some unexpected error occurred"`,
+                };
+                this.fireGAEvent(gaPayload);
+                if (
+                  error === error_wrong_otp ||
+                  error === error_otp_required ||
+                  error === error_otp_length
+                ) {
+                  throw errorResponse;
+                } else if (error === error_wrong_phone) {
+                  this.props.showNotification({
+                    type: 'error',
+                    message: error,
+                    hidePrevious: true,
+                  });
+                } else if (
+                  error === error_wrong_merchant ||
+                  error === error_max_attempts
+                ) {
+                  this.props.closeModal();
+                  this.openErrorScreen(error);
+                } else {
+                  this.props.showNotification({
+                    type: 'error',
+                    message: 'Some unexpected error occurred',
+                    hidePrevious: true,
+                  });
+                  this.props.closeModal();
+                }
               });
           }}
           onResend={() => {
