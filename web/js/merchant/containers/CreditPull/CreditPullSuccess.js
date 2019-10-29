@@ -79,13 +79,13 @@ export default class CreditPullSuccess extends Component {
     return <span>Credit Report</span>;
   };
 
-  handleInterest = (reportId, consent) => {
+  handleInterest = consent => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - D2C',
       eventAction: consent === 0 ? 'Not Interested' : 'Interested',
     });
+    this.props.closeModal();
     if (consent === 0) {
-      this.props.closeModal();
       this.props.openModal({
         component: (
           <CloseReasons
@@ -96,40 +96,16 @@ export default class CreditPullSuccess extends Component {
         ),
         size: 'small',
       });
-      return;
-    }
-    const payload = {
-      consent,
-    };
-    ajax(
-      {
-        url: `d2c_bureau_report/${reportId}`,
-        method: 'patch',
-        data: payload,
-      },
-      {},
-      '/merchant/api'
-    )
-      .then(success => {
-        this.props.closeModal();
-        this.props.showNotification({
-          type: 'success',
-          message: 'Recorded your feedback',
-          hidePrevious: true,
-        });
-      })
-      .catch(error => {
-        this.props.closeModal();
-        this.props.showNotification({
-          type: 'error',
-          message: 'Failed to record feeback',
-          hidePrevious: true,
-        });
+    } else {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Recorded your feedback',
+        hidePrevious: true,
       });
+    }
   };
 
   render() {
-    const { reportId } = this.props;
     return (
       <div className="credit-pull-success-container">
         <ModalHeader
@@ -164,7 +140,7 @@ export default class CreditPullSuccess extends Component {
               Based on your credit history, You may be eligible for a loan upto
               given amount. Please confirm your interest.
             </div>
-            {this.props.maxLoan && (
+            {this.props.maxLoan > 0 && (
               <div className="report-amount">
                 <Amount value={this.props.maxLoan} currency={'INR'} />
               </div>
@@ -173,12 +149,12 @@ export default class CreditPullSuccess extends Component {
               <AsyncButton
                 class="btn btn-primary"
                 text="Yes I'm interested"
-                onClick={() => this.handleInterest(reportId, 1)}
+                onClick={() => this.handleInterest(1)}
               />
               <AsyncButton
                 class="btn btn-secondary"
                 text="No, I'm not"
-                onClick={() => this.handleInterest(reportId, 0)}
+                onClick={() => this.handleInterest(0)}
               />
             </div>
           </div>

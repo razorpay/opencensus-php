@@ -163,16 +163,9 @@ export default class CreditPullModal extends Component {
               tokenStuff,
               merchantId
             )
-              .then(
-                ({ data: { report, score, max_loan_amount, reportId } }) => {
-                  this.openReportScreen(
-                    report,
-                    score,
-                    max_loan_amount,
-                    reportId
-                  );
-                }
-              )
+              .then(({ data: { report, score, max_loan_amount } }) => {
+                this.openReportScreen(report, score, max_loan_amount);
+              })
               .catch(error => {
                 throw error;
               });
@@ -201,14 +194,13 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = (report, score, maxLoan, reportId) => {
+  openReportScreen = (report, score, maxLoan) => {
     this.props.openModal({
       component: (
         <CreditPullSuccess
           score={score}
-          report={report}
+          report={JSON.parse(report)}
           maxLoan={maxLoan}
-          reportId={reportId}
         />
       ),
       size: 'large',
