@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -205,10 +206,13 @@ class OffersPaymentTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
+        $this->assertEquals('false', $order['status']);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
 
     }
 
-    public function testDiscountedOfferApplicableWithPaymentBlockedFlagNotSet()
+    public function testOfferApplicableWithPaymentBlockedFlagNotSet()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
         $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
@@ -313,7 +317,7 @@ class OffersPaymentTest extends TestCase
             {
                 $response = $this->doAuthPayment($payment);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class);
+            \RZP\Exception\BadRequestValidationFailureException::class,PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
     }
 
     public function testMaxCardUsage()
@@ -364,7 +368,7 @@ class OffersPaymentTest extends TestCase
             {
                 $response = $this->doAuthPayment($payment);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class);
+            \RZP\Exception\BadRequestValidationFailureException::class,PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
     }
 
     public function testOfferPaymentMultipleOffers()

@@ -899,4 +899,8 @@ class PublicErrorDescription
 
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
+
+    //Offer
+    const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
+    const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
 }

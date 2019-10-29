@@ -119,7 +119,12 @@ class Core extends Base\Core
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
-            $payment->setAmount($input['order_amount']);
+            //In case of discounted offer where Rzp modifies the amount, if offer validations fails
+            //and merchant does not want to block payment for that offer, setting the original order amount
+            //again for payment amount.
+            if($input['order_amount'] !== null) {
+                $payment->setAmount($input['order_amount']);
+            }
 
             $order = $payment->order;
 

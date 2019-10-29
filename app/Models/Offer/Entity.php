@@ -467,6 +467,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENT_OFFER_USAGE, $count);
     }
 
+    public function setErrorMessage(string $errorMessage)
+    {
+        $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
 // ------------------------Public Setters--------------------------------------------
 
     public function setPublicLinkedOfferIdsAttribute(array & $array)
