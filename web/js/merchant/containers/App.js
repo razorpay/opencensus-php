@@ -242,18 +242,28 @@ export default class App extends Component {
   }
 
   setLiveTransactionDone = ({ live_transaction_done, id }) => {
-    if (live_transaction_done != undefined && live_transaction_done === 1) {
-      updateMerchantLiveTransactionFlag(id)
-        .then(resp => {
-          if (resp.success) {
-            setTrackData({
-              eventCategory: 'Dashboard - Instant Activations Live',
-              eventAction: 'Login',
-              eventLabel: 'MTU',
-            })();
-          }
-        })
-        .catch(err => {});
+    if (live_transaction_done === undefined) return;
+
+    switch (live_transaction_done) {
+      case 1:
+        updateMerchantLiveTransactionFlag(id)
+          .then(resp => {
+            if (resp.success) {
+              setTrackData({
+                eventCategory: 'Dashboard - Instant Activations Live',
+                eventAction: 'Login',
+                eventLabel: 'MTU-Funnel',
+              })();
+            }
+          })
+          .catch(err => {});
+        break;
+      case 2:
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations Live',
+          eventAction: 'Login',
+          eventLabel: 'MTU-Audience',
+        })();
     }
   };
 
