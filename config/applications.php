@@ -359,6 +359,11 @@ return [
         'password'  => env('SMART_ROUTING_PASSWORD')
     ],
 
+    'doppler' => [
+        'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
+    ],
+
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
     ],
@@ -367,5 +372,9 @@ return [
         'mock'     => env('HUBSPOT_MOCK', false),
         'url'      => env('HUBSPOT_URL'),
         'secret'   => env('HUBSPOT_SECRET'),
+    ],
+
+    'mtu_lambda' => [
+        'secret'        => env('MTU_LAMBDA_SECRET'),
     ],
 ];

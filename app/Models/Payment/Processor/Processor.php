@@ -24,6 +24,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
@@ -1669,6 +1670,24 @@ class Processor
             $notifier = new Notify($this->payment);
 
             $notifier->trigger(Payment\Event::FAILED);
+        }
+
+        //TODO: Remove this later
+        try
+        {
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $this->payment->toArray(),
+                    'code'                => $code,
+                    'internal_code'       => $internalCode,
+                    'error'               => $e->getMessage()
+                ]
+            );
         }
     }
 

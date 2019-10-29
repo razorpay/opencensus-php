@@ -185,6 +185,7 @@ class Validator extends Base\Validator
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
         Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                   => 'filled|array',
+        Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
     ];
@@ -320,6 +321,12 @@ class Validator extends Base\Validator
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
         Entity::MERCHANTS       => 'filled|array',
         Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
+    ];
+
+    protected static $merchantMtuUpdateRules = [
+        Entity::MERCHANTS               => 'filled|array|between:0,15',
+        Entity::MERCHANTS . '*'         => 'sometimes|public_id|size:14',
+        Entity::LIVE_TRANSACTION_DONE   => 'filled|numeric|in:0,1,2',
     ];
 
     protected function validateRegisteredBusinessRules(array $input)
@@ -815,10 +822,12 @@ class Validator extends Base\Validator
      * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
      * no detail will be save in db and validation exception will be thrown
      *
+     * @param Merchant\Entity $merchant
+     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function validateFullActivationForm()
+    public function validateFullActivationForm(Merchant\Entity $merchant)
     {
         $this->validateIsNotLocked();
 
@@ -826,7 +835,7 @@ class Validator extends Base\Validator
         {
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
 
-            $activationFlowImpl->validateFullActivationForm($this->entity);
+            $activationFlowImpl->validateFullActivationForm($merchant);
         }
     }
 

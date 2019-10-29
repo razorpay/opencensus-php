@@ -1526,6 +1526,41 @@ return [
         ],
     ],
 
+    'testDashboardSummary' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+                'bacc_ABCde1234ABCde' => [
+                    'queued' =>  [
+                        'balance' =>  10000000,
+                        'count' => 1,
+                        'total_amount' => 20000099,
+                        'total_fees' =>  1770,
+                    ],
+                    'pending' => [
+                        'count' => 1,
+                        'total_amount' =>54321,
+                    ]
+                ],
+                'bacc_DEcba4321DEcba' => [
+                    'queued' =>  [
+                        'balance' => 10000000,
+                        'count' => 1,
+                        'total_amount' => 30000099,
+                        'total_fees' =>  0,
+                    ],
+                    'pending' => [
+                        'count' => 1,
+                        'total_amount' =>12345,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testCreatePayoutForVpaFundAccountId' => [
         'request'  => [
             'method'  => 'POST',

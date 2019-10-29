@@ -36,6 +36,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Models\Transaction;
@@ -51,7 +52,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -342,11 +342,37 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
+                // Payment Authentication failed for the gateway.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or,
+                // mpi_blade in case terminal is authorization terminals like Hitachi.
+
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
                 {
                     continue;
+                }
+
+                $errorCode = $e->getError()->getPublicErrorCode();
+
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+                //TODO: Remove this later
+                try
+                {
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'code'                => $errorCode,
+                            'internal_code'       => $internalErrorCode,
+                            'error'               => $e->getMessage()
+                        ]
+                    );
                 }
 
                 // An error occurred on gateway due to user or gateway.
@@ -357,8 +383,6 @@ trait Authorize
                 $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
@@ -5463,6 +5487,22 @@ trait Authorize
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
+
+            //TODO: Remove this later
+            try
+            {
+                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $payment->toArray(),
+                        'error'               => $e->getMessage()
+                    ]
+                );
+            }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 

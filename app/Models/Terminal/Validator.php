@@ -866,6 +866,7 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $upiHulkEditTerminalRules = [

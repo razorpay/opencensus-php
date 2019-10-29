@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
@@ -1418,6 +1419,70 @@ class PaymentCreateTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
+    }
+
+    public function testPublishEventToDopplerViaSNS()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $order = $this->fixtures->create('order', ['bank' => IFSC::KKBK, 'account_number' => '923729373']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['bank'] = IFSC::KKBK;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        // mocking the gateway call and return exception
+        $this->mockGatewayException();
+
+        // testing failure event here
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\BadRequestException::class);
+
+        // mocking the gateway call and return success
+        $this->mockGatewaySuccess();
+
+        // testing success event here
+        $this->doAuthPayment($payment);
+    }
+
+    protected function mockGatewayException()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+                ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway, $action, $input, $mode)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+
+    protected function mockGatewaySuccess()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                return null;
+            });
+
+        $this->app->instance('gateway', $gateway);
     }
 
     protected function mockGateway()

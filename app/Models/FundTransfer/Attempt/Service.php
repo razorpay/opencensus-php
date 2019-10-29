@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer\Mode;
 use Razorpay\Trace\Logger as Trace;
 use http\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt\Core;
@@ -362,5 +363,10 @@ class Service extends Base\Service
     public function processFundTransfersUsingFts(array $input, string $channel)
     {
         return (new Initiator)->processFundTransfersUsingFts($input, $channel);
+    }
+
+    public function getSupportedModes(array $input)
+    {
+       return Mode::getSupportedModesMap();
     }
 }

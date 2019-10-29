@@ -90,6 +90,14 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+
+        // assert legal entity data
+        $legalEntity = $this->getDbLastEntity('legal_entity');
+
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 8931);
+        $this->assertEquals('financial_services', $legalEntity->getBusinessCategory());
+        $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
     public function testSubmitWithInvalidFields()
@@ -714,6 +722,38 @@ class MerchantDetailTest extends TestCase
     public function testBulkAssignReviewer()
     {
         $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateSuccess()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('1', $testMerchant->merchantDetail->getLiveTransactionDone());
+
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('1', $liveMerchant->merchantDetail->getLiveTransactionDone());
+    }
+
+    public function testMerchantsMtuUpdateIdFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateLiveTransactionFailure()
+    {
+        $this->ba->appAuth();
 
         $this->startTest();
     }

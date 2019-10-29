@@ -1269,6 +1269,11 @@ class Gateway
         IFSC::ESFB,
         IFSC::ACUX,
         IFSC::SBIN,
+        IFSC::CIUB,
+        IFSC::DEUT,
+        IFSC::IOBA,
+        IFSC::PYTM,
+        IFSC::USFB,
     ];
 
     /**

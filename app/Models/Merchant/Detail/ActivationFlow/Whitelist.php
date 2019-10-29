@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Entity;
 
 /**
  * Class WhitelistActivationFlow
@@ -19,22 +19,16 @@ use RZP\Models\Merchant\Detail\Entity;
 class Whitelist extends Base implements ActivationFlowInterface
 {
     /**
-     * @param Entity $merchantDetails
+     * @param Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
      */
-    public function process(Entity $merchantDetails)
+    public function process(Entity $merchant)
     {
         $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);
 
-        //
-        // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
-        // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
-        // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
-        // merchant entity attributes, these values will not be reflected in the relation unless explicitly
-        // reloaded.
-        //
-        $merchantDetails->load('merchant');
-
-        $merchant = $merchantDetails->merchant;
+        $merchantDetails = $merchant->merchantDetail;
 
         (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails);
     }
@@ -42,9 +36,9 @@ class Whitelist extends Base implements ActivationFlowInterface
     /**
      * validation specific to whitelist activation flow
      *
-     * @param Entity $merchantDetails
+     * @param Entity $merchant
      */
-    public function validateFullActivationForm(Entity $merchantDetails)
+    public function validateFullActivationForm(Entity $merchant)
     {
         return;
     }

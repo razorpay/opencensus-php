@@ -305,6 +305,7 @@ final class Route
         'scrooge_refund_reference1_bulk_update'    => ['post',     'refunds/scrooge_reference1_bulk_update',         'RefundController@bulkUpdateRefundsReference1'                      ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
+        'fund_transfer_attempt_modes'              => ['get',      'fund_transfer_attempts/modes',                   'FundTransferAttemptController@getSupportedModes'                   ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',             ],
@@ -810,7 +811,6 @@ final class Route
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
-        'payouts_queued_amount'                    => ['get',      'payouts/queued/amount',                          'PayoutController@getQueuedPayoutsSummary'                          ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
@@ -929,17 +929,19 @@ final class Route
         // Github issue: https://github.com/gin-gonic/gin/issues/388
         // 1. `refund/bulk-status-update` will conflict with `refund/:id/:action`
         // 2. `POST` because the above URLs are identified as identical and one url can have only one PUT API, but can have multiple POST APIs
-        'scrooge_refunds_update_multiple'          => ['post',     'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkStatusUpdate'                                ],
-        'scrooge_refunds_bulk_reference1_update'   => ['post',     'scrooge/refunds/bulk-reference1-update',         'ScroogeController@bulkReference1Update'                            ],
-        'scrooge_reports_get_multiple'             => ['post',     'scrooge/reports',                                'ScroogeController@listReports'                                     ],
-        'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
-        'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
-        'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-        'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
-        'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
-        'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
-        'set_scrooge_refund_dark'                  => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                   ],
-        'scrooge_processed_refunds_state_change'   => ['post',     'scrooge/refunds/processed-refunds-state-change', 'ScroogeController@bulkStatusUpdate'                                ],
+        'scrooge_refunds_update_multiple'            => ['post',     'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkStatusUpdate'                              ],
+        'scrooge_refunds_bulk_reference1_update'     => ['post',     'scrooge/refunds/bulk-reference1-update',         'ScroogeController@bulkReference1Update'                          ],
+        'scrooge_reports_get_multiple'               => ['post',     'scrooge/reports',                                'ScroogeController@listReports'                                   ],
+        'scrooge_refunds_get_multiple'               => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                   ],
+        'scrooge_refunds_get'                        => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                           ],
+        'scrooge_refunds_update'                     => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                  ],
+        'scrooge_refunds_download'                   => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                               ],
+        'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                       ],
+        'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                    ],
+        'set_scrooge_refund_dark'                    => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                 ],
+        'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change', 'ScroogeController@bulkStatusUpdate'                              ],
+        'scrooge_set_instant_refunds_mode_config'    => ['post',     'scrooge/merchants/instant_refunds_mode',         'ScroogeController@setInstantRefundsMode'                         ],
+        'scrooge_expire_instant_refunds_mode_config' => ['post',     'scrooge/merchants/instant_refunds_mode/expire',  'ScroogeController@expireInstantRefundsModeConfig'                      ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1291,6 +1293,9 @@ final class Route
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
+
+        //route for updating merchant mtu
+        'merchant_mtu_update'                     => ['post',       'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
     ];
 
     public static $public = [
@@ -1658,6 +1663,7 @@ final class Route
         'scrooge_verify_refund_call',
         'refund_fetch_status',
         'scrooge_entities',
+        'fund_transfer_attempt_modes',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1741,6 +1747,7 @@ final class Route
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
         'transfer_process',
+        'merchant_mtu_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1775,6 +1782,18 @@ final class Route
         'invoice_send_notification_private',
         'invoice_cancel',
     ];
+
+    // The below routes can be used with partner credentials without X-Razorpay-Account header, 
+    // in which case, partner will be able to make request on his own behalf, just like private auth
+    public static $partnerCredentialsWithoutSubmerchantIdWhitelist = [
+        'account_create',
+        'account_list',
+        'account_fetch',
+        'account_edit',
+        'account_action',
+        'merchant_activation_status_partner',
+        'merchant_activation_update_partner',
+    ];    
 
     public static $proxy = [
         'fetch_partner_intent',
@@ -1966,7 +1985,6 @@ final class Route
         'payout_reject',
         'payouts_summary',
         'payouts_workflow_summary',
-        'payouts_queued_amount',
         'payment_link_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
@@ -3286,6 +3304,7 @@ final class Route
             'scrooge_verify_refund_call',
             'refund_fetch_status',
             'scrooge_entities',
+            'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
         ],
 
@@ -3343,6 +3362,11 @@ final class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
+        ],
+
+        'mtu_lambda' => [
+            // Accessing this route from lambda for updating merchant mtu
+            'merchant_mtu_update',
         ],
     ];
 
@@ -3442,8 +3466,8 @@ final class Route
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
-        'merchant_activation_update_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
-        'merchant_activation_status_partner'   => [Feature::ALLOW_PARTNER_TO_ACTIVATE_MERCHANT],
+        'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
+        'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
     ];
 
     /*

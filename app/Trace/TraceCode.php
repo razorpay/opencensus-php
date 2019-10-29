@@ -531,6 +531,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
 
+    const RX_LOW_BALANCE_EMAIL_ALERT_FAILED                     = 'RX_LOW_BALANCE_EMAIL_ALERT_FAILED';
+    const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
+
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                                = 'INVOICE_PDF_GEN_FAILED';
@@ -1048,6 +1051,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_EVALUATION_RESULT                     = 'PAYOUT_WORKFLOW_EVALUATION_RESULT';
     const PAYOUT_QUEUED                                         = 'PAYOUT_QUEUED';
     const PAYOUT_METRIC_PUSH_EXCEPTION                          = 'PAYOUT_METRIC_PUSH_EXCEPTION';
+    const PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED        = 'PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED';
+    const PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE     = 'PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1101,6 +1106,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORTING_SERVICE_FILTERED_CONFIGS                    = 'REPORTING_SERVICE_FILTERED_CONFIGS';
 
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
+    const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
 
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
@@ -1501,6 +1507,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                                = 'DISPUTE_CREATE_REQUEST';
     const DISPUTE_BULK_CREATE_REQUEST                           = 'DISPUTE_BULK_CREATE_REQUEST';
+    const DISPUTE_BULK_MAIL_TRIGGER_FAILED                      = 'DISPUTE_BULK_MAIL_TRIGGER_FAILED';
     const DISPUTE_EDIT_REQUEST                                  = 'DISPUTE_EDIT_REQUEST';
     const DISPUTE_BULK_EDIT_REQUEST                             = 'DISPUTE_BULK_EDIT_REQUEST';
     const DISPUTE_EDIT_REQUEST_FOR_MERCHANT                     = 'DISPUTE_EDIT_REQUEST_FOR_MERCHANT';
@@ -1644,6 +1651,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Account codes
     const ACCOUNT_CREATED                                       = 'ACCOUNT_CREATED';
 
+    const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
+    const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
+
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
@@ -1676,6 +1686,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_CREATE_ACCESS_MAP_REQUEST                     = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST                     = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT             = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT                 = 'SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT';
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
 
@@ -2055,6 +2066,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID        = 'BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID';
     const DUPLICATE_ACCOUNT_INFO_WEBHOOK                        = 'DUPLICATE_ACCOUNT_INFO_WEBHOOK';
     const BANKING_ACCOUNT_ENTITY_CREATED                        = 'BANKING_ACCOUNT_ENTITY_CREATED';
+    const BANKING_ACCOUNT_UPDATE_NOTIFICATION                   = 'BANKING_ACCOUNT_UPDATE_NOTIFICATION';
+    const BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED            = 'BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED';
     const BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE                 = 'BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE';
     const BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST           = 'BANKING_ACCOUNT_YESBANK_BULK_CREATE_REQUEST';
     const BANKING_ACCOUNT_YESBANK_CREATE_FAILED                 = 'BANKING_ACCOUNT_YESBANK_CREATE_FAILED';
@@ -2148,11 +2161,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
 
+    // Doppler service
+    const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
+
     /*
      * Trace codes for PowerWallet
      */
-    const PAYMENT_POWER_WALLET_INITIATED            = 'PAYMENT_POWER_WALLET_INITIATED';
-    const PAYMENT_POWER_WALLET_TOPUP                = 'PAYMENT_POWER_WALLET_TOPUP';
+    const PAYMENT_POWER_WALLET_INITIATED                        = 'PAYMENT_POWER_WALLET_INITIATED';
+    const PAYMENT_POWER_WALLET_TOPUP                            = 'PAYMENT_POWER_WALLET_TOPUP';
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
     const PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY                 = 'PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY';
@@ -2165,6 +2181,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
+
+    const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
+    const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
@@ -2309,7 +2328,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_MAILER_BLOCKED                                    => 'Email blocked for given org',
         self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
         self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
-        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.'
+        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.',
+        self::MERCHANT_MTU_UPDATE_SUCCESS                           => 'Updating live by transaction is successful for merchant ',
+        self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
     ];
 
     /**

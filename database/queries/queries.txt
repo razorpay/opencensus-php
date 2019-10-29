@@ -5327,6 +5327,12 @@ ALTER table terminals
     ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
     ADD INDEX terminals_req_rrn_index (`req_rrn`);
 
+ALTER TABLE  merchant_banks
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
+ALTER TABLE  terminals
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
@@ -5404,8 +5410,18 @@ ALTER TABLE offers
     ADD COLUMN current_offer_usage int(11) NOT NULL DEFAULT 0;
 
 ALTER TABLE merchants
-   ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
 
 ALTER TABLE fund_account_validations
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
+
+ALTER TABLE merchants
+    ADD COLUMN `legal_entity_id` CHAR(14) DEFAULT NULL AFTER `parent_id`,
+    ADD INDEX `merchants_legal_entity_id_index` (`legal_entity_id`);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN `notes` text DEFAULT NULL AFTER `virtual`;
+
+ALTER TABLE merchant_details
+    ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
 
