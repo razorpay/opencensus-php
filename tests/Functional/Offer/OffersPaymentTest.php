@@ -206,7 +206,6 @@ class OffersPaymentTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
-        $this->assertEquals('false', $order['status']);
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(null, $discount);
 
