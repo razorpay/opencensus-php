@@ -352,6 +352,9 @@ class Gateway
         IFSC::USFB,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::ANDB,
+        IFSC::KARB,
+        IFSC::UTBI,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -365,32 +368,12 @@ class Gateway
         IFSC::ESFB,
         IFSC::ICIC,
         IFSC::SIBL,
-    ];
-
-    // this is a list of banks supporting netbanking and card as auth_type
-    const ENACH_NPCI_NB_ALL_BANKS = [
-        IFSC::CBIN,
-        IFSC::CIUB,
-        IFSC::DEUT,
-        IFSC::ESFB,
-        IFSC::FDRL,
         IFSC::HDFC,
-        IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDFB,
-        IFSC::INDB,
-        IFSC::IOBA,
-        IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::PYTM,
-        IFSC::RATN,
-        IFSC::SIBL,
-        IFSC::TMBL,
-        IFSC::USFB,
-        IFSC::UTIB,
-        IFSC::YESB,
-        Netbanking::PUNB_R,
-        Netbanking::BARB_R,
+        IFSC::DEUT,
+        IFSC::UTBI,
+        IFSC::AUBL,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -1269,6 +1252,9 @@ class Gateway
         IFSC::ESFB,
         IFSC::ACUX,
         IFSC::SBIN,
+        IFSC::KARB,
+        IFSC::UTBI,
+        IFSC::AUBL,
         IFSC::CIUB,
         IFSC::DEUT,
         IFSC::IOBA,

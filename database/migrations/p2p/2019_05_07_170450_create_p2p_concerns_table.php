@@ -49,6 +49,14 @@ class CreateP2pConcernsTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            // Indices
+
+            $table->index([Entity::DEVICE_ID, Entity::HANDLE]);
+            $table->index([Entity::TRANSACTION_ID, Entity::CREATED_AT]);
+            $table->index(Entity::STATUS);
+            $table->index(Entity::GATEWAY_REFERENCE_ID);
+            $table->index(Entity::CREATED_AT);
         });
     }
 

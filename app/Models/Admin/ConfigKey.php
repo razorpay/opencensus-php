@@ -59,7 +59,6 @@ class ConfigKey
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
     const CITI_CHANNEL_PAYOUT_MIDS              = self::PREFIX . 'citi_channel_payout_mids';
     const ICICI_CHANNEL_PAYOUT_MIDS             = self::PREFIX . 'icici_channel_payout_mids';
-
     const ATOS_TID_RANGE_LIST                   = self::PREFIX . 'atos_tid_range_list';
 
     // Gateway level configs
