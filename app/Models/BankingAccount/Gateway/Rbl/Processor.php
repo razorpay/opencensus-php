@@ -63,7 +63,6 @@ class Processor extends BankingAccount\Gateway\Processor
                 [
                     'code'          => $e->getCode(),
                     'message'       => $e->getMessage(),
-                    'trace'         => $e->getTraceAsString(),
                 ]);
 
             throw new BadRequestException(
