@@ -2,21 +2,23 @@
 
 namespace RZP\Tests\Functional\Payout;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Models\Admin\Permission as AdminPermission;
-
+use Mail;
 use Config;
+
+use Carbon\Carbon;
+
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -77,9 +79,28 @@ class PayoutTest extends TestCase
 
     public function testCreatePayout(): array
     {
+        Mail::fake();
+
         $this->ba->privateAuth();
 
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
+                    '10000000000000' =>
+                        [
+                            'low_balance_threshold' => 10000000000,
+                            'email_ids'             => ['a@a.com', 'b@b.com']
+                        ]
+                ]
+            ]);
+
         $this->startTest();
+
+        Mail::assertQueued(LowBalanceAlert::class);
+
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::LOW_BALANCE_RX_EMAIL]);
+
+        $this->assertArrayHasKey('notify_at', $config['10000000000000']);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -243,6 +264,92 @@ class PayoutTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testPublicErrorCodeMapping()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E1028'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                    'IMPS is not enabled on Beneficiary Account');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testPublicErrorCodeMappingWithNonExistentBankStatusCode()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                    'Payout failed. Contact support for help');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testPublicErrorCodeMappingWithEmptyPublicError()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_SFMS_E59'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], '');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testPublicErrorCodeMappingWhenBankStatusCodeNotSent()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                    'Payout failed. Contact support for help');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
 
     public function testRxPayoutOnBankingHoliday(): array

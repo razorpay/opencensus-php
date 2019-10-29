@@ -43,7 +43,7 @@ class Doppler
     }
 
     // sends event to doppler's topic
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, string $errorCode = null, string $internalErrorCode = null)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
         if ($this->mode === Mode::TEST)
@@ -79,8 +79,23 @@ class Doppler
         }
     }
 
-    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, string $errorCode, string $internalErrorCode)
+    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
+
+        $card = [];
+
+        $upi = [];
+
+        $terminalType = null;
+
+        $gateway = null;
+
+        $device = null;
+
+        $browser = null;
+
+        $os = null;
+
         // associated terminal from payment entity
         $terminal = $payment->terminal;
 
@@ -89,76 +104,66 @@ class Doppler
             $gateway = $terminal->getGateway();
 
             $terminalType = $terminal->isShared() ? TerminalEntity::SHARED : TerminalEntity::DIRECT;
-
-            $card = [];
-
-            $upi = [];
-
-            $device = null;
-
-            $browser = null;
-
-            $os = null;
-
-            $paymentAnalytics = $payment->getMetadata("payment_analytics");
-
-            if (is_null($paymentAnalytics) === false)
-            {
-                $device = $paymentAnalytics->getDevice();
-
-                $browser = $paymentAnalytics->getBrowser();
-
-                $os = $paymentAnalytics->getOs();
-            }
-
-            if($payment->hasCard() === true)
-            {
-                $card['card_iin'] = $payment->card->getIin();
-                $card['card_network'] = $payment->card->getNetwork();
-                $card['card_type'] = $payment->card->getType();
-                $card['card_issuer'] = $payment->card->getIssuer();
-                $upi['vpa'] = null;
-                $upi['psp'] = null;
-                $upi['bank'] = null;
-                $upi['type'] = null;
-            }
-
-            if($payment->isUPI() === true)
-            {
-                $card['card_iin'] = null;
-                $card['card_network'] = null;
-                $card['card_type'] = null;
-                $card['card_issuer'] = null;
-                $upi['vpa'] = $payment->getVpa();
-                $upi['psp'] = $payment->getPspFromVpa();
-                $upi['bank'] = $payment->getBankName();
-                $upi['type'] = $payment->getMetadata("flow");;
-            }
-
-            $reqObj = [
-                'payment_id'            => $payment->getId(),
-                'method'                => $payment->getMethod(),
-                'authorized'            => $authorizeStatus,
-                'card'                  => $card,
-                'upi'                   => $upi,
-                'terminal'              => $payment->getTerminalId(),
-                'gateway'               => $gateway,
-                'terminalType'          => $terminalType,
-                'device'                => $device,
-                'os'                    => $os,
-                'browser'               => $browser,
-                'created_at'            => $payment->getCreatedAt(),
-                'authorized_at'         => Carbon::now()->getTimestamp(),
-                'error_code'            => $errorCode ?? null,
-                'internal_error_code'   => $internalErrorCode ?? null,
-            ];
-
-            $data = [
-                'session_id' => self::SESSION_ID,
-                'reqObj'     => $reqObj,
-            ];
-
-            return $data;
         }
+
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
+
+        if (is_null($paymentAnalytics) === false)
+        {
+            $device = $paymentAnalytics->getDevice();
+
+            $browser = $paymentAnalytics->getBrowser();
+
+            $os = $paymentAnalytics->getOs();
+        }
+
+        if($payment->hasCard() === true)
+        {
+            $card['card_iin'] = $payment->card->getIin();
+            $card['card_network'] = $payment->card->getNetwork();
+            $card['card_type'] = $payment->card->getType();
+            $card['card_issuer'] = $payment->card->getIssuer();
+            $upi['vpa'] = null;
+            $upi['psp'] = null;
+            $upi['bank'] = null;
+            $upi['type'] = null;
+        }
+
+        if($payment->isUPI() === true)
+        {
+            $card['card_iin'] = null;
+            $card['card_network'] = null;
+            $card['card_type'] = null;
+            $card['card_issuer'] = null;
+            $upi['vpa'] = $payment->getVpa();
+            $upi['psp'] = $payment->getPspFromVpa();
+            $upi['bank'] = $payment->getBankName();
+            $upi['type'] = $payment->getMetadata('flow');
+        }
+
+        $reqObj = [
+            'payment_id'            => $payment->getId(),
+            'method'                => $payment->getMethod(),
+            'authorized'            => $authorizeStatus,
+            'card'                  => $card,
+            'upi'                   => $upi,
+            'terminal'              => $payment->getTerminalId(),
+            'gateway'               => $gateway,
+            'terminalType'          => $terminalType,
+            'device'                => $device,
+            'os'                    => $os,
+            'browser'               => $browser,
+            'created_at'            => $payment->getCreatedAt(),
+            'authorized_at'         => Carbon::now()->getTimestamp(),
+            'error_code'            => $errorCode ?? null,
+            'internal_error_code'   => $internalErrorCode ?? null,
+        ];
+
+        $data = [
+            'session_id' => self::SESSION_ID,
+            'reqObj'     => $reqObj,
+        ];
+
+        return $data;
     }
 }

@@ -178,6 +178,27 @@ class NetbankingSibGatewayTest extends TestCase
         assert($verify['payment']['verified'] === 1);
     }
 
+    public function testAuthorizeFailed()
+    {
+        $this->testAuthFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertNotNull($payment['reference1']);
+
+        $acquirerdata = [
+            'bank_transaction_id' => '999999'
+        ];
+
+        $this->assertArraySelectiveEquals($acquirerdata, $payment['acquirer_data']);
+    }
+
     protected function doNetbankingSibAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);

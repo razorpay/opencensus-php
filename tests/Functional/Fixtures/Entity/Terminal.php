@@ -417,7 +417,7 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => '3387026421',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

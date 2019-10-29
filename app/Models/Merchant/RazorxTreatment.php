@@ -42,4 +42,7 @@ final class RazorxTreatment
     const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 
     const TRANSFERS_VIA_ORDER = 'transfers_via_order';
+
+    // Decides if Instant Refunds Mode decisioning call should go to scrooge during refund creation flow
+    const INSTANT_REFUND_MODES = 'instant_refunds_modes';
 }

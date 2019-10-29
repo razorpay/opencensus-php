@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
+    const NACH                          = 'nach';
     const CARDLESS_EMI                  = 'cardless_emi';
     const PAYLATER                      = 'paylater';
     const EMI_DURATION                  = 'emi_duration';

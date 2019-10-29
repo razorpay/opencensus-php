@@ -62,23 +62,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Fetch all merchant's given type of emails from database as arrays of type and email
-     *
-     * @param string $merchantId
-     * @param array $types
-     *
-     * @return array
-     */
-    public function fetchEmailByTypes(string $merchantId, array $types): array
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $emails = $this->core()->fetchEmailsByTypes($merchant, $types);
-
-        return $emails;
-    }
-
-    /**
      * Delete a merchant's  different type of emails from databases as an array
      *
      * @param $merchantId
@@ -93,5 +76,30 @@ class Service extends Base\Service
         $deleteOperation = $this->core()->deleteEmails($merchant, $type);
 
         return (array) $deleteOperation;
+    }
+
+    /**
+     * Fetch emails aggregated on merchant level by types
+     *
+     * @param array $merchantIds
+     * @param array $types
+     * @return array
+     */
+    public function fetchEmailByMerchantIdsAndTypes(array $merchantIds, array $types): array
+    {
+        $emailsArray = $this->core()->fetchEmailByMerchantIdsAndTypes($merchantIds, $types);
+
+        // For aggregating mails on merchant level by type and exploding emails
+        $merchantEmailMap = [];
+
+        foreach ($emailsArray as $emailArray)
+        {
+            $merchantEmailMap[$emailArray[Entity::MERCHANT_ID]][$emailArray[Entity::TYPE]] = array_map(
+                'trim',
+                explode(',', $emailArray['email'])
+            );
+        }
+
+        return $merchantEmailMap;
     }
 }

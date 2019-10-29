@@ -836,6 +836,75 @@ return [
         ],
     ],
 
+    'testMerchantsMtuUpdateSuccess' => [
+        'request' => [
+            'content' => [
+                'merchants'   => [
+                    '10000000000000'
+                ],
+                'live_transaction_done' => '1',
+            ],
+            'url'       => '/merchant_mtu_update',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 1,
+                'failed'        => 0,
+                'failedItems'   => [],
+            ],
+        ],
+    ],
+
+    'testMerchantsMtuUpdateIdFailure' => [
+        'request' => [
+            'content' => [
+                'merchants'   => [
+                    ''
+                ],
+                'live_transaction_done' => '1',
+            ],
+            'url'       => '/merchant_mtu_update',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 0,
+                'failed'        => 1,
+                'failedItems'   => [
+                    [
+                        'merchant_id' => '',
+                        'error' => 'The id provided does not exist'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantsMtuUpdateLiveTransactionFailure' => [
+        'request' => [
+            'content' => [
+                'merchants' => ["10000000000000"],
+                'live_transaction_done' => '3',
+            ],
+            'url' => '/merchant_mtu_update',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected live transaction done is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testBulkEditMerchantAttributes' => [
         'request' => [
             'method' => 'POST',
