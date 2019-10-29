@@ -688,6 +688,7 @@ class Gateway
             self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
+            self::MPGS,
         ],
 
         Method::NETBANKING => [
@@ -828,6 +829,7 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
+        self::MPGS                  => [],
     ];
 
     /**
@@ -991,6 +993,11 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::RUPAY,
+        ],
+        self::MPGS => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
         ],
     ];
 
@@ -2181,6 +2188,15 @@ class Gateway
         }
 
         return false;
+    }
+
+    public static function isCardPaymentServiceGateway($gateway)
+    {
+        $gateways = [
+            self::MPGS,
+        ];
+
+        return (in_array($gateway, $gateways, true));
     }
 
     /**

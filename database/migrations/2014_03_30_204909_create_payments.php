@@ -188,6 +188,7 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->tinyInteger(Payment::CPS_ROUTE)
+                  ->default(Payment::API)
                   ->nullable();
 
             $table->integer(Payment::REFERENCE5)
