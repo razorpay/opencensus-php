@@ -278,7 +278,9 @@ class Core extends Base\Core
                         'Account Details cannot be saved for given account status');
                 }
 
-                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input[Entity::DETAILS], $bankingAccount, $processor);
+                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input[Entity::DETAILS],
+                                                                             $bankingAccount,
+                                                                             $processor);
             }
         });
 
@@ -389,6 +391,8 @@ class Core extends Base\Core
             $bankingAccount->balance()->associate($balance);
 
             $this->repo->saveOrFail($bankingAccount);
+
+            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
             return $bankingAccount;
         });
