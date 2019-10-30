@@ -1,12 +1,21 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import Announcement from 'merchant/components/Announcement';
 
-import { submitL1Form } from 'merchant/modules/activationWizard';
+import {
+  submitL1Form,
+  submitL1FormSuccess,
+} from 'merchant/modules/activationWizard';
 import { updateSession } from 'merchant/modules/session';
 import { showNotification } from 'rzp/modules/notifications';
+import {
+  showInstantActivationSuccessModal,
+  showKYCDetailsModal,
+  showPANStatusModal,
+} from 'merchant/modules/home';
 
 import { handlePANTryAgain } from './AnnouncementActions';
 
@@ -21,8 +30,13 @@ import { activationDuration } from 'common/data';
     showNotification,
     updateSession,
     submitL1Form,
+    submitL1FormSuccess,
+    showKYCDetailsModal,
+    showPANStatusModal,
+    showInstantActivationSuccessModal,
   }
 )
+@RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);

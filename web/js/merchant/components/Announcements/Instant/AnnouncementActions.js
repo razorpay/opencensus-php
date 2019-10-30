@@ -1,6 +1,10 @@
 import User from 'merchant/models/User';
-
 import { pickProps } from 'rzp/utils/rzp-utils';
+
+import {
+  L1FormSuccess,
+  L1FormError,
+} from 'component/merchant/Activation/ActivationUtils';
 
 const L1FormFields = [
   'business_category',
@@ -29,6 +33,8 @@ export function handlePANTryAgain() {
   this.props
     .submitL1Form({ data })
     .then(response => {
+      this.props.submitL1FormSuccess({ data: response.data });
+
       const {
         activation_progress,
         activated,
@@ -56,27 +62,36 @@ export function handlePANTryAgain() {
         mode: session.mode,
       });
 
-      if (poi_verification_status == 'verified') {
-        this.props.showPANStatusModal();
-      } else if (poi_verification_status == 'incorrect_details') {
-        const error = {
-          errors: ['Incorrect PAN Details Provided'],
-        };
-        throw error;
-      } else if (poi_verification_status == 'not_matched') {
-        const error = {
-          errors: ['Provided details does not match any records.'],
-        };
-        throw error;
-      }
+      // const {business_type,poi_verification_status,instantActivation} = this.user;
+      const {
+        showPANStatusModal,
+        showKYCDetailsModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      } = this.props;
+      const props = {
+        activation_flow: this.user.activation_flow,
+        instantActivation: this.user.instantActivation,
+        business_type: this.user.business_type,
+        poi_verification_status: this.user.poi_verification_status,
+        showKYCDetailsModal,
+        showPANStatusModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      };
+
+      L1FormSuccess(props);
     })
     .catch(err => {
-      if (err.errors.length && err.errors[0]) {
+      if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
         });
       }
+
+      L1FormError();
+
       return err;
     });
 }
