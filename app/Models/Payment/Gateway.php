@@ -2204,13 +2204,18 @@ class Gateway
      * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created
      * r1, r2, r3.
      *
-     * @param $gateway
+     * @param $payment
      * @return bool
      *
      */
 
-    public static function isSequenceNoBasedRefund($gateway)
+    public static function isSequenceNoBasedRefund($payment)
     {
-        return (in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true);
+        $gateway = $payment->getGateway();
+
+        $method = $payment->getMethod();
+
+        return ((in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true) and
+                ($method === Method::NETBANKING));
     }
 }
