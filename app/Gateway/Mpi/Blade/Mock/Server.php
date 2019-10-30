@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use Lib\Formatters\Xml;
+use RZP\Gateway\FirstData\Mock\Constants;
 
 class Server extends Base\Mock\Server
 {
@@ -175,6 +176,7 @@ class Server extends Base\Mock\Server
                 break;
             case CardNumber::VALID_NOT_ENROLL_NUMBER:
             case CardNumber::VALID_VISA_NOT_ENROLLED:
+            case Constants::INTERNATIONAL_CARD:
                 $content['Message']['VERes'] =  $responseClass->notEnrolledValidResponse($paymentId, $cardNo);
 
                 break;

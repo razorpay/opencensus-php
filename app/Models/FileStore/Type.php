@@ -156,6 +156,8 @@ class Type
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
+    const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -274,6 +276,7 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
             self::ISG_SUMMARY,
+            self::FIRST_DATA_PARES_FILE,
             self::BULK_DISPUTES_FILE,
         ],
 
@@ -406,6 +409,7 @@ class Type
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
+        self::FIRST_DATA_PARES_FILE,
         self::BULK_DISPUTES_FILE,
     ];
 
@@ -486,6 +490,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::FIRST_DATA_PARES_FILE,
         ],
 
         self::RECON_BUCKET_CONFIG => [

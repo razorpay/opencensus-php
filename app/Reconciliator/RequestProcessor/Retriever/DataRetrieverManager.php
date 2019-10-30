@@ -9,7 +9,7 @@ class DataRetrieverManager
 {
     public static function getDataRetriever($gateway): DataRetriever{
 
-        $retriever = camel_case($gateway);
+        $retriever = studly_case($gateway);
 
         $gatewayRetrieverClassName = 'RZP\\Reconciliator\\RequestProcessor\\Retriever\\Impl\\' . $retriever . '\\DataRetriever';
 

@@ -17,7 +17,9 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Gateway extends Base\Gateway
 {
-    use AuthorizeFailed;
+    use AuthorizeFailed {
+        extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
+    }
 
     protected $gateway = 'mozart';
 
@@ -1205,5 +1207,29 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
             ]
         ];
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = $this->extractPaymentsPropertiesAuthorizedFailedTrait($gatewayPayment);
+
+        $gateway = $gatewayPayment->getGateway();
+
+        if ($this->isNetbankingGateway($gateway) === true)
+        {
+            $data = $gatewayPayment->getDataAttribute();
+
+            if (isset($data['bank_payment_id']) === true)
+            {
+                $response['acquirer'][Payment\Entity::REFERENCE1] = $data['bank_payment_id'];
+            }
+        }
+
+        return $response;
+    }
+
+    protected function isNetbankingGateway($gateway)
+    {
+        return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::NETBANKING], true);
     }
 }
