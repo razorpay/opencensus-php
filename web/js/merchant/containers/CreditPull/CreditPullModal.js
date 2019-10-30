@@ -13,8 +13,6 @@ import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/modules/b-merchants';
 import * as ModalActions from 'rzp/modules/modals';
 import bMerchantReducer from 'merchant/modules/b-merchants';
-import { objectDiff } from 'rzp/utils/rzp-utils';
-import { isEmpty } from 'lodash';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
 import {
   VerifyOtp,
@@ -335,10 +333,7 @@ export default class CreditPullModal extends Component {
     const { handleSubmit } = this.props;
     return (
       <>
-        <ModalHeader
-          title={'Business Details'}
-          onCloseClick={handleSubmit(this.close)}
-        />
+        <ModalHeader title={'Business Details'} onCloseClick={this.close} />
         <form className="form-horizontal bureau-merchant-form">
           <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
@@ -383,6 +378,9 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="Mobile Number"
+                  onChange={() => {
+                    this.mobileChanged = true;
+                  }}
                   validate={[
                     required('Please enter a mobile number'),
                     mobile('Please enter a valid mobile number'),
@@ -472,6 +470,9 @@ export default class CreditPullModal extends Component {
                   tagName="textarea"
                   type="textarea"
                   class="form-control"
+                  onChange={() => {
+                    this.addressChanged = true;
+                  }}
                   validate={required('Please enter the address line one')}
                 />
               </div>
@@ -584,25 +585,27 @@ export default class CreditPullModal extends Component {
     );
   };
 
-  close = formProps => {
-    let diffObject = objectDiff(this.props.initialValues, formProps);
-    if (isEmpty(diffObject)) {
-      this.fireGAEvent({
-        eventAction: `Close`,
-        eventLabel: `No changes`,
-      });
+  close = () => {
+    let eventAction = 'Close';
+    let eventLabel = '';
+    if (this.addressChanged || this.mobileChanged || this.consentChanged) {
+      eventLabel = `Closed after modifying: ${
+        this.addressChanged ? 'address, ' : ''
+      } ${this.mobileChanged ? 'mobile, ' : ''} ${
+        this.consentChanged ? 'consent' : ''
+      }`;
     } else {
-      this.fireGAEvent({
-        eventAction: `Close`,
-        eventLabel: `Closed after modifying: ${Object.keys(diffObject).join(
-          ','
-        )}`,
-      });
+      eventLabel = 'No changes';
     }
+    this.fireGAEvent({
+      eventAction,
+      eventLabel,
+    });
     this.props.closeModal();
   };
 
   handleCheckboxChange = event => {
+    this.consentChanged = true;
     this.setState({
       hasAcceptedTerms: !this.state.hasAcceptedTerms,
     });
