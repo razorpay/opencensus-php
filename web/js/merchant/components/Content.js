@@ -132,7 +132,13 @@ export default class Content extends Component {
   getBaseView = () => {
     const { user } = this.props;
     if (user.isPartnerIntent()) {
-      return <Onboarding />;
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: (
+          <PartnerOnbr closeModal={this.props.closeModal} disableClose={true} />
+        ),
+      });
     }
 
     return (

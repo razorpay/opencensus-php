@@ -45,15 +45,17 @@ export default class BaseScreen extends React.Component {
       .then(response => {
         this.props.updateSession({ user: userval });
         this.props.history.push(`partners/submerchants`);
+        this.props.closeModal();
       })
       .catch(err => {
+        this.props.closeModal();
         this.props.showNotification({
           type: 'error',
           message:
             'Something went wrong, we could not service this request at the moment.',
         });
+        this.props.closeModal();
       });
-    this.props.closeModal();
   };
 
   onCompleteClick = () => {
@@ -90,6 +92,16 @@ export default class BaseScreen extends React.Component {
             />
           )}
         </Slider>
+        {!this.props.disableClose && (
+          <button
+            type="button"
+            class="close"
+            onClick={this.props.closeModal}
+            style={{ position: 'absolute', top: '20px', right: '20px' }}
+          >
+            <i class="i i-close" />
+          </button>
+        )}
       </div>
     );
   }

@@ -4,50 +4,38 @@ import PartnerOnbr from './partnerOnbr';
 import { connect } from 'react-redux';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+
+import { openModal, closeModal } from 'rzp/modules/modals';
+
 @connect(
   state => ({
     user: state.session.user,
   }),
-  { updateSession }
+  {
+    updateSession,
+    openModal,
+    closeModal,
+  }
 )
 export class onboardPartner extends Component {
-  state = { showModal: true };
-
-  closeModal = () => {
-    this.setState({
-      showModal: false,
+  showModal = component => {
+    const disableClose = !Boolean(this.props.user.merchant_partner_intent);
+    this.props.openModal({
+      size: 'xlarge',
+      disableClose: disableClose,
+      component: (
+        <PartnerOnbr
+          closeModal={this.props.closeModal}
+          disableClose={disableClose}
+        />
+      ),
     });
-    const userval = new User({
-      ...this.props.user,
-      partner_intent: false,
-      partner_type: null,
-      merchant_partner_intent: false,
-    });
-    this.props.updateSession({ user: userval });
   };
+  componentDidMount() {
+    this.showModal();
+  }
   render() {
-    if (!this.state.showModal) {
-      return null;
-    }
-    const disMissableModal = Boolean(this.props.user.merchant_partner_intent);
-    return (
-      <ModalMask
-        maskClosable={disMissableModal}
-        isBlur={false}
-        onClose={this.closeModal}
-      >
-        <Modal
-          showCloseBtn={disMissableModal}
-          className="top-40"
-          onCloseCB={this.closeModal}
-          onClose={this.closeModal}
-        >
-          <ModalContent>
-            <PartnerOnbr closeModal={this.closeModal} />
-          </ModalContent>
-        </Modal>
-      </ModalMask>
-    );
+    return null;
   }
 }
 

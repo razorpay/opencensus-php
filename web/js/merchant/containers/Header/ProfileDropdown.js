@@ -18,7 +18,7 @@ import { logout, showOrHideTour } from 'merchant/modules/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
-
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 @withRouter
 @connect(
   state => {
@@ -62,12 +62,13 @@ export default class ProfileDropdown extends Component {
   };
 
   showPartnerIntent = () => {
-    const userval = new User({
-      ...this.props.user,
-      partner_intent: true,
-      merchant_partner_intent: true,
+    this.props.openModal({
+      size: 'xlarge',
+      disableClose: false,
+      component: (
+        <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />
+      ),
     });
-    this.props.updateSession({ user: userval });
   };
   openTicketModal = () => {
     window.rzpTicketSystem &&
