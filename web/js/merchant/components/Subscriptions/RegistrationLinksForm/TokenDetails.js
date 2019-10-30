@@ -8,7 +8,8 @@ import {
 } from './PaymentDetails/utils';
 
 export default ({
-  defaultMandateMaxAMount,
+  defaultMandateMaxAmount,
+  defaultFirstChargeAmount,
   tokenHasNoExpiry,
   handleDateChange,
   mandateMaxAmount,
@@ -42,7 +43,7 @@ export default ({
     <Input
       name="firstPaymentAmount"
       type="number"
-      placeholder="0"
+      placeholder={defaultFirstChargeAmount}
       size="half_big"
       label="Amount"
       class="Input--Amount"
@@ -56,7 +57,7 @@ export default ({
 
     <Input
       name="mandateMaxAmount"
-      placeholder={defaultMandateMaxAMount}
+      placeholder={defaultMandateMaxAmount}
       label="Token Max Amount"
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />

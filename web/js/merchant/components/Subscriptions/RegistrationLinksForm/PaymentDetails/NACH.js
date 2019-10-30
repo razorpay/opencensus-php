@@ -50,7 +50,7 @@ export default ({
     >
       <Input.Select
         name="accountType"
-        options={['--Select Bank--', ...OPTIONS]}
+        options={['--Select Account Type--', ...OPTIONS]}
         placeholder="Account Type"
         value={accountType}
       />
@@ -60,11 +60,11 @@ export default ({
 
 const OPTIONS = [
   {
-    label: 'Savings Bank',
+    label: 'Savings',
     name: 'savings',
   },
   {
-    label: 'Current Bank',
+    label: 'Current',
     name: 'current',
   },
 ];

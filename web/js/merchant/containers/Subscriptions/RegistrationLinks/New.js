@@ -81,6 +81,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     super(props);
 
     this.DEFAULT_MAX_AMOUNT = 99999;
+    this.DEFAULT_FIRST_CHARGE = 0;
     this.state = {
       loading: true,
       currentTab: 0,
@@ -121,7 +122,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   }
 
   get isNACHPayment() {
-    return this.state.formFields.mandateMethod === 'nach';
+    const isNACH = this.state.formFields.mandateMethod === 'nach';
+    if (isNACH) {
+      this.DEFAULT_MAX_AMOUNT = 10000000;
+      this.DEFAULT_FIRST_CHARGE = 300000;
+
+      return isNACH;
+    }
+
+    this.DEFAULT_MAX_AMOUNT = 99999;
+    return isNACH;
   }
 
   get Tabs() {
@@ -473,7 +483,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
-            defaultMandateMaxAMount={this.DEFAULT_MAX_AMOUNT}
+            defaultMandateMaxAmount={this.DEFAULT_MAX_AMOUNT}
+            defaultFirstChargeAmount={this.DEFAULT_FIRST_CHARGE}
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
           />
