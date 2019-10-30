@@ -233,7 +233,7 @@ export default class ActivationWizard extends React.Component {
       }
 
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
-      FORM_TABS_CONTENT[1][2][0].options = ['--Select--'].concat(
+      FORM_TABS_CONTENT[1][1][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
           label: props.categories[c].description,
@@ -1651,6 +1651,10 @@ function ActivationField(field) {
     key = rest.name;
   }
 
+  if (rest.getPlaceholder) {
+    rest.placeholder = rest.getPlaceholder(this);
+  }
+
   if (rest._type == 'address_proof_upload_doc') {
     const { documents } = this.props.data;
     defaultValue =
@@ -1665,10 +1669,6 @@ function ActivationField(field) {
       this.props.deleteFile(rest.name);
     };
   }
-
-  // if(rest.propagateOnChange) {
-  //   rest.onChange = (e) => this.handleFormFieldChange(e);
-  // }
 
   if (rest.checkValidityFromAPI) {
     const error = rest.checkValidityFromAPI(this);
