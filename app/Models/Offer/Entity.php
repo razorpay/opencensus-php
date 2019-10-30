@@ -163,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::TERMS,
         self::MAX_OFFER_USAGE,
         self::CURRENT_OFFER_USAGE,
+        self::CREATED_AT,
     ];
 
     protected $visible = [
@@ -241,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_OFFER_IDS   => 'array',
         self::MAX_OFFER_USAGE    => 'int',
         self::CURRENT_OFFER_USAGE => 'int',
+        self::CREATED_AT          => 'int',
     ];
 
     public function build(array $input = [], string $operation = 'create')
