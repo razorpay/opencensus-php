@@ -45,7 +45,7 @@ abstract class Generator extends Base
     {
         $bankingAccount = $this->repo
                                ->banking_account
-                               ->findByAccountNumberAndChannel($this->accountNumber, $this->channel);
+                               ->findByAccountNumberAndChannelPublic($this->accountNumber, $this->channel);
 
         $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
