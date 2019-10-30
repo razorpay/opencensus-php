@@ -7,6 +7,10 @@ export default class OnBoardingFeatures extends React.PureComponent {
       eventAction: `Page ${this.props.active} - Back CTA`,
     });
 
+    window.rzpQ
+      .onbr()
+      .success(`${this.props.feature}.onboarding.features_back.success`);
+
     this.props.prev(args);
   };
 

@@ -71,7 +71,9 @@ export default class FeatureEnableButton extends React.Component {
       .then(res => {
         window.rzpQ
           .onbr()
-          .success(`${this.props.feature}.onboarding.get_started.success`);
+          .success(`${this.props.feature}.onboarding.get_started.success`, {
+            clickSource: 'GetStarted_CTA',
+          });
 
         return this.props.fetchUser();
       })
@@ -85,7 +87,9 @@ export default class FeatureEnableButton extends React.Component {
       .catch(err => {
         window.rzpQ
           .onbr()
-          .failed(`${this.props.feature}.onboarding.get_started.failed`);
+          .failed(`${this.props.feature}.onboarding.get_started.failed`, {
+            clickSource: 'GetStarted_CTA',
+          });
 
         this.props.showNotification({
           type: 'error',
