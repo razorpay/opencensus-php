@@ -36,15 +36,15 @@ export default class BaseScreen extends React.Component {
       partner_type: this.state.role,
       merchant_partner_intent: false,
     });
-
-    merchantFetch({
+    return merchantFetch({
       url: url,
       method: 'PATCH',
       data,
     })
       .then(response => {
         this.props.updateSession({ user: userval });
-        this.props.history.push(`partners/submerchants`);
+        this.props.history.push(`partners/submerchants/${this.props.user.id}`);
+        this.props.closeModal();
       })
       .catch(err => {
         this.props.showNotification({
@@ -53,7 +53,6 @@ export default class BaseScreen extends React.Component {
             'Something went wrong, we could not service this request at the moment.',
         });
       });
-    this.props.closeModal();
   };
 
   onCompleteClick = () => {
