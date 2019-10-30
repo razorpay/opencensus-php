@@ -29,7 +29,6 @@ import mainFormTabsContent, {
 import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
-  BUSINESS_TYPE_OPTIONS,
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
@@ -53,6 +52,12 @@ import {
 } from 'merchant/modules/activationWizard';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
+
+import {
+  L1FormSuccess,
+  L1FormError,
+  updateHubSpotContactsProperties,
+} from './ActivationUtils';
 
 /*
 *             Main-form        LA-form
@@ -744,7 +749,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (data.can_submit) {
-      this.preloadSuccessAsset();
+      this.preloadSuccessAsset(); // TODO: Check where is it declared
     }
 
     const {
@@ -773,106 +778,68 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  submitL1 = currenActiveTab => {
+  submitL1 = async currenActiveTab => {
     const data = this.formData;
-    const { tracking } = this.props;
     this.setState({ callingL1Api: true });
     // this.props.submitL1Form({data, successCallback: this.submitL1Success});
-    this.props
-      .submitL1Form({ data, accountId: this.props.accountId })
-      .then(response => {
-        this.props.submitL1FormSuccess({ data: response.data });
-        if (this.onActivationSuccess) {
-          return this.onActivationSuccess(response);
-        }
-
-        this.updateSession(response.data); // Updating % activation_progress (side bar)
-
-        trackL1FormSuccess(this.user.activation_flow);
-        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-
-        // updating contact propteries of hubspot contact
-        updateHubSpotContactsProperties(
-          {
-            ...data,
-            activation_flow: this.user.activation_flow,
-            completed: true,
-          },
-          {},
-          'l1_'
-        );
-
-        trackTaboola('l1_activation');
-
-        if (this.user.business_type == 11) {
-          const poi_verification_status = this.user.poi_verification_status;
-          if (poi_verification_status == 'verified') {
-            this.props.showPANStatusModal();
-          } else if (poi_verification_status == 'incorrect_details') {
-            const error = {
-              errors: ['Incorrect PAN Details Provided'],
-            };
-            throw error;
-          } else if (poi_verification_status == 'not_matched') {
-            const error = {
-              errors: ['Provided details does not match any records.'],
-            };
-            throw error;
-          }
-        } else {
-          const {
-            isWhitelistFlow,
-            isBlacklistFlow,
-            isGraylistFlow,
-          } = this.user.instantActivation;
-          if (isWhitelistFlow) {
-            this.props.showInstantActivationSuccessModal();
-            fireAnalyticsEvents({ fbData: 'activation_complete_success' });
-          } else if (isGraylistFlow) {
-            this.props.showKYCDetailsModal();
-          }
-        }
-
-        let data = new BingDataObj('activationform', 'complete', 'success', 1);
-        fireAnalyticsEvents({
-          bingData: data,
-          liData: 987404,
-          twiData: 'o1ua0',
-        }); //fb = false, bing, linkedin, twitter
-
-        return this.props.history.replace(`/`);
-      })
-      .catch(err => {
-        this.setState({ callingL1Api: false });
-        this.markTabIfActive(currenActiveTab);
-        if (err.errors.length && err.errors[0]) {
-          this.props.showNotification({
-            type: 'error',
-            message: err.errors,
-          });
-        }
-
-        trackL1FormError();
-
-        let dataError = new BingDataObj(
-          'activationform',
-          'complete',
-          'error',
-          1
-        );
-        fireAnalyticsEvents({
-          fbData: 'activation_complete_error',
-          bingData: dataError,
-          liData: 987412,
-          twiData: 'o1ua2',
-        });
-
-        // if (this.onActivationSuccess) {
-        //   this.onActivationSuccess({ success: false });
-        // }
-
-        return err;
+    try {
+      let response = await this.props.submitL1Form({
+        data,
+        accountId: this.props.accountId,
       });
+
+      this.props.submitL1FormSuccess({ data: response.data });
+
+      if (this.onActivationSuccess) {
+        return this.onActivationSuccess(response);
+      }
+
+      this.updateSession(response.data); // Updating % activation_progress (side bar)
+
+      const {
+        activation_flow,
+        business_type,
+        poi_verification_status,
+        instantActivation,
+      } = this.user;
+      const {
+        showPANStatusModal,
+        showKYCDetailsModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      } = this.props;
+      const props = {
+        activation_flow,
+        instantActivation,
+        business_type,
+        poi_verification_status,
+        showKYCDetailsModal,
+        showPANStatusModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      };
+
+      L1FormSuccess(props);
+
+      return this.props.history.replace(`/`);
+    } catch (err) {
+      this.setState({ callingL1Api: false });
+      this.markTabIfActive(currenActiveTab);
+      if (err.errors && err.errors.length && err.errors[0]) {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      }
+
+      L1FormError();
+
+      // if (this.onActivationSuccess) {
+      //   this.onActivationSuccess({ success: false });
+      // }
+
+      return err;
+    }
   };
 
   get formData() {
@@ -1906,30 +1873,4 @@ class SubmitForm extends React.Component {
       </div>
     );
   }
-}
-
-function updateHubSpotContactsProperties(data, extra, prefix) {
-  const keyPrefix = !!prefix ? 'l2_' : prefix;
-  const hbsData = addPrefixToObjectKeys(keyPrefix, data);
-
-  const trackData = {
-    ...hbsData,
-    ...extra,
-  };
-
-  if (data.business_type) {
-    trackData.l2_business_type = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label;
-  }
-
-  if (data.promoter_pan) {
-    trackData.l2_promoter_pan = !!trackData.l2_promoter_pan;
-  }
-
-  if (data.gstin) {
-    trackData.l2_gstin = !!trackData.l2_gstin;
-  }
-
-  trackhubsContactUpdate(trackData);
 }
