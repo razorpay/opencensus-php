@@ -23,7 +23,7 @@ import {
   email as emailColumn,
 } from 'rzp/ui/item/pair';
 
-import Onboarding from './../Onboarding';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
 import {
@@ -197,7 +197,13 @@ export default class SubMerchantsList extends ListContainer {
     }
 
     if (user.isPartnerIntent()) {
-      return <Onboarding />;
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: (
+          <PartnerOnbr closeModal={this.props.closeModal} disableClose={true} />
+        ),
+      });
     }
     return (
       <tabbed-container>

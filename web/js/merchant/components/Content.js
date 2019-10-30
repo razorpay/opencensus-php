@@ -24,8 +24,8 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import Onboarding from './../containers/PartnerDashboard/Onboarding/index';
 import ErrorBoundary from 'common/ErrorBoundary';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   setBaseLocation,
