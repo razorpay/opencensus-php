@@ -208,8 +208,6 @@ class Entity extends Base\PublicEntity
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
         self::EMI_DURATIONS    => null,
-        //self::MAX_OFFER_USAGE    => 0,
-        //self::CURRENT_OFFER_USAGE => 0,
     ];
 
     protected $publicSetters = [

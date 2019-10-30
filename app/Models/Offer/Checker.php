@@ -378,7 +378,7 @@ class Checker extends Base\Core
 
 
     //Checks the number of successfully captured payments have been made with that offer, should
-    // not exceed the max offer usage cout
+    // not exceed the max offer usage count
     protected function checkMaxOfferUsage(): bool
     {
         $result = true;
