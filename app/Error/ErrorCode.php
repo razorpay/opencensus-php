@@ -1207,6 +1207,10 @@ class ErrorCode
     const SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE                                 = 'SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE';
     const SERVER_ERROR_CORE_PAYMENT_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_CORE_PAYMENT_SERVICE_TIMEOUT';
 
+    // Card Payment Service Error Codes
+    const SERVER_ERROR_CARD_PAYMENT_SERVICE_FAILURE                                 = 'SERVER_ERROR_CARD_PAYMENT_SERVICE_FAILURE';
+    const SERVER_ERROR_CARD_PAYMENT_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_CARD_PAYMENT_SERVICE_TIMEOUT';
+
     const SERVER_ERROR_GOVERNOR_SERVICE_FAILURE                                     = 'SERVER_ERROR_GOVERNOR_SERVICE_FAILURE';
     const SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT                                     = 'SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT';
     const BAD_REQUEST_ERROR_GOVERNOR                                                = 'BAD_REQUEST_ERROR_GOVERNOR';

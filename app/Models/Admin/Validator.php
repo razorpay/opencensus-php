@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
+        ConfigKey::CARD_PAYMENT_SERVICE_ENABLED       => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
         ConfigKey::FTS_PAYOUT_VPA                     => 'filled|string',
