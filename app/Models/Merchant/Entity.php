@@ -461,8 +461,9 @@ class Entity extends Base\PublicEntity
         self::APPLICATION,
     ];
 
-    const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
-    const RISK_THRESHOLD_DEFAULT     = 8;
+    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
+    const RISK_THRESHOLD_DEFAULT                      = 8;
 
     protected function generateTransactionReportEmail($input)
     {
