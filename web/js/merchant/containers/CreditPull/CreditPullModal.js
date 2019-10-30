@@ -75,6 +75,7 @@ export default class CreditPullModal extends Component {
       error_otp_required: 'The otp field is required.',
       error_otp_length: 'The otp must be at least 4 characters.',
     };
+    this.timeoutTime = 300000; //OTP expiry time
     this.dateContainer = React.createRef();
     this.state = {
       errors: null,
@@ -160,11 +161,28 @@ export default class CreditPullModal extends Component {
     });
   };
 
+  sessionExpiry = () => {
+    this.props.closeModal();
+    this.props.showNotification({
+      type: 'error',
+      message: 'The OTP Session expired',
+      hidePrevious: true,
+    });
+    this.fireGAEvent({
+      eventAction: `Error`,
+      eventLabel: `OTP timed out`,
+    });
+  };
+
   openVerify = (tokenStuff, merchantId, mobile) => {
+    this.timer = setTimeout(this.sessionExpiry, this.timeoutTime);
     this.props.openModal({
       component: (
         <VerifyOtp
-          closeModal={this.props.closeModal}
+          closeModal={() => {
+            clearTimeout(this.timer);
+            this.props.closeModal();
+          }}
           customClass={'credit-otp'}
           onSubmit={data => {
             return this.sendReqForOtpConfirmation(
@@ -174,6 +192,7 @@ export default class CreditPullModal extends Component {
               merchantId
             )
               .then(({ data: { report, score, max_loan_amount } }) => {
+                clearTimeout(this.timer);
                 this.openReportScreen(report, score, max_loan_amount);
               })
               .catch(errorResponse => {
@@ -207,9 +226,11 @@ export default class CreditPullModal extends Component {
                   error === error_wrong_merchant ||
                   error === error_max_attempts
                 ) {
+                  clearTimeout(this.timer);
                   this.props.closeModal();
                   this.openErrorScreen(error);
                 } else {
+                  clearTimeout(this.timer);
                   this.props.showNotification({
                     type: 'error',
                     message: 'Some unexpected error occurred',
@@ -228,7 +249,10 @@ export default class CreditPullModal extends Component {
               });
             });
           }}
-          onChangeMobileNumber={() => this.verifyMobile(tokenStuff, merchantId)}
+          onChangeMobileNumber={() => {
+            clearTimeout(this.timer);
+            this.verifyMobile(tokenStuff, merchantId);
+          }}
           contactMobile={mobile}
         />
       ),
