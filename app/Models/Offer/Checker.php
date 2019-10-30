@@ -382,7 +382,7 @@ class Checker extends Base\Core
     protected function checkMaxOfferUsage(): bool
     {
         $result = true;
-        if($this->offer->getMaxOfferUsage()!== NULL && $this->offer->getMaxOfferUsage() !== 0) {
+        if($this->offer->getMaxOfferUsage()!== NULL) {
 
                 $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 

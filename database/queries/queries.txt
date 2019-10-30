@@ -5406,8 +5406,8 @@ ALTER TABLE settlement_bucket
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
 ALTER TABLE offers
-    ADD COLUMN max_offer_usage int(11) NOT NULL DEFAULT 0;
-    ADD COLUMN current_offer_usage int(11) NOT NULL DEFAULT 0;
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
 
 ALTER TABLE merchants
     ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;

@@ -80,10 +80,10 @@ class CreateOffers extends Migration
                   ->nullable();
 
             $table->integer(Offer::MAX_OFFER_USAGE)
-                  ->default(0);
+                  ->nullable();
 
             $table->integer(Offer::CURRENT_OFFER_USAGE)
-                  ->default(0);
+                  ->nullable();
 
             $table->text(Offer::LINKED_OFFER_IDS)
                   ->nullable();
