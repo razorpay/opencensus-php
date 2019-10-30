@@ -65,7 +65,7 @@ export default class InstantActivationAnnouncements extends Component {
     await handlerFunc();
     this.setState({
       loading: false,
-      loadingText: '',
+      loadingTitle: '',
       loadingContent: '',
     });
   };
