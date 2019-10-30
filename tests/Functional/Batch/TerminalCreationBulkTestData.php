@@ -60,7 +60,7 @@ return [
                             'pay'            => '1',
                         ],
                         Header::TERMINAL_CREATION_MODE                 => null,
-                        Header::TERMINAL_CREATION_TPV                  => null,
+                        Header::TERMINAL_CREATION_TPV                  => '1',
                         Header::TERMINAL_CREATION_INTERNATIONAL        => null,
                         Header::TERMINAL_CREATION_CORPORATE            => null,
                         Header::TERMINAL_CREATION_EXPECTED             => null,

@@ -600,6 +600,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::TPV                        => 'sometimes|in:0,2',
     ];
 
     protected static $netbankingIdbiTerminalRules = [

@@ -245,6 +245,8 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
+            Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
 
 
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [

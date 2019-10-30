@@ -273,6 +273,10 @@ class Entity
     const SHIELD_RISKS                 = 'shield.risks';
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
+
+    const PAYMENTS_CARDS_AUTHORIZATION  = 'payments_cards.authorization';
+    const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
+
     // Service: Subscription
     const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
     const SUBSCRIPTIONS_SUBSCRIPTION     = 'subscriptions.subscription';
@@ -620,16 +624,18 @@ class Entity
     ];
 
     protected static $externalServiceClass = [
-        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
-        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
-        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
-        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
-        self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
-        self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
+        self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES           => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS         => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS             => \RZP\Services\ShieldClient::class,
+        self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,
+        self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
+        self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,
+        self::PAYMENTS_CARDS_AUTHORIZATION  => \RZP\Services\CardPaymentService::class,
         self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,

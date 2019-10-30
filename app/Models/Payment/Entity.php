@@ -191,6 +191,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
+    const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -200,6 +202,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+
+    // payment services
+    const API                               = 0;
+    const CORE_PAYMENT_SERVICE              = 1;
+    const CARD_PAYMENT_SERVICE              = 2;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -488,7 +495,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
-        self::CPS_ROUTE            => false,
+        self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
     ];
 
@@ -526,7 +533,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
-        self::CPS_ROUTE            => 'bool',
+        self::CPS_ROUTE            => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -1221,6 +1228,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function disableCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 0);
+    }
+
+    public function enableCardPaymentService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
     public function setMethod(string $method)

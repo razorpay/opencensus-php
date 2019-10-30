@@ -46,21 +46,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         try
         {
-
-            // This checks if the current request has to be routed
-            // to core payment service or not
-            if ((is_array($input) === true) and
-                (isset($input['cps_route']) === true) and
-                ($input['cps_route'] === true))
-            {
-                $response = $this->app['cps']->action($gatewayName, $action, $input);
-
-                return $response;
-            }
-            else
-            {
-                return $gateway->call($action, $input);
-            }
+            return $gateway->call($action, $input);
         }
         finally
         {
