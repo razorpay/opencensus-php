@@ -538,8 +538,9 @@ export default class CreditPullModal extends Component {
                 />
               </div>
               <label htmlFor="consent" className="cap-consent col-md-9">
-                I hereby agree to share my credit information with Razorpay and
-                its partners. By submitting this form I hereby agree to the
+                You hereby consent to Razorpay being appointed as your
+                authorised representative to receive your Credit Information
+                from Experian for the purpose of Lending products
                 <a
                   target="_blank"
                   href="https://razorpay.com/capital/credit-report-terms"
