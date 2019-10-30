@@ -632,7 +632,7 @@ class UserTest extends TestCase
                 ]);
 
         $merchant = $this->fixtures->create('merchant', [
-            'second_factor_auth'    =>  true,
+            'second_factor_auth' => true,
         ]);
 
         $mappingData = [
@@ -1290,10 +1290,9 @@ class UserTest extends TestCase
         {
             $viewData = $mail->viewData;
 
-            $this->assertArrayHasKey('org', $viewData);
             $this->assertArrayHasKey('token', $viewData);
 
-            $this->assertEquals('emails.user.account_verification', $mail->view);
+            $this->assertEquals('emails.user.razorpayx.account_verification', $mail->view);
 
             return true;
         });
