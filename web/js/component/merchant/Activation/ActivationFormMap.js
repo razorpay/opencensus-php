@@ -106,12 +106,6 @@ const contactFields = [
 
 const businessModel = [
   {
-    label: 'Full Business Name',
-    name: 'business_name',
-    info: 'Example: Acme Infotech Private Limited',
-    _when: excludeFor_Indiv,
-  },
-  {
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
@@ -334,6 +328,24 @@ const businessModel = [
 
 const businessDetails = [
   {
+    label: 'Business Name',
+    name: 'business_name',
+    info: 'Example: Acme Infotech Private Limited',
+    placeholder: 'Registered name',
+    _when: excludeFor_Indiv,
+  },
+  {
+    label: 'Business PAN',
+    name: 'company_pan',
+    placeholder: 'PAN of the company',
+    className: 'Input--capitalize',
+    info:
+      'Mandatory for Companies. PAN details should be of the mentioned business only.',
+    validator: validatePANCard,
+    _when: activation =>
+      isL1Submitted(activation) && excludeFor_CompanyPan(activation),
+  },
+  {
     label: 'CIN',
     name: 'company_cin',
     validator: validateCIN,
@@ -364,17 +376,6 @@ const businessDetails = [
         Number(activation.props.data.business_type)
       ) !== -1,
   },
-  {
-    label: 'Company PAN Number',
-    name: 'company_pan',
-    placeholder: 'PAN Number',
-    className: 'Input--capitalize',
-    info:
-      'Mandatory for Companies. PAN details should be of the mentioned business only.',
-    validator: validatePANCard,
-    _when: activation =>
-      isL1Submitted(activation) && excludeFor_CompanyPan(activation),
-  },
   [
     {
       // label: 'PAN info of Authorized Signatory/Promoter/Director',
@@ -382,13 +383,18 @@ const businessDetails = [
       dynamicLabel: true,
       name: 'promoter_pan',
       placeholder: 'PAN Number',
+      getPlaceholder: activation => {
+        return isUnregisteredBusiness(activation)
+          ? 'Business owner’s PAN'
+          : 'PAN of one of the directors';
+      },
       validator: validatePANCard,
       getLabel: activation => {
         return UNREGISTERED_TYPES[
           Number(activation.state.dirty['business_type'])
         ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
           ? 'PAN'
-          : 'PAN info of Authorized Signatory/Promoter/Director';
+          : 'Authorised Signatory PAN';
       },
       className: 'Input--vTop Input--capitalize',
       _disabledWhen: isActivatedIndividual,
@@ -407,10 +413,12 @@ const businessDetails = [
           Number(activation.state.dirty['business_type'])
         ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
           ? 'PAN Holder’s Name'
-          : 'PAN Owner Name';
+          : 'PAN Owner’s Name';
       },
       name: 'promoter_pan_name',
+      placeholder: 'Name as per PAN',
       description: activation => {
+        if (!isUnregisteredBusiness(activation)) return '';
         const { poi_verification_status } = activation.props.data;
         return poi_verification_status == 'incorrect_details' ||
           poi_verification_status == 'not_matched'
