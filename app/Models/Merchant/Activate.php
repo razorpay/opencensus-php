@@ -498,7 +498,7 @@ class Activate extends Base\Core
         {
             $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
                                 [
-                                    'merchant_id' => $this->merchantId
+                                    'merchant_id' => $merchant->getId()
                                 ]);
         }
         else
