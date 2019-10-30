@@ -191,6 +191,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
+    const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
