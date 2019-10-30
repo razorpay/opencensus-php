@@ -727,7 +727,11 @@ class ErrorCode
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
 
-    const FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED                                     = 'FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED';
+    const BAD_REQUEST_VA_ACCOUNT_CONFIRM_EMAIL_FAILED                               = 'BAD_REQUEST_VA_ACCOUNT_CONFIRM_EMAIL_FAILED';
+
+    const BAD_REQUEST_INSTANT_ACTIVATION_EMAIL_FAILED                               = 'BAD_REQUEST_INSTANT_ACTIVATION_EMAIL_FAILED';
+
+    const BAD_REQUEST_L2_SUBMISSION_WHITELIST_EMAIL_FAILED                          = 'BAD_REQUEST_L2_SUBMISSION_WHITELIST_EMAIL_FAILED';
 
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';

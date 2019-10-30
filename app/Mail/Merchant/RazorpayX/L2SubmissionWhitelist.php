@@ -3,7 +3,7 @@
 namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
-use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Exception\BadRequestException;
@@ -59,7 +59,7 @@ class L2SubmissionWhitelist extends Mailable
             else
             {
                 // this will be an exception and no mail should go. Because we do not have enough data
-                throw new BadRequestException(TraceCode::L2_SUBMISSION_WHITELIST_EMAIL_FAILED,
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_L2_SUBMISSION_WHITELIST_EMAIL_FAILED,
                                               null,
                                               [
                                                   'merchant_id' => $this->merchantId

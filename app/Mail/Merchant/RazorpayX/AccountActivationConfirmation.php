@@ -46,7 +46,7 @@ class AccountActivationConfirmation extends Mailable
 
         if ($bankingAccounts->count() === 0)
         {
-            throw new BadRequestException(ErrorCode::FINAL_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
                                           null,
                                           [
                                               'merchant_id' => $this->merchantId

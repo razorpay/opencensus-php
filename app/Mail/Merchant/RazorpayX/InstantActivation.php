@@ -3,7 +3,7 @@
 namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
-use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Exception\BadRequestException;
@@ -57,7 +57,7 @@ class InstantActivation extends Mailable
             }
             else
             {
-                throw new BadRequestException(TraceCode::INSTANT_ACTIVATION_EMAIL_FAILED,
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INSTANT_ACTIVATION_EMAIL_FAILED,
                                               null,
                                               [
                                                   'merchant_id' => $this->merchantId
