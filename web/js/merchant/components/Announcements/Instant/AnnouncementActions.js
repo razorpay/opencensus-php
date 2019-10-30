@@ -27,7 +27,8 @@ const L1FormFields = [
 ];
 
 // `this` context is binded to index.js in this directory
-export function handlePANTryAgain() {
+export function handlePANTryAgain(e) {
+  e.preventDefault();
   const { session } = this.props;
   const data = pickProps(this.props.user, L1FormFields);
   this.props

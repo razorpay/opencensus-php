@@ -82,10 +82,13 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Unable To Verify PAN';
           content = (
-            <span>
+            <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
-              details. <span onClick={this.handlePANTryAgain}>Try Again</span>.
-            </span>
+              details. <span class="big-dot-separator" />{' '}
+              <a class="text-primary" onClick={this.handlePANTryAgain}>
+                Try Again
+              </a>
+            </React.Fragment>
           );
         } else if (
           user.poi_verification_status == 'incorrect_details' ||
@@ -94,10 +97,12 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'PAN Verification Failed';
           content = (
-            <span>
-              Your PAN details did not match with the government database.{' '}
-              <Link to="/activation">Please review</Link> your details.
-            </span>
+            <React.Fragment>
+              Your PAN details did not match with the government database.
+              Please review your details.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Review details</Link>
+            </React.Fragment>
           );
         } else return null;
       } else {
