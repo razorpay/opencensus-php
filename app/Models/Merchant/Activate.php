@@ -10,9 +10,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -390,7 +392,8 @@ class Activate extends Base\Core
 
         $activationSource = $merchant->getActivationSource();
 
-        if ($activationSource === Product::BANKING)
+        if (($activationSource === Product::BANKING) and
+            ($merchant->hasBankingAccounts() === true))
         {
             $instantActivationMail = new RazorpayXInstantActivationMail($merchant->getId());
         }
@@ -491,9 +494,19 @@ class Activate extends Base\Core
 
     protected function sendMerchantActivationNotification(Entity $merchant)
     {
-        Mail::queue(
-            new AccountActivationConfirmation($merchant->getId())
-        );
+        if ($merchant->hasBankingAccounts() === false)
+        {
+            $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
+                                [
+                                    'merchant_id' => $this->merchantId
+                                ]);
+        }
+        else
+        {
+            Mail::queue(
+                new AccountActivationConfirmation($merchant->getId())
+            );
+        }
     }
 
     /**

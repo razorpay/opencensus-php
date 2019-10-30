@@ -197,7 +197,7 @@ class Service extends Base\Service
     public function sendConfirmationMail(Entity $user)
     {
         // Only send the confirmation email if the user isn't already confirmed
-        if ($user->getConfirmedAttribute() === false or true)
+        if ($user->getConfirmedAttribute() === false)
         {
             $orgId = $this->auth->getOrgId();
 
@@ -207,7 +207,7 @@ class Service extends Base\Service
 
             $requestOriginProduct = $this->auth->getRequestOriginProduct();
             // confirmation mail for Razorpay X is different. Handling it here based on the OriginProduct
-            if ($requestOriginProduct == Product::BANKING or true)
+            if ($requestOriginProduct == Product::BANKING)
             {
                 $confirmationMail = new UserMail\RazorpayX\AccountVerification($user->getId());
             }

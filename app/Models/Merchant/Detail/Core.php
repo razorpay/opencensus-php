@@ -426,18 +426,15 @@ class Core extends Base\Core
     {
         $activationFlow = $merchant->merchantDetail->getActivationFlow();
 
-        $mailer = null;
-
-        if ($activationFlow === ActivationFlow::WHITELIST)
+        if (($activationFlow === ActivationFlow::WHITELIST) and
+            ($merchant->hasBankingAccounts() === true) )
         {
-            $mailer = new L2SubmissionWhitelist($merchant->getId());
+            Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
         }
         else if ($activationFlow === ActivationFlow::GREYLIST)
         {
-            $mailer = new L2SubmissionGreylist($merchant->getId());
+            Mail::queue(new L2SubmissionGreylist($merchant->getId()));
         }
-
-        Mail::queue($mailer);
     }
 
     /**

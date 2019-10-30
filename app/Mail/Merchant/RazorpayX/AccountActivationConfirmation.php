@@ -37,22 +37,7 @@ class AccountActivationConfirmation extends Mailable
 
         $merchant = $app['repo']->merchant->find($this->merchantId);
 
-        /**
-         * Assumption is since this is an Instant Activation Email,
-         * the merchant will have only one Banking Account, which will be the Virtual Account
-         * Hence, we will get the first banking account
-         */
         $bankingAccounts = $merchant->bankingAccounts()->get();
-
-        if ($bankingAccounts->count() === 0)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_VA_ACCOUNT_CONFIRM_EMAIL_FAILED,
-                                          null,
-                                          [
-                                              'merchant_id' => $this->merchantId
-                                          ],
-                                          'No Banking Account found for the merchant: ' . $this->merchantId);
-        }
 
         return $bankingAccounts[0];
     }

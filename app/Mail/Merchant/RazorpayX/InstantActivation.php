@@ -44,26 +44,9 @@ class InstantActivation extends Mailable
         {
             $merchant = App::getFacadeRoot()['repo']->merchant->find($this->merchantId);
 
-            /***
-             * Assumption is since this is an Instant Activation Email,
-             * the merchant will have only one Banking Account, which will be the Virtual Account
-             * Hence, we will get the first banking account
-             */
             $bankingAccounts = $merchant->bankingAccounts()->get();
 
-            if ($bankingAccounts->count() !== 0)
-            {
-                $this->bankingAccount = $bankingAccounts[0];
-            }
-            else
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_INSTANT_ACTIVATION_EMAIL_FAILED,
-                                              null,
-                                              [
-                                                  'merchant_id' => $this->merchantId
-                                              ],
-                                              'No Banking Account found for the merchant: ' . $this->merchantId);
-            }
+            $this->bankingAccount = $bankingAccounts[0];
         }
 
         return $this->bankingAccount;
