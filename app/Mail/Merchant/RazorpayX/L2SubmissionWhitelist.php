@@ -21,52 +21,69 @@ class L2SubmissionWhitelist extends Mailable
 
     protected $bankingAccount;
 
+    protected $merchantId;
+
     protected $config;
 
     public function __construct(string $merchantId)
     {
         parent::__construct();
 
+        $this->merchantId = $merchantId;
+
         $app = App::getFacadeRoot();
 
-        $repo = $app['repo'];
+    }
 
-        $this->config = $app['config'];
-
-        $merchant = $repo->merchant->find($merchantId);
-
-        /***
-         * Assumption is since this is an Instant Activation Email,
-         * the merchant will have only one Banking Account, which will be the Virtual Account
-         * Hence, we will get the first banking account
-         */
-        $bankingAccounts = $merchant->bankingAccounts()->get();
-
-        if ($bankingAccounts->count() !== 0)
+    protected function getBankingAccount()
+    {
+        if ($this->bankingAccount === null)
         {
-            $this->bankingAccount = $bankingAccounts[0];
+            $app = App::getFacadeRoot();
+
+            $repo = $app['repo'];
+
+            $merchant = $repo->merchant->find($this->merchantId);
+
+            /***
+             * Assumption is since this is an Instant Activation Email,
+             * the merchant will have only one Banking Account, which will be the Virtual Account
+             * Hence, we will get the first banking account
+             */
+            $bankingAccounts = $merchant->bankingAccounts()->get();
+
+            if ($bankingAccounts->count() !== 0)
+            {
+                $this->bankingAccount = $bankingAccounts[0];
+            }
+            else
+            {
+                // this will be an exception and no mail should go. Because we do not have enough data
+                throw new BadRequestException(TraceCode::L2_SUBMISSION_WHITELIST_EMAIL_FAILED,
+                                              null,
+                                              [
+                                                  'merchant_id' => $this->merchantId
+                                              ],
+                                              'No Banking Account found for the merchant: ' . $this->merchantId);
+            }
         }
-        else
-        {
-            // this will be an exception and no mail should go. Because we do not have enough data
-            throw new BadRequestException(TraceCode::L2_SUBMISSION_WHITELIST_EMAIL_FAILED,
-                                          null,
-                                          [
-                                              'merchant_id' => $merchantId
-                                          ],
-                                          'No Banking Account found for the merchant: ' . $merchantId);
-        }
+
+        return $this->bankingAccount;
     }
 
     protected function addMailData()
     {
+        $config = App::getFacadeRoot()['config'];
+
+        $bankingAccount = $this->getBankingAccount();
+
         $data = [
             'learn_more_url'                       => self::LEARN_MORE_URL,
             'support_url'                          => self::SUPPORT_URL,
-            'view_dashboard_url'                   => $this->config['applications.banking_service_url'],
-            BankingAccountEntity::ACCOUNT_IFSC     => $this->bankingAccount->getAccountIfsc(),
-            BankingAccountEntity::ACCOUNT_NUMBER   => $this->bankingAccount->getAccountNumber(),
-            BankingAccountEntity::BENEFICIARY_NAME => $this->bankingAccount->getBeneficiaryName()
+            'view_dashboard_url'                   => $config['applications.banking_service_url'],
+            BankingAccountEntity::ACCOUNT_IFSC     => $bankingAccount->getAccountIfsc(),
+            BankingAccountEntity::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+            BankingAccountEntity::BENEFICIARY_NAME => $bankingAccount->getBeneficiaryName()
         ];
 
         $this->with($data);
@@ -76,8 +93,10 @@ class L2SubmissionWhitelist extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->bankingAccount->getBeneficiaryEmail(),
-                  $this->bankingAccount->getBeneficiaryName());
+        $bankingAccount = $this->getBankingAccount();
+
+        $this->to($bankingAccount->getBeneficiaryEmail(),
+                  $bankingAccount->getBeneficiaryName());
 
         return $this;
     }

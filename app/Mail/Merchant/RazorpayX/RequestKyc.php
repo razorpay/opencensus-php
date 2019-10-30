@@ -23,8 +23,6 @@ class RequestKyc extends Mailable
     {
         parent::__construct();
 
-        $this->config = App::getFacadeRoot()['config'];
-
         $this->merchantEmail = $merchantEmail;
 
         $this->merchantName = $merchantName;
@@ -69,9 +67,11 @@ class RequestKyc extends Mailable
 
     protected function addMailData()
     {
+        $config = App::getFacadeRoot()['config'];
+
         $this->with(
             [
-                'dashboard_url' => $this->config['applications.banking_service_url'],
+                'dashboard_url' => $config['applications.banking_service_url'],
                 'support_url'   => self::SUPPORT_URL
             ]);
 

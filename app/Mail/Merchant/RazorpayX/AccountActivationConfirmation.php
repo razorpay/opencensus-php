@@ -22,32 +22,27 @@ class AccountActivationConfirmation extends Mailable
 
     protected $bankingAccount;
 
-    protected $repo;
-
-    protected $config;
-
-    protected $merchant;
+    protected $merchantId;
 
     public function __construct(string $merchantId)
     {
         parent::__construct();
 
-        $app = App::getFacadeRoot();
-
-        $this->config = $app['config'];
-
-        $this->merchant = $app['repo']->merchant
-                                      ->find($merchantId);
+        $this->merchantId = $merchantId;
     }
 
     protected function getBankingAccount()
     {
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['repo']->merchant->find($this->merchantId);
+
         /**
          * Assumption is since this is an Instant Activation Email,
          * the merchant will have only one Banking Account, which will be the Virtual Account
          * Hence, we will get the first banking account
          */
-        $bankingAccounts = $this->merchant->bankingAccounts()->get();
+        $bankingAccounts = $merchant->bankingAccounts()->get();
 
         if ($bankingAccounts->count() === 0)
         {
@@ -89,13 +84,15 @@ class AccountActivationConfirmation extends Mailable
 
     protected function addMailData()
     {
+        $config = App::getFacadeRoot()['config'];
+
         $bankingAccount = $this->getBankingAccount();
 
         $data = [
             'beneficiary_name'     => $bankingAccount->getBeneficiaryName(),
             'account_number'       => $bankingAccount->getAccountNumber(),
             'account_ifsc'         => $bankingAccount->getAccountIfsc(),
-            'dashboard_url'        => $this->config['applications.banking_service_url'],
+            'dashboard_url'        => $config['applications.banking_service_url'],
             'learn_more_url'       => self::LEARN_MORE_URL,
             'guide_to_go_live_url' => self::GUIDE_TO_GO_LIVE_URL,
             'support_url'          => self::SUPPORT_URL

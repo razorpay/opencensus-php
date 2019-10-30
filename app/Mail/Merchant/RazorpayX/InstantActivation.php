@@ -2,11 +2,10 @@
 
 namespace RZP\Mail\Merchant\RazorpayX;
 
-use RZP\Error\ErrorCode;
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Merchant\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
@@ -26,58 +25,65 @@ class InstantActivation extends Mailable
 
     protected $bankingAccount;
 
-    protected $config;
+    protected $merchantId;
 
     /**
      * InstantActivation constructor.
      * @param string $merchantId
-     * @throws BadRequestException
      */
     public function __construct(string $merchantId)
     {
         parent::__construct();
 
-        $app = App::getFacadeRoot();
+        $this->merchantId = $merchantId;
+    }
 
-        $repo = $app['repo'];
-
-        $this->config = $app['config'];
-
-        $merchant = $repo->merchant->find($merchantId);
-
-        /***
-         * Assumption is since this is an Instant Activation Email,
-         * the merchant will have only one Banking Account, which will be the Virtual Account
-         * Hence, we will get the first banking account
-         */
-        $bankingAccounts = $merchant->bankingAccounts()->get();
-
-        if ($bankingAccounts->count() !== 0)
+    protected function getBankingAccount()
+    {
+        if (empty($this->bankingAccount) === true)
         {
-            $this->bankingAccount = $bankingAccounts[0];
+            $merchant = App::getFacadeRoot()['repo']->merchant->find($this->merchantId);
+
+            /***
+             * Assumption is since this is an Instant Activation Email,
+             * the merchant will have only one Banking Account, which will be the Virtual Account
+             * Hence, we will get the first banking account
+             */
+            $bankingAccounts = $merchant->bankingAccounts()->get();
+
+            if ($bankingAccounts->count() !== 0)
+            {
+                $this->bankingAccount = $bankingAccounts[0];
+            }
+            else
+            {
+                throw new BadRequestException(TraceCode::INSTANT_ACTIVATION_EMAIL_FAILED,
+                                              null,
+                                              [
+                                                  'merchant_id' => $this->merchantId
+                                              ],
+                                              'No Banking Account found for the merchant: ' . $this->merchantId);
+            }
         }
-        else
-        {
-            throw new BadRequestException(TraceCode::INSTANT_ACTIVATION_EMAIL_FAILED,
-                                          null,
-                                          [
-                                              'merchant_id' => $merchantId
-                                          ],
-                                          'No Banking Account found for the merchant: ' . $merchantId);
-        }
+
+        return $this->bankingAccount;
     }
 
     protected function addMailData()
     {
+        $bankingAccount = $this->getBankingAccount();
+
+        $config = App::getFacadeRoot()['config'];
+
         $data = [
             'learn_more_url'                       => self::LEARN_MORE_URL,
             'guide_to_go_live_url'                 => self::GUIDE_TO_GO_LIVE_URL,
             'support_url'                          => self::SUPPORT_URL,
             'fill_kyc_url'                         => self::FILL_KYC_URL,
-            'view_dashboard_url'                   => $this->config['applications.banking_service_url'],
-            BankingAccountEntity::ACCOUNT_IFSC     => $this->bankingAccount->getAccountIfsc(),
-            BankingAccountEntity::ACCOUNT_NUMBER   => $this->bankingAccount->getAccountNumber(),
-            BankingAccountEntity::BENEFICIARY_NAME => $this->bankingAccount->getBeneficiaryName()
+            'view_dashboard_url'                   => $config['applications.banking_service_url'],
+            BankingAccountEntity::ACCOUNT_IFSC     => $bankingAccount->getAccountIfsc(),
+            BankingAccountEntity::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+            BankingAccountEntity::BENEFICIARY_NAME => $bankingAccount->getBeneficiaryName()
         ];
 
         $this->with($data);
@@ -87,8 +93,10 @@ class InstantActivation extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->bankingAccount->getBeneficiaryEmail(),
-                  $this->bankingAccount->getBeneficiaryName());
+        $bankingAccount = $this->getBankingAccount();
+
+        $this->to($bankingAccount->getBeneficiaryEmail(),
+                  $bankingAccount->getBeneficiaryName());
 
         return $this;
     }

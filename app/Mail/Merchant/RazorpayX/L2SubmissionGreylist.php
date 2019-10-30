@@ -3,12 +3,8 @@
 namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
-use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Merchant\Entity;
-use RZP\Exception\BadRequestException;
-use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 class L2SubmissionGreylist extends Mailable
 {
@@ -18,17 +14,13 @@ class L2SubmissionGreylist extends Mailable
 
     const TEMPLATE_PATH  = 'emails.merchant.razorpayx.l2_submission_greylisted';
 
-    protected $merchant;
+    protected $merchantId;
 
     public function __construct(string $merchantId)
     {
         parent::__construct();
 
-        $app = App::getFacadeRoot();
-
-        $repo = $app['repo'];
-
-        $this->merchant = $repo->merchant->find($merchantId);
+        $this->merchantId = $merchantId;
     }
 
     protected function addMailData()
@@ -44,8 +36,12 @@ class L2SubmissionGreylist extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->merchant->getEmail(),
-                  $this->merchant->getName());
+        $repo = App::getFacadeRoot()['repo'];
+
+        $merchant = $repo->merchant->find($this->merchantId);
+
+        $this->to($merchant->getEmail(),
+                  $merchant->getName());
 
         return $this;
     }

@@ -18,11 +18,9 @@ class Invite extends Mailable
 
     protected $invitation;
 
+    protected $invitationId;
+
     protected $senderName;
-
-    protected $businessName;
-
-    protected $config;
 
     public function __construct($invitationId, $senderName = null)
     {
@@ -30,16 +28,11 @@ class Invite extends Mailable
 
         $app = App::getFacadeRoot();
 
+        $this->invitationId = $invitationId;
+
         $this->invitation = $app['repo']->invitation->find($invitationId);
 
-        $this->config = $app['config'];
-
-        $this->businessName = $this->invitation
-                                   ->merchant
-                                   ->merchantDetail
-                                   ->getBusinessName();
-
-        $this->senderName = (is_null($senderName) === true) ? $this->invitation->merchant->getName() : $senderName;
+        $this->senderName = $senderName;
     }
 
     protected function addSender()
@@ -67,28 +60,55 @@ class Invite extends Mailable
 
     protected function addSubject()
     {
-        $this->subject(sprintf(self::SUBJECT, $this->businessName));
+        $this->subject(sprintf(self::SUBJECT, $this->getBusinessName()));
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $bankingUrl = $this->config['application.banking_service_url'];
+        $config = App::getFacadeRoot()['config'];
 
-        $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $this->invitation->getToken());
+        $invitation = $this->getInvitation();
+
+        $bankingUrl = $config['application.banking_service_url'];
+
+        $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
+
+        $senderName = ($this->senderName === null) ? $invitation->merchant->getName() : $this->senderName;
 
         $this->with(
             [
-                'business_name' => $this->businessName,
-                'sender_name'   => $this->senderName,
-                'role'          => $this->invitation->getRole(),
+                'business_name' => $this->getBusinessName(),
+                'sender_name'   => $senderName,
+                'role'          => $invitation->getRole(),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,
             ]
         );
 
         return $this;
+    }
+
+    protected function getBusinessName()
+    {
+        $invitation = $this->getInvitation();
+
+        return $invitation->merchant
+                          ->merchantDetail
+                          ->getBusinessName();
+    }
+
+    protected function getInvitation()
+    {
+        if ($this->invitation === null)
+        {
+            $app = App::getFacadeRoot();
+
+            $this->invitation = $app['repo']->invitation->find($this->invitationId);
+        }
+
+        return $this->invitation;
     }
 
     protected function addHtmlView()

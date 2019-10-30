@@ -2,62 +2,70 @@
 
 namespace RZP\Mail\User\RazorpayX;
 
+use App;
 use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
 
 class AccountVerification extends Mailable
 {
-    protected $org;
+    const SUBJECT  = 'Verify your Email for RazorpayX';
 
-    protected $user;
+    const TEMPLATE = 'emails.user.razorpayx.account_verification';
 
-    protected $token;
+    protected $userId;
 
-    protected $product;
+    protected $user = null;
 
-    public function __construct($user, $org)
+    public function __construct($userId)
     {
         parent::__construct();
 
-        $this->user = $user->toArrayPublic();
+        $this->userId = $userId;
+    }
 
-        $this->token = $user->getConfirmToken();
+    protected function getUser()
+    {
+        if ($this->user === null)
+        {
+            $repo = App::getFacadeRoot()['repo'];
 
-        $this->org = $org;
+            $this->user = $repo->user->find($this->userId);
+        }
+
+        return $this->user;
     }
 
     protected function addRecipients()
     {
-        $email = $this->user['email'];
+        $user = $this->getUser();
 
-        $name = $this->user['name'];
-
-        $this->to($email, $name);
+        $this->to($user->getEmail(),
+                  $user->getName());
 
         return $this;
     }
 
     protected function addSender()
     {
-        $this->from($this->org['from_email'], $this->org['display_name']);
+        $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                    Constants::HEADERS[Constants::X_SUPPORT]);
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $orgName = $this->org['display_name'];
-
-        $subject = sprintf('%s | Confirm Your Email', $orgName);
-
-        $this->subject($subject);
+        $this->subject(self::SUBJECT);
 
         return $this;
     }
 
     protected function addMailData()
     {
+        $user = $this->getUser();
+
         $data = [
-            'token' => $this->token,
+            'token' => $user->getConfirmToken(),
         ];
 
         $this->with($data);
@@ -67,7 +75,7 @@ class AccountVerification extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.razorpayx.account_verification');
+        $this->view(self::TEMPLATE);
 
         return $this;
     }
