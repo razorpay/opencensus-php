@@ -21,6 +21,13 @@ import { handlePANTryAgain } from './AnnouncementActions';
 
 import { activationDuration } from 'common/data';
 
+const LOADING_TEXT = {
+  PAN: {
+    title: 'PAN Under Review',
+    content: 'We are validating your details with the PAN database.',
+  },
+};
+
 @connect(
   state => ({
     session: state.session,
@@ -40,8 +47,28 @@ import { activationDuration } from 'common/data';
 export default class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      loading: false,
+      loadingTitle: '',
+      loadingContent: '',
+    };
     this.handlePANTryAgain = handlePANTryAgain.bind(this);
   }
+
+  handleAsyncAction = async (actionName, handlerFunc) => {
+    const loadingText = LOADING_TEXT[actionName];
+    this.setState({
+      loading: true,
+      loadingTitle: loadingText.title,
+      loadingContent: loadingText.content,
+    });
+    await handlerFunc();
+    this.setState({
+      loading: false,
+      loadingText: '',
+      loadingContent: '',
+    });
+  };
 
   render() {
     const { user, mode, payments } = this.props;
@@ -51,7 +78,10 @@ export default class InstantActivationAnnouncements extends Component {
       content;
 
     if (!user.isSubmitted) {
-      if (payments && payments.items.length > 0 && !user.isAccepted) {
+      if (this.state.loading) {
+        title = this.state.loadingTitle;
+        content = this.state.loadingContent;
+      } else if (payments && payments.items.length > 0 && !user.isAccepted) {
         title = 'Enable Settlements';
         content = (
           <span>
@@ -85,7 +115,12 @@ export default class InstantActivationAnnouncements extends Component {
             <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
               details. <span class="big-dot-separator" />{' '}
-              <a class="text-primary" onClick={this.handlePANTryAgain}>
+              <a
+                class="text-primary"
+                onClick={() =>
+                  this.handleAsyncAction('PAN', this.handlePANTryAgain)
+                }
+              >
                 Try Again
               </a>
             </React.Fragment>

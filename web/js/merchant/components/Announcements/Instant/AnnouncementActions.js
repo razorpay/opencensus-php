@@ -27,72 +27,69 @@ const L1FormFields = [
 ];
 
 // `this` context is binded to index.js in this directory
-export function handlePANTryAgain(e) {
-  e.preventDefault();
+export async function handlePANTryAgain() {
   const { session } = this.props;
   const data = pickProps(this.props.user, L1FormFields);
-  this.props
-    .submitL1Form({ data })
-    .then(response => {
-      this.props.submitL1FormSuccess({ data: response.data });
+  try {
+    const response = await this.props.submitL1Form({ data });
 
-      const {
-        activation_progress,
-        activated,
-        activation_status,
-        activation_flow,
-        submitted,
-        international,
-        poi_verification_status,
-      } = response.data;
+    this.props.submitL1FormSuccess({ data: response.data });
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      submitted,
+      international,
+      poi_verification_status,
+    } = response.data;
 
-      // Updating % activation_progress (side bar) and other important activation fields
-      const user = (this.user = new User({
-        ...session.user,
-        activation_progress,
-        activated,
-        activation_status,
-        activation_flow,
-        international,
-        poi_verification_status,
-        submitted: +submitted,
-      }));
+    // Updating % activation_progress (side bar) and other important activation fields
+    const user = (this.user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      international,
+      poi_verification_status,
+      submitted: +submitted,
+    }));
 
-      this.props.updateSession({
-        user,
-        mode: session.mode,
-      });
-
-      // const {business_type,poi_verification_status,instantActivation} = this.user;
-      const {
-        showPANStatusModal,
-        showKYCDetailsModal,
-        showInstantActivationSuccessModal,
-        tracking,
-      } = this.props;
-      const props = {
-        activation_flow: this.user.activation_flow,
-        instantActivation: this.user.instantActivation,
-        business_type: this.user.business_type,
-        poi_verification_status: this.user.poi_verification_status,
-        showKYCDetailsModal,
-        showPANStatusModal,
-        showInstantActivationSuccessModal,
-        tracking,
-      };
-
-      L1FormSuccess(props);
-    })
-    .catch(err => {
-      if (err.errors && err.errors.length && err.errors[0]) {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      }
-
-      L1FormError();
-
-      return err;
+    this.props.updateSession({
+      user,
+      mode: session.mode,
     });
+
+    const {
+      showPANStatusModal,
+      showKYCDetailsModal,
+      showInstantActivationSuccessModal,
+      tracking,
+    } = this.props;
+
+    const props = {
+      activation_flow: this.user.activation_flow,
+      instantActivation: this.user.instantActivation,
+      business_type: this.user.business_type,
+      poi_verification_status: this.user.poi_verification_status,
+      showKYCDetailsModal,
+      showPANStatusModal,
+      showInstantActivationSuccessModal,
+      tracking,
+    };
+
+    L1FormSuccess(props);
+  } catch (err) {
+    if (err.errors && err.errors.length && err.errors[0]) {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
+    }
+
+    L1FormError();
+
+    return err;
+  }
 }
