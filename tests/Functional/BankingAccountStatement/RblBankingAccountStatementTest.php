@@ -256,11 +256,11 @@ class RblBankingAccountStatementTest extends TestCase
 
         $effectiveBalanceCell = 'B36';
 
-        $expectedOpeningBalance = 113.55;
+        $expectedOpeningBalance = 214.5;
 
-        $expectedClosingBalance = 214.5;
+        $expectedClosingBalance = 113.55;
 
-        $expectedEffectiveBalance = 214.5;
+        $expectedEffectiveBalance = 113.55;
 
         $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
                     '/2224440041626905_946684800_' .
