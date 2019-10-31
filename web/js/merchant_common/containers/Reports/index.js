@@ -423,7 +423,7 @@ export default function Reports(store, opts) {
             isMerchantAccount = selectedAccountId === user.current,
             reqData = {
               config_id: selectedConfig._item.id,
-              generated_by: selectedAccountId,
+              generated_by: user.user.id,
               start_time: startTime,
               end_time: endTime,
               // report file type option has to override default configs
