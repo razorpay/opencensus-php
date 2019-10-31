@@ -15,6 +15,7 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
+use RZP\Constants\Product;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -116,6 +117,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -139,7 +141,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($useLimit === true)
         {
@@ -835,12 +838,19 @@ class Repository extends Base\Repository
         // Because this will look at only transaction which not in ignore list
         // And Payment is part of ignore list and only payment has the type difference
         //
+        $balanceIDColumn                    = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIDColumn        = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedATColumn        = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
         return $this->newQuery()
-                    ->selectRaw(
-                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
-                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedATColumn, [$start, $end])
                     ->merchantId($merchantId)
-                    ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->where($balanceTypeColumn, Product::PRIMARY)
                     ->first();
     }
 
@@ -1548,6 +1558,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -1557,7 +1568,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($balanceId === null)
         {
@@ -1794,7 +1806,7 @@ class Repository extends Base\Repository
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
-        if(isset($params[Entity::CREATED_AT]) === false and isset($params[Entity::SETTLED_AT]) === false)
+        if((isset($params[Entity::CREATED_AT]) === false) and (isset($params[Entity::SETTLED_AT]) === false))
         {
             $query->where($transactionSettledAt, '<=', $timestamp);
         }
@@ -1804,11 +1816,13 @@ class Repository extends Base\Repository
             {
                 $query->where($transactionSettledAt, '<=', $params[Entity::SETTLED_AT]);
             }
+
             if(isset($params[Entity::CREATED_AT]) === true)
             {
                 $query->where($transactionCreatedAt, '<=', $params[Entity::CREATED_AT]);
             }
         }
+
         return $query;
     }
 

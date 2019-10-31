@@ -5327,6 +5327,12 @@ ALTER table terminals
     ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
     ADD INDEX terminals_req_rrn_index (`req_rrn`);
 
+ALTER TABLE  merchant_banks
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
+ALTER TABLE  terminals
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
@@ -5405,9 +5411,70 @@ ALTER TABLE merchants
 ALTER TABLE fund_account_validations
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
 
+ALTER TABLE `transfers`
+  CHANGE `transaction_id` `transaction_id` CHAR(14) NULL DEFAULT NULL;
+
 ALTER TABLE merchants
     ADD COLUMN `legal_entity_id` CHAR(14) DEFAULT NULL AFTER `parent_id`,
     ADD INDEX `merchants_legal_entity_id_index` (`legal_entity_id`);
 
 ALTER TABLE bank_accounts
     ADD COLUMN `notes` text DEFAULT NULL AFTER `virtual`;
+
+ALTER TABLE merchant_details
+    ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
+
+-- P2P - Adding Indices
+
+ALTER TABLE `p2p_bank_accounts`
+    ADD INDEX `p2p_bank_accounts_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_bank_accounts_account_number_ifsc_index`(`account_number`, `ifsc`),
+    ADD INDEX `p2p_bank_accounts_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_beneficiaries`
+    ADD INDEX `p2p_beneficiaries_device_id_index`(`device_id`),
+    ADD INDEX `p2p_beneficiaries_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_devices`
+    ADD INDEX `p2p_devices_customer_id_index`(`customer_id`),
+    ADD INDEX `p2p_devices_contact_index`(`contact`),
+    ADD INDEX `p2p_devices_auth_token_index`(`auth_token`),
+    ADD INDEX `p2p_devices_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_device_tokens`
+    ADD INDEX `p2p_device_tokens_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_device_tokens_status_index`(`status`),
+    ADD INDEX `p2p_device_tokens_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_register_tokens`
+    ADD INDEX `p2p_register_tokens_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_register_tokens_status_index`(`status`),
+    ADD INDEX `p2p_register_tokens_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_transactions`
+    ADD INDEX `p2p_transactions_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_transactions_customer_id_index`(`customer_id`),
+    ADD INDEX `p2p_transactions_status_index`(`status`),
+    ADD INDEX `p2p_transactions_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_upi_transactions`
+    ADD INDEX `p2p_upi_transactions_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_upi_transactions_network_transaction_id_index`(`network_transaction_id`),
+    ADD INDEX `p2p_upi_transactions_rrn_index`(`rrn`),
+    ADD INDEX `p2p_upi_transactions_gateway_error_code_index`(`gateway_error_code`),
+    ADD INDEX `p2p_upi_transactions_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_vpa`
+    ADD INDEX `p2p_vpa_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_vpa_username_handle_index`(`username`, `handle`),
+    ADD INDEX `p2p_vpa_bank_account_id_index`(`bank_account_id`),
+    ADD INDEX `p2p_vpa_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_concerns`
+    ADD INDEX `p2p_concerns_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_concerns_transaction_id_created_at_index`(`transaction_id`, `created_at`),
+    ADD INDEX `p2p_concerns_status_index`(`status`),
+    ADD INDEX `p2p_concerns_gateway_reference_id_index`(`gateway_reference_id`),
+    ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
+
+-- P2P - Adding Indices

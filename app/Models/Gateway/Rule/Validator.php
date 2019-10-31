@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::LOAD                    => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
         Entity::GATEWAY_ACQUIRER        => 'sometimes|string|max:30',
         Entity::INTERNATIONAL           => 'filled|boolean',
-        Entity::NETWORK_CATEGORY        => 'sometimes_if:type,filter|string|max:30',
+        Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
         Entity::CATEGORY                => 'sometimes_if:type,filter|string|numeric|digits:4',
         Entity::CATEGORY2               => 'sometimes_if:type,filter|string|max:30|custom',
         Entity::SHARED_TERMINAL         => 'filled|boolean',

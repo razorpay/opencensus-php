@@ -4,11 +4,12 @@ namespace RZP\Gateway\Mozart;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Constants\Entity as E;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
@@ -16,7 +17,9 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Gateway extends Base\Gateway
 {
-    use AuthorizeFailed;
+    use AuthorizeFailed {
+        extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
+    }
 
     protected $gateway = 'mozart';
 
@@ -502,7 +505,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function getMozartRequestArray($input)
+    protected function getMozartRequestArray($input, $mode = null)
     {
         if (($input['terminal'] instanceof TerminalEntity) === true)
         {
@@ -526,9 +529,9 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
-        $url = $this->getUrlForMozartRequest($input, 'payments');
+        $url = $this->getUrlForMozartRequest($input, 'payments', $mode);
 
-        return $this->getAuthenticatedMozartRequestArray($url, $content);
+        return $this->getAuthenticatedMozartRequestArray($url, $content, $mode);
     }
 
     protected function getTerminalOnboardingMozartRequestArray($input)
@@ -545,9 +548,11 @@ class Gateway extends Base\Gateway
         return $this->getAuthenticatedMozartRequestArray($url, $content);
     }
 
-    protected function getUrlForMozartRequest($input, $prefix)
-    {        
-        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+    protected function getUrlForMozartRequest($input, $prefix, $mode = null)
+    {
+        $mode = $this->mode ?? $mode;
+
+        $urlConfig = 'applications.mozart.' . $mode . '.url';
 
         $baseUrl = $this->app['config']->get($urlConfig);
 
@@ -565,9 +570,11 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function getAuthenticatedMozartRequestArray($url, $content)
+    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null)
     {
-        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+        $mode = $this->mode ?? $mode;
+
+        $passwordConfig = 'applications.mozart.' . $mode . '.password';
 
         $authentication = [
             'api',
@@ -619,6 +626,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY     => Action::PAY_VERIFY,
+            ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
             ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
@@ -712,6 +726,13 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
+            ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
             ],
 
             Payment\Gateway::WALLET_PAYPAL => [
@@ -946,7 +967,7 @@ class Gateway extends Base\Gateway
 
         $content['terminal']['gateway_secure_secret'] = $this->config['netbanking_yesb']['gateway_secure_secret'];
 
-        $request = $this->getMozartRequestArray($content);
+        $request = $this->getMozartRequestArray($content, Mode::LIVE);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -1010,6 +1031,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_SCB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
@@ -1200,5 +1222,29 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
             ]
         ];
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = $this->extractPaymentsPropertiesAuthorizedFailedTrait($gatewayPayment);
+
+        $gateway = $gatewayPayment->getGateway();
+
+        if ($this->isNetbankingGateway($gateway) === true)
+        {
+            $data = $gatewayPayment->getDataAttribute();
+
+            if (isset($data['bank_payment_id']) === true)
+            {
+                $response['acquirer'][Payment\Entity::REFERENCE1] = $data['bank_payment_id'];
+            }
+        }
+
+        return $response;
+    }
+
+    protected function isNetbankingGateway($gateway)
+    {
+        return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::NETBANKING], true);
     }
 }

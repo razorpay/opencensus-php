@@ -49,6 +49,7 @@ class Fetch extends BaseFetch
             Entity::VPA                          => 'sometimes|string|max:100',
             Terminal\Entity::GATEWAY_TERMINAL_ID => 'sometimes',
             Entity::ACQUIRER_DATA                => 'sometimes',
+            Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17'
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -71,6 +72,7 @@ class Fetch extends BaseFetch
             Entity::RECURRING,
             self::EXPAND_EACH,
             Entity::NOTES,
+            Entity::VIRTUAL_ACCOUNT_ID,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
@@ -125,6 +127,7 @@ class Fetch extends BaseFetch
         Entity::PAYMENT_LINK_ID,
         Entity::TRANSFER_ID,
         Entity::BATCH_ID,
+        Entity::VIRTUAL_ACCOUNT_ID,
     ];
 
     protected function validateCustomerId($attribute, $value)

@@ -34,6 +34,11 @@ class CreateP2pBeneficiaryTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            // Indices
+
+            $table->index(Entity::DEVICE_ID);
+            $table->index(Entity::CREATED_AT);
         });
     }
 

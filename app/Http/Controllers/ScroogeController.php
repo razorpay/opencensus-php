@@ -94,4 +94,18 @@ class ScroogeController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function setInstantRefundsMode()
+    {
+        $response = $this->app['scrooge']->setInstantRefundsMode($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function expireInstantRefundsModeConfig()
+    {
+        $response = $this->app['scrooge']->expireInstantRefundsModeConfig($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

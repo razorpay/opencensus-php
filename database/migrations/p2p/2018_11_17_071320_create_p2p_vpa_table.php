@@ -59,6 +59,11 @@ class CreateP2pVpaTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->index([Entity::DEVICE_ID, Entity::HANDLE]);
+            $table->index([Entity::USERNAME, Entity::HANDLE]);
+            $table->index(Entity::BANK_ACCOUNT_ID);
+            $table->index(Entity::CREATED_AT);
         });
     }
 
