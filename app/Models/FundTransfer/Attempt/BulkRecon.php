@@ -160,6 +160,8 @@ class BulkRecon extends Base\Core
                             $this->trace->error(TraceCode::FTA_RECON_FAILED, [
                                 'fta_id' => $fta->getId(),
                             ]);
+
+                            (new SlackNotification)->send('setl_reconciliation', [], $e);
                         }
                     }
                 }
