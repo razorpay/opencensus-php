@@ -1,6 +1,7 @@
 import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+import { CUSTOM_NOTES_OPTIONS } from 'rzp/utils/constants';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import {
@@ -261,5 +262,23 @@ export default [
     label: 'Internal Notes',
     className: 'Input--vTop',
     _cmp: Input.PairList,
+    _when: function(form) {
+      return !form.props.user.isCustomNotesDropdownEnabled;
+    },
+  },
+  {
+    name: 'notes',
+    label: 'Business Segment',
+    _cmp: Input.Select,
+    options: ({ props }) => getOptions(props.user.current),
+    _when: function(form) {
+      return form.props.user.isCustomNotesDropdownEnabled;
+    },
   },
 ];
+
+export function getOptions(id) {
+  const { options } = CUSTOM_NOTES_OPTIONS[id] || {};
+
+  return [{ label: 'Select A Value', value: '' }, ...options];
+}

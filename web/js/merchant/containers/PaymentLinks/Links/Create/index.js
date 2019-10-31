@@ -355,6 +355,12 @@ export default class CreateNewContainer extends React.Component {
 
   /* Handle change of notes */
   onChangeNotes = pairs => {
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      this.onChange(pairs);
+
+      return;
+    }
+
     const notes = onChangeNotes(pairs);
 
     this.setState({
@@ -406,6 +412,12 @@ export default class CreateNewContainer extends React.Component {
 
     if (!this.state.dirty.receipt) {
       delete reqPayload.receipt;
+    }
+
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      reqPayload.notes = {
+        business_segment: reqPayload.notes,
+      };
     }
 
     return FORM_FIELDS.onCreate(reqPayload)
@@ -520,6 +532,11 @@ export default class CreateNewContainer extends React.Component {
             </div>
           </Input.Group>
         );
+      }
+
+      let options = f.options;
+      if (typeof options === 'function') {
+        f.options = options(this);
       }
 
       return WizardFields.call(this, f);

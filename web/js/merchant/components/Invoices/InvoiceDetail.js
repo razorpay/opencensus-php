@@ -20,6 +20,7 @@ import {
   EditMinimumAmount,
   EditNotes,
   EditReceipt,
+  EditBusinessSegment,
 } from 'merchant/containers/PaymentLinks/Edit/index';
 
 import {
@@ -341,9 +342,8 @@ export default props => {
                   }
                 />
 
-                <EntityDetailRow
-                  label="Notes"
-                  value={() => (
+                {!user.isCustomNotesDropdownEnabled ? (
+                  <EntityDetailRow label="Notes">
                     <EditNotes
                       value={invoice.notes}
                       editFn={editPaymentLink}
@@ -351,8 +351,21 @@ export default props => {
                       entityId={invoice.id}
                       trackerFn={trackDetailViewEdits}
                     />
-                  )}
-                />
+                  </EntityDetailRow>
+                ) : (
+                  <EntityDetailRow
+                    label={<div class="m-t">Business Segment</div>}
+                  >
+                    <EditBusinessSegment
+                      value={invoice.notes}
+                      editFn={editPaymentLink}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
+                      entityId={invoice.id}
+                      id={user.current}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  </EntityDetailRow>
+                )}
                 {/*user.isOndemandSettlementEnabled && (
                   <ScheduledBanner fromWhere="Payment Pages" />
                 )*/}
