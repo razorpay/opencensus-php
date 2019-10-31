@@ -863,6 +863,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $cardFssEditTerminalRules = [
