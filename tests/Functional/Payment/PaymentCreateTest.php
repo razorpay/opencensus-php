@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
@@ -306,7 +307,7 @@ class PaymentCreateTest extends TestCase
         $payment['amount'] = '50000001';
 
         $testData = $this->testData[__FUNCTION__];
-        
+
         $this->runRequestResponseFlow($testData, function() use ($payment)
         {
             $this->doAuthPayment($payment);
@@ -1106,6 +1107,56 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
+    public function testDirectSettlementPaymentCustomerFeeBearerForNonHDFCOrgId()
+    {
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Admin\Org\Entity::RAZORPAY_ORG_ID
+            ]
+        );
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getFeesForPayment($payment)['input'];
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals('1000SharpTrmnl', $payment['terminal_id']);
+        $this->assertEquals('Razorpay', $payment['settled_by']);
+    }
+
+    public function testDirectSettlementPaymentCustomerFeeBearerForHDFCOrgId()
+    {
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Admin\Org\Entity::HDFC_ORG_ID
+            ]
+        );
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getFeesForPayment($payment)['input'];
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('axis_migs', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
         $this->assertEquals('hdfc', $payment['settled_by']);
     }
