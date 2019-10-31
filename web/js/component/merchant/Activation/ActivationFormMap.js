@@ -140,7 +140,7 @@ const businessModel = [
     //     }
     //   }
     // },
-    _disabledWhen: activation => isL1Submitted(activation),
+    _disabledWhen: activation => isL1Completed(activation),
   },
   [
     {
@@ -149,15 +149,9 @@ const businessModel = [
       _cmp: Input.Select,
       options: [],
       _disabledWhen: function(activation) {
-        console.log(
-          'activationPropsUserShowInstantActivation',
-          activation.props.user.showInstantActivation
-        );
-        // return !!activation.props.user.showInstantActivation; TODO: Confirm with aseem about this condition
         return (
-          activation.props.user.instantActivation.isL1Submitted &&
-          !!activation.props.user.showInstantActivation &&
-          !activation.props.user.instantActivation.isBlacklistFlow
+          isL1Completed(activation) &&
+          !!activation.props.user.showInstantActivation
         );
       },
     },
@@ -225,12 +219,10 @@ const businessModel = [
         // 'Others' business_category has no sub_category
         return hasBusinessCategory;
       },
-      _disabledWhen: function(activation) {
-        // return !!form.props.user.showInstantActivation; // TODO: change along with business_category
+      _disabledWhen: activation => {
         return (
-          activation.props.user.instantActivation.isL1Submitted &&
-          !!activation.props.user.showInstantActivation &&
-          !activation.props.user.instantActivation.isBlacklistFlow
+          isL1Completed(activation) &&
+          !!activation.props.user.showInstantActivation
         );
       },
     },
@@ -343,7 +335,7 @@ const businessDetails = [
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
     _when: activation =>
-      isL1Submitted(activation) && excludeFor_CompanyPan(activation),
+      isL1Completed(activation) && excludeFor_CompanyPan(activation),
   },
   {
     label: 'CIN',
@@ -358,7 +350,7 @@ const businessDetails = [
         activation.state.dirty.business_type ||
         activation.props.data.business_type;
       return (
-        isL1Submitted(activation) &&
+        isL1Completed(activation) &&
         currentBusinessType &&
         CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
       );
@@ -427,15 +419,7 @@ const businessDetails = [
       },
       _disabledWhen: isActivatedIndividual,
       _when: activation => {
-        console.log('user indiv', _showForIndiv);
-        console.log(
-          'user l1',
-          activation.props.user.instantActivation.isL1Submitted
-        );
-        return (
-          _showForIndiv(activation) ||
-          activation.props.user.instantActivation.isL1Submitted
-        ); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
+        return _showForIndiv(activation) || isL1Completed(activation); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
       },
       checkValidityFromAPI: activation => {
         const { poi_verification_status } = activation.props.data;
@@ -454,7 +438,7 @@ const businessDetails = [
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: activation =>
-        excludeFor_Indiv(activation) && isL1Submitted(activation),
+        excludeFor_Indiv(activation) && isL1Completed(activation),
       description: activation => {
         if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
@@ -473,7 +457,7 @@ const businessDetails = [
         return (
           excludeFor_Indiv(activation) &&
           activation.state.has_gstin === '0' &&
-          isL1Submitted(activation)
+          isL1Completed(activation)
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -723,15 +707,10 @@ const uploadFields = [
       return addressProofType.label + ' ' + addressProofType.frontView;
     },
     getName: activation => {
-      // if (!activation.state.address_proof)
-      //   return ADDRESS_PROOF_TYPES.aadhar.value + '_' + 'front';
       return activation.state.address_proof + '_' + 'front';
     },
     _cmp: Input.File,
     destinationUrl: 'merchant/documents/upload',
-    // _when: activation => {
-    //   return _showForIndiv(activation) && null !== activation.state.address_proof && _showForIndiv;
-    // },
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
@@ -742,25 +721,15 @@ const uploadFields = [
     dynamicLabel: true,
     dynamicName: true,
     getLabel: activation => {
-      // if (!activation.state.address_proof)
-      //   return ADDRESS_PROOF_TYPES.aadhar.label + ' ' + 'Last Page';
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.backView;
     },
     getName: activation => {
-      // if (!activation.state.address_proof)
-      //   return ADDRESS_PROOF_TYPES.aadhar.value + '_' + 'back';
       return activation.state.address_proof + '_' + 'back';
     },
     _cmp: Input.File,
     destinationUrl: 'merchant/documents/upload',
-    // _when: activation => {
-    //   return (
-    //     _showForIndiv(activation) && null !== activation.state.address_proof &&
-    //     ADDRESS_PROOF_TYPES[activation.state.address_proof].back
-    //   );
-    // },
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
@@ -796,6 +765,14 @@ export function _showForIndiv(activation) {
 
 function isL1Submitted(activation) {
   return activation.props.user.instantActivation.isL1Submitted;
+}
+
+export function isL1Completed(activation) {
+  const { user } = activation.props;
+  if (user.isSubmitted) {
+    return true; // Always return true if user.submitted true -> display all fields and tabs -> handles L2 submission without submitting L1 eg. Batch and EPOS
+  }
+  return isL1Submitted(activation) && !user.instantActivation.isBlacklistFlow;
 }
 
 function excludeFor_CompanyPan(activation) {
