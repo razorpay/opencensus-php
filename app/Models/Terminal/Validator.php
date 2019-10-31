@@ -750,6 +750,15 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $netbankingScbTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_scb',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
@@ -854,6 +863,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $cardFssEditTerminalRules = [

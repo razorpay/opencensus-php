@@ -5411,6 +5411,9 @@ ALTER TABLE merchants
 ALTER TABLE fund_account_validations
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
 
+ALTER TABLE `transfers`
+  CHANGE `transaction_id` `transaction_id` CHAR(14) NULL DEFAULT NULL;
+
 ALTER TABLE merchants
     ADD COLUMN `legal_entity_id` CHAR(14) DEFAULT NULL AFTER `parent_id`,
     ADD INDEX `merchants_legal_entity_id_index` (`legal_entity_id`);

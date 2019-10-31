@@ -738,7 +738,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::POI_VERIFICATION_STATUS);
     }
 
-    public function setPoiVerificationStatus(string $status)
+    public function setPoiVerificationStatus(string $status = null)
     {
         return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);
     }
