@@ -15,7 +15,6 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
-use RZP\Constants\Product;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -838,19 +837,12 @@ class Repository extends Base\Repository
         // Because this will look at only transaction which not in ignore list
         // And Payment is part of ignore list and only payment has the type difference
         //
-        $balanceIDColumn                    = $this->repo->balance->dbColumn(Entity::ID);
-        $transactionsBalanceIDColumn        = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
-        $transactionsCreatedATColumn        = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
-        $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
-        $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
-
         return $this->newQuery()
-                    ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
-                    ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
-                    ->whereBetween($transactionsCreatedATColumn, [$start, $end])
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
                     ->merchantId($merchantId)
-                    ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
-                    ->where($balanceTypeColumn, Product::PRIMARY)
+                    ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
                     ->first();
     }
 
