@@ -213,29 +213,39 @@ class MerchantController extends Controller
         {
             $fileId = $data['file_id'];
 
-            $ufhFileUrl = "ufh/file/$fileId/get-signed-url";
-
-            if (empty($adminUser) === false)
-            {
-                $ufhFileUrl = "admin-ufh/file/$fileId/get-signed-url";
-            }
-
-            // Re-create to avoid any GC-related bugs
-            $request = new ApiRequestAny($clientType);
-
-            list($error, $data) = $request->send($ufhFileUrl, 'GET');
-
-            // Trigger download
-            if ((empty($error) === true) and
-                (empty($data) === false))
-            {
-                if (isset($data['signed_url']))
-                {
-                    return redirect($data['signed_url']);
-                }
-            }
+            return $this->downloadFileFromUFH($fileId);
         }
 
+        return AppResponse::jsonResponse("Some error occurred.", null);
+    }
+
+    public function downloadFileFromUFH(string $fileId)
+    {
+        $adminUser = Auth::guard('api')->user();
+
+        $clientType = ['client_type' => 'merchant'];
+
+        $ufhFileUrl = "ufh/file/$fileId/get-signed-url";
+
+        if (empty($adminUser) === false)
+        {
+            $ufhFileUrl = "admin-ufh/file/$fileId/get-signed-url";
+        }
+
+        // Re-create to avoid any GC-related bugs
+        $request = new ApiRequestAny($clientType);
+
+        list($error, $data) = $request->send($ufhFileUrl, 'GET');
+
+        // Trigger download
+        if ((empty($error) === true) and
+            (empty($data) === false))
+        {
+            if (isset($data['signed_url']))
+            {
+                return redirect($data['signed_url']);
+            }
+        }
         return AppResponse::jsonResponse("Some error occurred.", null);
     }
 
