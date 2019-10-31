@@ -14,8 +14,6 @@ class Pdf extends Generator
 {
     protected const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
 
-    protected const PDF_MIME_TYPE      = 'application/pdf';
-
     public function getStatement()
     {
         $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);

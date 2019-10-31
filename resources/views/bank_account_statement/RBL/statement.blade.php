@@ -16,6 +16,11 @@
         width: 25%;
     }
 
+    img
+    {
+        opacity: 1;
+    }
+
     .w-50 {
         width: 50%;
     }
@@ -35,7 +40,8 @@
     .box {
         margin: 20px 0;
         width: 100%;
-        border: 1px solid #e3e3e3;
+        border: 1px solid #000000;
+
     }
 
     .box-header {
@@ -43,6 +49,11 @@
         background-color: #616161;
         font-weight: bold;
         color: white;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 20px;
     }
 
     main {
@@ -63,6 +74,24 @@
         padding: 10px;
     }
 
+    .details-table td:nth-child(even){
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 18px;
+        text-align: right;
+    }
+
+    .details-table td:nth-child(odd){
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bol`d;
+        font-size: 10px;
+        line-height: 18px;
+        text-align: left;
+    }
+
     .transactions-table tr:nth-child(2n+1) {
         background: #c9c8c8;
     }
@@ -72,34 +101,78 @@
     }
 
     .transactions-table td {
-        text-align: left;
+        text-align: center;
         padding: 10px;
     }
 
     .transactions-table {
         border-collapse: collapse;
         border-spacing: 0;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 8px;
+        line-height: 12px;
     }
 
     .details-table td:nth-child(1) {
+        text-align: right;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 18px;
         width: 10%;
+        color: rgba(0, 0, 0, 0.6);
     }
 
     .details-table td:nth-child(2) {
+        text-align: left;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 10px;
+        line-height: 18px;
         width: 30%;
+        color: rgba(0, 0, 0, 0.8);
     }
 
     .details-table td:nth-child(3) {
         width: 10%;
+        text-align: right;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 18px;
+        color: rgba(0, 0, 0, 0.6);
     }
 
     .details-table td:nth-child(4) {
+        text-align: left;
+        font-family: Muli;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 10px;
+        line-height: 18px;
         width: 30%;
+        color: rgba(0, 0, 0, 0.8);
+    }
+
+    .summary
+    {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: rgba(255, 255, 255, 0.6);
     }
 
     .transactions-title {
-        background-color: #616161;
-        color: white;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: rgba(255, 255, 255, 0.6);
+        font-family: Muli;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 20px;
     }
 
 
