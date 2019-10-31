@@ -58,7 +58,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+        $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -79,6 +79,9 @@ class Core extends Base\Core
 
                             if ($this->canSubmit($input, $response) === true)
                             {
+                                // blacklisted merchant should not be allowed to submit l2 form
+                                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
                                 $response = $this->submitActivationForm($merchant, $originProduct);
                             }
                             else
@@ -447,6 +450,8 @@ class Core extends Base\Core
     {
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return null;
         }
 
