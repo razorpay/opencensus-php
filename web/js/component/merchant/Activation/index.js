@@ -25,6 +25,7 @@ import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
   UNREGISTERED_TYPES,
+  isL1Completed,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -222,10 +223,7 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      if (
-        !props.user.instantActivation.isL1Submitted ||
-        props.user.instantActivation.isBlacklistFlow
-      ) {
+      if (!isL1Completed(this)) {
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
