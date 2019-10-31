@@ -1286,16 +1286,7 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(AccountVerification::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertArrayHasKey('token', $viewData);
-
-            $this->assertEquals('emails.user.razorpayx.account_verification', $mail->view);
-
-            return true;
-        });
+        Mail::assertQueued(AccountVerification::class);
     }
 
     public function testPasswordResetMail()
