@@ -30,6 +30,16 @@ class Entity extends BaseModel\PublicEntity
         }
     }
 
+    public function setPublicMerchantIdAttribute(array &$attributes)
+    {
+        $merchantId = $this->getAttribute(static::MERCHANT_ID);
+
+        if ($merchantId !== null)
+        {
+            $attributes[static::MERCHANT_ID] = $merchantId;
+        }
+    }
+
     public function setPublicRoleIdAttribute(array &$attributes)
     {
         $roleId = $this->getAttribute(Step\Entity::ROLE_ID);

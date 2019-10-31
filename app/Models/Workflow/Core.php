@@ -18,6 +18,7 @@ class Core extends Base\Core
 
         $orgId       = $input[Entity::ORG_ID];
         $permissions = $input[Entity::PERMISSIONS];
+        $merchantId  = $input[Entity::MERCHANT_ID];
 
         // Check if the permissions given are enabled to have workflows
         $workflow->getValidator()->validatePermissionsForOrg($orgId, $permissions);
@@ -33,7 +34,11 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($orgId);
 
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
         $workflow->org()->associate($org);
+
+        $workflow->merchant()->associate($merchant);
 
         $workflow->build($input);
 
