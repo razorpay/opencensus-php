@@ -131,7 +131,7 @@ export const SubscriptionsStates = {
 };
 
 export const CUSTOM_NOTES_OPTIONS = {
-  ByXOWLvMbo2Bdz: {
+  DJy3GWYGs76MnR: {
     name: 'RCI',
     options: [
       { label: 'BONUS', value: 'BONUS' },
