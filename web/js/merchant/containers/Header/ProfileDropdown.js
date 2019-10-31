@@ -256,24 +256,24 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
-            {user.partner_type === null && (
-              <div class="media loggedin-as">
-                <div class="media-body">
-                  <p class="small-txt">
-                    Partner with us and start earning on every referral
-                  </p>
+            {user.role === 'owner' &&
+              user.partner_type === null && (
+                <div class="media loggedin-as">
+                  <div class="media-body">
+                    <p class="small-txt">
+                      Partner with us and start earning on every referral
+                    </p>
 
-                  <a
-                    class="partner-link"
-                    style={{ color: '#528ff0', fontSize: '14px' }}
-                    onClick={this.showPartnerIntent}
-                  >
-                    <strong>Explore Partner Program</strong>{' '}
-                    <i className="i i-external-link " />
-                  </a>
+                    <a
+                      class="partner-link"
+                      style={{ color: '#528ff0', fontSize: '14px' }}
+                      onClick={this.showPartnerIntent}
+                    >
+                      <strong>Explore Partner Program</strong>{' '}
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </DropdownContent>
       </Dropdown>

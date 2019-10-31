@@ -71,7 +71,7 @@ export default class BaseScreen extends React.Component {
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
-          {this.props.user.merchant_partner_intent &&
+          {!this.props.disableClose &&
             (sliderProps => <S0 key={0} sliderProps={sliderProps} />)}
           {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
           {sliderProps => (
