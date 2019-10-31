@@ -141,17 +141,26 @@ class BulkRecon extends Base\Core
 
                     foreach ($ftas as $fta)
                     {
-                        $reconDetails = (new $entityProcessor($fta))->process();
+                        try
+                        {
+                            $reconDetails = (new $entityProcessor($fta))->process();
 
-                        $this->allReconciledRows[] = $reconDetails;
+                            $this->allReconciledRows[] = $reconDetails;
 
-                        $entity = $reconDetails['entity'];
+                            $entity = $reconDetails['entity'];
 
-                        $this->updateBatchFundTransferStats($entity);
+                            $this->updateBatchFundTransferStats($entity);
 
-                        $this->updateCriticalErrorsSummary($fta);
+                            $this->updateCriticalErrorsSummary($fta);
 
-                        $this->dispatchForStatusCheck($fta);
+                            $this->dispatchForStatusCheck($fta);
+                        }
+                        catch (\Throwable $e)
+                        {
+                            $this->trace->error(TraceCode::FTA_RECON_FAILED, [
+                                'fta_id' => $fta->getId(),
+                            ]);
+                        }
                     }
                 }
 
