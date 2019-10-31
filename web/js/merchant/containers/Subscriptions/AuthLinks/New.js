@@ -413,20 +413,17 @@ export default class CreateNewAuthLinkContainer extends Component {
             )}
 
             {method === 'card' && (
-              <Input.Group class="InputGroup--inline" label="Amount">
-                <div class="Input-content">
-                  <Input.CurrencySelect name="currency" />
-
-                  <Input
-                    name="amount"
-                    type="tel"
-                    placeholder="0.00"
-                    description="Amount of Authorization Link Payment"
-                    validator={checkIfAmount}
-                    required
-                  />
-                </div>
-              </Input.Group>
+              <Input
+                required
+                name="amount"
+                type="tel"
+                placeholder="0.00"
+                description="Amount of Authorization Link Payment"
+                validator={checkIfAmount}
+                size="half_big"
+                label="Amount"
+                class="Input--Amount"
+              />
             )}
 
             <Input.PairList

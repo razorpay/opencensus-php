@@ -24,7 +24,10 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
-import { resizeWindow } from 'merchant/modules/app';
+import {
+  resizeWindow,
+  updateMerchantLiveTransactionFlag,
+} from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
@@ -238,11 +241,38 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
+  setLiveTransactionDone = ({ live_transaction_done, id }) => {
+    if (live_transaction_done === undefined) return;
+
+    switch (live_transaction_done) {
+      case 1:
+        updateMerchantLiveTransactionFlag(id)
+          .then(resp => {
+            if (resp.success) {
+              setTrackData({
+                eventCategory: 'Dashboard - Instant Activations Live',
+                eventAction: 'Login',
+                eventLabel: 'MTU-Funnel',
+              })();
+            }
+          })
+          .catch(err => {});
+        break;
+      case 2:
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations Live',
+          eventAction: 'Login',
+          eventLabel: 'MTU-Audience',
+        })();
+    }
+  };
+
   fetchUser() {
     let user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
+      this.setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode

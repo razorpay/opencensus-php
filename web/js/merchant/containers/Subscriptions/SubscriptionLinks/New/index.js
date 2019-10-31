@@ -339,6 +339,7 @@ export default class NewSubscriptionLink extends Component {
 
     let { fields: data, internals } = this.state;
     data = deepClone(data);
+    data.source = 'dashboard';
 
     if (internals._startsImmediately) {
       delete data.start_at;
