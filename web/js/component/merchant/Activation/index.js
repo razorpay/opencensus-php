@@ -59,6 +59,7 @@ import {
   L1FormError,
   updateHubSpotContactsProperties,
 } from './ActivationUtils';
+import QueryString from 'query-string';
 
 /*
 *             Main-form        LA-form
@@ -301,7 +302,16 @@ export default class ActivationWizard extends React.Component {
       });
       updateHubSpotContactsProperties({ started: true });
     }
+
+    const query = QueryString.parse(this.props.location.search);
+    this.handleActionBasedOnQuery(query);
   }
+
+  handleActionBasedOnQuery = query => {
+    if (query['auto-submit'] == 'l1-form') {
+      this.submitL1(2);
+    }
+  };
 
   componentWillUnmount() {
     removeDropShield('.Activation--wizard');
