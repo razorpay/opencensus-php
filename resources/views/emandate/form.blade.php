@@ -561,7 +561,7 @@
                 <div class="sub-title">Via Debit Card details</div>
               </span>
             </label>
-            <input type="radio" id="content3" name="auth_type" value="debitcard" hidden checked>
+            <input type="radio" id="content3" name="auth_type" value="debitcard" hidden>
             <span class="arrow"></span>
           </div>
         @endif
