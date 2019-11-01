@@ -104,6 +104,7 @@ export default class OnboardingCardInstant extends Component {
         international,
         activated,
         business_type,
+        poi_verification_status,
       } = user,
       { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -125,6 +126,7 @@ export default class OnboardingCardInstant extends Component {
         international,
         activated,
         business_type,
+        poi_verification_status,
       };
 
     return (
