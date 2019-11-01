@@ -467,14 +467,14 @@ export default class ActivationWizard extends React.Component {
     );
   })
   goto = async (newActiveTab, cb) => {
-    if (
-      this.state.activeTab == 2 &&
-      newActiveTab === null &&
-      (this.props.user.instantActivation.isBlacklistFlow ||
-        !this.props.user.instantActivation.isL1Submitted)
-    ) {
-      await this.submitL1(this.state.activeTab);
-    }
+    // if (
+    //   this.state.activeTab == 2 &&
+    //   newActiveTab === null &&
+    //   (this.props.user.instantActivation.isBlacklistFlow ||
+    //     !this.props.user.instantActivation.isL1Submitted)
+    // ) {
+    //   await this.submitL1(this.state.activeTab);
+    // }
 
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
@@ -834,11 +834,13 @@ export default class ActivationWizard extends React.Component {
       };
 
       L1FormSuccess(props);
+      this.saveCurrentTab();
 
       return this.props.history.replace(`/`);
     } catch (err) {
       this.setState({ callingL1Api: false });
-      this.markTabIfActive(currenActiveTab);
+      this.saveCurrentTab();
+      // this.markTabIfActive(currenActiveTab);
       if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
           type: 'error',
@@ -1496,14 +1498,13 @@ export default class ActivationWizard extends React.Component {
                 {/* Action Button 3 */}
                 {isLastTab &&
                   activeTab == BUSINESS_DETAILS_STEP && (
-                    <Button.Primary
+                    <AsyncBtn.Primary
                       disabled={this.state.callingL1Api}
-                      onClick={this.saveCurrentTab}
+                      onClick={this.submitL1}
+                      pendingState={'Verifying'}
                     >
-                      {this.state.callingL1Api
-                        ? 'Verifying...'
-                        : 'Submit and Verify'}
-                    </Button.Primary>
+                      Submit and Verify
+                    </AsyncBtn.Primary>
                   )}
 
                 {/* Action Button 4 */}
