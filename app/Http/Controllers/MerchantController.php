@@ -195,6 +195,7 @@ class MerchantController extends Controller
         $adminUser = Auth::guard('api')->user();
 
         $clientType = ['client_type' => 'merchant'];
+
         $reportingLogUrl = "reporting/logs/$logId";
 
         if (empty($adminUser) === false)
@@ -229,6 +230,8 @@ class MerchantController extends Controller
 
         if (empty($adminUser) === false)
         {
+            $clientType = ['client_type' => 'admin'];
+
             $ufhFileUrl = "admin-ufh/file/$fileId/get-signed-url";
         }
 
@@ -257,13 +260,13 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
-    
+
     public function validateCoupon()
     {
         $input = Input::all();
-        
+
         list($error, $data) = (new Merchant\Service)->validateCouponCode($input);
 
         return AppResponse::jsonResponse($error, $data);
-    }    
+    }
 }
