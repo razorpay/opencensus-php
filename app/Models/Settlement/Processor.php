@@ -893,6 +893,24 @@ class Processor extends Base\Core
     {
         $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 
+        //
+        // in case of commision balance, balance entity should me present for merchant
+        //
+        if (($balanceType === Balance\Type::COMMISSION) and ($balance === null))
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant doesnot have commission balance',
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
+
         $balanceId = ($balance === null) ? null : $balance->getId();
 
         RuntimeManager::setMemoryLimit('1024M');
@@ -900,7 +918,7 @@ class Processor extends Base\Core
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balanceType, $params);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balanceId, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
