@@ -61,6 +61,19 @@ const contactFields = [
   },
 ];
 
+const businessDetails = [
+  {
+    label: 'Business Name',
+    name: 'contact_name',
+  },
+  {
+    label: 'Business Number',
+    name: 'contact_mobile',
+    type: 'tel',
+    info: 'We will reach out to this phone for any account related issues.',
+  },
+];
+
 const businessModel = [
   {
     label: 'Full Business Name',
@@ -89,24 +102,24 @@ const businessModel = [
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: activation => {
-      // Changing description of self
-      const currentBusinessType =
-        activation.state.dirty.business_type ||
-        activation.props.data.business_type;
+    // description: activation => {
+    //   // Changing description of self
+    //   const currentBusinessType =
+    //     activation.state.dirty.business_type ||
+    //     activation.props.data.business_type;
 
-      // if user has selected individual business type
-      if (currentBusinessType && !activation.props.accountId) {
-        if (currentBusinessType == INDIVIDUAL) {
-          return (
-            <div class="warning-svg red">
-              {WarningSvg()}
-              <span>{individualMsg}</span>
-            </div>
-          );
-        }
-      }
-    },
+    //   // if user has selected individual business type
+    //   if (currentBusinessType && !activation.props.accountId) {
+    //     if (currentBusinessType == INDIVIDUAL) {
+    //       return (
+    //         <div class="warning-svg red">
+    //           {WarningSvg()}
+    //           <span>{individualMsg}</span>
+    //         </div>
+    //       );
+    //     }
+    //   }
+    // },
   },
   [
     {
@@ -114,9 +127,9 @@ const businessModel = [
       name: 'business_category',
       _cmp: Input.Select,
       options: [],
-      _disabledWhen: function(form) {
-        return !!form.props.user.showInstantActivation;
-      },
+      // _disabledWhen: function(form) {
+      //   return !!form.props.user.showInstantActivation;
+      // },
     },
     {
       label: 'Business Model',
@@ -182,9 +195,9 @@ const businessModel = [
         // 'Others' business_category has no sub_category
         return hasBusinessCategory;
       },
-      _disabledWhen: function(form) {
-        return !!form.props.user.showInstantActivation;
-      },
+      // _disabledWhen: function(form) {
+      //   return !!form.props.user.showInstantActivation;
+      // },
     },
   ],
   [
@@ -271,8 +284,10 @@ const registrationDetails = [
       const currentBusinessType =
         activation.state.dirty.business_type ||
         activation.props.data.business_type;
-
+      // console.log(activation.props.user.showInstantActivation);
+      // console.log(activation.props.user.instantActivation);
       return (
+        activation.props.user.instantActivation.isL1Submitted &&
         currentBusinessType &&
         CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1
       );
@@ -302,14 +317,25 @@ const registrationDetails = [
   },
   [
     {
-      label: 'PAN info of Authorized Signatory/Promoter/Director',
+      // label: 'PAN info of Authorized Signatory/Promoter/Director',
+      // altLabel: 'PAN',
+      dynamicLabel: true,
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
+      getLabel: condition => {
+        return condition
+          ? 'PAN'
+          : 'PAN info of Authorized Signatory/Promoter/Director';
+      },
       className: 'Input--vTop Input--capitalize',
     },
     {
-      label: 'PAN Owner Name',
+      // label: 'PAN Owner Name',
+      dynamicLabel: true,
+      getLabel: condition => {
+        return condition ? 'PAN Holder’s Name' : 'PAN Owner Name';
+      },
       name: 'promoter_pan_name',
     },
   ],
