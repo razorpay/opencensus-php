@@ -26,7 +26,26 @@ const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
-
+const AADHAR = 'aadhar';
+const PASSPORT = 'passport';
+const VOTER_ID = 'voter_id';
+const DRIVER_LICENSE = 'driver_license';
+const UNREGISTERED_TYPES = {
+  11: true,
+  2: true,
+};
+const ADDRESS_PROOF_TYPES = {
+  none: { value: null, label: '--Select--', front: false, back: false },
+  aadhar: { value: 'aadhar', label: 'Aadhar', front: true, back: true },
+  passport: { value: 'passport', label: 'Passport', front: true, back: true },
+  voter_id: { value: 'voter_id', label: 'Voter Id', front: true, back: true },
+  driver_license: {
+    value: 'driver_license',
+    label: "Driver's License",
+    front: true,
+    back: false,
+  },
+};
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
@@ -314,8 +333,10 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
-      getLabel: condition => {
-        return condition
+      getLabel: activation => {
+        return UNREGISTERED_TYPES[
+          Number(activation.state.dirty['business_type'])
+        ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
           ? 'PAN'
           : 'PAN info of Authorized Signatory/Promoter/Director';
       },
@@ -325,8 +346,12 @@ const registrationDetails = [
     {
       // label: 'PAN Owner Name',
       dynamicLabel: true,
-      getLabel: condition => {
-        return condition ? 'PAN Holder’s Name' : 'PAN Owner Name';
+      getLabel: activation => {
+        return UNREGISTERED_TYPES[
+          Number(activation.state.dirty['business_type'])
+        ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
+          ? 'PAN Holder’s Name'
+          : 'PAN Owner Name';
       },
       name: 'promoter_pan_name',
       description: () => {
@@ -544,6 +569,7 @@ const uploadFields = [
     label: "Company's Bank Account Statement with Address",
     description:
       'Your Bank account number, IFSC code, and Company Name should be clearly visible',
+    _when: excludeFor_Indiv,
   },
   {
     name: 'promoter_address_url',
@@ -562,6 +588,7 @@ const uploadFields = [
         to join 2 different photos.
       </span>
     ),
+    _when: excludeFor_Indiv,
   },
   {
     name: 'form_12a_url',
@@ -574,6 +601,59 @@ const uploadFields = [
     label: 'Form 80G Allotment Letter',
     required: requiredForNGO,
     _when: showForOrgs,
+  },
+  {
+    label: 'Address Proof',
+    _name: 'address_proof',
+    _cmp: Input.Select,
+    options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {
+      return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
+    }),
+  },
+  {
+    label: 'First Page',
+    name: 'front',
+    dynamicLabel: true,
+    dynamicName: true,
+    getLabel: activation => {
+      return (
+        ADDRESS_PROOF_TYPES[activation.state.address_proof].label +
+        ' ' +
+        'First Page'
+      );
+    },
+    getName: activation => {
+      return activation.state.address_proof + '_' + 'front';
+    },
+    _cmp: Input.File,
+    destinationUrl: 'merchant/documents/upload',
+    _when: activation => {
+      return null !== activation.state.address_proof;
+    },
+  },
+  {
+    label: 'Last Page',
+    name: 'back',
+    dynamicLabel: true,
+    dynamicName: true,
+    getLabel: activation => {
+      return (
+        ADDRESS_PROOF_TYPES[activation.state.address_proof].label +
+        ' ' +
+        'Last Page'
+      );
+    },
+    getName: activation => {
+      return activation.state.address_proof + '_' + 'back';
+    },
+    _cmp: Input.File,
+    destinationUrl: 'merchant/documents/upload',
+    _when: activation => {
+      return (
+        null !== activation.state.address_proof &&
+        ADDRESS_PROOF_TYPES[activation.state.address_proof].back
+      );
+    },
   },
 ];
 
