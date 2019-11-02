@@ -94,7 +94,7 @@ export default class ActivationCard extends Component {
               Please review your details
               <div>
                 <Link
-                  to="/activation?auto-submit=l1-form"
+                  to="/activation"
                   className="btn btn-primary"
                   onClick={e => {
                     track.activateAccount();
