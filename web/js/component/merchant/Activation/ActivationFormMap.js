@@ -25,6 +25,7 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
+const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -89,6 +90,7 @@ const businessModel = [
       { label: 'Trust', name: TRUST },
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
+      { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
     ],
     // description: activation => {
     //   // Changing description of self
