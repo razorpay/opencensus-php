@@ -32,17 +32,18 @@ function L1FormSuccess(props) {
     const { poi_verification_status } = props;
     if (poi_verification_status == 'verified') {
       props.showPANStatusModal();
-    } else if (poi_verification_status == 'incorrect_details') {
-      const error = {
-        errors: ['Incorrect PAN Details Provided'],
-      };
-      throw error;
-    } else if (poi_verification_status == 'not_matched') {
-      const error = {
-        errors: ['Provided details does not match any records.'],
-      };
-      throw error;
     }
+    // else if (poi_verification_status == 'incorrect_details') {
+    //   const error = {
+    //     errors: ['Incorrect PAN Details Provided'],
+    //   };
+    //   throw error;
+    // } else if (poi_verification_status == 'not_matched') {
+    //   const error = {
+    //     errors: ['Provided details does not match any records.'],
+    //   };
+    //   throw error;
+    // }
   } else {
     const {
       isWhitelistFlow,
