@@ -309,7 +309,12 @@ export default class ActivationWizard extends React.Component {
 
   handleActionBasedOnQuery = query => {
     if (query['auto-submit'] == 'l1-form') {
-      this.submitL1(2);
+      const submitButton = document.querySelector(
+        'footer button[name=submit-and-verify]'
+      );
+      if (submitButton) {
+        submitButton.click();
+      }
     }
   };
 
@@ -836,7 +841,12 @@ export default class ActivationWizard extends React.Component {
       L1FormSuccess(props);
       this.saveCurrentTab();
 
-      return this.props.history.replace(`/`);
+      this.setState({ callingL1Api: false }, () => {
+        if (poi_verification_status == 'failed') {
+          return this.props.history.replace(`/`);
+        }
+      });
+      return response;
     } catch (err) {
       this.setState({ callingL1Api: false });
       this.saveCurrentTab();
@@ -1502,6 +1512,7 @@ export default class ActivationWizard extends React.Component {
                       disabled={this.state.callingL1Api}
                       onClick={this.submitL1}
                       pendingState={'Verifying'}
+                      name={'submit-and-verify'}
                     >
                       Submit and Verify
                     </AsyncBtn.Primary>
