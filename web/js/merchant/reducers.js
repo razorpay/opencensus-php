@@ -19,6 +19,7 @@ import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
+import activationWizardReducer from 'merchant/modules/activationWizard';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import transferReducer from 'merchant/modules/marketplace/transfer';
@@ -112,6 +113,7 @@ export default combineReducers({
   team: teamReducer,
   config: configReducer,
   activation: activationReducer,
+  activationWizard: activationWizardReducer,
   refunds: refundsReducer,
   refund: refundReducer,
   applications: applicationsReducer,
