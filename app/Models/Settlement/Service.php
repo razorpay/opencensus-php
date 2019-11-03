@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -19,6 +20,63 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
+    public function getMerchantSettlementAmount($input)
+    {
+        (new Validator)->validateInput('settlement_amount', $input);
+
+        $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
+
+        // todo: remove this and response structure has to be finalized
+        $this->merchant = $this->repo->merchant->find('10000000000000');
+
+        $balance = $this->merchant->getBalanceByType($balanceType);
+
+        $response = [
+            'balance_amount'    => $balance->getBalance(),
+            'settlement_amount' => 0,
+        ];
+
+        //
+        // This will give wrong result for wealthy merchant on saturdays
+        //
+        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant);
+
+        if ($status === false)
+        {
+            return $response + $data;
+        }
+
+        $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
+
+        $settlementDetails = (new Core)->getMerchantSettlementAmount(
+            $this->merchant,
+            $balance,
+            $nextSettlementTime);
+
+        $response += $settlementDetails;
+
+        //
+        // settlement amount should be atleast 1rs
+        // and settlement amount shouldn't be more than the available balance
+        //
+        if ($response['settlement_amount'] < 100)
+        {
+            $response += [
+                'reason' => 'settlement might get skipped',
+                'detail' => 'settlement amount is less than 1 rupee'
+            ];
+        }
+        else if ($response['settlement_amount'] > $balance->getBalance())
+        {
+            $response += [
+                'reason' => 'settlement might get skipped',
+                'detail' => 'settlement amount is more than the available live balance',
+            ];
+        }
+
+        return $response;
+    }
+
     public function initiateSettlements($input, $channel = null)
     {
         (new Validator)->validateInput('settlement_initiate', $input);
