@@ -1635,7 +1635,7 @@ class Repository extends Base\Repository
 
         if ($balance->isTypePrimary() === true)
         {
-            $query->where(function ($query) use ($transactionBalanceId, $balanceId) {
+            $query->where(function ($query) use ($transactionBalanceId, $balance) {
                 $query->where($transactionBalanceId, $balance->getId())
                       ->orWhereNull($transactionBalanceId);
             });

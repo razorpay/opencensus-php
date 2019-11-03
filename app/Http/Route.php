@@ -2615,6 +2615,8 @@ final class Route
         'setl_initiate_action'                     => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data'                        => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data_reset'                  => Permission::SETTLEMENT_BULK_UPDATE,
+        // TODO: get clarity on permissions
+        'setl_amount'                              => '*',
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,

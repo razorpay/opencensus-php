@@ -5,12 +5,12 @@ namespace RZP\Models\Settlement;
 use Cache;
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -22,12 +22,10 @@ class Service extends Base\Service
 {
     public function getMerchantSettlementAmount($input)
     {
+        // todo: response structure has to be finalized
         (new Validator)->validateInput('settlement_amount', $input);
 
         $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
-
-        // todo: remove this and response structure has to be finalized
-        $this->merchant = $this->repo->merchant->find('10000000000000');
 
         $balance = $this->merchant->getBalanceByType($balanceType);
 
