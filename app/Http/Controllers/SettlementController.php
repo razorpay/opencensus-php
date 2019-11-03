@@ -45,6 +45,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantSettlementAmount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getMerchantSettlementAmount($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Initiates settlements for merchants with
      * feature DAILY_SETTLEMENT enabled.

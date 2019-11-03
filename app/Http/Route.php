@@ -397,6 +397,7 @@ final class Route
         'setl_process_data'                        => ['get',      'settlements/process',                            'SettlementController@getSettlementProcess'                         ],
         'setl_process_data_reset'                  => ['delete',   'settlements/process',                            'SettlementController@resetSettlementProcess'                       ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
+        'setl_amount'                              => ['get',      'settlements/amount',                             'SettlementController@getMerchantSettlementAmount'                  ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
         'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
@@ -1454,6 +1455,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'oauth_app_webhook_create',
+        'setl_amount',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
@@ -1787,7 +1789,7 @@ final class Route
         'invoice_cancel',
     ];
 
-    // The below routes can be used with partner credentials without X-Razorpay-Account header, 
+    // The below routes can be used with partner credentials without X-Razorpay-Account header,
     // in which case, partner will be able to make request on his own behalf, just like private auth
     public static $partnerCredentialsWithoutSubmerchantIdWhitelist = [
         'account_create',
@@ -1797,7 +1799,7 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
-    ];    
+    ];
 
     public static $proxy = [
         'fetch_partner_intent',
