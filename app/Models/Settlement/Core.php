@@ -372,7 +372,7 @@ class Core extends Base\Core
         // In case merchant is not bucketed and has valid settlement amount
         // then enqueue him for bucketing so the settlement can go as expected
         //
-        if ($settlementAmount <= $balance->getBalance())
+        if (($isMerchantSettlementScheduled === false) and ($settlementAmount <= $balance->getBalance()))
         {
             Bucket::dispatch($this->mode, '', $merchant->getId(), $timestamp->getTimestamp());
         }
