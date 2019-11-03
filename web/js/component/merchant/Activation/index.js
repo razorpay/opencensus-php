@@ -47,6 +47,10 @@ import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
 } from 'merchant/modules/home';
+import {
+  submitL1Form,
+  submitL1FormSuccess,
+} from 'merchant/modules/activationWizard';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 
@@ -138,6 +142,9 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     updateSession,
     showInstantActivationSuccessModal,
     showKYCDetailsModal,
+    showPANStatusModal,
+    submitL1Form,
+    submitL1FormSuccess,
   }
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -770,16 +777,11 @@ export default class ActivationWizard extends React.Component {
     const data = this.formData;
     const { tracking } = this.props;
     this.setState({ callingL1Api: true });
-    return merchantFetch({
-      url: 'merchant/instant_activation',
-      method: 'POST',
-      mode: 'live',
-      data: data,
-      accountId: this.props.accountId, // TODO: confirm account id behaviour with  LA
-    })
+    // this.props.submitL1Form({data, successCallback: this.submitL1Success});
+    this.props
+      .submitL1Form({ data, accountId: this.props.accountId })
       .then(response => {
-        console.log('got response', response);
-        this.setState({ callingL1Api: false });
+        this.props.submitL1FormSuccess({ data: response.data });
         if (this.onActivationSuccess) {
           return this.onActivationSuccess(response);
         }
