@@ -494,7 +494,6 @@ class Processor extends Base\Core
 
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner, $balance, $params);
 
-
             if ($setl !== null)
             {
                 $settlements->push($setl);
@@ -842,7 +841,9 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ($this->isMerchantSettlementAllowed($merchant) === false)
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant);
+
+        if ($status === false)
         {
             return [
                 'settlement_count' => 0,
