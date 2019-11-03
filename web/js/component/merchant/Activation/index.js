@@ -348,7 +348,9 @@ export default class ActivationWizard extends React.Component {
         // For non-LA account
         firstInValid = 1; // Business Overview tab
       } else {
-        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+        !isFormSubmitted &&
+          isL1Completed(this) &&
+          (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
       }
     }
 
@@ -842,7 +844,10 @@ export default class ActivationWizard extends React.Component {
       this.saveCurrentTab();
 
       this.setState({ callingL1Api: false }, () => {
-        if (poi_verification_status == 'failed') {
+        if (
+          poi_verification_status != 'incorrect_details' &&
+          poi_verification_status != 'not_matched'
+        ) {
           return this.props.history.replace(`/`);
         }
       });
