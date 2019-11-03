@@ -1540,13 +1540,13 @@ class Repository extends Base\Repository
     /**
      * @param string $mid
      * @param string $channel
-     * @param string $balanceId
+     * @param Balance\Entity $balance
      * @param array $params
      *
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel,string $balanceId = null, array $params = []): Base\PublicCollection
+        string $mid, string $channel, Balance\Entity $balance, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1571,13 +1571,16 @@ class Repository extends Base\Repository
                       ->where($transactionType, '!=', Type::SETTLEMENT)
                       ->whereNotNull($transactionSettledAt);
 
-        if ($balanceId === null)
+        if ($balance->isTypePrimary() === true)
         {
-            $query->whereNull($transactionBalanceId);
+            $query->where(function ($query) use ($transactionBalanceId, $balance) {
+                $query->where($transactionBalanceId, $balance->getId())
+                      ->orWhereNull($transactionBalanceId);
+            });
         }
         else
         {
-            $query->where($transactionBalanceId, $balanceId);
+            $query->where($transactionBalanceId, $balance->getId());
         }
 
         $query = $this->addSettlementFilters($query, $timestamp, $params);
@@ -1592,7 +1595,8 @@ class Repository extends Base\Repository
                 'merchant_id'  => $mid,
                 'settled_at'   => $timestamp,
                 'params'       => $params,
-                'balance_type' => $balanceId,
+                'balance_type' => $balance->getType(),
+                'balance_id'   => $balance->getId(),
             ]);
 
         return $results;
