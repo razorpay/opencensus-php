@@ -3,6 +3,7 @@ import { classList } from 'common/util';
 
 import CalendarPicker from './Calendar';
 import TimePicker from './Time';
+import DateTime from './DateTime';
 import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
 import PowerDropdown from './PowerDropdown';
@@ -646,6 +647,7 @@ const ToCalendar = _ => (
 Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
+Field.DateTime = DateTime;
 Field.CurrencySelect = CurrencySelect;
 
 Field.TextareaAutoResize = TextareaAutoResize;
