@@ -70,7 +70,6 @@ export default class BaseScreen extends React.Component {
     this.closeTransaction('merchant/partner-intent', { partner_intent: false });
   };
   render() {
-    console.log('this.props.disableClose', this.props.disableClose);
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
