@@ -12,7 +12,7 @@ import Button, { AsyncBtn } from 'component/Button';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinkFormFields from './Fields';
+import PaymentLinkFormFields, { getOptions } from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
@@ -355,6 +355,12 @@ export default class CreateNewContainer extends React.Component {
 
   /* Handle change of notes */
   onChangeNotes = pairs => {
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      this.onChange(pairs);
+
+      return;
+    }
+
     const notes = onChangeNotes(pairs);
 
     this.setState({
@@ -406,6 +412,13 @@ export default class CreateNewContainer extends React.Component {
 
     if (!this.state.dirty.receipt) {
       delete reqPayload.receipt;
+    }
+
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      const { type } = getOptions(this.props.user.current);
+      reqPayload.notes = {
+        [type]: reqPayload.notes,
+      };
     }
 
     return FORM_FIELDS.onCreate(reqPayload)
@@ -520,6 +533,16 @@ export default class CreateNewContainer extends React.Component {
             </div>
           </Input.Group>
         );
+      }
+
+      let options = f.options;
+      if (typeof options === 'function') {
+        f.options = options(this);
+      }
+
+      let label = f.label;
+      if (typeof label === 'function') {
+        f.label = f.label(this);
       }
 
       return WizardFields.call(this, f);
