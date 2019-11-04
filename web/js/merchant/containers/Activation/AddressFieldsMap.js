@@ -2,9 +2,6 @@ import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
 import { excludeFor_Indiv } from 'component/merchant/Activation/ActivationFormMap';
 
-// const INDIVIDUAL = 2;
-// const NOT_YET_REGISTERED = 11;
-
 var stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
     return {
@@ -14,23 +11,13 @@ var stateOptions = ['--Select--'].concat(
   })
 );
 
-// function excludeFor_Indiv(activation) {
-//   const currentBusinessType =
-//     activation.state.dirty.business_type || activation.props.data.business_type;
-
-//   return [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1;
-// }
-
 export default [
   [
     {
       name: 'business_registered_address',
-      label: 'Registered Address',
+      label: 'Address',
+      placeholder: 'Enter Street Address',
       _cmp: Input.Textarea,
-      dynamicLabel: true,
-      getLabel: condition => {
-        return condition ? 'Address' : 'Registered Address';
-      },
     },
     {
       name: 'business_registered_pin',
@@ -62,7 +49,7 @@ export default [
   [
     {
       name: 'business_operation_address',
-      // placeholder: 'Enter Street Address',
+      placeholder: 'Enter Street Address',
       label: 'Operational Address',
       _cmp: Input.Textarea,
       _when: differentAddress,
