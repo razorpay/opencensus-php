@@ -867,7 +867,9 @@ class Service extends Base\Service
             'mobile_hotjar_survey',
             'paymentpages_v3',
             'paymentpages_v3_reports',
-            'show_commission_balance'
+            'show_commission_balance',
+            'custom_notes',
+            'sellerapp_PL_batch_upload'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
