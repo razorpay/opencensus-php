@@ -879,7 +879,7 @@ final class FactoryData
             'name'        => 'xyz.xlsx',
             'store'       => 's3',
             'location'    => 'xyz',
-            'bucket'      => 'rzp-1018-nonprod-test-bucket',
+            'bucket'      => 'rzp-test-bucket',
             'region'      => 'us-east-1',
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
