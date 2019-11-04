@@ -11,9 +11,9 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 class L2SubmissionWhitelist extends Mailable
 {
-    const SUPPORT_URL    = '';
+    const SUPPORT_URL    = 'https://x.razorpay.com/?support=ticket';
 
-    const LEARN_MORE_URL = '';
+    const LEARN_MORE_URL = 'https://razorpay.com/docs/razorpayx/';
 
     const SUBJECT        = 'KYC Form submitted for Razorpay';
 

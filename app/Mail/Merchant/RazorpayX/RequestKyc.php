@@ -1,7 +1,6 @@
 <?php
 namespace RZP\Mail\Merchant\RazorpayX;
 
-use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 
@@ -11,13 +10,13 @@ class RequestKyc extends Mailable
 
     const TEMPLATE_PATH = 'emails.merchant.razorpayx.request_kyc';
 
-    const SUPPORT_URL   = '';
+    const SUPPORT_URL   = 'https://razorpay.com/support/#request/merchant';
+
+    const FILL_KYC_URL  = 'https://x.razorpay.com/activation';
 
     protected $merchantName;
 
     protected $merchantEmail;
-
-    protected $config;
 
     public function __construct(string $merchantName, string $merchantEmail)
     {
@@ -67,11 +66,9 @@ class RequestKyc extends Mailable
 
     protected function addMailData()
     {
-        $config = App::getFacadeRoot()['config'];
-
         $this->with(
             [
-                'dashboard_url' => $config['applications.banking_service_url'],
+                'dashboard_url' => self::FILL_KYC_URL,
                 'support_url'   => self::SUPPORT_URL
             ]);
 

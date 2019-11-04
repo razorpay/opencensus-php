@@ -8,7 +8,7 @@ use RZP\Mail\Base\Constants;
 
 class Invite extends Mailable
 {
-    const SUPPORT_URL        = '';
+    const SUPPORT_URL        = 'https://razorpay.com/support/#request/merchant';
 
     const SUBJECT            = 'Invitation to join %s | RazorpayX';
 

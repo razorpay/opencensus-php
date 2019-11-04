@@ -13,13 +13,13 @@ class InstantActivation extends Mailable
 {
     const TEMPLATE_PATH        = 'emails.merchant.razorpayx.instant_activation_mail';
 
-    const LEARN_MORE_URL       = '';
+    const LEARN_MORE_URL       = 'https://razorpay.com/docs/razorpayx/';
 
-    const FILL_KYC_URL         = '';
+    const FILL_KYC_URL         = 'https://x.razorpay.com/activation';
 
-    const GUIDE_TO_GO_LIVE_URL = '';
+    const GUIDE_TO_GO_LIVE_URL = 'https://razorpay.com/docs/razorpayx/api/';
 
-    const SUPPORT_URL          = '';
+    const SUPPORT_URL          = 'https://x.razorpay.com/?support=ticket';
 
     const SUBJECT              = 'One step away from starting transactions on RazorpayX';
 

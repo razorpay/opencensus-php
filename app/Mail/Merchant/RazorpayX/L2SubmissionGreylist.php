@@ -8,7 +8,7 @@ use RZP\Mail\Base\Constants;
 
 class L2SubmissionGreylist extends Mailable
 {
-    const SUPPORT_URL    = '';
+    const SUPPORT_URL    = 'https://x.razorpay.com/?support=ticket';
 
     const SUBJECT        = 'KYC Form submitted for Razorpay';
 

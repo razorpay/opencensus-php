@@ -10,11 +10,11 @@ use RZP\Exception\BadRequestException;
 
 class AccountActivationConfirmation extends Mailable
 {
-    const GUIDE_TO_GO_LIVE_URL = '';
+    const GUIDE_TO_GO_LIVE_URL = 'https://razorpay.com/docs/razorpayx/api/';
 
-    const SUPPORT_URL          = '';
+    const SUPPORT_URL          = 'https://x.razorpay.com/?support=ticket';
 
-    const LEARN_MORE_URL       = '';
+    const LEARN_MORE_URL       = 'https://razorpay.com/docs/razorpayx/';
 
     const SUBJECT              = 'Your RazorpayX account is now live';
 
