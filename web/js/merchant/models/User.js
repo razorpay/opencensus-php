@@ -375,7 +375,7 @@ export default class User {
   }
 
   get isRemindersEnabled() {
-    return this.isFeatureEnabled('reminders');
+    return this.getExpStatus('reminders');
   }
 
   get getCurrencyList() {

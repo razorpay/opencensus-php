@@ -853,6 +853,7 @@ class Service extends Base\Service
         $merchantService = new Merchant\Service;
 
         $features = [
+            'reminders',
             'coupons',
             'is_announcement',
             'is_banner',
