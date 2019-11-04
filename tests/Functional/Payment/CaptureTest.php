@@ -1073,15 +1073,47 @@ class CaptureTest extends TestCase
 
 
     // Fee Model = Prepaid
-    // Fee Bearer = Customer
-    public function testTransactionOnCaptureWithFeeBearerCustomer()
+    // Payment Fee Bearer = Customer
+    // Merchant fee bearer = customer
+    public function testTransactionOnCaptureWithPaymentFeeBearerCustomerMerchantFeeBearerCustomer()
     {
         $merchant = $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
 
         $payment = $this->fixtures->create('payment:authorized', [
             'gateway_captured' => true,
-            'fee'              => 23000
+            'fee'              => 23000,
+            'fee_bearer'       => Merchant\FeeBearer::CUSTOMER,
         ]);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => Merchant\FeeBearer::CUSTOMER]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest(null, 977000);
+
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($transaction['credit_type'], 'default');
+        $this->assertEquals($transaction['fee_bearer'], 'customer');
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+    }
+
+    // Fee Model = Prepaid
+    // Payment Fee Bearer = Customer
+    // Merchant fee bearer = dynamic
+    public function testTransactionOnCaptureWithPaymentFeeBearerCustomerMerchantFeeBearerDynamic()
+    {
+        $this->markTestSkipped('test skipped temporarily to avoid canary-master issue. will be reverted. ref: https://razorpay.slack.com/archives/CNV2GTFEG/p1571946884026200');
+        $merchant = $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'dynamic']);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true,
+            'fee'              => 23000,
+            'fee_bearer'       => Merchant\FeeBearer::CUSTOMER,
+        ]);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => Merchant\FeeBearer::CUSTOMER]);
 
         $this->payment = $payment->toArrayPublic();
 
