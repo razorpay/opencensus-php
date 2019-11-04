@@ -62,6 +62,7 @@ export default class ActivationCard extends Component {
     if (!isL1Submitted) {
       status = possibleStatuses.active;
       if (poi_verification_status) {
+        status = possibleStatuses.blocked;
         if (poi_verification_status == 'failed') {
           content = (
             <div>
