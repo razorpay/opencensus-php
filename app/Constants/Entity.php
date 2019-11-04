@@ -439,6 +439,7 @@ class Entity
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
         self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
+        self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
