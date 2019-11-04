@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, NavLink } from 'react-router-dom';
+import { withRouter, NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import { RZPFeatures } from 'rzp/utils/constants';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe, findBy } from 'rzp/utils/rzp-utils';
 
 import * as InvoiceActions from 'merchant/modules/invoices/list';
+import { fetchReminders } from 'merchant/modules/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
@@ -24,9 +24,14 @@ import { trackSearchFilterForInternational } from './ga';
 @withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
+  fetchReminders,
 })
 @RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
 export default class PaymentLinksContainer extends ListContainer {
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
+
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
     return this.props.fetchInvoices(params);
@@ -50,6 +55,7 @@ export default class PaymentLinksContainer extends ListContainer {
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
+
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Payment Links',
@@ -86,6 +92,12 @@ export default class PaymentLinksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <span class="btn btn-link">
+              <span class="badge bg-success m-r">new</span>
+
+              <Link to="/reminders">Reminder Settings</Link>
+            </span>
+
             <TakeATourButton feature={RZPFeatures.PL} />
 
             <DocsLink url="https://razorpay.com/docs/payment-links/" />

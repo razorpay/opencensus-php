@@ -367,8 +367,7 @@ export default class User {
   }
 
   get isRemindersEnabled() {
-    return true; // For testing purpose
-    return this.isFeatureEnabled('reminders');
+    return this.getExpStatus('reminders');
   }
 
   get getCurrencyList() {
