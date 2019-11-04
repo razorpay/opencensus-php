@@ -5405,6 +5405,11 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number varchar(255) NOT NULL,
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER amount_due,
+    ADD INDEX merchant_invoice_balance_id_index (balance_id);
+
 ALTER TABLE merchants
     ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
 

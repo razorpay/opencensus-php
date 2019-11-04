@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Invoice;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Constants\Product;
 
 class Repository extends Base\Repository
 {
@@ -17,20 +19,47 @@ class Repository extends Base\Repository
     // Gets all invoice entities for a merchant for given month and year
     public function fetchInvoiceReportData(string $merchantId, int $month, int $year)
     {
+        $balanceIdCol   = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeCol = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $merchantInvoiceBalanceIdCol = $this->dbColumn(Entity::BALANCE_ID);
+
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->selectRaw(Table::MERCHANT_INVOICE . '.*')
+                    ->join(Table::BALANCE, $merchantInvoiceBalanceIdCol , '=', $balanceIdCol)
+                    ->merchantId($merchantId)
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
+                    ->where($balanceTypeCol, '=', Product::PRIMARY)
                     ->get();
     }
 
-    // Gets entities to be displayed on Tax Invoice page
+    /**
+     * Gets entities to be displayed on Tax Invoice page
+     *
+     * @param string $merchantId
+     * @param int    $month
+     * @param int    $year
+     *
+     * @return Base\PublicCollection | null
+     */
     public function fetchFeesDataForInvoice(string $merchantId, int $month, int $year)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
+                    ->where(Entity::TYPE, '!=', Type::ADJUSTMENT)
+                    ->get();
+    }
+
+    public function fetchFeesDataToCheckInvoiceExists(string $merchantId, int $month, int $year , string $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::YEAR, '=', $year)
+                    ->where(Entity::MONTH, '=', $month)
+                    ->where(Entity::BALANCE_ID , '=', $balanceId)
                     ->where(Entity::TYPE, '!=', Type::ADJUSTMENT)
                     ->get();
     }

@@ -26,8 +26,8 @@ class Validator extends Base\Validator
         Entity::MONTH               => 'sometimes|integer|between:1,12',
         Entity::YEAR                => 'sometimes|digits:4',
         'merchant_ids'              => 'sometimes|array',
-        'merchant_ids_excluded'     => 'sometimes|array',
         'merchant_ids.*'            => 'sometimes|string|size:14',
+        'merchant_ids_excluded'     => 'sometimes|array',
         'merchant_ids_excluded.*'   => 'sometimes|string|size:14',
         'correction'                => 'sometimes|boolean',
     ];

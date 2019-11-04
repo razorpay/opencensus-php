@@ -708,7 +708,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-  
+
     public function getScheduledEarlySettlementPricingForMerchant()
     {
         $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();

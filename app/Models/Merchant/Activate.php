@@ -451,7 +451,7 @@ class Activate extends Base\Core
             // This endpoint could be hit from test mode as well, depending which this merchant has been read from
             // corresponding connection. Because this entity is synced between both connection, setting connection
             // to live mode is same as fetching merchant of same id from live connection. We need to do this
-            // because in subsequent steps we do things like $merchant->bankingBalance which we expect in this flow
+            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect in this flow
             // to query in live connection.
             //
             $merchant->setConnection($liveMode);

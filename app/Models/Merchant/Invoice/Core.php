@@ -12,13 +12,14 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Org\Preferences;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, Balance\Entity $balance = null): Entity
     {
         $invoiceEntity = new Entity;
 
@@ -26,18 +27,124 @@ class Core extends Base\Core
 
         $invoiceEntity->build($input);
 
-        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year']);
+        // TODO: Balance should be sent from every caller of this function.
+        // Remove `null` default in function argument.
+        if (empty($balance) === true)
+        {
+            $balance = $merchant->primaryBalance;
+        }
+
+        $invoiceEntity->balance()->associate($balance);
+
+        $balanceType = $balance->getType();
+
+        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year'], $balanceType);
 
         $this->repo->saveOrFail($invoiceEntity);
 
         return $invoiceEntity;
     }
 
+    public function queueCreateInvoiceEntities(array $input)
+    {
+        RuntimeManager::setMaxExecTime(900);
+
+        (new Validator)->validateInput('create_queue', $input);
+
+        // Get invoice date
+        if ((isset($input['month']) === true) and
+            (isset($input['year']) === true))
+        {
+            $invoiceDate = Carbon::createFromDate($input['year'], $input['month'], 1, Timezone::IST);
+        }
+        else
+        {
+            $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
+        }
+
+        //
+        // When true, payment transactions will be considered from the month
+        // specified by `$invoiceDate` where created and captured in same month
+        // All other transaction will we considered on created date
+        //
+        $isCorrection = (isset($input['correction']) === true) ?
+                        (bool) $input['correction'] :
+                        false;
+
+        // Get merchants
+        $merchantIds = [];
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            $merchantIds = $input['merchant_ids'];
+        }
+
+        //
+        // merchant_ids_excluded is an array of merchant ids coming from input,
+        // for which invoice shouldn't be generated.
+        //
+        $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
+                               (array_merge($input['merchant_ids_excluded'],
+                                            Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)) :
+                               Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
+            [
+                'month'                 => $invoiceDate->month,
+                'year'                  => $invoiceDate->year,
+                'is_correction'         => $isCorrection,
+                'merchant_ids'          => $merchantIds,
+                'merchant_ids_excluded' => $merchantIdsExcluded,
+                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
+            ]);
+
+        $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
+
+        $batchSize = 10000;
+
+        $skip = 0;
+
+        $defaultDelay = 0;
+
+        do
+        {
+            $merchantIdsToEnqueue = $this->repo
+                                         ->merchant
+                                         ->fetchActivatedMerchantsBeforeTimestamp(
+                                             $batchSize,
+                                             $skip,
+                                             $endTimestamp,
+                                             $merchantIds,
+                                             $merchantIdsExcluded);
+
+            $count = count($merchantIdsToEnqueue);
+
+            $skip += $count;
+
+            foreach ($merchantIdsToEnqueue as $merchantId)
+            {
+                MerchantInvoiceJob::dispatch(
+                    $merchantId,
+                    $invoiceDate->month,
+                    $invoiceDate->year,
+                    $this->mode,
+                    $isCorrection)
+                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                                  ->delay($defaultDelay++ % 901);
+            }
+        } while($count === $batchSize);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
+            [
+                'count' => $skip,
+            ]);
+    }
+
     public function queueCorrectionInvoiceInvoice(array $input)
     {
-        $this->trace->info(
-                    TraceCode::MERCHANT_INVOICE_CORRECTION_REQUEST,
-                    $input);
+        $this->trace->info(TraceCode::MERCHANT_INVOICE_CORRECTION_REQUEST, $input);
 
         (new Validator)->validateInput('correction_queue', $input);
 
@@ -58,17 +165,17 @@ class Core extends Base\Core
 
         $offset = 0;
 
-        $i = 0;
+        $defaultDelay = 0;
 
         do
         {
             $merchantIds = $this->repo
-                              ->merchant
-                              ->fetchActivatedMerchantsBeforeTimestamp(
-                                  $batch,
-                                  $offset,
-                                  $invoiceDate->endOfMonth()->timestamp,
-                                  $merchantIds);
+                                ->merchant
+                                ->fetchActivatedMerchantsBeforeTimestamp(
+                                    $batch,
+                                    $offset,
+                                    $invoiceDate->endOfMonth()->timestamp,
+                                    $merchantIds);
 
             $count = count($merchantIds);
 
@@ -76,7 +183,6 @@ class Core extends Base\Core
 
             foreach ($merchantIds as $merchantId)
             {
-
                 MerchantInvoiceCorrectionJob::dispatch(
                                                 $merchantId,
                                                 $invoiceDate->month,
@@ -84,9 +190,8 @@ class Core extends Base\Core
                                                 $this->mode)
                                             // Assign a delay between 0 and 900 so that tasks are distributed
                                             // over 15 minute period
-                                            ->delay($i++ % 901);
+                                            ->delay($defaultDelay++ % 901);
             }
-
         } while ($count === $batch);
     }
 
@@ -108,104 +213,12 @@ class Core extends Base\Core
             Entity::TAX             => ($input[Entity::TAX] ?? 0),
         ];
 
-        $invoiceEntity = $this->create($params, $merchant);
+        $invoiceEntity = $this->create($params, $merchant, $adjustment->balance);
 
         return $invoiceEntity;
     }
 
-    public function queueCreateInvoiceEntities(array $input)
-    {
-        RuntimeManager::setMaxExecTime(900);
-
-        (new Validator)->validateInput('create_queue', $input);
-
-        // Get invoice date
-        if ((isset($input['month']) === true) and (isset($input['year']) === true))
-        {
-            $invoiceDate = Carbon::createFromDate($input['year'], $input['month'], 1, Timezone::IST);
-        }
-        else
-        {
-            $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
-        }
-
-        // When true, payment transactions will be cosiderd from the month
-        // specified by `$invoiceDate` where created and captured in same month
-        // All other transction will we considered on created date
-        $isCorrection = (isset($input['correction']) === true) ?
-                                (bool) $input['correction'] : false;
-
-        // Get merchants
-        $merchantIds = [];
-
-        if (isset($input['merchant_ids']) === true)
-        {
-            $merchantIds = $input['merchant_ids'];
-        }
-
-        //
-        // merchant_ids_excluded is an array of merchant ids coming from input,
-        // for which invoice shouldn't be generated.
-        //
-        $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
-                               (array_merge($input['merchant_ids_excluded'], Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)) :
-                                Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS;
-
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
-            [
-                'month'                 => $invoiceDate->month,
-                'yeat'                  => $invoiceDate->year,
-                'is_correction'         => $isCorrection,
-                'merchant_ids'          => $merchantIds,
-                'merchant_ids_excluded' => $merchantIdsExcluded,
-                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
-            ]);
-
-        $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
-
-        $batch = 10000;
-
-        $skip = 0;
-
-        $i = 0;
-
-        do
-        {
-            $merchantIdsToEnqueue = $this->repo
-                                         ->merchant
-                                         ->fetchActivatedMerchantsBeforeTimestamp(
-                                              $batch,
-                                              $skip,
-                                              $endTimestamp,
-                                              $merchantIds,
-                                              Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS);
-
-            $count = count($merchantIdsToEnqueue);
-
-            $skip += $count;
-
-            foreach ($merchantIdsToEnqueue as $merchantId)
-            {
-                MerchantInvoiceJob::dispatch(
-                                        $merchantId,
-                                        $invoiceDate->month,
-                                        $invoiceDate->year,
-                                        $this->mode,
-                                        $isCorrection)
-                                  // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                                  ->delay($i++ % 901);
-            }
-        } while($batch === $count);
-
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
-            [
-                'count' => $skip,
-            ]);
-    }
-
-    public function createMulitpleInvoiceEntities(array $input)
+    public function createMultipleInvoiceEntities(array $input)
     {
         (new Validator)->validateInput('bulk_create', $input);
 
@@ -215,11 +228,13 @@ class Core extends Base\Core
 
             $row[Entity::TYPE] = Type::ADJUSTMENT;
 
+            /** @var Merchant\Entity $merchant */
             $merchant = $this->repo->merchant->findOrFail($row[Entity::MERCHANT_ID]);
 
             unset($row[Entity::MERCHANT_ID]);
-
-            $this->create($row, $merchant);
+            // TODO: Accept balance_id in invoice_entities passed as input on route merchant_invoice_add_bulk
+            //Jira link : https://razorpay.atlassian.net/browse/RX-612
+            $this->create($row, $merchant, $merchant->primaryBalance);
         }
     }
 
