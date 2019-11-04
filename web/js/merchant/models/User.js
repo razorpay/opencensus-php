@@ -366,6 +366,10 @@ export default class User {
     );
   }
 
+  get isRemindersEnabled() {
+    return this.getExpStatus('reminders');
+  }
+
   get getCurrencyList() {
     return window.currencyList;
   }

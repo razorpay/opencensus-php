@@ -25,9 +25,13 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
+import {
+  fetchReminders,
+  fetchRemindersMerchantConfigs,
+} from 'merchant/modules/reminders';
 import { luminateRow } from 'merchant/modules/app';
 
-import { getURLQueryParams, paiseToRupees } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams, paiseToRupees, findBy } from 'rzp/utils/rzp-utils';
 import {
   trackOpenCreateForm,
   closePaymentLinkForm,
@@ -145,6 +149,47 @@ function WizardFields(field) {
 }
 
 @withRouter
+@connect(
+  state => {
+    const paymentLinksRemindersSettings =
+      findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
+      {};
+
+    let withExpireRemindersCount = 0,
+      withOutExpireRemindersCount = 0;
+
+    state.reminders.merchant_config.items.forEach(ele => {
+      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
+        withExpireRemindersCount += 1;
+
+        return;
+      }
+
+      withOutExpireRemindersCount += 1;
+    });
+
+    return {
+      ...state.session,
+      paymentLinksRemindersSettings: {
+        isEnabled: paymentLinksRemindersSettings.active,
+        count: {
+          withExpireRemindersCount,
+          withOutExpireRemindersCount,
+        },
+      },
+      reminders: state.reminders,
+    };
+  },
+  {
+    updatePLInReduxList,
+    showNotification,
+    openModal,
+    closeModal,
+    luminateRow,
+    fetchReminders,
+    fetchRemindersMerchantConfigs,
+  }
+)
 @connect(state => state.session, {
   updatePLInReduxList,
   fetchInvoice,
@@ -217,6 +262,8 @@ export default class CreateNewContainer extends React.Component {
             contact: data.customer_details.contact,
             expire_by,
             notes: defaultValueNotes,
+            reminder_enable:
+              data.reminder_status && !(data.reminder_status === 'disabled'),
           },
           _name: {
             hasNoExpiry: expire_by ? '0' : '1',
@@ -242,6 +289,14 @@ export default class CreateNewContainer extends React.Component {
     }
 
     this.toggleDisableState();
+
+    if (!this.props.reminders.reminders.items.length) {
+      this.props.fetchReminders();
+    }
+
+    if (!this.props.reminders.merchant_config.items.length) {
+      this.props.fetchRemindersMerchantConfigs();
+    }
   }
 
   componentDidUpdate() {
@@ -412,6 +467,12 @@ export default class CreateNewContainer extends React.Component {
 
     if (!this.state.dirty.receipt) {
       delete reqPayload.receipt;
+    }
+
+    if (reqPayload.reminder_enable === '1') {
+      reqPayload.reminder_enable = true;
+    } else {
+      delete reqPayload.reminder_enable;
     }
 
     if (this.props.user.isCustomNotesDropdownEnabled) {

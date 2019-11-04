@@ -1,17 +1,21 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
 import Banner from 'rzp/ui/Banner';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { Link } from 'react-router-dom';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+
 import Button, { AsyncBtn } from 'component/Button';
+import Input from 'component/Input';
+import Stepper from 'component/Stepper';
+
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'rzp/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 
@@ -112,8 +116,11 @@ export default props => {
     invoice,
     isLoading,
     statusMsg,
+    nextReminders,
     editPaymentLink,
     isRoleAllowedEdit,
+    isAutoRemindersUpdating,
+    onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
   } = props;
 
@@ -127,6 +134,11 @@ export default props => {
 
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
+
+  const isRemindersEnabled =
+    invoice.reminder_status && !(invoice.reminder_status === 'disabled');
+
+  const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -283,6 +295,28 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
+                {user.isRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <Input.Check
+                      name="auto_reminders"
+                      fieldLabel="Send auto reminders"
+                      checked={isRemindersEnabled}
+                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
+                      onChange={onChangeSendAutoReminder}
+                      autoRender
+                    />
+
+                    <Stepper
+                      list={getRemindersStepperData(
+                        isRemindersEnabled,
+                        nextReminders,
+                        isAutoRemindersUpdating,
+                        isPaymentLinkClosed
+                      )}
+                    />
+                  </EntityDetailRow>
+                )}
+
                 <EntityDetailRow
                   label="Receipt No."
                   value={
@@ -372,4 +406,46 @@ export default props => {
       )}
     </div>
   );
+};
+
+const getRemindersStepperData = (
+  isRemindersEnabled,
+  reminders,
+  isAutoRemindersUpdating,
+  isPaymentLinkClosed
+) => {
+  return reminders
+    .map(reminder => {
+      const currDate = moment(undefined),
+        reminderDate = moment(reminder * 1000),
+        isPendingState = reminderDate.diff(currDate, 'days');
+
+      if (isPaymentLinkClosed && isPendingState) {
+        return null;
+      }
+
+      const newReminder = {
+        status: !isRemindersEnabled
+          ? 'disabled'
+          : isPendingState > 0 ? 'pending' : 'completed',
+        time_to_sent: reminder,
+      };
+
+      return {
+        status: newReminder.status,
+        type: (
+          <i
+            class={`i i-${
+              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
+            }`}
+          />
+        ),
+        label: isAutoRemindersUpdating ? (
+          <PlaceholderLoader />
+        ) : (
+          moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
+        ),
+      };
+    })
+    .filter(ele => ele !== null);
 };
