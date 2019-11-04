@@ -707,6 +707,7 @@ const uploadFields = [
       return activation.state.address_proof + '_' + 'front';
     },
     _cmp: Input.File,
+    className: 'address-proof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
@@ -726,6 +727,7 @@ const uploadFields = [
       return activation.state.address_proof + '_' + 'back';
     },
     _cmp: Input.File,
+    className: 'address-proof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
