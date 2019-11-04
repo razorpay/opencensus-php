@@ -49,10 +49,10 @@
         background-color: #616161;
         font-weight: bold;
         color: white;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bold;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 20px;
     }
 
@@ -75,19 +75,19 @@
     }
 
     .details-table td:nth-child(even){
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bold;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         text-align: right;
     }
 
     .details-table td:nth-child(odd){
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bol`d;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         text-align: left;
     }
@@ -108,19 +108,19 @@
     .transactions-table {
         border-collapse: collapse;
         border-spacing: 0;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: 600;
-        font-size: 8px;
+        font-size: 14px;
         line-height: 12px;
     }
 
     .details-table td:nth-child(1) {
         text-align: right;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bold;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         width: 10%;
         color: rgba(0, 0, 0, 0.6);
@@ -128,10 +128,10 @@
 
     .details-table td:nth-child(2) {
         text-align: left;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: normal;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         width: 30%;
         color: rgba(0, 0, 0, 0.8);
@@ -140,20 +140,20 @@
     .details-table td:nth-child(3) {
         width: 10%;
         text-align: right;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bold;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         color: rgba(0, 0, 0, 0.6);
     }
 
     .details-table td:nth-child(4) {
         text-align: left;
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: normal;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 18px;
         width: 30%;
         color: rgba(0, 0, 0, 0.8);
@@ -168,15 +168,15 @@
     .transactions-title {
         background-color: rgba(0, 0, 0, 0.8);
         color: rgba(255, 255, 255, 0.6);
-        font-family: Muli;
+        font-family: Arial;
         font-style: normal;
         font-weight: bold;
-        font-size: 10px;
+        font-size: 16px;
         line-height: 20px;
     }
 
-
 </style>
+
 <body>
 <main>
     <header class="text-right">
