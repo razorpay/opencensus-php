@@ -1,75 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
 import Announcement from 'merchant/components/Announcement';
 
-import {
-  submitL1Form,
-  submitL1FormSuccess,
-} from 'merchant/modules/activationWizard';
-import { updateSession } from 'merchant/modules/session';
-import { showNotification } from 'rzp/modules/notifications';
-import {
-  showInstantActivationSuccessModal,
-  showKYCDetailsModal,
-  showPANStatusModal,
-} from 'merchant/modules/home';
-
-import { handlePANTryAgain } from './AnnouncementActions';
-
 import { activationDuration } from 'common/data';
 
-const LOADING_TEXT = {
-  PAN: {
-    title: 'PAN Under Review',
-    content: 'We are validating your details with the PAN database.',
-  },
-};
-
-@connect(
-  state => ({
-    session: state.session,
-    user: state.session.user,
-  }),
-  {
-    showNotification,
-    updateSession,
-    submitL1Form,
-    submitL1FormSuccess,
-    showKYCDetailsModal,
-    showPANStatusModal,
-    showInstantActivationSuccessModal,
-  }
-)
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: false,
-      loadingTitle: '',
-      loadingContent: '',
-    };
-    this.handlePANTryAgain = handlePANTryAgain.bind(this);
-  }
-
-  handleAsyncAction = async (actionName, handlerFunc) => {
-    const loadingText = LOADING_TEXT[actionName];
-    this.setState({
-      loading: true,
-      loadingTitle: loadingText.title,
-      loadingContent: loadingText.content,
-    });
-    await handlerFunc();
-    this.setState({
-      loading: false,
-      loadingTitle: '',
-      loadingContent: '',
-    });
-  };
-
   render() {
     const { user, mode, payments } = this.props;
 
@@ -78,10 +16,7 @@ export default class InstantActivationAnnouncements extends Component {
       content;
 
     if (!user.isSubmitted) {
-      if (this.state.loading) {
-        title = this.state.loadingTitle;
-        content = this.state.loadingContent;
-      } else if (payments && payments.items.length > 0 && !user.isAccepted) {
+      if (payments && payments.items.length > 0 && !user.isAccepted) {
         title = 'Enable Settlements';
         content = (
           <span>
@@ -115,14 +50,7 @@ export default class InstantActivationAnnouncements extends Component {
             <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
               details. <span class="big-dot-separator" />{' '}
-              <a
-                class="text-primary"
-                onClick={() =>
-                  this.handleAsyncAction('PAN', this.handlePANTryAgain)
-                }
-              >
-                Try Again
-              </a>
+              <Link to="/activation?auto-submit=l1-form">Try Again</Link>
             </React.Fragment>
           );
         } else if (
