@@ -30,14 +30,6 @@ class Vpa extends Base
 
     public function setDefaultValuesForValidation()
     {
-        if ($this->validation->getAmount() === null)
-        {
-            $this->validation->setAmount(Constants::DEFAULT_VPA_VALIDATION_AMOUNT);
-        }
-
-        if ($this->validation->getCurrency() === null)
-        {
-            $this->validation->setCurrency(Constants::DEFAULT_PENNY_TESTING_CURRENCY);
-        }
+        return;
     }
 }
