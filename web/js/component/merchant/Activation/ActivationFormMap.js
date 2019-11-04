@@ -172,7 +172,7 @@ const businessModel = [
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
       },
       _disabledWhen: function(form) {
-        return !!form.props.user.showInstantActivation;
+        return isL1Completed(form) && !!form.props.user.showInstantActivation;
       },
     },
     {
