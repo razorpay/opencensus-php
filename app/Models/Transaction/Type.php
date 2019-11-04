@@ -40,6 +40,17 @@ class Type
         self::FUND_ACCOUNT_VALIDATION,
     ];
 
+    const IGNORE_ENTITIES_FROM_MERCHANT_BANKING_INVOICE = [
+        self::PAYMENT,
+        self::REFUND,
+        self::DISPUTE,
+        self::REVERSAL,
+        self::EXTERNAL,
+        self::SETTLEMENT,
+        self::ADJUSTMENT,
+        self::COMMISSION,
+    ];
+
     public static function validateType(string $type)
     {
         $key = __CLASS__ . '::' . strtoupper($type);

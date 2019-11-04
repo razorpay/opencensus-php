@@ -13,6 +13,9 @@ class Type
     // Commission on All Methods Except Cards
     const OTHERS                = 'others';
 
+    // Commission on Razorpay-X Transactions
+    const RX_TRANSACTIONS       = 'rx_transactions';
+
     // Commission on All Validations
     const VALIDATION            = 'validation';
 
@@ -42,6 +45,7 @@ class Type
         self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
         self::VALIDATION    => 997158,
+        self::RX_TRANSACTIONS      => 997158,
         self::INSTANT_REFUNDS      => 997158,
         // This is kept to support older invoice
         self::NON_CARD             => 997158,
@@ -58,6 +62,7 @@ class Type
     const CARD_LTE_2K_DESCRIPTION           = 'Commission on Card Payments <= INR 2,000';
     const CARD_GT_2K_DESCRIPTION            = 'Commission on Card Payments > INR 2,000';
     const OTHERS_DESCRIPTION                = 'Commission on All Methods Except Cards';
+    const RX_TRANSACTIONS_DESCRIPTION       = 'Commission for Razorpay-X transactions';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
@@ -69,6 +74,7 @@ class Type
         self::CARD_GT_2K             => self::CARD_GT_2K_DESCRIPTION,
         self::OTHERS                 => self::OTHERS_DESCRIPTION,
         self::VALIDATION             => self::VALIDATION_DESCRIPTION,
+        self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
         self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
         // This is kept to support older invoice
         self::NON_CARD               => self::OTHERS_DESCRIPTION,
@@ -80,7 +86,7 @@ class Type
         self::REFUND_GT_10K          => self::REFUND_GT_10K_DESCRIPTION,
     ];
 
-    public static function getAllTypes(): array
+    public static function getAllPrimaryBalanceTypes(): array
     {
         return [
             self::CARD_LTE_2K,
@@ -88,6 +94,13 @@ class Type
             self::INSTANT_REFUNDS,
             self::OTHERS,
             self::VALIDATION,
+        ];
+    }
+
+    public static function getAllBankingBalanceTypes(): array
+    {
+        return [
+            self::RX_TRANSACTIONS,
         ];
     }
 

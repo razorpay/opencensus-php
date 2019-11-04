@@ -55,6 +55,9 @@ class UserRolesScope
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
+            // Banking Invoice route
+            'reports_monthly_banking_invoice' => BankingRole::getDefaultRoles(),
+
             // profile routes
             'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE, Role::MANAGER],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],

@@ -937,11 +937,17 @@ class Entity extends Base\PublicEntity
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function bankingBalance()
+    public function sharedBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
+    }
+
+    public function bankingBalances()
+    {
+        return $this->hasMany(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
     public function commissionBalance()
@@ -958,7 +964,7 @@ class Entity extends Base\PublicEntity
                 return $this->primaryBalance;
 
             case Balance\Type::BANKING:
-                return $this->bankingBalance;
+                return $this->sharedBankingBalance;
 
             case Balance\Type::COMMISSION:
                 return $this->commissionBalance;

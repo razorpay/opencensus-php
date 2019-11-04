@@ -24,6 +24,8 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -820,6 +822,7 @@ class Repository extends Base\Repository
     /**
      * calcualtes the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
      * Conciders only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     * Only consider transactions made through primary balance of merchant
      *
      * @param string $merchantId
      * @param int    $start
@@ -850,6 +853,63 @@ class Repository extends Base\Repository
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
                     ->merchantId($merchantId)
                     ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->where($balanceTypeColumn, Product::PRIMARY)
+                    ->first();
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
+     * Considers only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     * Only consider transactions made through banking balance of merchant
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $start
+     * @param int    $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForRXTransactions(
+        string $merchantId,
+        string $balanceId,
+        int $start,
+        int $end)
+    {
+        $balanceIDColumn             = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIdColumn = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedAtColumn = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->join(Entity::BALANCE, $transactionsBalanceIdColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedAtColumn, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_BANKING_INVOICE)
+                    ->where($transactionsBalanceIdColumn, $balanceId)
+                    ->where($balanceTypeColumn, Product::BANKING)
+                    ->first();
+
+    }
+
+    public function fetchFeesAndTaxForPrimaryFundAccountValidations(string $merchantId,
+                                                                    int $start,
+                                                                    int $end)
+    {
+        $balanceIDColumn             = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIDColumn = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedATColumn = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedATColumn, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->where($transactionsTypeColumn, Type::FUND_ACCOUNT_VALIDATION)
                     ->where($balanceTypeColumn, Product::PRIMARY)
                     ->first();
     }
