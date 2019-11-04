@@ -35,13 +35,18 @@ class Core extends Base\Core
         {
             $bankingAccountDetail = $this->repo
                                           ->banking_account_detail
-                                          ->getDetailsForKeyAndBankingAccount($bankingAccount, $key) ?? new Entity;
+                                          ->getDetailsForKeyAndBankingAccount($bankingAccount, $key);
+
+            if ($bankingAccountDetail === null)
+            {
+                $bankingAccountDetail = new Entity;
+
+                $bankingAccountDetail->setGatewayKey($key);
+            }
 
             $bankingAccountDetail->bankingAccount()->associate($bankingAccount);
 
             $bankingAccountDetail->merchant()->associate($bankingAccount->merchant);
-
-            $bankingAccountDetail->setGatewayKey($key);
 
             $bankingAccountDetail->setGatewayValue($value);
 

@@ -19,7 +19,7 @@ class Status
     // Account details can be saved only if the status
     // of banking account is in below array
     //
-    public static $allowedStatusForDetails = [self::PROCESSED, self::ACTIVATED];
+    public static $allowedStatusForDetails = [self::PROCESSED];
 
     protected static $initialStatuses = [
         Status::CREATED,

@@ -2,12 +2,16 @@
 
 namespace RZP\Models\BankingAccount\Detail;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Merchant;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
 
 class Entity extends PublicEntity
 {
+    use SoftDeletes;
+
     const GATEWAY_KEY           = 'gateway_key';
     const GATEWAY_VALUE         = 'gateway_value';
     const BANKING_ACCOUNT_ID    = 'banking_account_id';

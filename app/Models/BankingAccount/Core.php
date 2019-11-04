@@ -278,7 +278,9 @@ class Core extends Base\Core
                         'Account Details cannot be saved for given account status');
                 }
 
-                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input[Entity::DETAILS], $bankingAccount, $processor);
+                (new BankingAccountDetail\Core)->updateBankingAccountDetails($input[Entity::DETAILS],
+                                                                             $bankingAccount,
+                                                                             $processor);
             }
         });
 
@@ -472,7 +474,7 @@ class Core extends Base\Core
     {
         $attributes = [
             Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
-            Merchant\Balance\Entity::CHANNEL             => Merchant\Balance\Channel::RBL,
+            Merchant\Balance\Entity::CHANNEL             => $bankingAccount->getChannel(),
             Merchant\Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
         ];
 
