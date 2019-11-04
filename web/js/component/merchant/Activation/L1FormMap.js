@@ -5,7 +5,6 @@ import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 import { validatePANCard, isUrlLenient } from 'rzp/utils/validators';
 
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
-import { _showForIndiv } from 'component/merchant/Activation/ActivationFormMap';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -200,13 +199,3 @@ export default [
     },
   ],
 ];
-
-/* Return true IF NOT 'Individual/Not registered' business type */
-function excludeFor_Indiv(activation) {
-  const currentBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
-
-  return (
-    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
-  );
-}

@@ -370,8 +370,6 @@ const businessDetails = [
   },
   [
     {
-      // label: 'PAN info of Authorized Signatory/Promoter/Director',
-      // altLabel: 'PAN',
       dynamicLabel: true,
       name: 'promoter_pan',
       placeholder: 'PAN Number',
@@ -398,7 +396,6 @@ const businessDetails = [
       },
     },
     {
-      // label: 'PAN Owner Name',
       dynamicLabel: true,
       getLabel: activation => {
         return UNREGISTERED_TYPES[
