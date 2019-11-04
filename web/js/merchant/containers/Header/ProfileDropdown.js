@@ -18,7 +18,7 @@ import { logout, showOrHideTour } from 'merchant/modules/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
-
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 @withRouter
 @connect(
   state => {
@@ -62,12 +62,13 @@ export default class ProfileDropdown extends Component {
   };
 
   showPartnerIntent = () => {
-    const userval = new User({
-      ...this.props.user,
-      partner_intent: true,
-      merchant_partner_intent: true,
+    this.props.openModal({
+      size: 'xlarge',
+      disableClose: false,
+      component: (
+        <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />
+      ),
     });
-    this.props.updateSession({ user: userval });
   };
   openTicketModal = () => {
     window.rzpTicketSystem &&
@@ -120,6 +121,7 @@ export default class ProfileDropdown extends Component {
     } = this.props;
     let merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
+
     return (
       <Dropdown
         closeOnClick={false}
@@ -255,24 +257,24 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
-            {user.partner_type === null && (
-              <div class="media loggedin-as">
-                <div class="media-body">
-                  <p class="small-txt">
-                    Partner with us and start earning on every referral
-                  </p>
+            {user.role === 'owner' &&
+              user.partner_type === null && (
+                <div class="media loggedin-as">
+                  <div class="media-body">
+                    <p class="small-txt">
+                      Partner with us and start earning on every referral
+                    </p>
 
-                  <a
-                    class="partner-link"
-                    style={{ color: '#528ff0', fontSize: '14px' }}
-                    onClick={this.showPartnerIntent}
-                  >
-                    <strong>Explore Partner Program</strong>{' '}
-                    <i className="i i-external-link " />
-                  </a>
+                    <a
+                      class="partner-link"
+                      style={{ color: '#528ff0', fontSize: '14px' }}
+                      onClick={this.showPartnerIntent}
+                    >
+                      <strong>Explore Partner Program</strong>{' '}
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </DropdownContent>
       </Dropdown>

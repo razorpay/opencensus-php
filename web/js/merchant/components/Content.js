@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
+import * as ModalActions from 'rzp/modules/modals';
 
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
@@ -24,8 +25,8 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import Onboarding from './../containers/PartnerDashboard/Onboarding/index';
 import ErrorBoundary from 'common/ErrorBoundary';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   setBaseLocation,
@@ -60,6 +61,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     setActiveEntity,
     setSecActiveEntity,
     openSlider,
+    ...ModalActions,
   }
 )
 export default class Content extends Component {
@@ -132,7 +134,11 @@ export default class Content extends Component {
   getBaseView = () => {
     const { user } = this.props;
     if (user.isPartnerIntent()) {
-      return <Onboarding />;
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: <PartnerOnbr disableClose={true} />,
+      });
     }
 
     return (

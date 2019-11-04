@@ -10,6 +10,7 @@ import { updateSession } from 'merchant/modules/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 @withRouter
 @connect(
@@ -20,6 +21,8 @@ import { showNotification } from 'rzp/modules/notifications';
   {
     updateSession,
     showNotification,
+    openModal,
+    closeModal,
   }
 )
 export default class BaseScreen extends React.Component {
@@ -43,15 +46,17 @@ export default class BaseScreen extends React.Component {
     })
       .then(response => {
         this.props.updateSession({ user: userval });
-        this.props.history.push(`partners/submerchants/${this.props.user.id}`);
+        this.props.history.push(`partners/submerchants`);
         this.props.closeModal();
       })
       .catch(err => {
+        this.props.closeModal();
         this.props.showNotification({
           type: 'error',
           message:
             'Something went wrong, we could not service this request at the moment.',
         });
+        this.props.closeModal();
       });
   };
 
@@ -65,11 +70,13 @@ export default class BaseScreen extends React.Component {
     this.closeTransaction('merchant/partner-intent', { partner_intent: false });
   };
   render() {
+    console.log('this.props.disableClose', this.props.disableClose);
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
-          {this.props.user.merchant_partner_intent &&
-            (sliderProps => <S0 key={0} sliderProps={sliderProps} />)}
+          {!this.props.disableClose
+            ? sliderProps => <S0 key={0} sliderProps={sliderProps} />
+            : null}
           {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
           {sliderProps => (
             <S2
@@ -89,6 +96,16 @@ export default class BaseScreen extends React.Component {
             />
           )}
         </Slider>
+        {!this.props.disableClose && (
+          <button
+            type="button"
+            class="close"
+            onClick={this.props.closeModal}
+            style={{ position: 'absolute', top: '20px', right: '20px' }}
+          >
+            <i class="i i-close" />
+          </button>
+        )}
       </div>
     );
   }

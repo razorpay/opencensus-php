@@ -48,7 +48,7 @@ const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser, abort }) => {
         <div>
           <p style={{ marginTop: '10px' }}>
             For Enterprise solution
-            <a href="mailto:partnership@razorpay.com" target="_top">
+            <a href="https://razorpay.com/support/" target="_blank">
               &nbsp;Contact Support
             </a>
           </p>
