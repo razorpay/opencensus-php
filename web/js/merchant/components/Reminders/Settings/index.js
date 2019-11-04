@@ -6,10 +6,9 @@ import { findBy, objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import AdvancedSettings from './AdvancedSettings';
-import EmailPreviewModal from './EmailPreviewModal';
 import Footer from './Footer';
 import Header from './Header';
+import AdvancedSettings from './AdvancedSettings';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 const initState = {
@@ -18,8 +17,8 @@ const initState = {
   advancedSettings: {
     scheduledTime: '10AM - 12PM',
     channels: {
-      sms: true,
-      email: true,
+      sms: false,
+      email: false,
     },
   },
 };
@@ -54,20 +53,29 @@ export default class ReminderSetting extends React.Component {
         ...initState,
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
+        advancedSettings: {
+          scheduledTime: '10AM - 12PM',
+          channels: {
+            sms: props.channels.includes('sms'),
+            email: props.channels.includes('email'),
+          },
+        },
       },
       settings: {
         ...initState,
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
+        advancedSettings: {
+          scheduledTime: '10AM - 12PM',
+          channels: {
+            sms: props.channels.includes('sms'),
+            email: props.channels.includes('email'),
+          },
+        },
       },
       withExpireByConfigs: props.withExpireByConfigs,
       withOutExpireByConfigs: props.withOutExpireByConfigs,
     };
-
-    props.channels.forEach(channel => {
-      this.state.settings.advancedSettings.channels[channel] = true;
-      this.state.__stashed_settings__.advancedSettings.channels[channel] = true;
-    });
   }
 
   disableReminderSetting = () => {
@@ -164,24 +172,19 @@ export default class ReminderSetting extends React.Component {
     });
   };
 
-  showReminderEMailPreview = () => {
-    this.props.openModal({
-      size: 'large',
-      className: 'reminders-email-preview-modal',
-      component: (
-        <EmailPreviewModal
-          onClose={this.props.closeModal}
-          subject={this.props.emailDetails.subject}
-          businessName={this.props.user.business_name}
-          contentList={this.props.emailDetails.contentList}
-        />
-      ),
-    });
-  };
-
   isChanged = () => {
     return !isBlank(
       objectDiff(this.state.__stashed_settings__, this.state.settings)
+    );
+  };
+
+  isValid = () => {
+    const { settings } = this.state;
+
+    return (
+      (settings.withExpiry.length || settings.withOutExpiry.length) &&
+      (settings.advancedSettings.channels.email ||
+        settings.advancedSettings.channels.sms)
     );
   };
 
@@ -263,9 +266,8 @@ export default class ReminderSetting extends React.Component {
                 />
 
                 <Footer
-                  isSaveBtnDisable={!this.isChanged()}
+                  isSaveBtnDisable={!(this.isChanged() && this.isValid())}
                   onSaveClick={this.onSaveClick}
-                  onPreviewClick={this.showReminderEMailPreview}
                   scheduledTime={settings.advancedSettings.scheduledTime}
                 />
               </div>

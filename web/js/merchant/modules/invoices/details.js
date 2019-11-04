@@ -18,6 +18,12 @@ export const fetchInvoiceCount = data => {
   });
 };
 
+export const fetchInvoiceRemindersList = id => {
+  return merchantFetch({
+    url: `reminders/next_run/invoice/${id}`,
+  });
+};
+
 export const fetchCreditNote = id => {
   return merchantFetch(`creditnote/${id}`);
 };

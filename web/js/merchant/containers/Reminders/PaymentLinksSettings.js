@@ -42,13 +42,13 @@ import Setting from 'merchant/components/Reminders/Settings';
     });
 
     merchantConfig.forEach(ele => {
+      ele.channels.forEach(ele => channels.add(ele));
+
       if (ele.reminder_config.config_template.attr_key === 'expire_by') {
         withExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
 
         return;
       }
-
-      ele.channels.forEach(ele => channels.add(ele));
 
       withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
     });
@@ -149,12 +149,11 @@ export default class PaymentLinksSettings extends React.Component {
   render() {
     return (
       <div
-        class="Reminders-settings--payment_links"
+        class="RemindersSettings--PaymentLinks"
         key="RemindersSettings--PaymentLinks"
       >
         <Setting
           type="Payment Links"
-          emailDetails={emailDetails}
           isEnabled={this.props.paymentLinkReminder.active}
           channels={this.props.channels}
           onSaveClick={this.saveSettings}
@@ -169,22 +168,6 @@ export default class PaymentLinksSettings extends React.Component {
     );
   }
 }
-
-const emailDetails = {
-  // TODO: Update content
-  subject: '"We’ve not received your payment"',
-  contentList: [
-    'We have not received your payment. It will expire on 21st of April.',
-    'You can start accepting payments with Razorpay within 2 minutes. Complete the signup and verify your PAN card details online to start transacting today.',
-    <React.Fragment>
-      Payment Link:{' '}
-      <a href="www.razorpay.com/payment-link/4oejw68wbb9/">
-        www.razorpay.com/payment-link/4oejw68wbb9/
-      </a>
-    </React.Fragment>,
-    "Use our products like Payment Links or Invoices without any integration effort. Using these products you can collect payments using SMS, EMail, What'sapp, Chatbots, Messenger etc.",
-  ],
-};
 
 function serializeConfig(item) {
   return {

@@ -73,7 +73,7 @@ export default class extends React.Component {
         {this.state.errors ? (
           <Alert type="error" message={this.state.errors} showDismiss={false} />
         ) : (
-          <div class="Reminders-settings">
+          <div class="ReminderSettings">
             <PaymentLinksSettings />
           </div>
         )}
