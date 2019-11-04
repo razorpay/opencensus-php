@@ -16,6 +16,15 @@
         width: 25%;
     }
 
+    .transactions-table-header th
+    {
+        padding: 10px 5px 10px 5px;
+        background-color: #E5E5E5;
+        color: #5c5c5c;
+        font-size: 12px;
+        line-height: 12px
+    }
+
     img
     {
         opacity: 1;
@@ -40,7 +49,7 @@
     .box {
         margin: 20px 0;
         width: 100%;
-        border: 1px solid #000000;
+        border: 1px solid #d9d9d9;
 
     }
 
@@ -74,26 +83,8 @@
         padding: 10px;
     }
 
-    .details-table td:nth-child(even){
-        font-family: Arial;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 18px;
-        text-align: right;
-    }
-
-    .details-table td:nth-child(odd){
-        font-family: Arial;
-        font-style: normal;
-        font-weight: bol`d;
-        font-size: 16px;
-        line-height: 18px;
-        text-align: left;
-    }
-
     .transactions-table tr:nth-child(2n+1) {
-        background: #c9c8c8;
+        background: #f2f2f2;
     }
 
     .transactions-table tr:first-child {
@@ -103,6 +94,9 @@
     .transactions-table td {
         text-align: center;
         padding: 10px;
+        color: rgba(0, 0, 0, 0.8);
+        font-family: 'Arial';
+        font-weight: normal;
     }
 
     .transactions-table {
@@ -115,7 +109,7 @@
         line-height: 12px;
     }
 
-    .details-table td:nth-child(1) {
+    .details-table td:nth-child(odd) {
         text-align: right;
         font-family: Arial;
         font-style: normal;
@@ -126,29 +120,7 @@
         color: rgba(0, 0, 0, 0.6);
     }
 
-    .details-table td:nth-child(2) {
-        text-align: left;
-        font-family: Arial;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 16px;
-        line-height: 18px;
-        width: 30%;
-        color: rgba(0, 0, 0, 0.8);
-    }
-
-    .details-table td:nth-child(3) {
-        width: 10%;
-        text-align: right;
-        font-family: Arial;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 18px;
-        color: rgba(0, 0, 0, 0.6);
-    }
-
-    .details-table td:nth-child(4) {
+    .details-table td:nth-child(even) {
         text-align: left;
         font-family: Arial;
         font-style: normal;
@@ -162,25 +134,43 @@
     .summary
     {
         background-color: rgba(0, 0, 0, 0.8);
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255);
+        letter-spacing: 0.5px;
     }
 
     .transactions-title {
         background-color: rgba(0, 0, 0, 0.8);
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255);
         font-family: Arial;
         font-style: normal;
         font-weight: bold;
         font-size: 16px;
         line-height: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    .account-statement-title
+    {
+        font-family: Arial;
+        font-weight: bold;
+        font-size: 24px;
+        color: rgba(0, 0, 0, 0.6);
+        padding-top: 12px;
+        padding-bottom: 4px;
     }
 
 </style>
 
 <body>
 <main>
+
     <header class="text-right">
-        <img class="logo" src="https://drws17a9qx558.cloudfront.net/website/images/logo.png"/>
+        <span>
+            <img class="logo" src="https://drws17a9qx558.cloudfront.net/website/images/logo.png" style="width:10%">
+            <br>
+            <div class='account-statement-title'>Account Statement</span>
+        </span>
+
     </header>
 
     <div class="box">
@@ -190,13 +180,13 @@
                     <span>Account Name: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['account_name']}}</strong>
+                    {{$account_owner_info['account_name']}}
                 </td>
                 <td>
                     <span>Home Branch: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['home_branch_name']}} </strong>
+                    {{$account_owner_info['home_branch_name']}}
                 </td>
             </tr>
             <tr>
@@ -204,16 +194,16 @@
                     <span>Customer Address: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['customer_address']}} </strong><br>
-                    <strong> {{$account_owner_info['customer_address_l2']}} </strong>
-                    <strong> {{$account_owner_info['customer_city']}} </strong>
-                    <strong> {{$account_owner_info['customer_state']}} </strong>
+                    {{$account_owner_info['customer_address']}} <br>
+                    {{$account_owner_info['customer_address_l2']}}
+                    {{$account_owner_info['customer_city']}}
+                    {{$account_owner_info['customer_state']}}
                 </td>
                 <td>
                     <span>Home Branch Address: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['home_branch_address']}} </strong>
+                    {{$account_owner_info['home_branch_address']}}
                 </td>
             </tr>
             <tr>
@@ -221,13 +211,13 @@
                     <span>Phone: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['customer_mobile']}}</strong>
+                    {{$account_owner_info['customer_mobile']}}
                 </td>
                 <td>
                     <span>IFSC/RTGS/NEFT code: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['ifsc_code']}} </strong>
+                    {{$account_owner_info['ifsc_code']}}
                 </td>
             </tr>
             <tr>
@@ -235,13 +225,13 @@
                     <span>Email Id: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['customer_email']}}</strong>
+                    {{$account_owner_info['customer_email']}}
                 </td>
                 <td>
                     <span>Sanction Limit: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}} {{$account_owner_info['sanction_limit']}} </strong>
+                    {{$account_owner_info['currency']}} {{$account_owner_info['sanction_limit']}}
                 </td>
             </tr>
             <tr>
@@ -249,13 +239,13 @@
                     <span>CIF ID: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['customer_cif_id']}}</strong>
+                    {{$account_owner_info['customer_cif_id']}}
                 </td>
                 <td>
                     <span>Drawing Power: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}} {{$account_owner_info['drawing_power']}} </strong>
+                    {{$account_owner_info['currency']}} {{$account_owner_info['drawing_power']}}
                 </td>
             </tr>
             <tr>
@@ -263,13 +253,13 @@
                     <span>A/C Currency: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}}</strong>
+                    {{$account_owner_info['currency']}}
                 </td>
                 <td>
                     <span>Branch Timings: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['branch_timings']}} </strong>
+                    {{$account_owner_info['branch_timings']}}
                 </td>
             </tr>
             <tr>
@@ -277,13 +267,13 @@
                     <span>A/C Opening Date: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['account_opening_date']}}</strong>
+                    {{$account_owner_info['account_opening_date']}}
                 </td>
                 <td>
                     <span>Call Center:: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['call_center']}} </strong>
+                    {{$account_owner_info['call_center']}}
                 </td>
             </tr>
             <tr>
@@ -291,13 +281,13 @@
                     <span>A/C Type: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['account_type']}}</strong>
+                    {{$account_owner_info['account_type']}}
                 </td>
                 <td>
                     <span>Branch Phone Num: </span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['branch_phone_number']}} </strong>
+                    {{$account_owner_info['branch_phone_number']}}
                 </td>
             </tr>
             <tr>
@@ -305,7 +295,7 @@
                     <span>A/c Status: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['account_status']}}</strong>
+                    {{$account_owner_info['account_status']}}
                 </td>
                 <td></td>
                 <td></td>
@@ -315,7 +305,7 @@
                     <span>Statement Of Transactions in Account Number: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['account_number']}}</strong>
+                    {{$account_owner_info['account_number']}}
                 </td>
                 <td></td>
                 <td></td>
@@ -325,7 +315,7 @@
                     <span>Period: </span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['statement_period']}}</strong>
+                    {{$account_owner_info['statement_period']}}
                 </td>
                 <td></td>
                 <td></td>
@@ -335,54 +325,54 @@
 
     <div class="box">
         <div class="box-header transactions-title">
-            Transactions List - {{ $account_owner_info['account_name'] }} ({{ $account_owner_info['currency'] }})
+            TRANSACTIONS LIST - {{ $account_owner_info['account_name'] }} ({{ $account_owner_info['currency'] }})
             - {{ $account_owner_info['account_number'] }}
         </div>
         <table class="w-100 transactions-table">
-            <tr>
-                <th>
-                    Transaction Date
+            <tr class='transactions-table-header'>
+                <th class="text-left">
+                    TRANSACTION DATE
                 </th>
-                <th>
-                    Transaction Details
+                <th class="text-left">
+                    TRANSACTION DETAILS
                 </th>
-                <th>
-                    Cheque ID
+                <th class="text-left">
+                    CHEQUE ID
                 </th>
-                <th>
-                    Value Date
+                <th class="text-left">
+                    VALUE DATE
                 </th>
-                <th>
-                    Withdrawl Amt({{ $account_owner_info['currency'] }})
+                <th class="text-right">
+                    WITHDRAWAL AMT({{ $account_owner_info['currency'] }})
                 </th>
-                <th>
-                    Deposit Amt ({{ $account_owner_info['currency'] }})
+                <th class="text-right">
+                    DEPOSIT AMT ({{ $account_owner_info['currency'] }})
                 </th>
-                <th>
-                    Balance ({{ $account_owner_info['currency'] }})
+                <th class="text-right">
+                    BALANCE ({{ $account_owner_info['currency'] }})
                 </th>
             </tr>
             @foreach($transactions as $transaction)
                 <tr>
-                    <td>
+                    <td class="text-left">
                         {{ $transaction['transaction_date'] }}
                     </td>
-                    <td>
+                    <td class="text-left">
                         {{ $transaction['transaction_details'] }}
                     </td>
-                    <td>
+                    <td  class="text-left">
                         {{ $transaction['cheque_id'] }}
                     </td>
-                    <td>
+                    <td  class="text-left">
                         {{ $transaction['value_date'] }}
                     </td>
-                    <td>
+                    <td class="text-right">
                         {{ $transaction['withdrawal_amount'] }}
                     </td>
-                    <td>
+                    <td class="text-right">
                         {{ $transaction['deposit_amount'] }}
                     </td>
-                    <td>
+                    <td class="text-right">
                         {{ $transaction['balance'] }}
                     </td>
                 </tr>
@@ -393,7 +383,7 @@
 
     <div class="box">
         <div class="box-header summary">
-            Statement Summary
+            STATEMENT SUMMARY
         </div>
         <table class="w-100 details-table">
             <tr>
@@ -401,13 +391,13 @@
                     <span>Opening Balance:</span>
                 </td>
                 <td>
-                    <strong> {{$account_owner_info['currency']}} {{ $statement_summary['opening_balance'] }}</strong>
+                    {{$account_owner_info['currency']}} {{ $statement_summary['opening_balance'] }}
                 </td>
                 <td>
                     <span>Count Of Debit:</span>
                 </td>
                 <td>
-                    <strong>{{ $statement_summary['debit_count'] }}</strong>
+                    {{ $statement_summary['debit_count'] }}
                 </td>
 
             </tr>
@@ -416,13 +406,13 @@
                     <span>Closing Balance:</span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}} {{ $statement_summary['closing_balance'] }}</strong>
+                    {{$account_owner_info['currency']}} {{ $statement_summary['closing_balance'] }}
                 </td>
                 <td>
                     <span>Count Of Credit:</span>
                 </td>
                 <td>
-                    <strong>{{ $statement_summary['credit_count'] }}</strong>
+                    {{ $statement_summary['credit_count'] }}
                 </td>
             </tr>
             <tr>
@@ -430,19 +420,19 @@
                     <span>Eff Avail Bal::</span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}} {{ $statement_summary['effective_balance'] }}</strong>
+                    {{$account_owner_info['currency']}} {{ $statement_summary['effective_balance'] }}
                 </td>
                 <td>
                     <span>Lien Amt:</span>
                 </td>
                 <td>
-                    <strong>{{$account_owner_info['currency']}} {{ $statement_summary['lien_amount'] }}</strong>
+                    {{$account_owner_info['currency']}} {{ $statement_summary['lien_amount'] }}
                 </td>
             </tr>
             <t>
                 <td>As On:</td>
                 <td>
-                    <strong>{{ $statement_summary['statement_generated_date'] }}</strong>
+                    {{ $statement_summary['statement_generated_date'] }}
                 </td>
             </t>
         </table>
