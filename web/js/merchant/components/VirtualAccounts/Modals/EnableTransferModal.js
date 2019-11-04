@@ -12,16 +12,14 @@ import {
   titleCase,
 } from 'rzp/utils/rzp-utils';
 import { closeModal } from 'rzp/modules/modals';
-import { updateVirtualAccountDetails } from 'merchant/modules/VirtualAccounts';
 
 @connect(state => ({}), {
   closeModal,
-  updateVirtualAccountDetails,
   ...NotificationsActions,
 })
 export default class EnableTransferModal extends React.Component {
   onSubmit = data => {
-    const { virtualAccountId, isForBankAccount, isForUPIAddress } = this.props;
+    const { isForBankAccount, isForUPIAddress } = this.props;
     const { descriptor } = data;
 
     const receivers = {
@@ -47,7 +45,8 @@ export default class EnableTransferModal extends React.Component {
     }
 
     const payload = { receivers };
-    this.props.updateVirtualAccountDetails(virtualAccountId, payload);
+
+    return this.props.updateVirtualAccountDetails(payload);
   };
 
   render() {

@@ -243,7 +243,7 @@ export default class CreateVirtualAccount extends Component {
 
         <div class="modal-body">
           {virtualAccount ? (
-            <VirtualAccountDetails
+            <VirtualAccountDetailsSummary
               virtualAccount={virtualAccount}
               onCopy={onCopy}
             />
@@ -397,7 +397,12 @@ export default class CreateVirtualAccount extends Component {
   }
 }
 
-const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
+export const VirtualAccountDetailsSummary = ({
+  virtualAccount,
+  onCopy,
+  showUPIAddressDetails = true,
+  showBankAccountDetails = true,
+}) => {
   const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualAccount);
   const valueToCopy = getVirtualAccountDetailsToCopy({
     bankAccount,
@@ -412,7 +417,12 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
 
       <br />
 
-      <AccountDetails bankAccount={bankAccount} upiAddress={upiAddress} />
+      <AccountDetails
+        bankAccount={bankAccount}
+        upiAddress={upiAddress}
+        showUPIAddressDetails={showUPIAddressDetails}
+        showBankAccountDetails={showBankAccountDetails}
+      />
 
       {virtualAccount.close_by && (
         <div class="form-group">

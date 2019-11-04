@@ -15,10 +15,14 @@ import Table from 'rzp/ui/Table/Index';
 import { paymentId, amount } from 'rzp/ui/item/pair';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import EnableTransferModal from './Modals/EnableTransferModal';
+import { updateVirtualAccountDetails } from 'merchant/modules/VirtualAccounts';
+import { VirtualAccountDetailsSummary } from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
+import ModalHeader from 'rzp/ui/ModalHeader';
 
 @connect(state => ({}), {
   openModal,
   closeModal,
+  updateVirtualAccountDetails,
 })
 export default class extends React.Component {
   openEnableTransferModal = () => {
@@ -29,13 +33,72 @@ export default class extends React.Component {
     this.props.openModal({
       component: (
         <EnableTransferModal
-          virtualAccountId={this.props.virtualaccount.id}
           isForBankAccount={!bankAccount}
           isForUPIAddress={!upiAddress}
+          updateVirtualAccountDetails={this.updateVirtualAccountDetails}
         />
       ),
       size: 'small',
     });
+  };
+
+  updateVirtualAccountDetails = payload => {
+    return this.props
+      .updateVirtualAccountDetails(this.props.virtualaccount.id, payload)
+      .then(({ data }) => {
+        this.props.closeModal();
+
+        console.log('...data....', data);
+
+        let accountDetails, modalTitle;
+        let showUPIAddressDetails, showBankAccountDetails;
+
+        if (payload.receivers.indexOf('vpa') > -1) {
+          modalTitle = 'UPI Transfer Enabled';
+          showUPIAddressDetails = true;
+        } else if (payload.receivers.indexOf('bank_account') > -1) {
+          modalTitle = 'Account Transfer Enabled';
+          showBankAccountDetails = true;
+        }
+
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <div>
+              <ModalHeader
+                title={modalTitle}
+                onCloseClick={this.props.closeModal}
+              />
+
+              <VirtualAccountDetailsSummary
+                virtualAccount={data}
+                onClose={_ => {}}
+                showUPIAddressDetails={showUPIAddressDetails}
+                showBankAccountDetails={showBankAccountDetails}
+              />
+
+              <p className="text-muted">
+                Share the following information with the customer to accept
+                payments
+              </p>
+
+              <br />
+
+              <div className="modal-body">
+                <Form onSubmit={this.onSubmit} class="filters">
+                  {field}
+                  <br />
+                  <div className="Modal__actions">
+                    <button className="btn btn-primary btn-block">
+                      {buttonLabel}
+                    </button>
+                  </div>
+                </Form>
+              </div>
+            </div>
+          ),
+        });
+      });
   };
 
   render() {
