@@ -71,7 +71,7 @@ class Invite extends Mailable
 
         $invitation = $this->getInvitation();
 
-        $bankingUrl = $config['application.banking_service_url'];
+        $bankingUrl = $config['applications.banking_service_url'];
 
         $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
 
