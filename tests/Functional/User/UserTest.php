@@ -1289,8 +1289,13 @@ class UserTest extends TestCase
         Mail::assertQueued(AccountVerification::class,function ($mail)
         {
             $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+
             $this->assertArrayHasKey('token', $viewData);
+
             $this->assertEquals('emails.user.account_verification', $mail->view);
+
             return true;
         });
     }
