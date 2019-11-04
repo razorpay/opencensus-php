@@ -45,6 +45,7 @@ class TerminalCreation extends Base
         $aeps               = $entry[Batch\Header::TERMINAL_CREATION_AEPS];
         $emiDuration        = $entry[Batch\Header::TERMINAL_CREATION_EMI_DURATION];
         $type               = $entry[Batch\Header::TERMINAL_CREATION_TYPE] ?? [];
+        $tpv                = $entry[Batch\Header::TERMINAL_CREATION_TPV];
         $mode               = $entry[Batch\Header::TERMINAL_CREATION_MODE];
         $international      = $entry[Batch\Header::TERMINAL_CREATION_INTERNATIONAL];
         $corporate          = $entry[Batch\Header::TERMINAL_CREATION_CORPORATE];
@@ -82,6 +83,7 @@ class TerminalCreation extends Base
             Terminal\Entity::BANK_TRANSFER              => $bankTransfer,
             Terminal\Entity::AEPS                       => $aeps,
             Terminal\Entity::EMI_DURATION               => $emiDuration,
+            Terminal\Entity::TPV                        => $tpv,
             Terminal\Entity::INTERNATIONAL              => $international,
             Terminal\Entity::CORPORATE                  => $corporate,
             Terminal\Entity::EXPECTED                   => $expected,

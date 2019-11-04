@@ -50,6 +50,7 @@ class Gateway
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_UBI         = 'netbanking_ubi';
+    const NETBANKING_SCB         = 'netbanking_scb';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -352,6 +353,9 @@ class Gateway
         IFSC::USFB,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::ANDB,
+        IFSC::KARB,
+        IFSC::UTBI,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -365,32 +369,12 @@ class Gateway
         IFSC::ESFB,
         IFSC::ICIC,
         IFSC::SIBL,
-    ];
-
-    // this is a list of banks supporting netbanking and card as auth_type
-    const ENACH_NPCI_NB_ALL_BANKS = [
-        IFSC::CBIN,
-        IFSC::CIUB,
-        IFSC::DEUT,
-        IFSC::ESFB,
-        IFSC::FDRL,
         IFSC::HDFC,
-        IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDFB,
-        IFSC::INDB,
-        IFSC::IOBA,
-        IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::PYTM,
-        IFSC::RATN,
-        IFSC::SIBL,
-        IFSC::TMBL,
-        IFSC::USFB,
-        IFSC::UTIB,
-        IFSC::YESB,
-        Netbanking::PUNB_R,
-        Netbanking::BARB_R,
+        IFSC::DEUT,
+        IFSC::UTBI,
+        IFSC::AUBL,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -705,6 +689,7 @@ class Gateway
             self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
+            self::MPGS,
         ],
 
         Method::NETBANKING => [
@@ -725,6 +710,7 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_UBI,
+            self::NETBANKING_SCB,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
@@ -845,6 +831,7 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
+        self::MPGS                  => [],
     ];
 
     /**
@@ -1008,6 +995,11 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::RUPAY,
+        ],
+        self::MPGS => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
         ],
     ];
 
@@ -1269,6 +1261,14 @@ class Gateway
         IFSC::ESFB,
         IFSC::ACUX,
         IFSC::SBIN,
+        IFSC::KARB,
+        IFSC::UTBI,
+        IFSC::AUBL,
+        IFSC::CIUB,
+        IFSC::DEUT,
+        IFSC::IOBA,
+        IFSC::PYTM,
+        IFSC::USFB,
     ];
 
     /**
@@ -1424,6 +1424,7 @@ class Gateway
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
         IFSC::UBIN         => Gateway::NETBANKING_UBI,
+        IFSC::SCBL         => Gateway::NETBANKING_SCB,
         IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::CBIN         => Gateway::NETBANKING_CBI,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
@@ -2192,18 +2193,32 @@ class Gateway
         return false;
     }
 
+    public static function isCardPaymentServiceGateway($gateway)
+    {
+        $gateways = [
+            self::MPGS,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     /**
      * Some gateways, for example sbi netbanking expect us to send the sequence no or the order in which the refunds
      * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created
      * r1, r2, r3.
      *
-     * @param $gateway
+     * @param $payment
      * @return bool
      *
      */
 
-    public static function isSequenceNoBasedRefund($gateway)
+    public static function isSequenceNoBasedRefund($payment)
     {
-        return (in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true);
+        $gateway = $payment->getGateway();
+
+        $method = $payment->getMethod();
+
+        return ((in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true) and
+                ($method === Method::NETBANKING));
     }
 }

@@ -43,6 +43,7 @@ class Constants
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
+    const FIRST_DATA       = 'first_data';
     const SBIN             = 'sbin';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
@@ -117,6 +118,9 @@ class Constants
             self::HDFC_FSS,
             self::AXIS_CYBERSOURCE,
         ],
+        Type::PARESDATA => [
+           self::FIRST_DATA,
+        ],
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -127,6 +131,7 @@ class Constants
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
     ];
 
     const RECIPIENTS_MAP = [
@@ -200,6 +205,10 @@ class Constants
             self::HDFC_CYBERSOURCE => ['supportteam@razorpay.com'],
             self::AXIS_CYBERSOURCE => ['supportteam@razorpay.com'],
             self::HDFC_FSS         => ['supportteam@razorpay.com'],
+        ],
+
+        Type::PARESDATA => [
+            self::FIRST_DATA    => [''],
         ],
     ];
 }

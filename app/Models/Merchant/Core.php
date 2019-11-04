@@ -2211,13 +2211,13 @@ class Core extends Base\Core
             {
                 $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
 
-                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED;
             }
 
             $amount = BusinessSubCategoryMetaData::getFeatureValueUsingMccCode(
                 BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
                 $merchant->getCategory(),
-                Entity::MAX_PAYMENT_AMOUNT_DEFAULT);
+                Entity::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED);
         }
         else
         {

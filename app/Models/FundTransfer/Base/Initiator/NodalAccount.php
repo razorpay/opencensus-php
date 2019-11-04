@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Base\Initiator;
 
+use Cache;
 use Carbon\Carbon;
 use Monolog\Logger;
 
@@ -14,6 +15,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Batch;
 use Razorpay\Trace\Logger as Trace;
@@ -23,6 +25,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
 use RZP\Models\FundTransfer\Attempt\Alerts;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
 
 abstract class NodalAccount extends Base\Core
 {
@@ -178,7 +181,7 @@ abstract class NodalAccount extends Base\Core
 
                 $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
 
-                $attempt->setStatus(Attempt\Status::INITIATED);
+                $this->setAttemptToInitiated($attempt);
 
                 $this->trace->info(
                     TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
@@ -197,6 +200,15 @@ abstract class NodalAccount extends Base\Core
         $this->updateBatchFundTransferEntity();
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
+    }
+
+    protected function setAttemptToInitiated(Attempt\Entity $attempt)
+    {
+        $attempt->setStatus(Attempt\Status::INITIATED);
+
+        $cacheKey = StatusProcessor::FTA_INITIATED . '_' . $attempt->getId();
+
+        Cache::put($cacheKey, true, (StatusProcessor::TIME_OFFSET / 60));
     }
 
     protected function getInitiatedStatusForEntity(string $sourceEntityName): string

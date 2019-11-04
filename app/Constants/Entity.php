@@ -206,6 +206,7 @@ class Entity
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_UBI         = 'netbanking_ubi';
+    const NETBANKING_SCB         = 'netbanking_scb';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
@@ -273,6 +274,10 @@ class Entity
     const SHIELD_RISKS                 = 'shield.risks';
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
+
+    const PAYMENTS_CARDS_AUTHORIZATION  = 'payments_cards.authorization';
+    const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
+
     // Service: Subscription
     const SUBSCRIPTIONS_PLAN             = 'subscriptions.plan';
     const SUBSCRIPTIONS_SUBSCRIPTION     = 'subscriptions.subscription';
@@ -489,6 +494,7 @@ class Entity
         self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Allahabad::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_UBI         => \RZP\Gateway\Mozart::class,
+        self::NETBANKING_SCB         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
@@ -620,16 +626,18 @@ class Entity
     ];
 
     protected static $externalServiceClass = [
-        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
-        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
-        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
-        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
-        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
-        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
-        self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
-        self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
+        self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES           => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS         => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                  => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS             => \RZP\Services\ShieldClient::class,
+        self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,
+        self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
+        self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,
+        self::PAYMENTS_CARDS_AUTHORIZATION  => \RZP\Services\CardPaymentService::class,
         self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,

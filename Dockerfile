@@ -5,6 +5,7 @@ FROM razorpay/onggi:php-7.2-apache
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ENV NODE_NAME=""
+ARG GIT_USERNAME
 
 WORKDIR /app
 
@@ -27,6 +28,7 @@ COPY composer.json composer.lock /app/
 # A single character change in this command will trigger a new
 # composer install
 RUN set -eux && \
+    git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer global require hirak/prestissimo && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \

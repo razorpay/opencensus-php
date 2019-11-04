@@ -7,4 +7,6 @@ final class Constants
     const START_YEAR  = 2017;
 
     const START_MONTH = 07;
+
+    const RZPX = 'RZPX';
 }

@@ -357,17 +357,23 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                // Todo - to remove
+                //TODO: Remove this later
                 try
                 {
                     $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
                 }
-                catch (\Throwable $ex)
+                catch (\Throwable $e)
                 {
-                    $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'code'                => $errorCode,
+                            'internal_code'       => $internalErrorCode,
+                            'error'               => $e->getMessage()
+                        ]
+                    );
                 }
-
-
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -1496,7 +1502,7 @@ trait Authorize
         }
 
         // Customer fee bearer is not allowed on netbanking recurring
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed. Please contact the merchant for further assistance.',
@@ -2308,14 +2314,14 @@ trait Authorize
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
             if (($merchant->convertOnApi() === null) or
-                ($merchant->isFeeBearerCustomer() === true))
+                ($merchant->isFeeBearerCustomerOrDynamic() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                     null,
                     [
                         'convert_on_api'        => $merchant->convertOnApi(),
-                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomer(),
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
                         'payment_id'            => $payment->getId(),
                         'currency'              => $currency,
                     ]);
@@ -5482,15 +5488,20 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            // TODO - to remove
-
+            //TODO: Remove this later
             try
             {
                 $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
             }
             catch (\Throwable $e)
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $payment->toArray(),
+                        'error'               => $e->getMessage()
+                    ]
+                );
             }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);

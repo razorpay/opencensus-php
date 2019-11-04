@@ -54,7 +54,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+        $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -66,6 +66,9 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // blacklisted merchant should not be allowed to submit l2 form
+                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
                 $response = $this->submitActivationForm($merchant, $originProduct);
             }
             else
@@ -404,6 +407,8 @@ class Core extends Base\Core
     {
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return null;
         }
 
@@ -1310,6 +1315,44 @@ class Core extends Base\Core
             'success'     => $success,
             'failed'      => count($failedItems),
             'failedItems' => $failedItems,
+        ];
+
+        return $response;
+    }
+
+    public function merchantsMtuUpdate(array $merchants, int $value): array
+    {
+        $success = 0;
+
+        $failedItems = [];
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->editMerchantDetailFields($merchant, [Entity::LIVE_TRANSACTION_DONE => $value]);
+
+                $success++;
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_SUCCESS,['id' => $merchantId]);
+            }
+            catch(\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    'error'             => $e->getMessage()
+                ];
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_FAILURE,['id' => $merchantId]);
+            }
+        }
+
+        $response = [
+            'success'       => $success,
+            'failed'        => count($failedItems),
+            'failedItems'   => $failedItems,
         ];
 
         return $response;

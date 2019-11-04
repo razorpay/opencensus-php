@@ -93,6 +93,7 @@ class Netbanking
         IFSC::IDFB,
         IFSC::RATN,
         IFSC::UBIN,
+        IFSC::SCBL,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -450,6 +451,11 @@ class Netbanking
         Gateway::NETBANKING_UBI => [
             'retail' => [
                 IFSC::UBIN,
+            ],
+        ],
+        Gateway::NETBANKING_SCB => [
+            'retail' => [
+                IFSC::SCBL,
             ],
         ],
         Gateway::NETBANKING_CBI => [

@@ -100,4 +100,12 @@ class Repository extends Base\Repository
 
         return $refundEntities;
     }
+
+    public function findPaymentIdsBetween(int $start, int $end)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->where(Entity::ACTION, '=', Action::AUTHORIZE)
+                    ->pluck(Entity::PAYMENT_ID);
+    }
 }

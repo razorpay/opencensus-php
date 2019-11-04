@@ -25,4 +25,6 @@ class Constants
     const YESBANK_EMI_FILE_JOB_NAME    = 'yesbank_emi';
 
     const YESBANK_ENACH_NB_JOB_NAME    = 'yesbank_enach_nb';
+
+    const FIRST_DATA_PARES_FILE_JOB_NAME = 'firstdata_pares_data_push';
 }
