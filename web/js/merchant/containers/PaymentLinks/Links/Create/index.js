@@ -12,7 +12,7 @@ import Button, { AsyncBtn } from 'component/Button';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinkFormFields from './Fields';
+import PaymentLinkFormFields, { getOptions } from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
@@ -415,8 +415,9 @@ export default class CreateNewContainer extends React.Component {
     }
 
     if (this.props.user.isCustomNotesDropdownEnabled) {
+      const { type } = getOptions(this.props.user.current);
       reqPayload.notes = {
-        business_segment: reqPayload.notes,
+        [type]: reqPayload.notes,
       };
     }
 
@@ -537,6 +538,11 @@ export default class CreateNewContainer extends React.Component {
       let options = f.options;
       if (typeof options === 'function') {
         f.options = options(this);
+      }
+
+      let label = f.label;
+      if (typeof label === 'function') {
+        f.label = f.label(this);
       }
 
       return WizardFields.call(this, f);

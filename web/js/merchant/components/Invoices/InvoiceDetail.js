@@ -353,18 +353,14 @@ export default props => {
                     />
                   </EntityDetailRow>
                 ) : (
-                  <EntityDetailRow
-                    label={<div class="m-t">Business Segment</div>}
-                  >
-                    <EditBusinessSegment
-                      value={invoice.notes}
-                      editFn={editPaymentLink}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                      entityId={invoice.id}
-                      id={user.current}
-                      trackerFn={trackDetailViewEdits}
-                    />
-                  </EntityDetailRow>
+                  <EditBusinessSegment
+                    isRoleAllowedEdit={isRoleAllowedEdit}
+                    merchantId={user.current}
+                    value={invoice.notes}
+                    editFn={editPaymentLink}
+                    entityId={invoice.id}
+                    trackerFn={trackDetailViewEdits}
+                  />
                 )}
                 {/*user.isOndemandSettlementEnabled && (
                   <ScheduledBanner fromWhere="Payment Pages" />

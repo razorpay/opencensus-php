@@ -133,6 +133,7 @@ export const SubscriptionsStates = {
 export const CUSTOM_NOTES_OPTIONS = {
   DJy3GWYGs76MnR: {
     name: 'RCI',
+    type: 'Business Segment',
     options: [
       { label: 'BONUS', value: 'BONUS' },
       { label: 'DUPLICATE_CARD', value: 'DUPLICATE_CARD' },
@@ -156,6 +157,7 @@ export const CUSTOM_NOTES_OPTIONS = {
   },
   BYqeLRvN6FfCCY: {
     name: 'Apollo',
+    type: 'Scenario',
     options: [
       {
         label: 'NB',

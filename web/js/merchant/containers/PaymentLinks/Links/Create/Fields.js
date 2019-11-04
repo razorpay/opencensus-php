@@ -268,9 +268,13 @@ export default [
   },
   {
     name: 'notes',
-    label: 'Business Segment',
+    label: function(ctx) {
+      return getOptions(ctx.props.user.current).type;
+    },
     _cmp: Input.Select,
-    options: ({ props }) => getOptions(props.user.current),
+    options: function(ctx) {
+      return getOptions(ctx.props.user.current).options;
+    },
     _when: function(form) {
       return form.props.user.isCustomNotesDropdownEnabled;
     },
@@ -278,7 +282,10 @@ export default [
 ];
 
 export function getOptions(id) {
-  const { options } = CUSTOM_NOTES_OPTIONS[id] || {};
+  const { type, options } = CUSTOM_NOTES_OPTIONS[id] || {};
 
-  return [{ label: 'Select A Value', value: '' }, ...options];
+  return {
+    type,
+    options: [{ label: 'Select A Value', value: '' }, ...options],
+  };
 }
