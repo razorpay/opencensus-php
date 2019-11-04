@@ -92,11 +92,13 @@ export default class PaymentLinksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <span class="btn btn-link">
-              <span class="badge bg-success m-r">new</span>
+            {user.isRemindersEnabled && (
+              <span class="btn btn-link">
+                <span class="badge bg-success m-r">new</span>
 
-              <Link to="/reminders">Reminder Settings</Link>
-            </span>
+                <Link to="/reminders">Reminder Settings</Link>
+              </span>
+            )}
 
             <TakeATourButton feature={RZPFeatures.PL} />
 
