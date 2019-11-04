@@ -697,6 +697,22 @@ export default class ActivationWizard extends React.Component {
     return businessType == 2 || businessType == 11;
   }
 
+  get hasSelectedBlacklistedCategory() {
+    const categories = this.props.categories;
+    const selectedCategory =
+      this.state.dirty.business_category || this.props.data.business_category;
+    const subcategories = categories[selectedCategory]['subcategories'];
+    if (subcategories.length) {
+      const selectedSubcategory =
+        this.state.dirty.business_subcategory ||
+        this.props.data.business_subcategory;
+      return (
+        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+      );
+    }
+    return false;
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -1488,7 +1504,10 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
-                      disabled={this.state.callingL1Api}
+                      disabled={
+                        this.state.callingL1Api ||
+                        this.hasSelectedBlacklistedCategory
+                      }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}
                       name={'submit-and-verify'}
