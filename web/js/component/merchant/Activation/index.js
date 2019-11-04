@@ -82,14 +82,6 @@ const LOADING = {
   DEFAULT: 2, // Some custom message when form opens
 };
 
-// function isL1NotSubmittedForRegBiz(props) {
-//   return !props.user.instantActivation.isL1Submitted;
-// }
-
-// function isL1NotSubmittedForUnRegBiz(props) {
-//   return props.user.activated !== 1;
-// }
-
 function defaultFieldProps(f) {
   const self = this;
 
@@ -135,9 +127,6 @@ let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 
-// @RTracking((state, props, args) => {
-//   return window.rzpQ.component('ActivationCard');
-// })
 @withRouter
 @connect(
   state => ({
@@ -145,7 +134,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     user: state.session.user,
   }),
   {
-    // showNotification,
+    showNotification,
     updateSession,
     showInstantActivationSuccessModal,
     showKYCDetailsModal,
@@ -474,15 +463,6 @@ export default class ActivationWizard extends React.Component {
     );
   })
   goto = async (newActiveTab, cb) => {
-    // if (
-    //   this.state.activeTab == 2 &&
-    //   newActiveTab === null &&
-    //   (this.props.user.instantActivation.isBlacklistFlow ||
-    //     !this.props.user.instantActivation.isL1Submitted)
-    // ) {
-    //   await this.submitL1(this.state.activeTab);
-    // }
-
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
       // And since showSubmitLayer is set true in same cycle as click on 'Submit Form' handler, it will take previous value which is false.
@@ -701,7 +681,6 @@ export default class ActivationWizard extends React.Component {
     return !!this.props.accountId;
   }
 
-  // TODO: Consider razorX flag here
   get isIndividualTypeLock() {
     const { user } = this.props;
     const businessType =
@@ -802,7 +781,6 @@ export default class ActivationWizard extends React.Component {
   submitL1 = async currenActiveTab => {
     const data = this.formData;
     this.setState({ callingL1Api: true });
-    // this.props.submitL1Form({data, successCallback: this.submitL1Success});
     try {
       let response = await this.props.submitL1Form({
         data,
@@ -855,7 +833,6 @@ export default class ActivationWizard extends React.Component {
     } catch (err) {
       this.setState({ callingL1Api: false });
       this.saveCurrentTab();
-      // this.markTabIfActive(currenActiveTab);
       if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
           type: 'error',
@@ -1281,9 +1258,6 @@ export default class ActivationWizard extends React.Component {
       );
     }
 
-    // console.log(activeTab);
-    // console.log(BUSINESS_DETAILS_STEP);
-    // console.log('save button',(activeTab != BUSINESS_DETAILS_STEP || activeTab != DOCUMENT_UPLOAD_STEP));
     return (
       <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}

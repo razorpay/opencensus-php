@@ -11,9 +11,6 @@ const initialState = {
   title: 'Account Activation',
 };
 
-// const isUserActivated = (isActivated, businessType, activated) =>
-//   (isActivated && businessType != 11) || (businessType == 11 && activated == 1);
-
 @RTracking(() => {
   return window.rzpQ.component('ActivationCard');
 })
