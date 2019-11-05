@@ -896,6 +896,10 @@ class Gateway
         self::WALLET_PHONEPE,
     ];
 
+    public static $immediateVerifyGateways = [
+        self::BAJAJFINSERV,
+    ];
+
     public static $headless = [
        self::CYBERSOURCE => [
             Network::VISA,
