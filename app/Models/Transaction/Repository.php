@@ -15,6 +15,7 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
+use RZP\Constants\Product;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -23,6 +24,8 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -116,6 +119,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -139,7 +143,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($useLimit === true)
         {
@@ -817,6 +822,7 @@ class Repository extends Base\Repository
     /**
      * calcualtes the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
      * Conciders only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     * Only consider transactions made through primary balance of merchant
      *
      * @param string $merchantId
      * @param int    $start
@@ -835,12 +841,76 @@ class Repository extends Base\Repository
         // Because this will look at only transaction which not in ignore list
         // And Payment is part of ignore list and only payment has the type difference
         //
+        $balanceIDColumn                    = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIDColumn        = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedATColumn        = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedATColumn, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->where($balanceTypeColumn, Product::PRIMARY)
+                    ->first();
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the transaction created for a merchant in given time frame.
+     * Considers only transactions whose type is not in `IGNORE_ENTITIES_FROM_MERCHANT_INVOICE`
+     * Only consider transactions made through banking balance of merchant
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $start
+     * @param int    $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForRXTransactions(
+        string $merchantId,
+        string $balanceId,
+        int $start,
+        int $end)
+    {
+        $balanceIDColumn             = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIdColumn = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedAtColumn = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
         return $this->newQuery()
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
-                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->join(Entity::BALANCE, $transactionsBalanceIdColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedAtColumn, [$start, $end])
                     ->merchantId($merchantId)
-                    ->whereNotIn(Entity::TYPE, Type::IGNORE_ENTITIES_FROM_MERCHANT_INVOICE)
+                    ->whereNotIn($transactionsTypeColumn, Type::IGNORE_ENTITIES_FROM_MERCHANT_BANKING_INVOICE)
+                    ->where($transactionsBalanceIdColumn, $balanceId)
+                    ->where($balanceTypeColumn, Product::BANKING)
+                    ->first();
+
+    }
+
+    public function fetchFeesAndTaxForPrimaryFundAccountValidations(string $merchantId,
+                                                                    int $start,
+                                                                    int $end)
+    {
+        $balanceIDColumn             = $this->repo->balance->dbColumn(Entity::ID);
+        $transactionsBalanceIDColumn = $this->repo->transaction->dbColumn(Entity::BALANCE_ID);
+        $transactionsCreatedATColumn = $this->repo->transaction->dbColumn(Entity::CREATED_AT);
+        $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
+                    ->whereBetween($transactionsCreatedATColumn, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->where($transactionsTypeColumn, Type::FUND_ACCOUNT_VALIDATION)
+                    ->where($balanceTypeColumn, Product::PRIMARY)
                     ->first();
     }
 
@@ -1548,6 +1618,7 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
@@ -1561,7 +1632,8 @@ class Repository extends Base\Repository
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where($transactionType, '!=', Type::SETTLEMENT);
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt);
 
         if ($balanceType === Balance\Type::PRIMARY)
         {
@@ -1801,7 +1873,7 @@ class Repository extends Base\Repository
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
-        if(isset($params[Entity::CREATED_AT]) === false and isset($params[Entity::SETTLED_AT]) === false)
+        if((isset($params[Entity::CREATED_AT]) === false) and (isset($params[Entity::SETTLED_AT]) === false))
         {
             $query->where($transactionSettledAt, '<=', $timestamp);
         }
@@ -1811,11 +1883,13 @@ class Repository extends Base\Repository
             {
                 $query->where($transactionSettledAt, '<=', $params[Entity::SETTLED_AT]);
             }
+
             if(isset($params[Entity::CREATED_AT]) === true)
             {
                 $query->where($transactionCreatedAt, '<=', $params[Entity::CREATED_AT]);
             }
         }
+
         return $query;
     }
 

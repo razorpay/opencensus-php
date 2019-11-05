@@ -6,13 +6,16 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class EntityReportTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use DbEntityFetchTrait;
 
     public function __construct()
     {
@@ -217,25 +220,34 @@ class EntityReportTest extends TestCase
 
     public function testInvoiceNew()
     {
-        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K]);
-        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K]);
-        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::OTHERS]);
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K, 'balance_id' => 10000000000000, 'month' => 7, 'year' => 2019]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K, 'balance_id' => 10000000000000, 'month' => 7, 'year' => 2019]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::OTHERS, 'balance_id' => 10000000000000, 'month' => 7, 'year' => 2019]);
         $this->fixtures->create('merchant_invoice',
             [
                 'type' => Invoice\Type::ADJUSTMENT, 'amount' => -45000,
-                'tax' => -1800, 'Description' => 'Adjustment against extra commission'
+                'tax' => -1800, 'Description' => 'Adjustment against extra commission',
+                'balance_id' => 10000000000000,
+                'month' => 7,
+                'year' => 2019,
             ]);
 
         $this->fixtures->create('merchant_invoice',
             [
                 'type' => Invoice\Type::ADJUSTMENT, 'amount' => 25000,
-                'tax' => 800, 'Description' => 'Adjustment against uncharged fee'
+                'tax' => 800, 'Description' => 'Adjustment against uncharged fee',
+                'balance_id' => 10000000000000,
+                'month' => 7,
+                'year' => 2019
             ]);
 
-        $dt = Carbon::today(Timezone::IST);
         $input = [
-            'year'      => $dt->year,
-            'month'     => $dt->month,
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
             'format'    => 'new',
         ];
 
@@ -277,14 +289,23 @@ class EntityReportTest extends TestCase
         $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
 
         $this->assertEquals(177600, $lastRowOfSummary['Amount']);
+
+        Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWithoutGstinWithBusinessState()
     {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
         $this->fixtures->create('merchant_invoice',
             [
-                'type'      => Invoice\Type::CARD_LTE_2K,
-                'gstin'     => null,
+                'type'          => Invoice\Type::CARD_LTE_2K,
+                'gstin'         => null,
+                'balance_id'    => 10000000000000,
+                'month'         => 7,
+                'year'          => 2019
             ]);
 
         $md1 = $this->fixtures->create(
@@ -295,25 +316,32 @@ class EntityReportTest extends TestCase
                 'business_registered_state' => ' kerala',
             ]);
 
-        $dt = Carbon::today(Timezone::IST);
-
         $input = [
-            'year'      => $dt->year,
-            'month'     => $dt->month,
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
             'format'    => 'new',
         ];
 
         $invoiceEntries = $this->fetchInvoice($input);
 
         $this->assertTestResponse($invoiceEntries);
+
+        Carbon::setTestNow();
     }
 
     public function testInvoiceReportForMerchantWithoutGstinRegisteredInKarnataka()
     {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
         $this->fixtures->create('merchant_invoice',
             [
-                'type'      => Invoice\Type::CARD_LTE_2K,
-                'gstin'     => null,
+                'type'       => Invoice\Type::CARD_LTE_2K,
+                'gstin'      => null,
+                'balance_id' => 10000000000000,
+                'month'      => 7,
+                'year'       => 2019
             ]);
 
         $md1 = $this->fixtures->create(
@@ -324,11 +352,9 @@ class EntityReportTest extends TestCase
                 'business_registered_state' => 'Karnataka',
             ]);
 
-        $dt = Carbon::today(Timezone::IST);
-
         $input = [
-            'year'      => $dt->year,
-            'month'     => $dt->month,
+            'year'      => $oldDateTime->year,
+            'month'     => $oldDateTime->month,
             'format'    => 'new',
         ];
 

@@ -57,9 +57,11 @@ class ConfigKey
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
+
+    const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
+
     const CITI_CHANNEL_PAYOUT_MIDS              = self::PREFIX . 'citi_channel_payout_mids';
     const ICICI_CHANNEL_PAYOUT_MIDS             = self::PREFIX . 'icici_channel_payout_mids';
-
     const ATOS_TID_RANGE_LIST                   = self::PREFIX . 'atos_tid_range_list';
 
     // Gateway level configs
@@ -102,6 +104,7 @@ class ConfigKey
         self::FTS_PAYOUT_VPA,
         self::FTS_PAYOUT_CARD,
         self::FTS_PAYOUT_BANK_ACCOUNT,
+        self::CARD_PAYMENT_SERVICE_ENABLED,
         self::CITI_CHANNEL_PAYOUT_MIDS,
         self::ICICI_CHANNEL_PAYOUT_MIDS,
         self::LOW_BALANCE_RX_EMAIL

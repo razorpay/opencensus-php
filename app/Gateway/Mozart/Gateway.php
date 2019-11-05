@@ -17,7 +17,9 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Gateway extends Base\Gateway
 {
-    use AuthorizeFailed;
+    use AuthorizeFailed {
+        extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
+    }
 
     protected $gateway = 'mozart';
 
@@ -625,6 +627,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY     => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
+            ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -717,6 +726,13 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
+            ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
             ],
 
             Payment\Gateway::WALLET_PAYPAL => [
@@ -1015,6 +1031,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_SCB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
@@ -1205,5 +1222,29 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
             ]
         ];
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = $this->extractPaymentsPropertiesAuthorizedFailedTrait($gatewayPayment);
+
+        $gateway = $gatewayPayment->getGateway();
+
+        if ($this->isNetbankingGateway($gateway) === true)
+        {
+            $data = $gatewayPayment->getDataAttribute();
+
+            if (isset($data['bank_payment_id']) === true)
+            {
+                $response['acquirer'][Payment\Entity::REFERENCE1] = $data['bank_payment_id'];
+            }
+        }
+
+        return $response;
+    }
+
+    protected function isNetbankingGateway($gateway)
+    {
+        return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::NETBANKING], true);
     }
 }

@@ -938,6 +938,7 @@ class ErrorCode
     const SERVER_ERROR_DUPLICATE_SESSION_ID                                         = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
+    const SERVER_ERROR_PDF_GENERATION_FAILED                                        = 'SERVER_ERROR_PDF_GENERATION_FAILED';
 
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
     // Requests from api service to stork failed unexpectedly.
@@ -1206,6 +1207,10 @@ class ErrorCode
 
     const SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE                                 = 'SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE';
     const SERVER_ERROR_CORE_PAYMENT_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_CORE_PAYMENT_SERVICE_TIMEOUT';
+
+    // Card Payment Service Error Codes
+    const SERVER_ERROR_CARD_PAYMENT_SERVICE_FAILURE                                 = 'SERVER_ERROR_CARD_PAYMENT_SERVICE_FAILURE';
+    const SERVER_ERROR_CARD_PAYMENT_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_CARD_PAYMENT_SERVICE_TIMEOUT';
 
     const SERVER_ERROR_GOVERNOR_SERVICE_FAILURE                                     = 'SERVER_ERROR_GOVERNOR_SERVICE_FAILURE';
     const SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT                                     = 'SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT';

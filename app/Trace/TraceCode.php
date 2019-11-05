@@ -1274,6 +1274,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_DETECTION_DONE                                  = 'FRAUD_DETECTION_DONE';
     const FRAUD_DETECTION_FAILED                                = 'FRAUD_DETECTION_FAILED';
     const FRAUD_DETECTION_SKIPPED                               = 'FRAUD_DETECTION_SKIPPED';
+    const KUBERNETES_INVOICE_JOB_EXISTS                         = 'KUBERNETES_INVOICE_JOB_EXISTS';
+    const KUBERNETES_INVOICE_JOB_CREATED                        = 'KUBERNETES_INVOICE_JOB_CREATED';
+    const KUBERNETES_INVOICE_JOB_ERROR                          = 'KUBERNETES_INVOICE_JOB_ERROR';
+    const KUBERNETES_INVOICE_JOB_IN_PROCESS                     = 'KUBERNETES_INVOICE_JOB_IN_PROCESS';
+    const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 
@@ -1505,6 +1510,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                                = 'DISPUTE_CREATE_REQUEST';
     const DISPUTE_BULK_CREATE_REQUEST                           = 'DISPUTE_BULK_CREATE_REQUEST';
+    const DISPUTE_BULK_MAIL_TRIGGER_FAILED                      = 'DISPUTE_BULK_MAIL_TRIGGER_FAILED';
     const DISPUTE_EDIT_REQUEST                                  = 'DISPUTE_EDIT_REQUEST';
     const DISPUTE_BULK_EDIT_REQUEST                             = 'DISPUTE_BULK_EDIT_REQUEST';
     const DISPUTE_EDIT_REQUEST_FOR_MERCHANT                     = 'DISPUTE_EDIT_REQUEST_FOR_MERCHANT';
@@ -1567,6 +1573,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_BULK_CREATE                          = 'MERCHANT_INVOICE_BULK_CREATE';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED              = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
     const MERCHANT_INVOICE_REPORT_REQUEST                       = 'MERCHANT_INVOICE_REPORT_REQUEST';
+    const MERCHANT_BANKING_INVOICE_REPORT_REQUEST               = 'MERCHANT_BANKING_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST              = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
     const MERCHANT_INVOICE_QUERY_TIMEOUT                        = 'MERCHANT_INVOICE_QUERY_TIMEOUT';
 
@@ -2024,6 +2031,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
     const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
 
+    const CARD_PAYMENT_SERVICE_SWITCH_ROUTE                     = 'CARD_PAYMENT_SERVICE_SWITCH_ROUTE';
+
+    // Card Payment Service traces
+    const CARD_PAYMENT_SERVICE_REQUEST                          = 'CARD_PAYMENT_SERVICE_REQUEST';
+    const CARD_PAYMENT_SERVICE_RESPONSE                         = 'CARD_PAYMENT_SERVICE_RESPONSE';
+    const CARD_PAYMENT_SERVICE_RETRY                            = 'CARD_PAYMENT_SERVICE_RETRY';
+    const CARD_PAYMENT_SERVICE_ERROR                            = 'CARD_PAYMENT_SERVICE_ERROR';
+
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
@@ -2178,6 +2193,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
+
+    const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
+
+    const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
 
     const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';

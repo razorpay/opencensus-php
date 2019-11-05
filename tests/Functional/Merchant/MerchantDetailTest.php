@@ -873,7 +873,8 @@ class MerchantDetailTest extends TestCase
      */
     public function testUnsupportedActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
 

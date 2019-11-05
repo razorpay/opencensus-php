@@ -20,6 +20,8 @@ class Core extends Base\Core
 {
     protected $mutex;
 
+    const MUTEX_KEY = 'bank_transfer_processing_%s_%s';
+
     const NRE_FAILURE_MESSAGES = [
         'neft-return credit to nri account',
         'imps-rtn-nre account',
@@ -78,8 +80,10 @@ class Core extends Base\Core
         {
             $bankTransfer = $this->create($input, $provider);
 
+            $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYER_IFSC]);
+
             $this->mutex->acquireAndRelease(
-                $input[Entity::PAYEE_ACCOUNT],
+                $mutexKey,
                 function() use ($processor, $bankTransfer)
                 {
                     $processor->process($bankTransfer);

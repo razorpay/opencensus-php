@@ -57,11 +57,6 @@ class Entity extends Base\Entity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
-    public function getRaw()
-    {
-        return $this->getAttribute(self::RAW);
-    }
-
     public function setAccountNumber($accountNumber)
     {
         $raw = $this->getAttribute(self::RAW);
@@ -73,6 +68,16 @@ class Entity extends Base\Entity
         $raw = json_encode($data);
 
         $this->setRaw($raw);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getRaw()
+    {
+        return $this->getAttribute(self::RAW);
     }
 
     public function getDataAttribute()

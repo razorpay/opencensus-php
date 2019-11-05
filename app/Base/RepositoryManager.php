@@ -54,6 +54,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Merchant\Document\Repository           $merchant_document
  * @property Models\Card\Repository                        $card
  * @property Models\Settlement\bucket\Repository           $settlement_bucket
+ * @property Models\Merchant\Invoice\Repository            $merchant_invoice
  * @property Models\Address\Repository                     $address
  */
 class RepositoryManager extends Illuminate\Support\Manager
