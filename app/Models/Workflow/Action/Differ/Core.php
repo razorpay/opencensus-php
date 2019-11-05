@@ -150,11 +150,14 @@ class Core extends Base\Core
                     strtolower($this->baseIndex), self::ES_TYPE, $differ);
             }
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
             $this->trace->warning(
                 TraceCode::HEIMDALL_ACTION_LOG_FAIL,
-                ['msg' => $e]);
+                [
+                    'msg'   => $e->getMessage(),
+                    'trace' => $e->getTrace(),
+                ]);
         }
     }
 
