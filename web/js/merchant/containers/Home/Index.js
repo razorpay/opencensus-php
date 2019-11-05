@@ -749,7 +749,8 @@ export default class HomeContainer extends Component {
 
         {user.showInstantActivation &&
           !user.instantActivation.isL1Submitted &&
-          showOnboardingBannerFirstStep && (
+          showOnboardingBannerFirstStep &&
+          !user.isPartnerIntent() && (
             <ModalMask>
               <Modal
                 className="welcome-modal"
