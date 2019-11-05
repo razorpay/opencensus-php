@@ -192,4 +192,20 @@ class Service extends Base\Service
 
         return $tokenRegistration->toArrayAdmin();
     }
+
+    public function cancelAuthLink(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            null,
+            null,
+            [],
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
+
+        $invoice = $this->core->cancelAuthLink($invoice);
+
+        return $invoice->toArrayPublic();
+    }
 }

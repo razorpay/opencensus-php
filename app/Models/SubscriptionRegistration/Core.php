@@ -2,7 +2,9 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use mysql_xdevapi\Exception;
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -13,6 +15,9 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
+
 
 class Core extends Base\Core
 {
@@ -478,5 +483,42 @@ class Core extends Base\Core
         {
             $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $customer->getContact();
         }
+    }
+
+    public function cancelAuthLink(Invoice\Entity $invoice): Invoice\Entity
+    {
+        $this->trace->info(
+            TraceCode::CANCEL_AUTH_LINK,
+            [
+                'id' => $invoice->getId()
+            ]
+        );
+
+        $subscriptionRegistration = $invoice->entity;
+
+        if ($subscriptionRegistration === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->repo->invoice->lockForUpdateAndReload($invoice);
+
+                (new Invoice\Core())->validateIfInvoiceCanBeCancelled($invoice);
+
+                $invoice->setStatus(Invoice\Status::CANCELLED);
+
+                $this->repo->saveOrFail($invoice);
+            });
+
+        return $invoice;
     }
 }

@@ -1000,7 +1000,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateIfInvoiceCanBeCancelled(Entity $invoice)
+    public function validateIfInvoiceCanBeCancelled(Entity $invoice)
     {
         $count = $this->repo->invoice->getSucceedingPaymentsCount($invoice);
 

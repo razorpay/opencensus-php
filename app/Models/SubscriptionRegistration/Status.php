@@ -9,12 +9,14 @@ class Status
     const INITIALIZED    = 'initialized';
     const AUTHENTICATED  = 'authenticated';
     const COMPLETED      = 'completed';
+    const CANCELLED      = 'cancelled';
 
     protected static $statusList = [
         self::CREATED,
         self::INITIALIZED,
         self::AUTHENTICATED,
-        self::COMPLETED
+        self::COMPLETED,
+        self::CANCELLED,
     ];
 
     public static function isStatusValid($status)
