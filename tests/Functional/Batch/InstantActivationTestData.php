@@ -28,7 +28,7 @@ return [
         ],
     ],
 
-    'testVerifyBatchForWhitelistActivation' => [
+    'testVerifyBatchDataMigration' => [
         'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
@@ -80,28 +80,6 @@ return [
                 'processed_at' => null,
                 'total_count'  => 4,
             ],
-        ],
-    ],
-
-    'testCreateBatchWithMoreThanAllowedEntries' => [
-        'request'   => [
-            'url'     => '/batches',
-            'method'  => 'post',
-            'content' => [
-                'type' => 'instant_activation',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
         ],
     ],
 ];
