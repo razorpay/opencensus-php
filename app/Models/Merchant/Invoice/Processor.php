@@ -330,7 +330,7 @@ class Processor extends Base\Core
     {
         if (empty($feeDetails) === true)
         {
-            $this->trace->error(
+            $this->trace->info(
                 TraceCode::MERCHANT_INVOICE_QUERY_TIMEOUT,
                 [
                     'merchant_id' => $this->merchantId,

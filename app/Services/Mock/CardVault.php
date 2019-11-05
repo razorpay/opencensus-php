@@ -59,5 +59,7 @@ class CardVault extends BaseCardVault
         $response['token'] = $token;
         $response['fingerprint'] = strrev($token);
         $response['scheme'] = Vault::RZP_VAULT_SCHEME;
+
+        return $response;
     }
 }

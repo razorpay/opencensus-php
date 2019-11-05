@@ -8,6 +8,7 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 
 /**
  * @group dns-sensitive
@@ -46,11 +47,11 @@ class InstantActivationTest extends TestCase
     }
 
     /**
-     * verifies whitelist merchant L1 submission through batch
+     * verifies data Migration through batch
      */
-    public function testVerifyBatchForWhitelistActivation()
+    public function testVerifyBatchDataMigration()
     {
-        $merchantId = $this->createWhiteListMerchantFixture();
+        $merchantId = $this->createMerchantDetailFixture();
 
         $input = [
             [
@@ -62,45 +63,20 @@ class InstantActivationTest extends TestCase
 
         $this->startTest();
 
-        $liveMerchant        = $this->getDbEntityById('merchant', $merchantId, 'live');
-        $liveMerchantDetails = $liveMerchant->merchantDetail;
+        $documents = $this->getDbEntities('merchant_document', ['merchant_id'=>$merchantId], 'live');
 
-        $this->assertSame(true, $liveMerchant->isActivated());
-        $this->assertSame(true, $liveMerchant->getHoldFunds());
-        $this->assertSame('8931', $liveMerchant->getCategory());
-        $this->assertSame('others', $liveMerchant->getCategory2());
+        $this->assertCount(2,$documents);
 
-        $this->assertSame('whitelist', $liveMerchantDetails->getActivationFlow());
-        $this->assertSame('instantly_activated', $liveMerchantDetails->getActivationStatus());
-    }
+        $documentTypes = [];
 
-    /**
-     * verifies greylist merchant L1 submission through batch
-     */
-    public function testVerifyBatchForGreylistActivation()
-    {
-        $merchantId = $this->createGreyListMerchantFixture();
+        foreach ($documents as $document)
+        {
+            $documentTypes[] = $document['document_type'];
+        }
 
-        $input = [
-            [
-                DetailEntity::MERCHANT_ID => $merchantId,
-            ]
-        ];
+        $this->assertContains('business_proof_url',$documentTypes);
 
-        $this->createAndPutExcelFileInRequest($input, __FUNCTION__);
-
-        $this->startTest();
-
-        $liveMerchant        = $this->getDbEntityById('merchant', $merchantId, 'live');
-        $liveMerchantDetails = $liveMerchant->merchantDetail;
-
-        $this->assertSame(false, $liveMerchant->isActivated());
-        $this->assertSame(false, $liveMerchant->getHoldFunds());
-        $this->assertSame('5399', $liveMerchant->getCategory());
-        $this->assertSame('others', $liveMerchant->getCategory2());
-
-        $this->assertSame('greylist', $liveMerchantDetails->getActivationFlow());
-        $this->assertSame(null, $liveMerchantDetails->getActivationStatus());
+        $this->assertContains('address_proof_url',$documentTypes);
     }
 
     /**
@@ -126,90 +102,30 @@ class InstantActivationTest extends TestCase
     }
 
     /**
-     * File row count is more than allowed limit
-     */
-    public function testCreateBatchWithMoreThanAllowedEntries()
-    {
-        $entries = $this->getInvalidFileEntries(1001);
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    /**
-     * creates entities require for whitelist flow L1 submission
+     * creates fixtures required for data Migration
      *
      * @return string
      */
-    protected function createWhiteListMerchantFixture()
+    protected function createMerchantDetailFixture(): string
     {
-        return $this->createMerchantFixture('financial_services',
-                                            'accounting');
-    }
-
-    /**
-     * creates entities require  for greylist flow   L1 submission
-     *
-     * @return string merchantId
-     */
-    protected function createGreyListMerchantFixture()
-    {
-        return $this->createMerchantFixture('others',
-                                            null);
-    }
-
-    /**
-     * creates fixtures required for instant activation
-     *
-     * @param string      $businessCategory
-     * @param string|null $businessSubCategory
-     *
-     * @return string
-     */
-    protected function createMerchantFixture(string $businessCategory = "others",
-                                             string $businessSubCategory = null): string
-    {
-        $plan = $this->fixtures->create('pricing');
-
         // merchant detail internally creates merchant entity
         $merchantDetail = $this->fixtures->create('merchant_detail', [
-            DetailEntity::BUSINESS_CATEGORY    => $businessCategory,
-            DetailEntity::BUSINESS_SUBCATEGORY => $businessSubCategory,
-            DetailEntity::PROMOTER_PAN         => 'ABCDE1234E',
-            DetailEntity::BUSINESS_NAME        => 'test',
-            DetailEntity::BUSINESS_WEBSITE     => 'https://www.example.com',
-            DetailEntity::BUSINESS_TYPE        => '1',
-            DetailEntity::BUSINESS_DBA         => 'test',
+            DetailEntity::BUSINESS_PROOF_URL => 'DJaibu63Y8clYA',
+            DetailEntity::ADDRESS_PROOF_URL  => 'DJaibu63Y8clYD',
         ]);
-
-        $this->fixtures->edit('merchant', $merchantDetail->getMerchantId(), [
-            Entity::PRICING_PLAN_ID => $plan->getPlanId()
-        ]);
-
-        $this->fixtures->edit('methods', $merchantDetail->getMerchantId(), [
-            DetailEntity::MERCHANT_ID => $merchantDetail->getMerchantId(),
-            'disabled_banks'          => [],
-            'banks'                   => '[]',
-            'netbanking'              => 0,
-            'debit_card'              => 0,
-            'credit_card'             => 0,
-        ]);
-
-        $this->fixtures->edit('pricing', $plan->getId(), ['international' => 1]);
 
         return $merchantDetail->getMerchantId();
     }
 
     /**
-     * returns instant activation file entries having (invalid + valid) merchants ids
+     * returns Data Migration file entries having (invalid + valid) merchants ids
      *
      * @return array
      */
     protected function getDefaultFileEntries(): array
     {
         $successEntries = [
-            DetailEntity::MERCHANT_ID => $this->createGreyListMerchantFixture(),
+            DetailEntity::MERCHANT_ID => $this->createMerchantDetailFixture(),
         ];
 
         $defaultEntries = $this->getInvalidFileEntries();
@@ -220,7 +136,7 @@ class InstantActivationTest extends TestCase
     }
 
     /**
-     * returns instant activation file entries having invalid merchants ids
+     * returns data migration file  entries having invalid merchants ids
      *
      * @param int $noOfEntries
      *
