@@ -70,7 +70,15 @@ class Refund extends Base
 
             $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
+            if (($paymentTxn->isSettled() === true) or
+                (is_null($paymentTxn->getSettledAt()) === true))
+            {
+                return $nowTimestamp;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         return null;
