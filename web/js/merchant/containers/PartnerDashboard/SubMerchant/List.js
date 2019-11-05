@@ -26,6 +26,7 @@ import {
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
+import Announcement from 'merchant/components/Announcements/Instant';
 import {
   trackListEvents,
   trackSearchAnalytics,
@@ -115,6 +116,7 @@ const appId = {
 @connect(
   state => ({
     user: state.session.user,
+    mode: state.session.mode,
     ...state.submerchants,
   }),
   {
@@ -204,78 +206,81 @@ export default class SubMerchantsList extends ListContainer {
       });
     }
     return (
-      <tabbed-container>
-        <header>
-          <NavLink exact to="/partners/submerchants">
-            Affiliated Accounts
-          </NavLink>
-        </header>
-        <content>
-          <div class="sub-merchants-list">
-            <div>
-              <HeaderAction>
-                <>
-                  <button
-                    class="btn btn-default"
-                    onClick={this.onDownload}
-                    disabled={this.state.affiliatesDownloading}
-                  >
-                    {!this.state.affiliatesDownloading ? (
-                      <>
-                        <i className="i i-download" />
-                        <span>Export All (CSV)</span>
-                      </>
-                    ) : (
-                      <>Exporting Affiliates...</>
-                    )}
-                  </button>
-                  <ShowWhen
-                    myRole="owner manager admin"
-                    additionalCondition={user =>
-                      user.isPartner() && !user.isPartner('pure_platform')
-                    }
-                  >
+      <Fragment>
+        <Announcement user={this.props.user} mode={this.props.mode} />
+        <tabbed-container>
+          <header>
+            <NavLink exact to="/partners/submerchants">
+              Affiliated Accounts
+            </NavLink>
+          </header>
+          <content>
+            <div class="sub-merchants-list">
+              <div>
+                <HeaderAction>
+                  <>
                     <button
-                      class="btn btn-primary pull-right m-l"
-                      onClick={this.handleAddMerchant}
+                      class="btn btn-default"
+                      onClick={this.onDownload}
+                      disabled={this.state.affiliatesDownloading}
                     >
-                      <i class="i i-plus" />
-                      Add New Account
+                      {!this.state.affiliatesDownloading ? (
+                        <>
+                          <i className="i i-download" />
+                          <span>Export All (CSV)</span>
+                        </>
+                      ) : (
+                        <>Exporting Affiliates...</>
+                      )}
                     </button>
-                  </ShowWhen>
-                </>
-              </HeaderAction>
+                    <ShowWhen
+                      myRole="owner manager admin"
+                      additionalCondition={user =>
+                        user.isPartner() && !user.isPartner('pure_platform')
+                      }
+                    >
+                      <button
+                        class="btn btn-primary pull-right m-l"
+                        onClick={this.handleAddMerchant}
+                      >
+                        <i class="i i-plus" />
+                        Add New Account
+                      </button>
+                    </ShowWhen>
+                  </>
+                </HeaderAction>
+              </div>
+              <div class="content-wrapper">
+                <ListFilter
+                  form="SubmerchantListFilter"
+                  type="link"
+                  count={this.state.count}
+                  onSubmit={this.search}
+                  onSearchAnalytics={trackSearchAnalytics}
+                  onClearAnalytics={trackClearAnalytics}
+                  showAppIdFilter={user.isPartner('pure_platform')}
+                />
+                <DataTable
+                  title="Sub Merchants"
+                  count={this.state.count}
+                  skip={this.state.skip}
+                  paginate={this.paginate}
+                  columns={[
+                    name(user.isPartner('pure_platform')),
+                    id,
+                    email,
+                    ...appIdColumn,
+                    addedOn,
+                    activationStatus,
+                    ...switchMerchantColumn,
+                  ]}
+                  {...this.props}
+                />
+              </div>
             </div>
-            <div class="content-wrapper">
-              <ListFilter
-                form="SubmerchantListFilter"
-                type="link"
-                count={this.state.count}
-                onSubmit={this.search}
-                onSearchAnalytics={trackSearchAnalytics}
-                onClearAnalytics={trackClearAnalytics}
-                showAppIdFilter={user.isPartner('pure_platform')}
-              />
-              <DataTable
-                title="Sub Merchants"
-                count={this.state.count}
-                skip={this.state.skip}
-                paginate={this.paginate}
-                columns={[
-                  name(user.isPartner('pure_platform')),
-                  id,
-                  email,
-                  ...appIdColumn,
-                  addedOn,
-                  activationStatus,
-                  ...switchMerchantColumn,
-                ]}
-                {...this.props}
-              />
-            </div>
-          </div>
-        </content>
-      </tabbed-container>
+          </content>
+        </tabbed-container>
+      </Fragment>
     );
   }
 }

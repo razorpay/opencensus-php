@@ -14,10 +14,16 @@ export default class InstantActivationAnnouncements extends Component {
 
     let theme = 'warning',
       title,
-      content;
-
+      content,
+      isPaymentsOfTypeObject = payments instanceof Object;
     if (!user.isSubmitted) {
-      if (mode !== 'live' || payments.loading || payments.items.length === 0) {
+      if (
+        mode !== 'live' ||
+        (isPaymentsOfTypeObject && payments.loading) ||
+        (isPaymentsOfTypeObject &&
+          payments.items &&
+          payments.items.length === 0)
+      ) {
         return null;
       }
 
@@ -53,7 +59,6 @@ export default class InstantActivationAnnouncements extends Component {
         content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
       }
     }
-
     return (
       <Announcement
         title={title}
