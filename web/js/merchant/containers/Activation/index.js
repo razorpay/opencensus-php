@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import QueryString from 'query-string';
+import { withRouter } from 'react-router-dom';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { classList } from 'common/util';
@@ -11,6 +13,9 @@ import KycForm from './new';
 import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
 
+const SOURCE_RAZORPAY_X = 'x';
+
+@withRouter
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
@@ -86,6 +91,12 @@ export default class ActivationContainer extends Component {
         'activation'
       );
     }
+
+    const query = QueryString.parse(props.location.search);
+    this.isSourceRX =
+      query && query.merchant && query.merchant === SOURCE_RAZORPAY_X
+        ? true
+        : false;
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -139,6 +150,30 @@ export default class ActivationContainer extends Component {
     this.handleUnmount && this.handleUnmount();
   }
 
+  get shouldShowL1Modal() {
+    const { user, accountId } = this.props;
+    const {
+      instantActivation,
+      showInstantActivation,
+      isUnregBizFlowEnabled,
+    } = user;
+    const {
+      isL1Submitted,
+      isWhitelistFlow,
+      isBlacklistFlow,
+      isGraylistFlow,
+    } = instantActivation;
+
+    const showL1Modal =
+      !accountId &&
+      showInstantActivation &&
+      (!isL1Submitted || isBlacklistFlow);
+
+    return this.isSourceRX
+      ? showL1Modal
+      : isUnregBizFlowEnabled ? !showL1Modal : showL1Modal;
+  }
+
   render() {
     const { data, categories, additionalModalClass } = this.state,
       { user } = this.props,
@@ -153,19 +188,7 @@ export default class ActivationContainer extends Component {
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
       isModal = !!this.props.onClose,
-      {
-        isL1Submitted,
-        isWhitelistFlow,
-        isBlacklistFlow,
-        isGraylistFlow,
-      } = user.instantActivation,
-      showL1Modal =
-        !user.isUnregBizFlowEnabled &&
-        !this.props.accountId &&
-        user.showInstantActivation &&
-        (!isL1Submitted || isBlacklistFlow);
-
-    console.log('showL1Modal -----', showL1Modal);
+      showL1Modal = this.shouldShowL1Modal;
 
     let content = null,
       modalClasses = ['animate-down'],
