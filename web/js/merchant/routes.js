@@ -8,12 +8,13 @@ import {
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
 import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
-import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
+import PaymentLinkCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
-import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
+import VirtualAccountEntity from 'merchant/containers/VirtualAccounts/Entity';
+import VirtualAccountCreate from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
@@ -87,7 +88,7 @@ const entityDetailsMap = {
 
   '/route/payments/:id': { component: PaymentsDetails },
   '/route/accounts/:id': { component: AccountDetailsNew },
-  '/virtualaccounts/:id': { component: VirtualAccountDetails },
+  '/virtualaccounts/:id': { component: VirtualAccountEntity },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
   '/authlinks/:id(inv_.+)': {
@@ -158,7 +159,7 @@ const entityModalsMap = {
     additionalCondition: user => user.isAllowedEdit('activation'),
   },
   '/paymentlinks/new': {
-    component: PaymentLinksCreate,
+    component: PaymentLinkCreate,
     additionalCondition: user => user.isAllowedEdit('payment_links'),
   },
   '/authlinks/new': {
@@ -170,6 +171,9 @@ const entityModalsMap = {
   },
   '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
+  },
+  '/virtualaccounts/new': {
+    component: VirtualAccountCreate,
   },
 };
 

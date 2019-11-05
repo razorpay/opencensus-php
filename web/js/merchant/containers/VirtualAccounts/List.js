@@ -34,7 +34,6 @@ import OnBoarding, { getIsAllowedResetVAOnBoarding } from './OnBoarding';
 
 import QuickGuide, { getVAQuickGuideIsClosed } from './QuickGuide';
 
-import CreateVirtualAccount from './CreateVirtualAccount';
 import EmptyList from 'merchant/components/EmptyList';
 
 @connect(
@@ -166,6 +165,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
   };
 
+  /*
   showCreateVAModal = () => {
     this.props.openModal({
       size: 'medium',
@@ -181,6 +181,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
       ),
     });
   };
+*/
 
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
@@ -207,13 +208,10 @@ export default class VirtualAccountsListContainer extends ListContainer {
                   user.isAllowedEdit('virtual_accounts')
                 }
               >
-                <button
-                  class="btn btn-primary"
-                  onClick={this.showCreateVAModal}
-                >
+                <NavLink class="btn btn-primary" to="/virtualaccounts/new">
                   <i class="i i-plus" />
                   <span>Create Virtual Account</span>
-                </button>
+                </NavLink>
               </ShowWhen>
             </div>
           </HeaderAction>

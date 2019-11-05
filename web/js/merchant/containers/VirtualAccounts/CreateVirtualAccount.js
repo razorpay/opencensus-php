@@ -1,19 +1,16 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { TypeAhead } from 'react-power-select';
-import AsyncButton from 'react-async-button';
 
 import Form from 'component/Form';
 
-import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
-
 import { findBy } from 'rzp/utils/rzp-utils';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import { classList } from 'common/util';
 import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
 
 import Input, { Label, Description } from 'component/Input';
+import Button, { AsyncBtn } from 'component/Button';
 
 import { closeModal } from 'rzp/modules/modals';
 import * as ModalActions from 'rzp/modules/modals';
@@ -26,14 +23,15 @@ import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 import CustomerCreation from 'merchant/containers/Customers/New';
 
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import AccountDetails, {
+import {
   getVirtualAccountDetails,
+  getVirtualAccountDetailsToCopy,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
-import { getVirtualAccountDetailsToCopy } from 'merchant/components/VirtualAccounts/AccountDetails';
+import AccountDetailsSummary from 'merchant/components/VirtualAccounts/AccountDetailsSummary';
 
 const CustomCustomerOption = ({ option }) => {
   return (
-    <div className="custom-powerselect-options">
+    <div class="custom-powerselect-options">
       {option.name && <b>{option.name} : </b>}
       {option.email || option.contact}
     </div>
@@ -46,17 +44,7 @@ const CustomCustomerOption = ({ option }) => {
 
     return {
       customers,
-      notes: selector(state, 'notes'),
-      close_by: selector(state, 'close_by'),
-      descriptor: selector(state, 'descriptor'),
       customersLoading: state.customers.loading,
-      customer: findBy(customers, 'id', selector(state, 'customer_id')),
-      initialValues: {
-        receivers: {
-          types: ['bank_account'],
-          notes: [],
-        },
-      },
       ...state.config.config,
     };
   },
@@ -69,21 +57,11 @@ const CustomCustomerOption = ({ option }) => {
     ...ModalActions,
   }
 )
-@reduxForm({
-  form: 'createVirtualAccount',
-})
 export default class CreateVirtualAccount extends Component {
-  state = {
-    internals: {
-      __no_expiry: true,
-    },
-  };
-
-  componentWillMount() {
-    this.props.fetchCustomersForAutocomplete();
-  }
+  state = { disableSubmit: false };
 
   componentDidMount() {
+    this.props.fetchCustomersForAutocomplete();
     this.props.onMount && this.props.onMount();
   }
 
@@ -92,7 +70,7 @@ export default class CreateVirtualAccount extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    // Prepoluate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
+    // Prepopulate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
     if (!this.state.customerId && this.props.customer !== nextProps.customer) {
       this.setState({
         customerId: nextProps.customer,
@@ -100,7 +78,7 @@ export default class CreateVirtualAccount extends Component {
     }
   }
 
-  save = ({ numeric, descriptor, notes, receivers, ...props }) => {
+  handleCreate = ({ numeric, descriptor, notes, receivers, ...props }) => {
     let transformedNotes = notes;
 
     if (transformedNotes && transformedNotes.length > 0) {
@@ -124,9 +102,22 @@ export default class CreateVirtualAccount extends Component {
         },
       })
       .then(virtualAccount => {
-        this.props.onCreateVA && this.props.onCreateVA(props);
         this.props.luminateRow(virtualAccount.id);
-        this.setState({ virtualAccount });
+
+        // On success, Show account details summary
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <AccountDetailsSummary
+              modalTitle="Virtual Account Created"
+              closeModal={this.props.closeModal}
+              virtualAccount={virtualAccount}
+              onCopy={this.props.onCopy}
+            />
+          ),
+        });
+
+        this.props.onCreateVA && this.props.onCreateVA(props);
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -169,278 +160,35 @@ export default class CreateVirtualAccount extends Component {
     this.setState({ customerId: option });
   };
 
-  handleDateChange = selectedDate => {
-    const fieldName = 'close_by';
-
-    selectedDate.startOf('day');
-
-    const current = this.props[fieldName]
-      ? moment(this.props[fieldName], 'X')
-      : 0;
-
-    const time = current
-      ? Number(current.format('X')) - Number(current.startOf('day').format('X'))
-      : 0;
-
-    const value = Number(selectedDate.format('X')) + time;
-
-    this.props.change(fieldName, value);
-  };
-
-  handleTimeChange = selectedDate => {
-    let fieldName = 'close_by_time';
-
-    const time =
-      Number(selectedDate.format('X')) -
-      Number(selectedDate.startOf('day').format('X'));
-    fieldName = fieldName.replace('_time', '');
-
-    let current = this.props[fieldName];
-
-    // adding time to current day
-    current = Number(
-      moment(current, 'X')
-        .startOf('day')
-        .format('X')
-    );
-
-    this.props.change(fieldName, current + time);
-  };
-
-  handleNoExpiry = () => {
-    this.setState({
-      internals: {
-        __no_expiry: !this.state.internals.__no_expiry,
-      },
-    });
-  };
-
   updateDate = newDate => {
     this.setState({ expire_by: newDate });
   };
 
-  getCreateVAFormFields_NEW() {
-    return (
-      <Form>
-        <Input.Group class="Input--vTop" label="Accept Payment Via">
-          <div>
-            <Input.Check
-              _name="hasBankAccount"
-              fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
-            />
-            <Input label="Account Number" name="bank_account" />
-          </div>
-
-          <div>
-            <Input.Check _name="hasVPA" fieldLabel="UPI Transfer" />
-            <Input label="UPI ID" name="vpa" />
-          </div>
-        </Input.Group>
-
-        {/*
-        <Input.PowerDropdown
-          name="customer"
-          label="Customer (Optional)"
-          defaultValue={this.state.customerId}
-          placeholder={`${
-            customersLoading ? 'Loading...' : 'Select a customer'
-          }`}
-          options={this.typeOptions}
-          customOptionComponent={CustomCustomerOption}
-          customSelectedOptionComponent={CustomCustomerOption}
-          onChange={this.onSelectCustomer}
-          afterOptionsComponent={select => (
-            <QuickAddComponent {...select} onClick={this.quickCreateCustomer} />
-          )}
-        />
-*/}
-
-        <Input.TextareaAutoResize
-          class="Input--vTop"
-          name="description"
-          label="Account Description (Optional)"
-          description="Description is shown only on the dashboard and not to customers"
-        />
-
-        <Input.DateTime
-          class="Input--vTop"
-          label="Close By"
-          checkboxFieldLabel="Enable Auto Close"
-          onChange={this.updateDate}
-          description="You won’t be able to recieve payments after the specified date"
-          isInline
-        />
-      </Form>
+  toggleDisableState() {
+    /*
+    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
+    * Hence, relying on is-invalid.
+    * */
+    const invalidFields = document.querySelectorAll(
+      '.PaymentLinks--Create-Form .Input.is-invalid'
     );
-  }
+    const disableSubmit = invalidFields.length;
 
-  getCreateVAFormFields() {
-    const {
-      untouch,
-      close_by,
-      handle = '',
-      handleSubmit,
-      customers = [],
-      descriptor = '',
-      customersLoading,
-      onCopy = () => {},
-    } = this.props;
-
-    return (
-      <form onSubmit={handleSubmit(this.save)}>
-        <div className="form-group">
-          <label>Customer (Optional)</label>
-          <TypeAhead
-            options={customers}
-            disabled={customersLoading}
-            class="ps-in-modal"
-            searchIndices={['id', 'name', 'email', 'contact']}
-            placeholder={`${
-              customersLoading ? 'Loading...' : 'Select a customer'
-            }`}
-            showClear={true}
-            selected={this.state.customerId}
-            selectedOptionLabelPath="selectedDisplayName"
-            optionComponent={({ option }) => {
-              return (
-                <div className="custom-powerselect-options">
-                  {option.name && <b>{option.name} : </b>}
-                  {option.email || option.contact}
-                </div>
-              );
-            }}
-            onChange={this.onSelectCustomer}
-            afterOptionsComponent={select => (
-              <QuickAddComponent
-                {...select}
-                onClick={this.quickCreateCustomer}
-              />
-            )}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Account Description (Optional)</label>
-          <Field
-            name="description"
-            class="form-control"
-            component="input"
-            required={true}
-          />
-          <small className="help-block">
-            Account description is only displayed on the dashboard and is not
-            shared with the customer.
-          </small>
-        </div>
-
-        {!!handle && (
-          <div className="form-group">
-            <label>Descriptor (Optional)</label>
-            <Field
-              name="descriptor"
-              component="input"
-              class="form-control"
-              placeholder={`Accepts alphanumberic, upto ${descriptorLimit} chars`}
-              normalize={value => value.toUpperCase()}
-              onChange={event => {
-                let value = event.target.value;
-                let regex = new RegExp(`^[a-z0-9]{0,${descriptorLimit}}$`, 'i');
-
-                if (regex.test(value)) {
-                  this.props.change('descriptor', value);
-                } else {
-                  event.preventDefault();
-                }
-              }}
-            />
-            <small className="help-block">
-              Descriptor will be a part of the account number generated.
-            </small>
-          </div>
-        )}
-
-        <div className="form-group">
-          <label>Close By (Optional)</label>
-
-          <Input.Check
-            class="Input--vTop"
-            fieldLabel="Disable Auto Close"
-            data-name="__no_expiry"
-            checked={internals.__no_expiry}
-            onChange={this.handleNoExpiry}
-          />
-
-          <Input.Group class="InputGroup--inline InputGroup--near m-b">
-            <div className="Input-content">
-              <Input.ToCalendar
-                readOnly
-                allowToday
-                size="half"
-                name="close_by"
-                disablePastDates
-                placement="topLeft"
-                placeholder="DD-MM-YYYY"
-                defaultValue={dateInMoment}
-                onChange={this.handleDateChange}
-                disabled={internals.__no_expiry}
-                addonAfter={<i className="i i-date-range" />}
-              />
-              {close_by && (
-                <Input.TimePicker
-                  readOnly
-                  size="half"
-                  name="close_by_time"
-                  placeholder="HH:MM A"
-                  defaultValue={dateInMoment}
-                  disabled={internals.__no_expiry}
-                  onChange={this.handleTimeChange}
-                  addonAfter={<i className="i i-time" />}
-                />
-              )}
-            </div>
-          </Input.Group>
-
-          <small className="help-block">
-            If specified, Virtual Account will auto close at the specified time.
-          </small>
-        </div>
-
-        <br />
-
-        <div className="form-group">
-          <label className="notes-label">Internal Notes</label>
-          <FieldArray
-            name="notes"
-            component={NotesFieldArray}
-            showLinkedAccountOpt={false}
-          />
-        </div>
-
-        <div className="Modal__actions clearfix">
-          <AsyncButton
-            className="btn btn-primary btn-block"
-            text="Create Virtual Account"
-            pendingText="Creating..."
-            onClick={handleSubmit(this.save)}
-          />
-        </div>
-      </form>
-    );
+    if (this.state.disableSubmit !== disableSubmit) {
+      this.setState({ disableSubmit });
+    }
   }
 
   render() {
     const {
-      untouch,
       close_by,
       handle = '',
       handleSubmit,
       customers = [],
       descriptor = '',
       customersLoading,
-      onCopy = () => {},
+      onClose,
     } = this.props;
-
-    const { virtualAccount, internals } = this.state;
 
     let descriptorLimit;
 
@@ -454,86 +202,103 @@ export default class CreateVirtualAccount extends Component {
 
     const dateInMoment = undefined;
 
-    return (
-      <div>
-        <ModalHeader
-          size="small"
-          title={
-            virtualAccount
-              ? 'Virtual Account Created'
-              : 'Create Virtual Account'
-          }
-          onCloseClick={this.props.closeModal}
-        />
+    const IS_MODAL_VIEW = this.props.onClose;
 
-        <div class="modal-body">
-          {virtualAccount ? (
-            <VirtualAccountDetailsSummary
-              virtualAccount={virtualAccount}
-              onCopy={onCopy}
+    const content = (
+      <div class="PaymentLinks--Create Wizard">
+        <main class="form-container">
+          <main-title class="main-title">Create Virtual Account</main-title>
+
+          <Form
+            class="PaymentLinks--Create-Form"
+            onChange={this.props.onChange}
+            layout="tabular"
+          >
+            <Input.Group class="Input--vTop" label="Accept Payment Via">
+              <br />
+
+              <div>
+                <Input.Check
+                  _name="hasBankAccount"
+                  fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
+                />
+                <Input label="Account Number" name="bank_account" />
+              </div>
+
+              <div>
+                <Input.Check _name="hasVPA" fieldLabel="UPI Transfer" />
+                <Input label="UPI ID" name="vpa" />
+              </div>
+            </Input.Group>
+
+            {/*
+            <Input.PowerDropdown
+              name="customer"
+              label="Customer (Optional)"
+              defaultValue={this.state.customerId}
+              placeholder={`${
+                customersLoading ? 'Loading...' : 'Select a customer'
+              }`}
+              options={this.typeOptions}
+              customOptionComponent={CustomCustomerOption}
+              customSelectedOptionComponent={CustomCustomerOption}
+              onChange={this.onSelectCustomer}
+              afterOptionsComponent={select => (
+                <QuickAddComponent {...select} onClick={this.quickCreateCustomer} />
+              )}
             />
-          ) : (
-            // this.getCreateVAFormFields()
-            this.getCreateVAFormFields_NEW()
-          )}
-        </div>
+            */}
+
+            <Input.TextareaAutoResize
+              class="Input--vTop"
+              name="description"
+              label="Account Description (Optional)"
+              description="Description is shown only on the dashboard and not to customers"
+            />
+
+            <Input.DateTime
+              class="Input--vTop"
+              label="Close By"
+              checkboxFieldLabel="Enable Auto Close"
+              onChange={this.updateDate}
+              description="You won’t be able to recieve payments after the specified date"
+              isInline
+            />
+
+            <Input.PairList
+              class="Input-vTop"
+              name="notes"
+              label="Internal Notes"
+            />
+          </Form>
+        </main>
+
+        {/* Form Footer */}
+        <footer>
+          {/* Action Button 1 */}
+          {this.props.isModalView && <Button onClick={onClose}>Cancel</Button>}
+
+          {/* Action Button 2 */}
+          <AsyncBtn.Primary
+            onClick={this.handleCreate}
+            pendingState={'Creating...'}
+            disabled={this.state.disableSubmit || customersLoading}
+          >
+            Create Virtual Account
+          </AsyncBtn.Primary>
+        </footer>
       </div>
+    );
+
+    return IS_MODAL_VIEW ? (
+      <Modal
+        class={classList('PaymentLinks', content && 'animate-down')}
+        onClose={onClose}
+      >
+        <ModalContent>{content}</ModalContent>
+      </Modal>
+    ) : (
+      <div class="StandAloneContainer">{content}</div>
     );
   }
 }
-
-export const VirtualAccountDetailsSummary = ({
-  virtualAccount,
-  onCopy,
-  showUPIAddressDetails = true,
-  showBankAccountDetails = true,
-}) => {
-  const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualAccount);
-  const valueToCopy = getVirtualAccountDetailsToCopy({
-    bankAccount,
-    upiAddress,
-  });
-
-  return (
-    <div>
-      <p class="text-muted">
-        Share the following information with the customer to accept payments
-      </p>
-
-      <br />
-
-      <AccountDetails
-        bankAccount={bankAccount}
-        upiAddress={upiAddress}
-        showUPIAddressDetails={showUPIAddressDetails}
-        showBankAccountDetails={showBankAccountDetails}
-      />
-
-      {virtualAccount.close_by && (
-        <div class="form-group">
-          <div class="text-muted">Close By</div>
-          <div>
-            <b>
-              {moment(virtualAccount.close_by * 1000).format(
-                'DD MMM YYYY, hh:mm:ss a'
-              )}
-            </b>
-          </div>
-        </div>
-      )}
-
-      <CustomClipboard
-        value={valueToCopy}
-        onCopy={() => {
-          onCopy(virtualAccount);
-        }}
-      >
-        <button type="button" class="btn btn-primary btn-block m-t">
-          Copy Account Details
-        </button>
-      </CustomClipboard>
-    </div>
-  );
-};
-
-const selector = formValueSelector('createVirtualAccount');

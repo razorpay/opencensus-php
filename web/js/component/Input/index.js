@@ -616,7 +616,7 @@ Field.Select = ({ options, ...props }) => (
 );
 
 /* Fields to be shown visually closer than other fields in form*/
-Field.Group = ({ label, className, children, description, ...otherProps }) => {
+Field.Group = ({ label, className, children, ...otherProps }) => {
   return (
     <div
       class={classList(
@@ -627,7 +627,6 @@ Field.Group = ({ label, className, children, description, ...otherProps }) => {
     >
       <Label text={label} />
       {children}
-      <Description text={description} />
     </div>
   );
 };

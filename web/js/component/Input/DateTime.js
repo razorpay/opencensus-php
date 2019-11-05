@@ -73,7 +73,6 @@ export default class DateTime extends React.Component {
             !required && 'InputGroup--near',
             isInline ? 'InputGroup--inline' : 'Input--half_big'
           )}
-          description={description}
         >
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
