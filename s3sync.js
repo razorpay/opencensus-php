@@ -55,6 +55,7 @@ glob(
         file.endsWith('-entry.js') ||
         file.endsWith('.js.map') ||
         file.endsWith('signup.css') ||
+        file.endsWith('signup.js') ||
         ext.startsWith('woff')
       ) {
         fileParams.CacheControl = 'no-store,must-revalidate';
