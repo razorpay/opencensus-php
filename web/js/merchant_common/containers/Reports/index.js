@@ -185,6 +185,7 @@ export default function Reports(store, opts) {
           .startOf('month'),
         currentReportList,
         pollInstances,
+        disableDownloadButton: false,
       };
 
       this.onConfigChange = ::this.onConfigChange;
@@ -207,10 +208,12 @@ export default function Reports(store, opts) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
       this.setFileFormat(option);
+      this.enableDownloadButton();
     }
 
     onAccountChange(account) {
       this.setState({ selectedAccount: account });
+      this.enableDownloadButton();
     }
 
     setFileFormat = config => {
@@ -344,11 +347,27 @@ export default function Reports(store, opts) {
       this.props.addPollInstance(reportId, pollInstance);
     };
 
+    disableDownloadButton = () => {
+      this.setState({
+        disableDownloadButton: true,
+      });
+    };
+
+    enableDownloadButton = () => {
+      if (this.state.disableDownloadButton) {
+        this.setState({
+          disableDownloadButton: false,
+        });
+      }
+    };
+
     generateReport() {
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'download_report');
         window.hj('tagRecording', ['download_report']);
       }
+
+      this.disableDownloadButton();
 
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
@@ -680,6 +699,7 @@ export default function Reports(store, opts) {
         selectedConfig,
         selectedAccount,
         currentReportList,
+        disableDownloadButton,
       } = this.state;
 
       const { type, dateRangeData, user } = this.props;
@@ -800,6 +820,7 @@ export default function Reports(store, opts) {
                               name="type"
                               class="fix-select"
                               component="select"
+                              onChange={this.enableDownloadButton}
                             >
                               <option value="daily">Daily</option>
                               {!(
@@ -817,6 +838,7 @@ export default function Reports(store, opts) {
                                   id="with-time"
                                   component="input"
                                   type="checkbox"
+                                  onChange={this.enableDownloadButton}
                                 />
                                 <label for="with-time" class="icon i-check">
                                   Specify time
@@ -846,6 +868,7 @@ export default function Reports(store, opts) {
                               }
                               placeholder="Select Year-Month"
                               timeFormat={false}
+                              onChange={this.enableDownloadButton}
                             />
                           </div>
                         </div>
@@ -863,6 +886,7 @@ export default function Reports(store, opts) {
                                 placeholder="Select Date-Month-Year"
                                 isValidDate={validYear}
                                 timeFormat={false}
+                                onChange={this.enableDownloadButton}
                               />
                             </div>
                           </div>
@@ -881,6 +905,7 @@ export default function Reports(store, opts) {
                                   timeFormat={false}
                                   isValidDate={validYear}
                                   closeOnSelect
+                                  onChange={this.enableDownloadButton}
                                 />
                                 {dateRangeData.withTime && (
                                   <Field
@@ -890,6 +915,7 @@ export default function Reports(store, opts) {
                                     closeOnSelect
                                     dateFormat={false}
                                     class="m-t"
+                                    onChange={this.enableDownloadButton}
                                   />
                                 )}
                               </div>
@@ -909,6 +935,7 @@ export default function Reports(store, opts) {
                                     dateRangeData.startAt
                                   )}
                                   closeOnSelect
+                                  onChange={this.enableDownloadButton}
                                 />
                                 {dateRangeData.withTime && (
                                   <Field
@@ -917,6 +944,7 @@ export default function Reports(store, opts) {
                                     closeOnSelect
                                     dateFormat={false}
                                     class="m-t"
+                                    onChange={this.enableDownloadButton}
                                   />
                                 )}
                               </div>
@@ -944,6 +972,7 @@ export default function Reports(store, opts) {
                             name="reportType"
                             class="fix-select"
                             component="select"
+                            onChange={this.enableDownloadButton}
                           >
                             {/* Add option on the fly for txt, tsv or other formats */}
                             {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
@@ -965,7 +994,10 @@ export default function Reports(store, opts) {
                     <button
                       class="btn btn-primary"
                       onClick={this.generateReport}
-                      disabled={type === 'dateRange' && !!dateRangeError}
+                      disabled={
+                        disableDownloadButton ||
+                        (type === 'dateRange' && !!dateRangeError)
+                      }
                     >
                       Download Report
                     </button>
