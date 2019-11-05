@@ -301,6 +301,8 @@ class Processor
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
 
+            $this->incrementOfferUsageCount($payment);
+
             $this->logRequestTime($payment, $startTime);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
@@ -323,6 +325,18 @@ class Processor
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
+        }
+    }
+
+    protected function incrementOfferUsageCount($payment){
+
+        $offer = $payment->getOffer();
+
+        if($offer!== null) {
+
+            $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+            $this->repo->offer->saveOrFail($offer);
         }
     }
 

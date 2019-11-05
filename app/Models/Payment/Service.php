@@ -642,15 +642,6 @@ class Service extends Base\Service
 
         $payment = $this->getNewProcessor()->capture($payment, $input);
 
-        $offer = $payment->getOffer();
-
-        if($offer!== null) {
-
-            $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
-
-            $this->repo->offer->saveOrFail($offer);
-        }
-
         return $payment->toArrayPublic();
     }
 
