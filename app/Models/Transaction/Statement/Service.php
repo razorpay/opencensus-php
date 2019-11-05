@@ -21,7 +21,7 @@ class Service extends Transaction\Service
         $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
 
         /** @var PublicCollection $transactions */
-        $transactions = $this->repo->statement->fetch($input, $this->merchant->getId());
+        $transactions = $this->repo->statement->fetch($input, $this->merchant->getId(), true);
 
         return $transactions->toArrayPublic();
     }

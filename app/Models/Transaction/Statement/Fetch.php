@@ -28,7 +28,7 @@ class Fetch extends Transaction\Fetch
             Entity::UTR               => 'sometimes|string',
             Entity::MODE              => 'sometimes|string|custom',
             // Commenting out for now since the `explain` was scary
-            // Entity::ACTION          => 'sometimes|string|in:debit,credit',
+             Entity::ACTION          => 'sometimes|string|in:debit,credit',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
@@ -52,8 +52,7 @@ class Fetch extends Transaction\Fetch
             Entity::MODE,
         ],
         AuthType::PROXY_AUTH => [
-            // Commenting out for now since the `explain` was scary
-            // Entity::ACTION
+             Entity::ACTION
         ],
     ];
 
