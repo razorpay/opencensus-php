@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\XLSXHeaders;
@@ -38,13 +39,13 @@ class Xlsx extends Generator
             XLSXHeaders::BRANCH_TIMINGS       => 'C22',
             XLSXHeaders::CALL_CENTER          => 'C25',
             XLSXHeaders::BRANCH_PHONE_NUMBER  => 'C26',
-            XLSXHeaders::TRANSACTION_DATE     => 'A30',
-            XLSXHeaders::TRANSACTION_DETAILS  => 'B30',
-            XLSXHeaders::CHEQUE_ID            => 'C30',
-            XLSXHeaders::VALUE_DATE           => 'D30',
-            XLSXHeaders::WITHDRAWL_AMT        => 'E30',
-            XLSXHeaders::DEPOSIT_AMT          => 'F30',
-            XLSXHeaders::BALANCE              => 'G30',
+            XLSXHeaders::TRANSACTION_DATE     => 'A31',
+            XLSXHeaders::TRANSACTION_DETAILS  => 'B31',
+            XLSXHeaders::CHEQUE_ID            => 'C31',
+            XLSXHeaders::VALUE_DATE           => 'D31',
+            XLSXHeaders::WITHDRAWL_AMT        => 'E31',
+            XLSXHeaders::DEPOSIT_AMT          => 'F31',
+            XLSXHeaders::BALANCE              => 'G31',
         ];
 
     const ACCOUNT_OWNER_INFO_CELL_MAP =
@@ -99,13 +100,13 @@ class Xlsx extends Generator
 
     const WORKING_COLUMN_LIST           = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
-    const TRANSACTION_TITLE_CELL        = 'A29';
+    const TRANSACTION_TITLE_CELL        = 'A30';
 
-    const TRANSACTION_HEADER_CELL_RANGE = 'A30:G30';
+    const TRANSACTION_HEADER_CELL_RANGE = 'A31:G31';
 
-    const TRANSACTION_CELL_FILL_COLOR   = 'b19cd9';
+    const TRANSACTION_CELL_FILL_COLOR   = 'b29cd9';
 
-    const TRANSACTION_DATA_START_ROW    = 31;
+    const TRANSACTION_DATA_START_ROW    = 32;
 
     const DEFAULT_XLSX_FORMAT           = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -159,7 +160,7 @@ class Xlsx extends Generator
 
     protected function calculateStatementSummaryCellValues()
     {
-        $tCount = $this->getTotalTransactionCount();
+        $tCount = $this->getTotalTransactionCount() + 1;
 
         $this->summaryKeyMap[XLSXHeaders::STATEMENT_SUMMARY] =
             'A' . (string) (self::TRANSACTION_DATA_START_ROW + $tCount);
@@ -352,6 +353,14 @@ class Xlsx extends Generator
                                   ]
                           ]
                   ]);
+
+        // sub-title styling
+        $sheet->getStyle(self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_TITLE])
+              ->getAlignment()
+              ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->getStyle(self::HEADER_TO_CELL_MAP[XLSXHeaders::SHEET_TITLE])->getFont()->setSize(20);
+        $sheet->getRowDimension('2')->setRowHeight(20);
     }
 
     protected function getTotalTransactionCount(): int
