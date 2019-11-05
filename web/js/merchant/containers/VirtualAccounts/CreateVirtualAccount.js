@@ -58,7 +58,14 @@ const CustomCustomerOption = ({ option }) => {
   }
 )
 export default class CreateVirtualAccount extends Component {
-  state = { disableSubmit: false };
+  state = {
+    notes: {},
+    close_by: null,
+    _internals: {
+      hasBankAccount: true,
+      hasVPA: true,
+    },
+  };
 
   componentDidMount() {
     this.props.fetchCustomersForAutocomplete();
@@ -78,7 +85,10 @@ export default class CreateVirtualAccount extends Component {
     }
   }
 
-  handleSubmit = ({ numeric, descriptor, notes, receivers, ...props }) => {
+  handleSubmit = formData => {
+    const { descriptorVPA, descriptorBankAccount } = formData;
+    const { notes, close_by, _internals } = this.state;
+
     let transformedNotes = notes;
 
     if (transformedNotes && transformedNotes.length > 0) {
@@ -88,19 +98,31 @@ export default class CreateVirtualAccount extends Component {
       }, {});
     }
 
+    const reqPayload = {
+      receivers: {
+        notes: [],
+        types: [],
+      },
+      notes: transformedNotes,
+      close_by: close_by || undefined,
+    };
+
+    if (_internals.hasBankAccount) {
+      reqPayload.receivers.types.push('bank_account');
+      reqPayload.receivers.bank_account = descriptorBankAccount
+        ? { descriptor: descriptorBankAccount }
+        : {};
+    }
+
+    if (_internals.hasVPA) {
+      reqPayload.receivers.types.push('vpa');
+      reqPayload.receivers.vpa = descriptorVPA
+        ? { descriptor: descriptorVPA }
+        : {};
+    }
+
     return this.props
-      .saveVirtualAccount({
-        ...props,
-        notes: transformedNotes,
-        receivers: {
-          ...receivers,
-          bank_account: descriptor
-            ? {
-                descriptor,
-              }
-            : undefined,
-        },
-      })
+      .saveVirtualAccount(reqPayload)
       .then(virtualAccount => {
         this.props.luminateRow(virtualAccount.id);
 
@@ -163,34 +185,24 @@ export default class CreateVirtualAccount extends Component {
   };
 
   updateDate = newDate => {
-    this.setState({ expire_by: newDate });
+    this.setState({ close_by: newDate });
   };
 
-  toggleDisableState() {
-    /*
-    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
-    * Hence, relying on is-invalid.
-    * */
-    const invalidFields = document.querySelectorAll(
-      '.PaymentLinks--Create-Form .Input.is-invalid'
-    );
-    const disableSubmit = invalidFields.length;
-
-    if (this.state.disableSubmit !== disableSubmit) {
-      this.setState({ disableSubmit });
-    }
-  }
+  setRefForm = el => (this.formEl = el);
 
   render() {
     const {
-      close_by,
       handle = '',
-      handleSubmit,
       customers = [],
-      descriptor = '',
       customersLoading,
       onClose,
     } = this.props;
+
+    const IS_MODAL_VIEW = onClose;
+
+    const { _internals } = this.state;
+    const disableSubmit =
+      customersLoading || (!_internals.hasVPA && !_internals.hasBankAccount);
 
     let descriptorLimit;
 
@@ -202,10 +214,6 @@ export default class CreateVirtualAccount extends Component {
       }
     }
 
-    const dateInMoment = undefined;
-
-    const IS_MODAL_VIEW = this.props.onClose;
-
     const content = (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
@@ -214,35 +222,68 @@ export default class CreateVirtualAccount extends Component {
           <Form
             class="PaymentLinks--Create-Form"
             onChange={this.props.onChange}
+            onSubmit={this.handleSubmit}
             layout="tabular"
+            ref={this.setRefForm}
           >
             <Input.Group class="Input--vTop" label="Accept Payment Via">
               <div>
                 <Input.Check
                   _name="hasBankAccount"
                   fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
+                  defaultValue={_internals.hasBankAccount}
+                  onChange={e =>
+                    this.setState({
+                      _internals: {
+                        ...this.state._internals,
+                        hasBankAccount: e.target.checked,
+                      },
+                    })
+                  }
                 />
                 <Input
-                  name="bank_account"
+                  name="descriptorBankAccount"
                   label={() => (
                     <span style={{ fontWeight: 'normal' }}>Account Number</span>
                   )}
                   size="half_big"
-                  description="If left blank, an account number will be auto generated"
+                  description={
+                    _internals.hasBankAccount
+                      ? 'If left blank, an account number will be auto generated'
+                      : null
+                  }
+                  disabled={!_internals.hasBankAccount}
                 />
               </div>
 
               <br />
 
               <div>
-                <Input.Check _name="hasVPA" fieldLabel="UPI Transfer" />
+                <Input.Check
+                  _name="hasVPA"
+                  fieldLabel="UPI Transfer"
+                  defaultValue={_internals.hasVPA}
+                  onChange={e =>
+                    this.setState({
+                      _internals: {
+                        ...this.state._internals,
+                        hasVPA: e.target.checked,
+                      },
+                    })
+                  }
+                />
                 <Input
-                  name="vpa"
+                  name="descriptorVPA"
                   label={() => (
                     <span style={{ fontWeight: 'normal' }}>UPI ID</span>
                   )}
                   size="half_big"
-                  description="If left blank, a UPI ID will be auto generated"
+                  description={
+                    _internals.hasVPA
+                      ? 'If left blank, a UPI ID will be auto generated'
+                      : null
+                  }
+                  disabled={!_internals.hasVPA}
                 />
               </div>
             </Input.Group>
@@ -284,7 +325,7 @@ export default class CreateVirtualAccount extends Component {
             <Input.DateTime
               class="Input--vTop"
               label="Close By"
-              checkboxFieldLabel="Enable Auto Close"
+              checkboxFieldLabel="Disable Auto Close"
               onChange={this.updateDate}
               description="You won’t be able to recieve payments after the specified date"
               isInline
@@ -302,16 +343,16 @@ export default class CreateVirtualAccount extends Component {
         {/* Form Footer */}
         <footer>
           {/* Action Button 1 */}
-          {IS_MODAL_VIEW && <Button onClick={onClose}>Cancel</Button>}
+          {IS_MODAL_VIEW && (
+            <Button type="button" onClick={onClose}>
+              Cancel
+            </Button>
+          )}
 
           {/* Action Button 2 */}
-          <AsyncBtn.Primary
-            onClick={this.handleSubmit}
-            pendingState={'Creating...'}
-            disabled={this.state.disableSubmit || customersLoading}
-          >
+          <Button.Primary type="submit" disabled={disableSubmit}>
             Create Virtual Account
-          </AsyncBtn.Primary>
+          </Button.Primary>
         </footer>
       </div>
     );

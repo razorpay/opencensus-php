@@ -12,6 +12,7 @@ const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
 const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
+// TODO: Check to add UPI ID in receiver_type
 export const fetchVirtualAccounts = params => {
   if (!params.notes) {
     params.receiver_type = 'bank_account';

@@ -21,7 +21,7 @@ const AccountDetailsSummary = ({
 
   return (
     <div>
-      <ModalHeader title={modalTitle} onCloseClick={this.props.closeModal} />
+      <ModalHeader title={modalTitle} onCloseClick={closeModal} />
 
       <div class="modal-body">
         <p class="text-muted">
@@ -49,6 +49,8 @@ const AccountDetailsSummary = ({
             </div>
           </div>
         )}
+
+        <br />
 
         <CustomClipboard
           value={valueToCopy}
