@@ -1274,6 +1274,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_DETECTION_DONE                                  = 'FRAUD_DETECTION_DONE';
     const FRAUD_DETECTION_FAILED                                = 'FRAUD_DETECTION_FAILED';
     const FRAUD_DETECTION_SKIPPED                               = 'FRAUD_DETECTION_SKIPPED';
+    const KUBERNETES_INVOICE_JOB_EXISTS                         = 'KUBERNETES_INVOICE_JOB_EXISTS';
+    const KUBERNETES_INVOICE_JOB_CREATED                        = 'KUBERNETES_INVOICE_JOB_CREATED';
+    const KUBERNETES_INVOICE_JOB_ERROR                          = 'KUBERNETES_INVOICE_JOB_ERROR';
+    const KUBERNETES_INVOICE_JOB_IN_PROCESS                     = 'KUBERNETES_INVOICE_JOB_IN_PROCESS';
+    const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
 

@@ -168,7 +168,7 @@ abstract class Base extends BaseProcessor
         $amount = $payment->getAmount();
 
         // The payment amount is inclusive of fees, so we need to capture with the original amount.
-        if ($payment->isFeeBearerCustomer() === true)
+        if ($payment->merchant->isFeeBearerCustomer() === true)
         {
             $amount = $amount - $payment->getFee();
         }
