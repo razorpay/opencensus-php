@@ -202,7 +202,7 @@ export default class Content extends Component {
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
             additionalCondition={user =>
-              user.isAllowedView('payment_pages') && user.isPPV3Enabled
+              user.isAllowedView('payment_pages') && user.isPPMLIEnabled
             }
           />
 

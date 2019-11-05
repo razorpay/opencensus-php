@@ -7,7 +7,7 @@ export default class FormView extends React.PureComponent {
   render() {
     return (
       <Provider store={store}>
-        {store.getState().session.user.isPPV3Enabled ? <ViewV3 /> : <ViewV2 />}
+        {store.getState().session.user.isPPMLIEnabled ? <ViewV3 /> : <ViewV2 />}
       </Provider>
     );
   }
