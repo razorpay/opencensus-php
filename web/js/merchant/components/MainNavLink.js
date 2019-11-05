@@ -74,6 +74,7 @@ export default class MainNavLink extends Component {
       icon,
       label,
       isNew,
+      customBadge,
       isBeta = false,
       isPending,
       baseLocation,
@@ -94,6 +95,10 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+    } else if (customBadge) {
+      tag = (
+        <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>
+      );
     } else if (isSettlementEnabled) {
       tag = (
         <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />

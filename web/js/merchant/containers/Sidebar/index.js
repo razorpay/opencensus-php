@@ -187,9 +187,12 @@ export default class Sidebar extends Component {
                 />
 
                 {user.isPartner() ? (
-                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
+                  <PartnerSidebar
+                    merchantNavLinkProps={merchantNavLinkProps}
+                    user={user}
+                  />
                 ) : (
-                  <MerchantNavLinks {...merchantNavLinkProps} />
+                  <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
               </div>
             )}
@@ -282,7 +285,7 @@ class PartnerSidebar extends Component {
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >
-          <MerchantNavLinks {...props.merchantNavLinkProps} />
+          <MerchantNavLinks {...props.merchantNavLinkProps} user={props.user} />
         </MainNavLinkGroup>
       </>
     );
