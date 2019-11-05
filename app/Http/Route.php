@@ -3368,6 +3368,14 @@ final class Route
             // Accessing this route from lambda for updating merchant mtu
             'merchant_mtu_update',
         ],
+
+        //
+        // Accessing the routes for automation merchants, only the whitelisting of merchants has been added further
+        // in BasicAuth layer.
+        //
+        'automation' => [
+            '*'
+        ],
     ];
 
     //
