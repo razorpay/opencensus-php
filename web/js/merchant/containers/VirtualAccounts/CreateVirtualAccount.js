@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { TypeAhead } from 'react-power-select';
 
+import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 
 import { findBy } from 'rzp/utils/rzp-utils';
@@ -215,19 +216,31 @@ export default class CreateVirtualAccount extends Component {
             layout="tabular"
           >
             <Input.Group class="Input--vTop" label="Accept Payment Via">
-              <br />
-
               <div>
                 <Input.Check
                   _name="hasBankAccount"
                   fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
                 />
-                <Input label="Account Number" name="bank_account" />
+                <Input
+                  name="bank_account"
+                  label={() => (
+                    <span style={{ fontWeight: 'normal' }}>Account Number</span>
+                  )}
+                  size="half_big"
+                />
               </div>
+
+              <br />
 
               <div>
                 <Input.Check _name="hasVPA" fieldLabel="UPI Transfer" />
-                <Input label="UPI ID" name="vpa" />
+                <Input
+                  name="vpa"
+                  label={() => (
+                    <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                  )}
+                  size="half_big"
+                />
               </div>
             </Input.Group>
 
@@ -266,7 +279,7 @@ export default class CreateVirtualAccount extends Component {
             />
 
             <Input.PairList
-              class="Input-vTop"
+              class="Input--vTop"
               name="notes"
               label="Internal Notes"
             />
@@ -276,7 +289,7 @@ export default class CreateVirtualAccount extends Component {
         {/* Form Footer */}
         <footer>
           {/* Action Button 1 */}
-          {this.props.isModalView && <Button onClick={onClose}>Cancel</Button>}
+          {IS_MODAL_VIEW && <Button onClick={onClose}>Cancel</Button>}
 
           {/* Action Button 2 */}
           <AsyncBtn.Primary
