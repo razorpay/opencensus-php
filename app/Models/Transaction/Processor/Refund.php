@@ -77,7 +77,7 @@ class Refund extends Base
             }
             else
             {
-                return null;
+                return $paymentTxn->getSettledAt();
             }
         }
 
