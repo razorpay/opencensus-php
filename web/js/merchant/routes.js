@@ -78,7 +78,7 @@ const entityDetailsMap = {
   '/paymentpages/:id(pl_.+)': {
     component: PaymentPagesDetails,
     additionalCondition: user =>
-      user.isAllowedView('payment_pages') && !user.isPPV3Enabled,
+      user.isAllowedView('payment_pages') && !user.isPPMLIEnabled,
   },
   '/invoices/:id/details': {
     component: PaymentLinkEntity,

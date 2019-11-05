@@ -382,12 +382,9 @@ export default class User {
     return this.getExpStatus('sellerapp_plus');
   }
 
-  get isPPV3Enabled() {
-    return this.getExpStatus('paymentpages_v3');
-  }
-
-  get isPPV3ReportsEnabled() {
-    return this.getExpStatus('paymentpages_v3_reports');
+  // Payment pages multiple line items
+  get isPPMLIEnabled() {
+    return this.getExpStatus('paymentpages_mli');
   }
 
   get isMobileHotjarSurveyEnabled() {

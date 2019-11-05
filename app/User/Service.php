@@ -866,8 +866,7 @@ class Service extends Base\Service
             'second_factor_auth',
             'disable-view-reports',
             'mobile_hotjar_survey',
-            'paymentpages_v3',
-            'paymentpages_v3_reports',
+            'paymentpages_mli',
             'show_commission_balance',
             'custom_notes',
             'sellerapp_PL_batch_upload'

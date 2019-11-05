@@ -49,7 +49,7 @@ export const fetchPaymentPage = id => {
   return {
     type: FETCH_ENTITY,
     payload: fetchPaymentPageEntity(id),
-    isPPV3Enabled: store.getState().session.user.isPPV3Enabled,
+    isPPMLIEnabled: store.getState().session.user.isPPMLIEnabled,
     id,
   };
 };
@@ -138,7 +138,7 @@ export default function(state = initialState, action) {
 
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
 
-      if (action.isPPV3Enabled) {
+      if (action.isPPMLIEnabled) {
         entityData.payment_page_items.forEach(pi => {
           // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
