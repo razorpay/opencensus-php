@@ -169,9 +169,16 @@ export default class ActivationContainer extends Component {
       showInstantActivation &&
       (!isL1Submitted || isBlacklistFlow);
 
-    return this.isSourceRX
-      ? showL1Modal
-      : isUnregBizFlowEnabled ? !showL1Modal : showL1Modal;
+    if (this.isSourceRX) {
+      // if Source RX return whatever is computed value of showL1Modal - Since Unreg is not supported there
+      return showL1Modal;
+    }
+
+    if (isUnregBizFlowEnabled) {
+      return false; // never show L1 Modal if unreg biz flow is enabled
+    }
+
+    return showL1Modal;
   }
 
   render() {
