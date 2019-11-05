@@ -183,21 +183,15 @@ function WizardFields(field) {
   {
     updatePLInReduxList,
     showNotification,
+    fetchReminders,
+    fetchRemindersMerchantConfigs,
+    updatePLInReduxList,
+    fetchInvoice,
     openModal,
     closeModal,
     luminateRow,
-    fetchReminders,
-    fetchRemindersMerchantConfigs,
   }
 )
-@connect(state => state.session, {
-  updatePLInReduxList,
-  fetchInvoice,
-  showNotification,
-  openModal,
-  closeModal,
-  luminateRow,
-})
 @RTracking(() => window.rzpQ.component('CreateNewContainer'))
 export default class CreateNewContainer extends React.Component {
   static contextTypes = {
