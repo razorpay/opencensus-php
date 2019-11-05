@@ -8,7 +8,7 @@ import Form from 'component/Form';
 import { findBy } from 'rzp/utils/rzp-utils';
 
 import { classList } from 'common/util';
-import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
+import QuickAdd from 'rzp/ui/Select/QuickAdd';
 
 import Input, { Label, Description } from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
@@ -23,7 +23,6 @@ import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 
 import CustomerCreation from 'merchant/containers/Customers/New';
 
-import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
@@ -79,7 +78,7 @@ export default class CreateVirtualAccount extends Component {
     }
   }
 
-  handleCreate = ({ numeric, descriptor, notes, receivers, ...props }) => {
+  handleSubmit = ({ numeric, descriptor, notes, receivers, ...props }) => {
     let transformedNotes = notes;
 
     if (transformedNotes && transformedNotes.length > 0) {
@@ -129,12 +128,14 @@ export default class CreateVirtualAccount extends Component {
   };
 
   selectCustomerAndCloseModal = customer => {
-    this.props.change('customer_id', customer.id);
+    this.setState({
+      customer: customer,
+    });
+
     this.props.closeModal();
-    setTimeout(this.props.showCreateVAModal, 500); // To open create virtual account modal automatically with pre-selected customer name
   };
 
-  quickCreateCustomer = ({ searchTerm = '' }) => {
+  openCreateCustomerModal = ({ searchTerm = '' }) => {
     this.props.openModal({
       size: 'small',
       component: (
@@ -149,16 +150,16 @@ export default class CreateVirtualAccount extends Component {
     });
   };
 
-  onSelectCustomer = ({ option }) => {
-    // For setting in redux-form
-    if (option) {
-      this.props.change('customer_id', option.id);
-    } else {
-      this.props.untouch('createVirtualAccount', 'customer_id');
-    }
+  handleNotesChange = notes => {
+    this.setState({ notes });
+  };
 
-    // For display purpose only in TypeAhead
-    this.setState({ customerId: option });
+  handleSelectCustomer = ({ option }) => {
+    // For setting in redux-form
+    this.setState({
+      customer_id: option ? option.id : null,
+      customer: option, // For display purpose only in TypeAhead
+    });
   };
 
   updateDate = newDate => {
@@ -227,6 +228,7 @@ export default class CreateVirtualAccount extends Component {
                     <span style={{ fontWeight: 'normal' }}>Account Number</span>
                   )}
                   size="half_big"
+                  description="If left blank, an account number will be auto generated"
                 />
               </div>
 
@@ -240,32 +242,42 @@ export default class CreateVirtualAccount extends Component {
                     <span style={{ fontWeight: 'normal' }}>UPI ID</span>
                   )}
                   size="half_big"
+                  description="If left blank, a UPI ID will be auto generated"
                 />
               </div>
             </Input.Group>
 
-            {/*
-            <Input.PowerDropdown
-              name="customer"
-              label="Customer (Optional)"
-              defaultValue={this.state.customerId}
-              placeholder={`${
-                customersLoading ? 'Loading...' : 'Select a customer'
-              }`}
-              options={this.typeOptions}
-              customOptionComponent={CustomCustomerOption}
-              customSelectedOptionComponent={CustomCustomerOption}
-              onChange={this.onSelectCustomer}
-              afterOptionsComponent={select => (
-                <QuickAddComponent {...select} onClick={this.quickCreateCustomer} />
-              )}
-            />
-            */}
+            <div class="Input">
+              <div class="Input-label">Customer</div>
+
+              <div class="Input-content">
+                <TypeAhead
+                  options={customers}
+                  disabled={customersLoading}
+                  class="ps-in-modal"
+                  searchIndices={['id', 'name', 'email', 'contact']}
+                  placeholder={`${
+                    customersLoading ? 'Loading...' : 'Select a customer'
+                  }`}
+                  showClear={true}
+                  selected={this.state.customer}
+                  selectedOptionLabelPath="selectedDisplayName"
+                  optionComponent={CustomCustomerOption}
+                  onChange={this.handleSelectCustomer}
+                  afterOptionsComponent={props => (
+                    <QuickAdd
+                      {...props}
+                      onClick={this.openCreateCustomerModal}
+                    />
+                  )}
+                />
+              </div>
+            </div>
 
             <Input.TextareaAutoResize
               class="Input--vTop"
               name="description"
-              label="Account Description (Optional)"
+              label="Account Description"
               description="Description is shown only on the dashboard and not to customers"
             />
 
@@ -282,6 +294,7 @@ export default class CreateVirtualAccount extends Component {
               class="Input--vTop"
               name="notes"
               label="Internal Notes"
+              onChange={this.handleNotesChange}
             />
           </Form>
         </main>
@@ -293,7 +306,7 @@ export default class CreateVirtualAccount extends Component {
 
           {/* Action Button 2 */}
           <AsyncBtn.Primary
-            onClick={this.handleCreate}
+            onClick={this.handleSubmit}
             pendingState={'Creating...'}
             disabled={this.state.disableSubmit || customersLoading}
           >
