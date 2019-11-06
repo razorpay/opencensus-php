@@ -291,7 +291,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = () => {
     const isEditExistingId = !!this.props.id;
-    const isPPV3Enabled = this.props.user.isPPV3Enabled;
+    const isPPMLIEnabled = this.props.user.isPPMLIEnabled;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
 
@@ -318,7 +318,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     FORM_ITEMS.forEach((fi, ix) => {
       fi.settings = fi.settings || {};
-      fi.settings.position = isPPV3Enabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
+      fi.settings.position = isPPMLIEnabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
 
       if (isFormItemOfTypeAmount(fi)) {
         // Prepare payload for amount field (as extra fields aren't required to be sent)
@@ -373,7 +373,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     });
 
-    if (isPPV3Enabled) {
+    if (isPPMLIEnabled) {
       if (!paymentPageItems.length) {
         this.props.showNotification({
           type: 'error',
@@ -384,7 +384,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
-    const isValidSchema = isPPV3Enabled
+    const isValidSchema = isPPMLIEnabled
       ? validateUISchemaV3(udf_schema)
       : validateUISchemaV2(udf_schema);
 
@@ -418,14 +418,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       reqPayload.template_type = template_type;
     }
 
-    if (isPPV3Enabled) {
+    if (isPPMLIEnabled) {
       reqPayload.settings.checkout_options = {
         ...settings.checkout_options,
       };
 
       reqPayload.settings.payment_button_label = settings.payment_button_label;
 
-      // Should exist only when props.user.isPPV3Enabled = true
+      // Should exist only when props.user.isPPMLIEnabled = true
       if (paymentPageItems.length) {
         reqPayload.payment_page_items = paymentPageItems;
       }
@@ -569,7 +569,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isAllowedToSubmit = paymentPageEntity && paymentPageEntity.title;
 
       // For PPV3, notification error will be thrown.
-      if (!user.isPPV3Enabled) {
+      if (!user.isPPMLIEnabled) {
         isAllowedToSubmit =
           isAllowedToSubmit && paymentPageEntity.hasOwnProperty('amount');
       }

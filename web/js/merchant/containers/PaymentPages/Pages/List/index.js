@@ -256,7 +256,7 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
           </ListFilter>
-          {this.props.user.isPPV3Enabled ? (
+          {this.props.user.isPPMLIEnabled ? (
             <PaymentPagesV3List loading={loading} paymentPages={paymentPages} />
           ) : (
             <PaymentPagesV2List loading={loading} paymentPages={paymentPages} />
