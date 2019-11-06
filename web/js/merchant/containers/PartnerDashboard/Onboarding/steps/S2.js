@@ -49,7 +49,7 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
           <p style={{ marginTop: '10px' }}>
             For Enterprise solution
             <a href="https://razorpay.com/support/" target="_blank">
-              &nbsp;Contact Support
+              &nbsp;Contact Support <i className="i i-external-link " />
             </a>
           </p>
           <p style={{ marginTop: '10px' }}>
@@ -61,9 +61,8 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
                 color: '#57666E',
               }}
             >
-              I just want to use Razorpay products{' '}
+              I just want to use Razorpay products
             </a>
-            <i className="i i-external-link " />
           </p>
         </div>
       </div>
