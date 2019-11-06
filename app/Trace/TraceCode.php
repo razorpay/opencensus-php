@@ -1148,6 +1148,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LUMBERJACK_ASYNC_REQUEST_FAILED                       = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
     const SCROOGE_REQUEST                                       = 'SCROOGE_REQUEST';
     const SCROOGE_RESPONSE                                      = 'SCROOGE_RESPONSE';
+    const REMINDERS_RESPONSE                                    = 'REMINDERS_RESPONSE';
+    const REMINDERS_REQUEST                                     = 'REMINDERS_REQUEST';
 
     const EXCHANGE_REQUEST                                      = 'EXCHANGE_REQUEST';
     const EXCHANGE_RESPONSE                                     = 'EXCHANGE_RESPONSE';

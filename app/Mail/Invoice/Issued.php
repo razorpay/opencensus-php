@@ -63,4 +63,18 @@ class Issued extends Base
 
         return $this;
     }
+
+    protected function addSubject()
+    {
+        $subject = $this->getSubjectByInvoiceType();
+
+        if (empty($this->data["reminder"]) === false)
+        {
+            $subject = "Reminder::" . $subject;
+        }
+
+        $this->subject($subject);
+
+        return $this;
+    }
 }

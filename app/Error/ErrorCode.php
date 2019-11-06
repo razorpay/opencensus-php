@@ -348,6 +348,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_REQUEST_BODY                                          = 'BAD_REQUEST_INVALID_REQUEST_BODY';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
+    const BAD_REQUEST_REMINDER_NOT_APPLICABLE                                       = 'BAD_REQUEST_REMINDER_NOT_APPLICABLE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';

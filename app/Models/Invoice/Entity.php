@@ -154,6 +154,7 @@ class Entity extends Base\PublicEntity
     const DRAFT                    = 'draft';
     const BATCH_IDS                = 'batch_ids';
     const TYPES                    = 'types';
+    const REMINDER_ENABLE          = 'reminder_enable';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -290,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
+        self::REMINDER_STATUS
     ];
 
     protected $fillable = [
@@ -340,6 +342,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
+        self::REMINDER_STATUS,
         self::MERCHANT_ID,
         self::DATE,
         self::MERCHANT_GSTIN,
@@ -398,6 +401,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
+        self::REMINDER_STATUS,
         self::DATE,
         self::TERMS,
         self::PARTIAL_PAYMENT,
@@ -490,6 +494,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_STATUS,
         self::SUPPLY_STATE_CODE,
         self::USER_ID,
+        self::REMINDER_STATUS,
         self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
@@ -586,6 +591,16 @@ class Entity extends Base\PublicEntity
     public function getSmsStatus()
     {
         return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getReminderStatus()
+    {
+        return $this->getAttribute(self::REMINDER_STATUS);
+    }
+
+    public function getReminderId()
+    {
+        return $this->getAttribute(self::REMINDER_ID);
     }
 
     public function getCustomerId()
@@ -1056,6 +1071,21 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setReminderId($id)
+    {
+        $this->setAttribute(self::REMINDER_ID, $id);
+    }
+
+    public function setReminderStatus($status)
+    {
+        if ($status !== null)
+        {
+            ReminderStatus::checkStatus($status);
+        }
+
+        $this->setAttribute(self::REMINDER_STATUS, $status);
+    }
+
     public function setSmsStatus($status)
     {
         if ($status !== null)
@@ -1347,6 +1377,17 @@ class Entity extends Base\PublicEntity
         $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
     }
 
+    protected function setPublicReminderStatusAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($array[self::REMINDER_STATUS]);
+        }
+    }
+
     protected function setPublicSubscriptionIdAttribute(array & $array)
     {
         $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
@@ -1460,6 +1501,20 @@ class Entity extends Base\PublicEntity
             (boolval($input[self::SMS_NOTIFY]) === false))
         {
             $this->setAttribute(self::SMS_STATUS, null);
+        }
+    }
+
+    public function generateReminderStatus(array $input)
+    {
+        if(isset($input[self::REMINDER_ENABLE]) === true)
+        {
+            $reminderstatus = ReminderStatus::PENDING;
+
+            $reminderEnable = boolval($input[self::REMINDER_ENABLE]);
+
+            $reminderstatus = ($reminderEnable === true) ? ReminderStatus::PENDING : ReminderStatus::DISABLED;
+
+            $this->setAttribute(self::REMINDER_STATUS, $reminderstatus);
         }
     }
 

@@ -552,6 +552,10 @@ final class Route
         'customer_set_primary_address'             => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
         'customer_get_wallet_balance'              => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
+        'reminder_send'                            => ['post',     'reminders/send/{mode}/{entity}/{namespace}/{id}','RemindersController@sendReminder'                                  ],
+        'reminder_service'                         => ['any',      'reminders/service/{path?}',                      'RemindersController@handleAny'                                     ],
+        'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
+        'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}',               'RemindersController@remindersNextRun'                              ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'bulk_invoice_create'                      => ['post',     'invoices/bulk',                                  'InvoiceController@createInvoiceBulk'                               ],
         'invoice_fetch'                            => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
@@ -1666,6 +1670,7 @@ final class Route
         'refund_verify_call',
         'scrooge_verify_refund_call',
         'refund_fetch_status',
+        'reminder_send',
         'scrooge_entities',
         'fund_transfer_attempt_modes',
         'schedule_migration',
@@ -1787,7 +1792,7 @@ final class Route
         'invoice_cancel',
     ];
 
-    // The below routes can be used with partner credentials without X-Razorpay-Account header, 
+    // The below routes can be used with partner credentials without X-Razorpay-Account header,
     // in which case, partner will be able to make request on his own behalf, just like private auth
     public static $partnerCredentialsWithoutSubmerchantIdWhitelist = [
         'account_create',
@@ -1797,9 +1802,11 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
-    ];    
+    ];
 
     public static $proxy = [
+        'reminder_next_run',
+        'reminder_service',
         'fetch_partner_intent',
         'update_partner_intent',
         'merchant_document_fetch',
@@ -2015,6 +2022,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'reminder_admin',
         'merchant_document_admin_fetch',
         'org_get',
         'org_get_multiple',
@@ -2477,6 +2485,7 @@ final class Route
     ];
 
     public static $routePermission = [
+        'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
         'admin_create'                             => Permission::CREATE_ADMIN,
@@ -3346,6 +3355,10 @@ final class Route
         'fts'  => [
             'update_fts_nodal_beneficiary',
             'update_fts_fund_transfer',
+        ],
+
+        'reminders' => [
+            'reminder_send'
         ],
 
         'batch' => [

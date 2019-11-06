@@ -157,6 +157,7 @@ class Name
     const DELETE_PERMISSION                   = 'delete_permission';
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
+    const REMINDER_OPERATION                  = 'reminder_operation';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
