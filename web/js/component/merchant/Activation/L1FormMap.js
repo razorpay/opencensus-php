@@ -8,7 +8,7 @@ import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-export const INDIVIDUAL = 2;
+const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',

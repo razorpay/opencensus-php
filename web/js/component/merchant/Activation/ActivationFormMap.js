@@ -15,9 +15,22 @@ import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
 
+import {
+  excludeFor_Indiv,
+  isUnregisteredBusiness,
+  _showForIndiv,
+  isL1Completed,
+  excludeFor_CompanyPan,
+  requiredForNGO,
+  showForOrgs,
+  isActivatedUnreg,
+  checkValidityFromAPI,
+  getPANDescription,
+  getBeneficiaryInfo,
+} from './ActivationUtils';
+
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-export const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
@@ -26,16 +39,7 @@ const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
-const AADHAR = 'aadhar';
-const PASSPORT = 'passport';
-const VOTER_ID = 'voter_id';
-const DRIVER_LICENSE = 'driver_license';
-const UNREGISTERED_TYPES = {
-  11: true,
-  2: true,
-};
 const ADDRESS_PROOF_TYPES = {
-  // none: { value: null, label: '--Select--', front: false, back: false },
   aadhar: {
     value: 'aadhar',
     label: 'Aadhar',
@@ -69,6 +73,7 @@ const ADDRESS_PROOF_TYPES = {
     backView: 'Back',
   },
 };
+
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
@@ -114,7 +119,6 @@ const businessModel = [
       { label: 'Private Limited', name: PRIVATE },
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
-      // { label: 'Individual', name: INDIVIDUAL },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
@@ -122,24 +126,6 @@ const businessModel = [
       { label: 'NGO', name: NGO },
       { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
     ],
-    // description: activation => {
-    //   // Changing description of self
-    //   const currentBusinessType =
-    //     activation.state.dirty.business_type ||
-    //     activation.props.data.business_type;
-
-    //   // if user has selected individual business type
-    //   if (currentBusinessType && !activation.props.accountId) {
-    //     if (currentBusinessType == INDIVIDUAL) {
-    //       return (
-    //         <div class="warning-svg red">
-    //           {WarningSvg()}
-    //           <span>{individualMsg}</span>
-    //         </div>
-    //       );
-    //     }
-    //   }
-    // },
     _disabledWhen: activation => isL1Completed(activation),
   },
   [
@@ -272,41 +258,34 @@ const businessModel = [
           The entered App/Website should contain:
           <div className="bullet-list-container">
             <ul className="bullet-list bullet-list--left">
-              <li class="bullet-list-item shallow"> About Us</li>
-              <li class="bullet-list-item shallow"> Contact Us</li>
-              <li class="bullet-list-item shallow"> Pricing</li>
+              <li class="shallow"> About Us</li>
+              <li class="shallow"> Contact Us</li>
+              <li class="shallow"> Pricing</li>
             </ul>
             <ul className="bullet-list bullet-list--right">
               <li>
-                <b class="shallow">
-                  <a
-                    href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-                    target="_blank"
-                  >
-                    Privacy Policy
-                  </a>
-                </b>
+                <a
+                  href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </a>
               </li>
               <li>
-                <b class="shallow">
-                  <a
-                    href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-                    target="_blank"
-                  >
-                    Terms & Conditions
-                  </a>
-                </b>
+                <a
+                  href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                  target="_blank"
+                >
+                  Terms & Conditions
+                </a>
               </li>
-
               <li>
-                <b class="shallow">
-                  <a
-                    href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-                    target="_blank"
-                  >
-                    Cancellation/Refund Policy
-                  </a>
-                </b>
+                <a
+                  href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                  target="_blank"
+                >
+                  Cancellation/Refund Policy
+                </a>
               </li>
             </ul>
           </div>
@@ -370,59 +349,53 @@ const businessDetails = [
   },
   [
     {
-      dynamicLabel: true,
       name: 'promoter_pan',
       placeholder: 'PAN Number',
-      getPlaceholder: activation => {
-        return isUnregisteredBusiness(activation)
+      getPlaceholder: activation =>
+        isUnregisteredBusiness(activation)
           ? 'Business owner’s PAN'
-          : 'PAN of one of the directors';
-      },
+          : 'PAN of one of the directors',
       validator: validatePANCard,
-      getLabel: activation => {
-        return UNREGISTERED_TYPES[
-          Number(activation.state.dirty['business_type'])
-        ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
-          ? 'PAN'
-          : 'Authorised Signatory PAN';
-      },
+      getLabel: activation =>
+        isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
       className: 'Input--vTop Input--capitalize',
-      _disabledWhen: isActivatedIndividual,
+      _disabledWhen: isActivatedUnreg,
       checkValidityFromAPI: activation => {
-        const { poi_verification_status } = activation.props.data;
-        return poi_verification_status === 'incorrect_details'
-          ? 'The number entered doesn’t exist in the PAN database. Please verify and enter again'
-          : '';
+        const errMsg =
+          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+        return checkValidityFromAPI(
+          activation.props.data,
+          'poi_verification_status',
+          'incorrect_details',
+          errMsg
+        );
       },
     },
     {
-      dynamicLabel: true,
       getLabel: activation => {
-        return UNREGISTERED_TYPES[
-          Number(activation.state.dirty['business_type'])
-        ] || UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
+        return isUnregisteredBusiness(activation)
           ? 'PAN Holder’s Name'
           : 'PAN Owner’s Name';
       },
       name: 'promoter_pan_name',
       placeholder: 'Name as per PAN',
-      description: activation => {
-        if (!isUnregisteredBusiness(activation)) return '';
-        const { poi_verification_status } = activation.props.data;
-        return poi_verification_status == 'incorrect_details' ||
-          poi_verification_status == 'not_matched'
-          ? ''
-          : 'We verify the details with the central PAN database. Please ensure you enter the correct details';
-      },
-      _disabledWhen: isActivatedIndividual,
+      description: activation =>
+        isUnregisteredBusiness(activation)
+          ? getPANDescription(activation.props.data)
+          : '',
+      _disabledWhen: isActivatedUnreg,
       _when: activation => {
         return _showForIndiv(activation) || isL1Completed(activation); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
       },
       checkValidityFromAPI: activation => {
-        const { poi_verification_status } = activation.props.data;
-        return poi_verification_status === 'not_matched'
-          ? 'Please ensure you are entering the same spelling as on your PAN card'
-          : '';
+        const errMsg =
+          'Please ensure you are entering the same spelling as on your PAN card';
+        return checkValidityFromAPI(
+          activation.props.data,
+          'poi_verification_status',
+          'not_matched',
+          errMsg
+        );
       },
     },
   ],
@@ -550,26 +523,11 @@ const bankAccountFields = [
     label: 'Beneficiary Name',
     maxLength: '120',
     minLength: '4',
-    info: function() {
-      const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
-      if (isUnregisteredBusiness(this)) {
-        return 'Please ensure that the spelling is the same as your bank account';
-      } else {
-        let text = 'Company';
-
-        if (currentBusinessType == LLP) {
-          text = 'Individual';
-        }
-
-        return `The beneficiary name should be same as ${text} name`;
-      }
-    },
-    description: activation => {
-      return isUnregisteredBusiness(activation)
+    info: getBeneficiaryInfo,
+    description: activation =>
+      isUnregisteredBusiness(activation)
         ? 'We will deposit a small amount of money in your account to verify the account.'
-        : '';
-    },
+        : '',
   },
 ];
 
@@ -694,20 +652,14 @@ const uploadFields = [
   {
     label: 'First Page',
     name: 'address_proof_front',
-    dynamicLabel: true,
-    dynamicName: true,
     getLabel: activation => {
-      // if (!activation.state.address_proof)
-      //   return ADDRESS_PROOF_TYPES.aadhar.label + ' ' + 'Front';
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.frontView;
     },
-    getName: activation => {
-      return activation.state.address_proof + '_' + 'front';
-    },
+    getName: activation => activation.state.address_proof + '_' + 'front',
     _cmp: Input.File,
-    className: 'address-proof-upload',
+    className: 'AddressProof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
@@ -716,94 +668,20 @@ const uploadFields = [
   {
     label: 'Last Page',
     name: 'address_proof_back',
-    dynamicLabel: true,
-    dynamicName: true,
     getLabel: activation => {
       const { address_proof } = activation.state;
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.backView;
     },
-    getName: activation => {
-      return activation.state.address_proof + '_' + 'back';
-    },
+    getName: activation => activation.state.address_proof + '_' + 'back',
     _cmp: Input.File,
-    className: 'address-proof-upload',
+    className: 'AddressProof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
   },
 ];
-
-/* Show fields if same_address is not ticked */
-function differentAddress(activation) {
-  return activation.state.same_address === '0';
-}
-
-/* Return true IF NOT 'Individual/Not registered' business type */
-export function excludeFor_Indiv(activation) {
-  return !isUnregisteredBusiness(activation);
-}
-
-function isUnregisteredBusiness(activation) {
-  return (
-    UNREGISTERED_TYPES[Number(activation.state.dirty['business_type'])] ||
-    UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
-  );
-}
-
-/* Include for Individual/Not Yet Registered */
-export function _showForIndiv(activation) {
-  const currentBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
-
-  return (
-    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) !== -1
-  );
-}
-
-function isL1Submitted(activation) {
-  return activation.props.user.instantActivation.isL1Submitted;
-}
-
-export function isL1Completed(activation) {
-  const { user } = activation.props;
-  if (user.isSubmitted) {
-    return true; // Always return true if user.submitted true -> display all fields and tabs -> handles L2 submission without submitting L1 eg. Batch and EPOS
-  }
-  return isL1Submitted(activation) && !user.instantActivation.isBlacklistFlow;
-}
-
-function excludeFor_CompanyPan(activation) {
-  const currentBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
-  return (
-    [INDIVIDUAL, NOT_YET_REGISTERED, PROPRIETORSHIP].indexOf(
-      Number(currentBusinessType)
-    ) === -1
-  );
-}
-
-function requiredForNGO(activation) {
-  const selectedBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
-
-  return selectedBusinessType == NGO;
-}
-
-function showForOrgs(activation) {
-  const selectedBusinessType =
-    activation.state.dirty.business_type || activation.props.data.business_type;
-
-  return (
-    selectedBusinessType &&
-    ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
-  );
-}
-
-function isActivatedIndividual(activation) {
-  return !excludeFor_Indiv(activation) && activation.props.user.activated;
-}
 
 // Tabs name
 export const mainFormTabs = [
