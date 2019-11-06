@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { AsyncBtn } from 'component/Button';
 
@@ -31,6 +32,9 @@ import { setOnBoardingDataInLocalState } from './utils';
     handleProductQuickGuide,
   }
 )
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)
+)
 export default class FeatureEnableButton extends React.Component {
   state = {
     isSuccess: false,
@@ -46,6 +50,12 @@ export default class FeatureEnableButton extends React.Component {
       });
 
       this.props.onClick && this.props.onClick();
+
+      this.props.tracking.trackEvent(
+        window.rzpQ
+          .productOnboarding()
+          .success(`${this.props.feature}.onboarding.get_started.success`)
+      );
 
       return;
     }
@@ -69,11 +79,13 @@ export default class FeatureEnableButton extends React.Component {
 
     return saveOnboarding
       .then(res => {
-        window.rzpQ
-          .onbr()
-          .success(`${this.props.feature}.onboarding.get_started.success`, {
-            clickSource: 'GetStarted_CTA',
-          });
+        this.props.tracking.trackEvent(
+          window.rzpQ
+            .productOnboarding()
+            .success(`${this.props.feature}.onboarding.get_started.success`, {
+              clickSource: 'GetStarted_CTA',
+            })
+        );
 
         return this.props.fetchUser();
       })

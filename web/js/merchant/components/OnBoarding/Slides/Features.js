@@ -1,17 +1,24 @@
-import Button, { AsyncBtn } from 'component/Button';
+import RTracking from 'react-tracking';
 
+import Button from 'component/Button';
+
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
+)
 export default class OnBoardingFeatures extends React.PureComponent {
-  handleBackButton = (...args) => {
-    window.rzpAnalytics({
-      eventCategory: `Onboarding Card (${this.props.feature})`,
-      eventAction: `Page ${this.props.active} - Back CTA`,
+  handleBackButton = () => {
+    this.props.prev(() => {
+      window.rzpAnalytics({
+        eventCategory: `Onboarding Card (${this.props.feature})`,
+        eventAction: `Page ${this.props.active} - Back CTA`,
+      });
+
+      this.props.tracking.trackEvent(
+        window.rzpQ
+          .productOnboarding()
+          .success(`${this.props.feature}.onboarding.features_back.success`)
+      );
     });
-
-    window.rzpQ
-      .onbr()
-      .success(`${this.props.feature}.onboarding.features_back.success`);
-
-    this.props.prev(args);
   };
 
   render() {

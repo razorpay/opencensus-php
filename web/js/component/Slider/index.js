@@ -18,25 +18,32 @@ export default class Slider extends React.Component {
     }
   }
 
-  prev = () => this.goTo(this.state.active - 1);
+  prev = CB => this.goTo(this.state.active - 1, CB);
 
-  next = () => this.goTo(this.state.active + 1);
+  next = CB => this.goTo(this.state.active + 1, CB);
 
-  goTo = activeNum => {
+  goTo = (activeNum, CB) => {
     let active = Number(activeNum);
 
     if (active < 0 || active > this.TOTAL_SLIDES_LENGTH) {
       return;
     }
 
-    this.setState({
-      active,
-    });
+    this.setState(
+      {
+        active,
+      },
+      () => {
+        if (CB) {
+          CB(this.getChildProp());
+        }
+      }
+    );
 
     this.props.onSlideChange && this.props.onSlideChange(active);
   };
 
-  getChildProp = totalSlidesNo => {
+  getChildProp = (totalSlidesNo = this.TOTAL_SLIDES_LENGTH) => {
     const { active } = this.state;
 
     const prev = active > 0 && this.prev;

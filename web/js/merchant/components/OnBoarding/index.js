@@ -41,8 +41,6 @@ export default params => {
     }
 
     componentDidMount() {
-      window.rzpQ.onbr().success(`${FEATURE}.onboarding.start.success`);
-
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'product_onboarding_intro');
         window.hj('tagRecording', [`${FEATURE}_onboarding`]);
