@@ -5430,7 +5430,7 @@ ALTER TABLE merchant_details
     ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
 
 ALTER TABLE `settlement_details`
-    MODIFY COLUMN `component` varchar(25);
+    MODIFY COLUMN `component` varchar(255);
 
 -- P2P - Adding Indices
 
