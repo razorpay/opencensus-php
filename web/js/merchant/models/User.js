@@ -339,7 +339,7 @@ export default class User {
   }
 
   get isCreditPullEnabled() {
-    return this.isFeatureEnabled('show_credit_score');
+    return this.findTag('show_credit_score');
   }
 
   get isDiwaliPromoEnabled() {

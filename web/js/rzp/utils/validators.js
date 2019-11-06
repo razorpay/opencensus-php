@@ -55,6 +55,18 @@ export const isMobile = mobile => {
   return mobileRegExp.test(mobile);
 };
 
+export const isValidPinCode = pinCode => {
+  pinCode = pinCode || '';
+  let pinCodeRegExp = new RegExp(/^[1-9][0-9]{5}$/);
+  return pinCodeRegExp.test(pinCode);
+};
+
+export const isValidName = name => {
+  name = name || '';
+  let nameRegExp = new RegExp(/^[a-zA-Z]+$/);
+  return nameRegExp.test(name);
+};
+
 export const isInteger = (value = '') => {
   let integerRegExp = new RegExp(/^[0-9]+$/);
 
@@ -153,6 +165,8 @@ export const mobile = makeValidator(isMobile, 'Invalid Contact');
 export const lenientUrl = makeValidator(isUrlLenient, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');
 export const amount = makeValidator(isAmount, 'Invalid amount');
+export const pinCode = makeValidator(isValidPinCode, 'Invalid Pin Code');
+export const name = makeValidator(isValidName, 'Invalid name');
 
 /**
  * GSTIN Validator for Redux-Form.

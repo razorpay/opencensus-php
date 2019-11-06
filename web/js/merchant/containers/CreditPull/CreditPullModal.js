@@ -7,7 +7,13 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { RadioGroup } from 'rzp/ui/Forms/RadioGroup';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { required, mobile } from 'rzp/utils/validators';
+import {
+  required,
+  mobile,
+  pinCode,
+  maxLength,
+  name,
+} from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/modules/b-merchants';
@@ -29,12 +35,6 @@ const validate = values => {
   }
   if (!values.hasOwnProperty('dateOfBirth')) {
     errors.dateOfBirth = 'Please select a DOB';
-  }
-  if (values.hasOwnProperty('pinCode')) {
-    let pin = Number(values.pinCode);
-    if (!pin || pin < 100000 || pin > 999999) {
-      errors.pinCode = 'Please enter 6 digit pin code';
-    }
   }
   return errors;
 };
@@ -353,7 +353,10 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="First Name"
-                  validate={required('Please enter a first name')}
+                  validate={[
+                    required('Please enter a name'),
+                    name('Please enter a valid name'),
+                  ]}
                 />
               </div>
 
@@ -363,7 +366,10 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="Last Name"
-                  validate={required('Please enter a last email')}
+                  validate={[
+                    required('Please enter a name'),
+                    name('Please enter a valid name'),
+                  ]}
                 />
               </div>
             </div>
@@ -473,7 +479,10 @@ export default class CreditPullModal extends Component {
                   onChange={() => {
                     this.addressChanged = true;
                   }}
-                  validate={required('Please enter the address line one')}
+                  validate={[
+                    required('Please enter the address line one'),
+                    maxLength(255, 'Exceeded max length'),
+                  ]}
                 />
               </div>
               <div className="col-md-3" />
@@ -514,6 +523,10 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="Pin Code"
+                  validate={[
+                    required('Please enter a pin code'),
+                    pinCode('Please enter a valid Pin code'),
+                  ]}
                 />
               </div>
             </div>
