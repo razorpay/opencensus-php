@@ -6,7 +6,7 @@ import { TypeAhead } from 'react-power-select';
 import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { classList } from 'common/util';
 import QuickAdd from 'rzp/ui/Select/QuickAdd';
@@ -71,25 +71,34 @@ export default class CreateVirtualAccount extends Component {
 
   componentDidMount() {
     this.props.fetchCustomersForAutocomplete();
-    this.props.onMount && this.props.onMount();
+
+    window.rzpAnalytics &&
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Smart Collect',
+        eventAction: 'Open Form - Create Virtual Account',
+      });
   }
 
   componentWillUnmount() {
-    this.props.onUnmount && this.props.onUnmount();
+    window.rzpAnalytics &&
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Smart Collect',
+        eventAction: 'Close Form - Create Virtual Account',
+      });
   }
 
-  componentWillReceiveProps(nextProps) {
-    // Prepopulate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
-    if (!this.state.customerId && this.props.customer !== nextProps.customer) {
-      this.setState({
-        customerId: nextProps.customer,
+  onCopyAccountDetailsSummary = virtualaccount => {
+    window.rzpAnalytics &&
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Smart Collect',
+        eventAction: 'Copy To Clipboard',
+        eventLabel: `virtual_account_id${virtualaccount.id}`,
       });
-    }
-  }
+  };
 
   handleSubmit = formData => {
     const { descriptorVPA, descriptorBankAccount } = formData;
-    const { notes, close_by, _internals } = this.state;
+    const { notes, close_by, _internals, customer } = this.state;
 
     let transformedNotes = notes;
 
@@ -106,8 +115,12 @@ export default class CreateVirtualAccount extends Component {
         types: [],
       },
       notes: transformedNotes,
-      close_by: close_by || undefined,
+      close_by: close_by ? close_by.unix() : undefined,
     };
+
+    if (customer) {
+      reqPayload.customer_id = customer.id;
+    }
 
     if (_internals.hasBankAccount) {
       reqPayload.receivers.types.push('bank_account');
@@ -126,6 +139,13 @@ export default class CreateVirtualAccount extends Component {
     return this.props
       .saveVirtualAccount(reqPayload)
       .then(virtualAccount => {
+        window.rzpAnalytics &&
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Smart Collect',
+            eventAction: 'Submit Form - Create Virtual Account',
+            eventLabel: getKeysSeparatedByPipe(reqPayload),
+          });
+
         const entityId = virtualAccount.id;
         const IS_MODAL_VIEW = !!this.props.onClose;
 
@@ -147,7 +167,7 @@ export default class CreateVirtualAccount extends Component {
               modalTitle="Virtual Account Created"
               closeModal={this.props.closeModal}
               virtualAccount={virtualAccount}
-              onCopy={this.props.onCopy}
+              onCopy={this.onCopyAccountDetailsSummary}
             />
           ),
         });
