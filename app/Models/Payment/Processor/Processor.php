@@ -1116,10 +1116,11 @@ class Processor
     {
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
-        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
             'payment_id'     => $payment->getId(),
+            'merchant_id'    => $payment->getMerchantId(),
             'razorx_variant' => $variant,
         ]);
 

@@ -2201,6 +2201,7 @@ class Gateway
     {
         $gateways = [
             self::MPGS,
+            self::CYBERSOURCE,
         ];
 
         return (in_array($gateway, $gateways, true));
