@@ -24,8 +24,6 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
-  UNREGISTERED_TYPES,
-  isL1Completed,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -34,14 +32,12 @@ import accountFormTabsContent, {
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
-
 import FormFields from './L1FormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
   trackTnCClick,
 } from 'merchant/containers/Activation/ga_new';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import {
   showInstantActivationSuccessModal,
@@ -58,6 +54,8 @@ import {
   L1FormSuccess,
   L1FormError,
   updateHubSpotContactsProperties,
+  UNREGISTERED_TYPES,
+  isL1Completed,
 } from './ActivationUtils';
 import QueryString from 'query-string';
 
@@ -250,7 +248,7 @@ export default class ActivationWizard extends React.Component {
           }
 
           a.onChange = (file, progressTracker) => {
-            const filename = a.dynamicName ? a.getName(this) : a.name;
+            const filename = a.getName ? a.getName(this) : a.name;
             return props
               .saveFile(
                 filename,
@@ -1660,11 +1658,11 @@ function ActivationField(field) {
     rest.description = rest.description(this);
   }
 
-  if (rest.dynamicLabel) {
+  if (rest.getLabel) {
     rest.label = rest.getLabel(this);
   }
 
-  if (rest.dynamicName) {
+  if (rest.getName) {
     rest.name = rest.getName(this);
     key = rest.name;
   }
@@ -1721,7 +1719,7 @@ function isFieldValid(field, activation) {
     }
   }
 
-  const name = field.dynamicName ? field.getName(activation) : field.name;
+  const name = field.getName ? field.getName(activation) : field.name;
   let value =
     data[name] ||
     (data.documents && data.documents[name] && data.documents[name][0]['id']);
