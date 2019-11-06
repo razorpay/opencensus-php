@@ -64,9 +64,9 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {/*this.props.user.isOndemandSettlementEnabled && (
+          {this.props.user.isOndemandSettlementEnabled && (
             <ScheduledBanner fromWhere="Transactions" />
-          )*/}
+          )}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
           <EnableSettlementsBanner />

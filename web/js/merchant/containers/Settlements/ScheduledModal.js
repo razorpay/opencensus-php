@@ -31,6 +31,7 @@ export default class ScheduledModal extends Component {
       autoEnabled: false,
       isLoading: false,
       modalClosed: false,
+      errors: '',
     };
   }
 
@@ -80,7 +81,7 @@ export default class ScheduledModal extends Component {
     });
     ajax(
       {
-        url: 'es/scheduled_pricing',
+        url: 'es/scheduled',
         method: 'GET',
       },
       {},
@@ -93,12 +94,10 @@ export default class ScheduledModal extends Component {
         });
       })
       .catch(response => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Error while retrieving Scheduled Pricing',
-          hidePrevious: true,
+        this.setState({
+          errors: 'Error while retrieving Scheduled Pricing',
         });
-        this.props.closeModal();
+        //TODO GA
       });
   };
 
@@ -229,10 +228,12 @@ export default class ScheduledModal extends Component {
                   Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
                   settled
                 </li>
-                <li>
-                  A Minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged
-                  for each settlement
-                </li>
+                {!this.state.errors && (
+                  <li>
+                    A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
+                    charged for each settlement
+                  </li>
+                )}
               </ul>
             </div>
             <div className="schedule-img-container">
@@ -249,6 +250,11 @@ export default class ScheduledModal extends Component {
               </AsyncBtn.Primary>
             </div>
           </div>
+          {this.state.errors ? (
+            <div style={{ color: 'red' }}>{this.state.errors}</div>
+          ) : (
+            ''
+          )}
           <div className="border">
             <p>
               Early settlement applies to domestic settlements only. For
