@@ -278,6 +278,7 @@ class Channel
             self::RBL,
             self::ICICI,
             self::CITI,
+            self::YESBANK,
         ];
     }
 
