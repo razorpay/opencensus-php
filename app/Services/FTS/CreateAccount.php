@@ -75,8 +75,11 @@ class CreateAccount extends Base
         return $response;
     }
 
-    public function createSourceAccount(string $id, string $ftsAccountId, array $content,
-                                        string $product, string $channel = 'ICICI')
+    public function createSourceAccount(string $id,
+                                        string $ftsAccountId,
+                                        array $content,
+                                        string $product,
+                                        string $channel = 'ICICI')
     {
         $input = $this->getSourceAccountRequestBody($product, $ftsAccountId, $channel, $content);
 
@@ -181,7 +184,7 @@ class CreateAccount extends Base
             Constants::BENEFICIARY_STATE          => IndianStates::getStateCode($ba->getBeneficiaryState()),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
-            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode($ba->getBeneficiaryCountry()),
+            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode(strtolower($ba->getBeneficiaryCountry())),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
         ];
     }
@@ -243,19 +246,22 @@ class CreateAccount extends Base
         }
     }
 
-    protected function getSourceAccountRequestBody(string $product, string $fundAccountId, string $channel, array $content)
+    protected function getSourceAccountRequestBody(string $product,
+                                                   string $fundAccountId,
+                                                   string $channel,
+                                                   array $content)
     {
         $request = [
             Constants::PRODUCT              => $product,
             Constants::CREDENTIALS          => $content[Constants::CREDENTIALS],
             Constants::MOZART_IDENTIFIER    => $content[Constants::MOZART_IDENTIFIER],
             Constants::FUND_ACCOUNT_ID      => intval($fundAccountId),
-            Constants::CHANNEL              => strtoupper($channel)
+            Constants::CHANNEL              => strtoupper($channel),
+            Constants::CONFIGURATION        => $content[Constants::CONFIGURATION],
         ];
 
         return $request;
     }
-
 
     public function callFtsCreateAccount(PublicEntity $account, string $product)
     {

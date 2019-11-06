@@ -203,7 +203,7 @@ class BankingAccountTest extends TestCase
         $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
     }
 
-    public function testStoreMerchantCredentials()
+    public function testActivate()
     {
         $attribute = ['activation_status' => 'activated'];
 
@@ -215,15 +215,11 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
-           'account_number'         => '1234567890',
-            'beneficiary_state'     => 'karnataka',
-            'beneficiary_country'   => 'india',
-        ]);
+        $this->setupDataForActivation($bankingAccount);
 
         $dataToReplace = [
           'request' => [
-              'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/credentials'
+              'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
           ]
         ];
 
@@ -241,6 +237,8 @@ class BankingAccountTest extends TestCase
                                                                     Rbl\Status::SUCCESS));
 
         $this->setMozartMockResponse($mozartResponse);
+
+        $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
 
@@ -260,7 +258,42 @@ class BankingAccountTest extends TestCase
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
     }
 
-    public function testStoreMerchantCredentialsFailedDueToVaultFailure()
+    public function testActivateFailedDueToFtsFailure()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+            Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->mockFundAccountService(function ()
+        {
+            throw new \Exception();
+        });
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testActivateFailedDueToMissingData()
     {
         $this->ba->proxyAuth();
 
@@ -270,7 +303,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/credentials'
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
             ]
         ];
 
@@ -278,6 +311,8 @@ class BankingAccountTest extends TestCase
         {
             return [];
         });
+
+        $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
     }
@@ -729,6 +764,76 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
     }
 
+    public function testUpdateBankingAccountDetails()
+    {
+        $this->testUpdateBankingAccountStatusAsProcessed();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
+                'method'  => 'PATCH',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $request = [
+            'url'       => '/admin/banking_account/' . 'bacc_' . $bankingAccount->getId(),
+            'method'    => 'GET',
+            'content'   => [
+                'expand' => ['banking_account_details'],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->sendRequest($request);
+
+        $response = json_decode($response->getContent(), true);
+
+        $actualDetails = $response['banking_account_details']['items'];
+
+        $expectedDetails = [
+            [
+                'gateway_key'   => 'client_secret',
+                'gateway_value' => 'YXBpX3NlY3JldA==',
+            ],
+            [
+                'gateway_key'   => 'client_id',
+                'gateway_value' => 'api_key',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDetails, $actualDetails);
+    }
+
+    public function testUpdateBankingAccountDetailsWithOverride()
+    {
+        $this->testUpdateBankingAccountDetails();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . 'bacc_' . $bankingAccount->getId(),
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
+
+        $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
+    }
+
     protected function setMozartMockResponse($mockedResponse)
     {
         $mock = Mockery::mock(Mozart::class)->makePartial();
@@ -743,5 +848,44 @@ class BankingAccountTest extends TestCase
     protected function getMozartMockedResponse(string $key)
     {
         return $this->testData[$key];
+    }
+
+    protected function setupDataForActivation($bankingAccount)
+    {
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'account_type'          => 'current',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_address1'  => 'blr1',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+        ]);
+
+        $attributes = [
+            [
+                'id'                 => 'badetail000000',
+                'banking_account_id' => $bankingAccount->getId(),
+                'gateway_key'        => 'client_id',
+                'gateway_value'      => '123zz',
+                'merchant_id'        => '10000000000000',
+            ],
+            [
+                'id'                 => 'badetail000001',
+                'banking_account_id' => $bankingAccount->getId(),
+                'gateway_key'        => 'client_secret',
+                'gateway_value'      => '123zz',
+                'merchant_id'        => '10000000000000',
+            ]
+        ];
+
+        $this->fixtures->create('banking_account_detail', $attributes[0]);
+        $this->fixtures->create('banking_account_detail', $attributes[1]);
+
     }
 }

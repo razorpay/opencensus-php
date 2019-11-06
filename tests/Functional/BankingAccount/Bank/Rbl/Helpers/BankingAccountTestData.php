@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateBankingAccount' => [
@@ -336,36 +337,26 @@ return [
         ],
     ],
 
-    'testStoreMerchantCredentials' => [
+    'testActivate' => [
         'request'  => [
-            'url'     => '/banking_accounts/{id}/credentials',
+            'url'     => '/banking_accounts/{id}/activate',
             'method'  => 'POST',
-            'content' => [
-                'subcorp_id'              => 'MERCHANT_SUB_CORP',
-                'subcorp_user_name'       => 'MERCHANT_1234',
-                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
-            ],
+            'content' => [],
         ],
         'response' => [
             'content' => [
-                'entity'        => 'banking_account',
                 'channel'       => 'rbl',
                 'status'        => 'activated',
-                'username'      => 'MERCHANT_1234',
                 'reference1'    => 'MERCHANT_SUB_CORP'
             ]
         ],
     ],
 
-    'testStoreMerchantCredentialsFailedDueToVaultFailure' => [
+    'testActivateFailedDueToFtsFailure' => [
         'request'  => [
-            'url'     => '/banking_accounts/{id}/credentials',
+            'url'     => '/banking_accounts/{id}/activate',
             'method'  => 'POST',
-            'content' => [
-                'subcorp_id'              => 'MERCHANT_SUB_CORP',
-                'subcorp_user_name'       => 'MERCHANT_1234',
-                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
-            ],
+            'content' => [],
         ],
         'response'  => [
             'content'     => [
@@ -382,24 +373,24 @@ return [
         ],
     ],
 
-    'testStoreMerchantCredentialsFailedDueToFTSFailure' => [
+    'testActivateFailedDueToMissingData' => [
         'request'  => [
-            'url'     => '/banking_accounts/{id}/credentials',
+            'url'     => '/banking_accounts/{id}/activate',
             'method'  => 'POST',
-            'content' => [
-                'subcorp_id'              => 'MERCHANT_SUB_CORP',
-                'subcorp_user_name'       => 'MERCHANT_1234',
-                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
-            ],
+            'content' => [],
         ],
-        'response' => [
-            'content' => [
-                'entity'        => 'banking_account',
-                'channel'       => 'rbl',
-                'status'        => 'activated',
-                'username'      => 'MERCHANT_1234',
-                'reference1'    => 'MERCHANT_SUB_CORP'
-            ]
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -492,23 +483,6 @@ return [
         ],
     ],
 
-    'testStoreMerchantCredentialsFailed' => [
-        'request'  => [
-            'url'     => '/banking_accounts/{id}/credentials',
-            'method'  => 'POST',
-            'content' => [
-                'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_name'     => 'MERCHANT_1234',
-                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'success' => false,
-            ]
-        ],
-    ],
-
     'testUpdateBankingAccount' => [
         'request'  => [
             'url'     => '/banking_account',
@@ -550,6 +524,43 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountDetails' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::DETAILS => [
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_SECRET  => 'api_secret',
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_ID      => 'api_key',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountDetailsWithOverride' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::DETAILS => [
+                    BankingAccount\Gateway\Rbl\Fields::CLIENT_ID     => 'api_key_two',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
                 'channel'     => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
             ],
