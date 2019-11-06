@@ -93,5 +93,4 @@ class Repository extends Base\Repository
 
         return $query;
     }
-
 }

@@ -29,7 +29,6 @@ class Repository extends Base\Repository
 
     public function getOfferIdLinkedWithPayment($paymentIds)
     {
-
         return $this->newQuery()
                     ->whereIn(Entity::ENTITY_ID, $paymentIds)
                     ->where(Entity::ENTITY_TYPE, '=', 'payment')

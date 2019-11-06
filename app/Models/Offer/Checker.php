@@ -157,7 +157,6 @@ class Checker extends Base\Core
             'payment_card_network' => $card->getNetworkCode()
         ]);
 
-
         return $result;
     }
 
@@ -236,7 +235,6 @@ class Checker extends Base\Core
     {
         $offerIins = $this->offer->getIins();
 
-
         if ((empty($offerIins) === true) or ($this->payment->isMethodCardOrEmi() === false))
         {
             return true;
@@ -261,7 +259,6 @@ class Checker extends Base\Core
             'offer_iins' => $offerIins,
             'card_iin'   => $card->getIin()
         ]);
-
 
         return $result;
     }
@@ -365,9 +362,12 @@ class Checker extends Base\Core
                     // We are using < operator as paymentCount tracks the number of times payment
                     // has been made against the offer before current payment
                     $result = $paymentCount < $maxPaymentCount;
-                    if(!$result){
-                        $this->offer->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                    if(!$result)
+                    {
+                        $this->
+                        offer->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
                     }
+
                     return $result;
                 }
             }
@@ -378,12 +378,13 @@ class Checker extends Base\Core
 
 
     //Checks the number of successfully captured payments have been made with that offer, should
-    // not exceed the max offer usage count
+    //not exceed the max offer usage count
     protected function checkMaxOfferUsage(): bool
     {
         $result = true;
-        if($this->offer->getMaxOfferUsage()!== NULL) {
 
+        if($this->offer->getMaxOfferUsage()!== NULL)
+        {
                 $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
                 $this->traceCheckResult(
@@ -393,10 +394,14 @@ class Checker extends Base\Core
                         'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
                         'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                     ]);
-                if(!$result){
-                    $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+
+                if(!$result)
+                {
+                    $this->
+                    offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
                 }
         }
+
         return $result;
     }
 

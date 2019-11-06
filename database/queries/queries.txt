@@ -5415,7 +5415,6 @@ ALTER TABLE merchant_invoice
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER amount_due,
     ADD INDEX merchant_invoice_balance_id_index (balance_id);
 
-
 ALTER TABLE merchants
     ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
 
@@ -5489,4 +5488,3 @@ ALTER TABLE `p2p_concerns`
     ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
 
 -- P2P - Adding Indices
-

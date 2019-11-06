@@ -271,7 +271,8 @@ class OffersPaymentTest extends TestCase
     public function testMaxOfferUsage()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true]);
-        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true,'max_offer_usage' => 1]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true,
+                                                    'max_offer_usage' => 1]);
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1,
@@ -316,13 +317,15 @@ class OffersPaymentTest extends TestCase
             {
                 $response = $this->doAuthPayment($payment);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class,PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            \RZP\Exception\BadRequestValidationFailureException::class,
+                PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
     }
 
     public function testMaxCardUsage()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true]);
-        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true, 'max_payment_count' => 1]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true,
+                                                    'max_payment_count' => 1]);
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1,
@@ -367,7 +370,8 @@ class OffersPaymentTest extends TestCase
             {
                 $response = $this->doAuthPayment($payment);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class,PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+            \RZP\Exception\BadRequestValidationFailureException::class,
+                    PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
     }
 
     public function testOfferPaymentMultipleOffers()

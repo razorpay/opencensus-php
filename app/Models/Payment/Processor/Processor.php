@@ -328,12 +328,12 @@ class Processor
         }
     }
 
-    protected function incrementOfferUsageCount($payment){
-
+    protected function incrementOfferUsageCount($payment)
+    {
         $offer = $payment->getOffer();
 
-        if($offer!== null) {
-
+        if($offer !== null)
+        {
             $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
             $this->repo->offer->saveOrFail($offer);
