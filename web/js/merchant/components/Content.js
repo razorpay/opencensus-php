@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
+import * as ModalActions from 'rzp/modules/modals';
 
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
@@ -24,7 +25,6 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-
 import ErrorBoundary from 'common/ErrorBoundary';
 
 import {
@@ -60,6 +60,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     setActiveEntity,
     setSecActiveEntity,
     openSlider,
+    ...ModalActions,
   }
 )
 export default class Content extends Component {
@@ -131,6 +132,7 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>

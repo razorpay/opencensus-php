@@ -7,6 +7,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 import {
   roleEditPermissions,
@@ -310,6 +311,18 @@ export default class User {
       : !!this.partner_type;
   }
 
+  // checks if the merchant or user has shown intent to become partner
+  isPartnerIntent() {
+    return this.partner_type === null && this.partner_intent;
+  }
+
+  isSignUpPartnerIntent() {
+    return (
+      this.partner_type === null &&
+      this.partner_intent &&
+      this.merchant_partner_intent === false
+    );
+  }
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return (

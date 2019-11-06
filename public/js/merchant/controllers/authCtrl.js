@@ -190,7 +190,6 @@ app
         // disable signup submission before captcha in prod
         submissionDisabled: $location.host() === 'dashboard.razorpay.com',
       };
-
       // wait for recaptcha response
       $scope.$watch('signup.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
@@ -338,6 +337,8 @@ app
         payload.data.password_confirmation = payload.data.password;
 
         payload.data.business_name = payload.data.business_name || '';
+
+        payload.data.partner_intent = $scope.signup.settings.partner_intent;
 
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {
@@ -898,6 +899,8 @@ app
             user.identity().then(function(userDetails) {
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.settings.partner_intent =
+                userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
                 if (userDetails) {
                   Object.assign(
@@ -938,11 +941,14 @@ app
               // if pre sign up pending
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.settings.partner_intent =
+                userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
                 Object.assign(
                   $scope.signup.merchantData,
                   userDetails.pre_signup
                 );
+
                 $scope.login.currentStep = 2;
                 goToRelevantQuestion();
               } else if (!user.isVerified()) {
@@ -1073,6 +1079,8 @@ app
                   hideSpinner();
                   if (userDetails) {
                     $scope.login.data.email = userDetails.email;
+                    $scope.signup.settings.partner_intent =
+                      userDetails.partner_intent;
                     Object.assign(
                       $scope.signup.merchantData,
                       userDetails.pre_signup
@@ -1082,6 +1090,9 @@ app
                     $scope.email_not_verified = false;
                     goToRelevantQuestion();
                     $scope.login.currentStep = 2;
+                    $scope.signup.settings.partner_intent =
+                      userDetails.partner_intent;
+
                     $state.transitionTo(
                       'access.pre_signup',
                       {},
