@@ -383,7 +383,7 @@ class Checker extends Base\Core
     {
         $result = true;
 
-        if($this->offer->getMaxOfferUsage()!== NULL)
+        if($this->offer->getMaxOfferUsage() !== NULL)
         {
                 $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
