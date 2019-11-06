@@ -555,7 +555,10 @@
           <div class="separate"></div>
           <div id="section3">
             <label class="accordion-heading pickable" for="content3">
-              <svg width="24px" height="17px" viewBox="0 0 24 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <title>Rectangle 88</title> <desc>Created with Sketch.</desc> <defs> <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-1"> <stop stop-color="#EA3A44" offset="0%"></stop> <stop stop-color="#B70611" offset="100%"></stop> </linearGradient> </defs> <g id="Flow-1--Testing" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Both-HDFC--Aadhar" transform="translate(-28.000000, -502.000000)" fill="url(#linearGradient-1)"> <path d="M28,518.26087 L52,518.26087 L52,519 L28,519 L28,518.26087 Z M29.4117647,516.782609 L50.5882353,516.782609 L50.5882353,517.521739 L29.4117647,517.521739 L29.4117647,516.782609 Z M32.5351235,509.391304 L34.0468314,509.391304 L34.0468314,515.304348 L32.5351235,515.304348 L32.5351235,509.391304 Z M37.0702471,509.391304 L38.5819549,509.391304 L38.5819549,515.304348 L37.0702471,515.304348 L37.0702471,509.391304 Z M41.6053706,509.391304 L43.1170784,509.391304 L43.1170784,515.304348 L41.6053706,515.304348 L41.6053706,509.391304 Z M46.1404941,509.391304 L47.652202,509.391304 L47.652202,515.304348 L46.1404941,515.304348 L46.1404941,509.391304 Z M29.4117647,507.173913 L50.5882353,507.173913 L50.5882353,507.913043 L29.4117647,507.913043 L29.4117647,507.173913 Z M29.4117647,505.464674 L40,502 L50.5882353,505.464674 L50.5882353,506.157609 L29.4117647,506.157609 L29.4117647,505.464674 Z" id="Rectangle-88"></path> </g> </g> </svg>
+              <svg viewBox="0 0 27 22" width="24px" height="17px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <path d="M2 7v13h18v-5H7V7H2zm0-2h5v10h15v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="#B70611"></path>
+                <path d="M10.004 13.003a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2h-2zM7 0h18a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 2v13h18V2H7zm-.282 5.005a1 1 0 1 1 0-2h19a1 1 0 0 1 0 2h-19z" fill="#B70611"></path>
+              </svg>
               <span class="title">
                 Debit Card
                 <div class="sub-title">Via Debit Card details</div>
