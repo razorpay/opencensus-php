@@ -13,6 +13,7 @@ import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import PaymentPages from 'merchant/containers/PaymentPages/Index';
+import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
@@ -198,6 +199,14 @@ export default class Content extends Component {
           />
 
           <ShowWhenRoute
+            path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentPagesDetails}
+            additionalCondition={user =>
+              user.isAllowedView('payment_pages') && user.isPPV3Enabled
+            }
+          />
+
+          <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
             additionalCondition={user => user.isAllowedView('payment_pages')}
@@ -311,6 +320,11 @@ export default class Content extends Component {
             path="/webhooks"
             component={Settings}
             additionalCondition={user => user.isAllowedView('webhooks')}
+          />
+          <ShowWhenRoute
+            path="/reminders"
+            component={Settings}
+            additionalCondition={user => user.isRemindersEnabled}
           />
           <ShowWhenRoute
             path="/applications"

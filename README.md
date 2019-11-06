@@ -84,6 +84,63 @@ If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-fai
 $ make test AT="--filter <mytestname> --stop-on-failure"
 ```
 
+#### Without Docker Local Dashboard setup (only for apache 2.4 and node 8)
+
+follow apache setup if setting up for first time 
+[apche_setup.txt](https://github.com/razorpay/dashboard/files/3431506/apche_setup.txt)
+
+Change the permission of `dashboard/storage`
+
+```
+$ sudo chmod -R o+wx storage/
+```
+
+Copy over `environment/env.sample.php` to `environment/env.php`
+
+Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly, sample 
+[env.dev.txt](https://github.com/razorpay/dashboard/files/3428395/env.dev.txt)
+
+Make sure `SECURE_SESSION=false` in `.env.dev`
+
+Run `composer install` to install laravel
+
+Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, urn off strict SQL mode.
+Make sure you have redis installed by running the following (used for session management and caching).
+
+```
+$ brew install nvm
+```
+
+```
+$ brew services restart redis
+```
+
+Make sure you are running the node 8 using [`nvm`](https://github.com/nvm-sh/nvm)
+
+```
+$ nvm install 8
+```
+Start node server (need to be repeated every time code updates)
+
+```
+$ npm install
+```
+
+```$ npm start
+```
+
+if you don't have api key generated in `.env.dev` file, run following in dashboard folder to generate api key  [more details](https://stackoverflow.com/questions/33700580/laravel-5-application-key)
+
+```
+$ php artisan key:generate
+```
+
+Setup the following integrations in your editor:	local file-system, spin up `mysql:5.7` container and establish connection
+[editorconfig](http://editorconfig.org/#download)	to run the app locally.
+[prettier](https://github.com/prettier/prettier#editor-integration). The config is documented in `package.json`. We use `--single-quote` and enable semicolons.	
+
+Open <http://dashboard.razorpay.in> and login as `test@razorpay.com/123456`.
+
 #### Connecting to mysql:
 
 You need to connect to the API DB and not dashboard DB. Either SSH into the API DB container or connect externally. If you are SSHing, the port is 3306

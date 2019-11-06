@@ -38,6 +38,7 @@ import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
 import onboardingReducer from 'merchant/modules/onboarding';
+import remindersReducer from 'merchant/modules/reminders';
 
 import authLinkReducer from 'merchant/modules/auth_link';
 
@@ -141,4 +142,5 @@ export default combineReducers({
   batches: batchesReducer,
   invitations: invitationsReducer,
   onboarding: onboardingReducer,
+  reminders: remindersReducer,
 });

@@ -366,6 +366,10 @@ export default class User {
     );
   }
 
+  get isRemindersEnabled() {
+    return this.getExpStatus('reminders');
+  }
+
   get getCurrencyList() {
     return window.currencyList;
   }
@@ -376,6 +380,14 @@ export default class User {
 
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
+  }
+
+  get isPPV3Enabled() {
+    return this.getExpStatus('paymentpages_v3');
+  }
+
+  get isPPV3ReportsEnabled() {
+    return this.getExpStatus('paymentpages_v3_reports');
   }
 
   get isMobileHotjarSurveyEnabled() {
@@ -390,6 +402,14 @@ export default class User {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
       : this.isAllowedEdit('team');
+  }
+
+  get isCustomNotesDropdownEnabled() {
+    return this.getExpStatus('custom_notes');
+  }
+
+  get isPaymentLinkBatchEnabledForSellerAppRole() {
+    return this.getExpStatus('sellerapp_PL_batch_upload');
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

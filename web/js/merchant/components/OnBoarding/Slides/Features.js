@@ -94,22 +94,31 @@ const FeatureCard = ({ icon, title, desc }) => (
   </div>
 );
 
-const FeatureLink = ({ ga, url, page, label, feature }) => (
-  <a
-    class="external-link"
-    onClick={() => {
-      window.rzpAnalytics({
-        eventCategory: `Onboarding Card (${feature})`,
-        eventAction: `Page ${page} - ${ga}`,
-      });
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
+)
+class FeatureLink extends React.PureComponent {
+  handleFeatureLink = () => {
+    const { ga, url, page, label, feature } = this.props;
 
+    window.rzpAnalytics({
+      eventCategory: `Onboarding Card (${feature})`,
+      eventAction: `Page ${page} - ${ga}`,
+    });
+
+    this.props.tracking.trackEvent(
       window.rzpQ
-        .onbr()
-        .success(`${props.feature}.onboarding.features_hyperlink.success`);
+        .productOnboarding()
+        .success(`${props.feature}.onboarding.features_hyperlink.success`)
+    );
 
-      window.open(url);
-    }}
-  >
-    {label}
-  </a>
-);
+    window.open(url);
+  };
+  render() {
+    return (
+      <a class="external-link" onClick={this.handleFeatureLink}>
+        {this.props.label}
+      </a>
+    );
+  }
+}

@@ -54,7 +54,9 @@ export default class FeatureEnableButton extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ
           .productOnboarding()
-          .success(`${this.props.feature}.onboarding.get_started.success`)
+          .success(`${this.props.feature}.onboarding.get_started.success`, {
+            isTour: true,
+          })
       );
 
       return;
@@ -82,9 +84,7 @@ export default class FeatureEnableButton extends React.Component {
         this.props.tracking.trackEvent(
           window.rzpQ
             .productOnboarding()
-            .success(`${this.props.feature}.onboarding.get_started.success`, {
-              clickSource: 'GetStarted_CTA',
-            })
+            .success(`${this.props.feature}.onboarding.get_started.success`)
         );
 
         return this.props.fetchUser();
@@ -98,10 +98,8 @@ export default class FeatureEnableButton extends React.Component {
       })
       .catch(err => {
         window.rzpQ
-          .onbr()
-          .failed(`${this.props.feature}.onboarding.get_started.failed`, {
-            clickSource: 'GetStarted_CTA',
-          });
+          .productOnboarding()
+          .failed(`${this.props.feature}.onboarding.get_started.failed`);
 
         this.props.showNotification({
           type: 'error',
