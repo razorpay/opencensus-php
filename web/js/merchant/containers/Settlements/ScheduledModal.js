@@ -81,7 +81,7 @@ export default class ScheduledModal extends Component {
     });
     ajax(
       {
-        url: 'es/scheduled',
+        url: 'es/scheduled_pricing',
         method: 'GET',
       },
       {},
@@ -106,35 +106,30 @@ export default class ScheduledModal extends Component {
       eventAction: `ES Modal`,
       eventLabel: `On-Demand Success | Enable Scheduled ES`,
     });
-    let payload = {
-      features: {
-        es_on_demand: '0',
-        es_automatic: '1',
-      },
-      should_sync: 1,
-    };
     this.setState({
       isLoading: true,
     });
-    this.props
-      .updateFeatures(payload, this.props.user.current)
-      .then(res => {
+    ajax(
+      {
+        url: 'es/scheduled',
+        method: 'POST',
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(response => {
         let newUser = new User(this.props.user);
+        let features = newUser.enabledFeatures();
+        console.log(features);
+        /*
         newUser.features = setFeatures(res.success ? res.data.features : []);
         this.props.updateSession({ user: newUser });
         this.setState({
           autoEnabled: true,
           isLoading: false,
-        });
+        });*/
       })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'There was a problem enabling ES - Scheduling',
-          hidePrevious: true,
-        });
-        this.props.closeModal();
-      });
+      .catch(response => {});
   };
 
   successModalHeader = () => {
