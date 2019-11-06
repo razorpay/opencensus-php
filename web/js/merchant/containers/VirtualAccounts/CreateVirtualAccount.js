@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { TypeAhead } from 'react-power-select';
 
@@ -38,6 +39,7 @@ const CustomCustomerOption = ({ option }) => {
   );
 };
 
+@withRouter
 @connect(
   state => {
     const customers = state.customers.items;
@@ -124,11 +126,22 @@ export default class CreateVirtualAccount extends Component {
     return this.props
       .saveVirtualAccount(reqPayload)
       .then(virtualAccount => {
-        this.props.luminateRow(virtualAccount.id);
+        const entityId = virtualAccount.id;
+        const IS_MODAL_VIEW = !!this.props.onClose;
+
+        this.props.luminateRow(entityId);
+
+        if (IS_MODAL_VIEW) {
+          setTimeout(this.props.onClose, 50);
+        } else {
+          const redirectUrl = '/virtualaccounts/' + entityId;
+          this.props.history.push(redirectUrl);
+        }
 
         // On success, Show account details summary
         this.props.openModal({
           size: 'small',
+          className: 'VirtualAccountSummary',
           component: (
             <AccountDetailsSummary
               modalTitle="Virtual Account Created"
@@ -215,151 +228,153 @@ export default class CreateVirtualAccount extends Component {
     }
 
     const content = (
-      <div class="PaymentLinks--Create Wizard">
-        <main class="form-container">
-          <main-title class="main-title">Create Virtual Account</main-title>
+      <div class="VirtualAccount--Create Wizard">
+        <Form
+          onChange={this.props.onChange}
+          onSubmit={this.handleSubmit}
+          layout="tabular"
+          ref={this.setRefForm}
+        >
+          <main>
+            <div className="form-title">Create Virtual Account</div>
+            <div class="form-group">
+              <Input.Group class="Input--vTop" label="Accept Payment Via">
+                <div>
+                  <Input.Check
+                    _name="hasBankAccount"
+                    fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
+                    defaultValue={_internals.hasBankAccount}
+                    onChange={e =>
+                      this.setState({
+                        _internals: {
+                          ...this.state._internals,
+                          hasBankAccount: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  <Input
+                    name="descriptorBankAccount"
+                    label={() => (
+                      <span style={{ fontWeight: 'normal' }}>
+                        Account Number
+                      </span>
+                    )}
+                    size="half_big"
+                    description={
+                      _internals.hasBankAccount
+                        ? 'If left blank, an account number will be auto generated'
+                        : null
+                    }
+                    disabled={!_internals.hasBankAccount}
+                  />
+                </div>
 
-          <Form
-            class="PaymentLinks--Create-Form"
-            onChange={this.props.onChange}
-            onSubmit={this.handleSubmit}
-            layout="tabular"
-            ref={this.setRefForm}
-          >
-            <Input.Group class="Input--vTop" label="Accept Payment Via">
-              <div>
-                <Input.Check
-                  _name="hasBankAccount"
-                  fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
-                  defaultValue={_internals.hasBankAccount}
-                  onChange={e =>
-                    this.setState({
-                      _internals: {
-                        ...this.state._internals,
-                        hasBankAccount: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                <Input
-                  name="descriptorBankAccount"
-                  label={() => (
-                    <span style={{ fontWeight: 'normal' }}>Account Number</span>
-                  )}
-                  size="half_big"
-                  description={
-                    _internals.hasBankAccount
-                      ? 'If left blank, an account number will be auto generated'
-                      : null
-                  }
-                  disabled={!_internals.hasBankAccount}
-                />
+                <br />
+
+                <div>
+                  <Input.Check
+                    _name="hasVPA"
+                    fieldLabel="UPI Transfer"
+                    defaultValue={_internals.hasVPA}
+                    onChange={e =>
+                      this.setState({
+                        _internals: {
+                          ...this.state._internals,
+                          hasVPA: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  <Input
+                    name="descriptorVPA"
+                    label={() => (
+                      <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                    )}
+                    size="half_big"
+                    description={
+                      _internals.hasVPA
+                        ? 'If left blank, a UPI ID will be auto generated'
+                        : null
+                    }
+                    disabled={!_internals.hasVPA}
+                  />
+                </div>
+              </Input.Group>
+
+              <div class="Input">
+                <div class="Input-label">Customer</div>
+
+                <div class="Input-content">
+                  <TypeAhead
+                    options={customers}
+                    disabled={customersLoading}
+                    class="ps-in-modal"
+                    searchIndices={['id', 'name', 'email', 'contact']}
+                    placeholder={`${
+                      customersLoading ? 'Loading...' : 'Select a customer'
+                    }`}
+                    showClear={true}
+                    selected={this.state.customer}
+                    selectedOptionLabelPath="selectedDisplayName"
+                    optionComponent={CustomCustomerOption}
+                    onChange={this.handleSelectCustomer}
+                    afterOptionsComponent={props => (
+                      <QuickAdd
+                        {...props}
+                        onClick={this.openCreateCustomerModal}
+                      />
+                    )}
+                  />
+                </div>
               </div>
 
-              <br />
+              <Input.TextareaAutoResize
+                class="Input--vTop"
+                name="description"
+                label="Account Description"
+                description="Description is shown only on the dashboard and not to customers"
+              />
 
-              <div>
-                <Input.Check
-                  _name="hasVPA"
-                  fieldLabel="UPI Transfer"
-                  defaultValue={_internals.hasVPA}
-                  onChange={e =>
-                    this.setState({
-                      _internals: {
-                        ...this.state._internals,
-                        hasVPA: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                <Input
-                  name="descriptorVPA"
-                  label={() => (
-                    <span style={{ fontWeight: 'normal' }}>UPI ID</span>
-                  )}
-                  size="half_big"
-                  description={
-                    _internals.hasVPA
-                      ? 'If left blank, a UPI ID will be auto generated'
-                      : null
-                  }
-                  disabled={!_internals.hasVPA}
-                />
-              </div>
-            </Input.Group>
+              <Input.DateTime
+                class="Input--vTop"
+                label="Close By"
+                checkboxFieldLabel="Disable Auto Close"
+                onChange={this.updateDate}
+                description="You won’t be able to recieve payments after the specified date"
+                isInline
+              />
 
-            <div class="Input">
-              <div class="Input-label">Customer</div>
-
-              <div class="Input-content">
-                <TypeAhead
-                  options={customers}
-                  disabled={customersLoading}
-                  class="ps-in-modal"
-                  searchIndices={['id', 'name', 'email', 'contact']}
-                  placeholder={`${
-                    customersLoading ? 'Loading...' : 'Select a customer'
-                  }`}
-                  showClear={true}
-                  selected={this.state.customer}
-                  selectedOptionLabelPath="selectedDisplayName"
-                  optionComponent={CustomCustomerOption}
-                  onChange={this.handleSelectCustomer}
-                  afterOptionsComponent={props => (
-                    <QuickAdd
-                      {...props}
-                      onClick={this.openCreateCustomerModal}
-                    />
-                  )}
-                />
-              </div>
+              <Input.PairList
+                class="Input--vTop"
+                name="notes"
+                label="Internal Notes"
+                onChange={this.handleNotesChange}
+              />
             </div>
+          </main>
 
-            <Input.TextareaAutoResize
-              class="Input--vTop"
-              name="description"
-              label="Account Description"
-              description="Description is shown only on the dashboard and not to customers"
-            />
+          {/* Form Footer */}
+          <footer>
+            {/* Action Button 1 */}
+            {IS_MODAL_VIEW && (
+              <Button type="button" onClick={onClose}>
+                Cancel
+              </Button>
+            )}
 
-            <Input.DateTime
-              class="Input--vTop"
-              label="Close By"
-              checkboxFieldLabel="Disable Auto Close"
-              onChange={this.updateDate}
-              description="You won’t be able to recieve payments after the specified date"
-              isInline
-            />
-
-            <Input.PairList
-              class="Input--vTop"
-              name="notes"
-              label="Internal Notes"
-              onChange={this.handleNotesChange}
-            />
-          </Form>
-        </main>
-
-        {/* Form Footer */}
-        <footer>
-          {/* Action Button 1 */}
-          {IS_MODAL_VIEW && (
-            <Button type="button" onClick={onClose}>
-              Cancel
-            </Button>
-          )}
-
-          {/* Action Button 2 */}
-          <Button.Primary type="submit" disabled={disableSubmit}>
-            Create Virtual Account
-          </Button.Primary>
-        </footer>
+            {/* Action Button 2 */}
+            <Button.Primary type="submit" disabled={disableSubmit}>
+              Create Virtual Account
+            </Button.Primary>
+          </footer>
+        </Form>
       </div>
     );
 
     return IS_MODAL_VIEW ? (
       <Modal
-        class={classList('PaymentLinks', content && 'animate-down')}
+        class={classList('VirtualAccount', content && 'animate-down')}
         onClose={onClose}
       >
         <ModalContent>{content}</ModalContent>

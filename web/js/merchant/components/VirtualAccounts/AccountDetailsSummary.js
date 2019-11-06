@@ -20,7 +20,7 @@ const AccountDetailsSummary = ({
   });
 
   return (
-    <div>
+    <div class="VirtualAccountSummary">
       <ModalHeader title={modalTitle} onCloseClick={closeModal} />
 
       <div class="modal-body">
