@@ -124,6 +124,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
 
         Route::get('/reports/{log_id}', 'MerchantController@downloadReport');
+
+        Route::get('ufh/file/{file_id}', 'MerchantController@downloadFileFromUFH');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()

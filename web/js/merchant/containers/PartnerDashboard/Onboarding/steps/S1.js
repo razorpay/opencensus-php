@@ -8,7 +8,7 @@ const S1 = props => {
         <div class="title">Welcome to your Partner Dashboard</div>
         <div className="line-box brd-primary">
           <p className="info info-green">
-            Receive 0.1% Commission on every transaction{' '}
+            Receive 0.1% Commission on every transaction*{' '}
           </p>
           <p>done by your referred merchant</p>
         </div>
@@ -19,6 +19,10 @@ const S1 = props => {
           </p>
           <p className="" style={{ marginTop: '20px' }}>
             First, let’s fill a few more details.
+          </p>
+          <p className="" style={{ marginTop: '20px' }}>
+            <span style={{ color: '#f05050' }}>*</span>Commission details will
+            be shared over mail.
           </p>
         </div>
       </div>

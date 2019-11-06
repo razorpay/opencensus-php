@@ -100,9 +100,7 @@ class AnalyticsMobile extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
-
-          {user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />}
-
+          /*{user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />}*/
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -118,13 +116,11 @@ class AnalyticsMobile extends Component {
               />
             )}
           </div>
-
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
-
           <Header className="clearfix" title="" showMode={false}>
             <div
               className={`pull-left ${this.props.user

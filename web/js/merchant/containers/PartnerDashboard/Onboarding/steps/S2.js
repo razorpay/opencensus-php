@@ -2,7 +2,7 @@ import React from 'react';
 import { classList } from 'common/util';
 import SlideContoller from './SlideController';
 
-const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser, abort }) => {
+const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
   return (
     <>
       <div className={'partner-onbr-info'}>
@@ -49,24 +49,21 @@ const s2 = ({ role, onRoleSelect, sliderProps, isExistingUser, abort }) => {
           <p style={{ marginTop: '10px' }}>
             For Enterprise solution
             <a href="https://razorpay.com/support/" target="_blank">
-              &nbsp;Contact Support
+              &nbsp;Contact Support <i className="i i-external-link " />
             </a>
           </p>
-          {!isExistingUser && (
-            <p style={{ marginTop: '10px' }}>
-              <a
-                onClick={abort}
-                target="_blank"
-                style={{
-                  textDecoration: 'underline',
-                  color: '#57666E',
-                }}
-              >
-                I just want to use Razorpay products{' '}
-              </a>
-              <i className="i i-external-link " />
-            </p>
-          )}
+          <p style={{ marginTop: '10px' }}>
+            <a
+              onClick={abort}
+              target="_blank"
+              style={{
+                textDecoration: 'underline',
+                color: '#57666E',
+              }}
+            >
+              I just want to use Razorpay products
+            </a>
+          </p>
         </div>
       </div>
       <SlideContoller sliderProps={sliderProps} disNext={!Boolean(role)} />

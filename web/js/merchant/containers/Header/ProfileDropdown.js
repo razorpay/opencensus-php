@@ -121,6 +121,7 @@ export default class ProfileDropdown extends Component {
     } = this.props;
     let merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
+
     return (
       <Dropdown
         closeOnClick={false}

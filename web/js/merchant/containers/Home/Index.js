@@ -30,6 +30,7 @@ import InstantActivationSuccess from 'merchant/components/InstantActivationSucce
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   trackError,
@@ -142,11 +143,14 @@ export default class HomeContainer extends Component {
       // onboarding card is shown if this is present in localstorage
       onboardingCardToken = 'show_onboarding_card',
       // onboarding card first step is shown if this is present in localstorage
-      firstStepToken = 'onboarding_first_step';
+      firstStepToken = 'onboarding_first_step',
+      // partner onboarding is shown if user logs in for 1st time
+      partnerOnBoarding = 'partner_on_boarding_shown';
 
     // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
     this.firstStepToken = `${firstStepToken}--${user.current}`;
+    this.partnerOnBoardingToken = `${partnerOnBoarding}--${user.current}`;
 
     /*
      * Earlier , the tokens apply at browser level, if old tokens are present
@@ -705,6 +709,19 @@ export default class HomeContainer extends Component {
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
+    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(
+      this.partnerOnBoardingToken
+    );
+
+    if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
+      LocalStorageService.setItem(this.partnerOnBoardingToken, true);
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: <PartnerOnbr disableClose={true} />,
+      });
+    }
+
     return (
       <div class="react-root dashboard-home">
         {/* Show Diwali Promotional Banner */}
@@ -749,7 +766,8 @@ export default class HomeContainer extends Component {
 
         {user.showInstantActivation &&
           !user.instantActivation.isL1Submitted &&
-          showOnboardingBannerFirstStep && (
+          showOnboardingBannerFirstStep &&
+          !user.isPartnerIntent() && (
             <ModalMask>
               <Modal
                 className="welcome-modal"

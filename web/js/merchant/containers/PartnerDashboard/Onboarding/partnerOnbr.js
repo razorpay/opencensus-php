@@ -10,6 +10,7 @@ import { updateSession } from 'merchant/modules/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 @withRouter
 @connect(
@@ -20,6 +21,8 @@ import { showNotification } from 'rzp/modules/notifications';
   {
     updateSession,
     showNotification,
+    openModal,
+    closeModal,
   }
 )
 export default class BaseScreen extends React.Component {
@@ -36,8 +39,7 @@ export default class BaseScreen extends React.Component {
       partner_type: this.state.role,
       merchant_partner_intent: false,
     });
-
-    merchantFetch({
+    return merchantFetch({
       url: url,
       method: 'PATCH',
       data,
@@ -71,8 +73,9 @@ export default class BaseScreen extends React.Component {
     return (
       <div className="partner-onboarding-base-screen">
         <Slider>
-          {!this.props.disableClose &&
-            (sliderProps => <S0 key={0} sliderProps={sliderProps} />)}
+          {!this.props.disableClose
+            ? sliderProps => <S0 key={0} sliderProps={sliderProps} />
+            : null}
           {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
           {sliderProps => (
             <S2
@@ -81,7 +84,6 @@ export default class BaseScreen extends React.Component {
               onRoleSelect={this.onRoleSelect}
               role={this.state.role}
               abort={this.props.closeModal}
-              isExistingUser={this.props.user.merchant_partner_intent}
             />
           )}
           {sliderProps => (
