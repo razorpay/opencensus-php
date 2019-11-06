@@ -259,7 +259,7 @@ export default class ActivationContainer extends React.Component {
   saveFile = (fieldName, file, progressTracker, destinationUrl) => {
     const url =
       Boolean(destinationUrl) &&
-      'string' === typeof destinationUrl &&
+      typeof destinationUrl === 'string' &&
       Boolean(destinationUrl.trim(destinationUrl))
         ? destinationUrl
         : 'merchant/activation/upload';

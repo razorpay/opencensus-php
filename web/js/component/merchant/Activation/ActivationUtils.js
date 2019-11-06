@@ -174,7 +174,7 @@ function checkValidityFromAPI(data, key, errValue, errorMsg) {
 function getPANDescription(data) {
   const { poi_verification_status } = data;
   const description =
-    'We verify the details with the central PAN database. Please ensure you enter the correct details';
+    'We verify the details with the central PAN database. Please ensure you enter the correct details';
   return poi_verification_status == 'incorrect_details' ||
     poi_verification_status == 'not_matched'
     ? ''

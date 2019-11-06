@@ -9,17 +9,12 @@ import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { trackFormFields } from 'rzp/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { classList, addPrefixToObjectKeys } from 'common/util';
-import { activationDuration } from 'common/data';
+import { classList } from 'common/util';
 import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import {
-  trackhubsContactUpdate,
-  fireAnalyticsEvents,
-  trackTaboola,
-} from 'rzp/utils/googleAnalytics';
+import { fireAnalyticsEvents, trackTaboola } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -32,12 +27,8 @@ import accountFormTabsContent, {
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
-import FormFields from './L1FormMap';
-import {
-  trackL1FormSuccess,
-  trackL1FormError,
-  trackTnCClick,
-} from 'merchant/containers/Activation/ga_new';
+import L1FormFieldNames from './L1FormFieldNames';
+import { trackTnCClick } from 'merchant/containers/Activation/ga_new';
 import { updateSession } from 'merchant/modules/session';
 import {
   showInstantActivationSuccessModal,
@@ -867,16 +858,10 @@ export default class ActivationWizard extends React.Component {
   get formData() {
     const currentDirty = this.state.dirty;
     const reqData = {};
-    console.log('FormFields', FormFields);
-    FormFields.forEach(field => {
-      if (Array.isArray(field)) {
-        return field.forEach(field =>
-          this.populateReqData(field, reqData, currentDirty)
-        );
-      }
 
-      return this.populateReqData(field, reqData, currentDirty);
-    });
+    L1FormFieldNames.forEach(field =>
+      this.populateReqData(field, reqData, currentDirty)
+    );
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
@@ -891,7 +876,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   populateReqData(field, reqData, currentDirty) {
-    const name = field.name;
+    const name = field;
 
     if (!name) {
       return;
