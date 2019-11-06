@@ -396,9 +396,9 @@ export default props => {
                     trackerFn={trackDetailViewEdits}
                   />
                 )}
-                {/*user.isOndemandSettlementEnabled && (
+                {user.isOndemandSettlementEnabled && (
                   <ScheduledBanner fromWhere="Payment Pages" />
-                )*/}
+                )}
               </div>
             </div>
           </div>
