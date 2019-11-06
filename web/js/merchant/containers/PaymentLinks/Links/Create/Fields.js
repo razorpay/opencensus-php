@@ -4,7 +4,6 @@ import Input from 'component/Input';
 
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 
-import { CUSTOM_NOTES_OPTIONS } from 'rzp/utils/constants';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
@@ -320,11 +319,11 @@ export default [
   {
     name: 'notes',
     label: function(ctx) {
-      return getOptions(ctx.props.user.current).type;
+      return getOptions().type;
     },
     _cmp: Input.Select,
     options: function(ctx) {
-      return getOptions(ctx.props.user.current).options;
+      return getOptions().options;
     },
     _when: function(form) {
       return form.props.user.isCustomNotesDropdownEnabled;
@@ -354,8 +353,8 @@ const getRemindersOptionDescription = (count, hasNoExpiry) => {
   return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
 };
 
-export function getOptions(id) {
-  const { type, options } = CUSTOM_NOTES_OPTIONS[id] || {};
+export function getOptions() {
+  const { type, options } = window.custom_notes;
 
   return {
     type,

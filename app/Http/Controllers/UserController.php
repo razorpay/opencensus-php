@@ -81,6 +81,13 @@ class UserController extends Controller
                 $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
             }
 
+            $currentMerchantId = $details['current'];
+
+            if(isset($currentMerchantId))
+            {
+                $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
+            }
+
             return view('merchant.index', $data);
         }
     }
