@@ -261,6 +261,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
         self::TYPE,
+        self::GATEWAY,
     ];
 
     protected $defaults = [
@@ -949,6 +950,11 @@ class Entity extends Base\PublicEntity
         {
             $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
         }
+    }
+
+    protected function modifyGateway(& $input)
+    {
+        $input[self::GATEWAY] = strtolower($input[self::GATEWAY]);
     }
 
     // ---------------------- END MODIFIERS ----------------------

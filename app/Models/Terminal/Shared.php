@@ -43,6 +43,7 @@ class Shared
     const NETBANKING_AXIS_TPV_TERMINAL       = '100NbAxisTpvTl';
     const NETBANKING_AXIS_REC_TERMINAL       = '100NbAxisRecTl';
     const NETBANKING_UBI_TERMINAL            = '1000NbUbiTrmnl';
+    const NETBANKING_SCB_TERMINAL            = '1000NbScbTrmnl';
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';

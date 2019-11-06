@@ -1,0 +1,222 @@
+<?php
+
+namespace RZP\Models\P2p\Transaction;
+
+use Carbon\Carbon;
+use RZP\Exception\BadRequestValidationFailureException;
+
+class Rules
+{
+    const FIRST_TRANSACTION_EXISTS  = 'first_transaction_exists';
+    const FIRST_TRANSACTION_AMOUNT  = 'first_transaction_amount';
+    const FIRST_TRANSACTION_TIME    = 'first_transaction_time';
+    const TOTAL_TRANSACTION_AMOUNT  = 'total_transaction_amount';
+
+    // In Paisa
+    const MAX_AMOUNT_ALLOWED_IN_COOLDOWN = 500000;
+
+    // In Paisa
+    const MAX_AMOUNT_ALLOWED_ON_FIRST_TRANSACTION = 500000;
+
+    // In Seconds
+    const MAX_COOLDOWN_PERIOD = 86400;
+
+    protected $data = [
+        'first_transaction_exists'  => null,
+        'first_transaction_amount'  => null,
+        'first_transaction_time'    => null,
+        'total_transaction_amount'  => null,
+    ];
+
+    protected $rules = [
+        'rmd001' => [
+            'function' => 'rmd001_applicable_check',
+            'values'   => [
+                0 => true,
+                1 => [
+                    'function' => 'first_transaction_check',
+                    'values' => [
+                        0 => [
+                            'function' => 'new_transaction_amount_exceeds_check',
+                            'values' => [
+                                0 => 'First transaction can not be more than %s rupees.',
+                                1 => true,
+                            ],
+                        ],
+                        1 => [
+                            'function' => 'cooldown_period_check',
+                            'values' => [
+                                0 => true,
+                                1 => [
+                                    'function' => 'cooldown_amount_exceeds_check',
+                                    'values' => [
+                                        0 => 'Allowed limit of %s exceeded in cooldown of %s hours.',
+                                        1 => true,
+                                    ],
+                                ]
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    /**
+     * @var null
+     */
+    protected $currentRule      = null;
+
+    /**
+     * @var null
+     */
+    protected $currentFunction  = null;
+
+    /**
+     * @var Entity
+     */
+    protected $transaction;
+
+    public function __construct(Entity $transaction)
+    {
+        $this->transaction = $transaction;
+    }
+
+    public function validate()
+    {
+        foreach ($this->rules as $name => $rule)
+        {
+            $this->currentRule = $name;
+
+            $output = $this->run($rule);
+
+            if ($output === true)
+            {
+                continue;
+            }
+
+            $error = $this->currentFunction['values'][0];
+
+            throw new BadRequestValidationFailureException($error, null, [
+                Entity::DATA            => $this->data,
+                Entity::TRANSACTION     => $this->transaction->toArrayTrace(),
+            ]);
+        }
+    }
+
+    protected function rmd001ApplicableCheck(): bool
+    {
+        return ($this->transaction->getFlow() === Flow::DEBIT);
+    }
+
+    protected function firstTransactionCheck(): bool
+    {
+        return $this->retrieveDataValue(self::FIRST_TRANSACTION_EXISTS);
+    }
+
+    protected function newTransactionAmountExceedsCheck(): bool
+    {
+        $this->fillMessages([self::MAX_AMOUNT_ALLOWED_ON_FIRST_TRANSACTION / 100]);
+
+        return ($this->transaction->getAmount() <= self::MAX_AMOUNT_ALLOWED_ON_FIRST_TRANSACTION);
+    }
+
+    protected function cooldownPeriodCheck(): bool
+    {
+        $firstTransactionTime = $this->retrieveDataValue(self::FIRST_TRANSACTION_TIME);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $diff = $currentTime - $firstTransactionTime;
+
+        return $diff <= self::MAX_COOLDOWN_PERIOD;
+    }
+
+    protected function cooldownAmountExceedsCheck(): bool
+    {
+        $this->fillMessages([
+            self::MAX_AMOUNT_ALLOWED_IN_COOLDOWN / 100,
+            self::MAX_COOLDOWN_PERIOD / 3600
+        ]);
+
+        $totalAmount = $this->retrieveDataValue(self::TOTAL_TRANSACTION_AMOUNT);
+
+        $currentTransactionAmount = $this->transaction->getAmount();
+
+        return ($totalAmount + $currentTransactionAmount) <= self::MAX_AMOUNT_ALLOWED_IN_COOLDOWN;
+    }
+
+    private function retrieveDataValue(string $key)
+    {
+        if ($this->data[$key] === null)
+        {
+            $this->setDataValues($key);
+        }
+
+        return $this->data[$key];
+    }
+
+    private function setDataValues(string $config)
+    {
+        switch ($config)
+        {
+            case self::FIRST_TRANSACTION_EXISTS:
+            case self::FIRST_TRANSACTION_AMOUNT:
+            case self::FIRST_TRANSACTION_TIME:
+                $transaction = (new Core)->getFirstTransactionWithStatusAndFlow([
+                    Status::PENDING,
+                    Status::COMPLETED,
+                ], Flow::DEBIT);
+
+                if ($transaction instanceof Entity)
+                {
+                    $this->data[self::FIRST_TRANSACTION_EXISTS] = true;
+                    $this->data[self::FIRST_TRANSACTION_AMOUNT] = $transaction->getAmount();
+                    $this->data[self::FIRST_TRANSACTION_TIME]   = $transaction->getCreatedAt();
+                }
+                else
+                {
+                    $this->data[self::FIRST_TRANSACTION_EXISTS] = false;
+                    $this->data[self::FIRST_TRANSACTION_AMOUNT] = 0;
+                    $this->data[self::FIRST_TRANSACTION_TIME]   = 0;
+                }
+                break;
+
+            case self::TOTAL_TRANSACTION_AMOUNT:
+                $totalAmount = (new Core)->getTotalTransactionAmountWithStatusAndFlow([
+                    Status::PENDING,
+                    Status::COMPLETED
+                ], Flow::DEBIT);
+                $this->data[self::TOTAL_TRANSACTION_AMOUNT] = $totalAmount;
+                break;
+        }
+    }
+
+    private function run($function)
+    {
+        if (isset($function['function']) === true)
+        {
+            $this->currentFunction = $function;
+
+            $method = camel_case($function['function']);
+
+            $output = $this->{$method}();
+
+            $picked = $function['values'][(int) $output];
+
+            return $this->run($picked);
+        }
+
+        return $function;
+    }
+
+    private function fillMessages(array $args)
+    {
+        $this->currentFunction['values'][0] = sprintf($this->currentFunction['values'][0], ...$args);
+    }
+
+    public function getRules()
+    {
+        return $this->rules;
+    }
+}

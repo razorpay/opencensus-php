@@ -29,7 +29,7 @@ class MerchantInvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('merchant_invoice')->createMulitpleInvoiceEntities($input);
+        $data = $this->service('merchant_invoice')->createMultipleInvoiceEntities($input);
 
         return ApiResponse::json([]);
     }

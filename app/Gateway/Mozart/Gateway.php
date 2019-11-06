@@ -270,6 +270,11 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -627,6 +632,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY     => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
+            ],
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -719,6 +731,13 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
+            ],
+            Payment\Gateway::NETBANKING_SCB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+                Action::REFUND     => null,
+                Action::VERIFY_REFUND => null
             ],
 
             Payment\Gateway::WALLET_PAYPAL => [
@@ -1017,6 +1036,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_SCB,
             Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,

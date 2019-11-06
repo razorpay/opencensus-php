@@ -1477,13 +1477,13 @@ class VirtualAccountTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
-        $this->assertEquals($merchant->bankingBalance->getId(), $virtualAccount->getBalanceId());
+        $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
         $this->assertNotEmpty($virtualAccount->bankAccount);
         $this->assertStringStartsWith('222444', $virtualAccount->bankAccount->getAccountNumber());
         // Assert that creation of first bank account updates balance's account number attribute.
         $this->assertEquals(
             $virtualAccount->bankAccount->getAccountNumber(),
-            $merchant->bankingBalance->getAccountNumber());
+            $merchant->sharedBankingBalance->getAccountNumber());
     }
 
     public function testUpdateOnVirtualAccountOfBankingBalanceFails()

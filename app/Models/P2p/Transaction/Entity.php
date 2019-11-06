@@ -788,4 +788,16 @@ class Entity extends Base\Entity
 
         return $array;
     }
+
+    public function toArrayTrace(): array
+    {
+        return array_only($this->toArray(), [
+            self::ID,
+            self::DEVICE_ID,
+            self::HANDLE,
+            self::AMOUNT,
+            self::TYPE,
+            self::FLOW,
+        ]);
+    }
 }

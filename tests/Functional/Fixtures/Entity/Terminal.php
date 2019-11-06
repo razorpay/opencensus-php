@@ -88,6 +88,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIbkTerminal();
         $this->createSharedNetbankingIdbiTerminal();
         $this->createSharedNetbankingUbiTerminal();
+        $this->createSharedNetbankingScbTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -2462,6 +2463,26 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'netbanking_ubi_merchant_id',
             'netbanking'            => 1,
             'gateway_secure_secret' => 'random_secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingScbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                            => Shared::NETBANKING_SCB_TERMINAL,
+            'merchant_id'                   => $merchantId,
+            'gateway'                       => Gateway::NETBANKING_SCB,
+            'gateway_merchant_id'           => 'netbanking_scb_merchant_id',
+            'gateway_secure_secret2'        => 'netbanking_scb_decryption_key',
+            'netbanking'                    => 1,
+            'gateway_secure_secret'         => 'netbanking_scb_encryption_key',
+            'gateway_terminal_password'     => 'netbanking_scb_hash_salt',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

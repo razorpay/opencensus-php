@@ -89,6 +89,15 @@ class MerchantDocumentTest Extends TestCase
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
     }
 
+    public function testFileUploadDocumentTypeInvalid()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testFileUploadFileNotExist()
     {
         $this->ba->proxyAuth('rzp_test_' . '10000000000000');

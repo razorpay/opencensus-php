@@ -217,14 +217,13 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function fetchPayments(string $virtualAccountId)
+    public function fetchPayments(string $virtualAccountId, array $input)
     {
-        $payments = $this->repo
-                         ->payment
-                         ->fetchByPublicVaIdAndMerchant(
-                            $virtualAccountId,
-                            $this->merchant
-                            );
+        $input[Payment\Entity::VIRTUAL_ACCOUNT_ID] = $virtualAccountId;
+
+        $merchantId = $this->merchant->getId();
+
+        $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
         return $payments->toArrayPublic();
     }

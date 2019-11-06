@@ -54,7 +54,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+        $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -66,6 +66,9 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // blacklisted merchant should not be allowed to submit l2 form
+                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
                 $response = $this->submitActivationForm($merchant, $originProduct);
             }
             else
@@ -383,7 +386,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress, $merchantDetails->getActivationFlow());
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
 
             $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
@@ -404,6 +407,8 @@ class Core extends Base\Core
     {
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return null;
         }
 
@@ -446,17 +451,20 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
-     * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
+        $merchantDetail = $merchant->merchantDetail;
+
         $eventAttributes['activation_progress'] = $activationProgress;
+
+        $eventAttributes['poi_status'] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
-        $eventAttributes['activation_flow'] = $activationFlow ;
+        $eventAttributes['activation_flow'] = $merchantDetail->getActivationFlow();
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }

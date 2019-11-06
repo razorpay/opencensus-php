@@ -34,7 +34,9 @@ class VirtualAccountController extends Controller
 
     public function getPayments(string $id)
     {
-        $response = $this->service()->fetchPayments($id);
+        $input = Request::all();
+
+        $response = $this->service()->fetchPayments($id, $input);
 
         return ApiResponse::json($response);
     }
