@@ -107,8 +107,9 @@ class Core extends Base\Core
 
         if (empty($input[Entity::DOCUMENT_TYPE]) === false)
         {
-            $eventAttributes = [$input[Entity::DOCUMENT_TYPE]];
+            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
         }
+
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
 
