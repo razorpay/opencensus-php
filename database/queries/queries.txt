@@ -5392,6 +5392,10 @@ ALTER TABLE `addresses`
 ALTER TABLE merchant_documents
     ADD COLUMN `ocr_verify` varchar(30) DEFAULT NULL AFTER `entity_type`;
 
+ALTER TABLE invoices
+    ADD `reminder_id` CHAR(14) DEFAULT NULL AFTER `status`,
+    ADD `reminder_status` VARCHAR(255) DEFAULT NULL AFTER `reminder_id`;
+
 ALTER TABLE partner_configs
     ADD COLUMN tds_percentage INT(11) NOT NULL DEFAULT 500 AFTER settle_to_partner,
     ADD COLUMN has_gst_certificate TINYINT(1) NOT NULL DEFAULT 0 AFTER tds_percentage;
