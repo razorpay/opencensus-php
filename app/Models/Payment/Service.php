@@ -969,7 +969,10 @@ class Service extends Base\Service
 
         foreach($payments as $payment)
         {
-            $payment->setOfferId($plucked->get($payment->getId()));
+            if($plucked->contains($payment->getId()))
+            {
+                $payment->setOfferId($plucked->get($payment->getId()));
+            }
         }
     }
 
@@ -986,8 +989,11 @@ class Service extends Base\Service
                             ->getOfferIdLinkedWithPayment($paymentIds)
                             ->first();
 
-        $payment->setOfferId($entityOffer->getOfferId());
-
+        if($entityOffer !== null)
+        {
+            $payment->setOfferId($entityOffer->getOfferId());
+        }
+        
         $entity = $payment->toArrayPublic();
 
         // Adding support to add additional params to payment entity for frontend
