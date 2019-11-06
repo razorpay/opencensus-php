@@ -5,8 +5,6 @@ import { connect } from 'react-redux';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
-import * as ModalActions from 'rzp/modules/modals';
-
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
@@ -60,7 +58,6 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     setActiveEntity,
     setSecActiveEntity,
     openSlider,
-    ...ModalActions,
   }
 )
 export default class Content extends Component {
