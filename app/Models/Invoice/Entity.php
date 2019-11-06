@@ -76,6 +76,8 @@ class Entity extends Base\PublicEntity
     const STATUSES                  = 'statuses';
     const INTERNATIONAL             = 'international';
     const SUBSCRIPTIONS             = 'subscriptions';
+    const REMINDER_ID               = 'reminder_id';
+    const REMINDER_STATUS           = 'reminder_status';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
