@@ -333,6 +333,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
+        self::OFFER_ID,
     ];
 
     protected $public = [
@@ -372,6 +373,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+        self::OFFER_ID,
     ];
 
     /**
@@ -495,6 +497,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFUND_AT            => null,
         self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
+        self::OFFER_ID              => null,
     ];
 
     protected $amounts = [
@@ -1271,6 +1274,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setSubscriptionId(string $subscriptionId)
     {
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
+    public function setOfferId(string $offerId)
+    {
+        $this->setAttribute(self::OFFER_ID, $offerId);
     }
 
     // ----------------------- Setters Ends-----------------------------------------

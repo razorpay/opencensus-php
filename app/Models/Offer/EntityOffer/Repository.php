@@ -26,4 +26,13 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
+
+    public function getOfferIdLinkedWithPayment($paymentIds)
+    {
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $paymentIds)
+                    ->where(Entity::ENTITY_TYPE, '=', 'payment')
+                    ->get();
+    }
 }
