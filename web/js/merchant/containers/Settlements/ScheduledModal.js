@@ -104,7 +104,7 @@ export default class ScheduledModal extends Component {
   onEnable = () => {
     this.fireGAEvent({
       eventAction: `ES Modal`,
-      eventLabel: `On-Demand Success | Enable Scheduled ES`,
+      eventLabel: `Scheduled ES Enabling attempt | Enable Scheduled ES`,
     });
     this.setState({
       isLoading: true,
@@ -117,19 +117,31 @@ export default class ScheduledModal extends Component {
       {},
       '/merchant/api'
     )
-      .then(response => {
-        let newUser = new User(this.props.user);
-        let features = newUser.enabledFeatures();
-        console.log(features);
-        /*
-        newUser.features = setFeatures(res.success ? res.data.features : []);
-        this.props.updateSession({ user: newUser });
-        this.setState({
-          autoEnabled: true,
-          isLoading: false,
-        });*/
+      .then(() => {
+        let updatedUser = new User(this.props.user);
+        updatedUser.fetch().then(res => {
+          this.props.updateSession({ user: res.data });
+          this.setState({
+            autoEnabled: true,
+            isLoading: false,
+          });
+          this.fireGAEvent({
+            eventAction: `ES Modal`,
+            eventLabel: `Scheduled ES Success | Enable Scheduled ES`,
+          });
+        });
       })
-      .catch(response => {});
+      .catch(({ errors }) => {
+        const error = (errors || [])[0];
+        this.fireGAEvent({
+          eventAction: `ES Modal`,
+          eventLabel: `ES Scheduled Enabling failure | ${error}`,
+        });
+        this.setState({
+          errors: error,
+          isLoading: false,
+        });
+      });
   };
 
   successModalHeader = () => {
