@@ -3,6 +3,7 @@ import moment from 'moment';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import AccountDetails, { getVirtualAccountDetails } from './AccountDetails';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { getVirtualAccountDetailsToCopy } from './AccountDetails';
 
 const AccountDetailsSummary = ({
@@ -38,16 +39,13 @@ const AccountDetailsSummary = ({
         />
 
         {virtualAccount.close_by && (
-          <div class="form-group">
-            <div class="text-muted">Close By</div>
-            <div>
-              <b>
-                {moment(virtualAccount.close_by * 1000).format(
-                  'DD MMM YYYY, hh:mm:ss a'
-                )}
-              </b>
-            </div>
-          </div>
+          <EntityDetailRow label="Close By">
+            <b>
+              {moment(virtualAccount.close_by * 1000).format(
+                'DD MMM YYYY, hh:mm a'
+              )}
+            </b>
+          </EntityDetailRow>
         )}
 
         <br />

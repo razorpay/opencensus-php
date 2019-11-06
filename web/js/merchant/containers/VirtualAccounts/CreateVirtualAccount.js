@@ -70,6 +70,8 @@ export default class CreateVirtualAccount extends Component {
   };
 
   componentDidMount() {
+    this.props.closeModal(); // Close if previous AccountDetailsSummary modal is opened
+
     this.props.fetchCustomersForAutocomplete();
 
     window.rzpAnalytics &&
@@ -231,7 +233,7 @@ export default class CreateVirtualAccount extends Component {
       onClose,
     } = this.props;
 
-    const IS_MODAL_VIEW = onClose;
+    const IS_MODAL_VIEW = !!onClose;
 
     const { _internals } = this.state;
     const disableSubmit =
