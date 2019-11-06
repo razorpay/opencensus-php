@@ -428,6 +428,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
+        self::OFFER_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2512,6 +2513,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
+        }
+    }
+
+    public function setPublicOfferIdAttribute(array & $array)
+    {
+        if (isset($array[self::OFFER_ID]))
+        {
+            $array[self::OFFER_ID] =
+                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
         }
     }
 
