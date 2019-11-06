@@ -1319,6 +1319,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_DELETE_REQUEST                                = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION                           = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION                          = 'FEATURE_ASSIGNMENT_EXCEPTION';
+    const MERCHANT_FEATURE_NOT_EXIST                            = 'MERCHANT_FEATURE_NOT_EXIST';
     const MERCHANT_FEATURE_EDIT_REQUEST                         = 'MERCHANT_FEATURE_EDIT_REQUEST';
     const MERCHANT_FEATURE_UPDATE                               = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                          = 'FEATURE_MULTI_ASSIGN_REQUEST';

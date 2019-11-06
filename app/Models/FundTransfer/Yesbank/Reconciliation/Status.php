@@ -277,6 +277,16 @@ class Status extends BaseStatus
         'sfms:99'         => 'An Unhandled Exception Occurred In Processing',
         'npci:EMP'        => 'Transaction could not be processed due to internal exception',
         'npci:E30'        => 'Invalid message format',
+        'sfms:E55'        => 'Transaction sent to beneficiary bank',
+        'ns:E410'         => 'The requested entity is no longer available',
+        'ns:E9001'        => 'Transaction is in error due to issue with the transaction details. A request was found, '
+                             . 'but a corresponding entry for IMPS in CBS (transaction_master)',
+        'ns:E9002'        => 'Outward transaction is rejected by the payment body. A request was found, but a '
+                             . 'corresponding entry for NEFT in CBS (pm_bulk_msg_details) for Ref',
+        'ns:E8000'        => 'A transaction with same reference number is already processed or under processing',
+        'ns:E404'         => 'Request Reference Number sent in the request was not found.',
+        'npci:E68'        => 'Acquiring Bank CBS or node offline',
+        'atom:E11'        => 'CBS ISSUE',
     ];
 
     const FAILURE_CODE_PUBLIC_MAPPING = [
@@ -361,6 +371,15 @@ class Status extends BaseStatus
         'sfms:99'         => 'Payout failed. Contact support for help',
         'npci:EMP'        => 'Partner bank facing issue. Reinitiate the transaction after some time. ',
         'npci:E30'        => 'Payout failed. Contact support for help',
+        'sfms:E55'        => 'Transaction is pending at beneficiary bank',
+        'ns:E410'         => 'Payout failed. Contact support for help',
+        'ns:E9001'        => 'Payout failed. Contact support for help',
+        'ns:E9002'        => 'Failed while processing at the bank. Reinitiate transfer after 30 Minutes.',
+        'ns:E8000'        => 'Payout failed. Contact support for help',
+        'ns:E404'         => 'Payout failed. Contact support for help',
+        'npci:E68'        => 'Beneficiary bank is offline. Reinitiate transfer after 30 min',
+        'atom:E11'        => 'Payout failed. Reinitiate transfer after 30 min',
+
     ];
 
     /**
@@ -599,6 +618,6 @@ class Status extends BaseStatus
             return self::FAILURE_CODE_PUBLIC_MAPPING[$bankResponseCode];
         }
 
-        return 'transfer not completed';
+        return 'Payout failed. Contact support for help.';
     }
 }

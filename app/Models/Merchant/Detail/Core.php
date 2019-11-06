@@ -386,7 +386,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress, $merchantDetails->getActivationFlow());
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
 
             $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
@@ -451,17 +451,20 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
-     * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
+        $merchantDetail = $merchant->merchantDetail;
+
         $eventAttributes['activation_progress'] = $activationProgress;
+
+        $eventAttributes['poi_status'] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
-        $eventAttributes['activation_flow'] = $activationFlow ;
+        $eventAttributes['activation_flow'] = $merchantDetail->getActivationFlow();
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }

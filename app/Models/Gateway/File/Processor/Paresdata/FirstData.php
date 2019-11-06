@@ -10,11 +10,11 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Gateway\FirstData\Gateway;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Gateway\File\Processor\Base;
 use RZP\Services\Beam\Service as BeamService;
@@ -40,6 +40,12 @@ class FirstData extends Base
         parent::__construct();
 
         $this->cache = $this->app['cache'];
+
+        RuntimeManager::setMemoryLimit('4096M');
+
+        RuntimeManager::setTimeLimit(7200);
+
+        RuntimeManager::setMaxExecTime(7200);
     }
 
     public function checkIfValidDataAvailable(PublicCollection $payments)
@@ -68,11 +74,11 @@ class FirstData extends Base
             TraceCode::PAYMENTS_SELECTED,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'entity_ids'      => $paymentIds,
+                'count'           => count($paymentIds),
                 'begin'           => $begin,
                 'end'             => $end,
-                'count'           => count($paymentIds),
                 'gateway'         => 'first_data',
+                'entity_ids'      => $paymentIds,
             ]);
 
         return new PublicCollection($paymentIds);
@@ -87,7 +93,21 @@ class FirstData extends Base
             $item = Gateway::PARES_DATA_CACHE_KEY . $item;
         });
 
+        // pares data may be over 100MB. Redis request may time out while reading data.
+        // increasing timeout to 10s for that.
+        $this->cache->setConnection('default_with_high_timeout');
+
         $data = $this->cache->many($ids);
+
+        $this->trace->info(
+            TraceCode::PAYMENTS_SELECTED,
+            [
+                'gateway_file_id' => $this->gatewayFile->getId(),
+                'count'           => count($data),
+                'message'         => 'pares data retrieved from cache.',
+            ]);
+
+        $this->cache->setConnection('default');
 
         return $data;
     }

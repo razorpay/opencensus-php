@@ -872,4 +872,19 @@ class Entity
     {
         return in_array($entity, self::$externalEntities);
     }
+
+    /**
+     * @param string $entity
+     *
+     * @return mixed
+     */
+    public static function getEntityCoreClass(string $entity)
+    {
+        $class = self::getEntityNamespace($entity) . '\\' . 'Core';
+
+        if (class_exists($class) === true)
+        {
+            return new $class;
+        }
+    }
 }

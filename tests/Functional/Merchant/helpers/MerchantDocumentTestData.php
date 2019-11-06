@@ -125,6 +125,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testFileUploadDocumentTypeInvalid' => [
+        'request'   => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'abc'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invalid document type:abc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testFileUpload' => [
         'request'  => [
