@@ -26,7 +26,6 @@ import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
 import ErrorBoundary from 'common/ErrorBoundary';
-import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   setBaseLocation,
@@ -133,13 +132,6 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
-    if (user.isPartnerIntent()) {
-      this.props.openModal({
-        size: 'xlarge',
-        disableClose: true,
-        component: <PartnerOnbr disableClose={true} />,
-      });
-    }
 
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
