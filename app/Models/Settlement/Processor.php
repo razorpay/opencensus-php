@@ -895,6 +895,21 @@ class Processor extends Base\Core
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
 
+        if ($balance === null)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant does not have balance type ' . $balanceType,
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
