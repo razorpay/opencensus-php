@@ -65,6 +65,7 @@ app
       $scope.alerts = alertsFactory.getHandler();
       $scope.rightLayout = false; // login layout ? right is true : right is false
       $scope.lockme = false; // only turns true for lockme route
+      $scope.eventsMode = 'live';
 
       /*
         $scope.login = {
@@ -388,7 +389,9 @@ app
                   window.rzpQ
                     .now()
                     .onbr()
-                    .success('signup.display_signup_page')
+                    .success('signup.display_signup_page', {
+                      mode: $scope.eventsMode,
+                    })
                 );
                 $state.transitionTo(
                   'access.pre_signup',
@@ -418,7 +421,7 @@ app
                 window.rzpQ
                   .now()
                   .onbr()
-                  .failed('signup.submit_email')
+                  .failed('signup.submit_email', { mode: $scope.eventsMode })
               );
             }
 
@@ -759,6 +762,7 @@ app
             .onbr()
             .initiated('signup.click_other_links', {
               source: 'privacy',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -769,6 +773,7 @@ app
             .onbr()
             .initiated('signup.click_other_links', {
               source: 'terms',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -779,6 +784,7 @@ app
             .onbr()
             .initiated('signup.select_option', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -789,6 +795,7 @@ app
             .onbr()
             .initiated('signup.fill_pre_signup_form', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -799,6 +806,7 @@ app
             .onbr()
             .initiated('signup.finish_signup', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -808,7 +816,7 @@ app
           window.rzpQ
             .now()
             .onbr()
-            .initiated('signup.create_account')
+            .initiated('signup.create_account', { mode: $scope.eventsMode })
         );
       };
       $scope.goToSigninLayout = function() {
@@ -824,6 +832,7 @@ app
             .onbr()
             .success('signup.click_other_links', {
               source: 'sign_in',
+              mode: $scope.eventsMode,
             })
         );
         $state.transitionTo(
@@ -1122,6 +1131,7 @@ app
             .onbr()
             .success('signup.email_verification', {
               source: 'sign_in',
+              mode: $scope.eventsMode,
             })
         );
 
@@ -1235,6 +1245,7 @@ app
             .onbr()
             .success('signup.click_other_links', {
               source: 'contact_us',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -1281,6 +1292,7 @@ app
             .onbr()
             .success('signup.back_action', {
               source: toStepName,
+              mode: $scope.eventsMode,
             })
         );
       };
