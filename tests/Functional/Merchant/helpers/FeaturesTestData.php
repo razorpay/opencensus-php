@@ -121,23 +121,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed_response' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000001',
-                        'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
                     ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000002',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000003',
-                        'entity_type' => 'merchant'
-                    ],
-                ]
+                ],
+                'failed'     => [],
             ]
         ]
     ],
@@ -159,38 +150,19 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed_response' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000001',
-                        'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy'               => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
                     ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000002',
-                        'entity_type' => 'merchant'
+                    'terminal_onboarding' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
                     ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000003',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'terminal_onboarding',
-                        'entity_id'   => '10000000000001',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'terminal_onboarding',
-                        'entity_id'   => '10000000000002',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'terminal_onboarding',
-                        'entity_id'   => '10000000000003',
-                        'entity_type' => 'merchant'
-                    ],
-                ]
+                ],
+                'failed'     => [],
             ]
         ]
     ],
@@ -210,23 +182,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed_response' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000001',
-                        'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
                     ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000002',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000003',
-                        'entity_type' => 'merchant'
-                    ],
-                ]
+                ],
+                'failed'     => [],
             ]
         ]
     ],
@@ -242,20 +205,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed_response' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000001',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000003',
-                        'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000003'
                     ],
                 ],
-                'dummy'              => ['10000000000002'],
-                'failed_reason'      => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST
+                'failed'     => [
+                    'dummy' => [
+                        '10000000000002'
+                    ],
+                ],
             ],
         ],
     ],
