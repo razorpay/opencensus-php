@@ -41,7 +41,7 @@ const requestFailedFunc = () => {
   },
   downloadStartedMessage = {
     type: 'success',
-    message: 'Your report will download shortly',
+    message: 'Your report request is being placed...',
   };
 
 export default function Reports(store, opts) {
