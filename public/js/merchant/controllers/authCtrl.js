@@ -998,7 +998,7 @@ app
       $scope.canSkipIntermediateScreens = function() {
         return (
           $scope.signup.settings.partner_intent ||
-          $scope.signup.merchantData.business_type == 110
+          $scope.signup.merchantData.business_type == 11
         );
       };
       $scope.goToForgotPwd = function() {
