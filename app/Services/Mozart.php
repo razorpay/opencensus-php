@@ -54,6 +54,8 @@ class Mozart
         $this->trace = $app['trace'];
 
         $this->config = $app['config'];
+
+        $this->mode = $app['rzp.mode'];
     }
 
     public function sendMozartRequest(
@@ -103,9 +105,11 @@ class Mozart
 
     protected function getAuthenticationDetails(): array
     {
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->config->get('applications.mozart.password')
+            $this->config->get($passwordConfig)
         ];
 
         return $authentication;

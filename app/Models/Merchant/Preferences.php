@@ -140,6 +140,8 @@ class Preferences
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
     const MID_INVEZTA          = '8YQygO7pzP3Gut';
 
+    const MID_ONBOARDING_PENNY_TESTING = '100000Razorpay';
+
     /**
      * This needs to go in DB, for hotfix we are keeping it here
      * Maintains lists of gateways excluded for a merchant

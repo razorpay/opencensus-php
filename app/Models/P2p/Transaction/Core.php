@@ -115,6 +115,23 @@ class Core extends Base\Core
         return $upi;
     }
 
+    public function getFirstTransactionWithStatusAndFlow(array $status, $flow)
+    {
+        return $this->repo->newP2pQuery()
+                ->whereIn(Entity::STATUS, $status)
+                ->where(Entity::FLOW, $flow)
+                ->oldest()
+                ->first();
+    }
+
+    public function getTotalTransactionAmountWithStatusAndFlow(array $status, $flow)
+    {
+        return $this->repo->newP2pQuery()
+               ->whereIn(Entity::STATUS, $status)
+               ->where(Entity::FLOW, $flow)
+               ->sum(Entity::AMOUNT);
+    }
+
     public function deletePendingCollectForVpa(Vpa\Entity $vpa)
     {
         $query = $this->repo->newP2pQuery();

@@ -2,12 +2,11 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
-use Carbon\Carbon;
-
+use Cache;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
@@ -20,6 +19,7 @@ class StatusProcessor extends BaseRowProcessor
 {
     const NOT_FOUND   = 'ns:E404';
     const TIME_OFFSET = 180;
+    const FTA_INITIATED = '{fta}_status_initiated';
 
     /**
      * This will update the status based on the transfer API response
@@ -161,9 +161,7 @@ class StatusProcessor extends BaseRowProcessor
 
         $currentStatusCode = $this->reconEntity->getBankStatusCode();
 
-        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $initiatedTimeWithOffset = $this->reconEntity->getInitiateAt() + self::TIME_OFFSET;
+        $cacheKey = self::FTA_INITIATED . '_' . $this->reconEntity->getId();
 
         $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
 
@@ -171,7 +169,7 @@ class StatusProcessor extends BaseRowProcessor
         // if its initiated not more than 180sec ago then don't update the status
         // this is because bank might give the status bit later
         if (($this->parsedData[Constants::BANK_RESPONSE_CODE] === self::NOT_FOUND) and
-            ($initiatedTimeWithOffset > $currentTimestamp))
+            (Cache::has($cacheKey) === true))
         {
             $this->reconEntity->setBankStatusCode($currentStatusCode);
         }

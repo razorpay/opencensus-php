@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Constants;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -127,7 +128,9 @@ class Core extends Base\Core
                        ->account
                        ->findByPublicIdAndMerchant($accountId, $this->merchant);
 
-            $transfer = $this->createTransfer($order, $to, $input, $this->merchant);
+            $transfer = $this->buildTransferEntity($order, $to, $input, $this->merchant);
+
+            $this->repo->saveOrFail($transfer);
 
             $transfers->push($transfer->toArrayPublic());
         }
@@ -193,6 +196,17 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant) : Entity
     {
+        $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
+
+        return $this->createTransactionForTransfer($transfer);
+    }
+
+    protected function buildTransferEntity(
+        Base\Entity $source,
+        Base\Entity $to,
+        array $input,
+        Merchant\Entity $merchant): Entity
+    {
         $transfer = new Entity;
 
         $transfer->generateId();
@@ -204,21 +218,6 @@ class Core extends Base\Core
         $transfer->source()->associate($source);
 
         $transfer->to()->associate($to);
-
-        $txnCore = new Transaction\Core;
-
-        // Create a transaction for the transfer; debits the source merchant
-        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
-
-        $transfer->setFees($txn->getFee());
-
-        $transfer->setTax($txn->getTax());
-
-        $this->repo->saveOrFail($txn);
-
-        $this->repo->saveOrFail($transfer);
-
-        $txnCore->saveFeeDetails($txn, $feesSplit);
 
         return $transfer;
     }
@@ -537,7 +536,6 @@ class Core extends Base\Core
                                'transfer_ids' => $transfers->getIds(),
                            ]);
 
-
         $this->repo->transaction(function() use ($payment, $transfers)
         {
             $totalTransferAmount = 0;
@@ -556,6 +554,10 @@ class Core extends Base\Core
                 }
                 try
                 {
+                    $oldTransfer = clone $transfer;
+
+                    $transfer = $this->createTransactionForTransfer($oldTransfer);
+
                     $to = $this->repo
                                ->account
                                ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
@@ -611,6 +613,26 @@ class Core extends Base\Core
         });
 
         return $transfers;
+    }
+
+    protected function createTransactionForTransfer($transfer)
+    {
+        $txnCore = new Transaction\Core;
+
+        // Create a transaction for the transfer; debits the source merchant
+        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
+
+        $transfer->setFees($txn->getFee());
+
+        $transfer->setTax($txn->getTax());
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($transfer);
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
+
+        return $transfer;
     }
 
     protected function getTransferData(Entity $transfer)

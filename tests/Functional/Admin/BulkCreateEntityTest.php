@@ -22,4 +22,14 @@ class BulkCreateEntityTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testUpdateMerchantEmailsBulk()
+    {
+        $this->startTest();
+    }
+
+    public function testUpdateFailureMerchantEmailsBulk()
+    {
+        $this->startTest();
+    }
 }

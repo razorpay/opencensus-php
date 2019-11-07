@@ -194,7 +194,7 @@ class Core extends Base\Core
      *
      * @param  array        $terminals Set of all terminals
      * @param  array        $input     Array containing payment, merchant enttties
-     * @return PublicCollection collection of applicable downtimes
+     * @return Base\PublicCollection collection of applicable downtimes
      */
     public function getApplicableDowntimesForPayment(
                         array $terminals,
@@ -209,6 +209,13 @@ class Core extends Base\Core
         return $downtimes;
     }
 
+    /**
+     * @deprecated This approach is not being used now.
+     * @see Core::createDowntimeIfApplicable for current implementation
+     *
+     * @param string $gateway
+     * @param array $gatewayData
+     */
     public function createForGatewayException(string $gateway, array $gatewayData)
     {
         $method = $gatewayData['payment']['method'];

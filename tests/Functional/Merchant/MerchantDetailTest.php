@@ -14,7 +14,6 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -381,7 +380,11 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchValidStatusChange()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $attributes = [
+            'submitted' => true,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
@@ -395,8 +398,9 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchInvalidStatusChange()
     {
-        $attributes     = [
+        $attributes = [
             'bank_details_verification_status' => 'verified',
+            'submitted'                        => true,
         ];
         $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
@@ -728,6 +732,36 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantsMtuUpdateSuccess()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('1', $testMerchant->merchantDetail->getLiveTransactionDone());
+
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('1', $liveMerchant->merchantDetail->getLiveTransactionDone());
+    }
+
+    public function testMerchantsMtuUpdateIdFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateLiveTransactionFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testBulkEditMerchantAttributes()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
@@ -843,7 +877,8 @@ class MerchantDetailTest extends TestCase
      */
     public function testUnsupportedActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
 

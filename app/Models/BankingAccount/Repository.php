@@ -9,6 +9,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
+    protected $expands = [
+        Entity::BANKING_ACCOUNT_DETAILS,
+    ];
+
     public function getFromBalanceId(string $balanceId)
     {
         return $this->newQuery()

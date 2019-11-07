@@ -70,7 +70,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                         'message'       => $message,
-                        'row_details'   => $row,
                         'extra_details' => $extraDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -167,7 +166,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                             [
                                 'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                                 'message'       => $message,
-                                'row_details'   => $row,
                                 'extra_details' => $extraDetails,
                                 'gateway'       => $this->gateway
                             ]);

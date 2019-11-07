@@ -144,6 +144,7 @@ class Processor
      * Core payment service feature flag
      */
     const CPS_FEATURE_FLAG_PREFIX = 'cps_gateway_routing';
+    const CARD_PAYMENTS_PREFIX    = 'card_payments_gateway_routing';
 
     /**
      * @var Merchant\Entity
@@ -347,7 +348,7 @@ class Processor
 
         $properties = [
             'payment' => $request,
-            'reason'  => $data['missing'] ?? "Unknown",
+            'reason'  => $data['missing'] ?? 'Unknown',
             'merchant'     => [
                 'id'        => $merchant->getId(),
                 'name'      => $merchant->getBillingLabel(),
@@ -561,7 +562,6 @@ class Processor
 
                 $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
             }
-
 
             $this->payment->saveOrFail();
 
@@ -1057,6 +1057,13 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
+        if (Payment\Gateway::isCardPaymentServiceGateway($payment->getGateway()))
+        {
+            $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
+
+            return;
+        }
+
         // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         // Adding cybersource check until cybersource emi payments are fixed
         if (((empty($gatewayInput['authenticate']['gateway']) === false) and
@@ -1070,21 +1077,14 @@ class Processor
         }
 
         $this->trace->info(TraceCode::CPS_ROUTE_CONFIG, [
-            'payment_id' => $payment->getId(),
-            'cps_config' => Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false),
+            'payment_id'    => $payment->getId(),
+            'cps_config'    => Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false),
         ]);
 
         // If the config flag is enabled check for razorx variant and enable cps_route
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
-            $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
-
-            $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
-
-            $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'razorx_variant' => $variant,
-            ]);
+            $variant = $this->getRazorxVariant($payment, self::CPS_FEATURE_FLAG_PREFIX);
 
             // Hardcoding this till wallet phonepe intent is moved to cps.
             if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent'))
@@ -1094,14 +1094,56 @@ class Processor
                 return;
             }
 
-            if (strtolower($variant) === 'cps')
-            {
+            $this->setPaymentService($payment, $variant);
+        }
+    }
+
+    /**
+     * Handles Checks for Card Payment service gateways.
+     */
+    protected function handleCardPaymentServiceGateways(Payment\Entity $payment, $gatewayInput)
+    {
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+        {
+            $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
+
+            $this->setPaymentService($payment, $variant);
+        }
+
+    }
+
+    protected function getRazorxVariant(Payment\Entity $payment, $prefix)
+    {
+        $featureFlag = $prefix. '_' .$payment->getGateway();
+
+        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+
+        $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
+            'payment_id'     => $payment->getId(),
+            'razorx_variant' => $variant,
+        ]);
+
+        return $variant;
+    }
+
+    protected function setPaymentService(Payment\Entity $payment, $variant)
+    {
+        $variant = strtolower($variant);
+
+        switch($variant)
+        {
+            case 'cps':
+
                 $payment->enableCpsRoute();
-            }
-            else
-            {
+
+                break;
+            case 'cardps':
+
+                $payment->enableCardPaymentService();
+
+                break;
+            default:
                 $payment->disableCpsRoute();
-            }
         }
     }
 
@@ -1626,8 +1668,6 @@ class Processor
             'status'                => $status
         ];
 
-        $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
         if ($status !== Status::CREATED)
@@ -1670,6 +1710,24 @@ class Processor
             $notifier = new Notify($this->payment);
 
             $notifier->trigger(Payment\Event::FAILED);
+        }
+
+        //TODO: Remove this later
+        try
+        {
+            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                [
+                    'payment'             => $this->payment->toArray(),
+                    'code'                => $code,
+                    'internal_code'       => $internalCode,
+                    'error'               => $e->getMessage()
+                ]
+            );
         }
     }
 
@@ -1828,16 +1886,16 @@ class Processor
                 //Temp changes for yesb as we need to route only authorize and verify to cps not callback.
                 if (($action === Action::CALLBACK) and ($gateway === Payment\Gateway::NETBANKING_YESB))
                 {
-                    $gatewayData['cps_route'] = false;
+                    $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::API;
 
                     $this->trace->info(TraceCode::GATEWAY_CPS_SWITCH_ROUTE_CALLBACK, [
                         'payment_id'             => $this->payment->getId(),
-                        'gateway_cps_route'      => false,
+                        'gateway_cps_route'      => Payment\Entity::API,
                     ]);
                 }
                 else
                 {
-                    $gatewayData['cps_route'] = true;
+                    $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::CORE_PAYMENT_SERVICE;
                 }
             }
             // Else if this payment was earlier authorized by CPS then disable the cps_route flag
@@ -1849,8 +1907,26 @@ class Processor
 
                 $this->trace->info(TraceCode::CPS_SWITCH_ROUTE, [
                     'payment_id'     => $this->payment->getId(),
-                    'cps_route'      => false,
+                    'cps_route'      => Payment\Entity::API,
                 ]);
+            }
+        }
+        else if ($this->isRoutedThroughCardPayments($action, $gatewayData) === true)
+        {
+            if ((bool) ConfigKey::get(ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+            {
+                $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::CARD_PAYMENT_SERVICE;
+                // Persist card details only when payment method is card or emi
+                if ($this->payment->isMethodCardOrEmi() === true)
+                {
+                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                }
+            }
+
+            // card flow doesn't have any debit action
+            if ($action === Action::DEBIT)
+            {
+                return;
             }
         }
 
@@ -1869,6 +1945,19 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
+            if ((is_array($gatewayData) === true) and (isset($gatewayData[Payment\Entity::CPS_ROUTE]) === true))
+            {
+                switch ($gatewayData[Payment\Entity::CPS_ROUTE])
+                {
+                    case Payment\Entity::CORE_PAYMENT_SERVICE:
+                        return $this->app['cps']->action($gateway, $action, $gatewayData);
+
+                    case Payment\Entity::CARD_PAYMENT_SERVICE:
+                        return $this->app['card.payments']->action($gateway, $action, $gatewayData);
+
+                }
+            }
+
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1878,23 +1967,6 @@ class Processor
             $this->disableTerminalIfApplicable($terminal, $error);
 
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
-
-            /*
-             * Because error indicates gateway downtime, we might act on it later
-             * so set $gatewayDowntimeError = true
-             */
-            $this->trace->traceException(
-                $ex,
-                Trace::INFO,
-                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                [
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => $gateway,
-                    'action'     => $action,
-                    'method'     => $gatewayData['payment']['method'],
-                ]);
-
-            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
             throw $ex;
         }
@@ -1954,8 +2026,26 @@ class Processor
          */
         if ((is_array($input) === true) and
             (isset($input[E::PAYMENT]) === true) and
-            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CORE_PAYMENT_SERVICE) and
             (in_array($action, Action::$cpsSupportedActions) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isRoutedThroughCardPayments($action, $input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * card payment service or not. We are setting this flag(`cps_route`)
+         * for new payments based on variant returned by RazorX.
+         */
+        if ((is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE) and
+            (in_array($action, Action::$cardPaymentsSupportedActions) === true))
         {
             return true;
         }
@@ -2942,11 +3032,6 @@ class Processor
         {
             $this->disableTerminal($terminal);
         }
-    }
-
-    protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
-    {
-        (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
     }
 
     protected function disableTerminal(Terminal\Entity $terminal)

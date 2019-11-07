@@ -81,6 +81,26 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_kvb($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => $entities['gateway']['pay_verify']['bank_payment_id'],
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_sib($entities)
     {
         $response = [
@@ -115,6 +135,26 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function netbanking_scb($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'              => ['Status' => 'Y'],
+                'bank_payment_id'   => '999999',
+                'paymentId'         => $entities['payment']['id'],
+                'status'            => 'verification_successful',
+            ],
+        ];
+
+        return $response;
+    }
+
 
     public function netbanking_cbi($entities)
     {
@@ -174,7 +214,7 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
-    
+
     public function netbanking_idbi($entities)
     {
         $response = [

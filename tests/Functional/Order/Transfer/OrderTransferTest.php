@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Mockery;
 use Closure;
 
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Webhook;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -44,12 +45,17 @@ class OrderTransferTest extends TestCase
 
     public function testCreateOrderTransfersInsufficientBalance()
     {
+        $order = $this->testCreateOrderTransfers();
+
         $this->fixtures->merchant->editBalance(100);
 
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
-        {
-            $this->testCreateOrderTransfers();
-        });
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals(PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE, $transfer['message']);
     }
 
     public function testProcessOrderTransfers()

@@ -111,7 +111,7 @@ class Table
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details'; 
+    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -207,6 +207,7 @@ class Table
     // Banking Accounts Tables
     const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 
     // P2P Service Tables

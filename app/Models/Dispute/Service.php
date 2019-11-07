@@ -8,17 +8,15 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
-use RZP\Models\{Base, Payment};
 use RZP\Models\Dispute\File;
 use RZP\Models\Dispute\Reason;
+use RZP\Models\{Base, Payment};
 use RZP\Error\PublicErrorDescription;
-use RZP\Mail\Dispute as DisputeMailer;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -33,6 +31,10 @@ class Service extends Base\Service
 
     const bulkDisputeCreateDateFormat = 'd/m/Y H:i:s';
 
+    // This is a limit on number of entries in bulk create/update file.
+    // This can be removed once we handle files in Async batches
+    const MAX_DISPUTE_ENTRIES = 5000;
+
     const bulkCreateDisputesColumns = [
         Entity::PAYMENT_ID,
         Entity::GATEWAY_DISPUTE_ID,
@@ -43,7 +45,6 @@ class Service extends Base\Service
         Entity::RAISED_ON,
         Entity::EXPIRES_ON,
         Entity::AMOUNT,
-        Entity::MERCHANT_EMAILS,
         Entity::SKIP_EMAIL,
         Entity::CONTACT,
     ];
@@ -113,11 +114,11 @@ class Service extends Base\Service
                 'input'      => $input,
             ]);
 
-        $data = $this->validateInputAndGetFileData($input, self::bulkCreateAction);
+        $data = $this->validateAndGetFileData($input, self::bulkCreateAction);
 
         $orderKeys = $data[0];
 
-        $outputFileData = $mailData = $merchantData = $disputeData = [];
+        $outputFileData = $merchantData = $disputeData = [];
 
         $outputKeys   = $orderKeys;
         $outputKeys[] = self::RZPDisputeID;
@@ -143,23 +144,18 @@ class Service extends Base\Service
 
                 $disputeEntity = $this->create($createInput, $paymentId, $payment);
 
-                $contact = empty($input[Entity::CONTACT]) ? $payment[Payment\Entity::CONTACT] ?? 'N/A' : $input[Entity::CONTACT];
-
-                $disputeEntity[Entity::CONTACT] = $contact;
-
                 // Prepares Mail body data
                 if ($input[Entity::SKIP_EMAIL] === false)
                 {
-                    $emails = $this->core()->getEmailsForCreationMail($merchant, $input);
+                    $contact = empty($input[Entity::CONTACT]) ? 'N/A' : $input[Entity::CONTACT];
 
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]] = $merchant->getName();
+                    $disputeEntity[Entity::CONTACT] = $contact;
+
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][] = $disputeEntity[Entity::ID];
 
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
-
-                    foreach ($emails as $email)
-                    {
-                        $mailData[$disputeEntity[Entity::MERCHANT_ID]][$email][] = $disputeEntity[Entity::ID];
-                    }
                 }
 
                 $row[] = $disputeEntity[Entity::ID];
@@ -174,7 +170,7 @@ class Service extends Base\Service
             $outputFileData[] = $row;
         }
 
-        $this->sendAggregatedEmails($mailData, $merchantData, $disputeData);
+        $this->core()->sendAggregatedEmails($merchantData, $disputeData);
 
         $url = (new File\Service)->generateFile($outputFileData, self::bulkDisputeCreateFileName);
 
@@ -197,7 +193,7 @@ class Service extends Base\Service
                 'input'      => $input,
             ]);
 
-        $data = $this->validateInputAndGetFileData($input, self::bulkEditAction);
+        $data = $this->validateAndGetFileData($input, self::bulkEditAction);
 
         $orderKeys = $data[0];
 
@@ -302,7 +298,7 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateInputAndGetFileData(array $input, string $action)
+    public function validateAndGetFileData(array $input, string $action)
     {
         $validator = new Validator;
 
@@ -313,6 +309,13 @@ class Service extends Base\Service
         $validator->validateBulkDisputesFile($file);
 
         $data = (new File\Service)->getFileData($file);
+
+        if (count($data) > self::MAX_DISPUTE_ENTRIES)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Max. of ' . self::MAX_DISPUTE_ENTRIES . ' entries is/are allowed in a file'
+            );
+        }
 
         $headers = [];
 
@@ -400,39 +403,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Sends Aggregated Emails on merchant level
-     *
-     * @param array $mailData
-     * @param array $merchantData
-     * @param array $disputeData
-     */
-    public function sendAggregatedEmails(array $mailData, array $merchantData, array $disputeData)
-    {
-        foreach ($mailData as $merchantId => $data)
-        {
-            foreach ($data as $mailId => $disputeIds)
-            {
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME] = $merchantData[$merchantId];
-                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $mailId;
-                $bulkMailData[Constants::DISPUTES] = [];
-
-                $totalAmount = 0;
-
-                foreach ($disputeIds as $id)
-                {
-                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$id];
-
-                    $totalAmount += $disputeData[$id][Entity::AMOUNT];
-                }
-
-                $bulkMailData['totalAmount'] = $totalAmount;
-
-                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
-            }
-        }
-    }
-
-    /**
      * Validates each column of the file and converts it to necessary format
      *
      * @param array $row
@@ -511,18 +481,6 @@ class Service extends Base\Service
         }
 
         return $res;
-    }
-
-    public function formatValueMerchantEmails($res)
-    {
-        if (empty($res) === false)
-        {
-            $mails = array_map('trim', explode(',', $res));
-
-            return $mails;
-        }
-
-        return [];
     }
 
     public function formatValueReasonCode($res)

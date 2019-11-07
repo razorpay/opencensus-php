@@ -708,7 +708,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-  
+
     public function getScheduledEarlySettlementPricingForMerchant()
     {
         $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();
@@ -1150,6 +1150,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->bulkAssignReviewer($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function merchantsMtuUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->merchantsMtuUpdate($input);
 
         return ApiResponse::json($response);
     }

@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_ACCOUNT_NOTES,
         self::STATUS,
         self::PROCESSED_AT,
+        self::MESSAGE,
     ];
 
     protected $public = [

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use Carbon\Carbon;
+use App;
 
 use RZP\Base;
 use RZP\Exception;
@@ -14,6 +14,17 @@ use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
+    protected $env;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->env = $app['env'];
+    }
+
     const INVALID_REVIEWER                              = 'Invalid reviewer';
     const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
@@ -185,6 +196,7 @@ class Validator extends Base\Validator
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
         Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                   => 'filled|array',
+        Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
     ];
@@ -226,6 +238,12 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'business_subcategory_for_category',
+    ];
+
+    protected static $pennyTestingEventPayloadRules = [
+        Constants::MERCHANT_ID     => 'required|string|max:14',
+        Constants::ACCOUNT_STATUS  => 'required|string',
+        Constants::REGISTERED_NAME => 'sometimes|string',
     ];
 
     protected static $instantActivationRules = [
@@ -272,6 +290,12 @@ class Validator extends Base\Validator
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(
@@ -284,6 +308,12 @@ class Validator extends Base\Validator
 
     public function validatePOAVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(
@@ -320,6 +350,12 @@ class Validator extends Base\Validator
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
         Entity::MERCHANTS       => 'filled|array',
         Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
+    ];
+
+    protected static $merchantMtuUpdateRules = [
+        Entity::MERCHANTS               => 'filled|array|between:0,15',
+        Entity::MERCHANTS . '*'         => 'sometimes|public_id|size:14',
+        Entity::LIVE_TRANSACTION_DONE   => 'filled|numeric|in:0,1,2',
     ];
 
     protected function validateRegisteredBusinessRules(array $input)

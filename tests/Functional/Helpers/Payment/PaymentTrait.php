@@ -2228,7 +2228,6 @@ trait PaymentTrait
             switch ($endpoint)
             {
                 case '/account':
-
                     $response = [
                         'body' => [
                             'fund_account_id' => random_integer(2),
@@ -2239,9 +2238,10 @@ trait PaymentTrait
                     return $response;
 
                 case '/source_account':
-
                     $response = [
-                            'message' => 'source account registered',
+                            'body'=> [
+                                'message' => 'source account registered',
+                            ]
                         ];
 
                     return $response;

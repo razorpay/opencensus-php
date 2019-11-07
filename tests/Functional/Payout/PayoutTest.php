@@ -2,21 +2,23 @@
 
 namespace RZP\Tests\Functional\Payout;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Models\Admin\Permission as AdminPermission;
-
+use Mail;
 use Config;
+
+use Carbon\Carbon;
+
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -77,9 +79,28 @@ class PayoutTest extends TestCase
 
     public function testCreatePayout(): array
     {
+        Mail::fake();
+
         $this->ba->privateAuth();
 
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
+                    '10000000000000' =>
+                        [
+                            'low_balance_threshold' => 10000000000,
+                            'email_ids'             => ['a@a.com', 'b@b.com']
+                        ]
+                ]
+            ]);
+
         $this->startTest();
+
+        Mail::assertQueued(LowBalanceAlert::class);
+
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::LOW_BALANCE_RX_EMAIL]);
+
+        $this->assertArrayHasKey('notify_at', $config['10000000000000']);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -115,6 +136,15 @@ class PayoutTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testCreatePayoutWithoutFundAccountId()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array

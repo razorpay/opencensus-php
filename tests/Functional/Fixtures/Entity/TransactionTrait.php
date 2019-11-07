@@ -63,6 +63,14 @@ trait TransactionTrait
         });
     }
 
+    protected function createTransactionOnPayoutReversal($reversal)
+    {
+        return $this->transaction(function() use ($reversal)
+        {
+            return (new TransactionCore)->createFromPayoutReversal($reversal);
+        });
+    }
+
     protected function createTransactionOnDispute($dispute)
     {
         return $this->transaction(function() use ($dispute)

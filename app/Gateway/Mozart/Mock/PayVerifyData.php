@@ -84,6 +84,26 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_kvb($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['gateway']['redirect']['paymentId'],
+                'bank_payment_id' => '999999',
+                'amount'          => $entities['gateway']['redirect']['amount'],
+                'status'          => 'callback_successful',
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_sib($entities)
     {
         $response = [
@@ -115,6 +135,26 @@ class PayVerifyData extends Base\Mock\Server
             'data' => [
                 'paymentId'         => $entities['payment']['id'],
                 'amount'            => $entities['payment']['amount'] / 100,
+                'bank_payment_id'   => '999999',
+                'payment_status'    => 'Y',
+                'status'            => 'callback_successful',
+                '_raw'              => null
+            ],
+        ];
+        return $response;
+    }
+
+    public function netbanking_scb($entities)
+    {
+        $response = [
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'next'              => [],
+            'success'           => true,
+            'error'             => null,
+            'data' => [
+                'paymentId'         => $entities['payment']['id'],
+                'amount'            => $entities['payment']['amount'],
                 'bank_payment_id'   => '999999',
                 'payment_status'    => 'Y',
                 'status'            => 'callback_successful',
@@ -183,7 +223,7 @@ class PayVerifyData extends Base\Mock\Server
 
         return $response;
     }
-    
+
     public function netbanking_idbi($entities)
     {
         $response = [

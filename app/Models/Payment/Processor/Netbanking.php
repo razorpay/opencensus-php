@@ -93,6 +93,7 @@ class Netbanking
         IFSC::IDFB,
         IFSC::RATN,
         IFSC::UBIN,
+        IFSC::SCBL,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -107,6 +108,7 @@ class Netbanking
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
+        IFSC::KVBL,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -452,6 +454,11 @@ class Netbanking
                 IFSC::UBIN,
             ],
         ],
+        Gateway::NETBANKING_SCB => [
+            'retail' => [
+                IFSC::SCBL,
+            ],
+        ],
         Gateway::NETBANKING_CBI => [
             'retail' => [
                 IFSC::CBIN
@@ -596,6 +603,15 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ALLA,
+            ],
+        ],
+
+        Gateway::NETBANKING_KVB =>  [
+            'retail'    =>  [
+                IFSC::KVBL,
+            ],
+            'tpv'   => [
+                IFSC::KVBL,
             ],
         ],
     ];

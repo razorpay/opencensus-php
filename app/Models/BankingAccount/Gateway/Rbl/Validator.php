@@ -13,7 +13,8 @@ class Validator extends Base\Validator
     const PRE_ACCOUNT_INFO_WEBHOOK    = 'pre_account_info_webhook';
     const ACCOUNT_UPDATE              = 'account_update';
     const ACCOUNT_AVAILABILITY        = 'availability';
-    const ADD_CREDENTIALS             = 'add_credentials';
+    const ACCOUNT_DETAILS_UPDATE      = 'account_details_update';
+    const ACCOUNT_ACTIVATE            = 'account_activate';
 
     protected static $availabilityRules = [
         BankingAccount\Entity::CHANNEL => 'required|string|in:rbl',
@@ -50,11 +51,28 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
     ];
 
-    // ToDO add proper validations here after confirming with RBL
-    protected static $addCredentialsRules = [
-        Fields::SUBCORP_ID               => 'required|string',
-        Fields::SUBCORP_USER_NAME        => 'required|string',
-        Fields::SUBCORP_USER_PASSWORD    => 'required|string',
+    protected static $accountDetailsUpdateRules = [
+        Fields::MERCHANT_PASSWORD => 'sometimes|string',
+        Fields::MERCHANT_EMAIL    => 'sometimes|email',
+        Fields::CLIENT_ID         => 'sometimes|string',
+        Fields::CLIENT_SECRET     => 'sometimes|string',
+    ];
+
+    public static $accountActivateRules = [
+        BankingAccount\Entity::ACCOUNT_NUMBER       => 'required|string',
+        BankingAccount\Entity::ACCOUNT_IFSC         => 'required|string',
+        BankingAccount\Entity::USERNAME             => 'required|string',
+        BankingAccount\Entity::PASSWORD             => 'required|string',
+        BankingAccount\Entity::REFERENCE1           => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_NAME     => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_EMAIL    => 'required|email',
+        BankingAccount\Entity::BENEFICIARY_MOBILE   => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_STATE    => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_COUNTRY  => 'required|string',
+        BankingAccount\Entity::BENEFICIARY_ADDRESS1 => 'required|string',
+        BankingAccount\Entity::ACCOUNT_TYPE         => 'required|string',
+        Fields::CLIENT_ID                           => 'required|string',
+        Fields::CLIENT_SECRET                       => 'required|string',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)

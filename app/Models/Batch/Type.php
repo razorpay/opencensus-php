@@ -197,6 +197,7 @@ class Type
         self::ENTITY_MAPPING,
         self::LINKED_ACCOUNT,
         self::LINKED_ACCOUNT_REVERSAL,
+        self::INSTANT_ACTIVATION,
     ];
 
     /**

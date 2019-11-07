@@ -54,7 +54,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+        $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -66,6 +66,9 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // blacklisted merchant should not be allowed to submit l2 form
+                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
                 $response = $this->submitActivationForm($merchant, $originProduct);
             }
             else
@@ -82,7 +85,7 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
-        
+
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
         // If a merchant does not have website or app, we would need to activate them
@@ -94,6 +97,11 @@ class Core extends Base\Core
         $this->markSubmittedAndLock($merchantDetails);
 
         $this->updateActivationSource($merchant, $originProduct);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
@@ -383,7 +391,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress, $merchantDetails->getActivationFlow());
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
 
             $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
@@ -404,6 +412,8 @@ class Core extends Base\Core
     {
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return null;
         }
 
@@ -446,17 +456,20 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
-     * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
+        $merchantDetail = $merchant->merchantDetail;
+
         $eventAttributes['activation_progress'] = $activationProgress;
+
+        $eventAttributes['poi_status'] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
-        $eventAttributes['activation_flow'] = $activationFlow ;
+        $eventAttributes['activation_flow'] = $merchantDetail->getActivationFlow();
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }
@@ -1315,6 +1328,44 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function merchantsMtuUpdate(array $merchants, int $value): array
+    {
+        $success = 0;
+
+        $failedItems = [];
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->editMerchantDetailFields($merchant, [Entity::LIVE_TRANSACTION_DONE => $value]);
+
+                $success++;
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_SUCCESS,['id' => $merchantId]);
+            }
+            catch(\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    'error'             => $e->getMessage()
+                ];
+
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_FAILURE,['id' => $merchantId]);
+            }
+        }
+
+        $response = [
+            'success'       => $success,
+            'failed'        => count($failedItems),
+            'failedItems'   => $failedItems,
+        ];
+
+        return $response;
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *
@@ -1372,6 +1423,38 @@ class Core extends Base\Core
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
     }
 
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \Throwable
+     */
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ((new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        {
+            return;
+        }
+
+        // adding this check for qa automation
+        if ($this->env === 'func' and $merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        // if bank detail is already verified then skip penny testing
+        if ($merchantDetails->isBankDetailStatusVerified())
+        {
+            return;
+        }
+
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+    }
+
     public function isAdditionalFieldRequired($field)
     {
         $merchantDetail = $this->getMerchantDetails($this->merchant);
@@ -1401,7 +1484,7 @@ class Core extends Base\Core
      *
      * @return string
      */
-    private function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and

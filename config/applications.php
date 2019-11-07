@@ -74,13 +74,13 @@ return [
         'test'  =>  [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
-            'password'  => env('MOZART_TEST_PASSWORD'),    
+            'password'  => env('MOZART_TEST_PASSWORD'),
         ],
-        
+
         'live'  =>  [
             'mock'      => env('MOZART_LIVE_MOCK', false),
             'url'       => env('MOZART_LIVE_URL'),
-            'password'  => env('MOZART_LIVE_PASSWORD'),    
+            'password'  => env('MOZART_LIVE_PASSWORD'),
         ]
     ],
 
@@ -94,6 +94,13 @@ return [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'reminders' => [
+        'mock'             => env('REMINDERS_MOCK'),
+        'url'              => env('REMINDERS_URL'),
+        'secret'           => env('REMINDERS_SECRET'),
+        'reminder_secret'  => env('REMINDERS_SERVICE_SECRET')
     ],
 
     'scrooge' => [
@@ -125,11 +132,11 @@ return [
 
     'governor' => [
         'mock'      => env('GOVERNOR_SERVICE_MOCK', false),
-        'smart_routing'=> [
+        'smart_routing' => [
             'username'  => env('GOVERNOR_SMART_ROUTING_SERVICE_KEY'),
             'password'  => env('GOVERNOR_SMART_ROUTING_SERVICE_SECRET'),
         ],
-        'cps'=> [
+        'cps' => [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
         ],
@@ -266,6 +273,7 @@ return [
         'api_key' => env('PINCODE_SEARCH_API_KEY')
     ],
 
+
     'shield' => [
         'mock'    => env('SHIELD_MOCK', false),
         'url'     => env('SHIELD_BASE_URL'),
@@ -373,4 +381,19 @@ return [
         'url'      => env('HUBSPOT_URL'),
         'secret'   => env('HUBSPOT_SECRET'),
     ],
+
+    'mtu_lambda' => [
+        'secret'        => env('MTU_LAMBDA_SECRET'),
+    ],
+
+    'card_payment_service' => [
+        'mock'      => env('CARD_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CARD_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CARD_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('CARD_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('CARD_PAYMENT_SERVICE_TEST_URL'),
+        ],
+    ],
+
 ];

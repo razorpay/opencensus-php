@@ -357,17 +357,23 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                // Todo - to remove
+                //TODO: Remove this later
                 try
                 {
                     $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
                 }
-                catch (\Throwable $ex)
+                catch (\Throwable $e)
                 {
-                    $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'code'                => $errorCode,
+                            'internal_code'       => $internalErrorCode,
+                            'error'               => $e->getMessage()
+                        ]
+                    );
                 }
-
-
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -2479,7 +2485,7 @@ trait Authorize
 
             $emiDuration = $input['emi_duration'];
 
-            $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
         if ($payment->isCardlessEmi() === true)
@@ -3343,6 +3349,8 @@ trait Authorize
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
         $payment->emiPlan()->associate($emiPlan);
+
+        return $emiPlan->toArray();
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
@@ -5482,15 +5490,20 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            // TODO - to remove
-
+            //TODO: Remove this later
             try
             {
                 $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
             }
             catch (\Throwable $e)
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED);
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $payment->toArray(),
+                        'error'               => $e->getMessage()
+                    ]
+                );
             }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
@@ -6166,6 +6179,7 @@ trait Authorize
 
             unset($billingAddressFromInput['postal_code']);
         }
+
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }
