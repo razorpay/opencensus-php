@@ -9,7 +9,7 @@ import Group, { GroupItem } from 'rzp/ui/Group';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import LocalStorageService from 'rzp/utils/localStorage';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -175,16 +175,18 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
+                    <ShowWhen myRole="owner admin finance">
+                      <Button.Secondary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={
+                          current_balance.loading ||
+                          current_balance.data.balance < 100
+                        }
+                      >
+                        Settle Now
+                      </Button.Secondary>
+                    </ShowWhen>
                   ) : (
                     <Link className="pull-right" to="/settlements">
                       <span

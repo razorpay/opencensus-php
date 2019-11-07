@@ -20,6 +20,7 @@ import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAcco
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => ({
@@ -137,16 +138,18 @@ class AnalyticsMobile extends Component {
             </div>
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled ? (
-                <Button.Secondary
-                  class="settle-btn"
-                  onClick={this.showOndemandSettlementForm}
-                  disabled={
-                    current_balance.loading ||
-                    current_balance.data.balance < 100
-                  }
-                >
-                  Settle Now
-                </Button.Secondary>
+                <ShowWhen myRole="owner admin finance">
+                  <Button.Secondary
+                    class="settle-btn"
+                    onClick={this.showOndemandSettlementForm}
+                    disabled={
+                      current_balance.loading ||
+                      current_balance.data.balance < 100
+                    }
+                  >
+                    Settle Now
+                  </Button.Secondary>
+                </ShowWhen>
               ) : (
                 <Link className="pull-right" to="/settlements">
                   <span
