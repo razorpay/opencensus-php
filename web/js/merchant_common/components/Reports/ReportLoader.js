@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import moment from 'moment';
 
 import { arrayToSentence } from 'rzp/utils/rzp-utils';
+import { classList } from 'common/util';
 
 const ReportHelperText = ({ report, status, openEmailReportModal }) => {
   const isNoDataFound = report['status'] === 'processed' && !report['file_id'];
@@ -53,7 +54,7 @@ const ReportProgress = ({
   return (
     <div
       id={'report-progress-' + id}
-      class={`report-progress ${isSelected ? 'current' : ''}`}
+      class={classList('report-progress', isSelected && 'current')}
     >
       Generating {name} for {timePeriod}
       <div>

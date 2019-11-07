@@ -41,7 +41,7 @@ const requestFailedFunc = () => {
   },
   downloadStartedMessage = {
     type: 'success',
-    message: 'Your report request is being placed...',
+    message: 'Your report generation request is being placed',
   };
 
 export default function Reports(store, opts) {
@@ -372,12 +372,11 @@ export default function Reports(store, opts) {
     };
 
     generateReport() {
+      this.disableDownloadButton();
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'download_report');
         window.hj('tagRecording', ['download_report']);
       }
-
-      this.disableDownloadButton();
 
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
@@ -714,6 +713,7 @@ export default function Reports(store, opts) {
       const entity = selectedConfig && selectedConfig.value;
 
       let content = null;
+      let isCurrentConfigSelected = false;
 
       Object.keys(currentReportList).forEach(reportId => {
         if (
