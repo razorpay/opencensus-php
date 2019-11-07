@@ -118,7 +118,7 @@ class BusinessType
      *
      * @return bool
      */
-    public static function isUnregisteredBusiness($businessType): bool
+    public static function isUnregisteredBusiness(string $businessType): bool
     {
         if (empty($businessType))
         {
