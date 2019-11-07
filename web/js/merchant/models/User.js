@@ -403,6 +403,11 @@ export default class User {
     return this.getExpStatus('show_commission_balance');
   }
 
+  get isUnregBizFlowEnabled() {
+    // return true;
+    return this.getExpStatus('non_registered_onboarding');
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
