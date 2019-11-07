@@ -1804,6 +1804,10 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
+        // Temp fix to allow partners creating their own QR codes for
+        // submerchants to use only one set of credentials everywhere
+        'mpans_issue',
+        'mpans_fetch',
     ];
 
     public static $proxy = [
