@@ -39,7 +39,6 @@ class ActivationTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 
         parent::setUp();
-
         $this->setupMockDns();
 
         $this->fixtures->create('org:hdfc_org');
@@ -595,8 +594,6 @@ class ActivationTest extends TestCase
         $this->fixtures->create('merchant_detail', $data);
 
         $testSuit = 'validateUnregisteredKycSubmission';
-
-        $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
