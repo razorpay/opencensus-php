@@ -7,6 +7,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
+import scrollTo from 'rzp/utils/scrollTo';
 import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -343,8 +344,18 @@ export default function Reports(store, opts) {
       }
     };
 
-    saveLongPollInstances = (reportId, pollInstance) => {
+    onPollStart = (reportId, pollInstance) => {
       this.props.addPollInstance(reportId, pollInstance);
+      const reportProgressElement = document.querySelector(
+        '#report-progress-' + reportId
+      );
+
+      if (reportProgressElement) {
+        scrollTo({
+          endPos: reportProgressElement.getBoundingClientRect().top,
+          animation: 'ease-in-out',
+        });
+      }
     };
 
     disableDownloadButton = () => {
@@ -462,7 +473,7 @@ export default function Reports(store, opts) {
             reqData,
             isMerchantAccount,
             this.updateStore,
-            this.saveLongPollInstances,
+            this.onPollStart,
             isPartnerReport
           ).then(data => {
             if (data.error) {
