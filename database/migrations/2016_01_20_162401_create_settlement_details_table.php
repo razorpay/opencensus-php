@@ -28,7 +28,7 @@ class CreateSettlementDetailsTable extends Migration
 
             $table->char(Entity::SETTLEMENT_ID, 14);
 
-            $table->string(Entity::COMPONENT, 25);
+            $table->string(Entity::COMPONENT, 255);
 
             $table->char(Entity::TYPE, 6);
 
