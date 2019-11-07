@@ -894,8 +894,8 @@ class Service extends Base\Service
 
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
     {
-        if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
-        {
+        
+        
             // check business_type
 
             $businessType = $data['pre_signup']['business_type'] ?? null;
@@ -904,8 +904,7 @@ class Service extends Base\Service
             {
                 return true;
             }
-        }
-
+            
         return false;
     }
 
