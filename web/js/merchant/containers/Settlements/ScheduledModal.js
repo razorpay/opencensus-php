@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { closeModal } from 'rzp/modules/modals';
 import Button, { AsyncBtn } from 'component/Button';
 import { updateFeatures } from 'merchant/modules/config';
-import User, { setFeatures } from 'merchant/models/User';
+import User from 'merchant/models/User';
 import * as SessionActions from 'merchant/modules/session';
 import { showNotification } from 'rzp/modules/notifications';
 import ModalCloseReasons from './ModalCloseReasons';
@@ -93,11 +93,14 @@ export default class ScheduledModal extends Component {
           isLoading: false,
         });
       })
-      .catch(response => {
+      .catch(() => {
         this.setState({
           errors: 'Error while retrieving Scheduled Pricing',
         });
-        //TODO GA
+        this.fireGAEvent({
+          eventAction: `Click on Enable`,
+          eventLabel: `Failure while fetching price`,
+        });
       });
   };
 
@@ -180,7 +183,7 @@ export default class ScheduledModal extends Component {
           </div>
           <a
             target="_blank"
-            href="https://razorpay.freshdesk.com/support/solutions/folders/11000011340"
+            href="https://razorpay.com/capital/#faqs"
             className="highlight-support"
             onClick={() => {
               this.fireGAEvent({
@@ -210,7 +213,11 @@ export default class ScheduledModal extends Component {
         <ModalHeader
           title={'Enable Early Settlement'}
           onCloseClick={() => {
-            this.setState({ modalClosed: true });
+            if (this.state.errors) {
+              this.props.closeModal();
+            } else {
+              this.setState({ modalClosed: true });
+            }
           }}
         />
         <div className="modal-body">
@@ -225,42 +232,41 @@ export default class ScheduledModal extends Component {
               {` `}Learn more
             </a>
           </div>
-          <div className="overflow-box">
-            <div className="schedule-header">
-              Here's how instantly it works:
-            </div>
-            <div className="schedule-desc-container">
-              <ul className="schedule-desc">
-                <li>
-                  Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
-                  settled
-                </li>
-                {!this.state.errors && (
+          {!this.state.errors ? (
+            <div className="overflow-box">
+              <div className="schedule-header">
+                Here's how instantly it works:
+              </div>
+              <div className="schedule-desc-container">
+                <ul className="schedule-desc">
+                  <li>
+                    Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
+                    settled
+                  </li>
                   <li>
                     A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
                     charged for each settlement
                   </li>
-                )}
-              </ul>
+                </ul>
+              </div>
+              <div className="schedule-img-container">
+                <img src={'/dist/css/assets/settlements-blue-box.png'} />
+              </div>
+              <div>
+                <AsyncBtn.Primary
+                  class={'enable-schedule-btn'}
+                  pendingState="Enabling..."
+                  onClick={this.onEnable}
+                  disabled={this.state.isLoading}
+                >
+                  Enable Early Settlement
+                </AsyncBtn.Primary>
+              </div>
             </div>
-            <div className="schedule-img-container">
-              <img src={'/dist/css/assets/settlements-blue-box.png'} />
-            </div>
-            <div>
-              <AsyncBtn.Primary
-                class={'enable-schedule-btn'}
-                pendingState="Enabling..."
-                onClick={this.onEnable}
-                disabled={this.state.isLoading}
-              >
-                Enable Early Settlement
-              </AsyncBtn.Primary>
-            </div>
-          </div>
-          {this.state.errors ? (
-            <div style={{ color: 'red' }}>{this.state.errors}</div>
           ) : (
-            ''
+            <div style={{ color: 'red', marginTop: 20 }}>
+              {this.state.errors}
+            </div>
           )}
           <div className="border">
             <p>
