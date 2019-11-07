@@ -108,6 +108,7 @@ class Netbanking
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
+        IFSC::KVBL,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -602,6 +603,15 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ALLA,
+            ],
+        ],
+
+        Gateway::NETBANKING_KVB =>  [
+            'retail'    =>  [
+                IFSC::KVBL,
+            ],
+            'tpv'   => [
+                IFSC::KVBL,
             ],
         ],
     ];

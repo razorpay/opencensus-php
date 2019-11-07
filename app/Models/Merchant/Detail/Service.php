@@ -303,7 +303,9 @@ class Service extends Base\Service
             // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
             $partial = substr(bin2hex(random_bytes(6)), 0, 5);
 
-            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
+            $fileIdentifier = pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $fileIdentifier;
 
             $file = $this->createFile(
                 $publicEntity,

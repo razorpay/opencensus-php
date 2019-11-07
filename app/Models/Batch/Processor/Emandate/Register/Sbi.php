@@ -139,6 +139,10 @@ class Sbi extends Base
 
         $fileAccNo  = $data[self::ACCOUNT_NUMBER];
 
+        $tokenAccNo = ltrim($tokenAccNo, '0');
+
+        $fileAccNo = ltrim($fileAccNo, '0');
+
         if ($tokenAccNo !== $fileAccNo)
         {
             throw new Exception\GatewayErrorException(

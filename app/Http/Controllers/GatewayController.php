@@ -248,6 +248,45 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function staticCallbackGateway($method, $gateway, $mode)
+    {
+        $input = Request::all();
+
+        $data = [];
+
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
+            [
+                'input'     => $input,
+                'body'      => Request::getContent(),
+                'headers'   => Request::header(),
+                'gateway'   => $gateway,
+            ]);
+
+        switch ($method)
+        {
+            case Payment\Method::NETBANKING:
+                $data = $this->staticCallbackNetbanking($input, $gateway,$mode);
+                return  $data;
+        }
+
+        return null;
+    }
+
+    public function staticCallbackNetbanking($input, $gateway, $mode)
+    {
+        switch ($gateway)
+        {
+            case Gateway::NETBANKING_KVB:
+            $data = $this->callbackKvbbank($input, $mode);
+            return $data;
+        }
+
+        return null;
+    }
+
     public function callbackKotakCancel()
     {
         return $this->callbackKotak();
@@ -437,6 +476,39 @@ class GatewayController extends Controller
         $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_YESB);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_YESB);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $url = $url . '?' . http_build_query(['preProcessServerCallbackResponse' => json_encode($response)]);
+
+        return Redirect::to($url);
+    }
+
+    public function callbackKvbbank($input, $mode)
+    {
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'gateway'          => 'netbanking_kvb',
+                'encrypted_string' => $input
+            ]
+        );
+
+        $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_KVB);
+
+        $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_KVB, $mode);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_KVB);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 

@@ -392,6 +392,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccount);
 
+            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
+
             return $bankingAccount;
         });
 

@@ -1026,6 +1026,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION                 = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION                 = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION                  = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
+    const MERCHANT_PENNY_TESTING_ATTEMPT                        = 'MERCHANT_PENNY_TESTING_ATTEMPT';
+    const MERCHANT_PENNY_TESTING_EVENT_PAYLOAD                  = 'MERCHANT_PENNY_TESTING_EVENT_PAYLOAD';
+    const MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING       = 'MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING';
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
@@ -1327,6 +1330,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ASSIGNMENT_EXCEPTION                          = 'FEATURE_ASSIGNMENT_EXCEPTION';
     const MERCHANT_FEATURE_NOT_EXIST                            = 'MERCHANT_FEATURE_NOT_EXIST';
     const MERCHANT_FEATURE_EDIT_REQUEST                         = 'MERCHANT_FEATURE_EDIT_REQUEST';
+    const MERCHANT_MULTI_FEATURE_ASSIGN_RESPONSE                = 'MERCHANT_MULTI_FEATURE_ASSIGN_RESPONSE';
+    const MERCHANT_MULTI_FEATURE_REMOVE_RESPONSE                = 'MERCHANT_MULTI_FEATURE_REMOVE_RESPONSE';
     const MERCHANT_FEATURE_UPDATE                               = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                          = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                          = 'FEATURE_MULTI_REMOVE_REQUEST';
@@ -1569,6 +1574,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_RETRY_FAILED                  = 'FUND_ACCOUNT_VALIDATION_RETRY_FAILED';
     const FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           = 'FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED';
     const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
+    const FUND_ACCOUNT_VALIDATION_JOB_ERROR                     = 'FUND_ACCOUNT_VALIDATION_JOB_ERROR';
+    const FUND_ACCOUNT_VALIDATION_JOB_DELETE                    = 'FUND_ACCOUNT_VALIDATION_JOB_DELETE';
+    const FUND_ACCOUNT_VALIDATION_JOB_REQUEST                   = 'FUND_ACCOUNT_VALIDATION_JOB_REQUEST';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
@@ -2317,6 +2325,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FEATURE_MIGRATION_EXCEPTION                           => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION                          => 'Exception assigning feature to merchant',
         self::MERCHANT_FEATURE_EDIT_REQUEST                         => 'Edit merchant features request initiated',
+        self::MERCHANT_MULTI_FEATURE_ASSIGN_RESPONSE                => 'Bulk assign of features to merchants response',
+        self::MERCHANT_MULTI_FEATURE_REMOVE_RESPONSE                => 'Bulk removal of features from merchants response',
         self::MERCHANT_DETAIL_DOES_NOT_EXIST                        => 'Merchant Detail does not exists',
         self::CREATE_MERCHANT_DETAIL                                => 'Creating Merchant Detail',
         self::PAYMENT_TRANSFER_VALIDATION_FAILED                    => 'Transfer failed while validating transfer amount',

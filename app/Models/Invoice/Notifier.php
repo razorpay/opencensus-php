@@ -97,12 +97,14 @@ class Notifier extends Base\Core
     {
         $this->invoice->reload();
 
+        $merchantId = $this->invoice->getMerchantId();
+
         if(($this->invoice->getReminderStatus() === ReminderStatus::PENDING) and
             (empty($this->invoice->getReminderId()) === true))
         {
             $request = $this->getRemindersCreateReminderInput();
 
-            $response = $this->reminders->createReminder($request);
+            $response = $this->reminders->createReminder($request, $merchantId);
 
             $this->setReminderResponse($response);
 
@@ -116,7 +118,7 @@ class Notifier extends Base\Core
 
             $request = $this->getRemindersUpdateReminderInput();
 
-            $response = $this->reminders->updateReminder($request, $reminderId);
+            $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
 
             if(empty($response['id']) === true)
             {

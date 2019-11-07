@@ -471,6 +471,8 @@ final class Route
         'gateway_payment_callback_get'             => ['get',      'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_post'            => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
+        'gateway_payment_static_callback_get'      => ['get',      'gateway/{method}/{gateway}/callback/{mode}',     'GatewayController@staticCallbackGateway'                           ],
+        'gateway_payment_static_callback_post'     => ['post',     'gateway/{method}/{gateway}/callback/{mode}',     'GatewayController@staticCallbackGateway'                           ],
         'gateway_payment_callback_kotak_cancel'    => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_emandate_callback_npci_nb'        => ['post',     'gateway/emandate_npci_nb/callback',              'GatewayController@callbackEmandateNpciNb'                          ],
         'gateway_payment_callback_corporation'     => ['get',      'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
@@ -1802,6 +1804,10 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
+        // Temp fix to allow partners creating their own QR codes for
+        // submerchants to use only one set of credentials everywhere
+        'mpans_issue',
+        'mpans_fetch',
     ];
 
     public static $proxy = [
@@ -3023,6 +3029,8 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
+        'gateway_payment_static_callback_get',
+        'gateway_payment_static_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_corporation',
@@ -3381,6 +3389,14 @@ final class Route
         'mtu_lambda' => [
             // Accessing this route from lambda for updating merchant mtu
             'merchant_mtu_update',
+        ],
+
+        //
+        // Accessing the routes for automation merchants, only the whitelisting of merchants has been added further
+        // in BasicAuth layer.
+        //
+        'automation' => [
+            '*'
         ],
     ];
 

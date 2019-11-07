@@ -688,6 +688,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_NAME, $name);
     }
 
+    public function setBankDetailsVerificationStatus(string $bankDetailsVerificationStatus)
+    {
+        $this->setAttribute(self::BANK_DETAILS_VERIFICATION_STATUS, $bankDetailsVerificationStatus);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -968,6 +973,11 @@ class Entity extends Base\PublicEntity
     public function setCustomFields(array $customFields)
     {
         $this->setAttribute(self::CUSTOM_FIELDS, $customFields);
+    }
+
+    public function getIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
     }
 
     public function getLiveTransactionDone()

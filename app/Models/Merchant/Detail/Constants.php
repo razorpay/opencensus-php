@@ -16,4 +16,9 @@ class Constants
     const PASSPORT_FRONT    = 'passport_front';
     const AADHAR_FRONT      = 'aadhar_front';
     const VOTER_ID_FRONT    = 'voter_id_front';
+
+    // penny testing constants
+    const MERCHANT_ID     = 'merchant_id';
+    const ACCOUNT_STATUS  = 'account_status';
+    const REGISTERED_NAME = 'registered_name';
 }

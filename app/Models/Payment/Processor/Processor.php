@@ -1968,23 +1968,6 @@ class Processor
 
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
-            /*
-             * Because error indicates gateway downtime, we might act on it later
-             * so set $gatewayDowntimeError = true
-             */
-            $this->trace->traceException(
-                $ex,
-                Trace::INFO,
-                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                [
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => $gateway,
-                    'action'     => $action,
-                    'method'     => $gatewayData['payment']['method'],
-                ]);
-
-            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
-
             throw $ex;
         }
         finally
@@ -3049,11 +3032,6 @@ class Processor
         {
             $this->disableTerminal($terminal);
         }
-    }
-
-    protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
-    {
-        (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
     }
 
     protected function disableTerminal(Terminal\Entity $terminal)
