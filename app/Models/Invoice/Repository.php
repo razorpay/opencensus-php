@@ -128,7 +128,7 @@ class Repository extends Base\Repository
         // user id is not same as passed userId.
         //
         if (($userId !== null) and
-            ($userRole === Role::SELLERAPP) and
+            (($userRole === Role::SELLERAPP) or ($userRole === Role::SELLERAPP_PLUS)) and
             ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
