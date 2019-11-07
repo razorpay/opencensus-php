@@ -169,9 +169,8 @@ export default class ScheduledModal extends Component {
           onCloseClick={() => this.props.closeModal()}
         />
         <div className="modal-body">
-          Your Early settlement feature request has been sent to Razorpay's
-          operation team. Thus early settlement feature will be activated in 1
-          working day.
+          Congratulations, Your Early Settlement feature has now been enabled.
+          Never fall short of cash now!
           <div className="border">
             <p>
               Early settlement applies to domestic settlements only. For

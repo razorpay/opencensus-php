@@ -18,7 +18,6 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
-//import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -110,8 +109,6 @@ class AnalyticsDesktop extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
-
-          {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (

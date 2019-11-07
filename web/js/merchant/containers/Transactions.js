@@ -65,7 +65,9 @@ export default class TransactionsContainer extends Component {
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
           {this.props.user.isOndemandSettlementEnabled && (
-            <ScheduledBanner fromWhere="Transactions" />
+            <ShowWhen myRole="owner admin finance">
+              <ScheduledBanner fromWhere="Transactions" />
+            </ShowWhen>
           )}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (

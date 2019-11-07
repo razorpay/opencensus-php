@@ -18,6 +18,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'rzp/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   EditExpiry,
@@ -397,7 +398,9 @@ export default props => {
                   />
                 )}
                 {user.isOndemandSettlementEnabled && (
-                  <ScheduledBanner fromWhere="Payment Pages" />
+                  <ShowWhen myRole="owner admin finance">
+                    <ScheduledBanner fromWhere="Payment Pages" />
+                  </ShowWhen>
                 )}
               </div>
             </div>

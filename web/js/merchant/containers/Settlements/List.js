@@ -235,19 +235,21 @@ export default class SettlementsListContainer extends ListContainer {
                     </a>
                   </ShowWhen>
                   {this.props.user.isOndemandSettlementEnabled && (
-                    <div className="box-left-pad10-inline">
-                      <ScheduledBanner
-                        onExit={() => {
-                          this.setState({ openAutoModal: false });
-                        }}
-                        openAutoModal={this.state.openAutoModal}
-                        fromWhere={
-                          this.state.openAutoModal
-                            ? 'Announcement'
-                            : 'Settlements'
-                        }
-                      />
-                    </div>
+                    <ShowWhen myRole="owner admin finance">
+                      <div className="box-left-pad10-inline">
+                        <ScheduledBanner
+                          onExit={() => {
+                            this.setState({ openAutoModal: false });
+                          }}
+                          openAutoModal={this.state.openAutoModal}
+                          fromWhere={
+                            this.state.openAutoModal
+                              ? 'Announcement'
+                              : 'Settlements'
+                          }
+                        />
+                      </div>
+                    </ShowWhen>
                   )}
                 </React.Fragment>
               </HeaderAction>
