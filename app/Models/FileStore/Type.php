@@ -502,7 +502,7 @@ class Type
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_DEFAULT
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BEAM_BUCKET_CONFIG => [

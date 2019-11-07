@@ -55,6 +55,8 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use Cacheable;
 
+    const ID_LENGTH = 14;
+
     const ID                             = 'id';
     const ORG_ID                         = 'org_id';
     const NAME                           = 'name';

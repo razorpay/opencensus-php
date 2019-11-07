@@ -1472,6 +1472,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_EDIT                                             = 'USER_EDIT';
     const MERCHANT_USER_EMAIL_CHANGE                            = 'MERCHANT_USER_EMAIL_CHANGE';
     const USERS_SEND_OTP_FOR_ACTION                             = 'USERS_SEND_OTP_FOR_ACTION';
+    const USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT                = 'USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT';
     const USERS_VERIFY_OTP_FOR_ACTION                           = 'USERS_VERIFY_OTP_FOR_ACTION';
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
@@ -2209,6 +2210,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
+    const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
+    const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';
+    const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';

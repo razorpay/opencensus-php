@@ -124,6 +124,8 @@ class Entity
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
+    const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
+    const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
 
     // heimdall
     const ORG                   = 'org';
@@ -441,6 +443,8 @@ class Entity
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
         self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
+        self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
+        self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
 

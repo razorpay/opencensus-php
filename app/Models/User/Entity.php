@@ -13,6 +13,8 @@ use RZP\Models\Merchant\MerchantUser;
 
 class Entity extends Base\PublicEntity
 {
+    const ID_LENGTH = 14;
+
     const ID                            = 'id';
     const NAME                          = 'name';
     const EMAIL                         = 'email';
