@@ -12,12 +12,13 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import debounce from 'rzp/utils/debounce';
-
+import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
-
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 @withRouter
 @connect(
   state => {
@@ -25,9 +26,10 @@ import SwitchMerchant, {
       ...state.session,
       ...state.config.config,
       isMobileResolution: state.app.isMobileResolution,
+      user: state.session.user,
     };
   },
-  { logout, closeModal, openModal, showOrHideTour }
+  { logout, closeModal, openModal, showOrHideTour, updateSession }
 )
 export default class ProfileDropdown extends Component {
   state = {
@@ -59,6 +61,15 @@ export default class ProfileDropdown extends Component {
       });
   };
 
+  showPartnerIntent = () => {
+    this.props.openModal({
+      size: 'xlarge',
+      disableClose: false,
+      component: (
+        <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />
+      ),
+    });
+  };
   openTicketModal = () => {
     window.rzpTicketSystem &&
       window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
@@ -246,6 +257,24 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
+            {user.role === 'owner' &&
+              user.partner_type === null && (
+                <div class="media loggedin-as">
+                  <div class="media-body">
+                    <p class="small-txt">
+                      Partner with us and start earning on every referral
+                    </p>
+
+                    <a
+                      class="partner-link"
+                      style={{ color: '#528ff0', fontSize: '14px' }}
+                      onClick={this.showPartnerIntent}
+                    >
+                      <strong>Explore Partner Program</strong>{' '}
+                    </a>
+                  </div>
+                </div>
+              )}
           </div>
         </DropdownContent>
       </Dropdown>

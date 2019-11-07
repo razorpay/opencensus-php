@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true
-  }
+    "experimentalDecorators": true,
+    "baseUrl":"web/js"
+  },
+  "include": ["web/**/*"]
 }

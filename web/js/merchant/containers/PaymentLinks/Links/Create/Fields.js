@@ -1,15 +1,22 @@
+import { Link } from 'react-router-dom';
+
 import Input from 'component/Input';
-import { trackHelpClick } from '../ga';
+
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+
 import { CUSTOM_NOTES_OPTIONS } from 'rzp/utils/constants';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { AmountTooltip } from 'rzp/ui/Amount';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import { trackHelpClick } from '../ga';
+
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
   validateMinAmount,
 } from '../../Edit/EditMinimumAmount';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import { trackSelectCurrency } from '../ga';
 
@@ -258,6 +265,50 @@ export default [
     ],
   },
   {
+    className: 'InputGroup--vTop',
+    name: 'reminder_enable',
+    fieldLabel: 'Send auto reminders',
+    description: ({ props, state }) => {
+      return getRemindersOptionDescription(
+        props.paymentLinksRemindersSettings.count,
+        Number(state._name.hasNoExpiry)
+      );
+    },
+    _cmp: Input.Check,
+    label: 'Reminders',
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        form.props.paymentLinksRemindersSettings.isEnabled
+      );
+    },
+    _autoRenderImpure: true,
+  },
+  {
+    label: 'Reminders',
+    _cmp: () => <ReminderNotEnabled />,
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        !form.props.paymentLinksRemindersSettings.isEnabled &&
+        form.state._name.hasNoExpiry === '0'
+      );
+    },
+  },
+  {
+    label: 'Reminders',
+    _cmp: () => {
+      return <ReminderNotEnabled type="no" />;
+    },
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        !form.props.paymentLinksRemindersSettings.isEnabled &&
+        form.state._name.hasNoExpiry === '1'
+      );
+    },
+  },
+  {
     name: 'notes',
     label: 'Internal Notes',
     className: 'Input--vTop',
@@ -268,17 +319,46 @@ export default [
   },
   {
     name: 'notes',
-    label: 'Business Segment',
+    label: function(ctx) {
+      return getOptions(ctx.props.user.current).type;
+    },
     _cmp: Input.Select,
-    options: ({ props }) => getOptions(props.user.current),
+    options: function(ctx) {
+      return getOptions(ctx.props.user.current).options;
+    },
     _when: function(form) {
       return form.props.user.isCustomNotesDropdownEnabled;
     },
   },
 ];
 
-export function getOptions(id) {
-  const { options } = CUSTOM_NOTES_OPTIONS[id] || {};
+const ReminderNotEnabled = ({ type = '' }) => (
+  <div class="Input">
+    <div class="Input-label">Reminders</div>
+    <div class="Input-content">
+      Reminders is not set to payment links with {type} expiry date.
+      <br />
+      Set it up{' '}
+      <Link target="_blank" to="/reminders">
+        here
+      </Link>
+    </div>
+  </div>
+);
 
-  return [{ label: 'Select A Value', value: '' }, ...options];
+const getRemindersOptionDescription = (count, hasNoExpiry) => {
+  const totalReminders = hasNoExpiry
+    ? count.withOutExpireRemindersCount
+    : count.withOutExpireRemindersCount + count.withExpireRemindersCount;
+
+  return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
+};
+
+export function getOptions(id) {
+  const { type, options } = CUSTOM_NOTES_OPTIONS[id] || {};
+
+  return {
+    type,
+    options: [{ label: 'Select A Value', value: '' }, ...options],
+  };
 }

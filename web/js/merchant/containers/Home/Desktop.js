@@ -94,7 +94,6 @@ class AnalyticsDesktop extends Component {
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
-
     return (
       <div className="home-analytics-desktop">
         <div

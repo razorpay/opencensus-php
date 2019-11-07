@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
-
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
@@ -24,7 +23,6 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-
 import ErrorBoundary from 'common/ErrorBoundary';
 
 import {
@@ -131,6 +129,7 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
@@ -202,7 +201,7 @@ export default class Content extends Component {
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
             additionalCondition={user =>
-              user.isAllowedView('payment_pages') && user.isPPV3Enabled
+              user.isAllowedView('payment_pages') && user.isPPMLIEnabled
             }
           />
 
@@ -320,6 +319,11 @@ export default class Content extends Component {
             path="/webhooks"
             component={Settings}
             additionalCondition={user => user.isAllowedView('webhooks')}
+          />
+          <ShowWhenRoute
+            path="/reminders"
+            component={Settings}
+            additionalCondition={user => user.isRemindersEnabled}
           />
           <ShowWhenRoute
             path="/applications"

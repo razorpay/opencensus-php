@@ -13,8 +13,8 @@ export default class InstantActivationAnnouncements extends Component {
 
     let theme = 'warning',
       title,
-      content;
-
+      content,
+      isPaymentsOfTypeObject = payments instanceof Object;
     if (!user.isSubmitted) {
       if (payments && payments.items.length > 0 && !user.isAccepted) {
         title = 'Enable Settlements';
@@ -94,7 +94,6 @@ export default class InstantActivationAnnouncements extends Component {
         content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
       }
     }
-
     return (
       <Announcement
         title={title}

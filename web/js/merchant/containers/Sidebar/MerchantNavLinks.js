@@ -6,6 +6,7 @@ export default function MerchantNavLinks(props) {
     isReportsPending,
     isChargeAtWillEnabled,
     isSettlementEnabled,
+    user,
   } = props;
   return (
     <>
@@ -51,7 +52,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={user => user.isAllowedView('payment_pages')}
-        isNew
+        customBadge={user.isPPMLIEnabled ? 'v2.0' : null}
       />
       <MainNavLink
         label="Route"

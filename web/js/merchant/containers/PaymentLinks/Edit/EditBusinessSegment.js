@@ -1,12 +1,21 @@
 import Input from 'component/Input';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { getOptions } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
 
 export default class EditBusinessSegment extends React.Component {
-  state = this.resetState();
+  constructor(props) {
+    super(props);
+
+    let { type, options } = getOptions(this.props.merchantId);
+    this.TYPE = type;
+    this.OPTIONS = options;
+
+    this.state = this.resetState();
+  }
 
   resetState() {
     return {
-      notes: this.props.value.business_segment,
+      notes: this.props.value[this.TYPE],
       isUpdating: false,
     };
   }
@@ -18,7 +27,7 @@ export default class EditBusinessSegment extends React.Component {
     });
 
     const notes = {
-      business_segment: event.target.value,
+      [this.TYPE]: event.target.value,
     };
 
     return this.props
@@ -41,15 +50,15 @@ export default class EditBusinessSegment extends React.Component {
 
   render() {
     return (
-      <React.Fragment>
+      <EntityDetailRow label={<div class="m-t">{this.TYPE}</div>}>
         <Input.Select
           name="notes"
           onChange={this.saveAndUpdate}
           defaultValue={this.state.notes}
           disabled={this.state.isUpdating}
-          options={getOptions(this.props.id)}
+          options={this.OPTIONS}
         />
-      </React.Fragment>
+      </EntityDetailRow>
     );
   }
 }
