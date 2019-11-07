@@ -14,6 +14,13 @@ export function trackClickResubmitNachForm() {
 
 export function trackClickDownloadNACHForm(status) {
   track({
+    eventAction: `Details View - Download NACH Form`,
+    eventLabel: status,
+  });
+}
+
+export function trackClickViewNACHForm() {
+  track({
     eventAction: `Details View - View NACH Form`,
     eventLabel: status,
   });

@@ -27,6 +27,9 @@ export const resubmitNACHFile = id => {
   return merchantFetch({
     url: 'token.registration/paper_mandate/authenticate/proxy',
     method: 'post',
+    data: {
+      order: id,
+    },
   });
 };
 

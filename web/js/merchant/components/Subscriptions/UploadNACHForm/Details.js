@@ -18,7 +18,7 @@ export default ({
           class="btn btn-link nach-download-btn"
           onClick={() => {
             trackClickViewNACHForm();
-            downloadSignedNACHFile();
+            return downloadSignedNACHFile();
           }}
           target="_blank"
         >

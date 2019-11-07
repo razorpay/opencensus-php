@@ -31,7 +31,11 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import { getTokenStatus } from './List';
 import ChargeToken from './ChargeToken';
 
-import { trackClickDownloadNACHForm, trackClickResubmitNachForm } from './ga';
+import {
+  trackClickDownloadNACHForm,
+  trackClickResubmitNachForm,
+  trackClickViewNACHForm,
+} from './ga';
 
 @withRouter
 @connect(state => ({ ...state.token }), {
@@ -115,6 +119,11 @@ export default class TokenEntityContainer extends Component {
   downloadSignedNACHFile = () => {
     return downloadSignedNACHFile({
       token_id: this.props.id,
+    }).catch(err => {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
     });
   };
 
@@ -129,8 +138,13 @@ export default class TokenEntityContainer extends Component {
   render() {
     const { loading: isLoading, entity = {}, error } = this.props;
 
+    const showChangeBtn =
+      ['rejected', 'initiated'].indexOf(
+        (entity.recurring_details || {}).status
+      ) === -1;
+
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div class="content-wrapper content-sm txn-details Token--Details">
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -140,9 +154,7 @@ export default class TokenEntityContainer extends Component {
             <div class="panel-heading">
               {entity.id}
               <div class="btn-toolbar pull-right">
-                {['rejected', 'initiated'].indexOf(
-                  (entity.recurring_details || {}).status
-                ) === -1 && (
+                {showChangeBtn && (
                   <button
                     class="btn btn-primary btn-sm"
                     onClick={this.handleChargeNow}
@@ -191,6 +203,7 @@ export default class TokenEntityContainer extends Component {
                           trackClickDownloadNACHForm={
                             this.trackClickDownloadNACHForm
                           }
+                          trackClickViewNACHForm={trackClickViewNACHForm}
                         />
                       </EntityDetailRow>
                     )}
@@ -249,9 +262,9 @@ class ErrorMessage extends React.PureComponent {
   };
 
   resubmitNACHFile = () => {
-    trackClickResubmitNachForm();
-
-    return resubmitNACHFile(this.props.id);
+    return resubmitNACHFile(this.props.id).then(() => {
+      trackClickResubmitNachForm();
+    });
   };
 
   render() {
@@ -264,7 +277,7 @@ class ErrorMessage extends React.PureComponent {
           <Alert type="error" message={failure_reason} showDismiss={false} />
 
           <AsyncBtn.Primary
-            onClick={resubmitNACHFile}
+            onClick={this.resubmitNACHFile}
             pendingState="Resubmitting"
             class="btn"
           >
