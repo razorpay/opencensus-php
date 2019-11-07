@@ -48,6 +48,7 @@ export default class ActivationCard extends Component {
         tracking,
         activated,
         business_type,
+        poi_verification_status,
       } = nextProps,
       {
         isL1Submitted,
@@ -60,27 +61,80 @@ export default class ActivationCard extends Component {
 
     if (!isL1Submitted) {
       status = possibleStatuses.active;
-      content = (
-        <div>
-          Give a few details to start transacting immediately
+      if (poi_verification_status) {
+        status = possibleStatuses.blocked;
+        if (poi_verification_status == 'failed') {
+          content = (
+            <div>
+              Unable to verify PAN with the central database at the moment.
+              <div>
+                <Link
+                  to="/activation?auto-submit=l1-form"
+                  className="btn btn-primary"
+                  onClick={e => {
+                    track.activateAccount();
+                    this.props.tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.form_fill', {
+                        clickSource: 'Dashboard_CTA',
+                      })
+                    );
+                  }}
+                >
+                  Try Again
+                </Link>
+              </div>
+            </div>
+          );
+        } else if (
+          poi_verification_status == 'incorrect_details' ||
+          poi_verification_status == 'not_matched'
+        ) {
+          content = (
+            <div>
+              Your PAN details did not match with the government database.
+              Please review your details
+              <div>
+                <Link
+                  to="/activation"
+                  className="btn btn-primary"
+                  onClick={e => {
+                    track.activateAccount();
+                    this.props.tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.form_fill', {
+                        clickSource: 'Dashboard_CTA',
+                      })
+                    );
+                  }}
+                >
+                  Review Details
+                </Link>
+              </div>
+            </div>
+          );
+        }
+      } else {
+        content = (
           <div>
-            <Link
-              to="/activation"
-              className="btn btn-primary"
-              onClick={e => {
-                track.activateAccount();
-                this.props.tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'Dashboard_CTA',
-                  })
-                );
-              }}
-            >
-              Activate Account
-            </Link>
+            Give a few details to start transacting immediately
+            <div>
+              <Link
+                to="/activation"
+                className="btn btn-primary"
+                onClick={e => {
+                  track.activateAccount();
+                  this.props.tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.form_fill', {
+                      clickSource: 'Dashboard_CTA',
+                    })
+                  );
+                }}
+              >
+                Activate Account
+              </Link>
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
     } else if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
