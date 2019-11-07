@@ -6463,16 +6463,16 @@
         },
         {
             "name": "robrichards/xmlseclibs",
-            "version": "3.0.3",
+            "version": "3.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/robrichards/xmlseclibs.git",
-                "reference": "406c68ac9124db033d079284b719958b829cb830"
+                "reference": "0a53d3c3aa87564910cae4ed01416441d3ae0db5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/406c68ac9124db033d079284b719958b829cb830",
-                "reference": "406c68ac9124db033d079284b719958b829cb830",
+                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/0a53d3c3aa87564910cae4ed01416441d3ae0db5",
+                "reference": "0a53d3c3aa87564910cae4ed01416441d3ae0db5",
                 "shasum": ""
             },
             "require": {
@@ -6497,7 +6497,7 @@
                 "xml",
                 "xmldsig"
             ],
-            "time": "2018-11-15T11:59:02+00:00"
+            "time": "2019-11-05T11:44:22+00:00"
         },
         {
             "name": "rtconner/laravel-tagging",
@@ -8313,12 +8313,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/codacy/php-codacy-coverage.git",
-                "reference": "629d1fd597f91fb072bd822830059fd5145ce49a"
+                "reference": "b99f7cbe1db4f8f912d884e83531f40beb8153a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/629d1fd597f91fb072bd822830059fd5145ce49a",
-                "reference": "629d1fd597f91fb072bd822830059fd5145ce49a",
+                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/b99f7cbe1db4f8f912d884e83531f40beb8153a2",
+                "reference": "b99f7cbe1db4f8f912d884e83531f40beb8153a2",
                 "shasum": ""
             },
             "require": {
@@ -8350,7 +8350,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2018-04-30T16:23:12+00:00"
+            "time": "2019-10-01T08:37:00+00:00"
         },
         {
             "name": "codedungeon/phpunit-result-printer",
