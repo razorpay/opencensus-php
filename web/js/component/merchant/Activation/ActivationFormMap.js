@@ -383,7 +383,6 @@ const businessDetails = [
         isUnregisteredBusiness(activation)
           ? getPANDescription(activation.props.data)
           : '',
-      _disabledWhen: isActivatedUnreg,
       _when: activation => {
         return _showForIndiv(activation) || isL1Completed(activation); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
       },
@@ -397,6 +396,7 @@ const businessDetails = [
           errMsg
         );
       },
+      _disabledWhen: isActivatedUnreg,
     },
   ],
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
