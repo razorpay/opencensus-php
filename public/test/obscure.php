@@ -128,6 +128,7 @@ function disableEmptyInputs(form) {
                 <option value="IBKL">Industrial Development Bank of India</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="SIBL">South Indian Bank</option>
+                <option value="KVBL">Karur Vysya Bank</option>
             </select>
         </td>
     </tr>

@@ -1219,6 +1219,7 @@ class DatabaseSeeder extends Seeder
         $this->createEnstageTerminal();
         $this->createCardlessEmiTerminal();
         $this->createPayLaterTerminal();
+        $this->createNetbankingKvbTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2573,5 +2574,22 @@ class DatabaseSeeder extends Seeder
             'created_at'                => time(),
             'updated_at'                => time()
         ]);
+    }
+
+    protected function createNetbankingKvbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_KVB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_KVB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'RAZORPAY',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
     }
 }
