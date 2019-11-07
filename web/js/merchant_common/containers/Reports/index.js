@@ -56,7 +56,6 @@ export default function Reports(store, opts) {
     addReportToList,
     updateReportInList,
     removeReportFromList,
-    areReportsStillDownloading,
     addPollInstance,
   } = modelActions;
 
@@ -391,7 +390,6 @@ export default function Reports(store, opts) {
 
       //tracking vars for reports v2
       let reportActionTypeForTracking = 'Download Report';
-      let downloadTimeLapse = new Date().getTime();
 
       if (selectedConfig.value === 'monthlyInvoice') {
         const month = invoiceDate.month() + 1,
@@ -579,7 +577,7 @@ export default function Reports(store, opts) {
       }
 
       const { user, type, date, ga, dateRangeData } = this.props;
-      const { accounts, selectedAccount, selectedConfig } = this.state;
+      const { selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
       let emailsMap = {};
@@ -626,7 +624,6 @@ export default function Reports(store, opts) {
     // 1. merchant custom report configs
     // 2. rzp owned report configs
     sortConfigs = configs => {
-      const rzpId = '100000Razorpay';
       const merchantId = this.props.user.user.id;
       let merchantConfigs = [],
         rzpConfigs = [];
@@ -704,7 +701,6 @@ export default function Reports(store, opts) {
     render() {
       const {
         isLoading,
-        hasConfigs,
         configs,
         accounts,
         selectedConfig,
@@ -713,13 +709,11 @@ export default function Reports(store, opts) {
         disableDownloadButton,
       } = this.state;
 
-      const { type, dateRangeData, user } = this.props;
+      const { type, dateRangeData } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
       let content = null;
-
-      let isCurrentConfigSelected = false;
 
       Object.keys(currentReportList).forEach(reportId => {
         if (
