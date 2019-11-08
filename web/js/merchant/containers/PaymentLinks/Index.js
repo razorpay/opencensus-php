@@ -104,7 +104,8 @@ export default class PaymentLinksContainer extends React.Component {
           <ShowWhen
             additionalCondition={user =>
               user.isAllowedView('payment_links_batch_uploads') &&
-              user.isPaymentLinkBatchEnabledForSellerAppRole
+              (!user.isSellerAppRole ||
+                user.isPaymentLinkBatchEnabledForSellerAppRole)
             }
           >
             <NavLink exact to="/paymentlinks/batchuploads">
@@ -122,7 +123,8 @@ export default class PaymentLinksContainer extends React.Component {
               component={BatchUploadList}
               additionalCondition={user =>
                 user.isAllowedView('payment_links_batch_uploads') &&
-                user.isPaymentLinkBatchEnabledForSellerAppRole
+                (!user.isSellerAppRole ||
+                  user.isPaymentLinkBatchEnabledForSellerAppRole)
               }
             />
             <Route path="/paymentlinks" component={PaymentLinksList} />
