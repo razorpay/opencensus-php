@@ -103,7 +103,8 @@ class FaVpaValidation extends Job
     {
         $data = [];
 
-        try {
+        try
+        {
             $paymentService = new PaymentService();
 
             $response = $paymentService->validateVpa($vpa);

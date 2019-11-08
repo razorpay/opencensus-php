@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\FundAccount\Type;
 
 class Repository extends Base\Repository
 {
@@ -19,6 +20,7 @@ class Repository extends Base\Repository
             ->select(Entity::ID)
             ->where(Entity::RETRY_AT, '<', $time)
             ->where(Entity::STATUS, "=" , Status::CREATED)
+            ->where(Entity::FUND_ACCOUNT_TYPE, "=", Type::BANK_ACCOUNT)
             ->take($count)
             ->orderBy(Entity::RETRY_AT, 'asc')
             ->get()->pluck('id')->all();

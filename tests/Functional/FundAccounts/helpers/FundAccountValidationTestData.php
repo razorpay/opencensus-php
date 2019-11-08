@@ -531,6 +531,8 @@ return [
                         'address' => "jayesh@upi"
                     ],
                 ],
+                'amount'       => null,
+                'currency'     => null,
                 'status'       => 'created',
                 'notes'        => [],
                 'results'      => [
