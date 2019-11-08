@@ -74,7 +74,7 @@ const entityDetailsMap = {
     component: PaymentLinkBatchDetails,
     additionalCondition: user =>
       user.isAllowedView('payment_links_batch_uploads') &&
-      user.isPaymentLinkBatchEnabledForSellerAppRole,
+      (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
   '/paymentpages/:id(pl_.+)': {
     component: PaymentPagesDetails,
