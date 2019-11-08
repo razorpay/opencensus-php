@@ -319,12 +319,16 @@ export default [
   {
     name: 'notes',
     label: function(ctx) {
-      return ctx.props.user.isCustomNotesDropdownEnabled && getOptions().type;
+      return (
+        ctx.props.user.isCustomNotesDropdownEnabled &&
+        getCustomNotesOptions().type
+      );
     },
     _cmp: Input.Select,
     options: function(ctx) {
       return (
-        ctx.props.user.isCustomNotesDropdownEnabled && getOptions().options
+        ctx.props.user.isCustomNotesDropdownEnabled &&
+        getCustomNotesOptions().options
       );
     },
     _when: function(form) {
@@ -355,7 +359,7 @@ const getRemindersOptionDescription = (count, hasNoExpiry) => {
   return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
 };
 
-export function getOptions() {
+export function getCustomNotesOptions() {
   const { type, options } = window.custom_notes;
 
   return {
