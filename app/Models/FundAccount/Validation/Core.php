@@ -285,18 +285,16 @@ class Core extends Base\Core
     {
         if ($fundAccount->getAccountType() === FundAccount\Type::VPA)
         {
-            if (isset($input['amount']) and ($input['amount'] > 0))
+            if (isset($input['amount']))
             {
                 throw new BadRequestValidationFailureException(
-                    'Invalid amount: '. $input['amount'] . '. only 0 allowed.');
+                    'Amount is not a valid key for fund account of type vpa.');
             }
-        }
-        else
-        {
-            if (isset($input['amount']) and $input['amount'] < 100)
+
+            if (isset($input['currency']))
             {
                 throw new BadRequestValidationFailureException(
-                    'Invalid amount: '. $input['amount'] . '. Amount should be greater than 100');
+                    'Currency is not a valid key for fund account of type vpa.');
             }
         }
     }

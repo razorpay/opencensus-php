@@ -516,8 +516,6 @@ return [
                 Validation::FUND_ACCOUNT    => [
                     FundAccount::ID => '',
                 ],
-                Validation::AMOUNT          => 0,
-                Validation::CURRENCY        => 'INR',
                 Validation::NOTES           => [],
             ],
         ],
@@ -534,8 +532,6 @@ return [
                     ],
                 ],
                 'status'       => 'created',
-                'amount'       => 0,
-                'currency'     => 'INR',
                 'notes'        => [],
                 'results'      => [
                     'account_status'  => null,
