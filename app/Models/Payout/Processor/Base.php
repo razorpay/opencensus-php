@@ -420,6 +420,8 @@ class Base extends BaseCore
     {
         $payout = (new Payout\Entity);
 
+        $this->runInputValidations($payout, $input);
+
         $payout->merchant()->associate($this->merchant);
 
         $payout->customer()->associate($this->customer);
@@ -448,11 +450,7 @@ class Base extends BaseCore
 
         $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
-        //
-        // Doing this after all the associations since
-        // some validations run on the relations' data
-        //
-        $this->runInputValidations($payout, $input);
+        $this->runEntityValidations($payout, $input);
 
         if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
             (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
@@ -546,5 +544,10 @@ class Base extends BaseCore
         $method = Payout\Method::$destinationMethodMap[$destinationType];
 
         $payout->setMethod($method);
+    }
+
+    protected function runEntityValidations(Payout\Entity $payout, array $input)
+    {
+        return;
     }
 }

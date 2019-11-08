@@ -138,6 +138,15 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithoutFundAccountId()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
     {
         $this->ba->privateAuth();

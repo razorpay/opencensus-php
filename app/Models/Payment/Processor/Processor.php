@@ -942,7 +942,7 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         // Validate if customer is fee bearer then only move forward
-        if ($this->merchant->isFeeBearerCustomerOrDynamic() === false)
+        if ($this->merchant->isFeeBearerCustomer() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -970,15 +970,6 @@ class Processor
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-
-
-        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
-        {
-            $fee = 0;
-
-            $tax = 0;
-        }
-
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -1977,23 +1968,6 @@ class Processor
 
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
-            /*
-             * Because error indicates gateway downtime, we might act on it later
-             * so set $gatewayDowntimeError = true
-             */
-            $this->trace->traceException(
-                $ex,
-                Trace::INFO,
-                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                [
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => $gateway,
-                    'action'     => $action,
-                    'method'     => $gatewayData['payment']['method'],
-                ]);
-
-            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
-
             throw $ex;
         }
         finally
@@ -2121,7 +2095,7 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -2307,8 +2281,6 @@ class Processor
                     'calculated_fee'    => $payment->getFee(),
                 ]);
         }
-
-        $payment->setFeeBearer($this->payment->getFeeBearer());
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity
@@ -3060,11 +3032,6 @@ class Processor
         {
             $this->disableTerminal($terminal);
         }
-    }
-
-    protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
-    {
-        (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
     }
 
     protected function disableTerminal(Terminal\Entity $terminal)

@@ -96,13 +96,6 @@ abstract class Base extends BaseModel\Core
         return ($entity->merchant->isFeeBearerCustomer() === true);
     }
 
-    protected function isFeeBearerCustomerOrDynamic()
-    {
-        $entity = $this->entity;
-
-        return ($entity->merchant->isFeeBearerCustomerOrDynamic() === true);
-    }
-
     /**
      * Gets pricing calculator for entity
      */
@@ -154,7 +147,7 @@ abstract class Base extends BaseModel\Core
     {
         $amount = $this->amount;
 
-        // In case the payment is customer fee bearer, we shouldn't check
+        // In case the merchant is customer fee bearer, we shouldn't check
         // $amount <= $totalFees because amount is already inclusive of the fees.
         if ($this->isFeeBearerCustomer() === true)
         {
@@ -305,7 +298,9 @@ abstract class Base extends BaseModel\Core
                 ]);
         }
 
-        $rule = $this->chooseRuleWithAmount($rules, $amount);
+        $subventionType = $payment->merchant->getSubventionType();
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
         {
@@ -385,10 +380,11 @@ abstract class Base extends BaseModel\Core
      *
      * @param $rules
      * @param $amount
+     * @param $subventionType
      *
      * @return null
      */
-    protected function chooseRuleWithAmount($rules, $amount)
+    protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
         return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
     }
@@ -607,7 +603,7 @@ abstract class Base extends BaseModel\Core
 
             $amount = $this->amount;
 
-            if ($payment->isFeeBearerCustomer() === true)
+            if ($payment->merchant->isFeeBearerCustomer() === true)
             {
                 $amount = $amount + $fee;
             }

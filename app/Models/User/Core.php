@@ -882,6 +882,29 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
+    public function sendOtpWithContact(array $input, Merchant\Entity $merchant, Entity $user, array $otp = null): array
+    {
+        $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT, compact('input'));
+
+        $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
+
+        $payload = [
+            'receiver' => $input[Entity::CONTACT_MOBILE],
+            'source'   => "api.user.{$input['action']}",
+            'template' => 'sms.user.' . $input[Entity::ACTION],
+            'params'   => [
+                'otp'      => $otp['otp'],
+                'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+            ],
+        ];
+
+        $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+
+        $this->app->raven->sendSms($payload);
+
+        return array_only($otp, 'token');
+    }
+
     /**
      * Ref: `sendOtp()`
      * Sends OTP to user's email.
@@ -972,7 +995,7 @@ class Core extends Base\Core
     {
         $token    = $input['token'] ?? Entity::generateUniqueId();
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
-        $receiver = $user->getContactMobile();
+        $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
         $source   = 'api';
 

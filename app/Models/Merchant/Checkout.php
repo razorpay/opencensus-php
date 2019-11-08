@@ -556,7 +556,7 @@ class Checkout
 
         $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode);
 
-        $data['fee_bearer'] = $merchant->isFeeBearerCustomerOrDynamic();
+        $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
         $data['version'] = 1;
 

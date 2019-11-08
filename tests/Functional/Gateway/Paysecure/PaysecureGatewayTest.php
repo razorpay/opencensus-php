@@ -135,6 +135,9 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertSuccess($authResponse, 'redirect');
 
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertNotEmpty($payment['reference2']);
+
         // Assert card vault exist in card entity
         $card = $this->getDbLastEntityToArray('card');
         $this->assertNotEmpty($card['vault_token']);

@@ -99,7 +99,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::INTERNATIONAL,
-        self::FEE_BEARER,
         self::RECEIVER_TYPE,
         self::AMOUNT_RANGE_ACTIVE,
         self::AMOUNT_RANGE_MIN,

@@ -641,6 +641,9 @@ return [
                 'description' => 'edit_permission',
                 'workflow'    => true
             ],
+            Permission::REMINDER_OPERATION  => [
+                'description' => 'reminder_operation',
+            ],
         ],
 
         PermissionCategory::AUDIT_LOG  => [

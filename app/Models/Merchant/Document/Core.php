@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Document;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
@@ -101,6 +102,16 @@ class Core extends Base\Core
             $this->repo->saveOrFail($document);
         });
 
+
+        $eventAttributes = [];
+
+        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
+        {
+            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
+        }
+
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
 
         return $merchantDetailCore->createResponse($merchantDetails);
     }

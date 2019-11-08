@@ -18,6 +18,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -282,7 +283,7 @@ class Service extends Base\Service
         }
         );
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, array_keys($input));
+        $this->sendDocumentUploadEvent($merchant, $input);
 
         return $response;
     }
@@ -302,7 +303,9 @@ class Service extends Base\Service
             // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
             $partial = substr(bin2hex(random_bytes(6)), 0, 5);
 
-            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
+            $fileIdentifier = pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $fileIdentifier;
 
             $file = $this->createFile(
                 $publicEntity,
@@ -877,5 +880,25 @@ class Service extends Base\Service
         }
 
         return multidim_array_unique($admins, Admin\Admin\Entity::ID);
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     */
+    protected function sendDocumentUploadEvent(Merchant\Entity $merchant, array $input): void
+    {
+        $eventAttributes = [];
+
+        foreach ($input as $key => $value)
+        {
+            if (Document\Type::isValid($key) === true)
+            {
+                $eventAttributes[Constants::DOCUMENT_TYPE] = $key;
+                break;
+            }
+        }
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
 }

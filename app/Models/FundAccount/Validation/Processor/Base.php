@@ -7,14 +7,15 @@ use Config;
 use Monolog\Logger;
 
 use RZP\Exception;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
+use RZP\Models\FundAccount\Type;
+use RZP\Jobs\FundAccountValidation;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
-use RZP\Models\FundAccount\Validation\Constants;
 
 abstract class Base extends Core
 {
@@ -87,6 +88,8 @@ abstract class Base extends Core
 
         $this->repo->saveOrFail($this->validation);
 
+        $this->dispatchValidationCompletedEvent();
+
         $this->triggerValidationCompletedWebhook();
     }
 
@@ -114,5 +117,22 @@ abstract class Base extends Core
         ];
 
         $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
+    }
+
+    /**
+     * Pushes fund account validation events to queue if
+     *
+     * Request is raised by merchant 100000Razorpay and fund account type is bank account
+     *
+     */
+    protected function dispatchValidationCompletedEvent(): void
+    {
+        $whitelistMidsForEvent = ['100000Razorpay'];
+
+        if ((in_array($this->validation->getMerchantId(), $whitelistMidsForEvent, true) === true)
+            and ($this->validation->fundAccount->getAccountType() === Type::BANK_ACCOUNT))
+        {
+            FundAccountValidation::dispatch($this->mode, $this->validation->getId());
+        }
     }
 }

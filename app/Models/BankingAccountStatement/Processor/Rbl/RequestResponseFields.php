@@ -14,9 +14,7 @@ class RequestResponseFields
     const CREDENTIALS                       = 'credentials';
     const CLIENT_ID                         = 'client_id';
     const CLIENT_SECRET                     = 'client_secret';
-    const SUBCORP_ID                        = 'subcorp_id';
-    const SUBCORP_USER_ID                   = 'subcorp_user_id';
-    const SUBCORP_USER_PASSWORD             = 'subcorp_user_password';
+    const CORP_ID                           = 'corp_id';
     const AUTH_USERNAME                     = 'auth_username';
     const AUTH_PASSWORD                     = 'auth_password';
 

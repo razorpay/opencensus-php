@@ -14,4 +14,5 @@ class Constants
     const DATA                           = 'data';
     const BANK_DETAILS                   = 'bank_details';
     const CATEGORY_DETAILS               = 'category_details';
+    const DEFAULT                        = 'default';
 }

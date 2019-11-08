@@ -99,7 +99,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleUpiReceiver = new Pricing\Entity([
@@ -121,7 +120,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM
         ]);
 
         $pricingRuleOne = new Pricing\Entity([
@@ -142,7 +140,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleOneNetwork = new Pricing\Entity([
@@ -163,7 +160,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleDebit = new Pricing\Entity([
@@ -185,7 +181,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleWithReceiver = new Pricing\Entity([
@@ -207,7 +202,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetwork = new Pricing\Entity([
@@ -229,7 +223,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
 
@@ -251,7 +244,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleDebitPin = new Pricing\Entity([
@@ -273,7 +265,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleTwo = new Pricing\Entity([
@@ -289,7 +280,6 @@ class MerchantFeeTest extends TestCase
             'international'       => false,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             'amount_range_active' => true,
             'amount_range_min'    => 0,
             'amount_range_max'    => 200000,
@@ -310,7 +300,6 @@ class MerchantFeeTest extends TestCase
             'international'       => false,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             'amount_range_active' => true,
             'amount_range_min'    => 200000,
             'amount_range_max'    => 1000000000,
@@ -336,7 +325,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanDicl = new Pricing\Entity([
@@ -357,7 +345,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetB = new Pricing\Entity([
@@ -378,7 +365,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetB1 = new Pricing\Entity([
@@ -399,7 +385,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetB2 = new Pricing\Entity([
@@ -420,7 +405,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetB3 = new Pricing\Entity([
@@ -441,7 +425,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanNetB4 = new Pricing\Entity([
@@ -462,7 +445,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::CUSTOMER,
         ]);
 
         $pricingPlanWallet = new Pricing\Entity([
@@ -483,7 +465,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanWallet1 = new Pricing\Entity([
@@ -504,7 +485,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanWallet2 = new Pricing\Entity([
@@ -525,7 +505,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanWallet3 = new Pricing\Entity([
@@ -546,7 +525,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanEmi = new Pricing\Entity([
@@ -567,7 +545,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingPlanEmiPlan = new Pricing\Entity([
@@ -588,7 +565,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             'emi_duration'        => 9,
         ]);
 
@@ -610,7 +586,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleCardRecurring = new Pricing\Entity([
@@ -631,7 +606,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRuleCardEsAutomatic = new Pricing\Entity([
@@ -652,7 +626,6 @@ class MerchantFeeTest extends TestCase
             'international'       => 0,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
         ]);
 
         $pricingRules =  [
@@ -724,7 +697,6 @@ class MerchantFeeTest extends TestCase
             'international'       => true,
             'min_fee'             => 0,
             'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             ]);
 
         $pricingRules = [
@@ -767,7 +739,6 @@ class MerchantFeeTest extends TestCase
                 'international'       => 0,
                 'min_fee'             => 0,
                 'max_fee'             => 1000,
-                'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             ]);
 
             $maxRateRuleForWallet = new Pricing\Entity([
@@ -788,7 +759,6 @@ class MerchantFeeTest extends TestCase
                 'international'       => 0,
                 'min_fee'             => 0,
                 'max_fee'             => 2000,
-                'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
             ]);
 
         $pricingRules = [
@@ -1038,39 +1008,14 @@ class MerchantFeeTest extends TestCase
 
     public function testNetBankingRuleSelectionForCustomerFeeBearer()
     {
-        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => Merchant\FeeBearer::CUSTOMER]);
-
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
         $this->fixtures->merchant->setFeeBearer('customer');
-
 
         $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
 
         $this->fixtures->merchant->setFeeBearer('platform');
 
-        $pricing = new Pricing\Entity([
-            'id'                  => '1fq0OXpgrfrt4y',
-            'plan_id'             => '1hDYlICobzOCYy',
-            'plan_name'           => 'testDefaultPlan',
-            'product'             => 'primary',
-            'feature'             => 'payment',
-            'payment_method'      => 'netbanking',
-            'payment_method_type' => null,
-            'payment_network'     => 'HDFC',
-            'payment_issuer'      => null,
-            'amount_range_active' => true,
-            'amount_range_min'    => 0,
-            'amount_range_max'    => 100000000000,
-            'percent_rate'        => 0,
-            'fixed_rate'          => 500,
-            'international'       => 0,
-            'min_fee'             => 0,
-            'max_fee'             => null,
-            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
-        ]);
-
-        $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, false, [$pricing]));
         try
         {
             $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);

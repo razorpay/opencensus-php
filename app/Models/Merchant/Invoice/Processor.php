@@ -8,7 +8,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transaction\Type as TransactionType;
@@ -331,7 +330,7 @@ class Processor extends Base\Core
     {
         if (empty($feeDetails) === true)
         {
-            $this->trace->error(
+            $this->trace->info(
                 TraceCode::MERCHANT_INVOICE_QUERY_TIMEOUT,
                 [
                     'merchant_id' => $this->merchantId,

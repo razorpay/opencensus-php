@@ -58,4 +58,12 @@ class FundAccountPayout extends Base
                 ]);
         }
     }
+
+    protected function runEntityValidations(Payout\Entity $payout, array $input)
+    {
+        /** @var Payout\Validator $validator */
+        $validator = $payout->getValidator();
+
+        $validator->validateFundAccountMode($input);
+    }
 }

@@ -781,6 +781,68 @@ return [
         ],
     ],
 
+    'testCreateLinkReminderEnable' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                        'contact' => '1234567890',
+                        'email'   => 'abc@abc.com'
+                    ],
+                'reminder_enable' => true
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateLinkReminderDisable' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                    'contact' => '1234567890',
+                    'email'   => 'abc@abc.com'
+                ],
+                'reminder_enable' => false
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateLinkReminderFieldNotThere' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                    'contact' => '1234567890',
+                    'email'   => 'abc@abc.com'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled' => [
         'request' => [
             'url' => '/invoices',

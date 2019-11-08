@@ -11,7 +11,7 @@ use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 class BusinessSubCategoryMetaData
 {
     const DESCRIPTION                       = 'description';
-    const NORMAL_AUTH_FIELDS                = [self::DESCRIPTION];
+    const NORMAL_AUTH_FIELDS                = [self::DESCRIPTION, Entity::ACTIVATION_FLOW];
     const EMI_ACTIVATION                    = 'emi_activation';
     const INTERNATIONAL_ACTIVATION          = 'international_activation';
     const NON_REGISTERED_MAX_PAYABLE_AMOUNT = 'non_registered_max_payable_amount';
