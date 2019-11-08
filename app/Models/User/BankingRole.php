@@ -78,4 +78,9 @@ class BankingRole
 
         return $bankingRoles;
     }
+
+    public static function getDefaultRoles(): array
+    {
+        return self::$defaultRoles;
+    }
 }

@@ -5,10 +5,18 @@ namespace RZP\Models\Gateway\File\Processor\Combined;
 use Carbon\Carbon;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 
 class Sbin extends Base
 {
     const BANK_NAME = 'Sbi';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->increaseAllowedSystemLimits();
+    }
 
     protected function formatDataForMail(array $data)
     {
@@ -85,4 +93,8 @@ class Sbin extends Base
         ];
     }
 
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+    }
 }

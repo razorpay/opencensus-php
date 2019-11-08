@@ -152,9 +152,18 @@ class Validator extends Base\Validator
         'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
     ];
 
+    protected static $sendOtpWithContactRules = [
+        Entity::ACTION          => 'required|filled|in:bureau_verify',
+        Entity::TOKEN           => 'sometimes|filled',
+        Entity::CONTACT_MOBILE  => 'required|max:15',
+        Entity::MEDIUM          => 'sometimes|filled|in:sms',
+    ];
+
     protected static $verifyOtpRules = [
-        Entity::OTP   => 'required|filled|min:4',
-        Entity::TOKEN => 'required|unsigned_id',
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::TOKEN           => 'required|unsigned_id',
+        Entity::ACTION          => 'sometimes|filled|in:bureau_verify',
+        Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify|max:15',
     ];
 
     protected static $teamManagementValidators = [

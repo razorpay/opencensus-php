@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
+use RZP\Models\Reversal\Core as ReversalCore;
 
 class Reversal extends Base
 {
@@ -32,6 +33,27 @@ class Reversal extends Base
             ]);
 
         $txn = $this->createTransactionOnReversal($reversal);
+
+        $txn->saveOrFail();
+
+        $reversal->saveOrFail();
+
+        return $reversal;
+    }
+
+    public function createPayoutReversal(array $attributes = [])
+    {
+        $defaultValues = [
+            'amount'    => 200,
+            'currency'  => 'INR',
+            'channel'   => 'yesbank',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $reversal = $this->build('reversal', $attributes);
+
+        $txn = $this->createTransactionOnPayoutReversal($reversal);
 
         $txn->saveOrFail();
 

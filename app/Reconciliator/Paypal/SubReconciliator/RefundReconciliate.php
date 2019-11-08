@@ -72,4 +72,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         return true;
     }
+
+    protected function getRefundEntityAmount()
+    {
+        return $this->refund->getAmount();
+    }
 }

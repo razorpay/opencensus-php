@@ -12,6 +12,7 @@ use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Core extends Base\Core
@@ -150,11 +151,13 @@ class Core extends Base\Core
                     strtolower($this->baseIndex), self::ES_TYPE, $differ);
             }
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            $this->trace->warning(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::HEIMDALL_ACTION_LOG_FAIL,
-                ['msg' => $e]);
+                $differ);
         }
     }
 

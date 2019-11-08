@@ -34,6 +34,8 @@ final class Constants
 
     const CHANNEL                        = 'channel';
 
+    const CONFIGURATION                  = 'configuration';
+
     const MESSAGE                        = 'message';
 
     const ACCOUNT                        = 'account';
@@ -127,6 +129,8 @@ final class Constants
     const BENEFICIARY_COUNTRY            = 'beneficiary_country';
 
     const RTGS_CUTOFF_HOUR_MIN           = 8;
+
+    const BENEFICIARY_REQUIRED          = 'beneficiary_required';
 
     const BENEFICIARY_BANK_NAME          = 'beneficiary_bank_name';
 

@@ -2521,4 +2521,23 @@ return [
             'status_code'  => 200,
         ]
     ],
+
+    'testCreateTerminalWithWrongGatewayCase'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upI_airtel',
+                'gateway_merchant_id'       => 'MER0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MER0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];

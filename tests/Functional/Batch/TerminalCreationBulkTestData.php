@@ -51,7 +51,7 @@ return [
                         Header::TERMINAL_CREATION_NETBANKING           => null,
                         Header::TERMINAL_CREATION_EMANDATE             => null,
                         Header::TERMINAL_CREATION_EMI                  => null,
-                        Header::TERMINAL_CREATION_UPI                  => '1',
+                        Header::TERMINAL_CREATION_UPI                  => null,
                         Header::TERMINAL_CREATION_BANK_TRANSFER        => null,
                         Header::TERMINAL_CREATION_AEPS                 => null,
                         Header::TERMINAL_CREATION_EMI_DURATION         => null,

@@ -886,7 +886,7 @@ class Processor extends Base\Core
     protected function createSettlementForMerchant(
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('4096M');
 
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo

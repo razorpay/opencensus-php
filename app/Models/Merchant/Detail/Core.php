@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
@@ -54,7 +55,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+        $merchantDetails->getValidator()->validateIsNotLocked($merchant);
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
@@ -66,6 +67,9 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // blacklisted merchant should not be allowed to submit l2 form
+                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+
                 $response = $this->submitActivationForm($merchant, $originProduct);
             }
             else
@@ -82,7 +86,7 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
-        
+
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
         // If a merchant does not have website or app, we would need to activate them
@@ -94,6 +98,11 @@ class Core extends Base\Core
         $this->markSubmittedAndLock($merchantDetails);
 
         $this->updateActivationSource($merchant, $originProduct);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
@@ -189,6 +198,8 @@ class Core extends Base\Core
 
         $isOcrVerified = false;
 
+        $documentType = '';
+
         //
         // Update PoaVerificationStatus to Verified if any document uploaded has OCR Verified.
         //
@@ -203,6 +214,8 @@ class Core extends Base\Core
                         'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
+                $documentType =  $document[Document\Entity::DOCUMENT_TYPE];
+
                 $isOcrVerified = true;
 
                 break;
@@ -210,6 +223,12 @@ class Core extends Base\Core
         }
 
         $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+
+        $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
+                            [
+                                Detail\Constants::POA_STATUS    => $poaVerificationStatus,
+                                Detail\Constants::DOCUMENT_TYPE => $documentType
+                            ]);
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
 
@@ -383,7 +402,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchant, $activationProgress, $merchantDetails->getActivationFlow());
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
 
             $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
@@ -404,6 +423,8 @@ class Core extends Base\Core
     {
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return null;
         }
 
@@ -429,7 +450,6 @@ class Core extends Base\Core
             $response->setPanOwnerName($merchantDetails->getPromoterPanName());
 
             $merchantDetails->setPoiVerificationStatus($response->getStatus());
-
         }
         catch (\Throwable $e)
         {
@@ -440,23 +460,30 @@ class Core extends Base\Core
             $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
 
+        $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::POI_VERIFICATION_STATUS_TOTAL, $dimension);
+
         return $response;
     }
 
     /**
      * @param Merchant\Entity $merchant
      * @param                 $activationProgress
-     * @param string          $activationFlow
      */
-    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress, string $activationFlow = null)
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
     {
         $eventAttributes = $merchant->toArrayEvent();
 
+        $merchantDetail = $merchant->merchantDetail;
+
         $eventAttributes['activation_progress'] = $activationProgress;
+
+        $eventAttributes[Detail\Constants::POI_STATUS] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
-        $eventAttributes['activation_flow'] = $activationFlow ;
+        $eventAttributes['activation_flow'] = $merchantDetail->getActivationFlow();
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_SUBMIT_FORM_SUCCESS, $merchant, null, $eventAttributes);
     }
@@ -1353,6 +1380,13 @@ class Core extends Base\Core
         return $response;
     }
 
+    protected function fetchPoiMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::POI_STATUS => $merchantDetail->getPoiVerificationStatus()
+        ];
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *
@@ -1410,6 +1444,43 @@ class Core extends Base\Core
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
     }
 
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \Throwable
+     */
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ((new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        {
+            return;
+        }
+
+        // adding this check for qa automation
+        if ($this->env === 'func' and $merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        // if bank detail is already verified then skip penny testing
+        if ($merchantDetails->isBankDetailStatusVerified())
+        {
+            return;
+        }
+
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                            ]);
+
+        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+    }
+
     public function isAdditionalFieldRequired($field)
     {
         $merchantDetail = $this->getMerchantDetails($this->merchant);
@@ -1439,7 +1510,7 @@ class Core extends Base\Core
      *
      * @return string
      */
-    private function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and

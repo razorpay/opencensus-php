@@ -213,7 +213,9 @@ class Gateway extends Base\Gateway
             );
         }
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment->toArray());
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -607,5 +609,14 @@ class Gateway extends Base\Gateway
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
         return constant($urlClass . '::' .strtoupper($this->mode));
+    }
+
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer['acquirer'] = [
+            Payment\Entity::REFERENCE2 => $gatewayPayment[Entity::APPRCODE],
+        ];
+
+        return $acquirer;
     }
 }

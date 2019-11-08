@@ -2211,13 +2211,13 @@ class Core extends Base\Core
             {
                 $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
 
-                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT;
+                return Entity::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED;
             }
 
             $amount = BusinessSubCategoryMetaData::getFeatureValueUsingMccCode(
                 BusinessSubCategoryMetaData::NON_REGISTERED_MAX_PAYABLE_AMOUNT,
                 $merchant->getCategory(),
-                Entity::MAX_PAYMENT_AMOUNT_DEFAULT);
+                Entity::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED);
         }
         else
         {
@@ -2630,7 +2630,8 @@ class Core extends Base\Core
      *
      * 1. If merchant belongs to Razorpay org Id
      * 2. if operation is being performed from banking dashboard
-     * 3. if UNREGISTERED_ON_BOARDING razorx experiment is enabled for mid
+     * 3. if UNREGISTERED_ON_BOARDING razorx experiment is enabled for mid or merchant is already activated
+     *
      *
      * @param Entity $merchant
      * @param bool   $isUnregisteredBusiness
@@ -2645,7 +2646,8 @@ class Core extends Base\Core
         return (($isRazorpayOrgId === true) and
                 ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
                 ($isUnregisteredBusiness === true) and
-                ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode)));
+                (($merchant->isActivated()) or
+                 ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode))));
     }
 
     public function getAllMerchantsMappedToMerchantLegalEntity(Merchant\Entity $merchant): Base\PublicCollection

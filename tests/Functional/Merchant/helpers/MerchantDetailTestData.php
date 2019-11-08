@@ -1024,6 +1024,7 @@ return [
         'request'   => [
             'content' => [
                 'bank_branch_ifsc' => 'ICIC0000002',
+                'submit'           => 1,
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -1285,5 +1286,4 @@ return [
             ],
         ],
     ],
-
 ];

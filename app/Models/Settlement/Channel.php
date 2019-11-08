@@ -237,7 +237,6 @@ class Channel
         return [
             self::RBL,
             self::CITI,
-            self::ICICI,
         ];
     }
 
@@ -279,6 +278,7 @@ class Channel
             self::RBL,
             self::ICICI,
             self::CITI,
+            self::YESBANK,
         ];
     }
 

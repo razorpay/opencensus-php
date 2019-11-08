@@ -1,0 +1,91 @@
+<?php
+
+namespace RZP\Tests\Functional\D2cBureauDetails;
+
+use RZP\Models\D2cBureauDetail;
+use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+
+class D2cBureauDetailsTest extends TestCase
+{
+    use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/helpers/D2cBureauDetailsTestData.php';
+
+        parent::setUp();
+
+        $this->merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $this->user = $this->fixtures->user->createUserForMerchant($this->merchantDetail['merchant_id'], [
+            'name'              => 'john doe',
+            'contact_mobile'    => '9876543210',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::SHOW_CREDIT_SCORE,
+            'entity_id'     => $this->merchantDetail['merchant_id'],
+            'entity_type'   => 'merchant',
+        ]);
+    }
+
+    public function testPostCreate()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->startTest();
+
+        $d2cOwnerDetails = $this->getLastEntity('d2c_bureau_detail', true);
+
+        $this->assertArraySelectiveEquals([
+//                'id'                => 'd2cbd_DVPO2EfMdU2inS',
+            'first_name'        => 'testhello',
+            'contact_mobile'    => '9876543210',
+//                'email'             => 'tabitha.damore@mraz.biz',
+            'address'           => 'Adress',
+            'city'              => 'city',
+            'pincode'           => '123455',
+            'pan'               => 'ABCDE1234F',
+//                'created_at'        => 1571374473
+        ], $d2cOwnerDetails);
+    }
+
+    public function testPatchBureauDetails()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $response['id'];
+
+        $this->startTest();
+    }
+
+    public function testSubmitOtp()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->startTest();
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => $this->merchantDetail['merchant_id'],
+            'user_id'               => $this->user->getId(),
+            'd2c_bureau_detail_id'  => D2cBureauDetail\Entity::verifyIdAndStripSign($response['id']),
+            'provider'              => 'experian',
+            'score'                 => 752,
+            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
+            'ufh_file_id'           => 'rzp_file_mock_id_1000000_bureau_report',
+//                'created_at'        => 1571374473
+        ], $d2cBureauReport);
+    }
+}

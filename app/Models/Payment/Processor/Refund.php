@@ -1585,7 +1585,7 @@ trait Refund
         $refunded = $this->callRefundFunction($refund, $payment, $data);
 
         // In some cases we get gateway response in a file the next day
-        if (Payment\Gateway::isSequenceNoBasedRefund($payment->getGateway()) === false)
+        if (Payment\Gateway::isSequenceNoBasedRefund($payment) === false)
         {
             $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
         }
@@ -1943,7 +1943,7 @@ trait Refund
             $data['refund']['reverse'] = true;
         }
 
-        if (Payment\Gateway::isSequenceNoBasedRefund($payment->getGateway()) === true)
+        if (Payment\Gateway::isSequenceNoBasedRefund($payment) === true)
         {
             $data['refund']['reference3'] = payment\Refund\Core::getNewRefundSequenceNumberForPayment($payment);
         }
@@ -1963,6 +1963,7 @@ trait Refund
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
+            'payment_service_route'     => $payment->getCpsRoute(),
         ];
 
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
@@ -2729,9 +2730,7 @@ trait Refund
      */
     protected function setRefundReference3IfApplicable($payment)
     {
-        $gateway = $payment->getGateway();
-
-        if (Payment\Gateway::isSequenceNoBasedRefund($gateway) === true)
+        if (Payment\Gateway::isSequenceNoBasedRefund($payment) === true)
         {
             $seqNo = Payment\Refund\Core::getNewRefundSequenceNumberForPayment($payment);
 

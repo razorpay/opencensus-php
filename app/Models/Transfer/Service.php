@@ -250,7 +250,7 @@ class Service extends Base\Service
                 continue;
             }
 
-            if ((new PaymentProcessor($this->merchant))->shouldProcessOrderTransfer($payment) === false)
+            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
             {
                 continue;
             }

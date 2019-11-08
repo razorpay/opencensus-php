@@ -25,6 +25,7 @@ abstract class Base extends BaseProcessor
     const GATEWAY_ERROR_DESCRIPTION   = 'gateway_error_description';
     // Stored in token entity
     const TOKEN_ERROR_CODE            = 'token_error_code';
+    const ACCOUNT_NUMBER              = 'account_number';
 
     /**
      * @var Payment\Processor\Processor

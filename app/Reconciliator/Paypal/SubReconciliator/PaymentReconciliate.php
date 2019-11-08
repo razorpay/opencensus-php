@@ -90,4 +90,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         return;
     }
+
+    protected function getPaymentEntityAmount()
+    {
+        return $this->payment->getAmount();
+    }
 }

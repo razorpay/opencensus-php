@@ -11,9 +11,9 @@ class Service extends Base\Service
         return (new Core)->queueCreateInvoiceEntities($input);
     }
 
-    public function createMulitpleInvoiceEntities(array $input)
+    public function createMultipleInvoiceEntities(array $input)
     {
-        (new Core)->createMulitpleInvoiceEntities($input);
+        (new Core)->createMultipleInvoiceEntities($input);
     }
 
     public function updateGstin(string $merchantId, array $input): array

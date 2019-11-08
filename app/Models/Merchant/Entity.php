@@ -55,6 +55,8 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use Cacheable;
 
+    const ID_LENGTH = 14;
+
     const ID                             = 'id';
     const ORG_ID                         = 'org_id';
     const NAME                           = 'name';
@@ -461,8 +463,9 @@ class Entity extends Base\PublicEntity
         self::APPLICATION,
     ];
 
-    const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
-    const RISK_THRESHOLD_DEFAULT     = 8;
+    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
+    const RISK_THRESHOLD_DEFAULT                      = 8;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -936,11 +939,17 @@ class Entity extends Base\PublicEntity
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function bankingBalance()
+    public function sharedBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
+    }
+
+    public function bankingBalances()
+    {
+        return $this->hasMany(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
     public function commissionBalance()
@@ -957,7 +966,7 @@ class Entity extends Base\PublicEntity
                 return $this->primaryBalance;
 
             case Balance\Type::BANKING:
-                return $this->bankingBalance;
+                return $this->sharedBankingBalance;
 
             case Balance\Type::COMMISSION:
                 return $this->commissionBalance;

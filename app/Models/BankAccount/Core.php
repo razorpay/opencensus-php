@@ -445,12 +445,12 @@ class Core extends Base\Core
         return $this->repo->bank_account->findOrFailPublic($id);
     }
 
-    public function updateBankAccountWithFtsId(Entity $entity, $ftsFundAccountId)
-    {
-        $entity->setFtsFundAccountId($ftsFundAccountId);
-
-        $this->repo->saveOrFail($entity);
-    }
+//    public function updateBankAccountWithFtsId(Entity $entity, $ftsFundAccountId)
+//    {
+//        $entity->setFtsFundAccountId($ftsFundAccountId);
+//
+//        $this->repo->saveOrFail($entity);
+//    }
 
     public function getBankAccountByFtsFundAccountId($ftsFundAccountId)
     {

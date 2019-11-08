@@ -14,7 +14,6 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -381,7 +380,11 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchValidStatusChange()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $attributes = [
+            'submitted' => true,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
@@ -395,8 +398,9 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchInvalidStatusChange()
     {
-        $attributes     = [
+        $attributes = [
             'bank_details_verification_status' => 'verified',
+            'submitted'                        => true,
         ];
         $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
@@ -873,7 +877,8 @@ class MerchantDetailTest extends TestCase
      */
     public function testUnsupportedActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
 

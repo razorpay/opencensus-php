@@ -2457,6 +2457,27 @@ return [
         'status_code' => 200,
     ],
 
+    'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'    => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit'   => true,
+                'locked'       => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',

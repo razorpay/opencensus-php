@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use Carbon\Carbon;
+use App;
 
 use RZP\Base;
 use RZP\Exception;
@@ -14,6 +14,17 @@ use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
+    protected $env;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->env = $app['env'];
+    }
+
     const INVALID_REVIEWER                              = 'Invalid reviewer';
     const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
@@ -229,6 +240,12 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $pennyTestingEventPayloadRules = [
+        Constants::MERCHANT_ID     => 'required|string|max:14',
+        Constants::ACCOUNT_STATUS  => 'required|string',
+        Constants::REGISTERED_NAME => 'sometimes|string',
+    ];
+
     protected static $instantActivationRules = [
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
@@ -273,6 +290,12 @@ class Validator extends Base\Validator
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(
@@ -285,6 +308,12 @@ class Validator extends Base\Validator
 
     public function validatePOAVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(

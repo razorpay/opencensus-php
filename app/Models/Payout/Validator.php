@@ -126,10 +126,6 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
     ];
 
-    protected static $fundAccountPayoutValidators = [
-        'fund_account_mode',
-    ];
-
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
@@ -159,7 +155,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateFundAccountMode($input)
+    public function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;

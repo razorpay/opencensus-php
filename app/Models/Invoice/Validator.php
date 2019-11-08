@@ -104,7 +104,8 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
-        Entity::IDEMPOTENCY_KEY          => 'sometimes|string'
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
+        Entity::REMINDER_ENABLE          => 'sometimes|boolean'
     ];
 
     //
@@ -169,7 +170,8 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
-        Entity::IDEMPOTENCY_KEY          => 'sometimes|string'
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
+        Entity::REMINDER_ENABLE          => 'sometimes|bool'
     ];
 
     protected static $editDraftRules = [
@@ -203,6 +205,7 @@ class Validator extends Base\Validator
         Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY                => 'sometimes|epoch|nullable|custom',
+        Entity::REMINDER_ENABLE          => 'sometimes|boolean',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
@@ -221,6 +224,7 @@ class Validator extends Base\Validator
     protected static $editPartiallyPaidRules = [
         Entity::NOTES               => 'sometimes|notes',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable|custom',
+        Entity::REMINDER_ENABLE     => 'sometimes|boolean',
     ];
 
     protected static $editExpiredRules = [
