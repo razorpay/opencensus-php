@@ -130,7 +130,7 @@ class FaVpaValidation extends Job
                 ]
             );
 
-            $data['account_status'] = AccountStatus::UNKNOWN;
+            $data['account_status'] = AccountStatus::INVALID;
         }
 
         return $data;

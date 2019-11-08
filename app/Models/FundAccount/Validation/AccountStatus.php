@@ -6,5 +6,4 @@ class AccountStatus
 {
     const ACTIVE    = 'active';
     const INVALID   = 'invalid';
-    const UNKNOWN   = 'unknown';
 }
