@@ -81,6 +81,8 @@ export default {
     'finance',
     'agent',
     'rbl_supervisor',
+    'sellerapp',
+    'sellerapp_plus',
   ],
   payment_pages: [
     'owner',

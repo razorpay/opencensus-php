@@ -37,6 +37,8 @@ export default {
     'manager',
     'operations',
     'agent',
+    'sellerapp',
+    'sellerapp_plus',
     'rbl_supervisor',
   ],
   payment_pages: ['owner', 'admin', 'manager', 'sellerapp'],
