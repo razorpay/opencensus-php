@@ -106,8 +106,8 @@ class Constants
         ]
     ];
 
-    public static function getNotesForPaymentLinksByMID($mid): array
+    public static function getNotesForPaymentLinksByMID($mid)
     {
-        return self::PAYMENT_LINKS_CUSTOM_NOTES[$mid] ?? [];
+        return self::PAYMENT_LINKS_CUSTOM_NOTES[$mid] ?? null;
     }
 }

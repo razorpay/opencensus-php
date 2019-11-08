@@ -319,11 +319,13 @@ export default [
   {
     name: 'notes',
     label: function(ctx) {
-      return getOptions().type;
+      return ctx.props.user.isCustomNotesDropdownEnabled && getOptions().type;
     },
     _cmp: Input.Select,
     options: function(ctx) {
-      return getOptions().options;
+      return (
+        ctx.props.user.isCustomNotesDropdownEnabled && getOptions().options
+      );
     },
     _when: function(form) {
       return form.props.user.isCustomNotesDropdownEnabled;

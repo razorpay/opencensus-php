@@ -14,7 +14,7 @@ class Service extends Base\Service
      *
      * @return array List of notifications for a user.
      */
-    public function getNotesForPaymentLinksForMerchant(string $currentMerchantId): array
+    public function getNotesForPaymentLinksForMerchant(string $currentMerchantId)
     {
         $customNotes = Constants::getNotesForPaymentLinksByMID($currentMerchantId);
 
