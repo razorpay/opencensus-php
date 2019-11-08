@@ -15,7 +15,7 @@ RUN set -eux && \
     apk add --allow-untrusted --no-cache \
     # gnu-libiconv is the only loaded from /edge/community. Was earlier /edge/testing
     # Version has not been bumped in repo move.
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv && \
+    --repository http://dl-4.alpinelinux.org/alpine/latest-stable/community/ gnu-libiconv && \
     apk add --allow-untrusted --no-cache libxrender libx11-dev fontconfig zlib-dev \
     ca-certificates glib ttf-freefont dbus p7zip php7-sockets php7-mysqlnd wkhtmltopdf
 
