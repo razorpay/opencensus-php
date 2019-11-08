@@ -280,7 +280,7 @@ class Generator extends Base\Core
      *
      * @throws LogicException
      */
-    protected function getInvoiceLink(): string
+    public function getInvoiceLink(): string
     {
         $invoiceId = $this->invoice->getId();
 

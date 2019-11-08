@@ -286,6 +286,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerReminders();
+
         $this->registerNonBlockingHttp();
 
         $this->registerSmartRouting();
@@ -353,6 +355,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mailgun',
             'maxmind',
             'raven',
+            'reminders',
             'batchService',
             'scrooge',
             'repo',
@@ -402,6 +405,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerReminders()
+    {
+        $this->app->bind('reminders', function($app)
+        {
+            $mock = $app['config']->get('applications.reminders.mock');
+
+            $implementation = $mock ? Mock\Reminders::class : Reminders::class;
 
             return new $implementation($app);
         });

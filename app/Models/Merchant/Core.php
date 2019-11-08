@@ -2630,7 +2630,8 @@ class Core extends Base\Core
      *
      * 1. If merchant belongs to Razorpay org Id
      * 2. if operation is being performed from banking dashboard
-     * 3. if UNREGISTERED_ON_BOARDING razorx experiment is enabled for mid
+     * 3. if UNREGISTERED_ON_BOARDING razorx experiment is enabled for mid or merchant is already activated
+     *
      *
      * @param Entity $merchant
      * @param bool   $isUnregisteredBusiness
@@ -2645,7 +2646,8 @@ class Core extends Base\Core
         return (($isRazorpayOrgId === true) and
                 ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
                 ($isUnregisteredBusiness === true) and
-                ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode)));
+                (($merchant->isActivated()) or
+                 ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode))));
     }
 
     public function getAllMerchantsMappedToMerchantLegalEntity(Merchant\Entity $merchant): Base\PublicCollection

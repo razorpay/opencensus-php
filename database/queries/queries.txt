@@ -5379,6 +5379,7 @@ add column `kyc_additional_details` JSON NULL;
 ALTER TABLE pricing
     ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer
 
+
 ALTER TABLE `transfers`
 ADD COLUMN `status` VARCHAR(255) NOT NULL DEFAULT 'processed' AFTER `source_type`,
 ADD COLUMN `message` VARCHAR(255) DEFAULT NULL AFTER `recipient_settlement_id`,
@@ -5437,6 +5438,9 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE merchant_details
     ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
+
+ALTER TABLE `settlement_details`
+    MODIFY COLUMN `component` varchar(255);
 
 -- P2P - Adding Indices
 

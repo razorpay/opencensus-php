@@ -85,7 +85,7 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
-        
+
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
         // If a merchant does not have website or app, we would need to activate them
@@ -97,6 +97,11 @@ class Core extends Base\Core
         $this->markSubmittedAndLock($merchantDetails);
 
         $this->updateActivationSource($merchant, $originProduct);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
@@ -1418,6 +1423,38 @@ class Core extends Base\Core
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
     }
 
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \Throwable
+     */
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ((new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        {
+            return;
+        }
+
+        // adding this check for qa automation
+        if ($this->env === 'func' and $merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        // if bank detail is already verified then skip penny testing
+        if ($merchantDetails->isBankDetailStatusVerified())
+        {
+            return;
+        }
+
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+    }
+
     public function isAdditionalFieldRequired($field)
     {
         $merchantDetail = $this->getMerchantDetails($this->merchant);
@@ -1447,7 +1484,7 @@ class Core extends Base\Core
      *
      * @return string
      */
-    private function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and

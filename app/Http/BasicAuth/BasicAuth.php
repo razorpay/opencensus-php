@@ -1171,6 +1171,18 @@ class BasicAuth
 
         $appRoutes = Route::$internalApps[$this->internalApp];
 
+        //
+        // If the internal application is 'automation' and the route is proxy, authenticate requests only for
+        // white-listed merchants. Reason: Automation services should not have access to routes for all merchants
+        // via proxy also.
+        //
+        if (($this->isAutomationApp() === true) and
+            (($this->isProxyAuth() === false) or
+            ($this->isAutomationSuiteMid() === false)))
+        {
+            return false;
+        }
+
         // Now that the secret matches, check whether the current
         // route is allowed for this particular app.
 
@@ -1454,6 +1466,22 @@ class BasicAuth
     public function isSubscriptionsApp()
     {
         return ($this->getInternalApp() === 'subscriptions');
+    }
+
+    public function isAutomationApp(): bool
+    {
+        return ($this->getInternalApp() === 'automation');
+    }
+
+    /**
+     * Returns true if current key(in case of proxy it is merchant identifier) is
+     * one of multiple merchant ids created for automation suite.
+     *
+     * @return boolean
+     */
+    public function isAutomationSuiteMid(): bool
+    {
+        return in_array($this->authCreds->getKey(), Merchant\Account::AUTOMATION_SUITE_MERCHANT_IDS, true);
     }
 
     public function isBatchApp(): bool

@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "4efdefd6b1815dfda88cb5507785d196",
@@ -553,13 +553,13 @@
             "authors": [
                 {
                     "name": "Alex Corley",
-                    "email": "anthroprose@gmail.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "anthroprose@gmail.com"
                 },
                 {
                     "name": "DataDog",
-                    "email": "dev@datadoghq.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "dev@datadoghq.com"
                 }
             ],
             "description": "This is an extremely simple PHP datadogstatsd client",
@@ -2146,8 +2146,8 @@
             "authors": [
                 {
                     "name": "Mark Beech",
-                    "email": "m@rkbee.ch",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "m@rkbee.ch"
                 }
             ],
             "description": "CrawlerDetect is a PHP class for detecting bots/crawlers/spiders via the user agent",
@@ -2229,7 +2229,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/superclosure",
+            "name": "jeremeamia/SuperClosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -2798,8 +2798,8 @@
             "authors": [
                 {
                     "name": "Luís Otávio Cobucci Oblonczyk",
-                    "email": "lcobucci@gmail.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "lcobucci@gmail.com"
                 }
             ],
             "description": "A simple library to work with JSON Web Token and JSON Web Signature",
@@ -3475,19 +3475,19 @@
             "authors": [
                 {
                     "name": "Matyas Danter",
-                    "homepage": "http://matejdanter.com/",
-                    "role": "Author"
+                    "role": "Author",
+                    "homepage": "http://matejdanter.com/"
                 },
                 {
                     "name": "Thibaud Fabre",
+                    "role": "Maintainer",
                     "email": "thibaud@aztech.io",
-                    "homepage": "http://aztech.io",
-                    "role": "Maintainer"
+                    "homepage": "http://aztech.io"
                 },
                 {
                     "name": "Thomas Kerin",
-                    "email": "afk11@users.noreply.github.com",
-                    "role": "Maintainer"
+                    "role": "Maintainer",
+                    "email": "afk11@users.noreply.github.com"
                 }
             ],
             "description": "PHP Elliptic Curve Cryptography library",
@@ -3632,7 +3632,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -3745,9 +3745,9 @@
             "authors": [
                 {
                     "name": "Serban Ghita",
+                    "role": "Developer",
                     "email": "serbanghita@gmail.com",
-                    "homepage": "http://mobiledetect.net",
-                    "role": "Developer"
+                    "homepage": "http://mobiledetect.net"
                 }
             ],
             "description": "Mobile_Detect is a lightweight PHP class for detecting mobile devices. It uses the User-Agent string combined with specific HTTP headers to detect the mobile environment.",
@@ -5162,28 +5162,28 @@
             "authors": [
                 {
                     "name": "Jim Wigginton",
-                    "email": "terrafrost@php.net",
-                    "role": "Lead Developer"
+                    "role": "Lead Developer",
+                    "email": "terrafrost@php.net"
                 },
                 {
                     "name": "Patrick Monnerat",
-                    "email": "pm@datasphere.ch",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "pm@datasphere.ch"
                 },
                 {
                     "name": "Andreas Fischer",
-                    "email": "bantu@phpbb.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "bantu@phpbb.com"
                 },
                 {
                     "name": "Hans-Jürgen Petrich",
-                    "email": "petrich@tronic-media.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "petrich@tronic-media.com"
                 },
                 {
                     "name": "Graham Campbell",
-                    "email": "graham@alt-three.com",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "graham@alt-three.com"
                 }
             ],
             "description": "PHP Secure Communications Library - Pure-PHP implementations of RSA, AES, SSH2, SFTP, X.509 etc.",
@@ -5796,16 +5796,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.8",
+            "version": "1.4.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "d34f65dfe8d65012739e8744d56bb8bbdcb61c86"
+                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/d34f65dfe8d65012739e8744d56bb8bbdcb61c86",
-                "reference": "d34f65dfe8d65012739e8744d56bb8bbdcb61c86",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a6611bf6d300ba514a4d430b01a192ce380676b4",
+                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4",
                 "shasum": ""
             },
             "require": {
@@ -5838,7 +5838,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-10-14T13:52:58+00:00"
+            "time": "2019-11-07T07:33:14+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -8016,8 +8016,8 @@
             "authors": [
                 {
                     "name": "Tijs Verkoyen",
-                    "email": "css_to_inline_styles@verkoyen.eu",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "css_to_inline_styles@verkoyen.eu"
                 }
             ],
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
@@ -10422,8 +10422,8 @@
             "authors": [
                 {
                     "name": "Arne Blankerts",
-                    "email": "arne@blankerts.de",
-                    "role": "Developer"
+                    "role": "Developer",
+                    "email": "arne@blankerts.de"
                 }
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",

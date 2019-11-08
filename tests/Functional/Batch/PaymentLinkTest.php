@@ -44,9 +44,95 @@ class PaymentLinkTest extends TestCase
     {
         $testData = & $this->testData[$functionName];
 
-        $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000',$featureName, Mode::TEST);
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000', $featureName, Mode::TEST);
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
+    private function createUserMerchantMapping($merchantId, $role)
+    {
+        $user = $this->fixtures->create('user',['id'  => '20000000000000']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+    }
+
+    private function setRequirementsForTesting(string $functionName, string $variant)
+    {
+        $user = $this->createUserMerchantMapping('10000000000000','sellerapp');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000','20000000000000');
+
+        $this->mockRazorX($functionName,"sellerapp_PL_batch_upload", $variant);
+    }
+
+    public function testGetBatchByEPosRole()
+    {
+        $this->setRequirementsForTesting(__FUNCTION__, 'on');
+
+        $this->startTest();
+    }
+
+    public function testGetBatchByEPosRoleExperimentOff()
+    {
+        $this->setRequirementsForTesting(__FUNCTION__, 'off');
+
+        $this->startTest();
+    }
+
+    public function testCreateBatchOfPaymentLinkTypeByEposRole()
+    {
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->setRequirementsForTesting(__FUNCTION__, 'on');
+
+        $this->startTest();
+    }
+
+    public function testCreateBatchOfPaymentLinkTypeByRefund()
+    {
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->setRequirementsForTesting(__FUNCTION__, 'on');
+
+        $this->startTest();
+    }
+
+    public function testGetBatchByIdByEPosRole()
+    {
+        $batch = $this->fixtures->create('batch', [
+            'id'          => '00000000000002',
+            'type'        => 'payment_link',
+            'total_count' => 1,
+        ]);
+
+        $this->setRequirementsForTesting(__FUNCTION__, 'on');
+
+        $this->startTest();
+    }
+
+    public function testGetBatchByIdByEPosRoleNonPaymentLinkType()
+    {
+        $batch = $this->fixtures->create('batch', [
+            'id'          => '00000000000002',
+            'type'        => 'refund',
+            'total_count' => 1,
+        ]);
+
+        $this->setRequirementsForTesting(__FUNCTION__, 'on');
+
+        $this->startTest();
     }
 
     public function testCreateBatchOfPaymentLinkType1()
@@ -59,7 +145,7 @@ class PaymentLinkTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $response = $this->startTest();
+        $this->startTest();
 
         // Just asserting that job is being pushed on creation of batch entity
         // for payment link type.

@@ -87,6 +87,12 @@ class MerchantDocumentTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $fileStoreEntry = $this->getDbEntityById('file_store', $merchantDocumentEntry['file_store_id'], 'test');
+
+        $this->assertTrue(substr($fileStoreEntry->getName(), -2) === "/a");
     }
 
     public function testFileUploadDocumentTypeInvalid()

@@ -126,7 +126,7 @@ class Base extends FundAccountPayout\Base
                 // The below line will ensure that whenever the balance is above the threshold, we
                 // update the notify_at to 0 so that if it goes below the threshold again, we notify.
                 //
-                $this->modifyNotifyAtForLowBalanceEmail($merchantConfig, $merchantId, 0);
+                $this->modifyNotifyAtForLowBalanceEmail($lowBalanceEmailMerchantsConfig, $merchantId, 0);
 
                 return;
             }

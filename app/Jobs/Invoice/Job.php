@@ -141,16 +141,26 @@ class Job extends BaseJob
     {
         $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))
-                    ->notifyInvoiceIssuedToCustomer();
+        $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
+
+        $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
+
+        $reminderCreated = $notifier->createOrUpdateReminder();
+
+        return ($customerNotified and $reminderCreated);
     }
 
     protected function handleIssued()
     {
         $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))
-                    ->notifyInvoiceIssuedToCustomer();
+        $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
+
+        $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
+
+        $reminderCreated = $notifier->createOrUpdateReminder();
+
+        return ($customerNotified and $reminderCreated);
     }
 
     protected function handleExpired()
