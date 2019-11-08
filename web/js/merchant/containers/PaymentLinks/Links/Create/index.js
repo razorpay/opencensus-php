@@ -470,7 +470,8 @@ export default class CreateNewContainer extends React.Component {
     }
 
     if (this.props.user.isCustomNotesDropdownEnabled) {
-      const { type } = getOptions(this.props.user.current);
+      const { type } = getOptions();
+
       reqPayload.notes = {
         [type]: reqPayload.notes,
       };
