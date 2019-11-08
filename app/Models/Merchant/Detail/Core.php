@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
@@ -197,6 +198,8 @@ class Core extends Base\Core
 
         $isOcrVerified = false;
 
+        $documentType = '';
+
         //
         // Update PoaVerificationStatus to Verified if any document uploaded has OCR Verified.
         //
@@ -211,6 +214,8 @@ class Core extends Base\Core
                         'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
+                $documentType =  $document[Document\Entity::DOCUMENT_TYPE];
+
                 $isOcrVerified = true;
 
                 break;
@@ -218,6 +223,12 @@ class Core extends Base\Core
         }
 
         $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+
+        $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
+                            [
+                                Detail\Constants::POA_STATUS    => $poaVerificationStatus,
+                                Detail\Constants::DOCUMENT_TYPE => $documentType
+                            ]);
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
 
@@ -439,7 +450,6 @@ class Core extends Base\Core
             $response->setPanOwnerName($merchantDetails->getPromoterPanName());
 
             $merchantDetails->setPoiVerificationStatus($response->getStatus());
-
         }
         catch (\Throwable $e)
         {
@@ -449,6 +459,10 @@ class Core extends Base\Core
 
             $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
+
+        $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::POI_VERIFICATION_STATUS_TOTAL, $dimension);
 
         return $response;
     }
@@ -465,7 +479,7 @@ class Core extends Base\Core
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
-        $eventAttributes['poi_status'] = $merchantDetail->getPoiVerificationStatus();
+        $eventAttributes[Detail\Constants::POI_STATUS] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
@@ -1366,6 +1380,13 @@ class Core extends Base\Core
         return $response;
     }
 
+    protected function fetchPoiMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::POI_STATUS => $merchantDetail->getPoiVerificationStatus()
+        ];
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *
@@ -1451,6 +1472,11 @@ class Core extends Base\Core
         $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
 
         $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                            ]);
 
         (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
     }
