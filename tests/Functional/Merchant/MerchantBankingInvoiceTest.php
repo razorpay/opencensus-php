@@ -914,4 +914,48 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function testInvoiceNumberFormat()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        Carbon::setTestNow();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year,'merchant_ids' => ['10000000000000']],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $entities = $entities['items'];
+
+        foreach ($entities as $e)
+        {
+            if ($e[Invoice\Entity::TYPE] === 'rx_transactions')
+            {
+                $invoiceEntity = $e;
+                break;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        $this->assertEquals('10000000000-' . '07' . substr($oldDateTime->year,2,2),
+                            $invoiceEntity['invoice_number']);
+
+        Carbon::setTestNow();
+    }
+
 }
