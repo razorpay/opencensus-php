@@ -1341,7 +1341,7 @@ class GatewayDowntimeTest extends TestCase
 
     public function testUPIDowntimeCreation()
     {
-        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
         $request = [
             'content' => [
