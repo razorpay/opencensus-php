@@ -206,7 +206,11 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            $this->validateAmount($fundAccount, $input);
+            $inputValidator = $validation->getValidator();
+
+            $inputValidator->validateAmount($validation, $input);
+
+            $inputValidator->validateCurrency($validation, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -273,30 +277,6 @@ class Core extends Base\Core
         }
 
         return $txn;
-    }
-
-    /**
-     * @param FundAccount\Entity $fundAccount
-     * @param array              $input
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    protected function validateAmount(FundAccount\Entity $fundAccount, array $input)
-    {
-        if ($fundAccount->getAccountType() === FundAccount\Type::VPA)
-        {
-            if (isset($input['amount']))
-            {
-                throw new BadRequestValidationFailureException(
-                    'Amount is not a valid key for fund account of type vpa.');
-            }
-
-            if (isset($input['currency']))
-            {
-                throw new BadRequestValidationFailureException(
-                    'Currency is not a valid key for fund account of type vpa.');
-            }
-        }
     }
 
     /**
