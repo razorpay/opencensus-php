@@ -6,7 +6,6 @@ use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Job as BaseJob;
-use RZP\Models\Invoice\Entity;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -50,17 +49,14 @@ class Job extends BaseJob
     protected $invoice;
     protected $core;
 
-    protected $invoiceData;
-
     public $timeout = 3600;
 
-    public function __construct(string $mode, string $event, string $id, array $invoiceData = [])
+    public function __construct(string $mode, string $event, string $id)
     {
         parent::__construct($mode);
 
         $this->event = $event;
         $this->id    = $id;
-        $this->invoiceData = $invoiceData;
     }
 
     public function getEvent(): string
@@ -147,12 +143,7 @@ class Job extends BaseJob
 
         $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
 
-        $customerNotified = true;
-
-        if(isset($this->invoiceData[Entity::REMINDER_ENABLE]) === false)
-        {
-            $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
-        }
+        $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
 
         $reminderCreated = $notifier->createOrUpdateReminder();
 
