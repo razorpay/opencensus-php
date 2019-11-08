@@ -8,6 +8,15 @@ import { activationDuration } from 'common/data';
 
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
+  trackEvent = eventOrigin => {
+    const { tracking } = this.props;
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated(`act.${eventOrigin}`, {
+        clickSource: 'Try_Again_Banner',
+      })
+    );
+  };
+
   render() {
     const { user, mode, payments } = this.props;
 
@@ -50,7 +59,14 @@ export default class InstantActivationAnnouncements extends Component {
             <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
               details. <span class="big-dot-separator" />{' '}
-              <Link to="/activation?auto-submit=l1-form">Try Again</Link>
+              <Link
+                to="/activation?auto-submit=l1-form"
+                onClick={() => {
+                  this.trackEvent('nav_try_again');
+                }}
+              >
+                Try Again
+              </Link>
             </React.Fragment>
           );
         } else if (
@@ -64,7 +80,14 @@ export default class InstantActivationAnnouncements extends Component {
               Your PAN details did not match with the government database.
               Please review your details.
               <span class="big-dot-separator" />
-              <Link to="/activation">Review details</Link>
+              <Link
+                to="/activation"
+                onClick={() => {
+                  this.trackEvent('nav_review_details');
+                }}
+              >
+                Review details
+              </Link>
             </React.Fragment>
           );
         } else return null;
