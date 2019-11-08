@@ -42,6 +42,7 @@ export default class FeatureEnableButton extends React.Component {
         feature: this.props.feature,
         data: {
           isEnabled: true,
+          lastVisitedTime: isEnabled && Date.now(),
         },
       });
 
