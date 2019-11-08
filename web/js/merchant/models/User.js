@@ -360,6 +360,10 @@ export default class User {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
 
+  get isCreditPullEnabled() {
+    return this.isFeatureEnabled('show_credit_score');
+  }
+
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
