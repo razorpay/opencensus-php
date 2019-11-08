@@ -23,7 +23,7 @@ export default ({
           target="_blank"
         >
           <i class="i i-file-attach" />
-          View Scan
+          View Signed NACH Form
         </AsyncButton>
       </React.Fragment>
     );
