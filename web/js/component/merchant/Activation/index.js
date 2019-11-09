@@ -766,6 +766,7 @@ export default class ActivationWizard extends React.Component {
       poi_verification_status,
       promoter_pan_name,
       promoter_pan,
+      business_type,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -779,6 +780,7 @@ export default class ActivationWizard extends React.Component {
       poi_verification_status,
       promoter_pan,
       promoter_pan_name,
+      business_type,
       submitted: +submitted,
     }));
 
