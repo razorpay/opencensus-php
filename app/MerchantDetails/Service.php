@@ -149,7 +149,7 @@ class Service extends Base\Service
     {
         foreach (self::NOT_REGISTERED_BUSINESS_PRE_SIGNUP_FIELDS as $key)
         {
-            if (isset($input[$key]) === false)
+            if (empty($input[$key]) === true)
             {
                 return false;
             }
