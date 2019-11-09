@@ -6,7 +6,7 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls, isPresent } from 'rzp/utils/rzp-utils';
 import { trackFormFields } from 'rzp/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { classList } from 'common/util';
@@ -690,16 +690,19 @@ export default class ActivationWizard extends React.Component {
 
   get hasSelectedBlacklistedCategory() {
     const categories = this.props.categories;
-    const selectedCategory =
-      this.state.dirty.business_category || this.props.data.business_category;
-    const subcategories = categories[selectedCategory]['subcategories'];
-    if (subcategories.length) {
-      const selectedSubcategory =
-        this.state.dirty.business_subcategory ||
-        this.props.data.business_subcategory;
-      return (
-        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
-      );
+    if (isPresent(categories)) {
+      const selectedCategory =
+        this.state.dirty.business_category || this.props.data.business_category;
+      const subcategories =
+        selectedCategory && categories[selectedCategory]['subcategories'];
+      if (isPresent(subcategories)) {
+        const selectedSubcategory =
+          this.state.dirty.business_subcategory ||
+          this.props.data.business_subcategory;
+        return (
+          subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+        );
+      }
     }
     return false;
   }
