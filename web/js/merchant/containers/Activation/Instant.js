@@ -191,6 +191,8 @@ export default class ActivationWizard extends React.Component {
       activation_flow,
       submitted,
       international,
+      promoter_pan,
+      business_type,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -201,6 +203,8 @@ export default class ActivationWizard extends React.Component {
       activation_status,
       activation_flow,
       international,
+      promoter_pan,
+      business_type,
       submitted: +submitted,
     }));
 
