@@ -378,6 +378,7 @@ class Core extends Base\Core
         }
 
         return [
+            'balance'              => $balance->getBalance(),
             'settlement_amount'    => $settlementAmount,
             'next_settlement_time' => $timestamp->getTimestamp(),
         ];

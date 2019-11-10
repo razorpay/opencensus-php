@@ -1622,8 +1622,6 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
-        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $query = $this->newQuery()
             ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
             ->where($transactionMerchantId, $merchantId)
@@ -1642,7 +1640,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $query->where($transactionBalanceId, $balanceId);
+            $query->where($transactionBalanceId, $balance->getId());
         }
 
         $results = $query->first();
@@ -1653,7 +1651,7 @@ class Repository extends Base\Repository
                 'time_taken'   => get_diff_in_millisecond($startTime),
                 'merchant_id'  => $merchantId,
                 'settled_at'   => $timestamp,
-                'balance_id'   => $balanceId,
+                'balance_id'   => $balance->getId(),
             ]);
 
         return $results;
