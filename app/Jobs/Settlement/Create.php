@@ -50,6 +50,7 @@ class Create extends Job
 
     /**
      * if the job takes more time then it'll be terminated
+     *
      * @var int
      */
     public $timeout = 900;

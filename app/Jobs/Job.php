@@ -194,19 +194,7 @@ class Job implements ShouldQueue
         //
         // reset the job timeout
         //
-        try
-        {
-            $this->registerJobTimeoutSignal($app);
-        }
-        catch (\Throwable $e)
-        {
-            s($e->getMessage());
-        }
-    }
-
-    public function timeout()
-    {
-        return $this->timeout;
+        $this->registerJobTimeoutSignal($app);
     }
 
     /**
@@ -216,8 +204,8 @@ class Job implements ShouldQueue
      */
     protected function supportsAsyncSignals()
     {
-        return version_compare(PHP_VERSION, '7.1.0') >= 0 and
-            extension_loaded('pcntl');
+        return (version_compare(PHP_VERSION, '7.1.0') >= 0) and
+            (extension_loaded('pcntl') === true);
     }
 
     /**
@@ -226,6 +214,7 @@ class Job implements ShouldQueue
      * this will add a trace before terminating the job
      * which will provide the details of termination if its caused job by timeout
      *
+     * @param $app
      * @return void
      */
     protected function registerJobTimeoutSignal($app)
@@ -234,7 +223,6 @@ class Job implements ShouldQueue
         {
             //
             // this will override the default laravel handler where it just terminated the job.
-            //
             //
             // We will register a signal handler for the alarm signal so that we can kill this
             // process if it is running too long because it has frozen. This uses the async
