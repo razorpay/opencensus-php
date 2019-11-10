@@ -242,6 +242,12 @@ export default class ActivationWizard extends React.Component {
 
           a.onChange = (file, progressTracker) => {
             const filename = a.getName ? a.getName(this) : a.name;
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+                name: filename,
+              })
+            );
+
             return props
               .saveFile(
                 filename,
@@ -443,15 +449,20 @@ export default class ActivationWizard extends React.Component {
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
   @RTracking((props, state) => {
-    const { tracking } = props;
-    const fields = trackFormFields(props.data, state.dirty);
-    return fields.forEach(field =>
-      tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.provide_details', {
-          ...field,
-        })
-      )
-    );
+    try {
+      const activation = { props, state };
+      const { tracking } = props;
+      if (isL1Completed(activation)) {
+        const fields = trackFormFields(props.data, state.dirty);
+        return fields.forEach(field =>
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated('kyc.provide_details', {
+              ...field,
+            })
+          )
+        );
+      }
+    } catch (err) {}
   })
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
@@ -790,6 +801,17 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const fields = trackFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('act.provide_act_details', {
+          ...field,
+        })
+      )
+    );
+  })
   submitL1 = async currenActiveTab => {
     const data = this.formData;
     this.setState({ callingL1Api: true });
@@ -1204,6 +1226,8 @@ export default class ActivationWizard extends React.Component {
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
 
+    const { tracking } = this.props;
+
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
 
@@ -1513,7 +1537,12 @@ export default class ActivationWizard extends React.Component {
                   !this.props.user.instantActivation.isBlacklistFlow && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
-                      onClick={this.toggleSubmitLayer}
+                      onClick={() => {
+                        tracking.trackEvent(
+                          window.rzpQ.onbr().initiated('kyc.save_documents')
+                        );
+                        this.toggleSubmitLayer();
+                      }}
                     >
                       Submit Form
                     </Button.Primary>

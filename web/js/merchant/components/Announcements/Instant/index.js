@@ -12,7 +12,7 @@ export default class InstantActivationAnnouncements extends Component {
     const { tracking } = this.props;
     tracking.trackEvent(
       window.rzpQ.onbr().initiated(`act.${eventOrigin}`, {
-        clickSource: 'Try_Again_Banner',
+        clickSource: 'Instant_Announcement_Banner',
       })
     );
   };
