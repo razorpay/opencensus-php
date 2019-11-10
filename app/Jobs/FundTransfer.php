@@ -36,6 +36,8 @@ class FundTransfer extends Job
      */
     protected $ftaId;
 
+    public $timeout = 200;
+
     public function __construct(string $mode, string $ftaId)
     {
         parent::__construct($mode);
