@@ -52,7 +52,7 @@ class Create extends Job
      * if the job takes more time then it'll be terminated
      * @var int
      */
-    public $timeout = 10;
+    public $timeout = 900;
 
     /**
      * Here, we fetch merchantId and their corresponding unsettled transactionIds.
@@ -83,8 +83,6 @@ class Create extends Job
     public function handle()
     {
         parent::handle();
-
-        sleep(60);
 
         $merchant = $this->repoManager->merchant->findOrFail($this->merchantId);
 
