@@ -16,6 +16,8 @@ class MerchantInvoice extends Job
 
     protected $isCorrection;
 
+    public $timeout = 1800;
+
     public function __construct(
         string $merchantId,
         int $month,
