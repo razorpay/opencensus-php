@@ -187,6 +187,9 @@ class Generator extends Base\Core
             return $this->invoice;
         }
 
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
         $this->repo->transaction(
             function() use ($input)
             {
@@ -200,7 +203,7 @@ class Generator extends Base\Core
                 }
 
                 $this->repo->saveOrFail($this->invoice);
-            });
+            }, $maxAttempts);
 
         return $this->invoice;
     }

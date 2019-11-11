@@ -592,6 +592,9 @@ class Core extends Base\Core
 
         $validator->validateOperation(__FUNCTION__);
 
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
         $this->repo->transaction(
             function () use ($invoice)
             {
@@ -602,7 +605,7 @@ class Core extends Base\Core
                 $invoice->setStatus(Status::EXPIRED);
 
                 $this->repo->saveOrFail($invoice);
-            });
+            }, $maxAttempts);
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 
