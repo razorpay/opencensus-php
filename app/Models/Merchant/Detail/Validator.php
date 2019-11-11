@@ -383,7 +383,7 @@ class Validator extends Base\Validator
 
         if ($enabled === false)
         {
-            return;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED);
         }
 
         $this->validateForBlackListedCategories($input);

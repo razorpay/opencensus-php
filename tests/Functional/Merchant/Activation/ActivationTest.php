@@ -109,6 +109,17 @@ class ActivationTest extends TestCase
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
     }
 
+    public function testPostInstantActivationForUnregisteredRazorxOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
     public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
     {
         $merchantId = '1cXSLlUU8V9sXl';
