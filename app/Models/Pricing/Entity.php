@@ -177,7 +177,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ($input[self::AMOUNT_RANGE_ACTIVE] !== '1')
+        if (boolval($input[self::AMOUNT_RANGE_ACTIVE]) !== true)
         {
             $input[self::AMOUNT_RANGE_MIN] = null;
             $input[self::AMOUNT_RANGE_MAX] = null;

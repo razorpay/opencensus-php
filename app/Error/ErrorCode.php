@@ -827,6 +827,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                     = 'BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                               = 'BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                    = 'BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED';
+    const BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED                                    = 'BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                                 = 'BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY';
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                                = 'BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                          = 'BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION';
@@ -939,7 +940,7 @@ class ErrorCode
     const SERVER_ERROR_DUPLICATE_SESSION_ID                                         = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
-    const SERVER_ERROR_PDF_GENERATION_FAILED                                        = 'SERVER_ERROR_PDF_GENERATION_FAILED';
+    const SERVER_ERROR_INVOICE_PDF_GENERATION_FAILED                                = 'SERVER_ERROR_INVOICE_PDF_GENERATION_FAILED';
 
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
     // Requests from api service to stork failed unexpectedly.

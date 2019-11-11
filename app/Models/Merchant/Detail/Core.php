@@ -242,48 +242,103 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Entity          $merchantDetails
-     *
      * @param Merchant\Entity $merchant
      *
-     * @throws \RZP\Exception\BadRequestException
+     * @param Merchant\Entity $partner
+     *
      */
-    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant, $partner = null)
     {
+        $this->repo->assertTransactionActive();
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
         if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
         {
             $merchantDetails->setActivationFlow();
             $merchantDetails->setInternationalActivationFlow();
+
             return;
         }
 
-        $subcategory = $merchantDetails->getBusinessSubcategory();
-        $category    = $merchantDetails->getBusinessCategory();
+        $this->autoUpdateActivationFlow($merchant, $partner);
 
-        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
-
-        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
-
-        $activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getActivationFlow());
-
-        $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
-
-        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
+        $this->autoUpdateInternationalActivationFlow($merchant, $partner);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
-        if ($autoEnableInternational === true)
+        $internationalActivationFlow = $merchantDetails->getInternationalActivationFlow();
+
+        if (empty($internationalActivationFlow) === false)
         {
-            $merchantDetails->setInternationalActivationFlow($subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
-
             $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
-
-            $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getInternationalActivationFlow());
-
-            $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
         }
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
+    }
+
+    protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null)
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        //
+        // if request comes via on-boarding api, it will always be grey-list as on-boarding api
+        // does not support instant activation flow
+        //
+        if (empty($partner) === false)
+        {
+            $activationFlow = ActivationFlow::GREYLIST;
+        }
+        else
+        {
+            $subcategory = $merchantDetails->getBusinessSubcategory();
+            $category    = $merchantDetails->getBusinessCategory();
+
+            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+            $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+        }
+
+        $merchantDetails->setActivationFlow($activationFlow);
+
+        $activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+
+        $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
+    }
+
+    protected function autoUpdateInternationalActivationFlow(Merchant\Entity $merchant, $partner = null)
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
+
+        if ($autoEnableInternational === false)
+        {
+            return;
+        }
+
+        // if submerchant asked for international and partner wants to force international to greylist
+        if ((empty($partner) === false) and
+            ($merchantDetails->getBusinessInternational() === true) and
+            ($partner->forceGreyListInternational() === true))
+        {
+            $activationFlow = ActivationFlow::GREYLIST;
+        }
+        else
+        {
+            $subcategory = $merchantDetails->getBusinessSubcategory();
+            $category    = $merchantDetails->getBusinessCategory();
+
+            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION];
+        }
+
+        $merchantDetails->setInternationalActivationFlow($activationFlow);
+
+        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+
+        $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
     }
 
     /**
@@ -365,7 +420,7 @@ class Core extends Base\Core
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFlow($merchantDetails, $merchant);
+            $this->autoUpdateMerchantActivationFlows($merchant);
 
             $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
 

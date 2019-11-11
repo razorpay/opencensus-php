@@ -484,4 +484,37 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
     }
+
+    public function testFundAccValidationWithAccountNumberAndVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        // get database entities
+        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav['balance_id']);
+        $this->assertEquals('10000000000000', $fav['merchant_id']);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
+
+        // no transaction should be created for 0 fee
+        $this->assertNotEquals($fav['id'], $txn['entity_id']);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+    }
 }

@@ -883,6 +883,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_VALUE);
     }
 
+    public function getBusinessInternational()
+    {
+        return $this->getAttribute(self::BUSINESS_INTERNATIONAL);
+    }
+
     public function getBusinessModel()
     {
         return $this->getAttribute(self::BUSINESS_MODEL);
