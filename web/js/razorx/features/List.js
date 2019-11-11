@@ -1,6 +1,6 @@
 import { classList, formatDate } from 'common/util';
 import { Link } from 'react-router-dom';
-import Collection from 'model/collection';
+import Collection from 'razorx/model/collection';
 import { rexFetch } from 'razorx/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'razorx/components/ui/Table';

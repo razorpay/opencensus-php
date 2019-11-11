@@ -5,7 +5,7 @@ import Field, {
   SelectField,
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
-import Collection from 'model/collection';
+import Collection from 'razorx/model/collection';
 import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { formatDate } from 'common/util';
