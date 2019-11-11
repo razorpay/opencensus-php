@@ -484,7 +484,7 @@ class Core extends Base\Core
     public function sendNotification(Invoice\Entity $invoice, string $medium): array
     {
         $this->trace->info(
-            TraceCode::INVOICE_SEND_SUBSCRIPTION_NOTIFICATION,
+            TraceCode::AUTH_LINK_RESEND,
             [
                 'invoice_id'        => $invoice->getId(),
                 'invoice_status'    => $invoice->getStatus(),
