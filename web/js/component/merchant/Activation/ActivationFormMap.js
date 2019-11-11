@@ -1,10 +1,8 @@
 import Input from 'component/Input';
 import { states } from 'rzp/utils/constants';
-
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { getDetailsForIFSC } from 'common/util';
-import { isValidGSTIN } from 'rzp/utils/rzp-utils';
+import { isValidGSTIN, getDetailsForIFSC } from 'rzp/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,

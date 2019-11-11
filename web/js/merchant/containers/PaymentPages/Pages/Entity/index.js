@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import {
   fetchPaymentPageEntity,

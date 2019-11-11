@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { deepClone } from 'common/util';
+import { deepClone } from 'razorx/helpers/utils';
 import { notifyError } from 'razorx/components/Modal';
 
 // If directly using fetch, then send absolute url

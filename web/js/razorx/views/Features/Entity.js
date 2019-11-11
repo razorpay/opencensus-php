@@ -1,6 +1,7 @@
 import { withRouter, Link } from 'react-router-dom';
 import { openModal, notifyError } from 'razorx/components/Modal';
-import { formatDate, titleCase } from 'common/util';
+import { titleCase } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 import { rexFetch } from 'razorx/helpers/fetch';
 import FeaturesModal from './Modal';
 

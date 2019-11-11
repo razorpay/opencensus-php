@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import { sendLink } from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';

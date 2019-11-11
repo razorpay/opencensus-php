@@ -8,7 +8,7 @@ import Field, {
 import Collection from 'razorx/model/collection';
 import { adminGet } from 'razorx/helpers/admin-fetch';
 import { observer } from 'mobx-react';
-import { formatDate } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 import { isSuperAdmin } from 'razorx/user';
 
 @observer

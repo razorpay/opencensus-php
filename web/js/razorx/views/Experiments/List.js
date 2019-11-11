@@ -3,7 +3,7 @@ import Collection from 'razorx/model/collection';
 import { rexFetch } from 'razorx/helpers/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'razorx/components/ui/Table';
-import { formatDate } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 
 import Form from 'razorx/components/ui/Form';
 import Field, { DateField, SelectField } from 'razorx/components/ui/Field';

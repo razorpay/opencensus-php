@@ -1,4 +1,5 @@
-import { classList, formatDate } from 'common/util';
+import { classList } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 import { Link } from 'react-router-dom';
 import Collection from 'razorx/model/collection';
 import { rexFetch } from 'razorx/helpers/fetch';
