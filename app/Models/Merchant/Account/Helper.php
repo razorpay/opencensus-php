@@ -141,6 +141,11 @@ class Helper
             );
         }
 
+        if (self::shouldEnableInternational($input) === true)
+        {
+            $detailInput[Detail\Entity::BUSINESS_INTERNATIONAL] = true;
+        }
+
         $detailInput = array_merge($detailInput, self::getBankAccountFromInput($input));
 
         return $detailInput;
@@ -217,8 +222,7 @@ class Helper
             $customFields[Constants::TNC] = $input[Constants::TNC];
         }
 
-        if ((isset($input[Constants::PROFILE]) === true) and
-            (isset($input[Constants::PROFILE][Constants::APPS]) === true))
+        if ((isset($input[Constants::PROFILE][Constants::APPS]) === true))
         {
             $customFields[Constants::APPS] = $input[Constants::PROFILE][Constants::APPS];
         }
@@ -346,5 +350,16 @@ class Helper
         $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT];
 
         return $bankAccount[Constants::NOTES] ?? [];
+    }
+
+    public static function shouldEnableInternational(array $input)
+    {
+        if ((isset($input[Constants::SETTINGS][Constants::PAYMENT]) === true) and
+            (empty($input[Constants::SETTINGS][Constants::PAYMENT][Constants::INTERNATIONAL]) === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

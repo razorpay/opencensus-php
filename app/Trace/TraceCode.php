@@ -257,8 +257,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
-    const HITACHI_CALL_WITH_PROXY                               = 'HITACHI_CALL_WITH_PROXY';
-    const HITACHI_CALL_WITHOUT_PROXY                            = 'HITACHI_CALL_WITHOUT_PROXY';
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -1472,6 +1470,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_EDIT                                             = 'USER_EDIT';
     const MERCHANT_USER_EMAIL_CHANGE                            = 'MERCHANT_USER_EMAIL_CHANGE';
     const USERS_SEND_OTP_FOR_ACTION                             = 'USERS_SEND_OTP_FOR_ACTION';
+    const USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT                = 'USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT';
     const USERS_VERIFY_OTP_FOR_ACTION                           = 'USERS_VERIFY_OTP_FOR_ACTION';
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
@@ -2058,6 +2057,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
+    const BATCH_ADD_PRICING_RULE_REQUEST                        = 'BATCH_ADD_PRICING_RULE_REQUEST';
+    const BATCH_PRICING_PLAN_REPLICATE_REQUEST                  = 'BATCH_PRICING_PLAN_REPLICATE_REQUEST';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
@@ -2209,12 +2210,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
+    const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
+    const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';
+    const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
 
     const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
+
+    const PRICING_RULE_ALREADY_DEFINED                          = 'PRICING_RULE_ALREADY_DEFINED';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

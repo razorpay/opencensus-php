@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
@@ -115,6 +116,11 @@ class PennyTesting extends Base\Core
         {
             $bankAccountValidationStatus = BankDetailsVerificationStatus::VERIFIED;
         }
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $bankAccountValidationStatus
+                            ]);
 
         $this->trace->info(TraceCode::MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING, [
             Entity::BANK_DETAILS_VERIFICATION_STATUS => $bankAccountValidationStatus,

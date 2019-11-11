@@ -366,6 +366,7 @@ final class Route
         'pricing_supported_networks'               => ['get',      'pricing/networks',                               'PricingController@getSupportedNetworks'                            ],
         'pricing_get_plan'                         => ['get',      'pricing/{id}',                                   'PricingController@getPlan'                                         ],
         'pricing_add_plan_rule'                    => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPlanRule'                                 ],
+        'pricing_add_plan_rule_bulk'               => ['post',     'pricing/rules/bulk',                             'PricingController@postAddBulkPlanRules'                            ],
         'pricing_delete_plan_rule'                 => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePlanRule'                                  ],
         'pricing_delete_plan_rule_force'           => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePlanRuleForce'                             ],
         'pricing_update_plan_rule'                 => ['patch',    'pricing/{planId}/rule/{ruleId}',                 'PricingController@updatePlanRule'                                  ],
@@ -879,6 +880,7 @@ final class Route
         'user_update_contact_admin'                => ['patch',    'users-admin/contact',                            'UserController@updateContactMobile'                                ],
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
         'user_account_lock_unlock_admin'           => ['put',      'users-admin/account/{id}/{action}',              'UserController@accountLockUnlock'                                  ],
+        'otp_create'                               => ['post',     'otp/send',                                       'UserController@sendOtpWithContact'                                 ],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -1295,6 +1297,9 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+        'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
+        'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
+        'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
 
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
@@ -1603,6 +1608,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
         'admin_forgot_password',
@@ -1909,6 +1915,7 @@ final class Route
         'oauth_application_fetch',
         'oauth_application_delete',
         'oauth_application_update',
+        'otp_create',
         'merchant_analytics',
         'reports_refund_irctc',
         'feature_onboarding_create',
@@ -2020,6 +2027,9 @@ final class Route
         'user_update_contact',
         'user_update_contact_merchant',
         'user_account_unlock',
+        'd2c_bureau_details_fetch',
+        'd2c_bureau_details_patch',
+        'd2c_bureau_details_otp_submit',
         'update_partner_type',
     ];
 
@@ -2491,6 +2501,7 @@ final class Route
     ];
 
     public static $routePermission = [
+        'pricing_add_plan_rule_bulk'               => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
@@ -3378,6 +3389,7 @@ final class Route
             'payout_bulk_create',
             'partner_submerchant_map',
             'iin_batch_process_record',
+            'pricing_add_plan_rule_bulk',
         ],
 
         'stork' => [

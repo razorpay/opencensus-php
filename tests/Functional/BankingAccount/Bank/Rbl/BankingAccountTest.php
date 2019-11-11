@@ -255,7 +255,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($balance[RZP\Models\Merchant\Balance\Entity::ID],
                             $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);
 
-        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
     }
 
     public function testActivateFailedDueToFtsFailure()

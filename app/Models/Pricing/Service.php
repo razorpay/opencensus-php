@@ -3,13 +3,21 @@
 namespace RZP\Models\Pricing;
 
 use App;
+use RZP\Error\Error;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payment\Method;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
-use RZP\Models\Pricing;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -41,6 +49,134 @@ class Service extends Base\Service
             [$rule->toArray()]);
 
         return $rule->toArray();
+    }
+
+    public function postAddBulkPricingRules($input)
+    {
+        $this->trace->info(
+            TraceCode::BATCH_ADD_PRICING_RULE_REQUEST,
+            [
+                'request body' => $input
+            ]);
+
+        $pricingRulesCollection = new PublicCollection;
+
+        foreach ($input as $item)
+        {
+            $idempotencyKey = $item['idempotency_key'];
+            try
+            {
+                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey)
+                {
+                    $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
+
+                    $planId = $merchant->getPricingPlanId();
+
+                    $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+
+                    $ruleOrgId = $plan->getOrgId();
+
+                    unset($item[Entity::MERCHANT_ID], $item['idempotency_key']);
+
+                    array_walk($item, function (&$value, &$key)
+                    {
+                        $value = $value === '' ? null : $value;
+                    });
+
+                    if (((new Pricing\Repository)->getPricingRuleByMultipleParams(
+                        $planId,
+                        $item[Entity::PRODUCT],
+                        $item[Pricing\Entity::FEATURE],
+                        $item[Pricing\Entity::PAYMENT_METHOD],
+                        $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
+                        $item[Pricing\Entity::PAYMENT_NETWORK],
+                        $item[Pricing\Entity::INTERNATIONAL])) === null)
+                    {
+                        if (count($this->repo->merchant->fetchMerchantsWithPricingPlan($planId)) !== 1)
+                        {
+                            $plan = $this->replicatePLan($merchant, $plan);
+
+                            $planId = $plan->getId();
+                        }
+
+                        (new Pricing\Core)->addPlanRule($plan, $item, $ruleOrgId);
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::PRICING_RULE_ALREADY_DEFINED,
+                            ['pricing_rule' => $item]);
+
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+                    }
+
+                    return [Entity::PLAN_ID => $planId, 'success' => true, 'idempotency_key' => $idempotencyKey];
+                });
+
+                $pricingRulesCollection->push($result);
+            }
+            catch (\Throwable $e)
+            {
+                $pricingRulesCollection->push([
+                    'idempotency_key'   => $idempotencyKey,
+                    'success'            => false,
+                    'error'             => [
+                        Error::DESCRIPTION       => $e->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $e->getCode(),
+                    ]
+                ]);
+            }
+        }
+
+        return $pricingRulesCollection->toArrayWithItems();
+    }
+
+    public function replicatePLan($merchant, $plan)
+    {
+        $planId = $merchant->getPricingPlanId();
+
+        $ruleOrgId = $plan->getOrgId();
+
+        $this->trace->info(TraceCode::BATCH_PRICING_PLAN_REPLICATE_REQUEST,
+                            [
+                                Entity::PLAN_ID => $planId
+                            ]);
+
+        $rules = $plan->toArray();
+
+        $planName = UniqueIdEntity::generateUniqueId();
+
+        for ($i = 0; $i < count($rules); $i++)
+        {
+            $rules[$i] = array_except(
+                              $rules[$i],
+                              [Entity::ID,
+                              Entity::PLAN_ID,
+                              Entity::ORG_ID,
+                              Entity::CREATED_AT,
+                              Entity::UPDATED_AT,
+                              Entity::DELETED_AT,
+                              Entity::EXPIRED_AT]);
+
+            $rules[$i][Entity::INTERNATIONAL] = $rules[$i][Entity::INTERNATIONAL] === true ? '1' : '0';
+
+            if ($rules[$i][Entity::PRODUCT] !== Product::BANKING)
+            {
+                unset($rules[$i][Entity::ACCOUNT_TYPE]);
+            }
+
+            if (isset($rules[$i][Entity::ACCOUNT_TYPE]) === false or
+                $rules[$i][Entity::ACCOUNT_TYPE] !== Merchant\Balance\AccountType::DIRECT)
+            {
+                unset($rules[$i][Entity::CHANNEL]);
+            }
+        }
+
+        $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
+
+        (new Merchant\Service)->assignPricingPlan($merchant->getId(),
+                                                 [Merchant\Entity::PRICING_PLAN_ID => $newplan->getId()]);
+
+        return $newplan;
     }
 
     public function getPlanById($id)

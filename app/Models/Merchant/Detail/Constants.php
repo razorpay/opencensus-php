@@ -7,6 +7,12 @@ class Constants
     // input params for pan verifier
     const PAN_NUMBER = 'pan_number';
 
+    const POI_STATUS                       = 'poi_status';
+    const POA_STATUS                       = 'poa_status';
+    const DOCUMENT_TYPE                    = 'document_type';
+    const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
+    const EXTERNAL_VERIFIER                = 'external_verifier';
+
     // pan verifier response types
     const INCORRECT_DETAILS = 'incorrect_details';
     const SUCCESS           = 'success';

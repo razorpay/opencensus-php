@@ -148,12 +148,18 @@ class Entity extends Base\PublicEntity
     {
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
 
-        $invoiceNumber = $this->merchant->getInvoiceCode() . $dateString;
+        $invoiceNumber = $this->merchant->getInvoiceCode();
 
         if ($balanceType === BalanceType::BANKING)
         {
-            $invoiceNumber = $invoiceNumber . Constants::RZPX;
+            $invoiceNumber = substr($this->merchant->getId(), 0, Constants::INVOICE_CODE_LENGTH_FOR_X);
+
+            $invoiceNumber = strtoupper($invoiceNumber);
+
+            $invoiceNumber = $invoiceNumber . Constants::X_INVOICE_SEPARATOR;
         }
+
+        $invoiceNumber = $invoiceNumber . $dateString;
 
         $this->setAttribute(self::INVOICE_NUMBER, $invoiceNumber);
     }

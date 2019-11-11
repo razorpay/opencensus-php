@@ -224,9 +224,18 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
+        $invoiceData = [];
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $invoiceData = [
+                Entity::REMINDER_ENABLE => $input[Entity::REMINDER_ENABLE]
+            ];
+        }
+
         if ($invoice->isIssued() === true)
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $invoiceData);
         }
 
         return $invoice;
