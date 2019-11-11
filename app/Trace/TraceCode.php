@@ -822,6 +822,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE                  = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
     const FTA_SAVED_TO_DB                                       = 'FTA_SAVED_TO_DB';
     const FTA_BATCH_UPDATED                                     = 'FTA_BATCH_UPDATED';
+    const FTA_BATCH_SUCCESS_EVENT_TIME_TAKEN                    = 'FTA_BATCH_SUCCESS_EVENT_TIME_TAKEN';
 
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
