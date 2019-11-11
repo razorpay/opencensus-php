@@ -83,9 +83,12 @@ class UserController extends Controller
 
             $currentMerchantId = $details['current'];
 
-            if(isset($currentMerchantId))
+            if(is_null($currentMerchantId) === false)
             {
                 $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
+            }
+            else {
+                $data['custom_notes'] = null;
             }
 
             return view('merchant.index', $data);
