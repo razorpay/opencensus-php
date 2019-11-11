@@ -311,6 +311,8 @@ final class Route
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',             ],
         'fund_transfer_attempts_process_fts'       => ['post',     'fund_transfer_attempts/fts/process/{channel}',   'FundTransferAttemptController@processFundTransfersUsingFts'        ],
+        'fts_dashboard_fund_transfer_update'       => ['patch',    'fts/dashboard/fund_transfer_update',             'FTSController@updateBulkFtsAttempts'                               ],
+        'fts_dashboard_fund_transfer_status_bulk'  => ['post',     'fts/dashboard/fund_transfer_status/bulk',        'FTSController@getBulkTransferStatus'                               ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -1812,6 +1814,7 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
+
         // Temp fix to allow partners creating their own QR codes for
         // submerchants to use only one set of credentials everywhere
         'mpans_issue',
@@ -2502,6 +2505,10 @@ final class Route
         'token_registration_tokens_authenticate',
 
         'gateway_downtime_detection_get_stats',
+
+        //FTS Dashboard routes
+        'fts_dashboard_fund_transfer_update',
+        'fts_dashboard_fund_transfer_status_bulk',
     ];
 
     public static $routePermission = [
@@ -3011,6 +3018,8 @@ final class Route
         'recon_fetch_files_count'                   => '*',
         'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
+        'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'reports_monthly_banking_invoice'           => '*',
     ];
 
@@ -3996,11 +4005,11 @@ final class Route
     public function defineRootApiRoute()
     {
         $this->router
-            ->get('/',
-                  [
-                      'as'   => 'api_root',
-                      'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                  ]);
+             ->get('/',
+                 [
+                     'as'   => 'api_root',
+                     'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                 ]);
     }
 
     public function defineStatusApiRoute()

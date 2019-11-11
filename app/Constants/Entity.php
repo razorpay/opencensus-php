@@ -293,6 +293,11 @@ class Entity
     // Service: Stork
     const STORK_WEBHOOK = 'stork.webhook';
 
+    const FTS_TRANSFERS                  = 'fts.transfers';
+    const FTS_ATTEMPTS                   = 'fts.attempts';
+    const FTS_FUND_ACCOUNT               = 'fts.fund_accounts';
+    const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
+
     const COMMISSION = 'commission';
 
     /**
@@ -655,6 +660,10 @@ class Entity
         self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
         self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
+        self::FTS_TRANSFERS                => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
