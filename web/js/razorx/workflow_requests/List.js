@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
-import { PageTable } from 'ui/Table';
-import Field, { SelectField, SearchableSelectField } from 'ui/Field';
-import Collection from 'model/collection';
+import Form from 'razorx/components/ui/Form';
+import { PageTable } from 'razorx/components/ui/Table';
+import Field, {
+  SelectField,
+  SearchableSelectField,
+} from 'razorx/components/ui/Field';
+import Collection from 'razorx/model/collection';
 import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { formatDate } from 'common/util';

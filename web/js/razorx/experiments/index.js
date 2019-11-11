@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import ExperimentsModal from './Modal';
-import { SwitchField } from 'ui/Field';
+import { SwitchField } from 'razorx/components/ui/Field';
 import List from './List';
 import Entity from './Entity';
 

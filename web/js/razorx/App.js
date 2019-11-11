@@ -3,7 +3,7 @@ import ErrorBoundary from 'common/ErrorBoundary';
 import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { ShowWhenRoute } from 'razorx/components/ShowWhen';
-import AsyncButton from 'ui/AsyncButton';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 
 import { notifyError } from 'common/modal';
 import MainNavLink from 'razorx/components/MainNavLink';

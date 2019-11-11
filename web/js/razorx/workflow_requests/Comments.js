@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import Form from 'ui/Form';
+import Form from 'razorx/components/ui/Form';
 import { formatDate } from 'common/util';
-import { TextAreaField } from 'ui/Field';
-import AsyncButton from 'ui/AsyncButton';
+import { TextAreaField } from 'razorx/components/ui/Field';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 import { adminPost } from 'common/fetch';
 
 @observer

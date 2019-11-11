@@ -7,13 +7,13 @@ import {
   notifySuccess,
   notifyError,
 } from 'common/modal';
-import Form from 'ui/Form';
+import Form from 'razorx/components/ui/Form';
 import Field, {
   TextAreaField,
   SwitchField,
   SelectField,
   SearchableSelectField,
-} from 'ui/Field';
+} from 'razorx/components/ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'razorx/JSONEdit';
 

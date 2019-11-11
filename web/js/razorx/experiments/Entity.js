@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { openModal, notifyError, notifySuccess } from 'common/modal';
 import { formatDate, titleCase, classList } from 'common/util';
 import { rexFetch, rexPatch } from 'razorx/fetch';
-import AsyncButton from 'ui/AsyncButton';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 import ExperimentsModal from './Modal';
 
 export default class extends React.Component {

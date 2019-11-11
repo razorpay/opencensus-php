@@ -1,5 +1,5 @@
 import { observable, extendShallowObservable } from 'mobx';
-import BaseModel from 'model/base';
+import BaseModel from 'razorx/model/base';
 import { deepClone } from 'common/util';
 
 export default class Item extends BaseModel {

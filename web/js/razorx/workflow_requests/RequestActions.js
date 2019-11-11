@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { adminPost, adminPut } from 'common/fetch';
 import { confirm, closeModal, notifyError } from 'common/modal';
 import { notifyDone } from '../../common/modal';
-import AsyncButton from 'ui/AsyncButton';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 
 export default class RequestActions extends Component {
   //route config based on request actions i.e {<action>: [<action_url>, <action_http_func>]}
