@@ -29,10 +29,10 @@ class Core extends Base\Core
         return $this->repo->vpa->findOrFailPublic($id);
     }
 
-    public function updateVpaWithFtsId(Entity $entity, $ftsFundAccountId)
-    {
-        $entity->setFtsFundAccountId($ftsFundAccountId);
-
-        $this->repo->saveOrFail($entity);
-    }
+//    public function updateVpaWithFtsId(Entity $entity, $ftsFundAccountId)
+//    {
+//        $entity->setFtsFundAccountId($ftsFundAccountId);
+//
+//        $this->repo->saveOrFail($entity);
+//    }
 }

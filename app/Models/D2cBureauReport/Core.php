@@ -27,7 +27,9 @@ class Core extends Base\Core
     {
         $bureauDetailArray = $bureauDetail->toArrayPublic();
 
-        $request['d2c_bureau_details'] = $this->providerSpecificProcessing($bureauDetailArray, Provider::EXPERIAN);
+        $this->providerSpecificProcessing($bureauDetailArray, Provider::EXPERIAN);
+
+        $request['d2c_bureau_details'] = $bureauDetailArray;
 
         /** @var Mozart $mozartService */
         $mozartService = $this->app->mozart;

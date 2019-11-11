@@ -184,10 +184,11 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,
             [
-                'timestamp'   => $this->setlTime,
-                'time'        => time(),
-                'using_queue' => $useQueue,
-                'params'      => $params,
+                'timestamp'    => $this->setlTime,
+                'time'         => time(),
+                'using_queue'  => $useQueue,
+                'params'       => $params,
+                'merchant_ids' => $merchantIds,
             ]);
 
         $response = [];
@@ -492,8 +493,12 @@ class Processor extends Base\Core
 
             $balance = $this->merchants[$merchantId]->getBalanceByTypeOrFail($balanceType);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner, $balance, $params);
-
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns(
+                $txns,
+                $channel,
+                $merchantSettleToPartner,
+                $balance,
+                $params);
 
             if ($setl !== null)
             {
@@ -888,10 +893,27 @@ class Processor extends Base\Core
     {
         RuntimeManager::setMemoryLimit('4096M');
 
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        if ($balance === null)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant does not have balance type ' . $balanceType,
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balanceType, $params);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balance, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)

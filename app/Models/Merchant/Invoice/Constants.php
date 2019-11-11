@@ -8,5 +8,7 @@ final class Constants
 
     const START_MONTH = 07;
 
-    const RZPX = 'RZPX';
+    const X_INVOICE_SEPARATOR = '-';
+
+    const INVOICE_CODE_LENGTH_FOR_X = 11;
 }
