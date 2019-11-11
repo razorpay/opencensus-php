@@ -32,6 +32,13 @@ class Method
         self::PAYLATER      => 'Pay Later',
     ];
 
+    protected static $esAutomaticMethods = [
+        self::CARD          => 'Card',
+        self::NETBANKING    => 'Net Banking',
+        self::UPI           => 'UPI',
+        self::EMI           => 'EMI',
+    ];
+
     public static $bankMethods = [
         self::NETBANKING,
         self::AEPS,
@@ -68,9 +75,19 @@ class Method
         return array_keys(self::$methods);
     }
 
+    public static function getEsPaymentMethods()
+    {
+        return array_keys(self::$esAutomaticMethods);
+    }
+
     public static function isValid($method)
     {
         return in_array($method, self::getAllPaymentMethods(), true);
+    }
+
+    public static function isValidEsMethod($method)
+    {
+        return in_array($method, self::getEsPaymentMethods(), true);
     }
 
     public static function validateMethod($method)
@@ -79,6 +96,15 @@ class Method
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid Payment method: ' . $method);
+        }
+    }
+
+    public static function validateEsMethod($method)
+    {
+        if (self::isValidEsMethod($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid Payment method for early settlement: ' . $method);
         }
     }
 

@@ -828,6 +828,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddBulkPlanRules()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testAddBulkPlanRulesReplicatePlan()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['items'][0]['plan_id'],$content['id']);
+        $this->assertEquals($response['items'][0]['plan_id'],$response['items'][1]['plan_id']);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $this->ba->adminAuth();
