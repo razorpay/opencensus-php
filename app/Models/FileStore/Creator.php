@@ -520,7 +520,14 @@ class Creator extends Base\Core
         {
             $this->filePath = $this->localFile->getPathname();
 
-            $this->mime($this->localFile->getMimeType());
+            // Files generated for certain banking integrations during upload undergoes mime type validation.
+            // When mime type is not set then the library tries to guess the mime type.
+            // This produces type of incompatible nature and causes file upload level issues.
+            // Hence, the change.
+            if ($this->file->getMime() === null)
+            {
+                $this->mime($this->localFile->getMimeType());
+            }
         }
         else if ($this->localFilePath !== null)
         {
@@ -535,7 +542,10 @@ class Creator extends Base\Core
         {
             $this->writeToLocalFile();
 
-            $this->mime($this->localFile->getMimeType());
+            if ($this->file->getMime() === null)
+            {
+                $this->mime($this->localFile->getMimeType());
+            }
         }
 
         $this->validateBeforeUpload();

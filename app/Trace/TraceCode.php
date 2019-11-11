@@ -815,6 +815,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_UPDATE_STATUS                                     = 'FTA_UPDATE_STATUS';
     const FTA_FILE_ROWS_CREATED                                 = 'FTA_FILE_ROWS_CREATED';
     const FTA_FILE_CREATED_IN_S3                                = 'FTA_FILE_CREATED_IN_S3';
+    const FTA_ENCRYPTED_FILE_CREATE_IN_S3_INIT                  = 'FTA_ENCRYPTED_FILE_CREATE_IN_S3_INIT';
+    const FTA_UNENCRYPTED_FILE_CREATE_IN_S3_INIT                = 'FTA_UNENCRYPTED_FILE_CREATE_IN_S3_INIT';
+    const FTA_ENCRYPTED_FILE_CREATE_IN_S3_COMPLETE              = 'FTA_ENCRYPTED_FILE_CREATE_IN_S3_COMPLETE';
+    const FTA_UNENCRYPTED_FILE_CREATE_IN_S3_COMPLETE            = 'FTA_UNENCRYPTED_FILE_CREATE_IN_S3_COMPLETE';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE                  = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
     const FTA_SAVED_TO_DB                                       = 'FTA_SAVED_TO_DB';
     const FTA_BATCH_UPDATED                                     = 'FTA_BATCH_UPDATED';
@@ -1794,6 +1798,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MEMORY_USAGE_FTA_UPDATE_STATUS_END                    = 'MEMORY_USAGE_FTA_UPDATE_STATUS_END';
     const MEMORY_USAGE_FTA_FETCHING_ENTITIES                    = 'MEMORY_USAGE_FTA_FETCHING_ENTITIES';
     const MEMORY_USAGE_FTA_ENTITIES_FETCHED                     = 'MEMORY_USAGE_FTA_ENTITIES_FETCHED';
+    const FUND_TRANSFER_FILE_UPLOAD_FAILED                      = 'FUND_TRANSFER_FILE_UPLOAD_FAILED';
 
     // redis dual write
     const REDIS_DUAL_WRITE_STORE_ERROR                          = 'REDIS_DUAL_WRITE_STORE_ERROR';
