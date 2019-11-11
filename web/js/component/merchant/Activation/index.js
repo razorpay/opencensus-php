@@ -801,20 +801,28 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
-  @RTracking((props, state) => {
-    const { tracking } = props;
-    const fields = trackFormFields(props.data, state.dirty);
-    return fields.forEach(field =>
-      tracking.trackEvent(
-        window.rzpQ.onbr().initiated('act.provide_act_details', {
-          ...field,
-        })
-      )
-    );
-  })
+  trackSubmitL1 = data => {
+    const { tracking } = this.props;
+    try {
+      isPresent(data) &&
+        Object.keys(data).forEach(dataKey =>
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated('act.provide_act_details', {
+              value: data[dataKey],
+              name: dataKey,
+            })
+          )
+        );
+    } catch (e) {}
+  };
+
   submitL1 = async currenActiveTab => {
     const data = this.formData;
+
+    this.trackSubmitL1(data);
+
     this.setState({ callingL1Api: true });
+
     try {
       let response = await this.props.submitL1Form({
         data,

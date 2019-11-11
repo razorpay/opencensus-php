@@ -98,6 +98,7 @@ const PROPRIETORSHIP = 1;
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
+const LLP = 6; // 'LLP'
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 const UNREGISTERED_TYPES = {
   11: true,
@@ -185,7 +186,7 @@ function getBeneficiaryInfo() {
   const currentBusinessType =
     this.state.dirty.business_type || this.props.data.business_type;
   if (isUnregisteredBusiness(this)) {
-    return 'Please ensure that the spelling is the same as your bank account';
+    return 'Please ensure that the spelling is the same as your bank account';
   } else {
     let text = 'Company';
 
@@ -193,7 +194,7 @@ function getBeneficiaryInfo() {
       text = 'Individual';
     }
 
-    return `The beneficiary name should be same as ${text} name`;
+    return `The beneficiary name should be same as ${text} name`;
   }
 }
 
