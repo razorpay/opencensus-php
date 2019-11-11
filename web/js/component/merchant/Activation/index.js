@@ -49,6 +49,7 @@ import {
   updateHubSpotContactsProperties,
   UNREGISTERED_TYPES,
   isL1Completed,
+  hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 import QueryString from 'query-string';
 
@@ -697,25 +698,6 @@ export default class ActivationWizard extends React.Component {
       this.state.dirty.business_type || this.props.data.business_type;
 
     return businessType == 2 || businessType == 11;
-  }
-
-  get hasSelectedBlacklistedCategory() {
-    const categories = this.props.categories;
-    if (isPresent(categories)) {
-      const selectedCategory =
-        this.state.dirty.business_category || this.props.data.business_category;
-      const subcategories =
-        selectedCategory && categories[selectedCategory]['subcategories'];
-      if (isPresent(subcategories)) {
-        const selectedSubcategory =
-          this.state.dirty.business_subcategory ||
-          this.props.data.business_subcategory;
-        return (
-          subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
-        );
-      }
-    }
-    return false;
   }
 
   /*
@@ -1528,7 +1510,7 @@ export default class ActivationWizard extends React.Component {
                     <AsyncBtn.Primary
                       disabled={
                         this.state.callingL1Api ||
-                        this.hasSelectedBlacklistedCategory
+                        hasSelectedBlacklistedCategory(this)
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}

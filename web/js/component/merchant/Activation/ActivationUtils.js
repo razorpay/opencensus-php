@@ -5,6 +5,7 @@ import {
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
 import BingDataObj from 'rzp/utils/bingDataObj';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
 import {
   trackhubsContactUpdate,
@@ -198,6 +199,26 @@ function getBeneficiaryInfo() {
   }
 }
 
+function hasSelectedBlacklistedCategory(activation) {
+  const { props, state } = activation;
+  const categories = props.categories;
+  if (isPresent(categories)) {
+    const selectedCategory =
+      state.dirty.business_category || props.data.business_category;
+    const subcategories =
+      selectedCategory && categories[selectedCategory]['subcategories'];
+    if (isPresent(subcategories)) {
+      const selectedSubcategory =
+        state.dirty.business_subcategory || props.data.business_subcategory;
+      return (
+        subcategories[selectedSubcategory] &&
+        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+      );
+    }
+  }
+  return false;
+}
+
 export {
   L1FormSuccess,
   L1FormError,
@@ -216,4 +237,5 @@ export {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  hasSelectedBlacklistedCategory,
 };
