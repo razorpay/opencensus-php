@@ -11,7 +11,6 @@ import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
-import ShowWhen from 'merchant/components/ShowWhen';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
