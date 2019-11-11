@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 
 import ProfileDropdown from 'merchantLA/containers/Header/ProfileDropdown';
-import { toggleMobileMenu } from 'merchantLA/modules/app';
+import { toggleMobileMenu } from 'merchantLA/reducers/app';
 
 import NavFragment from 'merchant/components/HeaderNav/NavFragment';
 import ModesDropdown from 'merchant/components/HeaderNav/SwitchMode';

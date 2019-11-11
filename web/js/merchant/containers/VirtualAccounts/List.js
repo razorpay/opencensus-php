@@ -19,8 +19,8 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
+} from 'merchant/reducers/onboarding';
+import { fetchVirtualAccounts as fetchAll } from 'merchant/reducers/virtualaccounts';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';

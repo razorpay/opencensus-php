@@ -6,7 +6,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 
-import { sendInvitation } from 'merchant/modules/invitation';
+import { sendInvitation } from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import InvitationsList from './Invitations/List';

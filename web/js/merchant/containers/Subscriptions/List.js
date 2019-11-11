@@ -6,7 +6,7 @@ import { RZPFeatures } from 'rzp/utils/constants';
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
-import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
+import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
 
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';

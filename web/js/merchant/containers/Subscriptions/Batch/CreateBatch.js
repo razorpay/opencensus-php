@@ -9,7 +9,7 @@ import {
   validateRecurringChargeBatch,
   createAuthLinkBatch,
   validateAuthLinkBatch,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 import { closeModal } from 'rzp/modules/modals';
 
 import AuthLinksBatchForm from './AuthLinkBatchCreationForm';

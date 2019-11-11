@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
-import { upgradeAccount } from 'merchant/modules/profile';
+import { upgradeAccount } from 'merchant/reducers/profile';
 
 @connect(null, { showNotification, upgradeAccount })
 @reduxForm({

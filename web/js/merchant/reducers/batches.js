@@ -3,7 +3,7 @@ import {
   getActionName,
   makeCollectionReducer,
   makeActionCollectionReducer,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import {
   makeEntityReducer,
   entityFetchPendingState,

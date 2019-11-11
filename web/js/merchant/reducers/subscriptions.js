@@ -5,11 +5,11 @@ import {
   makeActionCollectionReducer,
   fetchAll,
   updateEntityInList,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
-import { PLAN_FETCH } from 'merchant/modules/plans';
-import { CUSTOMER_FETCH } from 'merchant/modules/customers';
+import { PLAN_FETCH } from 'merchant/reducers/plans';
+import { CUSTOMER_FETCH } from 'merchant/reducers/customers';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const ITEMS_FETCH = 'ITEMS_FETCH';

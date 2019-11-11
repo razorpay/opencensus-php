@@ -6,7 +6,7 @@ import { RZPFeatures } from 'rzp/utils/constants';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
 import { daysLeftInExpiry } from 'merchant/utils/disputes';
-import { fetchDisputes as fetchAll } from 'merchant/modules/collection';
+import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { titleCase } from 'common/util';

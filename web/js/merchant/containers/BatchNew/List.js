@@ -9,10 +9,10 @@ import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
 import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
 
-import { luminateRow } from 'merchant/modules/app';
+import { luminateRow } from 'merchant/reducers/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-import { batchDownload } from 'merchant/modules/batches';
+import { batchDownload } from 'merchant/reducers/batches';
 import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 

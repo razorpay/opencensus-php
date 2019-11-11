@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
 import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'merchantLA/modules/team';
+import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const selector = formValueSelector('newInvitation');

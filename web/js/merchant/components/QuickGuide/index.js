@@ -9,7 +9,7 @@ import {
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 /*
   DATA_POINTS: contains keys to get data from redux store

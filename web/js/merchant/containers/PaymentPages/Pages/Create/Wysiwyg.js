@@ -23,7 +23,7 @@ import {
   markDataSaved,
   updateTemplateType,
   isFormItemOfTypeAmount,
-} from 'merchant/modules/wysiwyg';
+} from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 

@@ -6,7 +6,7 @@ import S1 from './steps/S1';
 import S2 from './steps/S2';
 import S3 from './steps/S3';
 import User from 'merchant/models/User';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'rzp/modules/notifications';

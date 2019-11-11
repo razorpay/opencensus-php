@@ -6,8 +6,11 @@ import { classList } from 'common/util';
 
 import User from 'merchant/models/User';
 
-import { toggle2FaEnforcement, updateSelfContact } from 'merchant/modules/team';
-import { updateSession } from 'merchant/modules/session';
+import {
+  toggle2FaEnforcement,
+  updateSelfContact,
+} from 'merchant/reducers/team';
+import { updateSession } from 'merchant/reducers/session';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';

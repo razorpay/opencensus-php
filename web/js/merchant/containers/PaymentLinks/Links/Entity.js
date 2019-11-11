@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as InvoiceActions from 'merchant/modules/invoices/details';
+import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
-import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';

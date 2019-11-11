@@ -15,7 +15,7 @@ import {
 } from 'rzp/utils/validators';
 
 import * as NotificationActions from 'rzp/modules/notifications';
-import * as ApplicationActions from 'merchant/modules/applications';
+import * as ApplicationActions from 'merchant/reducers/applications';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import InputField from 'rzp/ui/Forms/InputField';

@@ -7,7 +7,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import DocsLink from 'merchant/components/DocsLink';
-import { fetchReversals as fetchAll } from 'merchant/modules/collection';
+import { fetchReversals as fetchAll } from 'merchant/reducers/collection';
 
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ReversalsListFilter from 'merchant/components/Marketplace/ReversalsListFilter';

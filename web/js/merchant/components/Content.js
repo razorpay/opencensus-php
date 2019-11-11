@@ -29,7 +29,7 @@ import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchant/modules/app';
+} from 'merchant/reducers/app';
 import { openSlider } from 'rzp/modules/slider';
 
 import store from 'merchant/store';

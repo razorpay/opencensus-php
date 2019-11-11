@@ -8,12 +8,12 @@ import SettlementsList from 'merchantLA/components/Settlements/List';
 import SettlementsListFilter from 'merchantLA/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchSettlements as fetchAll } from 'merchantLA/modules/collection';
+import { fetchSettlements as fetchAll } from 'merchantLA/reducers/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { fetchBalanceAction } from 'merchantLA/modules/credits';
+import { fetchBalanceAction } from 'merchantLA/reducers/credits';
 import Amount from 'rzp/ui/Amount';
 
 @connect(

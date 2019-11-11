@@ -4,7 +4,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { role } from 'rzp/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchInvitations as fetchAll } from 'merchant/modules/collection';
+import { fetchInvitations as fetchAll } from 'merchant/reducers/collection';
 
 import Actions from './Actions';
 

@@ -3,7 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchAuthLinks as fetchAll } from 'merchant/modules/collection';
+import { fetchAuthLinks as fetchAll } from 'merchant/reducers/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';

@@ -3,53 +3,53 @@ import { reducer as formReducer } from 'redux-form';
 import modalReducer from 'rzp/modules/modals';
 import sliderReducer from 'rzp/modules/slider';
 import notificationsReducer from 'rzp/modules/notifications';
-import sessionReducer from 'merchant/modules/session';
-import appReducer from 'merchant/modules/app';
-import homeReducer from 'merchant/modules/home';
-import invoicesReducer from 'merchant/modules/invoices/list';
-import invoiceDetailsReducer from 'merchant/modules/invoices/details';
-import profileReducer from 'merchant/modules/profile';
-import customersReducer from 'merchant/modules/customers';
-import itemsReducer from 'merchant/modules/items';
-import orderReducer from 'merchant/modules/orders/details';
-import disputeReducer from 'merchant/modules/disputes/details';
-import settlementReducer from 'merchant/modules/settlements/details';
-import webhooksReducer from 'merchant/modules/webhooks';
-import keysReducer from 'merchant/modules/keys';
-import bMerchantReducer from 'merchant/modules/b-merchants';
-import creditsReducer from 'merchant/modules/credits';
-import configReducer from 'merchant/modules/config';
-import activationReducer from 'merchant/modules/activation';
-import activationWizardReducer from 'merchant/modules/activationWizard';
-import refundReducer from 'merchant/modules/refunds/details';
-import paymentReducer from 'merchant/modules/payments/details';
-import transferReducer from 'merchant/modules/marketplace/transfer';
-import reversalReducer from 'merchant/modules/marketplace/reversal';
-import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
-import referralsReducer from 'merchant/modules/referrals';
-import applicationsReducer from 'merchant/modules/applications';
+import sessionReducer from 'merchant/reducers/session';
+import appReducer from 'merchant/reducers/app';
+import homeReducer from 'merchant/reducers/home';
+import invoicesReducer from 'merchant/reducers/invoices/list';
+import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
+import profileReducer from 'merchant/reducers/profile';
+import customersReducer from 'merchant/reducers/customers';
+import itemsReducer from 'merchant/reducers/items';
+import orderReducer from 'merchant/reducers/orders/details';
+import disputeReducer from 'merchant/reducers/disputes/details';
+import settlementReducer from 'merchant/reducers/settlements/details';
+import webhooksReducer from 'merchant/reducers/webhooks';
+import keysReducer from 'merchant/reducers/keys';
+import bMerchantReducer from 'merchant/reducers/b-merchants';
+import creditsReducer from 'merchant/reducers/credits';
+import configReducer from 'merchant/reducers/config';
+import activationReducer from 'merchant/reducers/activation';
+import activationWizardReducer from 'merchant/reducers/activationWizard';
+import refundReducer from 'merchant/reducers/refunds/details';
+import paymentReducer from 'merchant/reducers/payments/details';
+import transferReducer from 'merchant/reducers/marketplace/transfer';
+import reversalReducer from 'merchant/reducers/marketplace/reversal';
+import mpAccountsReducer from 'merchant/reducers/marketplace/accounts';
+import referralsReducer from 'merchant/reducers/referrals';
+import applicationsReducer from 'merchant/reducers/applications';
 import {
   virtualAccountsReducer,
   virtualAccountReducer,
-} from 'merchant/modules/virtualaccounts';
-import submerchantReducer from 'merchant/modules/submerchant';
+} from 'merchant/reducers/virtualaccounts';
+import submerchantReducer from 'merchant/reducers/submerchant';
 import commissionReducer, {
   commAggSingleDayReducer,
-} from 'merchant/modules/commission';
-import statesReducer from 'merchant/modules/states';
-import taxesReducer from 'merchant/modules/taxes';
-import tokenReducer from 'merchant/modules/token';
-import onboardingReducer from 'merchant/modules/onboarding';
-import remindersReducer from 'merchant/modules/reminders';
+} from 'merchant/reducers/commission';
+import statesReducer from 'merchant/reducers/states';
+import taxesReducer from 'merchant/reducers/taxes';
+import tokenReducer from 'merchant/reducers/token';
+import onboardingReducer from 'merchant/reducers/onboarding';
+import remindersReducer from 'merchant/reducers/reminders';
 
-import authLinkReducer from 'merchant/modules/auth_link';
+import authLinkReducer from 'merchant/reducers/auth_link';
 
 import {
   refundBatchesReducer,
   PaymentBatchIdsReducer,
   batchDetailsReducer,
   batchesReducer,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 
 import {
   paymentsReducer,
@@ -66,19 +66,19 @@ import {
   commissionsReducer,
   commissionsAggregateReducer,
   invitationsReducer,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 
-import { teamReducer } from 'merchant/modules/team';
+import { teamReducer } from 'merchant/reducers/team';
 
 import {
   subscriptionsReducer,
   subscriptionReducer,
-} from 'merchant/modules/subscriptions';
-import { plansReducer, planReducer } from 'merchant/modules/plans';
-import { addOnsReducer } from 'merchant/modules/addons';
-import { reportsReducer } from 'merchant/modules/reports';
+} from 'merchant/reducers/subscriptions';
+import { plansReducer, planReducer } from 'merchant/reducers/plans';
+import { addOnsReducer } from 'merchant/reducers/addons';
+import { reportsReducer } from 'merchant/reducers/reports';
 
-import wysiwygReducer from 'merchant/modules/wysiwyg';
+import wysiwygReducer from 'merchant/reducers/wysiwyg';
 
 export default combineReducers({
   modal: modalReducer,

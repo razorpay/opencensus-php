@@ -9,10 +9,10 @@ import { showNotification } from 'rzp/modules/notifications';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { updateFeatures } from 'merchant/modules/config';
-import { fetchTransfers } from 'merchant/modules/collection';
-import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
+} from 'merchant/reducers/onboarding';
+import { updateFeatures } from 'merchant/reducers/config';
+import { fetchTransfers } from 'merchant/reducers/collection';
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 

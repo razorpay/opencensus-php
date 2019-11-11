@@ -11,7 +11,7 @@ import RTracking from 'react-tracking';
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import {
   trackTestModeCard,

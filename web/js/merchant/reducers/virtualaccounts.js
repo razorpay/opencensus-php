@@ -3,7 +3,7 @@ import VirtualAccount from 'merchant/models/VirtualAccount';
 import {
   makeActionCollectionReducer,
   fetchAll,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
 const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';

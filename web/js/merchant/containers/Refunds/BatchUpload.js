@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 
 import BatchUpload from 'merchant/components/Batch/Upload';
 
-import { uploadRefundBatch as uploadBatch } from 'merchant/modules/batches';
+import { uploadRefundBatch as uploadBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'rzp/modules/notifications';
 
 @withRouter

@@ -14,9 +14,9 @@ import {
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 
-import * as HomeActions from 'merchantLA/modules/home';
-import { fetch } from 'merchantLA/modules/pokedex';
-import { fetchTransfers } from 'merchantLA/modules/collection';
+import * as HomeActions from 'merchantLA/reducers/home';
+import { fetch } from 'merchantLA/reducers/pokedex';
+import { fetchTransfers } from 'merchantLA/reducers/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,

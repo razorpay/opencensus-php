@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchEarnings as fetchAll } from 'merchant/modules/collection';
+import { fetchEarnings as fetchAll } from 'merchant/reducers/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import Amount from 'rzp/ui/Amount';

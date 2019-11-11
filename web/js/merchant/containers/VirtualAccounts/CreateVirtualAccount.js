@@ -16,9 +16,9 @@ import { closeModal } from 'rzp/modules/modals';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { luminateRow } from 'merchant/modules/app';
-import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
-import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
+import { luminateRow } from 'merchant/reducers/app';
+import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
+import { saveVirtualAccount } from 'merchant/reducers/virtualaccounts';
 
 import CustomerCreation from 'merchant/containers/Customers/New';
 

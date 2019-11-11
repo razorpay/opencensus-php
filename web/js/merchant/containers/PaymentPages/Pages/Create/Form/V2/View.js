@@ -9,7 +9,7 @@ import {
   updateData,
   deleteInFormItems,
   updateInFormItems,
-} from 'merchant/modules/wysiwyg';
+} from 'merchant/reducers/wysiwyg';
 
 function offset(el) {
   var rect = el.getBoundingClientRect(),

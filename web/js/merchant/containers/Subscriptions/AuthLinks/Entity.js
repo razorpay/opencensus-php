@@ -13,7 +13,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
-import { fetchAuthLink } from 'merchant/modules/auth_link';
+import { fetchAuthLink } from 'merchant/reducers/auth_link';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 

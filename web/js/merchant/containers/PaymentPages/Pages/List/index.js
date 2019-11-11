@@ -18,11 +18,11 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentPagesV2List from './V2';
 import PaymentPagesV3List from './V3';
 
-import { populateRPLReduxList } from 'merchant/modules/invoices/list';
+import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import {
   getIsPaymentPagesEnabled,

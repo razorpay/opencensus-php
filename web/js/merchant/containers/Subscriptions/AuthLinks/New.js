@@ -8,13 +8,13 @@ import { titleCase } from 'common/util';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
 import { closeModal } from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
+import { luminateRow } from 'merchant/reducers/app';
 import { showNotification } from 'rzp/modules/notifications';
 import {
   saveInvoice,
   updatePLInReduxList,
-} from 'merchant/modules/invoices/list';
-import { createAuthLink } from 'merchant/modules/auth_link';
+} from 'merchant/reducers/invoices/list';
+import { createAuthLink } from 'merchant/reducers/auth_link';
 
 import Form from 'component/Form';
 import Input from 'component/Input';

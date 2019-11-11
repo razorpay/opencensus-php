@@ -11,9 +11,9 @@ import ActivationWizard from 'component/merchant/Activation';
 import OldActivationWizard from './index';
 import Button from 'component/Button';
 
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { showKYCActivationSuccessModal } from 'merchant/modules/home';
+import { showKYCActivationSuccessModal } from 'merchant/reducers/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';

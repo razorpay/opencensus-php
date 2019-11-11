@@ -7,8 +7,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { RZPFeatures } from 'rzp/utils/constants';
 import { getKeysSeparatedByPipe, findBy } from 'rzp/utils/rzp-utils';
 
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { fetchReminders } from 'merchant/modules/reminders';
+import * as InvoiceActions from 'merchant/reducers/invoices/list';
+import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';

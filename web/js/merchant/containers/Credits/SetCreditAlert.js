@@ -4,7 +4,7 @@ import { reduxForm, Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
 import { closeModal } from 'rzp/modules/modals';
-import { updateConfig } from 'merchant/modules/config';
+import { updateConfig } from 'merchant/reducers/config';
 import { showNotification } from 'rzp/modules/notifications';
 
 import ModalHeader from 'rzp/ui/ModalHeader';

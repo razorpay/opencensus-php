@@ -14,8 +14,8 @@ import {
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
-import { fetchPlans as fetchAll } from 'merchant/modules/plans';
+import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
+import { fetchPlans as fetchAll } from 'merchant/reducers/plans';
 import * as ModalActions from 'rzp/modules/modals';
 
 import ShowWhen from 'merchant/components/ShowWhen';

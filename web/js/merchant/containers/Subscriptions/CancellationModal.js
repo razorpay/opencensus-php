@@ -9,7 +9,7 @@ import { isBlank } from 'rzp/utils/rzp-utils';
 import { closeModal } from 'rzp/modules/modals';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import { showNotification } from 'rzp/modules/notifications';
-import { cancelSubscription } from 'merchant/modules/subscriptions';
+import { cancelSubscription } from 'merchant/reducers/subscriptions';
 
 @connect(null, {
   closeModal,

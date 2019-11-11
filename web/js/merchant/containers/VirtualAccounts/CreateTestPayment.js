@@ -7,8 +7,8 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
-import { createTestPayment } from 'merchant/modules/virtualaccounts';
-import { fetchItem, fetchVAPayments } from 'merchant/modules/virtualaccounts';
+import { createTestPayment } from 'merchant/reducers/virtualaccounts';
+import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
 
 @connect(
   state => {

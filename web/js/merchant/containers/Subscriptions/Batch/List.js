@@ -6,7 +6,7 @@ import BatchList from 'merchant/containers/BatchNew/List';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchHostMandateBatches as fetchAll } from 'merchant/modules/batches';
+import { fetchHostMandateBatches as fetchAll } from 'merchant/reducers/batches';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import CreateBatch from './CreateBatch';

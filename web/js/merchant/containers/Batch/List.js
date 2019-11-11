@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status, createdAt } from 'rzp/ui/item/pair';
-import { batchDownload } from 'merchant/modules/batches';
+import { batchDownload } from 'merchant/reducers/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 

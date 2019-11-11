@@ -6,7 +6,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { notifyBatch } from 'merchant/modules/batches';
+import { notifyBatch } from 'merchant/reducers/batches';
 
 @connect(state => state.session, {
   showNotification,

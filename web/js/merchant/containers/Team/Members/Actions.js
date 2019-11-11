@@ -4,7 +4,7 @@ import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { removeMember, updateMember } from 'merchant/modules/team';
+import { removeMember, updateMember } from 'merchant/reducers/team';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { pickProps } from 'rzp/utils/rzp-utils';

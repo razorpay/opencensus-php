@@ -14,7 +14,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import OnBoarding, {
   getIsPaymentLinksEnabled,

@@ -24,10 +24,10 @@ import { titleCase, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import {
   fetchAccountsApi,
   fetchAccounts,
-} from 'merchant/modules/marketplace/accounts';
+} from 'merchant/reducers/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import { createTransfer } from 'merchant/modules/payments/details';
+import { createTransfer } from 'merchant/reducers/payments/details';
 import { isHoliday, nextWorkingDay } from 'rzp/utils/bankHolidays';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 

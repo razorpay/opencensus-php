@@ -6,7 +6,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
-import { updatePassword } from 'merchant/modules/profile';
+import { updatePassword } from 'merchant/reducers/profile';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 

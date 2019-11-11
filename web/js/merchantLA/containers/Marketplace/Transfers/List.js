@@ -5,7 +5,7 @@ import TransfersListFilter from 'merchantLA/components/Marketplace/TransfersList
 import DataTable from 'rzp/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'merchantLA/modules/collection';
+import { fetchTransfers as fetchAll } from 'merchantLA/reducers/collection';
 import {
   transferId,
   amount,

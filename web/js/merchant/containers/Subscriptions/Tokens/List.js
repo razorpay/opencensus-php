@@ -8,7 +8,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
 import { titleCase } from 'common/util';
-import { fetchTokens as fetchAll } from 'merchant/modules/collection';
+import { fetchTokens as fetchAll } from 'merchant/reducers/collection';
 
 import { tokenId, createdAt } from 'rzp/ui/item/pair';
 

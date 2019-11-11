@@ -7,7 +7,7 @@ import debounce from 'rzp/utils/debounce';
 import takeScreenshot from 'rzp/utils/screenshot';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { fetch } from 'merchant/modules/pokedex';
+import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,

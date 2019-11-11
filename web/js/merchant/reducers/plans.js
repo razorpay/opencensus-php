@@ -2,7 +2,7 @@ import Plan from 'merchant/models/Plan';
 import {
   makeActionCollectionReducer,
   fetchAll,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
 

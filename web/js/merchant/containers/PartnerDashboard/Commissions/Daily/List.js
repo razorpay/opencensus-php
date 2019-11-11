@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchAggregate } from 'merchant/modules/commission';
+import { fetchAggregate } from 'merchant/reducers/commission';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Amount from 'rzp/ui/Amount';

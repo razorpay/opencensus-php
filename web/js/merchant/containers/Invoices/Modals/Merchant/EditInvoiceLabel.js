@@ -7,7 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import * as ModalActions from 'rzp/modules/modals';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import PropTypes from 'prop-types';
-import * as ConfigActions from 'merchant/modules/config';
+import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const selector = formValueSelector('editInvoiceLabel');

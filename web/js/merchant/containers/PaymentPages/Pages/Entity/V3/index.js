@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { updatePPInReduxList } from 'merchant/modules/invoices/list';
+import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/util';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
@@ -15,7 +15,7 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
-import { addPollInstance, saveReportConfigs } from 'merchant/modules/reports';
+import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 import { exportReportCSV } from '../../model';

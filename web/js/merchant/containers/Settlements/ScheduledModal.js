@@ -4,9 +4,9 @@ import ajax from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { closeModal } from 'rzp/modules/modals';
 import Button, { AsyncBtn } from 'component/Button';
-import { updateFeatures } from 'merchant/modules/config';
+import { updateFeatures } from 'merchant/reducers/config';
 import User, { setFeatures } from 'merchant/models/User';
-import * as SessionActions from 'merchant/modules/session';
+import * as SessionActions from 'merchant/reducers/session';
 import { showNotification } from 'rzp/modules/notifications';
 import ModalCloseReasons from './ModalCloseReasons';
 

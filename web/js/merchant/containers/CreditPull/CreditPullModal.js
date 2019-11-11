@@ -16,9 +16,9 @@ import {
 } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { states } from 'rzp/utils/constants';
-import * as MerchantActions from 'merchant/modules/b-merchants';
+import * as MerchantActions from 'merchant/reducers/b-merchants';
 import * as ModalActions from 'rzp/modules/modals';
-import bMerchantReducer from 'merchant/modules/b-merchants';
+import bMerchantReducer from 'merchant/reducers/b-merchants';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
 import {
   VerifyOtp,

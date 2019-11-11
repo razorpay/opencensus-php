@@ -1,6 +1,6 @@
 import { Component } from 'react';
 
-import { fetchAppWebhooks } from 'merchant/modules/applications';
+import { fetchAppWebhooks } from 'merchant/reducers/applications';
 
 import CreateWebhook from 'merchant/containers/Webhooks/New';
 

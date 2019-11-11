@@ -7,7 +7,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import {
   batchDownload,
   fetchPaymentLinkBatchesDetails,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 

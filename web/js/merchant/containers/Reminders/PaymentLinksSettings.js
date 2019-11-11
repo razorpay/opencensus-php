@@ -8,9 +8,9 @@ import {
   editRemindersMerchantConfigs,
   disableEnableReminders,
   createReminders,
-} from 'merchant/modules/reminders';
+} from 'merchant/reducers/reminders';
 
-import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
+import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
 import Setting from 'merchant/components/Reminders/Settings';
 
 @connect(

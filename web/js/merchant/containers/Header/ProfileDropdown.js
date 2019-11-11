@@ -12,9 +12,9 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import debounce from 'rzp/utils/debounce';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { logout, showOrHideTour } from 'merchant/modules/session';
+import { logout, showOrHideTour } from 'merchant/reducers/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';

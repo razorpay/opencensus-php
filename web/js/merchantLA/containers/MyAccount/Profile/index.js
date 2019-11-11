@@ -10,12 +10,12 @@ import ShowWhen from 'merchantLA/components/ShowWhen';
 import User from 'merchant/models/User';
 import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDetails';
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
-import { fetchUser } from 'merchantLA/modules/session';
+import { fetchUser } from 'merchantLA/reducers/session';
 import PasswordForm from './PasswordForm';
 import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
 
-import { updateDisplayName } from 'merchantLA/modules/profile';
-import { updateSession } from 'merchantLA/modules/session';
+import { updateDisplayName } from 'merchantLA/reducers/profile';
+import { updateSession } from 'merchantLA/reducers/session';
 
 @connect(
   state => {

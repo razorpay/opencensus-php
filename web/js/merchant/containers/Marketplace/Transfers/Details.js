@@ -10,7 +10,7 @@ import {
   fetchTransfer,
   fetchReversals,
   updateTransfer,
-} from 'merchant/modules/marketplace/transfer';
+} from 'merchant/reducers/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 

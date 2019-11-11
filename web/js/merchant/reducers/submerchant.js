@@ -1,5 +1,5 @@
 import Submerchant from 'merchant/models/Submerchant';
-import { createLog, getLog, getFile } from 'merchant/modules/reports';
+import { createLog, getLog, getFile } from 'merchant/reducers/reports';
 
 import { merge } from 'rzp/utils/immutable';
 import poll from 'rzp/utils/poll/longPoll';

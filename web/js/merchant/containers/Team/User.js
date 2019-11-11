@@ -9,7 +9,7 @@ import {
   updateUser,
   removeUser,
   fetchTeamDetails,
-} from 'merchant/modules/team';
+} from 'merchant/reducers/team';
 
 @connect(
   state => {

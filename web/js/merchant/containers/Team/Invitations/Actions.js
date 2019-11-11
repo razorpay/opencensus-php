@@ -7,7 +7,7 @@ import {
   cancelInvitation,
   updateInvitation,
   resendInvitation,
-} from 'merchant/modules/invitation';
+} from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 

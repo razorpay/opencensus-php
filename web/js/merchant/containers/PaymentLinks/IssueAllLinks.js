@@ -9,7 +9,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import {
   issuePaymentLinkBatch,
   editIssuableBatchList,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 
 @connect(state => state.session, {
   showNotification,

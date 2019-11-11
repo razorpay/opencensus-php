@@ -6,8 +6,8 @@ import Input from 'component/Input';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { fetchCreditBalance } from 'merchant/modules/credits';
-import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
+import { fetchCreditBalance } from 'merchant/reducers/credits';
+import { reverseTransfer } from 'merchantLA/reducers/marketplace/transfer';
 import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
 import {
   amountValidation,
@@ -17,7 +17,7 @@ import {
 import {
   fetchTransfer,
   fetchReversals,
-} from 'merchantLA/modules/marketplace/transfer';
+} from 'merchantLA/reducers/marketplace/transfer';
 
 import { trackClickCreateRefund } from './ga';
 

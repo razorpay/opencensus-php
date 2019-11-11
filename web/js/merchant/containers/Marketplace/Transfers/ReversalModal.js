@@ -18,7 +18,7 @@ import {
   fetchTransfer,
   fetchReversals,
   reverseTransfer,
-} from 'merchant/modules/marketplace/transfer';
+} from 'merchant/reducers/marketplace/transfer';
 
 import { closeModal } from 'rzp/modules/modals';
 

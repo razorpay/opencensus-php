@@ -9,13 +9,13 @@ import { Modal, ModalContent } from 'component/Modal';
 
 import { findBy, stringToObj } from 'rzp/utils/rzp-utils';
 
-import { fetchPlans } from 'merchant/modules/plans';
-import { fetchItems } from 'merchant/modules/items';
+import { fetchPlans } from 'merchant/reducers/plans';
+import { fetchItems } from 'merchant/reducers/items';
 import {
   fetchSubscription,
   updateSubscription,
   fetchScheduledChanges,
-} from 'merchant/modules/subscriptions';
+} from 'merchant/reducers/subscriptions';
 
 import { showNotification } from 'rzp/modules/notifications';
 

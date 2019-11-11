@@ -15,11 +15,11 @@ import {
 } from 'rzp/utils/rzp-utils';
 import { email, phone, validateGSTIN } from 'rzp/utils/validators';
 
-import * as CustomerActions from 'merchant/modules/customers';
+import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-import { fetchStates } from 'merchant/modules/states';
+import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/components/AddressEntry.js';
 

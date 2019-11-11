@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
-import { generateKey } from 'merchant/modules/keys';
+import { generateKey } from 'merchant/reducers/keys';
 import { required, phone, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 import RadioButton from 'rzp/ui/Forms/RadioButton';

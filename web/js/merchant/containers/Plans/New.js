@@ -9,11 +9,11 @@ import InputField from 'rzp/ui/Forms/InputField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import Alert from 'rzp/ui/Forms/Alert';
 import { required } from 'rzp/utils/validators';
-import { savePlan } from 'merchant/modules/plans';
+import { savePlan } from 'merchant/reducers/plans';
 import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
-import { fetchPlan } from 'merchant/modules/plans';
+import { fetchPlan } from 'merchant/reducers/plans';
 import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
 
 import {

@@ -29,16 +29,16 @@ import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 import L1FormFieldNames from './L1FormFieldNames';
 import { trackTnCClick } from 'merchant/containers/Activation/ga_new';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
   showPANStatusModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 import {
   submitL1Form,
   submitL1FormSuccess,
-} from 'merchant/modules/activationWizard';
+} from 'merchant/reducers/activationWizard';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'rzp/modules/notifications';

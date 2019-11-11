@@ -8,7 +8,7 @@ import FeeBreakup from 'rzp/ui/FeeBreakup';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { isPresent } from 'rzp/utils/rzp-utils';
-import { fetchSingleDayAggregate } from 'merchant/modules/commission';
+import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {

@@ -10,7 +10,7 @@ import Image from 'rzp/ui/Image';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
 
-import { logout, showOrHideTour } from 'merchantLA/modules/session';
+import { logout, showOrHideTour } from 'merchantLA/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 
 @withRouter

@@ -23,13 +23,13 @@ import { onChangeNotes } from 'component/Input/PairList';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { updatePLInReduxList } from 'merchant/modules/invoices/list';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
+import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
+import { fetchInvoice } from 'merchant/reducers/invoices/details';
 import {
   fetchReminders,
   fetchRemindersMerchantConfigs,
-} from 'merchant/modules/reminders';
-import { luminateRow } from 'merchant/modules/app';
+} from 'merchant/reducers/reminders';
+import { luminateRow } from 'merchant/reducers/app';
 
 import { getURLQueryParams, paiseToRupees, findBy } from 'rzp/utils/rzp-utils';
 import {

@@ -10,10 +10,10 @@ import store from 'merchant/store';
 import 'rzp/utils/polyfills';
 import * as NotificationActions from 'rzp/modules/notifications';
 
-import * as SessionActions from 'merchant/modules/session';
+import * as SessionActions from 'merchant/reducers/session';
 import User, { setFeatures } from 'merchant/models/User';
-import { pokeConfig } from 'merchant/modules/pokedex';
-import { fetch } from 'merchant/modules/pokedex';
+import { pokeConfig } from 'merchant/reducers/pokedex';
+import { fetch } from 'merchant/reducers/pokedex';
 import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';

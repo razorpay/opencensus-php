@@ -3,7 +3,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import Customer from 'merchant/models/Customer';
 
 export const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH';

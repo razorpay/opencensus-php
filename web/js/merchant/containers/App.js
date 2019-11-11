@@ -16,18 +16,18 @@ import ActivationRequired from 'merchant/components/ActivationRequired';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
-import * as SessionActions from 'merchant/modules/session';
-import * as ConfigActions from 'merchant/modules/config';
+import * as SessionActions from 'merchant/reducers/session';
+import * as ConfigActions from 'merchant/reducers/config';
 import { applyTheme } from 'rzp/themes';
 import User, { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/modules/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
-import { fetchGST } from 'merchant/modules/profile';
-import { fetchConfig } from 'merchant/modules/config';
+import { fetchGST } from 'merchant/reducers/profile';
+import { fetchConfig } from 'merchant/reducers/config';
 import {
   resizeWindow,
   updateMerchantLiveTransactionFlag,
-} from 'merchant/modules/app';
+} from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';

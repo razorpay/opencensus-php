@@ -8,7 +8,7 @@ import BatchStats from 'rzp/ui/StatsTable';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/modules/batches';
+import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase } from 'rzp/utils/rzp-utils';
 

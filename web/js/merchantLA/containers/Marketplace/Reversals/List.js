@@ -6,7 +6,7 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import ReversalsTable from './ReversalsTable';
 import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
-import { fetchBalanceAction } from 'merchantLA/modules/credits';
+import { fetchBalanceAction } from 'merchantLA/reducers/credits';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';

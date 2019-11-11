@@ -9,7 +9,7 @@ import {
   createLinkedAccountReversalsBatch as createBatch,
   validateLinkedAccountReversalsBatch as validateBatch,
   batchDownload,
-} from 'merchantLA/modules/batches';
+} from 'merchantLA/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 const gaEvents = setGaTrack('LA Dashboard - Reversals BU');

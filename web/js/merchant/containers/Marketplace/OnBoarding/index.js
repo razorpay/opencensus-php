@@ -8,8 +8,8 @@ import Button from 'component/Button';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { fetchUser } from 'merchant/modules/session';
+} from 'merchant/reducers/onboarding';
+import { fetchUser } from 'merchant/reducers/session';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';

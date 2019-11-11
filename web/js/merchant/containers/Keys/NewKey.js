@@ -7,7 +7,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
-import { saveInvoice } from 'merchant/modules/invoices/list';
+import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 

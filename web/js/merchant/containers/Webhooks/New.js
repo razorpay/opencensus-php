@@ -6,13 +6,13 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, lenientUrl } from 'rzp/utils/validators';
-import { saveWebhook } from 'merchant/modules/webhooks';
+import { saveWebhook } from 'merchant/reducers/webhooks';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import {
   createAppWebhook,
   editAppWebhook,
-} from 'merchant/modules/applications';
+} from 'merchant/reducers/applications';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';

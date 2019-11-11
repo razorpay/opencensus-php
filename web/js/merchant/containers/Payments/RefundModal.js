@@ -19,7 +19,7 @@ import {
   fetchItem as fetchPayment,
   fetchRefunds,
   fetchTransfers,
-} from 'merchant/modules/payments/details';
+} from 'merchant/reducers/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 

@@ -16,7 +16,7 @@ import { autoPrefixUrls, addPrefixToObjectKeys } from 'rzp/utils/rzp-utils';
 import { trackFormFields } from 'rzp/utils/track-utils';
 import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import {
   trackhubsContactUpdate,
@@ -26,7 +26,7 @@ import {
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';

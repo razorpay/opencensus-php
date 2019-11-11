@@ -2,7 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'rzp/utils/rzp-utils';
 import { RZPFeatures } from 'rzp/utils/constants';
 
-import { fetchFeaturesAjax } from 'merchant/modules/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import LocalStorageService from 'rzp/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';

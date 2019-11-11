@@ -6,9 +6,9 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
-import { switchMerchant } from 'merchant/modules/session';
-import { downloadSubmerchants } from 'merchant/modules/submerchant';
+import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
+import { switchMerchant } from 'merchant/reducers/session';
+import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';

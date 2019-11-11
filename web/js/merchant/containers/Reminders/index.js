@@ -4,7 +4,7 @@ import {
   fetchReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
-} from 'merchant/modules/reminders';
+} from 'merchant/reducers/reminders';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Spinner from 'rzp/ui/Spinner';

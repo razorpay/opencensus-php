@@ -7,7 +7,7 @@ import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import GenericPanel, {

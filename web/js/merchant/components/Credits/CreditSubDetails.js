@@ -7,7 +7,7 @@ import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { fetchCreditById } from 'merchant/modules/credits';
+import { fetchCreditById } from 'merchant/reducers/credits';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 @withRouter

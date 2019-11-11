@@ -21,7 +21,7 @@ import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchantLA/modules/app';
+} from 'merchantLA/reducers/app';
 import { openSlider } from 'rzp/modules/slider';
 
 @withRouter

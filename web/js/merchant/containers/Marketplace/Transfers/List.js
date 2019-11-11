@@ -12,7 +12,7 @@ import { RZPFeatures } from 'rzp/utils/constants';
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
-import { fetchTransfers as fetchAll } from 'merchant/modules/collection';
+import { fetchTransfers as fetchAll } from 'merchant/reducers/collection';
 
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';

@@ -2,7 +2,7 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/modules/batches';
+import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import BatchStats from 'rzp/ui/StatsTable';

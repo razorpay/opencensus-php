@@ -7,7 +7,7 @@ import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details
 import {
   fetchTransfer,
   fetchReversals,
-} from 'merchantLA/modules/marketplace/transfer';
+} from 'merchantLA/reducers/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { showNotification } from 'rzp/modules/notifications';

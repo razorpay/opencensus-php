@@ -36,12 +36,12 @@ import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import {
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
-} from 'merchant/modules/customers';
-import { fetchItemsForAutocomplete } from 'merchant/modules/items';
-import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
-import { fetchStates } from 'merchant/modules/states';
-import { fetchGSTTaxes } from 'merchant/modules/taxes';
-import * as InvoiceActions from 'merchant/modules/invoices/details';
+} from 'merchant/reducers/customers';
+import { fetchItemsForAutocomplete } from 'merchant/reducers/items';
+import { saveInvoice, deleteInvoice } from 'merchant/reducers/invoices/list';
+import { fetchStates } from 'merchant/reducers/states';
+import { fetchGSTTaxes } from 'merchant/reducers/taxes';
+import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { PowerSelect } from 'react-power-select';
@@ -51,7 +51,7 @@ import EditInvoiceLabelModal from 'merchant/containers/Invoices/Modals/Merchant/
 import AddressDisplay from 'merchant/components/AddressDisplay';
 import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
-import { luminateRow } from 'merchant/modules/app';
+import { luminateRow } from 'merchant/reducers/app';
 import {
   track,
   trackLinkClick,

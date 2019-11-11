@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SettlementDetails from 'merchant/components/Settlements/Details';
-import * as SettlementActions from 'merchant/modules/settlements/details';
+import * as SettlementActions from 'merchant/reducers/settlements/details';
 import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.settlement, SettlementActions)

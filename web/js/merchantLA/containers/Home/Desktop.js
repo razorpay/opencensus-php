@@ -17,7 +17,7 @@ import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
 import GenericPanel, {
   PanelBody,
 } from 'merchantLA/components/Home/GenericPanel';
-import { showOrHideTour } from 'merchantLA/modules/session';
+import { showOrHideTour } from 'merchantLA/reducers/session';
 
 import { trackPresetChange, trackSettlementsClick, trackViewTour } from './ga';
 

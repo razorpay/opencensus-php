@@ -8,7 +8,7 @@ import {
   fetchPaymentLinkBatches as fetchAll,
   createPaymentLinkBatch as createBatch,
   validatePaymentLinkBatch as validateBatch,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import PaymentLinksForm from '../PaymentLinksForm';

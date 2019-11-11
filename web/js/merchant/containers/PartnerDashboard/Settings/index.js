@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { fetchPartnerApplication } from 'merchant/modules/applications';
+import { fetchPartnerApplication } from 'merchant/reducers/applications';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Spinner from 'rzp/ui/Spinner';

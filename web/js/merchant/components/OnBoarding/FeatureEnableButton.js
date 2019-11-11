@@ -7,12 +7,12 @@ import { classList } from 'common/util';
 
 import { showNotification } from 'rzp/modules/notifications';
 
-import { updateFeatures } from 'merchant/modules/config';
+import { updateFeatures } from 'merchant/reducers/config';
 import {
   saveOnboarding,
   handleProductQuickGuide,
-} from 'merchant/modules/onboarding';
-import { fetchUser } from 'merchant/modules/session';
+} from 'merchant/reducers/onboarding';
+import { fetchUser } from 'merchant/reducers/session';
 
 import { setOnBoardingDataInLocalState } from './utils';
 

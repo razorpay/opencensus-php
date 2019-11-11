@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { updateData } from 'merchant/modules/wysiwyg';
+import { updateData } from 'merchant/reducers/wysiwyg';
 import Title from './Title';
 import Description from './Description';
 import Share from './Share';

@@ -4,10 +4,10 @@ import { reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import * as CustomerActions from 'merchant/modules/customers';
+import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { fetchStates } from 'merchant/modules/states';
+import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
 import {

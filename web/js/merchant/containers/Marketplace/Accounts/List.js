@@ -9,8 +9,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { luminateRow } from 'merchant/modules/app';
-import * as AccountActions from 'merchant/modules/marketplace/accounts';
+import { luminateRow } from 'merchant/reducers/app';
+import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';

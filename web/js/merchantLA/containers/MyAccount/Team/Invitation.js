@@ -6,7 +6,7 @@ import {
   resendInvitation,
   cancelInvitation,
   fetchTeamDetails,
-} from 'merchantLA/modules/team';
+} from 'merchantLA/reducers/team';
 
 @connect(state => state.session, {
   fetchTeamDetails,

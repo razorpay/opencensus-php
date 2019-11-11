@@ -6,7 +6,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { testChargeSubscription } from 'merchant/modules/subscriptions';
+import { testChargeSubscription } from 'merchant/reducers/subscriptions';
 
 @connect(null, {
   closeModal,

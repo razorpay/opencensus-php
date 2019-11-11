@@ -17,7 +17,7 @@ import {
 } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
-import { getPincodeDetails } from 'merchant/modules/activation';
+import { getPincodeDetails } from 'merchant/reducers/activation';
 
 const selector = formValueSelector('activationBusinessDetails');
 

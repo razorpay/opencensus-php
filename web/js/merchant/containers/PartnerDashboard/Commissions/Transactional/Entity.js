@@ -9,7 +9,7 @@ import DualBreakup from 'rzp/ui/FeeBreakup';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { fetchCommission } from 'merchant/modules/commission';
+import { fetchCommission } from 'merchant/reducers/commission';
 import { isPresent } from 'rzp/utils/rzp-utils';
 
 @connect(

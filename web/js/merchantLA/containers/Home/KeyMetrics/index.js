@@ -22,7 +22,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/rzp-utils';
 import Change from 'rzp/ui/Change';
 
-import { fetch } from 'merchantLA/modules/pokedex';
+import { fetch } from 'merchantLA/reducers/pokedex';
 import {
   API_ERROR,
   API_INVALID_RESP,

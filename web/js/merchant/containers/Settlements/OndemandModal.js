@@ -6,7 +6,7 @@ import Button, { AsyncBtn } from 'component/Button';
 import { isInteger } from 'rzp/utils/validators';
 import ajax from 'merchant/utils/ajax';
 import { trackOndemand } from './ga';
-import { fetchCurrentBalance } from 'merchant/modules/home';
+import { fetchCurrentBalance } from 'merchant/reducers/home';
 import Input from 'component/Input';
 import Alert from 'rzp/ui/Forms/Alert';
 import { AmountTooltip } from 'rzp/ui/Amount';

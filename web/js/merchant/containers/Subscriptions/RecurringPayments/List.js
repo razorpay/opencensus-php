@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { fetchEmandatePayments as fetchAll } from 'merchant/modules/collection';
+import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
 
 import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
@@ -15,7 +15,7 @@ export default class EmandatePayments extends ListContainer {
       <div className="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar">
-            <DocsLink url="https://razorpay.com/docs/recurring-payments/"/>
+            <DocsLink url="https://razorpay.com/docs/recurring-payments/" />
           </div>
         </HeaderAction>
         <PaymentListFilter

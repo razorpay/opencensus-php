@@ -2,14 +2,14 @@ import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchPlans } from 'merchant/modules/plans';
+import { fetchPlans } from 'merchant/reducers/plans';
 import {
   fetchSubscriptionItems,
   fetchSubscription,
   saveSubscription,
-} from 'merchant/modules/subscriptions';
-import { fetchAddOns } from 'merchant/modules/addons';
-import { fetchCustomer } from 'merchant/modules/customers';
+} from 'merchant/reducers/subscriptions';
+import { fetchAddOns } from 'merchant/reducers/addons';
+import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { ModalAsideNav } from 'component/Wizard';

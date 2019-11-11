@@ -7,8 +7,8 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
-import { fetchUser } from 'merchant/modules/session';
-import { luminateRow } from 'merchant/modules/app';
+import { fetchUser } from 'merchant/reducers/session';
+import { luminateRow } from 'merchant/reducers/app';
 
 @connect(
   state => {

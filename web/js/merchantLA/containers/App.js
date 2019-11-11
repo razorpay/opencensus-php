@@ -14,10 +14,10 @@ import MerchantTour from 'merchant/containers/MerchantTour';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
-import * as SessionActions from 'merchantLA/modules/session';
+import * as SessionActions from 'merchantLA/reducers/session';
 import { applyTheme } from 'rzp/themes';
 import User, { setFeatures } from 'merchantLA/models/User';
-import { resizeWindow } from 'merchantLA/modules/app';
+import { resizeWindow } from 'merchantLA/reducers/app';
 
 @withRouter
 @connect(

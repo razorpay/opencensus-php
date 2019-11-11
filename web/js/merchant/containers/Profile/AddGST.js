@@ -9,11 +9,11 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { saveGST } from 'merchant/modules/profile';
+import { saveGST } from 'merchant/reducers/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { required, validateGSTIN } from 'rzp/utils/validators';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 

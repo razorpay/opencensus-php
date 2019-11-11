@@ -3,7 +3,7 @@ import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
 import {
   makeActionCollectionReducer,
   fetchAll,
-} from 'merchant/modules/collection';
+} from 'merchant/reducers/collection';
 
 import Team from 'merchant/models/Team';
 

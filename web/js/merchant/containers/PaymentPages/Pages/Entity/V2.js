@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { updatePPInReduxList } from 'merchant/modules/invoices/list';
+import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import { sendLink } from '../model';

@@ -2,7 +2,7 @@ import { set, merge } from 'rzp/utils/immutable';
 import {
   getActionName,
   makeActionCollectionReducer,
-} from 'merchantLA/modules/collection';
+} from 'merchantLA/reducers/collection';
 import {
   makeEntityReducer,
   entityFetchPendingState,

@@ -5,7 +5,7 @@ import RTracking from 'react-tracking';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as KeyActions from 'merchant/modules/keys';
+import * as KeyActions from 'merchant/reducers/keys';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import RollKey from './RollKey';

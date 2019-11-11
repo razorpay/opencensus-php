@@ -9,7 +9,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { closeModal } from 'rzp/modules/modals';
-import { createPaymentsBatch as createBatch } from 'merchant/modules/batches';
+import { createPaymentsBatch as createBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'rzp/modules/notifications';
 
 const hostToIframeHost = {

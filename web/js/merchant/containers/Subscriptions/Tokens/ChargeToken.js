@@ -12,7 +12,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import { AsyncBtn } from 'component/Button';
 
-import { chargeToken } from 'merchant/modules/token';
+import { chargeToken } from 'merchant/reducers/token';
 import { AmountTooltip } from 'rzp/ui/Amount';
 
 @withRouter

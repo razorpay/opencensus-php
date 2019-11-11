@@ -11,7 +11,7 @@ import {
 } from 'merchant/components/Applications/NoConnectedApps';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ModalActions from 'rzp/modules/modals';
-import * as ApplicationActions from 'merchant/modules/applications';
+import * as ApplicationActions from 'merchant/reducers/applications';
 
 @connect(
   state => {

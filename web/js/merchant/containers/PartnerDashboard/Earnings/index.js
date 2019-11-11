@@ -3,7 +3,7 @@ import { Switch, NavLink, Redirect } from 'react-router-dom';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-import { fetchCommissionBalances } from 'merchant/modules/commission';
+import { fetchCommissionBalances } from 'merchant/reducers/commission';
 
 import Amount from 'rzp/ui/Amount';
 import HeaderAction from 'rzp/ui/HeaderAction';

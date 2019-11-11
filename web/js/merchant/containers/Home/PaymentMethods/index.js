@@ -10,7 +10,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { fetch } from 'merchant/modules/pokedex';
+import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,

@@ -10,11 +10,11 @@ import Alert from 'rzp/ui/Forms/Alert';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import { merchantFetch } from 'merchant/utils/ajax';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
+import * as InvoiceActions from 'merchant/reducers/invoices/list';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';

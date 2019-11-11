@@ -5,7 +5,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ReferralsList from 'merchant/components/Referrals/ReferralsList';
-import * as ReferralActions from 'merchant/modules/referrals';
+import * as ReferralActions from 'merchant/reducers/referrals';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import CreateLogin from './CreateLogin';

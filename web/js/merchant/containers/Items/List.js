@@ -11,13 +11,13 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'rzp/modules/modals';
-import * as ItemActions from 'merchant/modules/items';
-import { fetchInvoices } from 'merchant/modules/invoices/list';
-import { luminateRow } from 'merchant/modules/app';
+import * as ItemActions from 'merchant/reducers/items';
+import { fetchInvoices } from 'merchant/reducers/invoices/list';
+import { luminateRow } from 'merchant/reducers/app';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { RZPFeatures } from 'rzp/utils/constants';
 import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';

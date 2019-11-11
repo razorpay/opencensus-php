@@ -1,6 +1,6 @@
 import React from 'react';
 import debounce from 'rzp/utils/debounce';
-import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
+import { fetchAccountsApi } from 'merchant/reducers/marketplace/accounts';
 import { TypeAhead } from 'react-power-select';
 
 const CustomTag = ({ tag, tagIcon }) => {

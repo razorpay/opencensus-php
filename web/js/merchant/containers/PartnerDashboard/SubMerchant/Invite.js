@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 
 import { closeModal } from 'rzp/modules/modals';
 import { required, email } from 'rzp/utils/validators';
-import { invite as inviteSubmerchant } from 'merchant/modules/submerchant';
+import { invite as inviteSubmerchant } from 'merchant/reducers/submerchant';
 import { showNotification } from 'rzp/modules/notifications';
 
 import ModalHeader from 'rzp/ui/ModalHeader';

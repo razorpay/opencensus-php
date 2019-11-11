@@ -5,7 +5,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import scrollTo from 'rzp/utils/scrollTo';
 
-import { showOrHideTour } from 'merchant/modules/session';
+import { showOrHideTour } from 'merchant/reducers/session';
 
 import { trackSkipTour, trackFinishTour } from './ga';
 

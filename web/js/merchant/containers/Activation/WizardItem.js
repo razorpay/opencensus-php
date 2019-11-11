@@ -4,9 +4,9 @@ import { reduxForm } from 'redux-form';
 import Alert from 'rzp/ui/Forms/Alert';
 import { without } from 'rzp/utils/rzp-utils';
 import { showNotification } from 'rzp/modules/notifications';
-import * as ActivationActions from 'merchant/modules/activation';
-import * as SessionActions from 'merchant/modules/session';
-import { fetchUser } from 'merchant/modules/session';
+import * as ActivationActions from 'merchant/reducers/activation';
+import * as SessionActions from 'merchant/reducers/session';
+import { fetchUser } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 
 import ContactDetailsForm from './ContactDetailsForm';

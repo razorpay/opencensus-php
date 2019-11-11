@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
-import { saveAddOn } from 'merchant/modules/addons';
+import { saveAddOn } from 'merchant/reducers/addons';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { AmountTooltip } from 'rzp/ui/Amount';
