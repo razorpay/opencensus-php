@@ -433,7 +433,7 @@ export default class User {
   }
 
   get isCustomNotesDropdownEnabled() {
-    return this.getExpStatus('custom_notes');
+    return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {

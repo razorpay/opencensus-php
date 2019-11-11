@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import {
   handleProductQuickGuide,
