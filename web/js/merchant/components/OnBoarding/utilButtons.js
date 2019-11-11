@@ -82,7 +82,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
     this.props.tracking.trackEvent(
       window.rzpQ
         .productOnboarding()
-        .initiated(`${props.feature}.onboarding.get_started.initiated`, {
+        .initiated(`${props.feature}.onboarding.get_started`, {
           clickSource: `Screen_${
             props.active === 0 ? 1 : 2
           }_SkipAndGetStarted_CTA`,

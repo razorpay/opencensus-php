@@ -12,7 +12,7 @@ export default class OnBoardingLanding extends React.PureComponent {
     this.props.tracking.trackEvent(
       window.rzpQ
         .productOnboarding()
-        .success(`${this.props.feature}.onboarding.start.success`)
+        .success(`${this.props.feature}.onboarding.start`)
     );
   }
 

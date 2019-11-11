@@ -16,7 +16,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
       this.props.tracking.trackEvent(
         window.rzpQ
           .productOnboarding()
-          .success(`${this.props.feature}.onboarding.features_back.success`)
+          .success(`${this.props.feature}.onboarding.features_back`)
       );
     });
   };
@@ -109,7 +109,7 @@ class FeatureLink extends React.PureComponent {
     this.props.tracking.trackEvent(
       window.rzpQ
         .productOnboarding()
-        .success(`${props.feature}.onboarding.features_hyperlink.success`)
+        .success(`${props.feature}.onboarding.features_hyperlink`)
     );
 
     window.open(url);
