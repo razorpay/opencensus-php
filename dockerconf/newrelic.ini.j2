@@ -93,6 +93,9 @@ newrelic.loglevel = "info"
 ;          will be collected.
 ;
 ;newrelic.high_security = false
+{% if env == "perf" %}
+newrelic.high_security = true
+{% endif %}
 
 ;setting multiple app name for canary instance for better tracking INSTANCE_TYPE env variable to be set in deployment. https://docs.newrelic.com/docs/agents/manage-apm-agents/app-naming/use-multiple-names-app#example1
 ; Setting: newrelic.appname
