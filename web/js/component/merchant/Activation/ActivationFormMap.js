@@ -683,6 +683,22 @@ const uploadFields = [
   },
 ];
 
+const needsClarificationFields = [
+  {
+    name: 'bank_account_name',
+    label: 'Beneficiary Name',
+    maxLength: '120',
+    minLength: '4',
+    info: getBeneficiaryInfo,
+    _when: () => {
+      return true;
+    },
+    description: activation =>
+      isUnregisteredBusiness(activation)
+        ? 'We will deposit a small amount of money in your account to verify the account.'
+        : '',
+  },
+];
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',

@@ -24,6 +24,7 @@ import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
 } from './AccountActivationFormMap';
+import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
@@ -51,6 +52,7 @@ import {
   isL1Completed,
 } from './ActivationUtils';
 import QueryString from 'query-string';
+import { NEEDS_CLARIFICATION } from 'merchant/containers/Home/OnboardingCard/data';
 
 /*
 *             Main-form        LA-form
@@ -111,7 +113,7 @@ let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 const BUSINESS_DETAILS_STEP = 2;
-
+const NEEDS_CLARIFICATION_STEP = 5;
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
@@ -153,6 +155,7 @@ export default class ActivationWizard extends React.Component {
     activeTab: 0, // Fallback for all cases.
     callingL1Api: false,
     address_proof: 'aadhar',
+    needsClarification: {},
   };
   constructor(props) {
     super(props);
@@ -186,7 +189,6 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_NAMES = [...accountFormFieldNamesMeta];
       BANK_ACCOUNT_TAB = 1;
       DOCUMENT_UPLOAD_STEP = 2;
-
       // Removing document upload
       if (!props.data.need_kyc) {
         FORM_TABS.splice(DOCUMENT_UPLOAD_STEP, 1);
@@ -201,10 +203,20 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS = mainFormTabs;
       FORM_TABS_CONTENT = mainFormTabsContent;
       FORM_TABS_NAMES = mainFormFieldNamesMeta;
+
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-
+      if (!props.data.need_kyc) {
+        FORM_TABS.push('Needs Clarification');
+        const ndcFields = getNeedsClarificationTabsData(
+          mainFormTabsContent,
+          props.data.kyc_clarification_reasons
+        );
+        FORM_TABS_CONTENT.push(ndcFields);
+        FORM_TABS_NAMES.push(Object.keys(ndcFields));
+      }
       if (!isL1Completed(this)) {
+        //Code needs some refactoring
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
@@ -862,6 +874,8 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  submitNeedsClarification = async currenActiveTab => {};
+
   get formData() {
     const currentDirty = this.state.dirty;
     const reqData = {};
@@ -995,10 +1009,12 @@ export default class ActivationWizard extends React.Component {
   };
 
   onChange = ({ target }) => {
+    if (!Boolean(target.name)) {
+      return;
+    }
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     let fieldName = target.name;
-
     let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
@@ -1241,7 +1257,6 @@ export default class ActivationWizard extends React.Component {
 
         return ActivationField.call(this, field);
       });
-
     let moreTabs = [];
     if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
@@ -1522,6 +1537,18 @@ export default class ActivationWizard extends React.Component {
             )}
           </footer>
         )}
+        {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
+          <footer>
+            <AsyncBtn.Primary
+              disabled={this.state.ndcSubmissionInProgress}
+              onClick={this.saveCurrentTab}
+              pendingState={'Verifying'}
+              name={'submit-and-verify'}
+            >
+              Submit and Verify
+            </AsyncBtn.Primary>
+          </footer>
+        )}
       </div>
     );
   }
@@ -1624,7 +1651,11 @@ function ActivationField(field) {
     /*
     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
     * */
-    defaultValue = this.state.dirty[key] || this.props.data[key];
+    if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+      defaultValue = null;
+    } else {
+      defaultValue = this.state.dirty[key] || this.props.data[key];
+    }
   } else if (_name) {
     defaultValue = this.state[_name];
     key = _name;
@@ -1634,13 +1665,15 @@ function ActivationField(field) {
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;
-
   // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
   if (_disabledWhen && _disabledWhen(this)) {
     // Overiride the value if it's disabled
     isComponentDisabled = true;
   }
-
+  //Always keep fields on needs clarification unlocked
+  if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+    isComponentDisabled = false;
+  }
   // Show bank account number if it's activated/locked
   if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
     rest.type = 'text';
