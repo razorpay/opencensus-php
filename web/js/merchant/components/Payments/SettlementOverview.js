@@ -24,10 +24,11 @@ function SettlementOverview(props) {
         <span>GST(18%) Fee</span>
         <span>40 INR</span>
       </div>
-      <div class="settlement-payment-info">
+      // TODO: Add when design is ready //
+      {/* <div class="settlement-payment-info">
         <i class="i i-info-circle" />
         <span>View your payment methods</span>
-      </div>
+      </div> */}
     </div>
   );
 }
