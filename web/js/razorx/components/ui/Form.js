@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { adminFetch as fetch } from 'common/fetch';
-import { notifyError } from 'common/modal';
+import { adminGet as fetch } from 'razorx/helpers/admin-fetch';
+import { notifyError } from 'razorx/components/Modal';
 
 export default class Form extends Component {
   state = {

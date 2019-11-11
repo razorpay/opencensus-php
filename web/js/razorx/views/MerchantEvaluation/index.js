@@ -1,8 +1,8 @@
-import { notifyError } from 'common/modal';
+import { notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, { SelectField, SwitchField } from 'razorx/components/ui/Field';
 
-import { rexFetch } from 'razorx/fetch';
+import { rexFetch } from 'razorx/helpers/fetch';
 import { AppStore } from 'razorx/store';
 
 export default class MerchantEvaluation extends React.Component {

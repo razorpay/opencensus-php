@@ -5,13 +5,13 @@ import {
   notify,
   notifySuccess,
   notifyError,
-} from 'common/modal';
+} from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, { TextAreaField } from 'razorx/components/ui/Field';
 import { ModalContent } from 'component/Modal';
-import JSONEdit from 'razorx/JSONEdit';
+import JSONEdit from 'razorx/components/JSONEdit';
 import EnumList from 'component/Input/EnumList';
-import { rexPost, rexPut } from 'razorx/fetch';
+import { rexPost, rexPut } from 'razorx/helpers/fetch';
 import validatorJSON, { initJSONObj } from './validators';
 
 @withRouter
