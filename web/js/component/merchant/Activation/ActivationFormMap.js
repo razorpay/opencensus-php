@@ -65,14 +65,14 @@ const ADDRESS_PROOF_TYPES = {
     frontView: 'Front',
     backView: 'Back',
   },
-  driver_license: {
-    value: 'driver_license',
-    label: "Driver's License",
-    front: true,
-    back: false,
-    frontView: 'Front',
-    backView: 'Back',
-  },
+  // driver_license: {
+  //   value: 'driver_license',
+  //   label: "Driver's License",
+  //   front: true,
+  //   back: false,
+  //   frontView: 'Front',
+  //   backView: 'Back',
+  // },
 };
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
