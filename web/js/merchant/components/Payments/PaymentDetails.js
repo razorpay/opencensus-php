@@ -14,6 +14,7 @@ import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
 import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
 import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
 export default props => {
   let {
@@ -188,6 +189,31 @@ export default props => {
                         </Definition>
                       ))
                     : '--'}
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Settlement Details">
+                  <ContentToggler>
+                    <span>Setted on 29 June 2019</span>
+                    <div>
+                      <div>setl_7dqkj1nBSEZqo</div>
+                      <div class="settlement-detail-row">
+                        <span>Settlement Amount</span>
+                        <span>10,745 INR</span>
+                      </div>
+                      <div class="settlement-detail-row">
+                        <span>Total Fee</span>
+                        <span>260 INR</span>
+                      </div>
+                      <div class="settlement-detail-row settlement-shift-row-right">
+                        <span>Razorpay Fee</span>
+                        <span>220 INR</span>
+                      </div>
+                      <div class="settlement-detail-row settlement-shift-row-right">
+                        <span>GST(18%) Fee</span>
+                        <span>40 INR</span>
+                      </div>
+                    </div>
+                  </ContentToggler>
                 </EntityDetailRow>
               </div>
             </div>
