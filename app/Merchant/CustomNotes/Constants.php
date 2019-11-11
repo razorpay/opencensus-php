@@ -4,7 +4,7 @@ namespace App\Merchant\CustomNotes;
 
 class Constants
 {
-    const   SRI_RAM_MID = '10000000000000', //'C9ZfBRKNLOljG8',
+    const   SRI_RAM_MID = 'C9ZfBRKNLOljG8',
             RCI_MID = 'DJy3GWYGs76MnR',
             APOLLO_MID = 'BYqeLRvN6FfCCY';
 
@@ -112,10 +112,6 @@ class Constants
 
     public static function getNotesForPaymentLinksByMID($mid)
     {
-        if (empty($mid)) {
-            return null;
-        }
-
         return self::PAYMENT_LINKS_CUSTOM_NOTES[$mid] ?? null;
     }
 }
