@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'component/ErrorBoundary';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import LocalStorageService from 'rzp/utils/localStorage';

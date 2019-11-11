@@ -1,5 +1,5 @@
 import { classList } from 'common/util';
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'component/ErrorBoundary';
 
 /* Modal with backdrop mask, closes with animation
 * @props

@@ -4,7 +4,7 @@ import RTracking from 'react-tracking';
 
 import Announcement from 'merchant/components/Announcement';
 
-import { activationDuration } from 'common/data';
+import { activationDuration } from 'merchant_common/helpers/data';
 
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {

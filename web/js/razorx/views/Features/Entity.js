@@ -1,11 +1,12 @@
 import { withRouter, Link } from 'react-router-dom';
-import { openModal, notifyError } from 'common/modal';
-import { formatDate, titleCase } from 'common/util';
-import { rexFetch } from 'razorx/fetch';
+import { openModal, notifyError } from 'razorx/components/Modal';
+import { titleCase } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
+import { rexFetch } from 'razorx/helpers/fetch';
 import FeaturesModal from './Modal';
 
 import { AppStore } from 'razorx/store';
-import ExperimentsModal from '../experiments/Modal';
+import ExperimentsModal from 'razorx/views/Experiments/Modal';
 
 @withRouter
 export default class extends React.Component {

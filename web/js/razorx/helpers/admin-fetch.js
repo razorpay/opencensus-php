@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { deepClone } from 'common/util';
-import { notifyError } from 'common/modal';
+import { deepClone } from 'razorx/helpers/utils';
+import { notifyError } from 'razorx/components/Modal';
 
 // If directly using fetch, then send absolute url
 // Eg: fetch({url: '/admin/api/live/your_url'})
@@ -26,10 +26,10 @@ export default function fetch(options, suppressError) {
 }
 
 /*
-  For all custom adminFetch, Post, /etc helpers, payload must have relative url to "/admin/api/"
-  Eg: adminFetch({url: '{mode}/your_url'}), or adminFetch('{mode}/your_url')
+  For all custom Get, Post, /etc helpers, payload must have relative url to "/admin/api/"
+  Eg: adminGet({url: '{mode}/your_url'}), or adminGet('{mode}/your_url')
 */
-export const adminFetch = payload => fetch(_makePayload(payload, 'get'));
+export const adminGet = payload => fetch(_makePayload(payload, 'get'));
 export const adminPost = payload => fetch(_makePayload(payload, 'post'));
 export const adminPut = payload => fetch(_makePayload(payload, 'put'));
 export const adminDelete = payload => fetch(_makePayload(payload, 'delete'));

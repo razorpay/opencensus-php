@@ -1,7 +1,7 @@
-import fetch from 'common/fetch';
+import adminFetch from 'razorx/helpers/admin-fetch';
 import { AppStore } from 'razorx/store';
 import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
-import { notifyError } from 'common/modal';
+import { notifyError } from 'razorx/components/Modal';
 
 /*
   For all custom rexFetch, Post, /etc helpers, payload must have relative url to "/admin/api/"
@@ -71,7 +71,7 @@ function _makeRequest(payload, type) {
     reqPayload.data = payload.data;
   }
 
-  return fetch(reqPayload)
+  return adminFetch(reqPayload)
     .then(resp => {
       if (!resp) {
         return;

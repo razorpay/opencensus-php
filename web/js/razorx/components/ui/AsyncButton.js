@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { serialize } from 'razorx/components/ui/Form';
-import { confirm } from 'common/modal';
+import { confirm } from 'razorx/components/Modal';
 import { prevent } from 'common/util';
 
 export default class AsyncButton extends Component {

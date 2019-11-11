@@ -15,7 +15,7 @@ import Settlements from 'merchantLA/containers/Settlements/List';
 import Reports from 'merchantLA/containers/Reports';
 import MyAccount from 'merchantLA/containers/MyAccount';
 
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'component/ErrorBoundary';
 
 import {
   setBaseLocation,

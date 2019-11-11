@@ -1,6 +1,6 @@
 import debounce from 'rzp/utils/debounce';
 import Field, { TextAreaField, SelectField } from 'razorx/components/ui/Field';
-import { notifyError } from 'common/modal';
+import { notifyError } from 'razorx/components/Modal';
 
 export default class extends React.Component {
   state = { segmentsList: this.props.defaultValue || [{}] };

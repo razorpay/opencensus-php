@@ -6,9 +6,9 @@ import Field, {
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
 import Collection from 'razorx/model/collection';
-import { adminFetch } from 'common/fetch';
+import { adminGet } from 'razorx/helpers/admin-fetch';
 import { observer } from 'mobx-react';
-import { formatDate } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 import { isSuperAdmin } from 'razorx/user';
 
 @observer
@@ -19,7 +19,7 @@ export default class WorkflowRequestsList extends Component {
   };
 
   componentWillMount() {
-    return adminFetch('live/workflows').then(data => {
+    return adminGet('live/workflows').then(data => {
       const workflows = data.items.filter(
         i => i.name.toLowerCase().indexOf('razorx') > -1
       );
@@ -27,7 +27,7 @@ export default class WorkflowRequestsList extends Component {
       this.defaultWorkflowId = workflows[0].id.replace('workflow_', '');
 
       this.collection = new Collection({
-        fetchFn: adminFetch,
+        fetchFn: adminGet,
         data: {
           url: 'live/w-actions',
         },

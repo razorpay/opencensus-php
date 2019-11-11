@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
-import { openModal, notifySuccess, notifyDone } from 'common/modal';
-import { adminFetch, adminPut } from 'common/fetch';
-import { formatDate, titleCase } from 'common/util';
+import { openModal, notifySuccess, notifyDone } from 'razorx/components/Modal';
+import { adminGet, adminPut } from 'razorx/helpers/admin-fetch';
+import { titleCase } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 
 import Comments from './Comments';
 import RequestActions from './RequestActions';
-import ExperimentsEntity from '../experiments/Entity';
+import ExperimentsEntity from 'razorx/views/Experiments/Entity';
 
 @observer
 export default class RequestEntity extends Component {
@@ -25,7 +26,7 @@ export default class RequestEntity extends Component {
     extendObservable(this, { pending: true });
     const { id } = this.props.match.params;
 
-    adminFetch(`live/w-actions/${id}/details`).then(
+    adminGet(`live/w-actions/${id}/details`).then(
       action(response => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}

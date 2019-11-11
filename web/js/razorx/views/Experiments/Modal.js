@@ -6,7 +6,7 @@ import {
   closeModal,
   notifySuccess,
   notifyError,
-} from 'common/modal';
+} from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, {
   TextAreaField,
@@ -15,9 +15,9 @@ import Field, {
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
 import { ModalContent } from 'component/Modal';
-import JSONEdit from 'razorx/JSONEdit';
+import JSONEdit from 'razorx/components/JSONEdit';
 
-import { rexFetch, rexPost, rexPut } from 'razorx/fetch';
+import { rexFetch, rexPost, rexPut } from 'razorx/helpers/fetch';
 import { AppStore } from 'razorx/store';
 import validatorJSON, { initJSONObj } from './validators';
 import SegmentsList from './SegmentsList';

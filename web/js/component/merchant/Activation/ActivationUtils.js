@@ -1,4 +1,4 @@
-import { addPrefixToObjectKeys } from 'common/util';
+import { addPrefixToObjectKeys } from 'rzp/utils/rzp-utils';
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
   trackL1FormSuccess,

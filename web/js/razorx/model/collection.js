@@ -1,8 +1,8 @@
 import { observable, observe } from 'mobx';
 import BaseModel from './base';
 import CollectionItem from './collectionItem';
-import { notifySuccess, notifyError } from 'common/modal';
-import { adminDelete } from 'common/fetch';
+import { notifySuccess, notifyError } from 'razorx/components/Modal';
+import { adminDelete } from 'razorx/helpers/admin-fetch';
 
 export const defaultFilters = {
   count: 20,

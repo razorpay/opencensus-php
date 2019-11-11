@@ -1,6 +1,6 @@
 import { observable, extendShallowObservable } from 'mobx';
 import BaseModel from 'razorx/model/base';
-import { deepClone } from 'common/util';
+import { deepClone } from 'razorx/helpers/utils';
 
 export default class Item extends BaseModel {
   constructor(collection, props = {}) {

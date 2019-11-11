@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
-import { methods, cardSteps, authTypes, authGateway } from 'common/data';
+import {
+  methods,
+  cardSteps,
+  authTypes,
+  authGateway,
+} from 'merchant_common/helpers/data';
 import { prevent, classList } from 'common/util';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';

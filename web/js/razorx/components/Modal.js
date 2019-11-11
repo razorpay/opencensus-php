@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import ErrorBoundary from 'common/ErrorBoundary';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
 import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { animObj } from 'common/util';
 import { ModalMask, Modal } from 'component/Modal';
+
+const animObj = { enter: 300, exit: 300 };
 
 class ModalStore {
   @observable.shallow modals = [];

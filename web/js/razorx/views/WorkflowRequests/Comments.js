@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import Form from 'razorx/components/ui/Form';
-import { formatDate } from 'common/util';
+import { formatDate } from 'razorx/helpers/utils';
 import { TextAreaField } from 'razorx/components/ui/Field';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
-import { adminPost } from 'common/fetch';
+import { adminPost } from 'razorx/helpers/admin-fetch';
 
 @observer
 export default class Comments extends Component {
