@@ -4,7 +4,6 @@ FROM razorpay/onggi:php-7.2-apache
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
-ENV NODE_NAME=""
 ARG GIT_USERNAME
 
 WORKDIR /app
