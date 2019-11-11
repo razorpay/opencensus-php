@@ -17,7 +17,7 @@ import {
   fetchScheduledChanges,
 } from 'merchant/reducers/subscriptions';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';

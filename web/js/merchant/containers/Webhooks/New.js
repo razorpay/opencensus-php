@@ -13,8 +13,8 @@ import {
   createAppWebhook,
   editAppWebhook,
 } from 'merchant/reducers/applications';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 

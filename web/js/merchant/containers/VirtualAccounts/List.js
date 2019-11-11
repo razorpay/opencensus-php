@@ -14,7 +14,7 @@ import { RZPFeatures } from 'rzp/utils/constants';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import {
   handleProductQuickGuide,

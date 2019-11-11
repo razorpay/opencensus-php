@@ -10,7 +10,7 @@ import {
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { paiseToRupees } from 'rzp/utils/rzp-utils';
 import { getCurrency } from 'rzp/ui/Amount';

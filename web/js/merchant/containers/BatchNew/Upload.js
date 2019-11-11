@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { closeModal, openModal } from 'rzp/modules/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 
 import BatchValidate from './Validate';

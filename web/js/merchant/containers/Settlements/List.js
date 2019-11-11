@@ -10,14 +10,14 @@ import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,

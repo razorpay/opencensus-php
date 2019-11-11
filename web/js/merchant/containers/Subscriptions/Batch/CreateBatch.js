@@ -10,7 +10,7 @@ import {
   createAuthLinkBatch,
   validateAuthLinkBatch,
 } from 'merchant/reducers/batches';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 import AuthLinksBatchForm from './AuthLinkBatchCreationForm';
 

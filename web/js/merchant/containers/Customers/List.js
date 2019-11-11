@@ -8,8 +8,8 @@ import CustomersList from 'merchant/components/Customers/CustomersList';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as CustomerActions from 'merchant/reducers/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { luminateRow } from 'merchant/reducers/app';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 

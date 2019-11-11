@@ -24,8 +24,8 @@ import {
   updateTemplateType,
   isFormItemOfTypeAmount,
 } from 'merchant/reducers/wysiwyg';
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';

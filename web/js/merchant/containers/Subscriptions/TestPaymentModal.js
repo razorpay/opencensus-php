@@ -4,8 +4,8 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { testChargeSubscription } from 'merchant/reducers/subscriptions';
 
 @connect(null, {

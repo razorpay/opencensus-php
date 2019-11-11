@@ -6,7 +6,7 @@ import AsyncButton from 'react-async-button';
 import Alert from 'rzp/ui/Forms/Alert';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';

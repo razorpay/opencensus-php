@@ -8,7 +8,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { generateKey } from 'merchant/reducers/keys';
 import { required, phone, email } from 'rzp/utils/validators';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 @connect(state => state.session, { closeModal })

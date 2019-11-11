@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { customRangeText } from 'rzp/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
@@ -13,7 +13,7 @@ import {
 } from 'rzp/utils/pokedex';
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { activationDuration } from 'merchant_common/helpers/data';
 

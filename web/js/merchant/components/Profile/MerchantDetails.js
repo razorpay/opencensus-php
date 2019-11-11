@@ -8,7 +8,7 @@ import DetailRow from '../DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'rzp/ui/ProgressBar';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 

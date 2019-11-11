@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ProceedModal from 'merchant/containers/PaymentLinks/BatchUpload/ProceedModal';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => state.session, ModalActions)

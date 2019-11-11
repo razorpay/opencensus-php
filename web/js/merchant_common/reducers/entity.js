@@ -1,5 +1,5 @@
 import { set, merge } from 'rzp/utils/immutable';
-import createReducer from 'rzp/modules/createReducer';
+import createReducer from 'merchant_common/reducers/createReducer';
 
 let defaultInitialState = {
   loading: true,

@@ -7,7 +7,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 
 import { sendInvitation } from 'merchant/reducers/invitation';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import InvitationsList from './Invitations/List';
 import MembersList from './Members/List';

@@ -14,9 +14,9 @@ import Plan from 'merchant/models/Plan';
 import { fetchPlan } from 'merchant/reducers/plans';
 import { deleteAddOn } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { expandSlider, compactSlider } from 'rzp/modules/slider';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import {
   fetchInvoice,

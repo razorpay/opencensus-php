@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import {
   resendInvitation,
   cancelInvitation,

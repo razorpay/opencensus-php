@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import ErrorBoundary from 'component/ErrorBoundary';
 import { classList } from 'common/util';
 

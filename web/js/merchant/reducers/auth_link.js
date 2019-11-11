@@ -1,6 +1,6 @@
 import AuthLink from 'merchant/models/AuthLink';
 
-import { makeEntityReducer } from 'rzp/modules/entity';
+import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const AUTH_LINK_FETCH = 'AUTH_LINK_FETCH';
 const AUTH_LINK_CREATE = 'AUTH_LINK_CREATE';

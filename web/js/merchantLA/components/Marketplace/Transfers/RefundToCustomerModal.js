@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 
 import Button from 'component/Button';
 import Input from 'component/Input';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance } from 'merchant/reducers/credits';
 import { reverseTransfer } from 'merchantLA/reducers/marketplace/transfer';
 import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';

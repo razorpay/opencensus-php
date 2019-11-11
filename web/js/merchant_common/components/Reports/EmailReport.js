@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { pluralize } from 'rzp/utils/rzp-utils';
 
 import moment from 'moment';

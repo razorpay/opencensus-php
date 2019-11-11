@@ -14,10 +14,10 @@ import {
   maxLength,
   name,
 } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { states } from 'rzp/utils/constants';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import bMerchantReducer from 'merchant/reducers/b-merchants';
 import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
 import {

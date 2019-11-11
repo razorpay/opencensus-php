@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import BatchList from 'merchant/containers/BatchNew/List';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   fetchLAReversalsBatches as fetchAll,
   createLinkedAccountReversalsBatch as createBatch,

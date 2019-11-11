@@ -5,8 +5,8 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 import { amount } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { createTestPayment } from 'merchant/reducers/virtualaccounts';
 import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
 

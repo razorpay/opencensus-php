@@ -6,8 +6,8 @@ import RTracking from 'react-tracking';
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as KeyActions from 'merchant/reducers/keys';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import RollKey from './RollKey';
 import NewKey from './NewKey';
 

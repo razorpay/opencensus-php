@@ -10,7 +10,7 @@ import ItemsList from 'merchant/components/Items/ItemsList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ItemActions from 'merchant/reducers/items';
 import { fetchInvoices } from 'merchant/reducers/invoices/list';
 import { luminateRow } from 'merchant/reducers/app';

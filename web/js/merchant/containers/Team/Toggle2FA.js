@@ -12,8 +12,8 @@ import {
 } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import {
   VerifyOtp,

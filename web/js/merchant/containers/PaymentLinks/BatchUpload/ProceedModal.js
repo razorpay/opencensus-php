@@ -5,8 +5,8 @@ import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('uploadBatch');
 @withRouter

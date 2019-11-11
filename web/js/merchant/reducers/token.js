@@ -1,6 +1,6 @@
 import Token from 'merchant/models/Token';
 
-import { makeEntityReducer } from 'rzp/modules/entity';
+import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const TOKEN_FETCH = 'TOKEN_FETCH';
 const DELETE_TOKEN = 'TOKEN_DELETE';

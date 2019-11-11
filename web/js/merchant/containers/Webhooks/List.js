@@ -7,7 +7,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/components/Webhooks/List';
 import WebhookCreation from 'merchant/containers/Webhooks/New';
 import * as WebhookActions from 'merchant/reducers/webhooks';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 import DocsLink from 'merchant/components/DocsLink';
 

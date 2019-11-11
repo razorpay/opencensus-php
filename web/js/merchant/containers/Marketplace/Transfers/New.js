@@ -18,7 +18,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import { required } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { titleCase, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 import {

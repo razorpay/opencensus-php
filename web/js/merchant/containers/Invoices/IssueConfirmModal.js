@@ -5,7 +5,7 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Clipboard from 'rzp/ui/Clipboard';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 const selector = formValueSelector('issueInvoice');
 @connect(state => {

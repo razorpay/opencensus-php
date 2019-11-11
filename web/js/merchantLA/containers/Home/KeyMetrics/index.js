@@ -18,7 +18,7 @@ import {
 } from 'rzp/utils/numerals';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { groupBy } from 'rzp/utils/rzp-utils';
 import Change from 'rzp/ui/Change';
 

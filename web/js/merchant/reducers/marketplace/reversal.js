@@ -1,6 +1,6 @@
 import { set, merge, unshift } from 'rzp/utils/immutable';
 import Reversal from 'merchant/models/Reversal';
-import { makeEntityReducer } from 'rzp/modules/entity';
+import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const REVERSAL_FETCH = 'REVERSAL_FETCH';
 

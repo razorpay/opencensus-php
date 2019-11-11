@@ -7,7 +7,7 @@ import {
   makeEntityReducer,
   entityFetchPendingState,
   entityFetchErrorState,
-} from 'rzp/modules/entity';
+} from 'merchant_common/reducers/entity';
 import { merchantFetch } from 'merchantLA/utils/ajax';
 
 //Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/rzp/modules/collection.js

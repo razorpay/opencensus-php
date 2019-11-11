@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import debounce from 'rzp/utils/debounce';
 import takeScreenshot from 'rzp/utils/screenshot';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { fetch } from 'merchantLA/reducers/pokedex';
 import GenericPanel, {

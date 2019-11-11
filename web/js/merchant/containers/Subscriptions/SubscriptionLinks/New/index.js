@@ -10,7 +10,7 @@ import {
 } from 'merchant/reducers/subscriptions';
 import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { ModalAsideNav } from 'component/Wizard';
 import { Modal, ModalContent } from 'component/Modal';

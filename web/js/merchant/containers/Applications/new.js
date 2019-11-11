@@ -14,9 +14,9 @@ import {
   flexibleDevUrl,
 } from 'rzp/utils/validators';
 
-import * as NotificationActions from 'rzp/modules/notifications';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ApplicationActions from 'merchant/reducers/applications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import InputField from 'rzp/ui/Forms/InputField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';

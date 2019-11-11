@@ -12,10 +12,10 @@ import Content from 'merchantLA/components/Content';
 import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as SessionActions from 'merchantLA/reducers/session';
-import { applyTheme } from 'rzp/themes';
+import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
 

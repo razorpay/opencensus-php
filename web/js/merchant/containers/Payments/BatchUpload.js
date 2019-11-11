@@ -8,9 +8,9 @@ import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { createPaymentsBatch as createBatch } from 'merchant/reducers/batches';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const hostToIframeHost = {
   'dashboard.razorpay.in': 'http://api.razorpay.in',

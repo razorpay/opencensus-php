@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { removeMember, updateMember } from 'merchant/reducers/team';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { pickProps } from 'rzp/utils/rzp-utils';
 
 import ModalHeader from 'rzp/ui/ModalHeader';

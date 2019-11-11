@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 // Duplicated AsyncButton logic here.
 // TODO: Should make `react-async-button` quite composable in the upstream

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { updateSession } from 'merchant/reducers/session';
 import { Link } from 'react-router-dom';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import { merchantFetch } from 'merchant/utils/ajax';

@@ -9,7 +9,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 @connect(state => state.session, { closeModal })
 @reduxForm({

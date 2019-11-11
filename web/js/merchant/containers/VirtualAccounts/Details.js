@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal } from 'rzp/modules/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
 import CreateTestPayment from './CreateTestPayment';
 import {
   getKeysSeparatedByPipe,

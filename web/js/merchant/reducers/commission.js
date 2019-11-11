@@ -1,6 +1,6 @@
 import Commission from 'merchant/models/Commission';
 
-import { makeEntityReducer } from 'rzp/modules/entity';
+import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const COMMISSION_FETCH = 'COMMISSION_FETCH';
 const COMMISSION_AGGREGATE_FETCH = 'COMMISSION_AGGREGATE_FETCH';

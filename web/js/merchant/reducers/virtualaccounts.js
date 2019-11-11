@@ -4,7 +4,10 @@ import {
   makeActionCollectionReducer,
   fetchAll,
 } from 'merchant/reducers/collection';
-import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
+import {
+  makeEntityReducer,
+  updateEntity,
+} from 'merchant_common/reducers/entity';
 
 const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';
 const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';

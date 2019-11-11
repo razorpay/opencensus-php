@@ -9,8 +9,8 @@ import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 
 import { required } from 'rzp/utils/validators';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { isWebkit } from 'rzp/utils/rzp-utils';
 

@@ -5,7 +5,7 @@ import Button from 'component/Button';
 import CreatorModal from '../CreatorModal';
 import FileUpload from 'merchant/components/File/Upload';
 import { uploadImageInDescription } from '../../../../model';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { classList } from 'common/util';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit

@@ -11,7 +11,7 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { autoPrefixUrls, addPrefixToObjectKeys } from 'rzp/utils/rzp-utils';
 import { trackFormFields } from 'rzp/utils/track-utils';
 import { classList } from 'common/util';

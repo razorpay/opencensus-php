@@ -4,11 +4,11 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import PropTypes from 'prop-types';
 import * as ConfigActions from 'merchant/reducers/config';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('editInvoiceLabel');
 

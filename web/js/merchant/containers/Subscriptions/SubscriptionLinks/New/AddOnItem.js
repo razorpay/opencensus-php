@@ -8,7 +8,7 @@ import QuickAdd from 'rzp/ui/Select/QuickAdd';
 
 import { isPresent } from 'rzp/utils/rzp-utils';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import QuantitySelector from './QuantitySelector';
 

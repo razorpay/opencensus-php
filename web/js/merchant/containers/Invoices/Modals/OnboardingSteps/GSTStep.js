@@ -8,9 +8,9 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import InputField from 'rzp/ui/Forms/InputField';
 
 import { saveGST } from 'merchant/reducers/profile';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('gstStepOnboarding');
 

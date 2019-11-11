@@ -6,7 +6,10 @@ import {
   fetchAll,
   updateEntityInList,
 } from 'merchant/reducers/collection';
-import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
+import {
+  makeEntityReducer,
+  updateEntity,
+} from 'merchant_common/reducers/entity';
 
 import { PLAN_FETCH } from 'merchant/reducers/plans';
 import { CUSTOMER_FETCH } from 'merchant/reducers/customers';

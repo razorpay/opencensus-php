@@ -41,7 +41,7 @@ import {
 } from 'merchant/reducers/activationWizard';
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import {
   L1FormSuccess,

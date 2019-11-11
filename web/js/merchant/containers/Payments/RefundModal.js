@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { Link } from 'react-router-dom';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { AmountTooltip } from 'rzp/ui/Amount';
@@ -20,7 +20,7 @@ import {
   fetchRefunds,
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 export const isPartialPayment = props => {

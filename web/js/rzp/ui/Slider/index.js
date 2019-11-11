@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
-import * as SliderActions from 'rzp/modules/slider';
+import * as SliderActions from 'merchant_common/reducers/slider';
 import { isNone } from 'rzp/utils/rzp-utils';
 
 @withRouter

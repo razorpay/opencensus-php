@@ -17,8 +17,8 @@ import Spinner from 'rzp/ui/Spinner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { updateItem } from 'rzp/utils/immutable';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
 import NoEntityResultsFound from 'rzp/ui/NoEntityResultsFound';

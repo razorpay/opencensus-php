@@ -18,8 +18,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
 import { fetchToken, deleteToken } from 'merchant/reducers/token';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './ChargeToken';

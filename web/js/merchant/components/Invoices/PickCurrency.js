@@ -1,8 +1,8 @@
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Form from 'component/Form';
 import Input from 'component/Input';
-import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'component/Button';
 import Alert from 'component/Alert';
 

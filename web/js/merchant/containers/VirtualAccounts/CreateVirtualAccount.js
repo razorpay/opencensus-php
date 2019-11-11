@@ -12,9 +12,9 @@ import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
 
 import Input, { Label, Description } from 'component/Input';
 
-import { closeModal } from 'rzp/modules/modals';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { luminateRow } from 'merchant/reducers/app';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';

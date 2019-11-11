@@ -5,7 +5,7 @@ import { AsyncBtn } from 'component/Button';
 
 import { classList } from 'common/util';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { updateFeatures } from 'merchant/reducers/config';
 import {

@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 import { activationDuration } from 'merchant_common/helpers/data';

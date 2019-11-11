@@ -22,7 +22,7 @@ import {
   setActiveEntity,
   setSecActiveEntity,
 } from 'merchantLA/reducers/app';
-import { openSlider } from 'rzp/modules/slider';
+import { openSlider } from 'merchant_common/reducers/slider';
 
 @withRouter
 @connect(null, {

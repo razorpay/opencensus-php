@@ -21,8 +21,8 @@ import { timeCalculator } from 'component/Input/Time';
 
 import { onChangeNotes } from 'component/Input/PairList';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import { fetchInvoice } from 'merchant/reducers/invoices/details';
 import {

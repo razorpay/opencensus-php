@@ -32,7 +32,7 @@ import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
 
 import { fetchPaymentPagesList } from '../model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
 import { RZPFeatures } from 'rzp/utils/constants';
 

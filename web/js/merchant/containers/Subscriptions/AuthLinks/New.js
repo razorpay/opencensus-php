@@ -7,9 +7,9 @@ import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 import { titleCase } from 'common/util';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   saveInvoice,
   updatePLInReduxList,

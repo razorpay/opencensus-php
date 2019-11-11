@@ -5,7 +5,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
 import Amount from 'rzp/ui/Amount';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
 import Item from 'merchant/models/Item';
 import { track } from './ga';

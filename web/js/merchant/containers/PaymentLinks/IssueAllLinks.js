@@ -4,8 +4,8 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   issuePaymentLinkBatch,
   editIssuableBatchList,

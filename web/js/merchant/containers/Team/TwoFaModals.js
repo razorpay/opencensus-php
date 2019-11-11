@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { OtpInput } from 'merchant/components/OtpInput';
 import { Field, reduxForm } from 'redux-form';

@@ -7,10 +7,10 @@ import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
 import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 
 import { luminateRow } from 'merchant/reducers/app';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { batchDownload } from 'merchant/reducers/batches';
 import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';

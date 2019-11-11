@@ -6,8 +6,8 @@ import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import { updatePassword } from 'merchantLA/reducers/profile';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 @connect(null, { closeModal, showNotification })
 @reduxForm({

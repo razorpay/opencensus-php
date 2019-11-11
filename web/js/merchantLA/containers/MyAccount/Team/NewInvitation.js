@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('newInvitation');
 @connect(

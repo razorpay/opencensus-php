@@ -7,11 +7,11 @@ import AddOnsListFilter from 'merchant/components/AddOns/ListFilter';
 import AddOnsList from 'merchant/components/AddOns/List';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchAddOns, deleteAddOn } from 'merchant/reducers/addons';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 import AddOnCreation from 'merchant/containers/AddOns/New';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import {
   planId,

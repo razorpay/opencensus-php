@@ -3,7 +3,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Button from 'component/Button';
 import Input from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { trackCreateButtonSizeSelection, trackCreateButtonCancel } from '../ga';
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];

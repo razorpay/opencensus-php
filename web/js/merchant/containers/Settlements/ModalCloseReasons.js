@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'component/Button';
 import { CLOSEOPTIONS } from './CloseReasons';
 

@@ -7,8 +7,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
 import { saveAddOn } from 'merchant/reducers/addons';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { AmountTooltip } from 'rzp/ui/Amount';
 
 @connect(null, {

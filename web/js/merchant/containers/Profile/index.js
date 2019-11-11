@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import Alert from 'rzp/ui/Forms/Alert';
 import Spinner from 'rzp/ui/Spinner';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 

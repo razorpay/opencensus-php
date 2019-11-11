@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import { findBy, filterBy } from 'rzp/utils/rzp-utils';
-import * as NotificationActions from 'rzp/modules/notifications';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import {
   fetchReminders,

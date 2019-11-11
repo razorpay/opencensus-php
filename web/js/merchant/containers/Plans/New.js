@@ -10,7 +10,7 @@ import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import Alert from 'rzp/ui/Forms/Alert';
 import { required } from 'rzp/utils/validators';
 import { savePlan } from 'merchant/reducers/plans';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
 import { fetchPlan } from 'merchant/reducers/plans';

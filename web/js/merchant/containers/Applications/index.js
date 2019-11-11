@@ -9,8 +9,8 @@ import {
   NoConnectedApps,
   LoadingConnectedApps,
 } from 'merchant/components/Applications/NoConnectedApps';
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
 
 @connect(

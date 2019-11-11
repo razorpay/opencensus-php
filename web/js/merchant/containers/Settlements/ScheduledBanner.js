@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Button from 'component/Button';
 import ScheduledModal from './ScheduledModal';
 import { connect } from 'react-redux';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 @connect(
   state => ({

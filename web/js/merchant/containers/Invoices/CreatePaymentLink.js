@@ -12,7 +12,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { required, phone, email, amount } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 

@@ -9,7 +9,7 @@ import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import RefundToCustomerModal from './RefundToCustomerModal';
 
 import {

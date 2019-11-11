@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 
 import { fetchSubmerchant, resendInvite } from 'merchant/reducers/submerchant';
 import { switchMerchant } from 'merchant/reducers/session';
-import { openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Entity from 'merchant/components/PartnerDashboard/Submerchant/Entity';
 

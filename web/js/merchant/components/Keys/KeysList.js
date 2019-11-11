@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Key from 'merchant/models/Key';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 // import RegenerateKey from 'merchant/models/Key'
 
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';

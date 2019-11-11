@@ -3,7 +3,10 @@ import {
   makeActionCollectionReducer,
   fetchAll,
 } from 'merchant/reducers/collection';
-import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
+import {
+  makeEntityReducer,
+  updateEntity,
+} from 'merchant_common/reducers/entity';
 import { set } from 'rzp/utils/immutable';
 
 export const PLANS_FETCH = 'PLANS_FETCH';

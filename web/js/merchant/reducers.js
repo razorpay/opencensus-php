@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
-import modalReducer from 'rzp/modules/modals';
-import sliderReducer from 'rzp/modules/slider';
-import notificationsReducer from 'rzp/modules/notifications';
+import modalReducer from 'merchant_common/reducers/modals';
+import sliderReducer from 'merchant_common/reducers/slider';
+import notificationsReducer from 'merchant_common/reducers/notifications';
 import sessionReducer from 'merchant/reducers/session';
 import appReducer from 'merchant/reducers/app';
 import homeReducer from 'merchant/reducers/home';

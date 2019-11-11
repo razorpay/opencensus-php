@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import { uploadImageInDescription } from '../../model';

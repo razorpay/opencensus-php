@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
 import { fetchPartnerApplication } from 'merchant/reducers/applications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import Spinner from 'rzp/ui/Spinner';
 import DetailRow from 'merchant/components/DetailRow';

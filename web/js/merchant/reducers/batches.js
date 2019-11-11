@@ -8,7 +8,7 @@ import {
   makeEntityReducer,
   entityFetchPendingState,
   entityFetchErrorState,
-} from 'rzp/modules/entity';
+} from 'merchant_common/reducers/entity';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';

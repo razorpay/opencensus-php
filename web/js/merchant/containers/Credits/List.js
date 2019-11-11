@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchCreditBalance } from 'merchant/reducers/credits';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import CreditsDetails from 'merchant/components/Credits';
 import gaTrack from './ga';
 

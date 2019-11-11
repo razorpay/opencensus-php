@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 
 import { isAmount } from 'rzp/utils/validators';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 

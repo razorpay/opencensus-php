@@ -16,8 +16,8 @@ import {
 import { email, phone, validateGSTIN } from 'rzp/utils/validators';
 
 import * as CustomerActions from 'merchant/reducers/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { fetchStates } from 'merchant/reducers/states';
 

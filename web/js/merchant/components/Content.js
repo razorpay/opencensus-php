@@ -30,7 +30,7 @@ import {
   setActiveEntity,
   setSecActiveEntity,
 } from 'merchant/reducers/app';
-import { openSlider } from 'rzp/modules/slider';
+import { openSlider } from 'merchant_common/reducers/slider';
 
 import store from 'merchant/store';
 
