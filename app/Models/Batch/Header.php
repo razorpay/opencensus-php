@@ -55,14 +55,21 @@ class Header
     //
     // IRCTC Headers
     //
-    const MERCHANT_REFERENCE = 'merchant_reference';
-    const REFUND_TYPE        = 'refund_type';
-    const REFUND_AMOUNT      = 'refund_amount';
-    const CANCELLATION_DATE  = 'cancellation_date';
-    const PAYMENT_AMOUNT     = 'payment_amount';
-    const CANCELLATION_ID    = 'cancellation_id';
-    const PAYMENT_DATE       = 'payment_date';
-    const REFUND_DATE        = 'refund_date';
+    const MERCHANT_REFERENCE      = 'merchant_reference';
+    const REFUND_TYPE             = 'refund_type';
+    const REFUND_AMOUNT           = 'refund_amount';
+    const CANCELLATION_DATE       = 'cancellation_date';
+    const PAYMENT_AMOUNT          = 'payment_amount';
+    const CANCELLATION_ID         = 'cancellation_id';
+    const PAYMENT_DATE            = 'payment_date';
+    const REFUND_DATE             = 'refund_date';
+    const MERCHANT_TXN_ID         = "MERCHANT_TXN_ID";
+    const TRANSACTION_DATE        = "TRANSACTION_DATE";
+    const BANK_TRANSACTION_ID     = "BANK_TRANSACTION_ID";
+    const REFUND_STATUS           = "REFUND_STATUS";
+    const BANK_REMARKS            = "BANK_REMARKS";
+    const BANK_ACTUAL_REFUND_DATE = "BANK_ACTUAL_REFUND_DATE";
+    const BANK_REFUND_TXN_ID      = "BANK_REFUND_TXN_ID";
 
     //
     // Linked Account / Sub-merchant Headers
@@ -672,6 +679,16 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Pricing Rules Addition Headers
+    const PRICING_RULE_MERCHANT_ID         = 'merchant_id';
+    const PRICING_RULE_PRODUCT             = 'product';
+    const PRICING_RULE_FEATURE             = 'feature';
+    const PRICING_RULE_PAYMENT_METHOD      = 'payment_method';
+    const PRICING_RULE_PAYMENT_METHOD_TYPE = 'payment_method_type';
+    const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
+    const PRICING_RULE_INTERNATIONAL       = 'international';
+    const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
 
@@ -871,17 +888,14 @@ class Header
             ],
 
             self::OUTPUT => [
-                self::MERCHANT_REFERENCE,
-                self::REFUND_TYPE,
+                self::MERCHANT_TXN_ID,
+                self::TRANSACTION_DATE,
+                self::BANK_TRANSACTION_ID,
                 self::REFUND_AMOUNT,
-                self::PAYMENT_ID,
-                self::STATUS,
-                self::REFUND_DATE,
-                self::REFUND_ID,
-                self::CANCELLATION_DATE,
-                self::PAYMENT_AMOUNT,
-                self::CANCELLATION_ID,
-                self::ERROR_DESCRIPTION,
+                self::REFUND_STATUS,
+                self::BANK_REMARKS,
+                self::BANK_ACTUAL_REFUND_DATE,
+                self::BANK_REFUND_TXN_ID,
             ],
         ],
 
@@ -2142,6 +2156,29 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::PRICING_RULE => [
+            self::INPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
+            ],
+            self::OUTPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
             ]
         ]
     ];

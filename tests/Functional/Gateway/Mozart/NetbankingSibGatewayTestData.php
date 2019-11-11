@@ -22,7 +22,10 @@ return [
         'email'             => 'a@b.com',
         'contact'           => '+919918899029',
         'notes'             => [
-            'merchant_order_id' => 'random order id',
+            'merchant_order_id'   => 'random order id',
+        ],
+        'acquirer_data'     => [
+            'bank_transaction_id' => '999999'
         ],
         'gateway'           => 'netbanking_sib',
         'signed'            => false,
@@ -134,6 +137,22 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthorizeFailed' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 ];

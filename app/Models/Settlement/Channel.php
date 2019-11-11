@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Mode;
 
 class Channel
 {
@@ -16,6 +20,7 @@ class Channel
     const RBL       = 'rbl';
     const AXIS2     = 'axis2';
     const ICICI2    = 'icici2';
+    const CITI      = 'citi';
 
     public static $gateways = [
         self::KOTAK => [
@@ -62,6 +67,7 @@ class Channel
             self::RBL,
             self::AXIS2,
             self::ICICI2,
+            self::CITI,
         ];
     }
 
@@ -212,7 +218,7 @@ class Channel
         return defined(get_class() . '::' . strtoupper($channel));
     }
 
-    public static function validate(string $channel)
+    public static function validate(string $channel = null)
     {
         if (in_array($channel, self::getChannels(), true) === false)
         {
@@ -221,6 +227,8 @@ class Channel
     }
 
     /**
+     * TODO: To yesbank for QA testing. Will remove when ramping and use razorx
+     *
      * Supported FTS channels for payouts
      * @return array
      */
@@ -228,6 +236,7 @@ class Channel
     {
         return [
             self::RBL,
+            self::CITI,
         ];
     }
 
@@ -254,6 +263,95 @@ class Channel
         return [
             self::RBL,
             self::YESBANK,
+            self::ICICI,
+            self::CITI,
+        ];
+    }
+
+    /**
+     * Used for retrying the stuck transfers on FTS supported channels
+     * @return array
+     */
+    public static function getFtsSupportedChannels()
+    {
+        return [
+            self::RBL,
+            self::ICICI,
+            self::CITI,
+            self::YESBANK,
+        ];
+    }
+
+    public static function validateChannelAndMode(string $channel = null,
+                                                  string $destinationType = null,
+                                                  string $mode = null)
+    {
+        self::validate($channel);
+
+        $allChannelsWithModes = self::getAllSupportedChannelsWithModes();
+
+        $modesSupportedForChannel = $allChannelsWithModes[$channel][$destinationType] ?? [];
+
+        if (in_array($mode, $modesSupportedForChannel, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ]);
+        }
+    }
+
+    protected static function getAllSupportedChannelsWithModes()
+    {
+        return [
+            self::YESBANK   => [
+                Constants\Entity::VPA           =>  [
+                    Mode::UPI,
+                ],
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::RTGS,
+                    Mode::IMPS,
+                    Mode::NEFT,
+                    Mode::IFT,
+                ],
+                Constants\Entity::CARD          =>  [
+                    Mode::IMPS,
+                    Mode::UPI,
+                    Mode::NEFT,
+                ]
+            ],
+            self::CITI      => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::RTGS,
+                    Mode::IMPS,
+                    Mode::NEFT,
+                    Mode::IFT,
+                ],
+                Constants\Entity::CARD          =>  [
+                    Mode::IMPS,
+                    Mode::NEFT,
+                ]
+            ],
+            self::ICICI     => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::IMPS,
+                ],
+                Constants\Entity::CARD          =>  [
+                    Mode::IMPS,
+                ]
+            ],
+            self::RBL       => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::RTGS,
+                    Mode::IMPS,
+                    Mode::NEFT,
+                    Mode::IFT,
+                ],
+            ]
         ];
     }
 }

@@ -15,6 +15,7 @@ class Fetch extends Transaction\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
+            Entity::ID                => 'sometimes|public_id|size:18',
             Entity::BALANCE_ID        => 'sometimes|unsigned_id',
             Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::PAYOUT_ID         => 'sometimes|public_id|size:19',
@@ -35,6 +36,7 @@ class Fetch extends Transaction\Fetch
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
+            Entity::ID,
             Entity::BALANCE_ID,
             Entity::CONTACT_ID,
             Entity::PAYOUT_ID,
@@ -70,6 +72,7 @@ class Fetch extends Transaction\Fetch
     ];
 
     const COMMON_FIELDS = [
+        Entity::ID,
         Entity::MERCHANT_ID,
         Entity::BALANCE_ID,
     ];

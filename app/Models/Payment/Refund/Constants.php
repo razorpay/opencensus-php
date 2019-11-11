@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 class Constants
 {
     const IS_FTA                            = 'is_fta';
+    const MOZART                            = 'mozart';
     const ENTITIES                          = 'entities';
     const REFUND_IDS                        = 'refund_ids';
     const DB_FETCH_LIMIT                    = 'limit';
@@ -49,4 +50,18 @@ class Constants
     const TERTIARY_MESSAGE   = 'tertiary_message';
     const SECONDARY_MESSAGE  = 'secondary_message';
     const MERCHANT_REFERENCE = 'merchant_reference';
+
+    const RESPONSE_CODE          = 'code';
+    const RESPONSE_BODY          = 'body';
+
+    const ISSUER        = 'issuer';
+    const METHOD        = 'method';
+    const CARD_TYPE     = 'card_type';
+    const NETWORK_CODE  = 'network_code';
+    const AMOUNT        = 'amount';
+
+    /**
+     * Instant Refunds mode level pricing/decisioning razorx experiments related constants
+     */
+    const RAZORX_VARIANT_ON = 'on';
 }

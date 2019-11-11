@@ -19,6 +19,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalSelectionTest extends TestCase
@@ -1366,6 +1367,66 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1240', $terminal->getCategory());
     }
 
+    public function testBlockedMccOnHitachiTerminal()
+    {
+        $this->fixtures->merchant->setCategory(HitachiGateway::BLACKLISTED_MCC[0]);
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment       = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment'  => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options           = new Options;
+        $selector          = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $selectedTerminals = array_filter($selectedTerminals);
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $this->assertNotEquals('hitachi', $selectedTerminals[0]->getGateway());
+    }
+
     public function testHitachiTerminalCreationOnRunWithZeroStratingCategory()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1795,6 +1856,53 @@ class TerminalSelectionTest extends TestCase
 
             $this->assertEquals($terminal, null);
         }
+    }
+
+    public function testMswipeTerminalAssigning()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $this->fixtures->merchant->addFeatures('use_mswipe_terminals');
+
+        $this->fixtures->create('terminal', ['id' => 'C7EW8LggSH7FnY']);
+        $this->fixtures->create('terminal', ['id' => 'CXjvHPZlPnqWBX']);
+        $this->fixtures->create('terminal', ['id' => 'CNqL80h9pI0hsI']);
+        $this->fixtures->create('terminal', ['id' => 'CHYaN0FnjkG5ni']);
+        $this->fixtures->create('terminal', ['id' => 'CWybuzsFqa9KDz']);
+
+        $cardArray = [
+            'number'        => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month'  => '1',
+            'expiry_year'   => '35',
+            'cvv'           => '123',
+            'name'          => 'Test',
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(6, sizeof($selectedTerminals));
     }
 
     public function testGatewayFilterRejectsCyberSource()

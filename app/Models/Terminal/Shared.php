@@ -42,6 +42,8 @@ class Shared
     const NETBANKING_AXIS_CRP_TERMINAL       = '100NbAxisCrpTl';
     const NETBANKING_AXIS_TPV_TERMINAL       = '100NbAxisTpvTl';
     const NETBANKING_AXIS_REC_TERMINAL       = '100NbAxisRecTl';
+    const NETBANKING_UBI_TERMINAL            = '1000NbUbiTrmnl';
+    const NETBANKING_SCB_TERMINAL            = '1000NbScbTrmnl';
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
@@ -57,10 +59,13 @@ class Shared
     const NETBANKING_SIB_TPV_TERMINAL        = '1000NbSibTpvTl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
     const NETBANKING_SBI_TPV_TERMINAL        = '100NbSbinTpvTl';
+    const NETBANKING_SBI_REC_TERMINAL        = '100NbSbinRecTl';
     const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
     const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
+    const NETBANKING_KVB_TERMINAL            = '1000NbKvbTrmnl';
+    const NETBANKING_KVB_TPV_TERMINAL        = '1000NbKvbTpvTl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL          = '100PayzappTmnl';
@@ -143,6 +148,7 @@ class Shared
         self::NETBANKING_PNB_TERMINAL,
         self::NETBANKING_ESFB_TERMINAL,
         self::NETBANKING_SBI_TERMINAL,
+        self::NETBANKING_KVB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -206,6 +212,7 @@ class Shared
         self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB,
         self::NETBANKING_SBI_TERMINAL            => Gateway::NETBANKING_SBI,
         self::NETBANKING_ESFB_TERMINAL           => Gateway::NETBANKING_EQUITAS,
+        self::NETBANKING_KVB_TERMINAL            => Gateway::NETBANKING_KVB,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,

@@ -3,7 +3,6 @@
 namespace RZP\Mail\Dispute;
 
 use RZP\Constants\MailTags;
-use RZP\Models\Payment\Entity as Payment;
 
 class Creation extends Base
 {

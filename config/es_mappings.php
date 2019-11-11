@@ -8,9 +8,14 @@ return [
 
     'settings' => [
 
-        'index.mapping.total_fields.limit'  => 10000000,
-        'index.mapping.depth.limit'         => 50,
-        'index.mapping.nested_fields.limit' => 20,
+        // Following are default values in Elasticsearch 5.6 and
+        // used unchanged for index creation.
+        'index.mapping.total_fields.limit'  => 1000,
+        'index.mapping.depth.limit'         => 20,
+        'index.mapping.nested_fields.limit' => 50,
+
+        // Following are default values in Elasticsearch 5.6 and
+        // is changeable per index via CLI command.
         'number_of_shards'                  => 5,
         'number_of_replicas'                => 1,
 
@@ -43,7 +48,7 @@ return [
                 // does not tokenized for a set of punctuation(set 1). So we use custom
                 // standard_analyzer where it's same as standard but also replaces
                 // those set 1 punctuation to '-' which will get used as word break
-                // char in normal standard anaylzer.
+                // char in normal standard analyzer.
                 //
                 //  This way, both index and search time analysis is consistent.
                 //
@@ -58,6 +63,16 @@ return [
                         'standard',
                         'lowercase',
                         'en_stopwords',
+                    ],
+                ],
+
+                // This is used as workaround until we use v5.1.
+                // Instead of type=keyword,normalizer=lowercase we will use type=text,analyzer=lowercase_keyword.
+                'lowercase_keyword' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'keyword',
+                    'filter'    => [
+                        'lowercase',
                     ],
                 ],
             ],
@@ -124,19 +139,19 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            // Reference: https://www.elastic.co/guide/en/elasticsearch/reference/current/object.html
             'notes' => [
-                'type' => 'object',
-            ],
-        ],
-        'dynamic_templates' => [
-            [
-                'notes' => [
-                    'path_match' => 'notes.*',
-                    'mapping'    => [
-                        'type'            => 'text',
-                        'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard_custom',
-                        'index_options'   => 'offsets',
+                'type'       => 'object',
+                'dynamic'    => false,
+                'enabled'    => true,
+                'properties' => [
+                    'key' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
+                    ],
+                    'value' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
                     ],
                 ],
             ],
@@ -331,40 +346,42 @@ return [
             ],
             'merchant_detail' => [
                 'properties' => [
-                    'merchant_id' => [
+                    'merchant_id'         => [
                         'type'  => 'keyword',
                         'index' => false,
                     ],
-                    'steps_finished' => [
+                    'steps_finished'      => [
                         'type'  => 'keyword',
                         'index' => false,
                     ],
                     'activation_progress' => [
                         'type' => 'byte',
                     ],
-                    'activation_status' => [
+                    'activation_status'   => [
                         'type' => 'keyword',
                     ],
-                    'activation_flow' => [
+                    'activation_flow'     => [
                         'type' => 'keyword',
                     ],
-                    'reviewer_id' => [
-                        'type'  => 'keyword',
+                    'reviewer_id'         => [
+                        'type' => 'keyword',
                     ],
-                    'archived_at' => [
+                    'archived_at'         => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                     ],
-                    'submitted_at' => [
+                    'submitted_at'        => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                    ],
+                    'updated_at'          => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                         'index'  => false,
                     ],
-                    'updated_at' => [
-                        'type'   => 'date',
-                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
-                        'index'  => false,
-                    ],
+                    'business_type'       => [
+                        'type' => 'keyword',
+                    ]
                 ],
             ],
             'admins' => [
@@ -477,6 +494,9 @@ return [
             'balance_id' => [
                 'type'  => 'keyword',
             ],
+            'contact_type' => [
+                'type'  => 'keyword',
+            ],
             'contact_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -492,8 +512,15 @@ return [
             'type' => [
                 'type'  => 'keyword',
             ],
+            'product' => [
+                'type'  => 'keyword',
+            ],
             'method' => [
                 'type'  => 'keyword',
+            ],
+            'mode' => [
+                'type'     => 'text',
+                'analyzer' => 'lowercase_keyword'
             ],
             'status' => [
                 'type'  => 'keyword',
@@ -502,6 +529,10 @@ return [
                 'type'  => 'keyword',
             ],
             'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'reversed_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],

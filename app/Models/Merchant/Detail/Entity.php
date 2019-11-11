@@ -35,12 +35,14 @@ class Entity extends Base\PublicEntity
     const BUSINESS_REGISTERED_COUNTRY        = 'business_registered_country';
     const BUSINESS_REGISTERED_STATE          = 'business_registered_state';
     const BUSINESS_REGISTERED_CITY           = 'business_registered_city';
+    const BUSINESS_REGISTERED_DISTRICT       = 'business_registered_district';
     const BUSINESS_REGISTERED_PIN            = 'business_registered_pin';
     const BUSINESS_OPERATION_ADDRESS         = 'business_operation_address';
     const BUSINESS_OPERATION_ADDRESS_L2      = 'business_operation_address_l2';
     const BUSINESS_OPERATION_COUNTRY         = 'business_operation_country';
     const BUSINESS_OPERATION_STATE           = 'business_operation_state';
     const BUSINESS_OPERATION_CITY            = 'business_operation_city';
+    const BUSINESS_OPERATION_DISTRICT        = 'business_operation_district';
     const BUSINESS_OPERATION_PIN             = 'business_operation_pin';
     const BUSINESS_DOE                       = 'business_doe';
     const GSTIN                              = 'gstin'; // Goods and Services Tax Identification Number
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_VALUE                  = 'transaction_value';
     const PROMOTER_PAN                       = 'promoter_pan';
     const PROMOTER_PAN_NAME                  = 'promoter_pan_name';
+    const DATE_OF_BIRTH                      = 'date_of_birth';
     const BANK_NAME                          = 'bank_name';
     const BANK_ACCOUNT_NUMBER                = 'bank_account_number';
     const BANK_ACCOUNT_NAME                  = 'bank_account_name';
@@ -90,6 +93,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_PROGRESS                = 'activation_progress';
     const LOCKED                             = 'locked';
     const ACTIVATION_STATUS                  = 'activation_status';
+    const BANK_DETAILS_VERIFICATION_STATUS   = 'bank_details_verification_status';
+    const POI_VERIFICATION_STATUS            = 'poi_verification_status';
+    const POA_VERIFICATION_STATUS            = 'poa_verification_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
     const REVIEWER_ID                        = 'reviewer_id';
@@ -117,6 +123,11 @@ class Entity extends Base\PublicEntity
     const MERCHANTS                          = 'merchants';
     const ACTIVATION_FLOW                    = 'activation_flow';
     const INTERNATIONAL_ACTIVATION_FLOW      = 'international_activation_flow';
+    const LIVE_TRANSACTION_DONE              = 'live_transaction_done';
+    const KYC_CLARIFICATION_REASONS          = 'kyc_clarification_reasons';
+    const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
+    const CLARIFICATION_REASONS              = 'clarification_reasons';
+    const ADDITIONAL_DETAILS                 = 'additional_details';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -157,12 +168,14 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::BUSINESS_DOE,
         self::GSTIN,
@@ -223,6 +236,12 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::LIVE_TRANSACTION_DONE,
+        self::DATE_OF_BIRTH,
+        self::KYC_CLARIFICATION_REASONS,
+        self::KYC_ADDITIONAL_DETAILS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
     ];
 
     protected $public = [
@@ -242,12 +261,14 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_DISTRICT,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
         self::BUSINESS_OPERATION_ADDRESS_L2,
         self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_DISTRICT,
         self::BUSINESS_OPERATION_PIN,
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
@@ -274,6 +295,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
         self::ACTIVATION_STATUS,
+        self::BANK_DETAILS_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
+        self::POI_VERIFICATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
@@ -311,7 +335,10 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
-        self::INTERNATIONAL_ACTIVATION_FLOW
+        self::INTERNATIONAL_ACTIVATION_FLOW,
+        self::LIVE_TRANSACTION_DONE,
+        self::KYC_CLARIFICATION_REASONS,
+        self::KYC_ADDITIONAL_DETAILS,
     ];
 
     protected $defaults = [
@@ -322,10 +349,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::LOCKED                 => 'bool',
-        self::SUBMITTED              => 'bool',
-        self::BUSINESS_INTERNATIONAL => 'bool',
-        self::ACTIVATION_PROGRESS    => 'int',
+        self::LOCKED                    => 'bool',
+        self::SUBMITTED                 => 'bool',
+        self::BUSINESS_INTERNATIONAL    => 'bool',
+        self::ACTIVATION_PROGRESS       => 'int',
+        self::KYC_CLARIFICATION_REASONS => 'array',
+        self::KYC_ADDITIONAL_DETAILS    => 'array'
     ];
 
     const UPLOADED_FIELDS = [
@@ -424,8 +453,8 @@ class Entity extends Base\PublicEntity
 
     public function hasBankAccountDetails(): bool
     {
-        $ifscCode      = $this->getAttribute(self::BANK_BRANCH_IFSC);
-        $accountNumber = $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+        $ifscCode      = $this->getBankBranchIfsc();
+        $accountNumber = $this->getBankAccountNumber();
 
         return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
     }
@@ -454,6 +483,21 @@ class Entity extends Base\PublicEntity
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);
+    }
+
+    public function getBankAccountName()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NAME);
+    }
+
+    public function getBankAccountNumber()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+    }
+
+    public function getBankBranchIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
     }
 
     public function getCompanyCin()
@@ -546,6 +590,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
     }
 
+    public function getBusinessRegisteredDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_DISTRICT);
+    }
+
     public function getBusinessRegisteredState()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
@@ -592,6 +641,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
     }
 
+    public function getBusinessOperationDistrict()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_DISTRICT);
+    }
+
     public function getBusinessOperationState()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_STATE);
@@ -624,14 +678,49 @@ class Entity extends Base\PublicEntity
         return substr($gstin, 0, 2);
     }
 
+    public function getBankDetailsVerificationStatus()
+    {
+        return $this->getAttribute(self::BANK_DETAILS_VERIFICATION_STATUS);
+    }
+
+    public function setContactName($name)
+    {
+        $this->setAttribute(self::CONTACT_NAME, $name);
+    }
+
+    public function setBankDetailsVerificationStatus(string $bankDetailsVerificationStatus)
+    {
+        $this->setAttribute(self::BANK_DETAILS_VERIFICATION_STATUS, $bankDetailsVerificationStatus);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
     }
 
-    public function setActivationFlow(string $activationFlow)
+    public function setActivationFlow(string $activationFlow = null)
     {
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function setPoaVerificationStatus(string $poaVerificationStatus)
+    {
+        $this->setAttribute(self::POA_VERIFICATION_STATUS, $poaVerificationStatus);
+    }
+
+    public function getPoaVerificationStatus()
+    {
+        return $this->getAttribute(self::POA_VERIFICATION_STATUS);
+    }
+
+    public function isPoaVerified() : bool
+    {
+        return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isBankDetailStatusVerified() : bool
+    {
+        return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
     }
 
     public function getActivationFlow()
@@ -639,7 +728,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_FLOW);
     }
 
-    public function setInternationalActivationFlow(string $internationalActivationFlow)
+    public function setInternationalActivationFlow(string $internationalActivationFlow = null)
     {
         $this->setAttribute(self::INTERNATIONAL_ACTIVATION_FLOW, $internationalActivationFlow);
     }
@@ -647,6 +736,16 @@ class Entity extends Base\PublicEntity
     public function getInternationalActivationFlow()
     {
         return $this->getAttribute(self::INTERNATIONAL_ACTIVATION_FLOW);
+    }
+
+    public function getPoiVerificationStatus()
+    {
+        return $this->getAttribute(self::POI_VERIFICATION_STATUS);
+    }
+
+    public function setPoiVerificationStatus(string $status = null)
+    {
+        return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);
     }
 
     public function setActivationProgress($activationProgress)
@@ -694,6 +793,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
@@ -711,12 +815,32 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessType()
     {
-        return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
+        return BusinessType::getKeyFromIndex($this->getBusinessTypeValue());
+    }
+
+    public function getBusinessTypeValue()
+    {
+        return $this->getAttribute(self::BUSINESS_TYPE);
+    }
+
+    public function isUnregisteredBusiness(): bool
+    {
+        if (empty($this->getAttribute(self::BUSINESS_TYPE)))
+        {
+            return false;
+        }
+
+        return BusinessType::isUnregisteredBusinessIndex($this->getAttribute(self::BUSINESS_TYPE));
     }
 
     public function getBusinessName()
     {
         return $this->getAttribute(self::BUSINESS_NAME);
+    }
+
+    public function getKycClarificationReasons()
+    {
+        return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
     }
 
     public function getBusinessCategory()
@@ -757,6 +881,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionValue()
     {
         return $this->getAttribute(self::TRANSACTION_VALUE);
+    }
+
+    public function getBusinessInternational()
+    {
+        return $this->getAttribute(self::BUSINESS_INTERNATIONAL);
     }
 
     public function getBusinessModel()
@@ -849,5 +978,15 @@ class Entity extends Base\PublicEntity
     public function setCustomFields(array $customFields)
     {
         $this->setAttribute(self::CUSTOM_FIELDS, $customFields);
+    }
+
+    public function getIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
+    }
+
+    public function getLiveTransactionDone()
+    {
+        return $this->getAttribute(self::LIVE_TRANSACTION_DONE);
     }
 }

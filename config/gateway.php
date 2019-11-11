@@ -12,6 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
+        'atos',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -36,8 +37,11 @@ return [
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
+        'netbanking_bob_v2',
         'netbanking_vijaya',
         'netbanking_corporation',
+        'netbanking_ubi',
+        'netbanking_scb',
         'netbanking_kotak',
         'netbanking_icici',
         'netbanking_airtel',
@@ -56,6 +60,7 @@ return [
         'netbanking_ibk',
         'netbanking_idbi',
         'netbanking_yesb',
+        'netbanking_kvb',
         'paytm',
         'sharp',
         'upi_airtel',
@@ -110,6 +115,7 @@ return [
     'mock_netbanking_cbi'         => env('NETBANKING_CBI_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
+    'mock_netbanking_bob_v2'      => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
@@ -123,6 +129,8 @@ return [
     'mock_netbanking_sbi'         => env('NETBANKING_SBI_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_ubi'         => env('NETBANKING_UBI_MOCK'),
+    'mock_netbanking_scb'         => env('NETBANKING_SCB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
@@ -132,6 +140,7 @@ return [
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
+    'mock_netbanking_kvb'         => env('NETBANKING_KVB_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -166,6 +175,7 @@ return [
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
+    'mock_atos'                   => env('ATOS_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -758,9 +768,13 @@ return [
         'merchant_id'       => env('PAYSECURE_TEST_MERCHANT_ID'),
     ],
     'netbanking_sbi' => [
-        'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
-        'iv'                => env('NETBANKING_SBI_IV'),
+        'test_merchant_id'            => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
+        'test_merchant_id_recurring'  => env('NETBANKING_SBI_TEST_MERCHANT_ID_RECURRING'),
+        'test_hash_secret'            => env('NETBANKING_SBI_TEST_HASH_SECRET'),
+        'test_hash_secret_recurring'  => env('NETBANKING_SBI_TEST_HASH_SECRET_RECURRING'),
+        'live_hash_secret'            => env('NETBANKING_SBI_LIVE_HASH_SECRET'),
+        'iv'                          => env('NETBANKING_SBI_IV'),
+        'emandate_corporate_id'       => env('EMANDATE_SBI_CORPORATE_ID'),
     ],
 
     'mozart' => [
@@ -782,10 +796,6 @@ return [
         'razorpayx' => [
             'direct' => [
                 'rbl' => [
-                    'auth_username' => env('BANKING_ACCOUNT_RBL_USERNAME'),
-                    'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
-                    'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
-                    'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
                     'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]

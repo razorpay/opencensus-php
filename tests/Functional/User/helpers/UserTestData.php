@@ -157,6 +157,10 @@ return [
         'response'      => [
             'content'   => [
                 'access'    => true,
+                'merchant'  => [
+                    'banking_role'        => null,
+                    'role'                => 'owner',
+                ],
             ],
         ],
     ],
@@ -165,6 +169,22 @@ return [
         'response'      => [
             'content'   => [
                 'access'    => true,
+                'merchant'  => [
+                    'banking_role'        => 'owner',
+                    'role'                => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testUserAccessWithMappingForMultipleProducts'  => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+                'merchant'  => [
+                    'banking_role'        => 'admin',
+                    'role'                => 'owner',
+                ],
             ],
         ],
     ],
@@ -172,17 +192,49 @@ return [
     'testFailedUserAccessAccrossProducts'  => [
         'response'      => [
             'content'   => [
-                'access'    => false,
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
             ],
+            'status_code'   => 400,
         ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
     ],
 
     'testFailedUserAccess'    => [
         'response'      => [
             'content'   => [
-                'access'    => false,
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
             ],
+            'status_code'   => 400,
         ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
+    ],
+
+    'testUserAccessWithoutMerchantIdInRequest' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
     ],
 
     'testUserEnable2fa' => [
@@ -835,6 +887,23 @@ return [
             'content' => [
                 'medium' => 'sms',
                 'action' => 'verify_contact',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
+    'testSendOtpWithContact' => [
+        'request' => [
+            'url'     => '/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'            => 'sms',
+                'action'            => 'bureau_verify',
+                'contact_mobile'    => '9876543210',
             ],
         ],
         'response' => [

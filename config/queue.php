@@ -265,6 +265,23 @@ return [
         'test'       => env('AWS_BEAM_TEST_QUEUE'),
         'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
+
+    // settlement related QUEUES
+    'settlement_create' => [
+        'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_CREATE_LIVE_QUEUE'),
+    ],
+    'settlement_bucket' => [
+        'test'       => env('AWS_SETTLEMENT_BUCKET_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_BUCKET_LIVE_QUEUE'),
+    ],
+    'settlement_initiate' => [
+        'test'       => env('AWS_SETTLEMENT_INITIATE_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_INITIATE_LIVE_QUEUE'),
+    ],
+
+    // not using anymore for settlement
+    // but has dependency on FTA
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
@@ -297,6 +314,10 @@ return [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
+    'terminal_onboarding_creation'=> [
+        'test'       => env('AWS_TERMINAL_ONBOARDING_CREATION_TEST_QUEUE'),
+        'live'       => env('AWS_TERMINAL_ONBOARDING_CREATION_LIVE_QUEUE'),
+    ],
     'merchant_balance_update' => [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
@@ -316,6 +337,22 @@ return [
     'beneficiary_verifications' => [
         'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
         'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
+    ],
+    'commission' => [
+        'test'       => env('AWS_COMMISSION_QUEUE'),
+        'live'       => env('AWS_COMMISSION_QUEUE'),
+    ],
+    'fund_account_validation' => [
+        'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+        'live'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+    ],
+    'mailing_list_update' => [
+        'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
+        'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),
+    ],
+    'fa_vpa_validation' => [
+        'test'       => env('AWS_FA_VPA_VALIDATION_TEST_QUEUE'),
+        'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

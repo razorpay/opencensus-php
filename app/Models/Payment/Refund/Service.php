@@ -95,6 +95,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::CSBK]);
                 unset($gateways[IFSC::VIJB]);
                 unset($gateways[IFSC::CNRB]);
+                unset($gateways[IFSC::SBIN]);
                 unset($gateways[Netbanking::PUNB_R]);
                 unset($gateways[Netbanking::BARB_R]);
                 unset($gateways[IFSC::ALLA]);
@@ -436,15 +437,20 @@ class Service extends Base\Service
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
                                             $entity = $this->repo
-                                                ->$gatewayEntity
-                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                ->toArray();
+                                                           ->$gatewayEntity
+                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                           ->toArray();
 
                                             $map = [];
 
+                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            {
+                                                $entity = json_decode($entity['raw'], true);
+                                            }
+
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column];
+                                                $map[$column] = $entity[$column] ?? '';
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
@@ -668,6 +674,17 @@ class Service extends Base\Service
         $merchant = $refund->merchant;
 
         $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund, $input);
+
+        return $response;
+    }
+
+    public function makeScroogeVerifyRefundCall(string $refundId, array $input)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeVerifyRefund($refund, $input);
 
         return $response;
     }
@@ -1251,7 +1268,14 @@ class Service extends Base\Service
     {
         $refund = $this->repo->refund->findByPublicId($id);
 
-        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        if ($refund->isScrooge() === true)
+        {
+            $verifySuccess = $this->app['scrooge']->verifyRefund($refund['id'])['body'];
+        }
+        else
+        {
+            $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+        }
 
         return [
             'refund_id'      => $id,
@@ -1405,7 +1429,31 @@ class Service extends Base\Service
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
                                 $processor->eventRefundSpeedChanged($refund);
+
                                 $processor->eventRefundProcessed($refund);
+
+                                break;
+
+                            case 'processed_to_file_init_event':
+
+                                $this->trace->info(
+                                    TraceCode::REFUND_PROCESSED_TO_CREATED,
+                                    [
+                                        'refund_id'        => $refundId,
+                                        'status'           => $refund->getStatus(),
+                                        'reference1'       => $refund->getReference1(),
+                                        'processed_at'     => $refund->getProcessedAt(),
+                                        'gateway_refunded' => $refund->getGatewayRefunded(),
+                                    ]);
+
+                                if ((isset($input[RefundEntity::STATUS])) and
+                                    ($input[RefundEntity::STATUS] === 'file_init') and
+                                    ($refund->getStatus() === Refund\Status::PROCESSED))
+                                {
+                                    $processor->revertProcessedRefundToCreatedState($refund);
+                                }
+
+                                break;
                         }
 
                         $this->repo->saveOrFail($refund);
@@ -2522,15 +2570,15 @@ class Service extends Base\Service
 
             $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
 
-            $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+            $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
 
             if ((in_array($scroogeResponseCode, [200, 201, 204], true) === false) or
-                (isset($scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
+                (isset($scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
             {
                 throw new Exception\RuntimeException('Unexpected response received from scrooge service');
             }
 
-            $speedChangeTime = $scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
+            $speedChangeTime = $scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
 
             if ($speedChangeTime !== null)
             {

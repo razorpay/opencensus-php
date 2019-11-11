@@ -488,4 +488,38 @@ return [
         'entity'            => 'payment',
         'international'     => true
     ],
+
+    'testBqrPayment' => [
+        'url'     => '/payment/callback/bharatqr/hitachi',
+        'method'  => 'post',
+        'content' => [
+            'F002'       => '423156XXXXXX1234',
+            'F003'       => '26000',
+            'F004'       => '000000000200',
+            'F011'       => 'abc123',
+            'F012'       => '120000',
+            'F013'       => '1212',
+            'F037'       => 'somethingrandom',
+            'F038'       => 'randomauthorization',
+            'F039'       => '00',
+            'F041'       => 'abc',
+            'F042'       => 'random',
+            'F043'       => 'RazorpayBangalore',
+            'F102'       => 'paymentId',
+            'PurchaseID' => 'tobefilled',
+            'SenderName' => 'Random Name',
+        ],
+    ],
+
+    'createVirtualAccount' => [
+        'url'     => '/virtual_accounts',
+        'method'  => 'post',
+        'content' => [
+            'receiver_types' => 'qr_code',
+            'notes'          => [
+                'key' => 'value',
+            ],
+        ],
+    ],
+
 ];

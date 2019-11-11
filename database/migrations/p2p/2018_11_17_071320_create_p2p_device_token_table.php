@@ -39,6 +39,12 @@ class CreateP2pDeviceTokenTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            // Indices
+
+            $table->index([Entity::DEVICE_ID, Entity::HANDLE, Entity::STATUS]);
+            $table->index(Entity::STATUS);
+            $table->index(Entity::CREATED_AT);
         });
     }
 

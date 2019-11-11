@@ -24,6 +24,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const PREAUTH               = 'PREAUTH';
     const CYBS                  = 'CYBS';
 
+    const COLUMN_REFUND_AMOUNT  = 'txn_amount';
+
     /**
      * If we are not able to find refund id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.
@@ -36,6 +38,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Therefore, if less than 29% of data is present, we don't mark row as failure
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.29;
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getRefundId(array $row)
     {

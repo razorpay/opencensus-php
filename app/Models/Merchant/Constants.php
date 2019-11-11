@@ -13,6 +13,8 @@ final class Constants
     const REF                                     = 'ref';
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
+    const SUSPEND                                 = 'suspend';
+    const UNSUSPEND                               = 'unsuspend';
 
     // Used for pagination in submerchant listing for partners
     const TO                                      = 'to';
@@ -27,6 +29,9 @@ final class Constants
     const AGGREGATOR                              = 'aggregator';
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
+    const PARTNER_INTENT                          = 'partner_intent';
+
+    const DOCUMENT_TYPE                           = 'document_type';
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
@@ -36,6 +41,7 @@ final class Constants
     const RECORDS_PROCESSED                        = 'records_processed';
 
     const REMOVE                                  = 'remove';
+    const LIVE                                    = 'live';
 
     public static $partnerTypes = [
         self::BANK,
@@ -48,7 +54,21 @@ final class Constants
     // Used in merchant activation elastic search flows
     const INSTANT_ACTIVATION = 'instant_activation';
 
+    // Used in elastic search merchant search flows
+    const BUSINESS_TYPE_BUCKET = 'business_type_bucket';
+
     const IS_WHITELISTED_ACTIVATION = 'is_whitelisted_activation';
+
+    // need clarification constants
+    const REASON_TYPE            = 'reason_type';
+    const FIELD_TYPE             = 'field_type';
+    const FIELD_VALUE            = 'field_value';
+    const FIELD_NAME             = 'field_name';
+    const REASON                 = 'reason';
+    const REASON_CODE            = 'reason_code';
+    const CUSTOM_REASON_TYPE     = 'custom';
+    const PREDEFINED_REASON_TYPE = 'predefined';
+
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.

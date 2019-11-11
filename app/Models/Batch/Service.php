@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\ServerNotFoundException;
@@ -13,16 +14,36 @@ class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
+        $this->validateBatchTypeForUserRole($input);
+
         $batch = $this->core()->create($input, $this->merchant, $this->getAuthAdminElseUser());
 
         return $batch->toArrayPublic();
     }
 
+    private function validateBatchTypeForUserRole($input)
+    {
+        if ($this->auth->isProxyAuth() === true)
+        {
+            $mode = $this->mode ?? 'live';
+
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT,
+                                                        $mode);
+
+            $role = $this->auth->getUserRole();
+
+            (new Validator)->validateBatchTypeForUserRole($role, $variant, $input['type'] ?? Constants::DEFAULT);
+        }
+    }
+
     public function fetchMultiple(array $input): array
     {
+        $this->validateBatchTypeForUserRole($input);
+
         $fetchResult = $this->core()->fetchWithSettings($input, $this->merchant);
 
-        if (isset($input['type']) && ($this->app->batchService->isMigratingBatchType($input['type']) === true))
+        if (isset($input['type']) and ($this->app->batchService->isMigratingBatchType($input['type']) === true))
         {
             $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
         }
@@ -38,10 +59,18 @@ class Service extends Base\Service
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
+            $input = [Entity::TYPE => $responseBatch[Entity::TYPE]];
+
+            $this->validateBatchTypeForUserRole($input);
+
             return $responseBatch;
         }
 
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $input = [Entity::TYPE => $batch->getAttribute(Entity::TYPE) ];
+
+        $this->validateBatchTypeForUserRole($input);
 
         return $batch->toArrayPublic();
     }
@@ -180,12 +209,15 @@ class Service extends Base\Service
     public function consumeToken($input)
     {
         $validator = new Validator();
+
         $validator->validateInput('token', [
-            Entity::TOKEN   =>  $input['token']
+            Entity::TOKEN => $input['token']
         ]);
+
         $token = $input['token'];
 
         $merchantRequestService = new MerchantRequestService();
+
         $merchantRequestService->consumeOneTimeToken($token);
     }
 
@@ -203,5 +235,20 @@ class Service extends Base\Service
         $validator->validateInput('sendMail', $input);
 
         return $this->core()->sendMail($input);
+    }
+
+    public function getReconBatchesWithFiles(array $input)
+    {
+        $result = $this->repo->batch->getReconBatchesWithFiles($input);
+
+        return $result->toArray();
+    }
+
+    public function getReconFilesCount(array $input)
+    {
+
+        $result = $this->repo->batch->getReconFilesCountByGateway($input);
+
+        return $result->toArray();
     }
 }

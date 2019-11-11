@@ -20,6 +20,7 @@ class ProviderCode
      * on the command line to check against
      * the spreadsheet
      */
+    const ABFSPAY            = 'abfspay';
     const AIRTEL             = 'airtel';
     const AIRTELPAYMENTSBANK = 'airtelpaymentsbank';
     const ALBK               = 'albk';
@@ -31,6 +32,7 @@ class ProviderCode
     const AXIS               = 'axis';
     const AXISBANK           = 'axisbank';
     const AXISGO             = 'axisgo';
+    const AXISB              = 'axisb';
     const BANDHAN            = 'bandhan';
     const BARODAMPAY         = 'barodampay';
     const BARODAPAY          = 'barodapay';
@@ -47,8 +49,10 @@ class ProviderCode
     const CSBCASH            = 'csbcash';
     const CSBPAY             = 'csbpay';
     const CUB                = 'cub';
+    const DB                 = 'db';
     const DBS                = 'dbs';
     const DCB                = 'dcb';
+    const DCBBANK            = 'dcbbank';
     const DENABANK           = 'denabank';
     const DLB                = 'dlb';
     const EAZYPAY            = 'eazypay';
@@ -59,10 +63,11 @@ class ProviderCode
     const FINOBANK           = 'finobank';
     const FREECHARGE         = 'freecharge';
     const HDFCBANK           = 'hdfcbank';
-    const HDFCBANKRZP        = 'hdfcbankrzp';
+    const HDFCBANKJD         = 'hdfcbankjd';
     const HSBC               = 'hsbc';
     const ICICI              = 'icici';
     const ICICIPAY           = 'icicipay';
+    const ICICIBANK          = 'icicibank';
     const IDBI               = 'idbi';
     const IDBIBANK           = 'idbibank';
     const IDFC               = 'idfc';
@@ -78,6 +83,7 @@ class ProviderCode
     const JIO                = 'jio';
     const JKB                = 'jkb';
     const JSB                = 'jsb';
+    const JSBP               = 'jsbp';
     const KARB               = 'karb';
     const KARURVYSYABANK     = 'karurvysyabank';
     const KAYPAY             = 'kaypay';
@@ -146,6 +152,7 @@ class ProviderCode
      * mapping the psp to NPCI code.
      */
     protected static $bankCodes = [
+        self::ABFSPAY            => IFSC::UTBI,
         self::AIRTEL             => IFSC::AIRP,
         self::AIRTELPAYMENTSBANK => IFSC::AIRP,
         self::ALBK               => IFSC::ALLA,
@@ -157,6 +164,7 @@ class ProviderCode
         self::AXIS               => IFSC::UTIB,
         self::AXISBANK           => IFSC::UTIB,
         self::AXISGO             => IFSC::UTIB,
+        self::AXISB              => IFSC::UTIB,
         self::BANDHAN            => IFSC::BDBL,
         self::BARODAMPAY         => IFSC::BARB,
         self::BARODAPAY          => IFSC::BARB,
@@ -173,8 +181,10 @@ class ProviderCode
         self::CSBCASH            => IFSC::CSBK,
         self::CSBPAY             => IFSC::CSBK,
         self::CUB                => IFSC::CIUB,
+        self::DB                 => IFSC::DEUT,
         self::DBS                => IFSC::DBSS,
         self::DCB                => IFSC::DCBL,
+        self::DCBBANK            => IFSC::DCBL,
         self::DENABANK           => IFSC::BKDN,
         self::DLB                => IFSC::DLXB,
         self::EAZYPAY            => IFSC::ICIC,
@@ -185,9 +195,10 @@ class ProviderCode
         self::FINOBANK           => IFSC::FINO,
         self::FREECHARGE         => IFSC::UTIB,
         self::HDFCBANK           => IFSC::HDFC,
-        self::HDFCBANKRZP        => IFSC::HDFC,
+        self::HDFCBANKJD         => IFSC::HDFC,
         self::HSBC               => IFSC::HSBC,
         self::ICICI              => IFSC::ICIC,
+        self::ICICIBANK          => IFSC::ICIC,
         self::ICICIPAY           => IFSC::ICIC,
         self::IDBI               => IFSC::IBKL,
         self::IDBIBANK           => IFSC::IBKL,
@@ -203,6 +214,7 @@ class ProviderCode
         self::IOB                => IFSC::IOBA,
         self::JIO                => 'NPCI',
         self::JSB                => IFSC::JSBP,
+        self::JSBP               => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
         self::KARB               => IFSC::KARB,
         self::KARURVYSYABANK     => IFSC::KVBL,

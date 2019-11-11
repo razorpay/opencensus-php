@@ -6,6 +6,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Base\RuntimeManager;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 
 class Service extends Base\Service
 {
@@ -45,6 +49,15 @@ class Service extends Base\Service
         {
             $data[Constants::FEATURES][$feature] = "1";
         }
+
+        $merchant = $this->merchant;
+
+        $EsOnDemandFeature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+            $merchant->getEntity(),
+            $merchant->getId(),
+            Constants::ES_ON_DEMAND);
+
+        $data['es_enabled'] = ($EsOnDemandFeature === null) ? false : true;
 
         $merchantValidator = new Merchant\Validator;
 
@@ -141,67 +154,144 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
+        $this->increaseAllowedSystemLimits();
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        $response = new Base\Collection;
+        $names = $input[Entity::NAME];
 
-        foreach ($entityIds as $entityId)
+        // Will separately update dashboard to start
+        // sending a list of features in a single request
+        $names = (is_array($input[Entity::NAME]) ? $names : [$input[Entity::NAME]]);
+
+        $opsResponse = $successResponse = $failedResponse = [];
+
+        foreach ($names as $featureName)
         {
-            $featureParam = [
-                Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
-                Entity::ENTITY_ID       => $entityId,
-                Entity::NAME            => $input[Entity::NAME]
-            ];
+            $failedMerchant = $successfulMerchant = [];
 
-            try
+            foreach ($entityIds as $entityId)
             {
-                $feature = (new Core)->create($featureParam, $shouldSync);
+                $featureParam = [
+                    Entity::ENTITY_TYPE => $input[Entity::ENTITY_TYPE],
+                    Entity::ENTITY_ID   => $entityId,
+                    Entity::NAME        => $featureName,
+                ];
 
-                $response->push($feature);
+                try
+                {
+                    $feature = (new Core)->create($featureParam, $shouldSync);
+
+                    array_push($successfulMerchant, $entityId);
+                }
+                catch (\Exception $e)
+                {
+                    array_push($failedMerchant, $entityId);
+
+                    $this->trace->traceException($e);
+
+                    $this->trace->warn(
+                        TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
+                        [
+                            'msg' => $e->getMessage()
+                        ]);
+                }
             }
-            catch (\Exception $e)
+            if (count($failedMerchant) > 0)
             {
-                $this->trace->warn(
-                    TraceCode::FEATURE_ASSIGNMENT_EXCEPTION,
-                    [
-                        'msg' => $e->getMessage()
-                    ]);
+                $failedResponse[$featureName] = $failedMerchant;
+            }
+
+            if (count($successfulMerchant) > 0)
+            {
+                $successResponse[$featureName] = $successfulMerchant;
             }
         }
 
-        return $response->toArray();
+        $opsResponse['successful'] = $successResponse;
+
+        $opsResponse['failed'] = $failedResponse;
+
+        $this->trace->info(TraceCode::MERCHANT_MULTI_FEATURE_ASSIGN_RESPONSE, $opsResponse);
+
+        return $opsResponse;
     }
 
     public function multiRemoveFeature($input)
     {
         $this->trace->info(TraceCode::FEATURE_MULTI_REMOVE_REQUEST, $input);
 
+        $this->increaseAllowedSystemLimits();
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        $featureName = $input[Entity::NAME];
+        $names = $input[Entity::NAME];
 
-        $response = new Base\Collection;
+        // Will separately update dashboard to start
+        // sending a list of features in a single request
+        $names = (is_array($input[Entity::NAME]) ? $names : [$input[Entity::NAME]]);
 
-        foreach ($entityIds as $entityId)
+        $opsResponse = $successResponse = $failedResponse = [];
+
+        foreach ($names as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+            $failedMerchant = $successfulMerchant = [];
+
+            foreach ($entityIds as $entityId)
+            {
+                try
+                {
+                    $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                         Constants::MERCHANT,
                         $entityId,
                         $featureName);
 
-            if ($feature !== null)
-            {
-                $response->push($feature);
+                    if (!empty($feature))
+                    {
+                        (new Core)->delete($feature, $shouldSync);
 
-                (new Core)->delete($feature, $shouldSync);
+                        array_push($successfulMerchant, $entityId);
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    array_push($failedMerchant, $entityId);
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::MERCHANT_FEATURE_NOT_EXIST,
+                        $failedMerchant);
+                }
+            }
+            if (count($failedMerchant) > 0)
+            {
+                $failedResponse[$featureName] = $failedMerchant;
+            }
+
+            if (count($successfulMerchant) > 0)
+            {
+                $successResponse[$featureName] = $successfulMerchant;
             }
         }
 
-        return $response->toArray();
+        $opsResponse['successful'] = $successResponse;
+
+        $opsResponse['failed'] = $failedResponse;
+
+        $this->trace->info(TraceCode::MERCHANT_MULTI_FEATURE_REMOVE_RESPONSE, $opsResponse);
+
+        return $opsResponse;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(300);
     }
 
     public function getFeaturesForEntity($entity)

@@ -12,6 +12,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_BANK_PAYMENT_ID    = 'BID';
     const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
     const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
+    const COLUMN_PAYMENT_AMOUNT     = 'Amount';
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_BANK_CUSTOMER_NAME,
+    ];
 
     protected function getPaymentId(array $row)
     {

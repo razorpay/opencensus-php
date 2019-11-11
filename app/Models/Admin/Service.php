@@ -373,7 +373,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function getConfigKey($input): array
+    public function getConfigKey($input)
     {
         (new Validator)->validateInput('get_config_key', $input);
 
@@ -793,6 +793,13 @@ class Service extends Base\Service
                         $merchantId = $data[$newEntity::MERCHANT_ID];
 
                         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                        $entityCore = (new Entity)->getEntityCoreClass($type);
+
+                        if (method_exists($entityCore, 'deleteExistingEntities'))
+                        {
+                            $entityCore->deleteExistingEntities($merchant, $data);
+                        }
 
                         $newEntity->merchant()->associate($merchant);
 

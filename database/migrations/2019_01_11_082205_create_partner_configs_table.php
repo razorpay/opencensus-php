@@ -19,7 +19,7 @@ class CreatePartnerConfigsTable extends Migration
     public function up()
     {
         Schema::create(Table::PARTNER_CONFIG, function (Blueprint $table) {
-            $table->engine = "InnoDB";
+            $table->engine = 'InnoDB';
 
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
@@ -56,6 +56,12 @@ class CreatePartnerConfigsTable extends Migration
                   ->default(CommissionModel::COMMISSION);
 
             $table->tinyInteger(Entity::SETTLE_TO_PARTNER)
+                  ->default(0);
+
+            $table->integer(Entity::TDS_PERCENTAGE)
+                  ->default(Entity::DEFAULT_TDS_PERCENTAGE);
+
+            $table->tinyInteger(Entity::HAS_GST_CERTIFICATE)
                   ->default(0);
 
             $table->integer(Entity::REVISIT_AT);

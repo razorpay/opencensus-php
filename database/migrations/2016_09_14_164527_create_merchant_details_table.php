@@ -71,6 +71,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_REGISTERED_CITY)
                   ->nullable();
 
+            $table->string(MerchantDetail::BUSINESS_REGISTERED_DISTRICT)
+                  ->nullable();
+
             $table->string(MerchantDetail::BUSINESS_REGISTERED_PIN)
                   ->nullable();
 
@@ -87,6 +90,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_CITY)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_OPERATION_DISTRICT)
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_PIN)
@@ -131,6 +137,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::PROMOTER_PAN_NAME)
+                  ->nullable();
+
+            $table->string(MerchantDetail::DATE_OF_BIRTH, 30)
                   ->nullable();
 
             $table->string(MerchantDetail::BANK_NAME)
@@ -242,6 +251,15 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::ACTIVATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::POI_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::POA_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BANK_DETAILS_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->string(MerchantDetail::CLARIFICATION_MODE, 15)
                   ->nullable();
 
@@ -276,6 +294,15 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::INTERNATIONAL_ACTIVATION_FLOW)
+                  ->nullable();
+
+            $table->string(MerchantDetail::LIVE_TRANSACTION_DONE)
+                 ->nullable();
+
+            $table->json(MerchantDetail::KYC_CLARIFICATION_REASONS)
+                  ->nullable();
+
+            $table->json(MerchantDetail::KYC_ADDITIONAL_DETAILS)
                   ->nullable();
 
             $table->boolean(MerchantDetail::SUBMITTED)

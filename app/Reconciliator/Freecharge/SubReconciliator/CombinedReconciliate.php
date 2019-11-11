@@ -22,6 +22,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         self::TXN_TYPE_PAYMENT_REVERSAL => BaseReconciliate::REFUND
     ];
 
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getReconciliationTypeForRow($row)
     {
         $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];
@@ -49,10 +51,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                    'message' => $message,
-                    'row_details' => $row,
-                    'gateway' => $this->gateway
+                    'trace_code'        => TraceCode::RECON_PARSE_ERROR,
+                    'message'           => $message,
+                    'transaction_type'  => $transactionType,
+                    'gateway'           => $this->gateway
                 ]);
         }
 

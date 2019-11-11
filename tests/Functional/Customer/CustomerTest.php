@@ -532,7 +532,7 @@ class CustomerTest extends TestCase
         $this->assertEquals($merchantFeeDebitTransaction->getBalance(), 400);
 
         // Recon
-        $result = $this->initiateTransfer(Channel::YESBANK, 'refund');
+        $result = $this->initiateTransfer(Channel::YESBANK, 'refund', 'payout');
 
         $this->assertEquals(1, $result['yesbank']['success']);
 
@@ -596,6 +596,8 @@ class CustomerTest extends TestCase
     public function testCustomerWalletPayoutReversal()
     {
         $payout = $this->testCustomerWalletPayout();
+
+        $payout->setStatus(Payout\Status::INITIATED);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'     => 'failed',

@@ -104,8 +104,7 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::TYPE,
         self::LAST4,
-        self::LENGTH,
-        self::VAULT_TOKEN
+        self::LENGTH
     ];
 
     protected $hidden = [];
@@ -416,6 +415,8 @@ class Entity extends Base\PublicEntity
 
     public function getMaskedCardNumber()
     {
+        // $this->getIin() returns the first 6 digits
+        // $this->getLast4() returns the last 4 digits
         return $this->getIin() . 'XXXXXX' . $this->getLast4();
     }
 

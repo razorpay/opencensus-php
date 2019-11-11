@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\BankingAccountStatement;
 
 use Mockery;
 
+use RZP\Constants\Mode;
 use RZP\Services\Mozart;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as EntityConstants;
@@ -437,6 +438,8 @@ class RblBankingAccountStatementTest extends TestCase
 
     protected function setMozartMockResponse($mockedResponse)
     {
+        $this->app['rzp.mode'] = Mode::TEST;
+
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mock->shouldReceive([

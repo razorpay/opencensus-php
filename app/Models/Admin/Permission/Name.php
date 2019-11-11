@@ -157,6 +157,7 @@ class Name
     const DELETE_PERMISSION                   = 'delete_permission';
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
+    const REMINDER_OPERATION                  = 'reminder_operation';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
@@ -165,6 +166,7 @@ class Name
     const EDIT_MERCHANT_INVITE                = 'edit_merchant_invite';
     const VIEW_MERCHANT_INVITE                = 'view_merchant_invite';
     const EDIT_MERCHANT_FORCE_ACTIVATION      = 'edit_merchant_force_activation';
+    const EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   = 'edit_merchant_receipt_email_event';
     const VIEW_WORKFLOW                       = 'view_workflow';
     const CREATE_WORKFLOW                     = 'create_workflow';
     const VIEW_ALL_WORKFLOW                   = 'view_all_workflow';
@@ -241,9 +243,12 @@ class Name
     const ACCESS_EXCEL_STORE                  = 'access_excel_store';
     const CANCEL_BATCH                        = 'cancel_batch';
     const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
+    const COMMISSION_CAPTURE                  = 'commission_capture';
+    const COMMISSION_PAYOUT                   = 'commission_payout';
     const MERCHANT_RESTRICT                   = 'merchant_restrict';
     const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
     const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
+    const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
@@ -257,20 +262,23 @@ class Name
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND                => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND              => self::EDIT_MERCHANT_UNSUSPEND,
-        Merchant\Action::LOCK                   => self::EDIT_MERCHANT_LOCK_ACTIVATION,
-        Merchant\Action::UNLOCK                 => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
-        Merchant\Action::EDIT_COMMENT           => self::EDIT_MERCHANT_COMMENTS,
-        Merchant\Action::HOLD_FUNDS             => self::EDIT_MERCHANT_HOLD_FUNDS,
-        Merchant\Action::RELEASE_FUNDS          => self::EDIT_MERCHANT_RELEASE_FUNDS,
-        Merchant\Action::ENABLE_RECEIPT_EMAILS  => self::EDIT_MERCHANT_ENABLE_RECEIPT,
-        Merchant\Action::DISABLE_RECEIPT_EMAILS => self::EDIT_MERCHANT_DISABLE_RECEIPT,
-        Merchant\Action::ENABLE_INTERNATIONAL   => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
-        Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
-        Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
+        Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND                            => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND                          => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK                               => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK                             => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::EDIT_COMMENT                       => self::EDIT_MERCHANT_COMMENTS,
+        Merchant\Action::HOLD_FUNDS                         => self::EDIT_MERCHANT_HOLD_FUNDS,
+        Merchant\Action::RELEASE_FUNDS                      => self::EDIT_MERCHANT_RELEASE_FUNDS,
+        Merchant\Action::ENABLE_RECEIPT_EMAILS              => self::EDIT_MERCHANT_ENABLE_RECEIPT,
+        Merchant\Action::DISABLE_RECEIPT_EMAILS             => self::EDIT_MERCHANT_DISABLE_RECEIPT,
+        Merchant\Action::ENABLE_INTERNATIONAL               => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
+        Merchant\Action::DISABLE_INTERNATIONAL              => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
+        Merchant\Action::FORCE_ACTIVATE                     => self::EDIT_MERCHANT_FORCE_ACTIVATION,
+        Merchant\Action::SET_RECEIPT_EMAIL_EVENT_AUTHORIZED => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT,
+        Merchant\Action::SET_RECEIPT_EMAIL_EVENT_CAPTURED   => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT
+
     ];
 
     /**

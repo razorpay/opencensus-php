@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -122,8 +123,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 Merchant\Entity::EMAIL => $user[Entity::EMAIL],
-                Merchant\Entity::NAME  => $businessName
+                Merchant\Entity::NAME  => $businessName,
             ];
+
+            if (isset($input[Merchant\Constants::PARTNER_INTENT]))
+            {
+                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $input[Merchant\Constants::PARTNER_INTENT];
+            }
 
             if (empty($tokenData) === false)
             {
@@ -135,6 +141,8 @@ class Service extends Base\Service
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
+
+        (new Core)->trackOnboardingEvent($user[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
 
         return $data;
     }
@@ -168,7 +176,11 @@ class Service extends Base\Service
 
         $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
 
-        $this->sendConfirmationMail($userData['id']);
+        $user = $this->repo->user->findOrFailPublic($userData['id']);
+
+        $this->sendConfirmationMail($user);
+
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
 
         return [
             'id'    => $merchantData['id'],
@@ -178,14 +190,12 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $userId
+     * @param Entity $user
      *
      * @return array
      */
-    public function sendConfirmationMail($userId)
+    public function sendConfirmationMail(Entity $user)
     {
-        $user = $this->repo->user->findOrFailPublic($userId);
-
         // Only send the confirmation email if the user isn't already confirmed
         if ($user->getConfirmedAttribute() === false)
         {
@@ -304,15 +314,19 @@ class Service extends Base\Service
 
     public function checkUserAccess(array $input)
     {
+        if (empty($input['merchant_id']) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
 
         $user = $this->auth->getUser();
 
-        $userId = $user->getId();
-
         $product = $this->auth->getRequestOriginProduct();
 
-        return $this->core()->checkUserAccess($userId, $merchantId, $product);
+        return $this->core()->checkAccessForMerchant($user, $merchantId, $product);
+
     }
 
     public function setup2faMobileOnLogin(array $input): array
@@ -388,7 +402,11 @@ class Service extends Base\Service
     {
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
-        $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
+        $user = $this->repo->user->findOrFailPublic($dashboardHeaders['user_id']);
+
+        $data = $this->sendConfirmationMail($user);
+
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
 
         return $data;
     }
@@ -678,6 +696,13 @@ class Service extends Base\Service
         $this->user->getValidator()->validateSendOtpOperation($input);
 
         return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function sendOtpWithContact(array $input)
+    {
+        $this->user->getValidator()->validateInput('sendOtpWithContact', $input);
+
+        return $this->core()->sendOtpWithContact($input, $this->merchant, $this->user);
     }
 
     public function verifyContactWithOtp(array $input): array

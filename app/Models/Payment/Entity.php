@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -49,6 +50,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  */
@@ -109,6 +111,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const GATEWAY_PROVIDER      = 'gateway_provider';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -167,6 +170,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
+    const BILLING_ADDRESS       = 'billing_address';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -187,6 +191,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
+    const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -196,6 +202,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+
+    // payment services
+    const API                               = 0;
+    const CORE_PAYMENT_SERVICE              = 1;
+    const CARD_PAYMENT_SERVICE              = 2;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -283,6 +294,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::GATEWAY_PROVIDER,
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
@@ -355,6 +367,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
+        self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
         self::EMI,
         self::EMI_PLAN,
@@ -411,10 +424,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
+        self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
     ];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -481,7 +495,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
-        self::CPS_ROUTE            => false,
+        self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
     ];
 
@@ -519,7 +533,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
-        self::CPS_ROUTE            => 'bool',
+        self::CPS_ROUTE            => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -942,14 +956,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setCaptureTimestamp()
     {
-        $this->setAttribute(self::CAPTURED_AT, time());
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->setAttribute(self::CAPTURED_AT, $timestamp);
     }
 
     public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
-            $this->setAttribute(self::AUTHORIZED_AT, time());
+            $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $this->setAttribute(self::AUTHORIZED_AT, $timestamp);
         }
         else
         {
@@ -1076,6 +1094,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SETTLED_BY, $settledBy);
     }
 
+    public function setGatewayProvider($gatewayProvider)
+    {
+        $this->setAttribute(self::GATEWAY_PROVIDER, $gatewayProvider);
+    }
+
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
@@ -1167,6 +1190,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
+    public function getCpsRoute()
+    {
+        return $this->getAttribute(self::CPS_ROUTE);
+    }
+
     public function setMetadata($input)
     {
         $this->metadata = $input['_'] ?? null;
@@ -1205,6 +1233,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function disableCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 0);
+    }
+
+    public function enableCardPaymentService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
     public function setMethod(string $method)
@@ -1400,12 +1433,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 if (isset($upiTransactionId) === true)
                 {
-                    $acquirerData["upi_transaction_id"] = $upiTransactionId;
+                    $acquirerData['upi_transaction_id'] = $upiTransactionId;
                 }
                 break;
         }
 
         return (new Dictionary($acquirerData));
+    }
+
+    protected function getGatewayProviderAttribute()
+    {
+        $gatewayProvider = 'Razorpay';
+
+        if ($this->terminal !== null)
+        {
+            if ($this->terminal->getProcurer() !== Procurer::RAZORPAY)
+            {
+                $gatewayProvider = $this->getGateway();
+            }
+        }
+
+        return $gatewayProvider;
     }
 
     protected function getOtpAttemptsAttribute()
@@ -2535,6 +2583,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicGatewayProviderAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
+        {
+            unset($array[self::GATEWAY_PROVIDER]);
+        }
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -2546,14 +2607,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->terminal()->associate($terminal);
 
-        $this->setGateway($terminal->getGateway());
+        $gateway = $terminal->getGateway();
+
+        $this->setGateway($gateway);
 
         $this->setSettledBy('Razorpay');
 
         if ($terminal->isDirectSettlement() === true)
         {
-            $gateway = $this->getGateway();
-
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
 
             $this->setSettledBy($settledBy);
@@ -3234,6 +3295,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
     {
         return 'payment:redirect.authorize.' . $trackId . '.encrypt';
+    }
+
+    public function getPaymentResponseCacheKey(): string
+    {
+        return 'payment:response' . $this->getId() . '.cache';
     }
 
     public function getTransactionType()

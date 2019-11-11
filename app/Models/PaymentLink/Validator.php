@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
@@ -22,6 +23,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Validator extends Base\Validator
 {
+    const MAX_ALLOWED_PAYMENT_PAGE_ITEMS = 25;
+
     protected static $createRules = [
         Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min_amount|custom',
         Entity::CURRENCY        => 'filled|string|currency|custom',
@@ -36,6 +39,7 @@ class Validator extends Base\Validator
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS        => 'nullable|array',
+        Entity::TEMPLATE_TYPE   => 'sometimes|string|max:24',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
@@ -43,6 +47,10 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
+
+        Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1',
     ];
 
     protected static $editRules = [
@@ -65,6 +73,10 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
+
+        Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1|max:25',
     ];
 
     protected static $sendNotificationRules = [
@@ -98,12 +110,69 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::SETTINGS,
+        Entity::PAYMENT_PAGE_ITEMS,
     ];
 
     protected static $editValidators = [
         Entity::SETTINGS,
         'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
     ];
+
+    protected static $createOrderRules = [
+        Entity::LINE_ITEMS  => 'required|array|min:1|max:25|custom'
+    ];
+
+    protected static $createOrderLineItemRules = [
+        Entity::PAYMENT_PAGE_ITEM_ID => 'required|public_id',
+        LineItem\Entity::AMOUNT      => 'required|mysql_unsigned_int|custom',
+        LineItem\Entity::QUANTITY    => 'sometimes|integer|min:1',
+    ];
+
+    public function validateLineItems(string $attribute, array $value)
+    {
+        $totalAmount = 0;
+
+        $paymentPageItemMandatoryIds = $this->entity
+                                            ->paymentPageItems()
+                                            ->get()
+                                            ->where(PaymentPageItem\Entity::MANDATORY, true)
+                                            ->pluck(Entity::ID);
+
+        $paymentPageGivenIds = array_column($value, Entity::PAYMENT_PAGE_ITEM_ID);
+
+        foreach ($paymentPageItemMandatoryIds as $itemMandatoryId)
+        {
+            $itemMandatoryId = PaymentPageItem\Entity::getSignedId($itemMandatoryId);
+
+            if (in_array($itemMandatoryId, $paymentPageGivenIds) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    $itemMandatoryId . ' is mandatory payment page item, should be ordered'
+                );
+            }
+        }
+
+        $PPItemId = [];
+
+        foreach ($value as $lineItem)
+        {
+            $this->validateInput('create_order_line_item', $lineItem);
+
+            if (isset($PPItemId[$lineItem[Entity::PAYMENT_PAGE_ITEM_ID]]) === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'all payment page item id should be unique'
+                );
+            }
+
+            $PPItemId[$lineItem[Entity::PAYMENT_PAGE_ITEM_ID]] = true;
+
+            $totalAmount += $lineItem[LineItem\Entity::AMOUNT] *
+                ($lineItem[LineItem\Entity::QUANTITY] ?? 1);
+        }
+
+        $this->validateAmount('total_amount', $totalAmount);
+    }
 
     /**
      * Validates user provided slug value, allows alpha numeric, _ and - chars.
@@ -182,11 +251,11 @@ class Validator extends Base\Validator
         if ($amount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
-                'Amount exceeds maximum payment amount allowed',
-                Entity::AMOUNT,
+                $attribute . ' exceeds maximum payment amount allowed',
+                $attribute,
                 [
                     Entity::ID                          => $paymentLink->getId(),
-                    Entity::AMOUNT                      => $amount,
+                    $attribute                          => $amount,
                     Merchant\Entity::MAX_PAYMENT_AMOUNT => $maxAmountAllowed,
                 ]);
         }
@@ -221,6 +290,22 @@ class Validator extends Base\Validator
         // Additionally, validates UDF schema
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
+    }
+
+    public function validatePaymentPageItems(array $input)
+    {
+        if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === false)
+        {
+            return;
+        }
+
+        if (count($input[Entity::PAYMENT_PAGE_ITEMS]) > self::MAX_ALLOWED_PAYMENT_PAGE_ITEMS)
+        {
+            throw new BadRequestValidationFailureException(
+                'The total number of payment page items may not be greater than ' .
+                self::MAX_ALLOWED_PAYMENT_PAGE_ITEMS
+            );
+        }
     }
 
     /**
@@ -279,12 +364,22 @@ class Validator extends Base\Validator
     public function validateShouldActivationBeAllowed()
     {
         $paymentLink  = $this->entity;
-        $timesPayable = $paymentLink->getTimesPayable();
         $expireBy     = $paymentLink->getExpireBy();
 
-        if ($timesPayable !== null)
+        if ($paymentLink->getVersion() !== Version::V2)
         {
-            $this->validateTimesPayableForActivation($timesPayable);
+            $timesPayable = $paymentLink->getTimesPayable();
+
+            if ($timesPayable !== null)
+            {
+                $this->validateTimesPayableForActivation($timesPayable);
+            }
+        }
+        else if ($paymentLink->isTimesPayableExhausted() === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'at least one of the payment page item\'s stock should be left to activate payment page'
+            );
         }
 
         if ($expireBy !== null)
@@ -325,13 +420,16 @@ class Validator extends Base\Validator
         }
 
         // If payment for multiple units are not allowed, both amount should be same.
-        if (($allowMultipleUnits === false) and ($paymentLinkAmount !== $paymentAmount))
+        if (($allowMultipleUnits === false) and
+            ($paymentLinkAmount !== $paymentAmount) and
+            ($payment->hasOrder() === false))
         {
             $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
         }
         // Else if payment for multiple amounts is allowed and payment.notes.units must(if exists) must
         // contain valid integer value.
-        else if ($allowMultipleUnits === true)
+        else if (($allowMultipleUnits === true) and
+            ($payment->hasOrder() === false))
         {
             $paymentUnits = filter_var($payment->getNotes()[Entity::UNITS] ?? '1', FILTER_VALIDATE_INT);
 
@@ -394,6 +492,16 @@ class Validator extends Base\Validator
             ];
 
             $this->validateInputValues('min_amount_check', $inputAmount);
+        }
+    }
+
+    public function validatePaymentLinkToCreateOrder()
+    {
+        if ($this->entity->getStatus() !== Status::ACTIVE)
+        {
+            $message = 'order cannot be created for payment page which is not active';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 }

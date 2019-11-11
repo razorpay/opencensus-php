@@ -43,6 +43,7 @@ class Constants
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
+    const FIRST_DATA       = 'first_data';
     const SBIN             = 'sbin';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
@@ -56,7 +57,6 @@ class Constants
             self::ICICI,
             self::IBK,
             self::CSB,
-            self::CBI,
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
@@ -94,6 +94,7 @@ class Constants
             self::CUB,
             self::IDBI,
             self::SBIN,
+            self::CBI,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -117,6 +118,9 @@ class Constants
             self::HDFC_FSS,
             self::AXIS_CYBERSOURCE,
         ],
+        Type::PARESDATA => [
+           self::FIRST_DATA,
+        ],
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -127,6 +131,7 @@ class Constants
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
     ];
 
     const RECIPIENTS_MAP = [
@@ -162,6 +167,7 @@ class Constants
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
             self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
             self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
+            self::CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -200,5 +206,13 @@ class Constants
             self::AXIS_CYBERSOURCE => ['supportteam@razorpay.com'],
             self::HDFC_FSS         => ['supportteam@razorpay.com'],
         ],
+
+        Type::PARESDATA => [
+            self::FIRST_DATA    => [''],
+        ],
+    ];
+
+    const ASYNC_GATEWAYS = [
+        self::SBIN
     ];
 }

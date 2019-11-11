@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
@@ -13,14 +14,15 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base\Entity as BaseEntity;
-use RZP\Models\Transaction as TransactionModel;
 
 abstract class Base extends BaseCore
 {
@@ -69,7 +71,7 @@ abstract class Base extends BaseCore
         $this->source = $source;
     }
 
-    public function setTransaction(TransactionModel\Entity $txn)
+    public function setTransaction(Transaction\Entity $txn)
     {
         $this->txn = $txn;
     }
@@ -169,9 +171,9 @@ abstract class Base extends BaseCore
     public function setSourceDefaults()
     {
         $txnData = [
-            TransactionModel\Entity::TYPE            => $this->source->getEntity(),
-            TransactionModel\Entity::CURRENCY        => Currency\Currency::INR,
-            TransactionModel\Entity::CHANNEL         => $this->source->merchant->getChannel(),
+            Transaction\Entity::TYPE            => $this->source->getEntity(),
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $this->source->merchant->getChannel(),
         ];
 
         $this->txn->fill($txnData);
@@ -191,7 +193,7 @@ abstract class Base extends BaseCore
 
     protected function createNewTransaction()
     {
-        $txn = new TransactionModel\Entity;
+        $txn = new Transaction\Entity;
 
         $txn->generateId();
 
@@ -265,7 +267,7 @@ abstract class Base extends BaseCore
 
     protected function calculateFeeDefault()
     {
-        $this->txn->setCreditType(TransactionModel\CreditType::DEFAULT);
+        $this->txn->setCreditType(Transaction\CreditType::DEFAULT);
     }
 
     protected function calculateFeeForAmountCredit()
@@ -292,7 +294,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setGratis(true);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::AMOUNT);
+        $this->txn->setCreditType(Transaction\CreditType::AMOUNT);
 
         $this->feesSplit = new BaseCollection\PublicCollection;
     }
@@ -303,7 +305,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setCredits($feeCredits);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::FEE);
+        $this->txn->setCreditType(Transaction\CreditType::FEE);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
@@ -580,5 +582,38 @@ abstract class Base extends BaseCore
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         $this->txn->setBalance($this->merchantBalance->getBalance());
+    }
+
+    /**
+     * It'll dispatch the job to update settlement bucket for merchant
+     * This will also suppress the any error occurred at this stage
+     * if settled at is null then it wont dispatch the job
+     *
+     * @param Transaction\Entity $txn
+     * @param null               $settledAt
+     */
+    public function dispatchForSettlementBucketing(Transaction\Entity $txn, $settledAt = null)
+    {
+        //
+        // in case the transaction is not eligible for settlement then
+        // settled_at will have some number else it will be null
+        //
+        if ($settledAt === null)
+        {
+            return;
+        }
+
+        try
+        {
+            Bucket::dispatch($this->mode, $txn->getId(), $txn->getMerchantId(), $settledAt);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
+            );
+        }
     }
 }

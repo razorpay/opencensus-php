@@ -173,6 +173,9 @@ return array(
         'tech_alerts'          => 'C5FD7THSP',
         // pgob_alerts channel
         'pgob_alerts'          => 'CL985FWUX',
+        // fta alerts
+        'fta_alerts'           => 'CMLR1R6FJ',
+
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

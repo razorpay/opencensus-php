@@ -15,7 +15,7 @@ class FundTransfer extends BaseFundTransfer
      */
     protected $fta;
 
-    public function requestFundTransfer(string $ftaId, bool $isRegistered):array
+    public function requestFundTransfer():array
     {
         $mockResponse = [
             Constants::STATUS           => Constants::STATUS_CREATED,
@@ -24,8 +24,6 @@ class FundTransfer extends BaseFundTransfer
         ];
 
         $this->FTACore = new FundTransferAttempt\Core;
-
-        $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
         $this->updateFTAMock($mockResponse);
     }
@@ -42,5 +40,15 @@ class FundTransfer extends BaseFundTransfer
         }
 
         $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
+    }
+
+    public function initialize(string $ftaId)
+    {
+        $this->fta = $this->FTACore->getFTAEntity($ftaId);
+    }
+
+    public function shouldAllowTransfersViaFts()
+    {
+        return [true, 'Dummy'];
     }
 }

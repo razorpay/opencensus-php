@@ -5,8 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Merchant\Invoice\Entity as Invoice;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\Invoice\Entity as Invoice;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 
 class CreateMerchantInvoices extends Migration
 {
@@ -26,7 +27,7 @@ class CreateMerchantInvoices extends Migration
 
             $table->char(Invoice::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(Invoice::INVOICE_NUMBER, 16);
+            $table->string(Invoice::INVOICE_NUMBER, Invoice::INVOICE_NUMBER_LENGTH);
 
             $table->integer(Invoice::MONTH)
                   ->unsigned();
@@ -49,6 +50,9 @@ class CreateMerchantInvoices extends Migration
             $table->bigInteger(Invoice::AMOUNT_DUE)
                   ->default(0);
 
+            $table->char(Invoice::BALANCE_ID, Invoice::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Invoice::CREATED_AT);
 
             $table->integer(Invoice::UPDATED_AT);
@@ -60,6 +64,8 @@ class CreateMerchantInvoices extends Migration
 
             $table->index(Invoice::GSTIN);
 
+            $table->index(Invoice::BALANCE_ID);
+
             $table->index(Invoice::CREATED_AT);
 
             $table->index(Invoice::UPDATED_AT);
@@ -69,6 +75,13 @@ class CreateMerchantInvoices extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->foreign(Invoice::BALANCE_ID)
+                  ->references(Balance::ID)
+                  ->on(Table::BALANCE)
+                  ->on_delete('restrict');
+
+
         });
     }
 
@@ -81,7 +94,9 @@ class CreateMerchantInvoices extends Migration
     {
         Schema::table(Table::MERCHANT_INVOICE, function(Blueprint $table)
         {
-            $table->dropForeign(Table::MERCHANT_INVOICE .'_' .Invoice::MERCHANT_ID .'_foreign');
+            $table->dropForeign(Table::MERCHANT_INVOICE . '_' . Invoice::MERCHANT_ID . '_foreign');
+
+            $table->dropForeign(Table::MERCHANT_INVOICE . '_' . Invoice::BALANCE_ID . '_foreign');
         });
 
         Schema::drop(Table::MERCHANT_INVOICE);

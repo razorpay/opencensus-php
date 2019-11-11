@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Repository extends Base\Repository
 {
@@ -67,11 +68,27 @@ class Repository extends Base\Repository
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
         Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
+        Constants::BUSINESS_TYPE_BUCKET => 'sometimes|custom'
     ];
 
     protected function validateAccountStatus($attribute, $value)
     {
         AccountStatus::validate($value);
+    }
+
+    /**
+     * @param $attribute
+     * @param $value
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateBusinessTypeBucket($attribute, $value)
+    {
+        if (Detail\BusinessType::isValidBusinessTypeBucket($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid business type bucket: ' . $value);
+        }
     }
 
     protected function validateSubAccounts($attribute, $value)
@@ -103,10 +120,10 @@ class Repository extends Base\Repository
                       ->where(Entity::ACTIVATED, '=', 1)
                       ->where(Entity::ACTIVATED_AT, '<=', $end)
                       ->where(function ($query)
-                        {
-                            $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
-                                  ->orWhereNull(Entity::PARENT_ID);
-                        })
+                      {
+                          $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                ->orWhereNull(Entity::PARENT_ID);
+                      })
                       ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
                       ->take($limit)
                       ->skip($skip);
@@ -158,6 +175,13 @@ class Repository extends Base\Repository
                     {
                         $q->where('balance', '>', 0);
                     })->get();
+    }
+
+    public function fetchMerchantsWithPricingPlan($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->get();
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -699,8 +723,34 @@ class Repository extends Base\Repository
         return $activatedMerchants;
     }
 
-    public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds)
+    public function getPartnerMerchantFromSubMerchantId(string $subMerchantId)
     {
+        $accessMapRepo = $this->repo->merchant_access_map;
+
+        // db columns
+        $accessMapOwnerId    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+        $accessMapMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantId          = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()
+                      ->select($this->getTableName() . '.*')
+                      ->join(Table::MERCHANT_ACCESS_MAP, $accessMapOwnerId, '=', $merchantId)
+                      ->where($accessMapMerchantId, '=', $subMerchantId);
+
+        return $query->firstOrFail();
+    }
+
+    public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds): Base\PublicCollection
+    {
+        // filter mIds so that we get only merchantIds which are mapped to at least one partner
+        $submerchantIds = $this->repo->merchant_access_map->fetchMerchantsMappedToPartner($submerchantIds);
+
+        if (empty($submerchantIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
         // Repo class instances
         $accessMapRepo     = $this->repo->merchant_access_map;
         $partnerConfigRepo = $this->repo->partner_config;
@@ -737,36 +787,45 @@ class Repository extends Base\Repository
             $partnerConfigOriginId . ' as partner_config_origin_id',
         ];
 
-        $appConfig = $this->newQuery()
-                          ->select($attributes)
-                          ->join(
-                              Table::MERCHANT_ACCESS_MAP,
-                              $merchantsMerchantId,
-                              $accessMapsMerchantId)
-                          ->join(
-                              Table::MERCHANT . ' as ' . $partnerTable,
-                              $accessMapsEntityOwnerId,
-                              $partnersMerchantId)
-                          ->join(
-                              Table::BANK_ACCOUNT,
-                              $partnersMerchantId,
-                              $bankAccountsMerchantId)
-                          ->where($partnersPartnerType, '!=', Constants::PURE_PLATFORM)
-                          ->where($bankAccountsType, BankAccount\Type::MERCHANT)
-                          ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
-                          ->whereNull($accessMapsDeletedAt)
-                          ->whereNull($bankAccountsDeletedAt)
-                          ->whereIn($merchantsMerchantId, $submerchantIds);
+        $chunkedIdsList = array_chunk($submerchantIds, 5000);
 
-        $submerchantConfig = clone $appConfig;
+        $aggregateResults = new Base\PublicCollection;
 
-        $this->joinPartnerConfigForApp($appConfig);
+        foreach ($chunkedIdsList as $chunkedIds)
+        {
+            $appConfig = $this->newQuery()
+                              ->select($attributes)
+                              ->join(
+                                  Table::MERCHANT_ACCESS_MAP,
+                                  $merchantsMerchantId,
+                                  $accessMapsMerchantId)
+                              ->join(
+                                  Table::MERCHANT . ' as ' . $partnerTable,
+                                  $accessMapsEntityOwnerId,
+                                  $partnersMerchantId)
+                              ->join(
+                                  Table::BANK_ACCOUNT,
+                                  $partnersMerchantId,
+                                  $bankAccountsMerchantId)
+                              ->where($partnersPartnerType, '!=', Constants::PURE_PLATFORM)
+                              ->where($bankAccountsType, BankAccount\Type::MERCHANT)
+                              ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+                              ->whereNull($accessMapsDeletedAt)
+                              ->whereNull($bankAccountsDeletedAt)
+                              ->whereIn($merchantsMerchantId, $chunkedIds);
 
-        $this->joinPartnerConfigForSubmerchant($submerchantConfig);
+            $submerchantConfig = clone $appConfig;
 
-        $results = $submerchantConfig->union($appConfig)->get();
+            $this->joinPartnerConfigForApp($appConfig);
 
-        return $results;
+            $this->joinPartnerConfigForSubmerchant($submerchantConfig);
+
+            $results = $submerchantConfig->union($appConfig)->get();
+
+            $aggregateResults = $aggregateResults->concat($results);
+        }
+
+        return $aggregateResults;
     }
 
     private function joinPartnerConfigForApp(BuilderEx & $query)
@@ -829,5 +888,26 @@ class Repository extends Base\Repository
                      ->where($partnerConfigEntityType, PartnerConfig\Constants::MERCHANT)
                      ->where($partnerConfigOriginType, PartnerConfig\Constants::APPLICATION);
             });
+    }
+
+    public function fetchAllSuspendedMerchants($input)
+    {
+        $merchants = $this->newQuery()
+                          ->where(Entity::LIVE, '=', 0)
+                          ->whereNotNull(Entity::SUSPENDED_AT);
+
+        if(isset($input['limit']) === true )
+        {
+            $merchants->take($input['limit']);
+        }
+
+        if(isset($input['skip']) === true )
+        {
+            $merchants->skip($input['skip']);
+        }
+
+        $merchants = $merchants->select(['email', 'transaction_report_email'])
+                               ->get();
+        return $merchants;
     }
 }

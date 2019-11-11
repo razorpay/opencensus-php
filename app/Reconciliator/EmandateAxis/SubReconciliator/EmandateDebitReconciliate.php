@@ -31,6 +31,10 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const STATUS_FAILURE  = 'failure';
     const STATUS_REJECTED = 'rejected';
 
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_CUSTOMER_NAME,
+    ];
+
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
         self::STATUS_FAILURE,

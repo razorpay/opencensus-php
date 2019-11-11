@@ -828,6 +828,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddBulkPlanRules()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testAddBulkPlanRulesReplicatePlan()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['items'][0]['plan_id'],$content['id']);
+        $this->assertEquals($response['items'][0]['plan_id'],$response['items'][1]['plan_id']);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $this->ba->adminAuth();
@@ -1284,7 +1309,7 @@ class PricingTest extends TestCase
             'percent_rate'              => 1000,
             'fixed_rate'                =>  0,
             'payment_network'           => 'MC',
-            'payment_issuer'            => 'SBI',
+            'payment_issuer'            => 'SBIN',
             'org_id'                    => '10000000000000',
             'type'                      => 'pricing',
         ];
@@ -1423,7 +1448,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];
@@ -1464,7 +1489,7 @@ class PricingTest extends TestCase
             'percent_rate'        => 2000,
             'fixed_rate'          => 0,
             'payment_network'     => 'VISA',
-            'payment_issuer'      => 'SBI',
+            'payment_issuer'      => 'SBIN',
             'org_id'              => '10000000000000',
             'type'                => 'pricing',
         ];

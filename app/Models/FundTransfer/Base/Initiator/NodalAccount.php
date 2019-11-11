@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Base\Initiator;
 
+use Cache;
 use Carbon\Carbon;
 use Monolog\Logger;
 
@@ -14,6 +15,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Batch;
 use Razorpay\Trace\Logger as Trace;
@@ -21,6 +23,9 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
+use RZP\Models\FundTransfer\Attempt\Alerts;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
 
 abstract class NodalAccount extends Base\Core
 {
@@ -176,7 +181,7 @@ abstract class NodalAccount extends Base\Core
 
                 $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
 
-                $attempt->setStatus(Attempt\Status::INITIATED);
+                $this->setAttemptToInitiated($attempt);
 
                 $this->trace->info(
                     TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
@@ -195,6 +200,15 @@ abstract class NodalAccount extends Base\Core
         $this->updateBatchFundTransferEntity();
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
+    }
+
+    protected function setAttemptToInitiated(Attempt\Entity $attempt)
+    {
+        $attempt->setStatus(Attempt\Status::INITIATED);
+
+        $cacheKey = StatusProcessor::FTA_INITIATED . '_' . $attempt->getId();
+
+        Cache::put($cacheKey, true, (StatusProcessor::TIME_OFFSET / 60));
     }
 
     protected function getInitiatedStatusForEntity(string $sourceEntityName): string
@@ -429,15 +443,34 @@ abstract class NodalAccount extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $data = [
+                'fta_id'      => $fta->getId(),
+                'status'      => $fta->getStatus(),
+                'merchant_id' => $fta->getMerchantId(),
+                'source_id'   => $fta->getSourceId(),
+                'source_type' => $fta->getSourceType(),
+                'error'       => $e->getMessage(),
+            ];
+
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
-                []
+                $data
             );
+
+            $alerts = new Alerts();
+
+            $alerts->notifySlack($data + ['headLine' => 'fta source processing failed'], Alerts::ALERT);
         }
     }
 
+    /**
+     * @param Attempt\Entity $attempt
+     * @param                $amount
+     * @return string
+     * @throws BadRequestValidationFailureException
+     */
     public function getPaymentModeForCard(Attempt\Entity $attempt, $amount): string
     {
         if ($attempt->hasMode() === true)
@@ -445,21 +478,51 @@ abstract class NodalAccount extends Base\Core
             return $attempt->getMode();
         }
 
+        $iin = $attempt->card->iinRelation;
+
+        if ($iin !== null)
+        {
+            $issuer = $iin->getIssuer();
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException("iin is not valid mode for issuer");
+        }
+
+        $networkCode = $attempt->card->getNetworkCode();
+
+        $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
         if ($amount < self::MAX_IMPS_AMOUNT)
         {
-            return Mode::IMPS;
+            $mode =  Mode::IMPS;
         }
-
-        $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if ((($now >= $this->bankingStartTimeRtgs) and
-                ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= self::MIN_RTGS_AMOUNT))
+        else
         {
-            return Mode::RTGS;
+            $mode = Mode::NEFT;
+
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if ((($now >= $this->bankingStartTimeRtgs) and
+                    ($now <= $this->bankingEndTimeRtgs)) and
+                ($amount >= self::MIN_RTGS_AMOUNT))
+            {
+                $mode = Mode::RTGS;
+            }
         }
 
-        return Mode::NEFT;
+        if (in_array($mode, $supportedModes, true) === true)
+        {
+            return $mode;
+        }
+        else if (in_array(Mode::NEFT, $supportedModes, true) === true)
+        {
+            return Mode::NEFT;
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer $issuer");
+        }
     }
 
     protected function markAttemptAsFailed(Attempt\Entity $entity, $remarks, $failureReason)

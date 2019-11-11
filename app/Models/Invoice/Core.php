@@ -9,13 +9,13 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
+use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
@@ -43,6 +43,10 @@ class Core extends Base\Core
     protected $slack;
     protected $slackTechLogsChannel;
     protected $eventService;
+    /**
+     * @var Reminders
+     */
+    protected $reminders;
 
     public function __construct()
     {
@@ -53,6 +57,7 @@ class Core extends Base\Core
         $this->slack                = $this->app['slack'];
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
         $this->eventService         = $this->app['events'];
+        $this->reminders            = $this->app['reminders'];
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -196,6 +201,17 @@ class Core extends Base\Core
 
         $updateFunction = 'update' . studly_case($status) . 'Invoice';
 
+        if($this->changeReminderStatus($invoice, $input))
+        {
+            $invoice->setReminderStatus(ReminderStatus::PENDING);
+        }
+
+        if((isset($input['reminder_enable']) === true) and
+            (boolval($input['reminder_enable']) === false))
+        {
+            $this->deleteReminder($invoice);
+        }
+
         // If a custom function exists to handle update for a status, call it. Else, handle save here and proceed
         if (method_exists($this, $updateFunction) === true)
         {
@@ -208,12 +224,73 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
+        $invoiceData = [];
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $invoiceData = [
+                Entity::REMINDER_ENABLE => $input[Entity::REMINDER_ENABLE]
+            ];
+        }
+
         if ($invoice->isIssued() === true)
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $invoiceData);
         }
 
         return $invoice;
+    }
+
+    protected function changeReminderStatus(Entity $invoice, $input): bool
+    {
+        $reminderStatus = $invoice->getReminderStatus();
+
+        if((array_key_exists('expire_by', $input) === true) and
+            ($reminderStatus === ReminderStatus::IN_PROGRESS))
+        {
+            return true;
+        }
+
+        if((empty($input['reminder_enable']) === false) and
+            (boolval($input['reminder_enable']) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function deleteReminder(Entity $invoice): bool
+    {
+        $reminderId = $invoice->getReminderId();
+
+        if(empty($reminderId) === true)
+        {
+            return false;
+        }
+
+        try {
+            $response = $this->reminders->deleteReminder($reminderId);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
+                null);
+
+            return false;
+        }
+
+        if((isset($response['status_code']) === true) and $response['status_code'] === 200)
+        {
+            $invoice->setReminderStatus(ReminderStatus::DISABLED);
+            $invoice->setReminderId(null);
+            return true;
+        }
+
+        return false;
     }
 
     public function updateBillingPeriod(Entity $invoice, array $input): Entity
@@ -528,13 +605,6 @@ class Core extends Base\Core
             });
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
-
-        $merchant = $invoice->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === false)
-        {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
-        }
 
         // Sends expiration mails to customer asynchronously
         $this->eventService->fire('api.invoice.expired', [$invoice]);

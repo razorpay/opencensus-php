@@ -11,7 +11,9 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -24,6 +26,12 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
+    const PREFERENCES = 'preferences';
+
+    const BATCH_ID                          = 'Batch Id';
+    const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
+    // Rate limit on items sending for bulk submerchant assign.
+    const MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT = 15;
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -39,6 +47,7 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
+        Constants::PARTNER_INTENT           => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -72,6 +81,8 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST                  => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:5',
+        Entity::WHITELISTED_DOMAINS . '.*'            => 'required_with:' . Entity::WHITELISTED_DOMAINS . '|string',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '|ipv4',
@@ -152,6 +163,7 @@ class Validator extends Base\Validator
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
         Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+        'es_enabled'                => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -269,6 +281,29 @@ class Validator extends Base\Validator
     protected static $restrictSettingsMerchantRules = [
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
         Entity::ACTION      => 'required|in:add,remove',
+    ];
+
+    protected static $bulkSubmerchantAssignRules = [
+        'idempotency_key'   => 'required',
+        'submerchant_id'    => 'required|alpha_num|size:14',
+        'terminal_id'       => 'required|alpha_num|size:14',
+    ];
+
+    protected static $suspendedMerchantRemoveRules = [
+        'skip'  => 'sometimes|integer',
+        'limit' => 'sometimes|integer',
+    ];
+
+    protected static $updatePartnerIntentRules = [
+        Constants::PARTNER_INTENT       => 'required|boolean',
+    ];
+
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+    ];
+
+    protected static $preferencesRules = [
+        'contact_id'  => 'filled|public_id',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -702,6 +737,16 @@ class Validator extends Base\Validator
                     'feature',
                     [$feature]);
             }
+            // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
+            else if (($input['es_enabled'] === false) and
+                     (($feature === Feature\Constants::ES_AUTOMATIC) or
+                     ($feature === Feature\Constants::ES_ON_DEMAND)))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
+            }
         }
     }
 
@@ -822,6 +867,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventAuthorized()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::AUTHORIZED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORISED);
+        }
+    }
+
+    protected function validateSetReceiptEmailEventCaptured()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getReceiptEmailTriggerEvent() === Event::CAPTURED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED);
         }
     }
 
@@ -1178,6 +1245,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateAndTranslateToAccountNumberForBankingIfApplicable(array & $input)
+    {
+        $product       = array_get($input, Entity::PRODUCT);
+        $accountNumber = array_get($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        if ((empty($product) === true) or
+            (empty($accountNumber) === false))
+        {
+            $this->validateAndTranslateAccountNumberForBanking($input);
+        }
+    }
+
     /**
      * There are service methods (list & fetch) for few models which expect
      * mandatory ACCOUNT_NUMBER in query parameter. Such models include
@@ -1227,5 +1306,48 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+    }
+
+    public function validateBatchId($batchId)
+    {
+        if (empty($batchId) === true)
+        {
+            throw new BadRequestValidationFailureException('Batch Id not present');
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of submerchant terminal assign in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkSubmerchantAssignCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of ' . self::BULK_SUBMERCHANT_ASSIGN . ' is ' . self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT,
+                null,
+                null
+            );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+
+        }
     }
 }

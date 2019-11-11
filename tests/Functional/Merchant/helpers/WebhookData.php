@@ -1196,7 +1196,6 @@ return [
                         'speed_requested' => 'optimum',
                         'speed_processed' => 'instant',
                         'acquirer_data'   => [
-                            'arn' => null,
                         ],
                     ],
                 ],
@@ -1224,6 +1223,176 @@ return [
                         'acquirer_data'   => [
                             'arn' => null,
                         ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testRefundCreatedWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.created',
+            'contains' => ['refund'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 50000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantByAggregatorWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testRefundCreatedWebhookForAggregatorModel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.created',
+            'contains' => ['refund'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 25000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTerminalOnboardingVerificationWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingVerificationWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.activated',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'activated',
+                        'enabled'           =>  false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    
+    'testTerminalOnboardingCreationFailedWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/creation',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingCreationFailedWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.failed',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'failed',
+                        'enabled'           =>  false,
+                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
+                        'error_description' => 'Duplicate MVISAPAN', 
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTerminalOnboardingActivationFailedWebhook' => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingActivationFailedWebhookData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.failed',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'failed',
+                        'enabled'           =>  false,
+                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
                     ],
                 ],
             ],

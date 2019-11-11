@@ -10,15 +10,16 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
-use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
@@ -72,6 +73,8 @@ class Core extends Base\Core
         $user->setConfirmTokenNull();
 
         $this->repo->saveOrFail($user);
+
+        $this->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
 
         return $user;
     }
@@ -264,21 +267,6 @@ class Core extends Base\Core
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
 
         return $this->get($user);
-    }
-
-    /**
-     * This method currently checks if given user has access to the merchant
-     * It checks if there is an entry in merchant_users table of the given userId and merchantId
-     */
-    public function checkUserAccess(string $userId, string $merchantId, string $product): array
-    {
-        $accessMaps = $this->repo
-                           ->merchant_user
-                           ->getMerchantUserRelation($userId, $merchantId, $product);
-
-        $access = (empty($accessMaps) === false);
-
-        return [ 'access' => $access ];
     }
 
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
@@ -565,28 +553,10 @@ class Core extends Base\Core
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
-        // Prepares unique list of merchants for users out of pivot relations.
-        $merchantsUnique = [];
-
-        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
-        {
-            $id   = $merchant[Entity::ID];
-            $role = $merchant[Entity::ROLE];
-
-            if (isset($merchantsUnique[$id]) === false)
-            {
-                $merchantsUnique[$id]                       = $merchant;
-                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
-                $merchantsUnique[$id][Entity::ROLE]         = null;
-            }
-
-            // Push pivot's role to one of the keys in response basis product type.
-            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
-            $merchantsUnique[$id][$key] = $role;
-        });
+        $merchantsUnique = $this->getUnifiedMerchants($merchants);
 
         // Additional resources for users.
-        $merchantsUnique = $this->appendBankingSpecificDetails(array_values($merchantsUnique));
+        $merchantsUnique = $this->appendBankingSpecificDetails($merchantsUnique);
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -912,6 +882,29 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
+    public function sendOtpWithContact(array $input, Merchant\Entity $merchant, Entity $user, array $otp = null): array
+    {
+        $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT, compact('input'));
+
+        $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
+
+        $payload = [
+            'receiver' => $input[Entity::CONTACT_MOBILE],
+            'source'   => "api.user.{$input['action']}",
+            'template' => 'sms.user.' . $input[Entity::ACTION],
+            'params'   => [
+                'otp'      => $otp['otp'],
+                'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+            ],
+        ];
+
+        $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+
+        $this->app->raven->sendSms($payload);
+
+        return array_only($otp, 'token');
+    }
+
     /**
      * Ref: `sendOtp()`
      * Sends OTP to user's email.
@@ -1002,7 +995,7 @@ class Core extends Base\Core
     {
         $token    = $input['token'] ?? Entity::generateUniqueId();
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
-        $receiver = $user->getContactMobile();
+        $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
         $source   = 'api';
 
@@ -1255,5 +1248,100 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_RESTRICTED_TO_PERFORM_ACTION);
         }
+    }
+
+    /**
+     * Prepares unified
+     * @param Array       $merchants
+     */
+    protected function getUnifiedMerchants($merchants): array
+    {
+        $merchantsUnique = [];
+
+        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
+        {
+            $id = $merchant[Entity::ID];
+            $role = $merchant[Entity::ROLE];
+
+            if(isset($merchantsUnique[$id]) === false)
+            {
+                $merchantsUnique[$id]                       = $merchant;
+                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
+                $merchantsUnique[$id][Entity::ROLE]         = null;
+            }
+
+            // Push pivot's role to one of the keys in response basis product type.
+            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
+            $merchantsUnique[$id][$key] = $role;
+        });
+
+        return array_values($merchantsUnique);
+    }
+
+    /**
+     * This function checks if
+     * the current user has an access on a certain merchant
+     *
+     * @param user\Entity $user
+     * @param String      $merchantId
+     * @param String      $product
+     * @throws Exception\BadRequestException
+     *
+     *
+     */
+    public function checkAccessForMerchant(Entity $user, $merchantId, $product)
+    {
+        $merchants = $user->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                        ->withPivot([Entity::ROLE, Entity::PRODUCT])
+                        ->where(Merchant\Entity::ID,$merchantId)
+                        ->get()
+                        ->callOnEveryItem('toArrayUser');
+
+        // this is to verify if user has access to merchant
+        // for the given product
+        $merchantForCurrentProduct = array_filter(
+            $merchants,
+            function ($entity) use ($product) {
+                return $entity[Entity::PRODUCT] === $product;
+            });
+
+        if(empty($merchantForCurrentProduct) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    Entity::USER_ID      => $user->getId(),
+                    Entity::MERCHANT_ID  => $merchantId,
+                    Entity::PRODUCT      => $product,
+                ]
+            );
+        }
+
+        $merchants = $this->getUnifiedMerchants($merchants);
+
+        $merchants = $this->appendBankingSpecificDetails($merchants);
+
+        return [
+            // just to maintain backward compatibility
+            // sending access key
+            // dashboard application determines the access currently
+            // based value of access key being true or false
+            'access'   => true,
+            'merchant' => $merchants[0],
+        ];
+    }
+
+    /**
+     * Tracking Onboarding event along with User Email.
+     *
+     * @param string $userEmail
+     * @param array  $eventCode
+     */
+    public function trackOnboardingEvent(string $userEmail, array $eventCode)
+    {
+        $customProperties = ['email' => $userEmail];
+
+        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
     }
 }

@@ -101,6 +101,8 @@ class Scrooge extends BaseScrooge
     public function bulkUpdateRefundStatus(array $input, bool $throwExceptionOnFailure = false): array
     {
         return json_decode('{
+           "success_count": 1,
+           "failure_count": 1,
            "errors": [{
               "refund_id": "abc1234d",
               "code": "INVALID_STATE",
@@ -188,5 +190,10 @@ class Scrooge extends BaseScrooge
                 "status": "init",
                 "updated_at": 1537266043
             }');
+    }
+
+    public function getInstantRefundsMode(string $merchantId, array $params): string
+    {
+        return 'IMPS';
     }
 }

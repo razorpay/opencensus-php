@@ -3,8 +3,10 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Constants;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -13,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Customer;
 use RZP\Models\Transaction;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -78,7 +81,13 @@ class Core extends Base\Core
 
         $this->validateMerchantForTransfer($merchant);
 
-        (new Validator)->validateTransfers($payment, $input);
+        $orderTransfers = [];
+        if ($payment->hasOrder() === true)
+        {
+            $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
+        }
+
+        (new Validator)->validateTransfers($payment, $input, $orderTransfers);
 
         $totalTransferAmount = 0;
 
@@ -94,6 +103,37 @@ class Core extends Base\Core
         $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
         (new Metric)->pushCreateSuccessMetrics(current($input));
+
+        return $transfers;
+    }
+
+    public function createForOrder(Order\Entity $order, array $transferInput)
+    {
+        $transfers = new Base\Collection();
+
+        if ($this->isTransfersForOrderEnabled() === false)
+        {
+            return $transfers;
+        }
+
+        foreach ($transferInput as $input)
+        {
+            $input[Entity::STATUS] = Status::CREATED;
+
+            $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
+
+            $accountId = $input[ToType::ACCOUNT];
+
+            $to = $this->repo
+                       ->account
+                       ->findByPublicIdAndMerchant($accountId, $this->merchant);
+
+            $transfer = $this->buildTransferEntity($order, $to, $input, $this->merchant);
+
+            $this->repo->saveOrFail($transfer);
+
+            $transfers->push($transfer->toArrayPublic());
+        }
 
         return $transfers;
     }
@@ -156,6 +196,17 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant) : Entity
     {
+        $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
+
+        return $this->createTransactionForTransfer($transfer);
+    }
+
+    protected function buildTransferEntity(
+        Base\Entity $source,
+        Base\Entity $to,
+        array $input,
+        Merchant\Entity $merchant): Entity
+    {
         $transfer = new Entity;
 
         $transfer->generateId();
@@ -167,21 +218,6 @@ class Core extends Base\Core
         $transfer->source()->associate($source);
 
         $transfer->to()->associate($to);
-
-        $txnCore = new Transaction\Core;
-
-        // Create a transaction for the transfer; debits the source merchant
-        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
-
-        $transfer->setFees($txn->getFee());
-
-        $transfer->setTax($txn->getTax());
-
-        $this->repo->saveOrFail($txn);
-
-        $this->repo->saveOrFail($transfer);
-
-        $txnCore->saveFeeDetails($txn, $feesSplit);
 
         return $transfer;
     }
@@ -234,6 +270,8 @@ class Core extends Base\Core
      */
     protected function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
+        $this->repo->payment->lockForUpdateAndReload($payment);
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
             [
@@ -272,6 +310,8 @@ class Core extends Base\Core
         else if (isset($input[ToType::ACCOUNT]) === true)
         {
             $id = $input[ToType::ACCOUNT];
+
+            $input[Entity::STATUS] = Status::CREATED;
 
             return $this->accountTransfer($id, $source, $input, $merchant);
         }
@@ -358,6 +398,10 @@ class Core extends Base\Core
 
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
 
+        $transfer->setProcessed();
+
+        $this->repo->saveOrFail($transfer);
+
         $transferPayment->transfer()->associate($transfer);
 
         $this->repo->saveOrFail($transferPayment);
@@ -425,5 +469,205 @@ class Core extends Base\Core
                 null,
                 ['merchant_id' => $merchant->getId()]);
         }
+    }
+
+    public function validateTransfersInput(int $orderAmount, array $transfers)
+    {
+        if ($this->isTransfersForOrderEnabled() === false)
+        {
+            return;
+        }
+
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $this->merchant);
+
+        $this->validateMerchantForTransfer($this->merchant);
+
+        $validator = new Validator();
+
+        $validator->validateTransferForOrder($transfers, $orderAmount);
+
+        foreach ($transfers as $transfer)
+        {
+            $to = $this->repo
+                       ->account
+                       ->findByPublicIdAndMerchant($transfer[ToType::ACCOUNT], $this->merchant);
+
+            $this->merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+        }
+    }
+
+    public function getForPayment(string $paymentId, array $status = [])
+    {
+        return $this->repo
+                    ->transfer
+                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $paymentId, $this->merchant, $status);
+    }
+
+    public function getForOrder(string $orderId, array $status = [])
+    {
+        return $this->repo
+                    ->transfer
+                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $orderId, $this->merchant, $status);
+    }
+
+    public function processOrderTransfers(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_REQUEST,
+            [
+                'payment_id' => $payment->getPublicId()
+            ]
+        );
+
+        $orderId = $payment->getApiOrderId();
+
+        $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+
+        $transferStatus = [Status::CREATED, Status::FAILED];
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $orderId, $this->merchant, $transferStatus);
+
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESSING,
+                           [
+                               'payment_id'   => $payment->getPublicId(),
+                               'order_id'     => $orderId,
+                               'transfer_ids' => $transfers->getIds(),
+                           ]);
+
+        $this->repo->transaction(function() use ($payment, $transfers)
+        {
+            $totalTransferAmount = 0;
+
+            foreach ($transfers as $transfer)
+            {
+                if ($transfer->isFailed() === true and
+                    $transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                {
+                    $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_INVALID_REQUEST,
+                                       [
+                                           'payment_id' => $payment->getPublicId(),
+                                           'transfer'   => $transfer->toArrayPublic(),
+                                       ]);
+                    continue;
+                }
+                try
+                {
+                    $oldTransfer = clone $transfer;
+
+                    $transfer = $this->createTransactionForTransfer($oldTransfer);
+
+                    $to = $this->repo
+                               ->account
+                               ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
+
+                    $input = $this->getTransferData($transfer);
+
+                    $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
+
+                    $transferPayment->transfer()->associate($transfer);
+
+                    $this->repo->saveOrFail($transferPayment);
+
+                    $transfer->setProcessed();
+
+                    $totalTransferAmount += $transfer->getAmount();
+
+                    (new Metric())->pushTransferProcessSuccessMetrics();
+                }
+                catch (\Exception $e)
+                {
+                    $transfer->setFailed();
+
+                    $transfer->setMessage($e->getMessage());
+
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::ORDER_TRANSFER_PROCESS_FAILURE,
+                        [
+                            'payment_id' => $payment->getPublicId(),
+                            'transfer'   => $transfer->toArrayPublic(),
+                        ]
+                    );
+
+                    (new Metric())->pushTransferProcessFailedMetrics($e);
+                }
+                finally
+                {
+                    $transfer->incrementAttempts();
+
+                    $this->repo->saveOrFail($transfer);
+
+                    if ($transfer->isProcessed())
+                    {
+                        $this->repo->reload($transfer);
+
+                        $this->eventOrderTransferProcessed($transfer);
+                    }
+                }
+            }
+
+            $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+        });
+
+        return $transfers;
+    }
+
+    protected function createTransactionForTransfer($transfer)
+    {
+        $txnCore = new Transaction\Core;
+
+        // Create a transaction for the transfer; debits the source merchant
+        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
+
+        $transfer->setFees($txn->getFee());
+
+        $transfer->setTax($txn->getTax());
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($transfer);
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
+
+        return $transfer;
+    }
+
+    protected function getTransferData(Entity $transfer)
+    {
+        $input = [
+            ToType::ACCOUNT       => $transfer->getToId(),
+            Entity::AMOUNT        => $transfer->getAmount(),
+            Entity::CURRENCY      => $transfer->getCurrency(),
+            Entity::ON_HOLD       => $transfer->getOnHold(),
+            Entity::ON_HOLD_UNTIL => $transfer->getOnHoldUntil(),
+        ];
+
+        $laNotes = $this->getLinkedAccountNotes($input);
+
+        $input[Entity::NOTES] = $laNotes;
+
+        return $input;
+    }
+
+    public function eventOrderTransferProcessed(Entity $transfer)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $transfer
+        ];
+
+        $this->app['events']->fire('api.transfer.processed', $eventPayload);
+    }
+
+    protected function isTransfersForOrderEnabled(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
+                                                    $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }

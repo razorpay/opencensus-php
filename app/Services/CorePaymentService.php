@@ -6,6 +6,7 @@ use Requests;
 use Requests_Session;
 
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -38,6 +39,8 @@ class CorePaymentService
 
     protected $config;
 
+    protected $mozartConfig;
+
     protected $trace;
 
     protected $request;
@@ -55,6 +58,8 @@ class CorePaymentService
         $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.cps');
+
+        $this->mozartConfig = $app['config']->get('gateway.mozart');
 
         if ($this->request === null)
         {
@@ -86,7 +91,21 @@ class CorePaymentService
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+
+            $input[Entity::TERMINAL] = $this->updateTerminalFromConfig($input);
         }
+
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+        }
+
+        if (empty($input[Entity::UPI]) === false &&
+            empty($input['upi']['expiry_time']) === false)
+        {
+            $input['upi']['expiry_time'] = (float)$input['upi']['expiry_time'];
+        }
+
 
         $content = [
             self::ACTION  => $action,
@@ -306,6 +325,16 @@ class CorePaymentService
                 ]
             );
         }
+        else if ($errorCode !== null)
+        {
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $responseBody[self::ERROR]['gateway_error_code'] ?? '0',
+                $responseBody[self::ERROR]['gateway_error_description'] ?? 'Verify - Payment failed',
+                [],
+                null,
+                $this->action);
+        }
 
         return $responseBody[self::DATA];
     }
@@ -346,6 +375,12 @@ class CorePaymentService
         $data = $error['data'] ?? null;
 
         $description = $error['description'] ?? null;
+
+        if ($errorCode == ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+        }
 
         if (empty($error['gateway_error_code']) === false)
         {
@@ -461,5 +496,25 @@ class CorePaymentService
         }
 
         return $class;
+    }
+
+    protected function updateTerminalFromConfig($input)
+    {
+        if (isset($input['payment']['gateway']) === true)
+        {
+            switch ($input['payment']['gateway']) {
+                case Payment\Gateway::NETBANKING_CUB:
+                    $input['terminal']['gateway_secure_secret'] = $this->mozartConfig['netbanking_cub']['gateway_secure_secret'];
+                    $input['terminal']['gateway_secure_secret2'] = $this->mozartConfig['netbanking_cub']['gateway_secure_secret2'];
+                    $input['terminal']['gateway_terminal_password'] = $this->mozartConfig['netbanking_cub']['gateway_terminal_password'];
+                    $input['terminal']['gateway_terminal_password2'] = $this->mozartConfig['netbanking_cub']['gateway_terminal_password2'];
+
+                    break;
+                case Payment\Gateway::NETBANKING_YESB:
+                    $input['terminal']['gateway_secure_secret'] = $this->mozartConfig['netbanking_yesb']['gateway_secure_secret'];
+            }
+        }
+
+        return $input['terminal'];
     }
 }

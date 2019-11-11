@@ -10,6 +10,8 @@ use RZP\Gateway\Mozart\NetbankingCub\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[ReconFields::PAYMENT_ID]) === false)
@@ -42,7 +44,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['bank_payment_id'];
+        $dbReferenceNumber = $data['bank_payment_id'] ?? null;
 
         //
         // Sometimes we have db reference number saved as string 'null'.

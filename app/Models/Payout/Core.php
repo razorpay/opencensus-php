@@ -112,6 +112,22 @@ class Core extends Base\Core
         return $payout;
     }
 
+    public function calculateEsOnDemandFees(array $input, Merchant\Entity $merchant): array
+    {
+        (new Validator)->validateInput(Validator::CALCULATE_ES_ON_DEMAND_FEES, $input);
+
+        $payoutInput = [
+            Entity::PURPOSE   => Purpose::PAYOUT, // this purpose should be mapped to FundTransfer\Attempt\Purpose::SETTLEMENT
+            Entity::AMOUNT    => $input[Entity::AMOUNT],
+            Entity::CURRENCY  => $input[Entity::CURRENCY],
+            Entity::TYPE      => Entity::ON_DEMAND,
+        ];
+
+        return $this->getProcessor('merchant_payout')
+                    ->setMerchant($merchant)
+                    ->calculateFees($payoutInput);
+    }
+
     /**
      * Payouts to a fund account
      *
@@ -286,6 +302,9 @@ class Core extends Base\Core
 
         $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
 
+        $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
+        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
+
         switch ($status)
         {
             case Status::PROCESSED:
@@ -293,11 +312,11 @@ class Core extends Base\Core
                 break;
 
             case Status::REVERSED:
-                $this->handlePayoutReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode);
                 break;
 
             case Status::FAILED:
-                $this->handlePayoutFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode);
                 break;
 
             case Status::CREATED:
@@ -311,13 +330,13 @@ class Core extends Base\Core
         }
     }
 
-    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
+    public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
     {
-        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
+        $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
 
-        $entity->setStatus(Status::INITIATED);
+        $payout->setStatus(Status::INITIATED);
 
-        $this->repo->saveOrFail($entity);
+        $this->repo->saveOrFail($payout);
     }
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
@@ -686,23 +705,32 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handlePayoutReversed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutReversed(Entity $payout,
+                                            string $ftaFailureReason = null,
+                                            string $ftaBankStatusCode = null)
     {
+        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
     }
 
-    protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutFailed(Entity $payout,
+                                          string $ftaFailureReason = null,
+                                          string $ftaBankStatusCode = null)
     {
+        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+
         if ($payout->hasTransaction() === true)
         {
             throw new Exception\LogicException(
                 'A Payout with transaction can not be moved to failed state, it should be reversed',
                 null,
                 [
-                    'payout_id'      => $payout->getId(),
-                    'failure_reason' => $ftaFailureReason,
+                    'payout_id'         => $payout->getId(),
+                    'status'            => $payout->getStatus(),
+                    'failure_reason'    => $ftaFailureReason,
                 ]);
         }
 
@@ -711,7 +739,7 @@ class Core extends Base\Core
         //
         // Payout can go to failed state from initiated or created state only
         //
-        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
+        Status::validateStatusUpdate(Status::FAILED, $currentStatus);
 
         $payout->setStatus(Status::FAILED);
 
@@ -736,9 +764,9 @@ class Core extends Base\Core
                 'Attempted to reverse an already reversed payout',
                 null,
                 [
-                    'payout_id'         => $payout->getId(),
-                    'status'            => $payout->getStatus(),
-                    'reverse_reason'    => $reverseReason,
+                    'payout_id'      => $payout->getId(),
+                    'status'         => $payout->getStatus(),
+                    'reverse_reason' => $reverseReason,
                 ]);
         }
 
@@ -746,9 +774,10 @@ class Core extends Base\Core
             function() use ($payout, $reverseReason) {
                 $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-                $payout->setStatus(Status::REVERSED);
-
                 $payout->setFailureReason($reverseReason);
+
+                // To be set after failure_reason for metrics purpose
+                $payout->setStatus(Status::REVERSED);
 
                 $this->repo->saveOrFail($payout);
 
@@ -756,6 +785,30 @@ class Core extends Base\Core
             });
 
         return $reversal;
+    }
+
+    protected function getPublicErrorMessage(
+        Entity $payout,
+        string $ftaFailureReason = null,
+        string $ftaBankStatusCode = null)
+    {
+        if (empty($ftaBankStatusCode) === true)
+        {
+            $this->trace->error(
+                TraceCode::PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'failure_reason'    => $ftaFailureReason,
+                    'status'            => $payout->getStatus(),
+                ]);
+        }
+
+        if (empty($ftaFailureReason) === true)
+        {
+            $ftaFailureReason = ErrorCodeMapping::getErrorMessageFromBankResponseCode($payout, $ftaBankStatusCode);
+        }
+
+        return $ftaFailureReason;
     }
 
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)

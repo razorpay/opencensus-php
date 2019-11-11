@@ -31,6 +31,11 @@ class EventCode
         'name'  => 'payment.input.validations.processed'
     ];
 
+    const PAYMENT_CREATION_RESPAWN                      = [
+        'group' => 'initiation',
+        'name'  => 'payment.creation.respawn'
+    ];
+
     const PAYMENT_CARDSAVING_INITIATED                  = [
         'group' => 'internal_checks',
         'name'  => 'payment.cardsaving.initiated'
@@ -248,6 +253,11 @@ class EventCode
         'name'  => 'settlement.creation.initiated'
     ];
 
+    const SETTLEMENT_CREATION_SKIPPED = [
+        'group' => 'skipped',
+        'name'  => 'settlement.creation.skipped'
+    ];
+
     const SETTLEMENT_CREATION_SUCCESS = [
         'group' => 'success',
         'name'  => 'settlement.creation.success'
@@ -265,7 +275,7 @@ class EventCode
 
     const FTA_CREATION_SUCCESS = [
         'group' => 'success',
-        'name'  => 'fta.creation.initiated'
+        'name'  => 'fta.creation.success'
     ];
 
     const FTA_CREATION_FAILED = [
@@ -288,24 +298,29 @@ class EventCode
         'name'  => 'batchFta.creation.failed'
     ];
 
-    const BEAM_FILE_PUSH_SUCCESS = [
+    const BEAM_FILE_PUSH_REQUEST_SUCCESS = [
         'group' => 'success',
-        'name'  => 'beam.push.success'
+        'name'  => 'beam.push.request.success'
     ];
 
-    const BEAM_FILE_PUSH_RETRY = [
+    const BEAM_FILE_PUSH_REQUEST_RETRY = [
         'group' => 'retry',
-        'name'  => 'beam.push.retry'
+        'name'  => 'beam.push.request.retry'
     ];
 
-    const BEAM_FILE_PUSH_FAILED = [
+    const BEAM_FILE_PUSH_REQUEST_FAILED = [
         'group' => 'failure',
-        'name'  => 'beam.push.failed'
+        'name'  => 'beam.push.request.failed'
     ];
 
     const FTA_UTR_UPDATED = [
         'group' => 'update',
         'name'  => 'fta.utr.updated'
+    ];
+
+    const FTA_DATA_UPDATED_FROM_REVERSE_FEED = [
+        'group' => 'update',
+        'name'  => 'fta.data.updated.reverse.feed'
     ];
 
     const FTA_STATUS_UPDATED = [
@@ -321,5 +336,116 @@ class EventCode
     const REVERSE_FEED_RECEIVED = [
         'group' => 'receive',
         'name'  => 'reverse.feed.received'
+    ];
+
+    // onboarding events
+    const SIGNUP_CAPTCHA_VERIFICATION_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.captcha_verification.success',
+    ];
+
+    const SIGNUP_CAPTCH_VERIFICATION_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'signup.captcha_verification.failed',
+    ];
+
+    const SIGNUP_EMAIL_VERIFICATION_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'signup.email_verification.failed',
+    ];
+
+    const SIGNUP_EMAIL_VERIFICATION_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.email_verification.success',
+    ];
+
+    const SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.resend_verification_email.success',
+    ];
+
+    const SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.send_verification_email.success',
+    ];
+
+    const SIGNUP_APPLY_COUPON_CODE_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.apply_coupon_code.success',
+    ];
+
+    const SIGNUP_APPLY_COUPON_CODE_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'signup.apply_coupon_code.failed',
+    ];
+
+    const SIGNUP_FINISH_SIGNUP_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.finish_signup.success',
+    ];
+
+    const SIGNUP_FINISH_SIGNUP_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'signup.finish_signup.failed',
+    ];
+
+    const SIGNUP_CREATE_ACCOUNT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.create_account.success',
+    ];
+
+    const SIGNUP_CREATE_ACCOUNT_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'signup.create_account.failed',
+    ];
+
+    const ACT_SUBMIT_FORM_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'act.submit_form.success',
+    ];
+
+    const ACT_SUBMIT_FORM_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'act.submit_form.failed',
+    ];
+
+    const ACT_CHANGE_ACTIVATION_STATUS_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'act.change_activation_status.success',
+    ];
+
+    const ACT_CHANGE_ACTIVATION_FLOW_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'act.change_activation_flow.success',
+    ];
+
+    const KYC_FORM_SUBMIT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.form_submit.success',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_modifications.success',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.success',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.failed',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_modifications.failed',
+    ];
+
+    const PAYMENT_PAGE_CREATED = [
+        'group' => 'payment_page',
+        'name'  => 'payment_page.created',
     ];
 }

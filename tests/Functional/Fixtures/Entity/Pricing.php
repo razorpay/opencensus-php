@@ -189,6 +189,34 @@ class Pricing extends Base
                 'org_id'              => '100000razorpay',
             ],
             [
+                'id'                  => '1zD0BXpfOJaqqG',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'debitcard',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zD01Xpe3JaqpG',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'debitcard',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
                 'id'                  => '1zD0BXpfOJaqqE',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -464,6 +492,16 @@ class Pricing extends Base
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
             ],
+            [
+                'id'             => '1zE31zbyeGCTd6',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 20,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);
@@ -647,6 +685,29 @@ class Pricing extends Base
                 'feature'             => 'refund',
                 'payment_method'      => 'upi',
                 'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
+    public function createInstantRefundsModeLevelPricingPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbyaD',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'IMPS',
+                'fixed_rate'          => 600,
                 'amount_range_active' => 1,
                 'amount_range_min'    => 100,
                 'amount_range_max'    => 50000,
@@ -894,6 +955,16 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createDefaultPartnerCommissionPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getPartnerCommissionPlanData());
+    }
+
+    public function createDefaultPlanForSubmerchantsOfOnboardedPartners()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getSubmerchantPricingOfOnboardedPartners());
     }
 
     protected function addPricingRulesToDb($rows)

@@ -22,6 +22,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_TRANS_STATUS       = 'trans_status';
 
     const RECON_STATUS_CREDITED     = 'credited';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYER_NAME,
+    ];
+
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *

@@ -99,6 +99,8 @@ class MailTags
     const HDFC_EMANDATE_REGISTER_MAIL      = 'hdfc_emandate_register_mail';
     const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
 
+    const SBI_EMANDATE_DEBIT_MAIL          = 'sbi_emandate_debit_mail';
+
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
@@ -107,6 +109,7 @@ class MailTags
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
+    const RX_LOW_BALANCE_ALERT             = 'rx_low_balance_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
@@ -156,6 +159,7 @@ class MailTags
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+    const DISPUTES_CREATED_IN_BULK         = 'disputes_created_in_bulk';
     const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
     const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 
@@ -164,6 +168,8 @@ class MailTags
 
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
+
+    const BANKING_ACCOUNT_STATUS_UPDATED = 'banking_account_status_updated';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

@@ -6,6 +6,8 @@ class Fields
 {
     const MERCH_ID                     = 'merchId';
     const MERCH_CHAN_ID                = 'merchChanId';
+    const CALLBACK_MERCHANT_ID         = 'merchantId';
+    const CALLBACK_MERCHANT_CHAN_ID    = 'merchantChannelId';
     const CREDIT_VPA                   = 'creditVpa';
     const UNQ_TXN_ID                   = 'unqTxnId';
     const UNQ_CUST_ID                  = 'unqCustId';
@@ -50,6 +52,7 @@ class Fields
     const CHECK_STATUS_DATE_TIME       = 'dateTime';
     const CHECK_STATUS_DEBIT_VPA       = 'debitVpa';
     const CHECK_STATUS_CREDIT_VPA      = 'creditVpa';
+    const CHECK_STATUS_TXN_ID          = 'txnid';
     const STATUS                       = 'status';
     const REMARKS                      = 'remarks';
 

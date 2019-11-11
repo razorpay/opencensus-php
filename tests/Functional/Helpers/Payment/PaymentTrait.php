@@ -926,9 +926,17 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false, $auth = [])
     {
-        $this->ba->privateAuth();
+        if ((empty($auth['key']) === false) and
+            (empty($auth['secret']) === false))
+        {
+            $this->ba->privateAuth($auth['key'], $auth['secret']);
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $content = [];
 
@@ -1025,9 +1033,11 @@ trait PaymentTrait
             $response = $this->makeRequestAndGetContent($request);
         }
 
+        $rrn = $response['gateway_keys']['rrn'] ?? null;
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event', null, $rrn);
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1037,6 +1047,16 @@ trait PaymentTrait
 
             switch ($refund['amount'])
             {
+                case 200:
+                    $failed = $data['failed'] ?? false;
+
+                    if ($failed === false)
+                    {
+                        $event = 'processed_event';
+                    }
+
+                    break;
+
                 case 3459:
                     $event = 'failed_event';
                     break;
@@ -1078,7 +1098,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null, $rrn = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1094,7 +1114,13 @@ trait PaymentTrait
             $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
         }
 
+        if ($rrn !== null)
+        {
+            $input['reference_no'] = $rrn;
+        }
+
         $input['event'] = $event;
+        $input['status'] = $status;
 
         $this->ba->scroogeAuth();
 
@@ -1168,7 +1194,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
     {
         $this->ba->adminAuth();
 
@@ -1185,6 +1211,11 @@ trait PaymentTrait
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
+
+            if (isset($data['amount']) === true)
+            {
+                $response['amount'] = $data['amount'];
+            }
 
             $this->scroogeRefund($response, $content);
         }
@@ -1579,6 +1610,8 @@ trait PaymentTrait
 
         if ($this->isPaymentCreationUrl($url))
         {
+            $this->resetSingletons();
+
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
         }
 
@@ -2081,6 +2114,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockExpressSendRequest($closure, $times = 1)
+    {
+        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+
+        $express->shouldAllowMockingProtectedMethods();
+
+        $express->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('express', $express);
+
+        return $express;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
@@ -2180,7 +2228,6 @@ trait PaymentTrait
             switch ($endpoint)
             {
                 case '/account':
-
                     $response = [
                         'body' => [
                             'fund_account_id' => random_integer(2),
@@ -2191,9 +2238,10 @@ trait PaymentTrait
                     return $response;
 
                 case '/source_account':
-
                     $response = [
-                            'message' => 'source account registered',
+                            'body'=> [
+                                'message' => 'source account registered',
+                            ]
                         ];
 
                     return $response;
@@ -2208,4 +2256,19 @@ trait PaymentTrait
 
         $this->app->instance('fts_create_account', $fts);
     }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
 }

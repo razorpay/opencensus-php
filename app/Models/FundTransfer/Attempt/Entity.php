@@ -6,9 +6,11 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Card\Issuer;
 use RZP\Constants\Entity as E;
+use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
+use RZP\Trace\TraceCode;
 
 /**
  * @property mixed batchFundTransfer
@@ -65,6 +67,8 @@ class Entity extends Base\PublicEntity
     const FUND_TRANSFER_ID      = 'fund_transfer_id';
 
     protected $entity = 'fund_transfer_attempt';
+
+    protected static $sign = 'fta';
 
     protected $fillable = [
         self::PURPOSE,
@@ -440,6 +444,17 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        // The below logic to update the mode of FTA is being done specifically
+        // for Yesbank. Going forward all banks will be migrated to FTS and
+        // any such change of mode will happen at FTS layer. Till yesbank
+        // is being migrated this change is required for it. For other
+        // banks already on FTS we don't need to run mode logic to update banks.
+
+        if ($this->getIsFTS() === true)
+        {
+            return;
+        }
+
         // Assumption is that the validation would have happened already before this
         // step and hence we can assume that the bank account exists and is valid.
 
@@ -449,16 +464,18 @@ class Entity extends Base\PublicEntity
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            $this->setMode(Mode::NEFT);
-
-            return;
-        }
-
         if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
         {
-            $this->setMode(Mode::IFT);
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                $this->setMode(Mode::IFT);
+            }
+            else
+            {
+                $this->setMode(Mode::NEFT);
+            }
         }
     }
 
@@ -548,17 +565,60 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    public function shouldUseGateway(): bool
+    public function shouldUseGateway($mode = null): bool
     {
+        if ((empty($mode) === false) and
+            ($mode !== Mode::UPI))
+        {
+            return false;
+        }
+
+        $source = $this->source;
+
+        $amount = ($source->getAmount() / 100);
+
+        $amount = round($amount, 2);
+
+        if ($amount > Constants::MAX_UPI_AMOUNT)
+        {
+            // Throw Exception if Mode is sent by Source and Amount is greater than UPI limit
+            if ($mode === Mode::UPI)
+            {
+                throw new LogicException(
+                    "Amount for Mode $mode is greater than limit.",
+                    null,
+                    [
+                        'amount' => $amount
+                    ]);
+            }
+
+            return false;
+        }
+
         if ($this->hasVpa() === true)
         {
             return true;
         }
 
-        if (($this->hasCard() === true) and
-            ($this->card->getIssuer() === Issuer::ICIC))
+        if ($this->hasCard() === true)
         {
-            return true;
+            $iin = $this->card->iinRelation;
+
+            if ($iin === null)
+            {
+                return false;
+            }
+
+            $issuer = $iin->getIssuer();
+
+            $networkCode = $this->card->getNetworkCode();
+
+            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
+
+            if (in_array(Mode::UPI, $supportedModes, true) === true)
+            {
+                return true;
+            }
         }
 
         return false;

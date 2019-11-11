@@ -11,6 +11,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_ID          = 'fldMerchRefNbr';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'fldBankRefNbr';
     const COLUMN_BANK_ACCOUNT_NUMBER = 'AccountNo.';
+    const COLUMN_PAYMENT_AMOUNT      = 'Transaction Amount';
+
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getPaymentId(array $row)
     {

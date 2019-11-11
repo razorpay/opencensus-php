@@ -19,9 +19,32 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_TRANSACTION_STATUS     = 'transaction_status';
     const COLUMN_TRANSACTION_REMARKS    = 'transaction_remarks';
 
+    // Blacklisted columns
+    const COLUMN_PAYER_VPA              = 'payer_virtual_address';
+    const COLUMN_PAYEE_VPA              = 'payee_virtual_address';
+    const COLUMN_DEVICE_TYPE            = 'device_type';
+    const COLUMN_APP                    = 'app';
+    const COLUMN_DEVICE_OS              = 'device_os';
+    const COLUMN_DEVICE_MOBILE_NO       = 'device_mobile_no';
+    const COLUMN_DEVICE_LOCATION        = 'device_location';
+    const COLUMN_IP_ADDRESS             = 'ip_address';
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYEE_VPA,
+        self::COLUMN_PAYER_VPA,
+        self::COLUMN_DEVICE_TYPE,
+        self::COLUMN_APP,
+        self::COLUMN_DEVICE_OS,
+        self::COLUMN_DEVICE_MOBILE_NO,
+        self::COLUMN_DEVICE_LOCATION,
+        self::COLUMN_IP_ADDRESS,
+    ];
+
     const SUCCESS   = 'SUCCESS';
     const DEBIT     = 'Debit';
     const APPROVED  = 'Approved';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     protected function getRefundId(array $row)
     {

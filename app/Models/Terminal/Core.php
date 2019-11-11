@@ -217,13 +217,18 @@ class Core extends Base\Core
 
         $existingTerminals = $this->repo->terminal->getByParams($params);
 
+        $gateway = $terminal->getGateway();
+        
         //
         // Checks that existing terminals don't
         // have same gateway field as the new one
         //
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
-        $this->validateExistingTerminalGatewayMerchantId($terminal);
+        if (in_array($gateway, Gateway::MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS) === false)
+        {
+            $this->validateExistingTerminalGatewayMerchantId($terminal);
+        }
 
         $this->validateExistingMpan($terminal);
     }
@@ -433,7 +438,7 @@ class Core extends Base\Core
 
     protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
-        $existingTerminals = $this->repo->terminal->getByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         // This check if this terminal is same as what
         // we are trying to edit

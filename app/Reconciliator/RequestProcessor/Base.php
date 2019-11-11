@@ -15,15 +15,15 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Base extends Core
 {
-    const GATEWAY                 = 'gateway';
-    const ATTACHMENT_COUNT        = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
-    const ATTACHMENT_HYPHEN_ONE   = 'attachment-1';
-    const FORCE_UPDATE            = 'force_update';
-    const FORCE_AUTHORIZE         = 'force_authorize';
-
-    const SOURCE                  = 'source';
-    const MANUAL_RECON_FILE       = 'manual_recon_file';
+    const GATEWAY                       = 'gateway';
+    const ATTACHMENT_COUNT              = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT       = 'attachment-count';
+    const ATTACHMENT_HYPHEN_ONE         = 'attachment-1';
+    const FORCE_UPDATE                  = 'force_update';
+    const FORCE_AUTHORIZE               = 'force_authorize';
+    const ATTACHMENT_HYPHEN_PREFIX      = 'attachment-';
+    const SOURCE                        = 'source';
+    const MANUAL_RECON_FILE             = 'manual_recon_file';
 
     /**
      * Type of request processor
@@ -31,6 +31,7 @@ class Base extends Core
     const LAMBDA                  = 'lambda';
     const MAILGUN                 = 'mailgun';
     const MANUAL                  = 'manual';
+    const CRAWLER                 = 'crawler';
 
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
@@ -75,6 +76,7 @@ class Base extends Core
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
+    const NETBANKING_BOB_V2      = 'NetbankingBobV2';
     const NETBANKING_OBC         = 'NetbankingObc';
     const NETBANKING_VIJAYA      = 'NetbankingVijaya';
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
@@ -101,6 +103,7 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
+    const PAYPAL                 = 'Paypal';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -142,7 +145,7 @@ class Base extends Core
         self::NETBANKING_VIJAYA      => [], //TODO: add this value when shared post UAT
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
-        self::NETBANKING_SBI         => [],
+        self::NETBANKING_SBI         => ['fssrecon.inbdau@sbi.co.in'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -166,6 +169,12 @@ class Base extends Core
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
+    ];
+
+    const GATEWAY_CRAWLERS = [
+        self::NETBANKING_BOB_V2     => Gateway::NETBANKING_BOB_V2,
+        self::NETBANKING_CUB        => Gateway::NETBANKING_CUB,
+        self::PAYPAL                => Gateway::WALLET_PAYPAL
     ];
 
     /**
@@ -248,6 +257,7 @@ class Base extends Core
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
         Gateway::WALLET_PHONEPE         => self::PHONEPE,
+        Gateway::WALLET_PAYPAL          => self::PAYPAL,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],

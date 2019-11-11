@@ -73,9 +73,6 @@ class Entity extends Base\PublicEntity
     const RRN                    = 'rrn';
     const UTR                    = 'utr';
 
-    const RESPONSE_CODE          = 'code';
-    const RESPONSE_BODY          = 'body';
-
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
      */
@@ -94,6 +91,10 @@ class Entity extends Base\PublicEntity
     const SPEED_DECISIONED       = 'speed_decisioned';
     const FEE                    = 'fee';
     const TAX                    = 'tax';
+
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    const MODE_REQUESTED         = 'mode_requested';
 
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
@@ -146,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::SPEED_REQUESTED,
+        self::MODE_REQUESTED,
         self::SPEED_DECISIONED,
         self::SPEED_PROCESSED,
         self::FEE,
@@ -344,10 +346,19 @@ class Entity extends Base\PublicEntity
 
     /**
      * Returns base amount + applicable fee
+     * In case of a merchant with fee model as postpaid
+     * we do not add the fee since it will be collected at the end of the month
      */
     public function getNetAmount()
     {
-        return $this->getBaseAmount() + $this->getFee();
+        $netAmount = $this->getBaseAmount();
+
+        if ($this->merchant->isPostpaid() === false)
+        {
+            $netAmount += $this->getFee();
+        }
+
+        return $netAmount;
     }
 
     public function getCurrency()
@@ -435,6 +446,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SPEED_REQUESTED);
     }
 
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    public function getModeRequested()
+    {
+        return $this->getAttribute(self::MODE_REQUESTED);
+    }
+
     public function getSpeedDecisioned()
     {
         return $this->getAttribute(self::SPEED_DECISIONED);
@@ -453,6 +471,11 @@ class Entity extends Base\PublicEntity
     public function getReference2()
     {
         return $this->getAttribute(self::REFERENCE2);
+    }
+
+    public function getReference3()
+    {
+        return $this->getAttribute(self::REFERENCE3);
     }
 
     public function getSettledBy()
@@ -510,6 +533,11 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->payment->getMethod();
+    }
+
+    public function getGatewayRefunded()
+    {
+        $this->getAttribute(self::GATEWAY_REFUNDED);
     }
 
     protected function getAcquirerDataAttribute()
@@ -597,6 +625,13 @@ class Entity extends Base\PublicEntity
     public function setSpeedRequested(string $speedRequested)
     {
         $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
+    }
+
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    public function setModeRequested(string $modeRequested)
+    {
+        $this->setAttribute(self::MODE_REQUESTED, $modeRequested);
     }
 
     public function setSpeedDecisioned(string $speedDecisioned)
@@ -759,7 +794,7 @@ class Entity extends Base\PublicEntity
         $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
     }
 
-    public function setReference1(string $value)
+    public function setReference1(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }
@@ -767,6 +802,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReference3(string $value)
+    {
+        $this->setAttribute(self::REFERENCE3, $value);
     }
 
     public function setReceipt(string $value)
@@ -1124,11 +1164,11 @@ class Entity extends Base\PublicEntity
             {
                 $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
 
-                $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+                $scroogeResponseCode = $scroogeResponse[Constants::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+                    $scroogeResponseBody = $scroogeResponse[Constants::RESPONSE_BODY];
 
                     $scroogeStatus =
                         (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';

@@ -6,10 +6,44 @@ use Request;
 use ApiResponse;
 
 use RZP\Models\Merchant\Document;
+use RZP\Constants\Entity as Entity;
 
 class DocumentController extends Controller
 {
     use Traits\HasCrudMethods;
 
     protected $service = Document\Service::class;
+
+    public function uploadMerchantDocuments()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @Todo add comments
+     * @return mixed
+     */
+    public function getMerchantDocuments()
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchActivationFilesFromDocument();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @Todo add comments
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getMerchantDocumentsByAdmin(string $merchantId)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchActivationFilesFromDocument($merchantId);
+
+        return ApiResponse::json($response);
+    }
 }

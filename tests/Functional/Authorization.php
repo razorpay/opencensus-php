@@ -136,7 +136,7 @@ class Authorization
 
         $this->addProxyAuthHeaders($merchantUser);
     }
-    
+
     public function hostedAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user, \Config::get('applications.hosted')['secret']);

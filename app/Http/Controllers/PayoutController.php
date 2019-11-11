@@ -122,13 +122,6 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getQueuedPayoutsSummary()
-    {
-        $data = $this->service()->getQueuedPayoutsSummary();
-
-        return ApiResponse::json($data);
-    }
-
     public function getSummary()
     {
         $data = $this->service()->getDashboardSummary();
@@ -168,6 +161,15 @@ class PayoutController extends Controller
         $input = Request::all();
 
         $response = $this->service()->createBulkPayout($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function calculateEsOnDemandFees()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->calculateEsOnDemandFees($input);
 
         return ApiResponse::json($response);
     }

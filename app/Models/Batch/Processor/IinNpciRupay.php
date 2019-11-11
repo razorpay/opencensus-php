@@ -27,16 +27,13 @@ class IinNpciRupay extends BaseProcessor
 
         $row = array_values($entry)[0];
 
-        if (substr($row, 0, 3) !== 'TRL')
-        {
-            $this->processor->preprocess($entry);
+        unset($entry[$header]);
 
-            unset($entry[$header]);
+        $entry[Batch\Header::IIN_NPCI_RUPAY_ROW] = $row;
 
-            $entry[Batch\Header::IIN_NPCI_RUPAY_ROW] = $row;
+        $this->processor->preprocess($entry);
 
-            $this->processor->process();
-        }
+        $this->processor->process();
 
         $entry[Batch\Header::STATUS]  = Batch\Status::SUCCESS;
     }

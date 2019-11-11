@@ -643,6 +643,34 @@ return [
         ]
     ],
 
+    'testEditMerchantWhitelistedDomains' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [
@@ -1339,6 +1367,26 @@ return [
         ]
     ],
 
+    'testUpdateBankAccountWithAddressProof' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ]
+        ]
+    ],
+
     'testAddBankAccountWithMerchantIdInURL' => [
         'request' => [
             'content' => [
@@ -1731,6 +1779,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1742,6 +1793,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1756,6 +1810,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1767,6 +1824,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1778,6 +1838,9 @@ return [
         'request'  => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1790,6 +1853,9 @@ return [
         'request'  => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1803,6 +1869,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1818,11 +1887,37 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'contact_id' => 'cont_AAAAAAAAAAAAAA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
 
     'testGetCheckoutPreferencesForPaidOrder' => [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -1844,6 +1939,7 @@ return [
             'method'  => 'get',
             'content' => [
                 'invoice_id' => 'inv_1000000invoice',
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1867,6 +1963,7 @@ return [
             'method'  => 'get',
             'content' => [
                 'invoice_id' => 'inv_1000000invoice',
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1888,6 +1985,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1907,6 +2007,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1926,6 +2029,9 @@ return [
         'request' => [
             'url'    => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -1946,7 +2052,8 @@ return [
             'url'     => '/preferences',
             'method'  => 'get',
             'content' => [
-                'order_id' => null
+                'order_id' => null,
+                'currency' => 'INR',
             ],
         ],
         'response' => [
@@ -1973,6 +2080,9 @@ return [
         'request' => [
             'url'    => null,
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'tests' => [
             [
@@ -2110,6 +2220,9 @@ return [
         'request' => [
             'url'    => null,
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'tests' => [
             [
@@ -2220,7 +2333,10 @@ return [
     'testGetCheckoutPreferencesWithEmiOffer' => [
         'request' => [
             'url'    => null,
-            'method' => 'GET'
+            'method' => 'GET',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2251,6 +2367,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2273,6 +2392,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2290,6 +2412,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
         ],
         'response' => [
             'content' => [
@@ -2910,6 +3035,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2921,6 +3049,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2943,6 +3074,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2965,6 +3099,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -2985,6 +3122,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3037,6 +3177,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3048,6 +3191,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3068,6 +3214,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3088,6 +3237,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -3155,6 +3307,19 @@ return [
         ]
     ],
 
+    'testFetchEsScheduledPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'percent_rate' => 20,
+                'fixed_rate' => 0,
+            ]
+        ]
+    ],
+
     'testPutEmiMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
@@ -3205,6 +3370,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3218,6 +3384,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3259,6 +3426,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3300,7 +3468,8 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'app_token' => 'capp_1000000custapp'
+                'app_token' => 'capp_1000000custapp',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3314,6 +3483,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3328,7 +3498,8 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'customer_id' => 'cust_100000customer'
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3343,6 +3514,7 @@ return [
             'method' => 'get',
             'content' => [
                 'contact' => '9988776655',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3357,7 +3529,8 @@ return [
             'method' => 'get',
             'content' => [
                 'contact' => '9988776655',
-                'device_token' => '1000custdevice'
+                'device_token' => '1000custdevice',
+                'currency' => 'INR'
             ],
         ],
         'response' => [
@@ -3378,6 +3551,7 @@ return [
             'content' => [
                 'contact' => '9988776655',
                 'device_token' => '1000custdevice',
+                'currency' => 'INR',
                 '_' => [
                     'library' => 'checkoutjs',
                     'platform' => 'android',
@@ -3398,6 +3572,7 @@ return [
             'content' => [
                 'contact' => '9988776655',
                 'device_token' => '1000custdevice',
+                'currency' => 'INR',
                 '_' => [
                     'library' => 'checkoutjs',
                     'platform' => 'android',
@@ -3563,6 +3738,38 @@ return [
                 'entity'    => 'merchant',
                 'activated' => true,
                 'live'      => true,
+            ],
+        ]
+    ],
+
+    'testMerchantEditReceiptEmailEventCapture' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_captured'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'captured',
+            ],
+        ]
+    ],
+
+    'testMerchantEditReceiptEmailEventAuthorized' => [
+        'request' => [
+            'content' => [
+                'action' => 'set_receipt_email_event_authorized'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'receipt_email_trigger_event' => 'authorized',
             ],
         ]
     ],
@@ -4345,6 +4552,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -4356,6 +4566,9 @@ return [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
         ],
         'response' => [
             'content' => [
@@ -4930,6 +5143,110 @@ return [
                 'user_id'        => '',
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantRazorxBulkExperimentFetch' => [
+        'request'  => [
+            'url'     => '/razorx/bulkevaluate',
+            'method'  => 'get',
+            'content' => [
+                'features' => 'feature1,feature2'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'feature1' => ['result' => 'on'],
+                'feature2' => ['result' => 'off'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntent'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentForMerchantWithoutPartnerIntent' => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => null,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentWithPartnerIntentFalse'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentTrue'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 0 //sends false,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '0',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentFalse' => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentNull'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
         ],
     ],
 ];

@@ -5,6 +5,7 @@ namespace RZP\Models\Base;
 use App;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class EsDao
 {
@@ -15,6 +16,12 @@ class EsDao
 
     protected $config;
 
+    /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+
     // Logically separated instance for heimdall
     protected $esHeimdall;
 
@@ -23,6 +30,8 @@ class EsDao
         $this->app = App::getFacadeRoot();
 
         $this->config = $this->app['config'];
+
+        $this->trace = $this->app['trace'];
 
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
@@ -55,6 +64,8 @@ class EsDao
 
     public function delete(array $params)
     {
+        $this->trace->info(TraceCode::ES_DELETE_QUERY, ['params' => $params]);
+
         $this->es->delete($params);
     }
 
@@ -87,6 +98,8 @@ class EsDao
                 'mappings' => $mappings
             ]
         ];
+
+        $this->trace->info(TraceCode::ES_INDEX_CREATE, ['params' => $params]);
 
         return $this->es->createIndex($params);
     }
@@ -252,7 +265,7 @@ class EsDao
             $results = [];
         }
 
-        $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
 
         $formattedResults = $this->formatAuditLogResults($results);
 

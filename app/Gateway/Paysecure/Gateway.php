@@ -213,7 +213,9 @@ class Gateway extends Base\Gateway
             );
         }
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment->toArray());
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -433,16 +435,44 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
+        $attributes = [];
+
+        // Sample response content:
+        // {
+        //
+        //    "status":"success",
+        //    "errorcode":"00",
+        //    "errormsg":"",
+        //    "history":
+        //    {
+        //        "transaction":
+        //        {
+        //            "status":"I",
+        //            "tran_id":"200000000000000000000999999999",
+        //            "apprcode":"",
+        //            "datetime":"09/17/2019 21:02:28",
+        //            "amount":"100"
+        //        }
+        //    }
+        //
+        //}
+
         // If gateway payment does not contain apprcode and if apprcode
         // is present in verify response, update it.
         if ((empty($gatewayPayment[Entity::APPRCODE]) === true) and
             (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]) === false)
         )
         {
-            $attributes = [
-                Entity::APPRCODE => $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]
-            ];
+            $attributes[Entity::APPRCODE] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE];
+        }
 
+        if (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === false)
+        {
+            $attributes[Entity::STATUS] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS];
+        }
+
+        if (empty($attributes) === false)
+        {
             $gatewayPayment->fill($attributes);
 
             $this->repo->saveOrFail($gatewayPayment);
@@ -579,5 +609,14 @@ class Gateway extends Base\Gateway
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
         return constant($urlClass . '::' .strtoupper($this->mode));
+    }
+
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer['acquirer'] = [
+            Payment\Entity::REFERENCE2 => $gatewayPayment[Entity::APPRCODE],
+        ];
+
+        return $acquirer;
     }
 }

@@ -48,6 +48,8 @@ class Type
 
     const SUBMERCHANT_ASSIGN        = 'submerchant_assign';
 
+    const PRICING_RULE              = 'pricing_rule';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -99,6 +101,7 @@ class Type
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
         self::MPAN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -113,8 +116,8 @@ class Type
      * @var array
      */
     public static $retryInProcessingBatchTypes = [
-        // 2 hours gap for Recon batches
-        self::RECONCILIATION    => 7200,
+        // 1 hour gap for Recon batches
+        self::RECONCILIATION    => 3600,
     ];
 
     /**
@@ -159,6 +162,7 @@ class Type
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
         self::MPAN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -195,6 +199,9 @@ class Type
         self::AUTH_LINK,
         self::VIRTUAL_BANK_ACCOUNT,
         self::ENTITY_MAPPING,
+        self::LINKED_ACCOUNT,
+        self::LINKED_ACCOUNT_REVERSAL,
+        self::INSTANT_ACTIVATION,
     ];
 
     /**
@@ -216,7 +223,9 @@ class Type
     public static $batchTypeMigrating = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::SUBMERCHANT_ASSIGN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -227,7 +236,9 @@ class Type
     public static $batchTypeMigrationCompleted = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::IIN_NPCI_RUPAY,
+        self::PRICING_RULE,
     ];
 
     public static function exists(string $type)

@@ -16,6 +16,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -40,6 +41,7 @@ class Merchant
     protected $logging;
     protected $mode;
     protected $env;
+    protected $merchantSettleToPartner;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -48,7 +50,11 @@ class Merchant
 
     protected $app;
 
-    public function __construct($merchant, $channel, $repo = null, $logging = false)
+    public function __construct($merchant,
+                                $channel,
+                                $repo = null,
+                                $logging = false,
+                                array $merchantSettleToPartner = [])
     {
         $this->app = App::getFacadeRoot();
 
@@ -62,8 +68,10 @@ class Merchant
 
         $this->trace = $this->app['trace'];
 
-        // Get merchant bank account
-        $this->attachMerchantBankAccount();
+        $this->merchantSettleToPartner = $merchantSettleToPartner;
+
+        // Get settlement bank account
+        $this->attachSettlementBankAccount();
 
         $this->logging = $logging;
 
@@ -96,15 +104,16 @@ class Merchant
         $tax,
         $setlTime,
         array $setlDetailAmounts,
-        array $merchantSettleToPartner): Entity
+        array $merchantSettleToPartner,
+        Balance\Entity $balance): Entity
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
-        $this->fee = $fee;
-        $this->txns = $txns;
+        $this->fee    = $fee;
+        $this->txns   = $txns;
 
-        $this->tax = $tax;
-        $this->setlTime = $setlTime;
+        $this->tax               = $tax;
+        $this->setlTime          = $setlTime;
         $this->setlDetailAmounts = $setlDetailAmounts;
 
         $this->setlDetails = new Base\PublicCollection;
@@ -114,10 +123,10 @@ class Merchant
             $startTime = microtime(true);
         }
 
-        $this->repo->transaction(function() use ($merchantSettleToPartner)
+        $this->repo->transaction(function() use ($merchantSettleToPartner, $balance)
         {
             //create new settlement entity
-            $this->newSettlementEntity($merchantSettleToPartner);
+            $this->newSettlementEntity($merchantSettleToPartner, $balance);
 
             // Create Settlement Details entity
             $this->createSettlementDetailsEntities();
@@ -156,11 +165,20 @@ class Merchant
         });
     }
 
-    public function createSettlementAttempt($merchantSettleToPartner) : FundTransferAttempt\Entity
+    public function createSettlementAttempt($merchantSettleToPartner, $params = []) : FundTransferAttempt\Entity
     {
         assert($this->setl->hasTransaction(), true);
 
-        $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+        $initiateAt = null;
+
+        if(isset($params['initiate_at']) === true)
+        {
+            $initiateAt = $params['initiate_at'];
+        }
+        else
+        {
+            $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+        }
 
         $this->createSettlementAttemptEntity($initiateAt, $merchantSettleToPartner);
 
@@ -224,10 +242,12 @@ class Merchant
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
                 case Transaction\Type::DISPUTE:
+                case Transaction\Type::FUND_ACCOUNT_VALIDATION:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 
                 case Transaction\Type::ADJUSTMENT:
+                case Transaction\Type::COMMISSION:
                     $details[$componentType]['amount'] += $txn->getCredit();
                     $details[$componentType]['amount'] -= $txn->getDebit();
                     break;
@@ -317,7 +337,7 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function newSettlementEntity($merchantSettleToPartner)
+    protected function newSettlementEntity($merchantSettleToPartner, Balance\Entity $balance)
     {
         $setl = (new Settlement\Entity)->generateId();
 
@@ -332,6 +352,8 @@ class Merchant
         $setl = $setl->build($input);
 
         $setl->merchant()->associate($this->merchant);
+
+        $setl->balance()->associate($balance);
 
         $mid = $this->merchant->getId();
 
@@ -411,6 +433,7 @@ class Merchant
     {
 
         $customProperties = [
+            'merchant_id'           => $this->merchant->getId(),
             'channel'               => $this->channel,
             'settlement_id'         => $this->setl->getId(),
             'transaction_count'     => $this->txns ? $this->txns->count() : 0,
@@ -528,7 +551,6 @@ class Merchant
 
         $fundTransferAttempt->source()->associate($source);
 
-
         $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
 
         $values = [
@@ -579,12 +601,15 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachMerchantBankAccount(): BankAccount\Entity
+    protected function attachSettlementBankAccount(): BankAccount\Entity
     {
         $mode = $this->ba->getMode();
 
+        $mid = $this->merchant->getId();
+
         if (($mode === Mode::TEST) and
-            ($this->merchant->bankAccount === null))
+            ($this->merchant->bankAccount === null) and
+            (isset($this->merchantSettleToPartner[$mid]) === false))
         {
             $ba = $this->attachTestBank($this->merchant);
         }
@@ -592,10 +617,18 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if ($ba === null)
+            if ($ba === null and isset($this->merchantSettleToPartner[$mid]) === false)
             {
                 throw new Exception\LogicException(
-                    'Merchant bank account not found');
+                    'Settling bank account not found');
+            }
+            else
+            {
+                if(isset($this->merchantSettleToPartner[$mid]) === true)
+                {
+                    $partnerBankAccountId = $this->merchantSettleToPartner[$mid];
+                    $ba = $this->repo->bank_account->getBankAccountById($partnerBankAccountId);
+                }
             }
         }
 

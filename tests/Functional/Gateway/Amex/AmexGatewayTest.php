@@ -113,6 +113,27 @@ class AmexGatewayTest extends TestCase
         $this->verifyPayment($payment['id']);
     }
 
+    public function testPaymentVerify3DSFailed()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if($action === 'verify')
+            {
+                $content['vpc_3DSenrolled'] = 'C';
+                $content['vpc_3DSstatus'] = 'N';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $payment = $this->doAuthAndCapturePayment($this->payment);
+
+            $this->verifyPayment($payment['id']);
+        });
+    }
+
     public function testAmexCardWhenNotEnabled()
     {
         $this->ba->publicLiveAuth();

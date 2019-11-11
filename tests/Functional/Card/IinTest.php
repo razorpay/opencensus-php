@@ -109,6 +109,13 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchServiceIinUpdate()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPaymentFlows()
     {
         $this->testAddIin();
@@ -124,7 +131,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless', 'charge_at_will']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'charge_at_will']);
 
         $this->startTest();
     }
@@ -149,8 +156,6 @@ class IinTest extends TestCase
         ];
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
-
-        $this->fixtures->merchant->addFeatures(['headless']);
 
         $response = $this->startTest();
 
@@ -250,7 +255,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -269,7 +274,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -447,7 +452,7 @@ class IinTest extends TestCase
                     'type'           => 'credit',
                     'country'        => 'IN',
                     'issuer'         => 'HDFC',
-                    'issuer_name'    => 'HDFC',
+                    'issuer_name'    => 'HDFC Bank',
                     'emi'            => true,
                     'message_type'   => 'SMS',
                     'recurring'      => false,

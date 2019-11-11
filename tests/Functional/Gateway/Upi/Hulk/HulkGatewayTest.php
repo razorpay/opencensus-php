@@ -17,6 +17,8 @@ class HulkGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/HulkGatewayTestData.php';
 
         parent::setUp();

@@ -12,6 +12,8 @@ class DiagClient extends EventTrackerClient
     use Traits\OrderEvent;
     use Traits\PaymentEvent;
     use Traits\SettlementEvent;
+    use Traits\OnBoardingEvent;
+    use Traits\PaymentPageEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event, array $properties)
     {

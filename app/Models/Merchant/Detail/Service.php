@@ -9,16 +9,19 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Coupon;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
@@ -59,6 +62,8 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
+
         return $response;
     }
 
@@ -67,6 +72,8 @@ class Service extends Base\Service
         $response = $this->saveMerchantDetails($input);
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null,$input);
 
         return $response;
     }
@@ -133,9 +140,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        $merchantDetails = $this->core()->patchMerchantDetails($merchantDetails, $input);
+        $merchantDetails = $this->core()->patchMerchantDetails($this->merchant, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -237,43 +242,73 @@ class Service extends Base\Service
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $merchantDetails->edit($input);
+        $response = $this->repo->transaction(function() use ( $merchant, $merchantDetails, $input, $core)
+        {
+            $previousFileStoreId = [];
 
-        $params = $this->storeActivationFile($merchantDetails, $input);
+            //find the previous document uploaded with same document type and delete them from Merchant_documents table
+            foreach ($input as $key => $value)
+            {
+                $fileStoreId = $merchantDetails->getAttribute($key);
 
-        $merchantDetails->fill($params);
+                if(isset($fileStoreId) === true)
+                {
+                    $previousFileStoreId[] = $fileStoreId;
+                }
+            }
 
-        $response = $core->createResponse($merchantDetails);
+            (new DocumentCore)->deleteDocuments($previousFileStoreId);
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+            $merchantDetails->edit($input);
 
-        $this->repo->saveOrFail($merchantDetails);
+            $documentMapping = $this->storeActivationFile($merchantDetails, $input);
 
-        // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
-        $response = $core->createResponse($merchantDetails);
+            $merchantDetails->fill($documentMapping);
+
+            $response = $core->createResponse($merchantDetails);
+
+            $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+            //
+            // for backward compatibility we are storing file in both merchant detail and merchant_document table
+            //
+            (new DocumentCore)->storeInMerchantDocument($merchant, $documentMapping);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
+            $response = $core->createResponse($merchantDetails);
+
+            return $response;
+        }
+        );
+
+        $this->sendDocumentUploadEvent($merchant, $input);
 
         return $response;
     }
 
     public function storeActivationFile(
-        Entity $merchantDetails,
+        Base\PublicEntity $publicEntity,
         array $input)
     {
         $params = [];
 
-        $merchant = $merchantDetails->merchant;
+        $merchant = $publicEntity->merchant;
 
         foreach ($input as $key => $value)
         {
-            $merchantDetails->getValidator()->validateFileType($value);
+            (new Validator)->validateFileType($value);
 
             // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
             $partial = substr(bin2hex(random_bytes(6)), 0, 5);
 
-            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
+            $fileIdentifier = pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $fileIdentifier;
 
             $file = $this->createFile(
-                $merchantDetails,
+                $publicEntity,
                 $value->extension(),
                 $value,
                 $fileName,
@@ -323,7 +358,22 @@ class Service extends Base\Service
         return $merchantDetailCore->createResponse($merchantDetails);
     }
 
-    protected function createFile(Entity $merchantDetail,
+    public function editMerchantDetailsByPartner($merchantId, array $input)
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    protected function createFile(Base\PublicEntity $merchantDetail,
                                     string $extension,
                                     $file,
                                     string $fileName,
@@ -351,7 +401,7 @@ class Service extends Base\Service
         return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    public function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $core = new FileStore\Core;
 
@@ -433,11 +483,24 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchantDetails = $merchant->merchantDetail;
-
         $admin = $this->app['basicauth']->getAdmin();
 
-        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function updateActivationStatusByPartner($merchantId, array $input): array
+    {
+        $partnerMerchant = $this->app['basicauth']->getMerchant();
+
+        (new Account\Core)->validatePartnerAccess($partnerMerchant, $merchantId);
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->core()->updateActivationStatus($merchant, $input, $partnerMerchant);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -506,7 +569,7 @@ class Service extends Base\Service
      */
     public function getNeedsClarificationReasons()
     {
-        $needsClarificationReasonsMap = NeedsClarificationReasons::REASON_MAPPING;
+        $needsClarificationReasonsMap = NeedsClarificationMetaData::REASON_MAPPING;
         $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
         $response                     = [];
 
@@ -519,7 +582,7 @@ class Service extends Base\Service
                 $reasonList[$reason] = $reasonDetails[$reason];
             }
 
-            $response[$field] = [NeedsClarificationReasons::REASONS => $reasonList];
+            $response[$field] = [NeedsClarificationMetaData::REASONS => $reasonList];
         }
 
         return $response;
@@ -780,6 +843,17 @@ class Service extends Base\Service
         return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
     }
 
+    public function merchantsMtuUpdate(array $input)
+    {
+        (new Validator)->validateInput('merchant_mtu_update', $input);
+
+        $merchants = $input[Entity::MERCHANTS];
+
+        $value = $input[Entity::LIVE_TRANSACTION_DONE];
+
+        return (new Core)->merchantsMtuUpdate($merchants, $value);
+    }
+
     public function getMerchantActivationReviewers()
     {
         $orgId = $this->auth->getOrgId();
@@ -806,5 +880,25 @@ class Service extends Base\Service
         }
 
         return multidim_array_unique($admins, Admin\Admin\Entity::ID);
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     */
+    protected function sendDocumentUploadEvent(Merchant\Entity $merchant, array $input): void
+    {
+        $eventAttributes = [];
+
+        foreach ($input as $key => $value)
+        {
+            if (Document\Type::isValid($key) === true)
+            {
+                $eventAttributes[Constants::DOCUMENT_TYPE] = $key;
+                break;
+            }
+        }
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
 }

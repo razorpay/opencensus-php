@@ -4,17 +4,17 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 
@@ -72,14 +72,15 @@ class ViewDataSerializer extends Base\Core
     public function serializeForHosted(): array
     {
         return [
-            'environment'       => $this->app->environment(),
-            'is_test_mode'      => ($this->mode === Mode::TEST),
-            'invoicejs_url'     => Config::get('app.cdn_v1_url') . '/invoice.js',
-            'key_id'            => $this->getMerchantKeyId(),
-            'merchant'          => $this->serializeMerchantForHosted(),
-            'invoice'           => $this->serializeInvoiceForHosted(),
-            'custom_labels'     => $this->getCustomLabelValues(),
-            'checkout_options'  => $this->getCheckoutOptions(),
+            'environment'      => $this->app->environment(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'invoicejs_url'    => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'           => $this->getMerchantKeyId(),
+            'merchant'         => $this->serializeMerchantForHosted(),
+            'invoice'          => $this->serializeInvoiceForHosted(),
+            'custom_labels'    => $this->getCustomLabelValues(),
+            'checkout_options' => $this->getCheckoutOptions(),
+            'view_preferences' => $this->getViewPreferences(),
         ];
     }
 
@@ -93,6 +94,19 @@ class ViewDataSerializer extends Base\Core
     }
 
     /**
+     * Get view preferences for this Merchant
+     * @return array
+     */
+    protected function getViewPreferences(): array
+    {
+        $hideIssuedTo = $this->merchant->isFeatureEnabled(Feature\Constants::PL_HIDE_ISSUED_TO);
+
+        $viewPreferences = ['hide_issued_to' => $hideIssuedTo];
+
+        return $viewPreferences;
+    }
+
+    /**
      * Get custom view label values, if defined for the merchant
      * @return array
      */
@@ -101,8 +115,7 @@ class ViewDataSerializer extends Base\Core
         $merchantId = $this->merchant->getId();
 
         $customLabels = [
-            'hide_issued_to' => false,
-            'expire_by'      => 'EXPIRES ON',
+            'expire_by' => 'EXPIRES ON',
         ];
 
         switch ($merchantId)
@@ -114,7 +127,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number'           => 'CREDIT CARD NUMBER',
                     'first_payment_min_amount' => 'MAD', // I.e. Minimum Amount Due.
-                    'hide_issued_to'           => true,
                 ];
 
                 break;
@@ -126,7 +138,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number'           => 'LOAN ACCOUNT NUMBER',
                     'first_payment_min_amount' => 'EMI AMOUNT',
-                    'hide_issued_to'           => true,
                 ];
 
                 break;
@@ -136,7 +147,6 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number' => 'CREDIT CARD NUMBER',
                     'amount'         => 'TAD', // I.e. Total Amount Due.
-                    'hide_issued_to' => true,
                 ];
 
                 break;
@@ -185,6 +195,14 @@ class ViewDataSerializer extends Base\Core
                     'first_payment_min_amount'  =>  'EMI AMOUNT',
                 ];
 
+                break;
+
+            case Preferences::MID_BOB:
+                $customLabels = [
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'expire_by'      => 'PAYMENT LINK EXPIRES ON',
+                    'receipt_number' => 'CREDIT CARD NUMBER',
+                ];
                 break;
 
         }
@@ -418,7 +436,16 @@ class ViewDataSerializer extends Base\Core
     {
         if ($this->invoice->isOfSubscription() === true)
         {
-            $serialized[E::SUBSCRIPTION] = $this->invoice->subscription->toArrayHosted();
+            $subscriptionId = $this->invoice->getSubscriptionId();
+
+            $subscription = $this->app['module']
+                                 ->subscription
+                                 ->fetchSubscriptionForInvoice(
+                                     Subscription\Entity::getSignedId($subscriptionId),
+                                     $this->merchant
+                                 );
+
+            $serialized[E::SUBSCRIPTION] = $subscription;
         }
     }
 

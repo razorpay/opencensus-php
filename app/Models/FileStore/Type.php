@@ -120,12 +120,14 @@ class Type
 
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
-    const BATCH_INPUT                       = 'batch_input';
-    const BATCH_OUTPUT                      = 'batch_output';
-    const BATCH_VALIDATED                   = 'batch_validated';
-    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
-    const BATCH_SERVICE                     = 'batch_service';
-    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
+    const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
+
+    const BATCH_INPUT                           = 'batch_input';
+    const BATCH_OUTPUT                          = 'batch_output';
+    const BATCH_VALIDATED                       = 'batch_validated';
+    const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
+    const BATCH_SERVICE                         = 'batch_service';
+    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
 
@@ -154,6 +156,8 @@ class Type
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
+    const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -163,6 +167,13 @@ class Type
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
+    const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
+    const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_PASSPORT_BACK                = 'passport_back';
+    const MERCHANT_PASSPORT_FRONT               = 'passport_front';
+    const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
+    const MERCHANT_VOTER_ID_BACK                = 'voter_id_back';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -170,11 +181,14 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const ANALYTICS_BUCKET_CONFIG               = 'analytics_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+
+    const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -196,6 +210,7 @@ class Type
             self::ENACH_NPCI_NB_DEBIT,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
@@ -261,6 +276,8 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
             self::ISG_SUMMARY,
+            self::FIRST_DATA_PARES_FILE,
+            self::BULK_DISPUTES_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -268,7 +285,7 @@ class Type
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -281,6 +298,13 @@ class Type
             self::MERCHANT_PROMOTER_ADDRESS_URL,
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
+            self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_AADHAR_FRONT,
+            self::MERCHANT_AADHAR_BACK,
+            self::MERCHANT_PASSPORT_FRONT,
+            self::MERCHANT_PASSPORT_BACK,
+            self::MERCHANT_VOTER_ID_FRONT,
+            self::MERCHANT_VOTER_ID_BACK,
         ],
 
         Constants\Entity::INVOICE => [
@@ -306,7 +330,7 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
-        self::RECONCILIATION_BATCH_OUTPUT,
+        self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,
@@ -343,6 +367,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
@@ -384,6 +409,8 @@ class Type
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
+        self::FIRST_DATA_PARES_FILE,
+        self::BULK_DISPUTES_FILE,
     ];
 
     /**
@@ -463,15 +490,19 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::FIRST_DATA_PARES_FILE,
         ],
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
+        ],
+
+        self::ANALYTICS_BUCKET_CONFIG => [
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_DEFAULT
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BEAM_BUCKET_CONFIG => [

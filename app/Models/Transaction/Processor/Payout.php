@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
+use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\ReconciledType;
@@ -82,7 +85,7 @@ class Payout extends Base
 
     public function updateTransaction()
     {
-        $settledAt = $reconciledAt = time();
+        $settledAt = $reconciledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->txn->setSettledAt($settledAt);
 

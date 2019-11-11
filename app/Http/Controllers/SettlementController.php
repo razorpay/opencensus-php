@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 
 class SettlementController extends Controller
@@ -13,6 +14,24 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->initiateSettlements($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementBucketBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_BUCKET)->fillSettlementBucket($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteCompletedBucketEntries()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_BUCKET)->deleteCompletedBucketEntries($input);
 
         return ApiResponse::json($data);
     }
@@ -253,6 +272,30 @@ class SettlementController extends Controller
     public function getSettlementAmount()
     {
         $data = $this->service()->nextSettlementAmount();
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * gets the settlement process details
+     * contains intermediate cached data of settlement
+     */
+    public function getSettlementProcess()
+    {
+        $data = $this->service()->getProcessDetails();
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * delete all process data
+     * this is required to clear the config if terminated unexpectedly
+     */
+    public function resetSettlementProcess()
+    {
+        $this->service()->resetProcessDetails();
+
+        $data = $this->service()->getProcessDetails();
 
         return ApiResponse::json($data);
     }

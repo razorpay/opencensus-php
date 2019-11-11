@@ -9,12 +9,7 @@
 
 <div>
     <p>
-        @isset($source['created_at_formatted'])
-           INR {{ amount_format_IN($txn['amount']) }} has been credited to your RazorpayX account {{ mask_except_last4($balance['account_number']) }} from Bank Account {{ $source['payer_account'] }} on {{ $source['created_at_formatted'] }}.
-        @endisset
-        @if(!isset($source['created_at_formatted']))
-           INR {{ amount_format_IN($txn['amount']) }} has been credited to your RazorpayX account {{ mask_except_last4($balance['account_number']) }} from Bank Account {{ $source['payer_account'] }} on {{ epoch_format($source['created_at']) }}.
-        @endif
+        INR {{ amount_format_IN($txn['amount']) }} has been credited to your RazorpayX account {{ mask_except_last4($balance['account_number']) }} from Bank Account {{ $source['payer_account'] }} on {{ $source['created_at_formatted'] }}.
     </p>
     <p>
         Your transaction reference number is {{ $source['utr'] }}.

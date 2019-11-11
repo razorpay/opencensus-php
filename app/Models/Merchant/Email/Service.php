@@ -77,4 +77,29 @@ class Service extends Base\Service
 
         return (array) $deleteOperation;
     }
+
+    /**
+     * Fetch emails aggregated on merchant level by types
+     *
+     * @param array $merchantIds
+     * @param array $types
+     * @return array
+     */
+    public function fetchEmailByMerchantIdsAndTypes(array $merchantIds, array $types): array
+    {
+        $emailsArray = $this->core()->fetchEmailByMerchantIdsAndTypes($merchantIds, $types);
+
+        // For aggregating mails on merchant level by type and exploding emails
+        $merchantEmailMap = [];
+
+        foreach ($emailsArray as $emailArray)
+        {
+            $merchantEmailMap[$emailArray[Entity::MERCHANT_ID]][$emailArray[Entity::TYPE]] = array_map(
+                'trim',
+                explode(',', $emailArray['email'])
+            );
+        }
+
+        return $merchantEmailMap;
+    }
 }

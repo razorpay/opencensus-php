@@ -4,9 +4,26 @@ namespace RZP\Error;
 
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
 {
+     /** Error codes in which data needs to persist in response
+     * Data will be persisted in the error response in non-debug also
+     */
+    const ERROR_CODES_PERSIST_DATA_IN_RESPONSE = [
+        ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+        ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+        ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+        ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+        ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+        ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+    ];
+
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const INTERNAL_ERROR_DESC   = 'internal_error_desc';
     const PUBLIC_ERROR_CODE     = 'code';
@@ -93,17 +110,15 @@ class Error extends Support\Fluent
         return in_array($internalCode, $terminalRelatedErrors, true);
     }
 
-    public function isGatewayDowntimeError()
+    public static function isGatewayDowntimeErrorCode(string $errorCode)
     {
-        $gatewayDowntimeRelatedErrors = [
-            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-            ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        ];
+        // NoError is set when there is no error code and that is a success case.
+        if ($errorCode === DowntimeMetric::NoError)
+        {
+            return false;
+        }
 
-        $internalCode = $this->getInternalErrorCode();
-
-        return in_array($internalCode, $gatewayDowntimeRelatedErrors, true);
+        return (in_array(Error::getErrorClassFromErrorCode($errorCode), [ErrorClass::GATEWAY, ErrorClass::SERVER]) === true);
     }
 
     protected function setInternalErrorCode($code)
@@ -115,7 +130,7 @@ class Error extends Support\Fluent
 
     protected function setClass($code)
     {
-        $class = $this->getErrorClassFromErrorCode($code);
+        $class = self::getErrorClassFromErrorCode($code);
 
         self::checkErrorClass($class);
 
@@ -324,6 +339,8 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
+        $error = $this->checkAndAddDataToErrorResp($error);
+
         $action = $this->getAttribute(self::ACTION);
 
         if ($action !== null)
@@ -333,8 +350,6 @@ class Error extends Support\Fluent
 
         if ($field !== null)
             $error[self::FIELD] = $field;
-
-        $attributes = $this->getAttribute(self::DATA);
 
         $array = ['error' => $error];
 
@@ -348,9 +363,27 @@ class Error extends Support\Fluent
         return $array;
     }
 
+    /** We generally don't send the data in the error response. However, in few situations
+    * need to send extra data in case of error. So, adding that extra data to the error
+    * response. Ref: https://razorpay.slack.com/archives/C6QPQKVLZ/p1568717119044100
+    */
+    public function checkAndAddDataToErrorResp(array $error)
+    {
+        $dataAttributes = $this->getAttribute(self::DATA);
+
+        if ((is_null($dataAttributes) === false) and
+            (in_array($this->getInternalErrorCode(), self::ERROR_CODES_PERSIST_DATA_IN_RESPONSE) === true))
+        {
+            $error = array_merge($error, ['_internal' => $dataAttributes]);
+        }
+
+        return $error;
+    }
+
     public function toDebugArray()
     {
-        return array('error' => $this->getAttributes());
+        $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
+        return array('error' => $error);
     }
 
     protected function getDescriptionFromErrorCode($code)
@@ -395,7 +428,7 @@ class Error extends Support\Fluent
         return null;
     }
 
-    protected function getErrorClassFromErrorCode($code)
+    public static function getErrorClassFromErrorCode($code)
     {
         $pos = strpos($code, '_');
 

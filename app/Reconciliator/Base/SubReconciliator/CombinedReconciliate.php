@@ -70,7 +70,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                         'message'       => $message,
-                        'row_details'   => $row,
                         'extra_details' => $extraDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -167,7 +166,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                             [
                                 'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                                 'message'       => $message,
-                                'row_details'   => $row,
                                 'extra_details' => $extraDetails,
                                 'gateway'       => $this->gateway
                             ]);
@@ -239,6 +237,12 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     ]
                 );
             }
+
+            //
+            // setting the variable null here to free up the memory associated with this variable.
+            // not calling unset as that only removes the reference and the GC will free up the memory.
+            //
+            $fileContents = null;
 
             $this->setReconOutputData($batchProcessor);
 

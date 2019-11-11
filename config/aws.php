@@ -25,6 +25,7 @@ return [
     ],
 
     'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
+    'analytics_bucket'      => env('AWS_S3_ANALYTICS_BUCKET'),
     'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),
     'h2h_bucket'            => env('AWS_H2H_BUCKET'),
     'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
@@ -40,6 +41,7 @@ return [
     'sns_target_arn'        => [
         'sms'               => env('AWS_RAVEN_TARGET_ARN'),
         'lumberjack'        => env('AWS_LUMBERJACK_TARGET_ARN'),
+        'stage-doppler'     => env('AWS_DOPPLER_TARGET_ARN'),
     ],
 
     'mock' => env('AWS_S3_MOCK')

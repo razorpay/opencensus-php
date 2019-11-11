@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\RecurringType;
 
 class Sbi extends Base
 {
     protected $gateway = Gateway::NETBANKING_SBI;
+
+    protected $useSpreadSheetLibrary = false;
 
     protected function getDataFromRow(array & $row): array
     {
@@ -47,5 +52,44 @@ class Sbi extends Base
     protected function getNumRowsToSkipExcelFile()
     {
         return 5;
+    }
+
+    protected function getStartRowExcelFiles()
+    {
+        return 6;
+    }
+
+    protected function getPayment(array $content)
+    {
+        $paymentId = $content[self::PAYMENT_ID];
+
+        // Get payment
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $tokenAccNo = ltrim($token->getAccountNumber(), '0');
+
+        $fileAccountNumber = ltrim($content[self::ACCOUNT_NUMBER], '0');
+
+        if (($payment->isCreated() === false) or
+            ($payment->getGateway() !== $this->gateway) or
+            ($payment->getRecurringType() !== RecurringType::AUTO) or
+            ($token === null) or
+            ($tokenAccNo !== $fileAccountNumber))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
+                null,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'account_number' => $fileAccountNumber,
+                    'token_id' => $token->getId(),
+                    'gateway' => 'netbanking_sbi'
+                ]);
+        }
+
+        return $payment;
     }
 }

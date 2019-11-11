@@ -320,10 +320,22 @@ class Entity extends Base\Entity
     public function getAppFullName()
     {
         $map = [
-            'com.razorpay' => 'Bajaj Application'
+            'com.razorpay'                      => 'Bajaj Finserv MARKETS',
+            'in.bajajfinservmarkets.app'        => 'Bajaj Finserv MARKETS',
+            'in.bajajfinservmarkets.app.uat'    => 'Bajaj Finserv MARKETS',
         ];
 
         return array_get($map, $this->getAppName(), 'Razorpay Mobile Application');
+    }
+
+    public function getSmsSender()
+    {
+        $map = [
+            'com.razorpay'                  => 'BAJAJP',
+            'in.bajajfinservmarkets.app'    => 'BAJAJP',
+        ];
+
+        return array_get($map, $this->getAppName(), 'RZRPAY');
     }
 
     /**

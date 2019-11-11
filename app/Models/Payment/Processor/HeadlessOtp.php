@@ -20,11 +20,12 @@ trait HeadlessOtp
     ];
 
     public static $elfErrorCodeMapping = [
-        OtpElf::CARD_BLOCKED      => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
-        OtpElf::NETWORK_ERROR     => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        OtpElf::BANK_ERROR        => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
-        OtpElf::PAYMENT_TIMEOUT   => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
-        OtpElf::BANK_SERVICE_DOWN => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::CARD_BLOCKED         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::NETWORK_ERROR        => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        OtpElf::BANK_ERROR           => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::PAYMENT_TIMEOUT      => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::NO_AVAILABLE_ACTIONS => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
     ];
 
     protected function getNextOtpAction(array $actions)
@@ -62,7 +63,7 @@ trait HeadlessOtp
 
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true))
+            ($this->merchant->isHeadlessEnabled() === true))
         {
             $iin = $payment->card->iinRelation;
 
@@ -136,12 +137,32 @@ trait HeadlessOtp
             'type'    => $payment->card->getType()
         ];
 
+        $analytics = $payment->getMetadata('payment_analytics');
+
+        // For private auth we should always fetch it from payment analytics
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            if (empty($analytics['ip']) === true)
+            {
+                $analytics['ip'] = $this->app['request']->ip();
+            }
+
+            if (empty($analytics['user_agent']) === true)
+            {
+                $analytics['user_agent'] = $this->app['request']->header('User-Agent');
+            }
+        }
+
         $data = [
             'payment_id'  => $payment->getId(),
             'request'     => $request,
             'card'        => $card,
             'merchant_id' => $payment->getMerchantId(),
             'gateway'     => $payment->getGateway(),
+            'client'      => [
+                'ip' => $analytics['ip'],
+                'ua' => $analytics['user_agent'],
+            ]
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);
@@ -397,5 +418,19 @@ trait HeadlessOtp
         }
 
         return false;
+    }
+
+    protected function isHeadlessRetryableException($exception)
+    {
+        $internalErrorCode = $exception->getError()->getInternalErrorCode();
+
+        $errorCodes = array_values(self::$elfErrorCodeMapping);
+
+        if (in_array($internalErrorCode, $errorCodes, true) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

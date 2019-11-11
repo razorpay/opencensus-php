@@ -9,7 +9,14 @@ use RZP\Models\Card\IIN\MessageType;
 
 class NpciRupay extends Base
 {
+    const ROW                   = 'row';
+
     protected $row;
+
+    protected $rules = [
+        self::ROW           => 'required|string|max:62',
+        self::IDEMPOTENT_ID => 'sometimes|string|max:20'
+    ];
 
     const IIN_TYPE_MAPPING = [
         '01' => Type::DEBIT,
@@ -33,7 +40,17 @@ class NpciRupay extends Base
     {
         parent::preprocess($entry);
 
-        $this->row = array_values($entry)[0];
+        $this->row = $entry[self::ROW];
+    }
+
+    public function shouldSkip()
+    {
+        if (substr($this->row, 0, 3) === 'TRL')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function getIin()

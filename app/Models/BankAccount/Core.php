@@ -6,15 +6,16 @@ use Mail;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Jobs\FTS\CreateAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Document\Core as DocumentCore;
 
 class Core extends Base\Core
 {
@@ -186,6 +187,26 @@ class Core extends Base\Core
 
                 if ($merchantDetails !== null)
                 {
+                    //
+                    // for backward compatibility in case of re upload delete entries
+                    // from merchant documents and merchant_detail also
+                    //
+                    if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
+                    {
+                        $previousAddressProof = $merchantDetails->getAttribute(Detail\Entity::ADDRESS_PROOF_URL);
+
+                        if (isset($previousAddressProof) === true)
+                        {
+                            (new DocumentCore)->deleteDocuments([$previousAddressProof]);
+                        }
+
+                        $params = [
+                            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL],
+                        ];
+
+                        (new DocumentCore)->storeInMerchantDocument($merchant, $params);
+                    }
+
                     // Doing a fill only for ADDRESS_PROOF_URL because Details\Validator
                     // expects it to be a file object where as we're passing a File ID.
                     $merchantDetails->fill($input);
@@ -284,8 +305,6 @@ class Core extends Base\Core
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
-        $this->callFtsCreateAccount($ba);
-
         return $ba;
     }
 
@@ -310,8 +329,6 @@ class Core extends Base\Core
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
-        $this->callFtsCreateAccount($ba);
-
         return $ba;
     }
 
@@ -320,6 +337,19 @@ class Core extends Base\Core
         $ba = new BankAccount\Entity;
 
         $ba->setConnection($mode);
+
+        // if live mode and input does not already contain notes, copy test mode notes
+        if (($mode === Mode::LIVE) and (empty($input[Entity::NOTES]) === true))
+        {
+            $testBankAccount = $this->repo->bank_account->getBankAccountOnConnection($merchant, Mode::TEST);
+
+            if (empty($testBankAccount) === false)
+            {
+                $notes = $testBankAccount->getNotes();
+
+                $input[Entity::NOTES] = $notes->toArray();
+            }
+        }
 
         $ba = $ba->build($input);
 
@@ -410,67 +440,17 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function callFtsCreateAccount(Entity $ba)
-    {
-        try
-        {
-            $id = $ba->getId();
-
-            $sourceType = $ba->getType();
-
-            if (in_array($sourceType, [Constants\Entity::MERCHANT, Constants\Entity::CONTACT], true) === false)
-            {
-                return;
-            }
-
-            //TODO:: Enable it once fts is live
-            /*switch ($sourceType)
-            {
-                case Constants\Entity::MERCHANT:
-                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
-
-                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::SETTLEMENT);
-
-                    break;
-
-                case Constants\Entity::CONTACT:
-                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
-
-                    break;
-            }
-
-            $this->trace->info(
-                TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,
-                [
-                    'source_type'     => $sourceType,
-                    'bank_account_id' => $id,
-                ]);
-            */
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTS_CREATE_ACCOUNT_DISPATCH_FAILED,
-                [
-                    'source_type'     => $ba->getType(),
-                    'bank_account_id' => $ba->getId(),
-                ]);
-        }
-    }
-
     public function getBankAccountEntity(string $id)
     {
         return $this->repo->bank_account->findOrFailPublic($id);
     }
 
-    public function updateBankAccountWithFtsId(Entity $entity, $ftsFundAccountId)
-    {
-        $entity->setFtsFundAccountId($ftsFundAccountId);
-
-        $this->repo->saveOrFail($entity);
-    }
+//    public function updateBankAccountWithFtsId(Entity $entity, $ftsFundAccountId)
+//    {
+//        $entity->setFtsFundAccountId($ftsFundAccountId);
+//
+//        $this->repo->saveOrFail($entity);
+//    }
 
     public function getBankAccountByFtsFundAccountId($ftsFundAccountId)
     {

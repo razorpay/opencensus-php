@@ -11,6 +11,7 @@ class Type
     const EMANDATE_REGISTER = 'emandate_register';
     const EMANDATE_DEBIT    = 'emandate_debit';
     const REFUND_FAILED     = 'refund_failed';
+    const PARESDATA         = 'paresdata';
 
     // Sub types for gateway_file entity
     const TPV           = 'tpv';

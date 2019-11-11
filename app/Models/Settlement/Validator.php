@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
@@ -83,12 +84,24 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementInitiateRules = [
+        'merchant_ids'        => 'sometimes|array',
+        'merchant_ids.*'      => 'sometimes|string|size:14',
         'use_queue'           => 'sometimes|boolean',
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
         'logging'             => 'sometimes|boolean',
-        'ignore_time_limit'   => 'sometimes|string'
+        'debug'               => 'sometimes|boolean',
+        'ignore_time_limit'   => 'sometimes|string',
+        'balance_type'        => 'sometimes|string|custom',
+        'created_at'          => 'sometimes|epoch',
+        'settled_at'          => 'sometimes|epoch',
+        'initiated_at'        => 'required_with:settled_at,created_at|epoch',
     ];
+
+    protected function validateBalanceType($attribute, $value)
+    {
+        Balance\Type::validateSettlementBalanceType($value);
+    }
 
     protected function validateFailedResponse($attribute, $value)
     {

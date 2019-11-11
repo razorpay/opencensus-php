@@ -278,6 +278,51 @@ class VirtualAccountTest extends TestCase
         $this->assertNotEquals($originalVirtualAccountId, $virtualAccount['id']);
     }
 
+    public function testFetchOrderWithVirtualAccountExpand()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->createVirtualAccountForOrder($order);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+        $this->assertEquals('order', $virtualAccount['entity_type']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], 'order_' . $order['id']);
+        $this->assertEquals($response['virtual_account']['id'], $virtualAccount['id']);
+        $this->assertEquals($response['virtual_account']['receivers'][0]['id'], $bankAccount['id']);
+    }
+
+    public function testFetchOrderWithoutVirtualAccountExpand()
+    {
+        $order = $this->fixtures->create('order');
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $this->startTest();
+    }
+
+    public function testFetchOrderWithVirtualAccountNoExpand()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->createVirtualAccountForOrder($order);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountForOrderCustomerFeeBearer()
     {
         $order = $this->fixtures->create('order');
@@ -293,6 +338,19 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals($order->getAmount(), $virtualAccount['amount_expected']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+    }
+
+    public function testCreateVirtualAccountForOrderWithCloseBy()
+    {
+        $order = $this->fixtures->create('order');
+
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+
+        $response = $this->createVirtualAccountForOrder($order, ['close_by' => $closeTimeStamp]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals($response['close_by'], $virtualAccount['close_by']);
     }
 
     public function testCreateVirtualAccountInvalidReceiverTypes()
@@ -1419,13 +1477,13 @@ class VirtualAccountTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
-        $this->assertEquals($merchant->bankingBalance->getId(), $virtualAccount->getBalanceId());
+        $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
         $this->assertNotEmpty($virtualAccount->bankAccount);
         $this->assertStringStartsWith('222444', $virtualAccount->bankAccount->getAccountNumber());
         // Assert that creation of first bank account updates balance's account number attribute.
         $this->assertEquals(
             $virtualAccount->bankAccount->getAccountNumber(),
-            $merchant->bankingBalance->getAccountNumber());
+            $merchant->sharedBankingBalance->getAccountNumber());
     }
 
     public function testUpdateOnVirtualAccountOfBankingBalanceFails()

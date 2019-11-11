@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 use App;
 
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
@@ -22,18 +21,11 @@ class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    /** @var $downtimeMetric DowntimeMetric */
-    protected $downtimeMetric;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/HitachiGatewayTestData.php';
 
         parent::setUp();
-
-        $app = App::getFacadeRoot();
-
-        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->otpFlow = false;
 
@@ -86,9 +78,9 @@ class HitachiGatewayTest extends TestCase
 
     public function testSuccessful13DigitPanForEnrolledCard()
     {
-        $this->assertEquals([],$this->downtimeMetric->getMetrics());
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
 
-        $payment = $this->defaultAuthPayment([
+        $this->defaultAuthPayment([
             'card' => [
                 'number'       => CardNumber::VALID_ENROLL_NUMBER,
                 'expiry_month' => '02',
@@ -97,6 +89,14 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+
+        $this->assertEquals([
+            $this->gateway => [
+                DowntimeMetric::Success    => [
+                    DowntimeMetric::NoError      => 1,
+                ]
+            ]
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -125,19 +125,6 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
-
-        $this->assertEquals([
-            $this->gateway => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 2,
-                ]
-            ],
-            'mpi_blade' => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
-                ]
-            ]
-        ], $this->downtimeMetric->getMetrics());
     }
 
     public function testRecurringPayment()
@@ -506,9 +493,17 @@ class HitachiGatewayTest extends TestCase
 
     public function testCaptureFailure()
     {
-        $this->assertEquals([],$this->downtimeMetric->getMetrics());
+        $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
 
         $this->doAuthPayment($this->payment);
+
+        $this->assertEquals([
+            'hitachi' => [
+                'SUCCESS'    => [
+                    'NO_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -523,25 +518,17 @@ class HitachiGatewayTest extends TestCase
                 $this->capturePayment($payment['public_id'], $payment['amount']);
             });
 
+        $this->assertEquals([
+            'hitachi' => [
+                'FAILURE'    => [
+                    'GATEWAY_ERROR_UNKNOWN_ERROR'      => 1,
+                ],
+            ],
+        ], $this->app['gateway_downtime_metric']->getMetrics());
+
         $hitachi = $this->getLastEntity('hitachi', true);
 
         $this->assertTestResponse($hitachi, 'testCaptureFailureEntity');
-
-        $this->assertEquals([
-            'hitachi' => [
-                'SUCCESS'    => [
-                    'NO_ERROR'      => 1,
-                ],
-                'FAILURE'   => [
-                    'GATEWAY_ERROR_UNKNOWN_ERROR'  => 1,
-                ],
-            ],
-            'mpi_blade' => [
-                'SUCCESS'    => [
-                    'NO_ERROR'      => 1,
-                ]
-            ]
-        ],$this->downtimeMetric->getMetrics());
     }
 
     public function testPaymentRefund()
@@ -836,8 +823,6 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthenticationGatewayExpressPayDisabled()
     {
-        $this->fixtures->merchant->addFeatures('headless');
-
         $this->fixtures->iin->create([
             'iin'     => '556763',
             'country' => 'IN',
@@ -1270,5 +1255,98 @@ class HitachiGatewayTest extends TestCase
         {
             self::assertNotNull($e);
         }
+    }
+
+    public function testBqrPaymentAndRefund()
+    {
+        $request = $this->testData['testBqrPayment'];
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $content = $this->getMockServer()->getBharatQrCallback($qrCodeId);
+
+        // This method tests if the request that contains plain text as input is getting handled properly
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        // Notes from the VA are copied over to the payment
+        $this->assertArrayHasKey('notes', $payment);
+        $this->assertArrayHasKey('key', $payment['notes']);
+        $this->assertEquals('value', $payment['notes']['key']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+    }
+
+    protected function createVirtualAccount()
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

@@ -31,18 +31,11 @@ class PaysecureGatewayTest extends TestCase
 
     protected $terminal;
 
-    /** @var $downtimeMetric DowntimeMetric */
-    protected $downtimeMetric;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
 
         parent::setUp();
-
-        $app = App::getFacadeRoot();
-
-        $this->downtimeMetric = $app['gateway_downtime_metric'];
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
@@ -141,6 +134,21 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertNotEmpty($payment['reference2']);
+
+        // Assert card vault exist in card entity
+        $card = $this->getDbLastEntityToArray('card');
+        $this->assertNotEmpty($card['vault_token']);
+
+        // Assert card vault token does not added in cache
+        $paymentId = substr($authResponse['razorpay_payment_id'], 4);
+        $cacheKey = sprintf(Gateway::CACHE_KEY, $paymentId);
+
+        $cacheDriver = $this->app['config']->get('cache.secure_default');
+        $redisValue = $this->app['cache']->store($cacheDriver)->get($cacheKey);
+        $this->assertEmpty($redisValue);
 
         return $authResponse;
     }
@@ -436,14 +444,11 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertEquals([
             $this->gateway => [
-                DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
-                ],
                 DowntimeMetric::Failure   => [
                     'SERVER_ERROR_INVALID_ARGUMENT' => 1,
                 ]
             ],
-        ], $this->downtimeMetric->getMetrics());
+        ], $this->app['gateway_downtime_metric']->getMetrics());
     }
 
     public function testAuthorizeFailureWithNoErrorMessage()
@@ -770,6 +775,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $verify
         );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals('AZ', $gatewayPayment['status']);
     }
 
     // For terminal mode "purchase", capture would not be called

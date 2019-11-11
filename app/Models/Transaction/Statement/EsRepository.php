@@ -12,6 +12,7 @@ class EsRepository extends Transaction\EsRepository
      * {@inheritDoc}
      */
     protected $queryFields = [
+        Entity::ID,
         Entity::UTR,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,

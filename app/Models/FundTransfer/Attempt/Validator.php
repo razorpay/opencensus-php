@@ -10,6 +10,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Services\FTS\Base as FtsService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
@@ -24,10 +25,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $initiateFundTransferRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|custom',
-        Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
+        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
+        Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
-        'failed_response'       => 'sometimes|int'
+        'failed_response'       => 'sometimes|int',
+        'ignore_time_limit'     => 'sometimes|string',
     ];
 
     protected static $ftaControlRules = [
@@ -47,19 +49,29 @@ class Validator extends Base\Validator
     ];
 
     protected static $ftsStatusUpdateRules = [
-        Entity::UTR            => 'sometimes|string',
-        Entity::STATUS         => 'required|string|custom',
-        Entity::REMARKS        => 'sometimes|string',
-        Entity::NARRATION      => 'sometimes|string',
-        Entity::DATE_TIME      => 'sometimes|string',
-        Entity::SOURCE_ID      => 'required_with:source_type|string',
-        Entity::SOURCE_TYPE    => 'required_with:source_id|string',
-        Entity::FAILURE_REASON => 'sometimes|string',
-        Entity::MODE           => 'sometimes|string',
-        'bank_processed_time'  => 'sometimes|string',
-        'fund_transfer_id'     => 'required|int',
-        'extra_info'           => 'sometimes',
-        'extra_info.*'         => 'sometimes',
+        Entity::UTR              => 'sometimes|string',
+        Entity::STATUS           => 'required|string|custom',
+        Entity::REMARKS          => 'sometimes|string',
+        Entity::NARRATION        => 'sometimes|string',
+        Entity::DATE_TIME        => 'sometimes|string',
+        Entity::SOURCE_ID        => 'required_with:source_type|string',
+        Entity::SOURCE_TYPE      => 'required_with:source_id|string',
+        Entity::FAILURE_REASON   => 'sometimes|string',
+        Entity::MODE             => 'sometimes|string',
+        'bank_processed_time'    => 'sometimes|string',
+        'fund_transfer_id'       => 'required|int',
+        'extra_info'             => 'sometimes',
+        'extra_info.*'           => 'sometimes',
+        Entity::BANK_STATUS_CODE => 'sometimes|string',
+    ];
+
+    protected  static $ftsFundTransferRules = [
+        Entity::ID => 'required_without_all:from,to,limit,size|public_id|size:18',
+        'from'     => 'required_with:to,limit|epoch|date_format:U',
+        'to'       => 'required_with:from,limit|epoch|date_format:U',
+        'limit'    => 'required_with:from,to|int',
+        'size'     => 'required_without_all:from,to,limit,id|filled|int',
+        'action'   => 'required|filled|custom'
     ];
 
     protected function validateStatus($attribute, $value)
@@ -103,18 +115,26 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
     public function validateModeIfSet()
     {
         /** @var Entity $attempt */
         $attempt = $this->entity;
 
+        $destinationType = $attempt->getDestinationType();
+
+        $mode = $attempt->getMode();
+
+        $channel = $attempt->getChannel();
+
         if ($attempt->hasMode() === false)
         {
             return;
         }
-
-        $mode = $attempt->getMode();
-        $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
 
@@ -122,25 +142,12 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $attempt->card->getIssuer();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer);
+            $networkCode = $attempt->card->getNetworkCode();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
-        $channel = $attempt->getChannel();
-
-        // If we want to support for other channels, we need to make changes in the channel specific classes
-        // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
-        if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
-            (in_array($channel, Channel::getPreferredModeSupportedChannels(), true) === false))
-        {
-            throw new LogicException(
-                'Mode preference not allowed',
-                ErrorCode::SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED,
-                [
-                    'attempt_id'    => $attempt->getId(),
-                    'mode'          => $mode,
-                    'channel'       => $channel,
-                ]);
-        }
+        Channel::validateChannelAndMode($channel, $destinationType, $mode);
 
         $amount = $attempt->source->getAmount();
 
@@ -171,6 +178,19 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid purpose passed to FTA',
+                $attribute,
+                [
+                    'value' => $value
+                ]);
+        }
+    }
+
+    protected function validateAction($attribute, $value)
+    {
+        if (FtsService::isValidFtsAction($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid action for FTS',
                 $attribute,
                 [
                     'value' => $value

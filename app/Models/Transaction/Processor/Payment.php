@@ -2,15 +2,11 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use Carbon\Carbon;
 use RZP\Diag\EventCode;
-use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
@@ -34,6 +30,15 @@ class Payment extends Base
 
         $settledAt = $this->getSettledAtTimestamp();
 
+        $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
+
+        $this->raiseTxnSettledAtUpdateEvent($this->txn);
+    }
+
+    private function raiseTxnSettledAtUpdateEvent(Transaction\Entity $txn)
+    {
         $type = $this->txn->getType();
 
         $entity_id = $this->txn->getEntityId();
@@ -42,11 +47,14 @@ class Payment extends Base
 
         $transactionId = $this->txn->getId();
 
+        $merchantId = $this->txn->getMerchantId();
+
         $customProperties = [
             'type'              => $type,
             'entity_id'         => $entity_id,
             'channel'           => $channel,
             'transaction_id'    => $transactionId,
+            'merchant_id'       => $merchantId,
         ];
 
         $this->app['diag']->trackSettlementEvent(
@@ -54,8 +62,6 @@ class Payment extends Base
             null,
             null,
             $customProperties);
-
-        $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
     }
 
     private function checkAndSetTxnReconciliation()

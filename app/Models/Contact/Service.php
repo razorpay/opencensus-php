@@ -51,7 +51,9 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $contact =  $this->repo->contact->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        $merchant = $this->merchant;
+
+        $contact = $this->core->fetch($id, $merchant, $input);
 
         return $contact->toArrayPublic();
     }

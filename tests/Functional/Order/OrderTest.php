@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
@@ -43,6 +45,50 @@ class OrderTest extends TestCase
 
     public function testCreateOrder()
     {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessLessThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
         $order = $this->startTest();
 
         return $order;
@@ -243,6 +289,35 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testEmandateRegistrationOrderWithTokenMaxAmount()
+    {
+        $this->mockCardVault();
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $order = $this->startTest();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB', 0);
+
+        $payment['order_id'] = $order['id'];
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2500, $token['max_amount']);
+    }
+
     public function testEmandateRegistrationOrderWithZeroRupeeAndTokenWithFirstAmount()
     {
         $order = $this->startTest();
@@ -338,6 +413,17 @@ class OrderTest extends TestCase
         $this-> assertEquals($payments['count'], 0);
     }
 
+    public function testFetchOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('virtual_account', $response);
+    }
+
     public function testRetrieveOrderWithReceipt()
     {
         $order = $this->fixtures->create('order');
@@ -379,7 +465,6 @@ class OrderTest extends TestCase
 
         $this->assertEquals($order['items'][0]['id'], $order['items'][0]['payments']['items'][0]['order_id']);
     }
-
 
     public function testStatusAfterPayment()
     {

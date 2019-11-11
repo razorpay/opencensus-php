@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use \RZP\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -43,6 +44,9 @@ class FundAccountValidationTest extends TestCase
     {
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
         $response = $this->startTest();
@@ -55,6 +59,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
         $this->assertEquals('10000000000000', $fav['balance_id']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
@@ -82,6 +87,34 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1000000, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
+
+        // utr should be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        return $response;
+    }
+
+    public function testCreateValidationWithExposeUTRNotSetInResponse()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // remove features is not required as by default feature would be disabled
+        //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $response = $this->startTest();
+
+        $fav      = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['registered_name']);
+
+        // utr should not be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['account_status','registered_name']);
+
         return $response;
     }
 
@@ -450,5 +483,38 @@ class FundAccountValidationTest extends TestCase
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
+    }
+
+    public function testFundAccValidationWithAccountNumberAndVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        // get database entities
+        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav['balance_id']);
+        $this->assertEquals('10000000000000', $fav['merchant_id']);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
+
+        // no transaction should be created for 0 fee
+        $this->assertNotEquals($fav['id'], $txn['entity_id']);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
     }
 }

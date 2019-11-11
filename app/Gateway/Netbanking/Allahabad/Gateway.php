@@ -92,9 +92,35 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        // If callback status was a success, we verify the payment immediately
+        $this->verifyCallback($gatewayPayment, $input);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback($gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -172,6 +198,11 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getVerifyRequestData($verify);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $request['options']['verify'] = $this->getCaInfo();
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -375,6 +406,13 @@ class Gateway extends Base\Gateway
         assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }
 

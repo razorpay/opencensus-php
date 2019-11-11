@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use RZP\Constants;
 use Illuminate\Http\UploadedFile;
-
 use RZP\Services\HubspotClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -14,9 +14,9 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 
 /**
  * @group dns-sensitive
@@ -43,7 +43,15 @@ class MerchantDetailTest extends TestCase
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant['id'], $user->getId());
+        $this->fixtures->on('test')->create('merchant_document', [
+            'id'            => 'DM6dWd1tzUfbnM',
+            'merchant_id'   => $merchant['id'],
+            'document_type' => 'Address_proof_url',
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+            'entity_type'   => 'merchant'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
 
         $this->startTest();
     }
@@ -81,6 +89,14 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+
+        // assert legal entity data
+        $legalEntity = $this->getDbLastEntity('legal_entity');
+
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 8931);
+        $this->assertEquals('financial_services', $legalEntity->getBusinessCategory());
+        $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
     public function testSubmitWithInvalidFields()
@@ -352,6 +368,42 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchValidStatusChange()
+    {
+        $attributes = [
+            'submitted' => true,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
+        $merchant       = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchInvalidStatusChange()
+    {
+        $attributes = [
+            'bank_details_verification_status' => 'verified',
+            'submitted'                        => true,
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
+        $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
         $admin = $this->ba->getAdmin();
@@ -675,6 +727,38 @@ class MerchantDetailTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateSuccess()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('1', $testMerchant->merchantDetail->getLiveTransactionDone());
+
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('1', $liveMerchant->merchantDetail->getLiveTransactionDone());
+    }
+
+    public function testMerchantsMtuUpdateIdFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateLiveTransactionFailure()
+    {
+        $this->ba->appAuth();
+
         $this->startTest();
     }
 
@@ -793,7 +877,8 @@ class MerchantDetailTest extends TestCase
      */
     public function testUnsupportedActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
 
@@ -858,5 +943,131 @@ class MerchantDetailTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
         $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
+    }
+
+    public function testFileUploadSyncInDetailAndDocumentTable()
+    {
+        $merchantId = "1cXSLlUU8V9sXl";
+
+        $documentType = MerchantDetails::PROMOTER_PAN_URL;
+
+        $fileStoreId = 'DG7xtA4fkoXNaa';
+
+        $merchantDetail = $this->fixtures->create(Constants\Entity::MERCHANT_DETAIL, [
+            MerchantDetails::MERCHANT_ID => $merchantId,
+            $documentType                => $fileStoreId,
+        ]);
+
+        $this->fixtures->create(Constants\Entity::MERCHANT_DOCUMENT, [
+            MerchantDocuments::MERCHANT_ID   => $merchantId,
+            MerchantDocuments::DOCUMENT_TYPE => $documentType,
+            MerchantDocuments::FILE_STORE_ID => $fileStoreId,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->updateUploadDocumentData(__FUNCTION__, $documentType);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntityById(Constants\Entity::MERCHANT_DETAIL, $merchantId);
+
+        $this->assertNotEquals($merchantDetail->getAttribute($documentType), $fileStoreId);
+
+        $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $fileStoreId]);
+
+        $this->assertNULL($document);
+
+        $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $merchantDetail->getAttribute($documentType)]);
+
+        $this->assertNotNull($document);
+    }
+
+    public function updateUploadDocumentData(string $callee, string $documentType)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files'][$documentType] = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+    }
+
+    public function testUpdateKYCClarificationReason()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testUpdateKYCClarificationReasonWithFailure()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetails()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetailsWithFailure()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        unset($testData['kyc_clarification_reasons']['additional_details']);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testUpdateKycAdditionalDetailsWithInvalidField()
+    {
+        $testData = &$this->testData['testUpdateKycAdditionalDetailsData'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $testData);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
     }
 }

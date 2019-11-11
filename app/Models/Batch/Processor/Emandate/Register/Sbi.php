@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Gateway\Netbanking;
@@ -12,7 +14,9 @@ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Sbi extends Base
 {
-    const GATEWAY   = Gateway::NETBANKING_SBI;
+    const GATEWAY           = Gateway::NETBANKING_SBI;
+
+    protected $useSpreadSheetLibrary = false;
 
     protected $gatewayPaymentMapping = [
         self::TOKEN_STATUS     => NetbankingEntity::SI_STATUS,
@@ -30,11 +34,16 @@ class Sbi extends Base
 
         $status = $this->getTokenStatus($gatewayTokenStatus, $entry);
 
+        // the column names will be different based on file shared through portal and mail
+        $accountNumber = $entry[Batch\Header::SBI_EM_REGISTER_DEBIT_ACCOUNT_NUMBER] ??
+                         $entry[Batch\Header::SBI_EM_REGISTER_CUSTOMER_ACCOUNT_NUMBER];
+
         return [
             self::TOKEN_STATUS     => $status,
             self::GATEWAY_TOKEN    => $gatewayToken,
             self::TOKEN_ERROR_CODE => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
             self::PAYMENT_ID       => $paymentId,
+            self::ACCOUNT_NUMBER   => $accountNumber
         ];
     }
 
@@ -57,9 +66,9 @@ class Sbi extends Base
         else
         {
             return Netbanking\Sbi\Emandate\ErrorCode::getRegisterErrorCode(
-                                    $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
-                                    $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
-                                  );
+                $entry[Batch\Header::SBI_EM_REGISTER_STATUS_DESCRIPTION] ??
+                $entry[Batch\Header::SBI_EM_REGISTER_REJECT_REASON]
+            );
         }
     }
 
@@ -83,6 +92,12 @@ class Sbi extends Base
         return 5;
     }
 
+
+    protected function getStartRowExcelFiles()
+    {
+        return 6;
+    }
+
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
         if (isset($entries[0]) === false)
@@ -92,11 +107,11 @@ class Sbi extends Base
 
         if (array_key_exists(Batch\Header::SBI_EM_REGISTER_UMRN_REJECT_RILE, $entries[0]) === true)
         {
-            $fileType = 'success';
+            $fileType = 'reject';
         }
         else
         {
-            $fileType = 'rejected';
+            $fileType = 'success';
         }
 
         $headers = $headers[$fileType];
@@ -105,5 +120,39 @@ class Sbi extends Base
     protected function parseTextFile(string $file, string $delimiter = '~')
     {
         return parent::parseTextFile($file, ',');
+    }
+
+    protected function fetchPaymentEntity($data): Payment\Entity
+    {
+        $payment = $this->repo->payment->findOrFailPublic($data[self::PAYMENT_ID]);
+
+        $this->validateAccountNumber($payment, $data);
+
+        return $payment;
+    }
+
+    protected function validateAccountNumber($payment, $data)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $tokenAccNo = $token->getAccountNumber();
+
+        $fileAccNo  = $data[self::ACCOUNT_NUMBER];
+
+        $tokenAccNo = ltrim($tokenAccNo, '0');
+
+        $fileAccNo = ltrim($fileAccNo, '0');
+
+        if ($tokenAccNo !== $fileAccNo)
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH,
+                null,
+                null,
+                [
+                    'token_account_number' => $tokenAccNo,
+                    'file_account_number'  => $fileAccNo,
+                ]);
+        }
     }
 }

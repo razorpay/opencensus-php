@@ -5,12 +5,11 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use RZP\Constants\Mode as RZPMode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -21,7 +20,7 @@ class Sbin extends Base
 {
     use FileHandler;
 
-    const FILE_NAME              = 'SBI_REFUND';
+    const FILE_NAME              = 'RZPY_SBI_Refund';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::SBI_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_SBI;
@@ -29,7 +28,9 @@ class Sbin extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const BANK_CODE              = 'sbin';
-    const DATE_FORMAT            = 'dmy';
+    const DATE_FORMAT            = 'ymd';
+
+    const REFUND_CODE            = 20;
 
     protected $config;
 
@@ -42,13 +43,35 @@ class Sbin extends Base
         'Refund Amount',
     ];
 
+    // SBI netbanking works on a 8pm to 8pm cycle for refunds
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $begin = Carbon::createFromTimestamp($begin, Timezone::IST)
+                        ->subHours(4)
+                        ->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($end, Timezone::IST)
+                      ->subHours(4)
+                      ->getTimestamp();
+
+        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY
+        );
+
+        return $refunds;
+    }
+
     protected function formatDataForFile(array $data)
     {
-        $this->loadGatewayConfig();
-
         $content = [];
-
-        $srNo = 1;
 
         foreach ($data as $row)
         {
@@ -64,103 +87,30 @@ class Sbin extends Base
 
             $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
 
-            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
-                Action::AUTHORIZE);
+            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
 
             $content[] = [
-                'Tnx Code(99)'        => $srNo++,
+                'Tnx Code'            => self::REFUND_CODE,
                 'Txn Date(YYMMDD)'    => $date,
                 'Refund Date(YYMMDD)' => $refundDate,
-                'Ban REf No.'         => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
-                'Txn Amount'          => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
-                'Refund Amount'       => $row[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100,
+                'Ban Ref No.'         => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                'Txn Amount'          => $this->getFormattedAmount($row[ConstantsEntity::PAYMENT][RefundEntity::AMOUNT]),
+                'Refund Amount'       => $this->getFormattedAmount($row[ConstantsEntity::REFUND][RefundEntity::AMOUNT]),
             ];
         }
 
-        $initialLine = $this->getInitialLine();
-
-        $content = $this->getTextData($content, $initialLine);
-
-        return $content;
+        return $this->generateText($content,'|',true);
     }
 
-    protected function getTextData($data, $initialLine)
+    protected function getFormattedAmount($amount)
     {
-        $txt  = $this->generateText($data,'|',true);
-
-        $txt = $initialLine . $txt;
-
-        return $txt;
-    }
-
-    protected function getInitialLine()
-    {
-        $data = self::$headers;
-
-        $line = implode('|', $data) . "\r\n";
-
-        return $line;
+        return number_format($amount / 100, 2, '.', '');
     }
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         return self::FILE_NAME . '_' . $date;
-    }
-
-    protected function formatDataForMail(array $data)
-    {
-        $file = $this->gatewayFile
-            ->files()
-            ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-            ->first();
-
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-
-        $totalAmount = array_reduce(
-            $data,
-            function(int $carry, array $item)
-            {
-                $carry += $item[ConstantsEntity::REFUND][RefundEntity::AMOUNT];
-
-                return $carry;
-            },
-            0);
-
-        $totalAmount = $totalAmount / 100;
-
-        $totalAmount = number_format($totalAmount, 2, '.', '');
-
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        $mailData = [
-            'file_name'  => $file->getLocation(),
-            'signed_url' => $signedUrl,
-            'amount'     => $totalAmount,
-            'count'      => count($data),
-            'date'       => $today
-        ];
-
-        return $mailData;
-    }
-
-    protected function loadGatewayConfig()
-    {
-        $configGatewayStr = 'gateway.' . self::GATEWAY;
-
-        $this->config = $this->app['config']->get($configGatewayStr);
-    }
-
-    protected function getMerchantId($terminal): string
-    {
-        $merchantId = $this->config['test_merchant_id'];
-
-        if ($this->mode === RZPMode::LIVE)
-        {
-            $merchantId = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-        }
-
-        return $merchantId;
     }
 }

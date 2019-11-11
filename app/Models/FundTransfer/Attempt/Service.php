@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer\Mode;
 use Razorpay\Trace\Logger as Trace;
 use http\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt\Core;
@@ -18,6 +19,8 @@ class Service extends Base\Service
 {
     public function initiateFundTransfers(array $input, $channel = null)
     {
+        (new Validator)->validateInput('initiate_fund_transfer', $input);
+
         $this->trace->info(
             TraceCode::INITIATE_FUND_TRANSFER,
             [
@@ -25,12 +28,18 @@ class Service extends Base\Service
                 'channel'   => $channel
             ]);
 
-        if($input['purpose'] === Purpose::SETTLEMENT)
+        if(($input[Entity::PURPOSE] === Purpose::SETTLEMENT) and ($input[Entity::SOURCE_TYPE] === Type::SETTLEMENT))
         {
             $channelState = $this->getChannelState();
 
             if((isset($channelState[$channel]) === true) and $channelState[$channel] === Constants::DISABLE)
             {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_TRANSFER_DISABLED,
+                    [
+                        'channel' => $channel,
+                    ]);
+
                 return ['status' => 'failed'];
             }
         }
@@ -349,5 +358,15 @@ class Service extends Base\Service
         }
 
         return $values;
+    }
+
+    public function processFundTransfersUsingFts(array $input, string $channel)
+    {
+        return (new Initiator)->processFundTransfersUsingFts($input, $channel);
+    }
+
+    public function getSupportedModes(array $input)
+    {
+       return Mode::getSupportedModesMap();
     }
 }

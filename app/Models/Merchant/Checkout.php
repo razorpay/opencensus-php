@@ -13,6 +13,7 @@ use RZP\Models\Emi;
 use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Order;
+use RZP\Models\Contact;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -92,6 +93,10 @@ class Checkout
         $this->fillEnabledFeatures($merchant, $data);
 
         $this->checkAndFillPartnerUrl($merchant, $data);
+
+        $this->updateCurrencyMethodsIfApplicable($input, $merchant, $data);
+
+        $this->checkAndFillContactDetails($input, $merchant, $data);
 
         return $data;
     }
@@ -868,5 +873,43 @@ class Checkout
                 $data['features'][$feature] = true;
             }
         }
+    }
+
+    protected function updateCurrencyMethodsIfApplicable($input, $merchant, array & $data)
+    {
+        if ((isset($data['methods']['wallet']['paypal']) === true) and
+            ($data['methods']['wallet']['paypal'] === true))
+        {
+            try
+            {
+                $currency = isset($data['order']) ? $data['order']['currency'] : $input['currency'][0];
+
+                $isPaypalTerminalPresent = (new Methods\Core)->checkPaypalTerminalForCurrency($merchant, $currency);
+
+                if ($isPaypalTerminalPresent === false)
+                {
+                    unset($data['methods']['wallet']['paypal']);
+                }
+            }
+
+            catch (\Throwable $exception)
+            {
+                $this->trace->info(TraceCode::CHECKOUT_PREFERENCES_CURRENCY_ABSENT_EXCEPTION, $data);
+
+                unset($data['methods']['wallet']['paypal']);
+            }
+        }
+    }
+
+    protected function checkAndFillContactDetails($input, $merchant, array & $data)
+    {
+        if (isset($input['contact_id']) === false)
+        {
+            return;
+        }
+
+        $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant)->toArrayPublic();
+
+        $data['contact'] = $contact;
     }
 }

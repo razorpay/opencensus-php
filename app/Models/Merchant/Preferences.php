@@ -112,6 +112,7 @@ class Preferences
     const MID_RBL_RETAIL_ASSETS     = 'AtgdEIzM6qtWmS';
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
+    const MID_BOB                   = 'CxOgfvYhxGztjJ';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
@@ -138,6 +139,8 @@ class Preferences
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
     const MID_INVEZTA          = '8YQygO7pzP3Gut';
+
+    const MID_ONBOARDING_PENNY_TESTING = '100000Razorpay';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here

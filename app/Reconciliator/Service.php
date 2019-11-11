@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -62,7 +63,8 @@ class Service extends Base\Service
         catch (\Throwable $e)
         {
             if (($this->isManualRequest($input) === true) or
-                ($this->isLambdaRequest() === true))
+                ($this->isLambdaRequest() === true) or
+                ($this->isCrawlerRequest($input) === true))
             {
                 $this->trace->traceException(
                     $e, Trace::ERROR, TraceCode::RECON_ALERT);
@@ -364,6 +366,10 @@ class Service extends Base\Service
         {
             return RequestProcessor\Base::MANUAL;
         }
+        else if ($this->isCrawlerRequest($input))
+        {
+            return RequestProcessor\Base::CRAWLER;
+        }
         else if ($this->isLambdaRequest())
         {
             return RequestProcessor\Base::LAMBDA;
@@ -479,6 +485,17 @@ class Service extends Base\Service
         return false;
     }
 
+    protected function isCrawlerRequest(array $input): bool
+    {
+        if ((isset($input[RequestProcessor\Base::CRAWLER]) === true) and
+            ($input[RequestProcessor\Base::CRAWLER] === '1') and
+            ($this->auth->isCron() === true))
+        {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Checks if the request originated via an aws lambda trigger
      *
@@ -487,5 +504,23 @@ class Service extends Base\Service
     protected function isLambdaRequest(): bool
     {
         return ($this->auth->isLambda() === true);
+    }
+
+    public function getReconBatchesAndFiles($input)
+    {
+        $service = new Batch\Service;
+
+        $data  = $service->getReconBatchesWithFiles($input);
+
+        return $data;
+    }
+
+    public function getReconFilesCount($input)
+    {
+        $service = new Batch\Service;
+
+        $data  = $service->getReconFilesCount($input);
+
+        return $data;
     }
 }

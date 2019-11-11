@@ -40,7 +40,7 @@ class Cbi extends Base
         {
             $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('dmY');
 
-            $account_number = str_pad($row['gateway']['data']['account_number'], 17, "0", STR_PAD_LEFT);
+            $account_number = str_pad(substr($row['gateway']['data']['account_number'], 3), 17, "0", STR_PAD_LEFT);
 
             $narration_text = str_pad($row['merchant']->getFilteredDba(), 50, " ", STR_PAD_RIGHT);
 
@@ -86,36 +86,6 @@ class Cbi extends Base
         $dateTime = Carbon::now(Timezone::IST)->format('dmY');
 
         return static::FILE_NAME . $dateTime;
-    }
-
-    protected function formatDataForMail(array $data)
-    {
-
-        $file = $this->gatewayFile
-                     ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
-
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-
-        $totalAmount = array_reduce($data, function ($carry, $item)
-        {
-            $carry += ($item['refund']['amount'] / 100);
-
-            return $carry;
-        });
-
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        $mailData = [
-            'file_name'  => $file->getLocation(),
-            'signed_url' => $signedUrl,
-            'count'      => count($data),
-            'amount'     => number_format($totalAmount, 2, '.', ''),
-            'date'       => $today
-        ];
-
-        return $mailData;
     }
 
     public function generateData(PublicCollection $refunds)

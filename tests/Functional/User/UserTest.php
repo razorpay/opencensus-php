@@ -254,9 +254,53 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserAccessWithMappingForMultipleProducts()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingDataForPrimaryProduct = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $mappingDataForBankingProduct = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'admin',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingDataForPrimaryProduct);
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingDataForBankingProduct);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testFailedUserAccessAccrossProducts()
     {
-        // this should faild
+        // this should fail
         // since mapping is for one product
         // and request is coming for different product
         $user = $this->fixtures->create('user');
@@ -307,6 +351,38 @@ class UserTest extends TestCase
             'content'   => [
                 'merchant_id'   => $merchant->getId(),
             ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserAccessWithoutMerchantIdInRequest()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
             'server'     => [
                 'HTTP_X-Dashboard-User-Id'      => $user->getId(),
             ],
@@ -1307,6 +1383,15 @@ class UserTest extends TestCase
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
 
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSendOtpWithContact()
+    {
         $this->ba->proxyAuth();
 
         $response = $this->startTest();

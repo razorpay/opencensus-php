@@ -1447,6 +1447,43 @@ class Repository extends Base\Repository
         $query->select($this->getTableName() . '.*');
     }
 
+    /**
+     * Fetches payments for virtual account
+     *
+     * select * from `payments` inner join `virtual_accounts` on
+     * `payments`.`receiver_id` = `virtual_accounts`.`qr_code_id` or
+     * `payments`.`receiver_id` = `virtual_accounts`.`bank_account_id`
+     *  where `payments`.`merchant_id` = ? and `virtual_accounts`.`id` = ?;
+     *
+     * @todo : Join has to be added for VPA as well
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamVirtualAccountId($query, $params)
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+
+        $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+
+        $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
+
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
+
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                    {
+                        $join->on($paymentReceiverId, '=', $qrcodeId);
+                        $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                    })
+              ->where($virtualAccountIdCol, '=', $virtualAccountId);
+    }
+
     protected function joinQueryBankTransfer($query)
     {
         $joins = $query->getQuery()->joins;
@@ -1648,6 +1685,8 @@ class Repository extends Base\Repository
 
     public function findPaymentsWithCardVault(string $vault, int $limit)
     {
+        $window = 1200;
+
         $cardRepo = $this->repo->card;
 
         $cardTableName = $cardRepo->getTableName();
@@ -1658,7 +1697,7 @@ class Repository extends Base\Repository
 
         $paymentData = $this->dbColumn('*');
 
-        $timestamp = time() - Entity::PAYMENT_WINDOW;
+        $timestamp = time() - $window;
 
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
 

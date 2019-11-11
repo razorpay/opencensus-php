@@ -8,6 +8,8 @@ use RZP\Exception\GatewayErrorException;
 
 class RegistrationStatus
 {
+    // online flow. This does not indicate final registration status. That is provided by the registration
+    // response file
     const SUCCESS = 'true';
     const FAILURE = 'false';
 

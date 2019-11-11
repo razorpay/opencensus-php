@@ -212,6 +212,8 @@ class Gateway
 
     protected $wasGatewayHit = false;
 
+    protected $shouldMapLateAuthorized = false;
+
     /**
      * @var $downtimeMetric DowntimeMetric Singleton for storing count of gateway
      * requests data with success-failure count and error codes (if any)
@@ -283,28 +285,22 @@ class Gateway
 
             $previousExc = $exc->getPrevious();
 
-            if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                if (($previousExc instanceof \Requests_Exception) and
+            if (($previousExc instanceof \Requests_Exception) and
                     ($previousExc->getType() === 'curlerror'))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+            }
+            else
+            {
+                $excData = 'UKNOWN';
+
+                if($exc instanceof Exception\BaseException)
                 {
-                    $excData = curl_errno($previousExc->getData());
-
-                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
-
-                    $exc->isPropagatedException = true;
+                    $excData = $exc->getError()->getClass();
                 }
-                else
-                {
-                    $excData = 'UKNOWN';
-                    if($exc instanceof Exception\BaseException)
-                    {
-                        $excData = $exc->getError()->getClass();
-                    }
-                    $this->pushDimensions($action, $input, Metric::FAILED, $excData);
-
-                    $exc->isPropagatedException = true;
-                }
+                $this->pushDimensions($action, $input, Metric::FAILED, $excData);
             }
 
             throw $exc;
@@ -352,6 +348,20 @@ class Gateway
 
         $this->input = $input;
         $this->action = Action::OMNI_PAY;
+    }
+
+    public function createTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::CREATE_TERMINAL;
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::VERIFY_TERMINAL;
     }
 
     public function debit(array $input)
@@ -424,6 +434,12 @@ class Gateway
     {
         throw new Exception\LogicException(
             'Verify Refund is not implemented');
+    }
+
+    public function reconcile(array $input)
+    {
+        throw new Exception\LogicException(
+            'Reconcile is not implemented');
     }
 
     public function canTopup()
@@ -1042,6 +1058,20 @@ class Gateway
             ]);
     }
 
+    protected function traceGatewayTerminalOnboarding(
+        array $data,
+        $dataKey,
+        $input,
+        $traceCode)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                $dataKey     => $data,
+                'gateway'    => $input['gateway'],
+            ]);
+    }
+
     protected function traceGatewayPaymentResponseForMozart(
         $response,
         $input,
@@ -1576,6 +1606,12 @@ class Gateway
 
     protected function pushDimensions($action, $input, $status, $excData = null)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
@@ -1647,7 +1683,9 @@ class Gateway
 
     protected function getMozartApiUrl($input)
     {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $version = $this->getVersionForAction($input, $this->action);
 
@@ -1663,9 +1701,11 @@ class Gateway
     {
         $url = $this->getMozartApiUrl($input);
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password'; 
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         $input['terminal'] = $input['terminal']->toArrayWithPassword();

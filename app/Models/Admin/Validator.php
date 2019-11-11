@@ -62,11 +62,25 @@ class Validator extends Base\Validator
         ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
+        ConfigKey::CARD_PAYMENT_SERVICE_ENABLED       => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
+        ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
+        ConfigKey::FTS_PAYOUT_VPA                     => 'filled|string',
+        ConfigKey::FTS_PAYOUT_CARD                    => 'filled|string',
+        ConfigKey::FTS_PAYOUT_BANK_ACCOUNT            => 'filled|string',
+
+
+        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
+        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
+        ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
+        ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
+
+        ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
         ConfigKey::FTS_CHANNELS                     => 'filled|array',
+        ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
@@ -100,7 +114,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs,settlement_transaction_limit,'.ConfigKey::GATEWAY_UNPROCESSED_REFUNDS
+        'key'   => 'required'
     ];
 
     protected static $deleteConfigKeyRules = [

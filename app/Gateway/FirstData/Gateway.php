@@ -30,6 +30,8 @@ class Gateway extends Base\Gateway
     use Base\AuthorizeFailed;
     use Base\CardCacheTrait;
 
+    const CACHE_PREFIX = '{first_data}:';
+
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
@@ -45,6 +47,8 @@ class Gateway extends Base\Gateway
 
     const PRE_AUTH_TRANSACTION_TYPE  = 'PREAUTH';
     const SALE_TRANSACTION_TYPE      = 'SALE';
+
+    const PARES_DATA_CACHE_KEY       = self::CACHE_PREFIX . 'pares_';
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -237,27 +241,17 @@ class Gateway extends Base\Gateway
 
         if ($this->isS2sFlow($input['gateway']) === true)
         {
-            $mpiEntity = $this->app['repo']
-                              ->mpi
-                              ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
-
-            $authenticationGateway = Payment\Gateway::FIRST_DATA;
-
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                 $input['payment']['id'], Action::AUTHORIZE);
 
-            if ($mpiEntity !== null)
-            {
-                $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-            }
-
-            switch ($authenticationGateway)
+            switch ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY])
             {
                 case Payment\Gateway::MPI_BLADE:
                 case Payment\Gateway::MPI_ENSTAGE:
-                    $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+                    $authResponse = $this->callAuthenticationGateway($input,
+                                                        $input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY]);
 
-                    $authorizeRequest = $this->prepareAuthorizeRequestFromBladeResp($input, $authResponse, $mpiEntity);
+                    $authorizeRequest = $this->prepareAuthorizeRequestFromBladeResp($input, $authResponse);
 
                     $this->authorizeEnrolled($input, $gatewayPayment, $authorizeRequest);
 
@@ -307,7 +301,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function prepareAuthorizeRequestFromBladeResp($input, $authResponse, $mpiEntity)
+    protected function prepareAuthorizeRequestFromBladeResp($input, $authResponse)
     {
         $txnType = $this->getTransactionType($input);
 
@@ -2000,6 +1994,7 @@ class Gateway extends Base\Gateway
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
+        $this->scrubCardInfo($request['content']['v1:Transaction']['v1:CreditCardData']);
         $this->scrubCardInfo($request['content']);
 
         parent::traceGatewayPaymentRequest($request, $input, $traceCode);
@@ -2015,7 +2010,7 @@ class Gateway extends Base\Gateway
         );
     }
 
-    protected function traceGatewayEnrollRequest(
+    protected function traceGatewayRequest(
         array $request,
         array $input,
         $traceCode = TraceCode::GATEWAY_ENROLL_REQUEST)
@@ -2268,7 +2263,7 @@ class Gateway extends Base\Gateway
 
     protected function authorizeNotEnrolled(array $input, $authorizeRequest)
     {
-        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+        $this->traceGatewayRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
@@ -2283,7 +2278,7 @@ class Gateway extends Base\Gateway
 
     protected function authorizeEnrolled(array $input, $gatewayPayment, $authorizeRequest)
     {
-        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+        $this->traceGatewayRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
@@ -2498,7 +2493,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getEnrollRequest($input);
 
-        $this->traceGatewayEnrollRequest($request, $input);
+        $this->traceGatewayRequest($request, $input);
 
         $this->getCardCacheKey($input);
 

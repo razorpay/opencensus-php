@@ -29,7 +29,9 @@ class OrderController extends Controller
 
     public function fetchOrderById($id)
     {
-        $data = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $data = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($data);
     }
