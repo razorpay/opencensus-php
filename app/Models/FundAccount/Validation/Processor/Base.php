@@ -42,11 +42,7 @@ abstract class Base extends Core
 
     public abstract function validateRetry();
 
-    protected abstract function getAccount();
-
     public abstract function preProcessValidation();
-
-    public abstract function processValidation();
 
     public abstract function setDefaultValuesForValidation();
 
@@ -82,7 +78,7 @@ abstract class Base extends Core
         throw new Exception\LogicException('Not supported for source type: ' . json_encode($this->validation->getFundAccountType()));
     }
 
-    protected function markValidationAsCompleted(string $accountStatus, string $utr = null)
+    public function markValidationAsCompleted(string $accountStatus, string $utr = null)
     {
         $this->validation->setStatus(Status::COMPLETED);
 

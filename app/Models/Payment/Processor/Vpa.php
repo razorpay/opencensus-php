@@ -10,6 +10,13 @@ use Razorpay\Trace\Logger as Trace;
 
 trait Vpa
 {
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function validateVpa(array $input)
     {
         $action = Payment\Action::VALIDATE_VPA;

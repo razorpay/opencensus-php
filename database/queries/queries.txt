@@ -5491,3 +5491,9 @@ ALTER TABLE `p2p_concerns`
     ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
 
 -- P2P - Adding Indices
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN currency currency CHAR(3) NULL;
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN amount amount bigint NULL;
