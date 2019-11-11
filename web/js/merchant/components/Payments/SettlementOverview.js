@@ -1,7 +1,13 @@
+import { Link } from 'react-router-dom';
+
 function SettlementOverview(props) {
   return (
     <div>
-      <div>setl_7dqkj1nBSEZqo</div>
+      <div>
+        <Link to={`/settlements/setl_9ZZof5jzJkSE22`}>
+          <code>setl_9ZZof5jzJkSE22</code>
+        </Link>
+      </div>
       <div class="settlement-detail-row">
         <span>Settlement Amount</span>
         <span>10,745 INR</span>
