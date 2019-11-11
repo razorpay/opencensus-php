@@ -122,17 +122,26 @@ export default class ScheduledModal extends Component {
     )
       .then(() => {
         let updatedUser = new User(this.props.user);
-        updatedUser.fetch().then(res => {
-          this.props.updateSession({ user: res.data });
-          this.setState({
-            autoEnabled: true,
-            isLoading: false,
+        updatedUser
+          .fetch()
+          .then(res => {
+            this.props.updateSession({ user: res.data });
+            this.setState({
+              autoEnabled: true,
+              isLoading: false,
+            });
+            this.fireGAEvent({
+              eventAction: `ES Modal`,
+              eventLabel: `Scheduled ES Success | Enable Scheduled ES`,
+            });
+          })
+          .catch(() => {
+            this.props.showNotification({
+              type: 'error',
+              message: 'Error loading user profile',
+            });
+            this.props.closeModal();
           });
-          this.fireGAEvent({
-            eventAction: `ES Modal`,
-            eventLabel: `Scheduled ES Success | Enable Scheduled ES`,
-          });
-        });
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];
