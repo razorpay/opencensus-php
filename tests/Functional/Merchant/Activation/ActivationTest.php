@@ -575,7 +575,7 @@ class ActivationTest extends TestCase
 
     public function testKycUnregisteredCanSubmitWithDL()
     {
-        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT]);
+        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK]);
     }
 
     public function testKycUnregisteredCanSubmitWithVoterId()

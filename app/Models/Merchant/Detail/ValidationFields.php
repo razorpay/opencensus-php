@@ -60,7 +60,7 @@ class ValidationFields
             [Type::AADHAR_FRONT, Type::AADHAR_BACK],
             [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
             [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
-            [Type::DRIVER_LICENSE_FRONT],
+            [Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK],
         ]
     ];
 

@@ -11,6 +11,7 @@ class Type
     const AMFI_CERTIFICATE               = 'amfi_certificate';
     const PPI_LICENSE                    = 'ppi_license';
     const DRIVER_LICENSE_FRONT           = 'driver_license_front';
+    const DRIVER_LICENSE_BACK            = 'driver_license_back';
     const AADHAR_FRONT                   = 'aadhar_front';
     const AADHAR_BACK                    = 'aadhar_back';
     const PASSPORT_BACK                  = 'passport_back';
