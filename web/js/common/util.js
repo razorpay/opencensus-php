@@ -67,30 +67,6 @@ export const formatDate = value => {
   return date.format('Do MMM, YYYY hh:mm A');
 };
 
-export const removeFromArray = (array, index) => {
-  let newArray = array.slice();
-  newArray.splice(index, 1);
-  return newArray;
-};
-
-export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');
-
-/*
- * Check for pending workflow requests
- */
-export const isWorkflow = (response, history = null) => {
-  if (
-    typeof response.id !== 'undefined' &&
-    response.id.indexOf('w_action') === 0 &&
-    typeof response.workflow_id !== 'undefined'
-  ) {
-    const url = `/admin/requests/${response.id}`;
-    return (location.href = url);
-  } else {
-    return false;
-  }
-};
-
 export function classList(...args) {
   const classes = [];
 

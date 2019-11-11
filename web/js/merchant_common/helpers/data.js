@@ -1,5 +1,5 @@
 export const testMerchantId = '10000000000000';
-import { snakeToTitleCase } from './util';
+import { snakeToTitleCase } from 'common/util';
 
 export const activationDuration = '4-5 working days';
 

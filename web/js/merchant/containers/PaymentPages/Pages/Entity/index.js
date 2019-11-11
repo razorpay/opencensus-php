@@ -21,7 +21,7 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import NoEntityResultsFound from 'common/NoEntityResultsFound';
+import NoEntityResultsFound from 'rzp/ui/NoEntityResultsFound';
 
 import PaymentPagesV2Entity from './V2';
 import PaymentPagesV3Entity from './V3';

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import { prefixEntityValue } from 'common/data';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
 
 import Time from 'rzp/ui/Time';
 import TableBody from 'rzp/ui/TableBody';

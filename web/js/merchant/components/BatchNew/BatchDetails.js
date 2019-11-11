@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import Banner from 'rzp/ui/Banner';
 import Spinner from 'rzp/ui/Spinner';
-import NoEntityResultsFound from 'common/NoEntityResultsFound';
+import NoEntityResultsFound from 'rzp/ui/NoEntityResultsFound';
 
 export default function BatchDetails({ renderDetails, ...props }) {
   let { batch = {}, isLoading, onDownload, downloadReportText } = props;
