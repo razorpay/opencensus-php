@@ -11,7 +11,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import StatsInfo from 'ui/StatsTable';
+import StatsInfo from 'rzp/ui/StatsTable';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';

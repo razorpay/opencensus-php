@@ -3,7 +3,7 @@ import { methods, cardSteps, authTypes, authGateway } from 'common/data';
 import { prevent, classList } from 'common/util';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
-import CalendarPicker from 'ui/Calendar';
+import CalendarPicker from 'razorx/components/ui/Calendar';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();

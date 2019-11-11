@@ -6,8 +6,8 @@ import {
   notifySuccess,
   notifyError,
 } from 'common/modal';
-import Form from 'ui/Form';
-import Field, { TextAreaField } from 'ui/Field';
+import Form from 'razorx/components/ui/Form';
+import Field, { TextAreaField } from 'razorx/components/ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'razorx/JSONEdit';
 import EnumList from 'component/Input/EnumList';

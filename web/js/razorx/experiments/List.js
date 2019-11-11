@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 import Collection from 'model/collection';
 import { rexFetch } from 'razorx/fetch';
 import { observer } from 'mobx-react';
-import { PageTable } from 'ui/Table';
+import { PageTable } from 'razorx/components/ui/Table';
 import { formatDate } from 'common/util';
 
-import Form from 'ui/Form';
-import Field, { DateField, SelectField } from 'ui/Field';
+import Form from 'razorx/components/ui/Form';
+import Field, { DateField, SelectField } from 'razorx/components/ui/Field';
 
 import { statusPill } from 'razorx/data';
 import { AppStore } from 'razorx/store';

@@ -1,7 +1,6 @@
 import { notifyError } from 'common/modal';
-import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
-import { SwitchField } from 'ui/Field';
+import Form from 'razorx/components/ui/Form';
+import Field, { SelectField, SwitchField } from 'razorx/components/ui/Field';
 
 import { rexFetch } from 'razorx/fetch';
 import { AppStore } from 'razorx/store';

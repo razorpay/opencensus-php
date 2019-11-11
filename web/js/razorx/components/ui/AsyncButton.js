@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { serialize } from 'ui/Form';
+import { serialize } from 'razorx/components/ui/Form';
 import { confirm } from 'common/modal';
 import { prevent } from 'common/util';
 

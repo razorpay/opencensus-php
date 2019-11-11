@@ -2,7 +2,7 @@ import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import FeaturesModal from './Modal';
-import { SwitchField } from 'ui/Field';
+import { SwitchField } from 'razorx/components/ui/Field';
 import List from './List';
 import Entity from './Entity';
 

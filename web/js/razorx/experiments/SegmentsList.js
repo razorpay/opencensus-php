@@ -1,5 +1,5 @@
 import debounce from 'rzp/utils/debounce';
-import Field, { TextAreaField, SelectField } from 'ui/Field';
+import Field, { TextAreaField, SelectField } from 'razorx/components/ui/Field';
 import { notifyError } from 'common/modal';
 
 export default class extends React.Component {
