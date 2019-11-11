@@ -243,6 +243,7 @@ final class Route
         'get_merchant_partner_status'              => ['get',      'merchant/partner_status',                        'MerchantController@getMerchantPartnerStatus'                       ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         // TODO: Should be removed once the correction has run for all the merchant
         'merchant_invoice_correction'              => ['post',     'merchants/invoice/correction',                   'MerchantInvoiceController@createCorrectionInvoice'                 ],
@@ -530,6 +531,7 @@ final class Route
         'reports_transaction_dsp'                  => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
         'reports_monthly_invoice'                  => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
+        'reports_monthly_banking_invoice'          => ['post',     'reports/invoice/banking',                        'MerchantController@generateBankingInvoice'                         ],
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
@@ -1855,6 +1857,7 @@ final class Route
         'merchant_sub_create',
         'merchant_sub_send_password_link',
         'merchant_fetch_referrals',
+        'merchant_invoice_fetch_multiple',
         'webhook_fetch_events',
         'customer_delete',
         'device_verify_token',
@@ -2022,6 +2025,7 @@ final class Route
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
+        'reports_monthly_banking_invoice',
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_update_contact',
@@ -3007,6 +3011,7 @@ final class Route
         'recon_fetch_files_count'                   => '*',
         'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
+        'reports_monthly_banking_invoice'           => '*',
     ];
 
     public static $direct = [

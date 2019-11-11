@@ -2221,6 +2221,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
 
+    const MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST           = 'MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST';
+
+    const UFH_RESPONSE                                           = 'UFH_RESPONSE';
     const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
