@@ -193,16 +193,20 @@ class Service extends Base\Service
         return $tokenRegistration->toArrayAdmin();
     }
 
-    protected function sendNotification(string $id, string $medium): array
+    public function sendNotification(string $id, string $medium): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
             $id,
             $this->merchant,
             null,
             null,
-            null,
+            [],
             Constants\Entity::SUBSCRIPTION_REGISTRATION
         );
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $invoice->entity()->associate($subscriptionRegistration);
 
         $data = $this->core->sendNotification($invoice, $medium);
 
