@@ -2339,8 +2339,10 @@ class Entity extends Base\PublicEntity
 
     protected function fireEventWithMerchantPayload(string $event)
     {
+        $entity = clone $this;
+
         $eventPayload = [
-            ApiEventSubscriber::MAIN => $this,
+            ApiEventSubscriber::MAIN => $entity,
         ];
 
         $app = App::getFacadeRoot();
