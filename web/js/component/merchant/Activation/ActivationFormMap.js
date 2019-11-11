@@ -27,6 +27,7 @@ import {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 
 // This is as per the value saved in BE database
@@ -188,6 +189,20 @@ const businessModel = [
         }
 
         return this.options;
+      },
+      description: activation => {
+        if (hasSelectedBlacklistedCategory(activation)) {
+          return (
+            <div class="warning-svg red">
+              {WarningSvg()}
+              <span>
+                We do not have the support for your business category selected
+                as of now.
+              </span>
+            </div>
+          );
+        }
+        return '';
       },
       _when: activation => {
         let { state, props } = activation;
