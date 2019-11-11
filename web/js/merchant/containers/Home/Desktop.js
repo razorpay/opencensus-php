@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
@@ -8,6 +9,7 @@ import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
@@ -18,11 +20,14 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
+//import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
+import CreditPullAnnouncement from 'merchant/components/Announcements/CreditPull';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 
 import {
   trackPresetChange,
@@ -32,6 +37,7 @@ import {
   trackSettleNow,
 } from './ga';
 
+@withRouter
 @connect(state => ({ user: state.session.user, config: state.config }), {
   openModal,
 })
@@ -45,6 +51,27 @@ class AnalyticsDesktop extends Component {
       this
     );
   }
+
+  popupCredit = () => {
+    if (this.props.location.hash === '#creditscore') {
+      this.resetHash();
+      this.props.openModal({
+        component: <CreditPullModal fromWhere="Announcements" />,
+        size: 'regular',
+      });
+    }
+  };
+
+  componentDidUpdate() {
+    this.popupCredit();
+  }
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
+  };
 
   showOndemandSettlementForm() {
     trackSettleNow();
@@ -93,7 +120,6 @@ class AnalyticsDesktop extends Component {
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
-
     return (
       <div className="home-analytics-desktop">
         <div
@@ -108,6 +134,14 @@ class AnalyticsDesktop extends Component {
         >
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
+          {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
+
+          {user.isCreditPullEnabled && (
+            <ShowWhen myRole="owner">
+              <CreditPullAnnouncement />
+            </ShowWhen>
           )}
 
           {/* capital banner*/}

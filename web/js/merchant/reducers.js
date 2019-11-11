@@ -16,9 +16,11 @@ import disputeReducer from 'merchant/modules/disputes/details';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
+import bMerchantReducer from 'merchant/modules/b-merchants';
 import creditsReducer from 'merchant/modules/credits';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
+import activationWizardReducer from 'merchant/modules/activationWizard';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import transferReducer from 'merchant/modules/marketplace/transfer';
@@ -91,6 +93,7 @@ export default combineReducers({
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
   batchDetails: batchDetailsReducer,
+  bMerchant: bMerchantReducer,
   subscriptions: subscriptionsReducer,
   subscription: subscriptionReducer,
   plans: plansReducer,
@@ -113,6 +116,7 @@ export default combineReducers({
   team: teamReducer,
   config: configReducer,
   activation: activationReducer,
+  activationWizard: activationWizardReducer,
   refunds: refundsReducer,
   refund: refundReducer,
   applications: applicationsReducer,

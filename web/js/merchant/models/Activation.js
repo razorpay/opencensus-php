@@ -182,6 +182,16 @@ export default class Activation extends Entity {
     });
   }
 
+  submitL1Form(data) {
+    return merchantFetch({
+      url: 'merchant/instant_activation',
+      mode: 'live',
+      method: 'post',
+      data,
+      accountId: this.accountId,
+    });
+  }
+
   serializeProperty(prop) {
     if (prop === 'business_international') {
       return normalizeBoolean(this.business_international);

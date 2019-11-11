@@ -7,6 +7,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
 import { getExperiment } from 'common/util';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 import {
   roleEditPermissions,
@@ -156,6 +157,8 @@ export default class User {
   get instantActivation() {
     return {
       activation_flow: this.activation_flow,
+      business_type: this.business_type,
+      activated: this.activated,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -169,8 +172,15 @@ export default class User {
         return this.activation_flow === 'greylist';
       },
 
+      get isUnregBizActivated() {
+        return this.activated === 1;
+      },
+
       get isL1Submitted() {
-        return !!this.activation_flow;
+        return (
+          (this.business_type != 11 && !!this.activation_flow) ||
+          this.isUnregBizActivated
+        );
       },
     };
   }
@@ -310,6 +320,18 @@ export default class User {
       : !!this.partner_type;
   }
 
+  // checks if the merchant or user has shown intent to become partner
+  isPartnerIntent() {
+    return this.partner_type === null && this.partner_intent;
+  }
+
+  isSignUpPartnerIntent() {
+    return (
+      this.partner_type === null &&
+      this.partner_intent &&
+      this.merchant_partner_intent === false
+    );
+  }
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
@@ -336,6 +358,10 @@ export default class User {
 
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
+  }
+
+  get isCreditPullEnabled() {
+    return this.isFeatureEnabled('show_credit_score');
   }
 
   get isDiwaliPromoEnabled() {
@@ -395,6 +421,11 @@ export default class User {
     return this.getExpStatus('show_commission_balance');
   }
 
+  get isUnregBizFlowEnabled() {
+    // return true;
+    return this.getExpStatus('non_registered_onboarding');
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
@@ -407,6 +438,11 @@ export default class User {
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
     return this.getExpStatus('sellerapp_PL_batch_upload');
+  }
+
+  get isSellerAppRole() {
+    const userRole = this.userRole;
+    return ['sellerapp', 'sellerapp_plus'].indexOf(userRole) > -1;
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

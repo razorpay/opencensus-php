@@ -184,6 +184,24 @@ class Constants
                 'features'         => ['es_on_demand'],
             ]
         ],
+        [
+            'title'       => 'Free Credit Score!',
+            'description' => 'Click Here to get your credit score along with the credit report for FREE!',
+            'start_ts'    => 1571898702,
+            'end_ts'      => 1577791088,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/badge.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Free Credit Report',
+                    'url'   => '/dashboard#creditscore',
+                ],
+            ],
+            'filters'     => [
+                'tags'  => ['show_credit_score'],
+                'role'  => ['owner'],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array

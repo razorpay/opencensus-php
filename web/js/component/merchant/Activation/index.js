@@ -6,34 +6,51 @@ import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls, isPresent } from 'rzp/utils/rzp-utils';
 import { trackFormFields } from 'rzp/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { classList, addPrefixToObjectKeys } from 'common/util';
-import { activationDuration } from 'common/data';
+import { classList } from 'common/util';
 import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import {
-  trackhubsContactUpdate,
-  fireAnalyticsEvents,
-  trackTaboola,
-} from 'rzp/utils/googleAnalytics';
+import { fireAnalyticsEvents, trackTaboola } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
-  INDIVIDUAL,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
-  BUSINESS_TYPE_OPTIONS,
 } from './AccountActivationFormMap';
 import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
+import L1FormFieldNames from './L1FormFieldNames';
+import { trackTnCClick } from 'merchant/containers/Activation/ga_new';
+import { updateSession } from 'merchant/modules/session';
+import {
+  showInstantActivationSuccessModal,
+  showKYCDetailsModal,
+  showPANStatusModal,
+} from 'merchant/modules/home';
+import {
+  submitL1Form,
+  submitL1FormSuccess,
+} from 'merchant/modules/activationWizard';
+import User from 'merchant/models/User';
+import { withRouter } from 'react-router-dom';
+import { showNotification } from 'rzp/modules/notifications';
+
+import {
+  L1FormSuccess,
+  L1FormError,
+  updateHubSpotContactsProperties,
+  UNREGISTERED_TYPES,
+  isL1Completed,
+} from './ActivationUtils';
+import QueryString from 'query-string';
 
 /*
 *             Main-form        LA-form
@@ -93,17 +110,30 @@ function defaultFieldProps(f) {
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
+const BUSINESS_DETAILS_STEP = 2;
 
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
-@RTracking((state, props, args) => {
-  return window.rzpQ.component('ActivationCard');
-})
-@connect(state => ({
-  user: state.session.user,
-}))
+const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
+
+@withRouter
+@connect(
+  state => ({
+    session: state.session,
+    user: state.session.user,
+  }),
+  {
+    showNotification,
+    updateSession,
+    showInstantActivationSuccessModal,
+    showKYCDetailsModal,
+    showPANStatusModal,
+    submitL1Form,
+    submitL1FormSuccess,
+  }
+)
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 export default class ActivationWizard extends React.Component {
   state = {
@@ -121,8 +151,9 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
+    callingL1Api: false,
+    address_proof: 'aadhar',
   };
-
   constructor(props) {
     super(props);
     this.prepareTabs(props);
@@ -138,9 +169,11 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    this.formName = props.user.showInstantActivation
-      ? 'KYC Form'
-      : 'Activation Form';
+    this.formName =
+      props.user.showInstantActivation &&
+      props.user.instantActivation.isL1Submitted
+        ? 'KYC Form'
+        : 'Activation Form';
   }
 
   prepareTabs(props) {
@@ -171,8 +204,15 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
+      if (!isL1Completed(this)) {
+        FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
+        DOCUMENT_UPLOAD_STEP = null;
+      }
+
       // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
-      FORM_TABS_CONTENT[1][3][0].options = ['--Select--'].concat(
+      FORM_TABS_CONTENT[1][1][0].options = ['--Select--'].concat(
         Object.keys(props.categories).map(c => ({
           name: c,
           label: props.categories[c].description,
@@ -180,6 +220,8 @@ export default class ActivationWizard extends React.Component {
       );
     }
 
+    DOCUMENT_UPLOAD_STEP &&
+      SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     /*
@@ -188,30 +230,40 @@ export default class ActivationWizard extends React.Component {
     * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
-        a._cmp = Input.File;
-        a._accept = ['pdf', 'image'];
-        a._showAcceptInfo = false;
-        a._showStagedFileStatus = false;
+        if (a._cmp === undefined || a._cmp === Input.File) {
+          a._cmp = Input.File;
+          a._accept = ['pdf', 'image'];
+          a._showAcceptInfo = false;
+          a._showStagedFileStatus = false;
 
-        if (!a.hasOwnProperty('required')) {
-          a.required = true;
+          if (!a.hasOwnProperty('required')) {
+            a.required = true;
+          }
+
+          a.onChange = (file, progressTracker) => {
+            const filename = a.getName ? a.getName(this) : a.name;
+            return props
+              .saveFile(
+                filename,
+                file,
+                progressTracker,
+                a.destinationUrl || null
+              )
+              .then(() => {
+                updateHubSpotContactsProperties({
+                  [filename]: true,
+                });
+
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('kyc.upload_document', {
+                    name: filename,
+                  })
+                );
+
+                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              });
+          };
         }
-
-        a.onChange = (file, progressTracker) => {
-          return props.saveFile(a.name, file, progressTracker).then(() => {
-            updateHubSpotContactsProperties({
-              [a.name]: true,
-            });
-
-            tracking.trackEvent(
-              window.rzpQ.onbr().initiated('kyc.upload_document', {
-                name: a.name,
-              })
-            );
-
-            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-          });
-        };
       });
   }
 
@@ -230,7 +282,21 @@ export default class ActivationWizard extends React.Component {
       });
       updateHubSpotContactsProperties({ started: true });
     }
+
+    const query = QueryString.parse(this.props.location.search);
+    this.handleActionBasedOnQuery(query);
   }
+
+  handleActionBasedOnQuery = query => {
+    if (query['auto-submit'] == 'l1-form') {
+      const submitButton = document.querySelector(
+        'footer button[name=submit-and-verify]'
+      );
+      if (submitButton) {
+        submitButton.click();
+      }
+    }
+  };
 
   componentWillUnmount() {
     removeDropShield('.Activation--wizard');
@@ -262,7 +328,9 @@ export default class ActivationWizard extends React.Component {
         // For non-LA account
         firstInValid = 1; // Business Overview tab
       } else {
-        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+        !isFormSubmitted &&
+          isL1Completed(this) &&
+          (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
       }
     }
 
@@ -385,7 +453,7 @@ export default class ActivationWizard extends React.Component {
       )
     );
   })
-  goto = (newActiveTab, cb) => {
+  goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
       // And since showSubmitLayer is set true in same cycle as click on 'Submit Form' handler, it will take previous value which is false.
@@ -605,10 +673,38 @@ export default class ActivationWizard extends React.Component {
   }
 
   get isIndividualTypeLock() {
+    const { user } = this.props;
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+    return (
+      !!UNREGISTERED_TYPES[Number(businessType)] && !user.isUnregBizFlowEnabled
+    );
+  }
+
+  get isUnregBiz() {
     const businessType =
       this.state.dirty.business_type || this.props.data.business_type;
 
-    return businessType == INDIVIDUAL;
+    return businessType == 2 || businessType == 11;
+  }
+
+  get hasSelectedBlacklistedCategory() {
+    const categories = this.props.categories;
+    if (isPresent(categories)) {
+      const selectedCategory =
+        this.state.dirty.business_category || this.props.data.business_category;
+      const subcategories =
+        selectedCategory && categories[selectedCategory]['subcategories'];
+      if (isPresent(subcategories)) {
+        const selectedSubcategory =
+          this.state.dirty.business_subcategory ||
+          this.props.data.business_subcategory;
+        return (
+          subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+        );
+      }
+    }
+    return false;
   }
 
   /*
@@ -643,6 +739,166 @@ export default class ActivationWizard extends React.Component {
 
       this.removeLoader();
     }, 500); // Let loader be seen for 0.5 sec
+  }
+
+  updateSession(data) {
+    const { session, accountId } = this.props;
+
+    // Update data
+    this.setState({ data });
+
+    // Session need not be updated if it's linked account form
+    if (accountId) {
+      return;
+    }
+
+    if (data.can_submit) {
+      this.preloadSuccessAsset(); // TODO: Check where is it declared
+    }
+
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      submitted,
+      international,
+      poi_verification_status,
+      promoter_pan_name,
+      promoter_pan,
+      business_type,
+    } = data;
+
+    // Updating % activation_progress (side bar) and other important activation fields
+    const user = (this.user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      activation_status,
+      activation_flow,
+      international,
+      poi_verification_status,
+      promoter_pan,
+      promoter_pan_name,
+      business_type,
+      submitted: +submitted,
+    }));
+
+    this.props.updateSession({
+      user,
+      mode: session.mode,
+    });
+  }
+
+  submitL1 = async currenActiveTab => {
+    const data = this.formData;
+    this.setState({ callingL1Api: true });
+    try {
+      let response = await this.props.submitL1Form({
+        data,
+        accountId: this.props.accountId,
+      });
+
+      this.props.submitL1FormSuccess({ data: response.data });
+
+      if (this.onActivationSuccess) {
+        return this.onActivationSuccess(response);
+      }
+
+      this.updateSession(response.data); // Updating % activation_progress (side bar)
+
+      const {
+        activation_flow,
+        business_type,
+        poi_verification_status,
+        instantActivation,
+      } = this.user;
+      const {
+        showPANStatusModal,
+        showKYCDetailsModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      } = this.props;
+      const props = {
+        activation_flow,
+        instantActivation,
+        business_type,
+        poi_verification_status,
+        showKYCDetailsModal,
+        showPANStatusModal,
+        showInstantActivationSuccessModal,
+        tracking,
+      };
+
+      L1FormSuccess(props);
+      this.saveCurrentTab();
+
+      this.setState({ callingL1Api: false }, () => {
+        if (
+          poi_verification_status != 'incorrect_details' &&
+          poi_verification_status != 'not_matched'
+        ) {
+          return this.props.history.replace(`/`);
+        }
+      });
+      return response;
+    } catch (err) {
+      this.setState({ callingL1Api: false });
+      this.saveCurrentTab();
+      if (err.errors && err.errors.length && err.errors[0]) {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      }
+
+      L1FormError();
+
+      // if (this.onActivationSuccess) {
+      //   this.onActivationSuccess({ success: false });
+      // }
+
+      return err;
+    }
+  };
+
+  get formData() {
+    const currentDirty = this.state.dirty;
+    const reqData = {};
+
+    L1FormFieldNames.forEach(field =>
+      this.populateReqData(field, reqData, currentDirty)
+    );
+
+    if (!Object.keys(reqData).length) {
+      return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
+    }
+
+    // If it is a registered biz then promoter_pan_name should not be sent
+    if (!this.isUnregBiz) {
+      delete reqData.promoter_pan_name;
+    }
+
+    return reqData;
+  }
+
+  populateReqData(field, reqData, currentDirty) {
+    const name = field;
+
+    if (!name) {
+      return;
+    }
+
+    const fieldVal =
+      name in currentDirty ? currentDirty[name] : this.props.data[name];
+
+    reqData[name] = fieldVal;
+
+    // For business website empty string => user don't have website. null => user didn't attempt the field.
+    const allowEmptyString = ['business_website', 'gstin'];
+    if (allowEmptyString.indexOf(name) === -1) {
+      reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+    }
   }
 
   submitForm = () => {
@@ -987,7 +1243,7 @@ export default class ActivationWizard extends React.Component {
       });
 
     let moreTabs = [];
-    if (!isFormSubmitted) {
+    if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
         <li
           key="submit-tab"
@@ -1165,6 +1421,26 @@ export default class ActivationWizard extends React.Component {
               {documentContent}
             </div>
           </Form>
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links') &&
+              user.isUnregBizFlowEnabled &&
+              this.state.activeTab == 2 &&
+              !this.props.user.instantActivation.isL1Submitted
+            }
+          >
+            <div className="subfooter">
+              By submitting this form you agree to our{' '}
+              <a
+                className="text-primary"
+                target="_blank"
+                href="https://razorpay.com/terms/"
+                onClick={trackTnCClick}
+              >
+                Terms and Conditions
+              </a>
+            </div>
+          </ShowWhen>
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
@@ -1198,7 +1474,7 @@ export default class ActivationWizard extends React.Component {
             {!this.state.showSubmitLayer && (
               <React.Fragment>
                 {/* Action Button 1 */}
-                {activeTab != DOCUMENT_UPLOAD_STEP && (
+                {SAVE_BUTTON_DISABLED_STEPS.indexOf(activeTab) === -1 && (
                   <Button onClick={this.saveCurrentTab}>Save</Button>
                 )}
 
@@ -1216,7 +1492,25 @@ export default class ActivationWizard extends React.Component {
 
                 {/* Action Button 3 */}
                 {isLastTab &&
-                  !isFormSubmitted && (
+                  activeTab == BUSINESS_DETAILS_STEP && (
+                    <AsyncBtn.Primary
+                      disabled={
+                        this.state.callingL1Api ||
+                        this.hasSelectedBlacklistedCategory
+                      }
+                      onClick={this.submitL1}
+                      pendingState={'Verifying'}
+                      name={'submit-and-verify'}
+                    >
+                      Submit and Verify
+                    </AsyncBtn.Primary>
+                  )}
+
+                {/* Action Button 4 */}
+                {isLastTab &&
+                  !isFormSubmitted &&
+                  this.props.user.instantActivation.isL1Submitted &&
+                  !this.props.user.instantActivation.isBlacklistFlow && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
@@ -1356,6 +1650,40 @@ function ActivationField(field) {
     rest.description = rest.description(this);
   }
 
+  if (rest.getLabel) {
+    rest.label = rest.getLabel(this);
+  }
+
+  if (rest.getName) {
+    rest.name = rest.getName(this);
+    key = rest.name;
+  }
+
+  if (rest.getPlaceholder) {
+    rest.placeholder = rest.getPlaceholder(this);
+  }
+
+  if (rest._type == 'address_proof_upload_doc') {
+    const { documents } = this.props.data;
+    defaultValue =
+      (documents &&
+        documents[`${rest.name}`] &&
+        documents[`${rest.name}`][0]['id']) ||
+      null;
+  }
+
+  if (rest.isDeletable) {
+    rest.onCloseClick = () => {
+      this.props.deleteFile(rest.name);
+    };
+  }
+
+  if (rest.checkValidityFromAPI) {
+    const error = rest.checkValidityFromAPI(this);
+    if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
+    else rest.propagatedError = '';
+  }
+
   return (
     <Component
       key={key}
@@ -1370,7 +1698,8 @@ function ActivationField(field) {
 }
 
 function isFieldValid(field, activation) {
-  let data = activation.props.data;
+  const { props } = activation;
+  let data = props.data;
   if (!field.name) {
     // what isn't submissible is valid
     return true;
@@ -1382,7 +1711,11 @@ function isFieldValid(field, activation) {
     }
   }
 
-  let value = data[field.name];
+  const name = field.getName ? field.getName(activation) : field.name;
+  let value =
+    data[name] ||
+    (data.documents && data.documents[name] && data.documents[name][0]['id']);
+
   let isFieldRequired = field.required;
 
   if (typeof isFieldRequired === 'function') {
@@ -1395,6 +1728,15 @@ function isFieldValid(field, activation) {
     // value missing in required field
     return false;
   }
+
+  if (
+    field.name == 'promoter_pan' &&
+    props.business_type == 11 &&
+    !props.user.instantActivation.isL1Submitted
+  ) {
+    return false;
+  }
+
   return true;
 }
 
@@ -1545,29 +1887,4 @@ class SubmitForm extends React.Component {
       </div>
     );
   }
-}
-
-function updateHubSpotContactsProperties(data, extra) {
-  const hbsData = addPrefixToObjectKeys('l2_', data);
-
-  const trackData = {
-    ...hbsData,
-    ...extra,
-  };
-
-  if (data.business_type) {
-    trackData.l2_business_type = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label;
-  }
-
-  if (data.promoter_pan) {
-    trackData.l2_promoter_pan = !!trackData.l2_promoter_pan;
-  }
-
-  if (data.gstin) {
-    trackData.l2_gstin = !!trackData.l2_gstin;
-  }
-
-  trackhubsContactUpdate(trackData);
 }
