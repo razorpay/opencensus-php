@@ -65,7 +65,7 @@ import RTracking from 'react-tracking';
     };
     let utm = null;
     let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
-    if (undefined !== analytics) {
+    if (typeof window.analytics !== 'undefined') {
       utm = analytics.utils.getLandingParams();
       gclid = analytics.utils.getCookie('gclid');
     }
