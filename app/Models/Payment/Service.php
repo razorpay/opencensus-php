@@ -298,6 +298,8 @@ class Service extends Base\Service
 
             $this->cacheResponseData($payment, $response);
 
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
+
             return $response;
         }
         catch (\Throwable $e)
