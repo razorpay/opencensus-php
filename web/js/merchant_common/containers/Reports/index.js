@@ -440,6 +440,22 @@ export default function Reports(store, opts) {
               [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
               break;
             }
+
+            case 'yesterday': {
+              [startTime, endTime] = getUnixTimeStampsForYesterday();
+              break;
+            }
+
+            case 'last_7_days': {
+              [startTime, endTime] = getUnixTimeStampsForLastDays(7);
+              break;
+            }
+
+            case 'last_month': {
+              // not using getUnixTimeStampsForLastDays since month duration is not fixed
+              [startTime, endTime] = getUnixTimeStampsForLastMonth();
+              break;
+            }
           }
 
           const { user } = this.props,
@@ -1104,6 +1120,35 @@ function getFullUnixTimeStamps(data) {
     getFullStartTimeStamp(data.startAt, data.withTime && data.startAtTime),
     getFullEndTimeStamp(data.endAt, data.withTime && data.endAtTime),
   ];
+}
+
+function getUnixTimeStampsForYesterday() {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayStartOfDayUnix = yesterday.startOf('day').format('X');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+
+  return [yesterdayStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastDays(numberOfDays) {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+  const last7thStartOfDayUnix = yesterday
+    .subtract(numberOfDays - 1, 'day')
+    .startOf('day')
+    .format('X');
+
+  return [last7thStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastMonth() {
+  const lastMonth = moment().subtract(1, 'month');
+  const lastDayOfLastMonthEndOfDayUnix = lastMonth.endOf('month').format('X');
+  const firstDayOfLastMonthStartOfDayUnix = lastMonth
+    .startOf('month')
+    .format('X');
+
+  return [firstDayOfLastMonthStartOfDayUnix, lastDayOfLastMonthEndOfDayUnix];
 }
 
 function getFullStartTimeStamp(startAtMoment, startAtTimeMoment) {
