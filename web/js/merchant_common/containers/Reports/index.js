@@ -808,6 +808,49 @@ export default function Reports(store, opts) {
       }
     };
 
+    renderPredefinedDurations = () => {
+      const DISPLAY_FORMAT = 'll';
+      const { type } = this.props;
+      let forDate, fromDate, toDate;
+      const today = moment();
+      switch (type) {
+        case 'yesterday':
+          forDate = today
+            .clone()
+            .subtract(1, 'day')
+            .format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_7_days':
+          const previousDay = today.clone().subtract(1, 'day');
+          toDate = previousDay.format(DISPLAY_FORMAT);
+
+          // calculating last 7th day from today which last 6th day from yesterday
+          fromDate = previousDay.subtract(6, 'day').format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_month':
+          const lastDayOfLastMonth = today
+            .clone()
+            .startOf('month')
+            .subtract(1, 'day');
+          toDate = lastDayOfLastMonth.format(DISPLAY_FORMAT);
+          fromDate = lastDayOfLastMonth.startOf('month').format(DISPLAY_FORMAT);
+          break;
+
+        default:
+          return null;
+      }
+
+      return (
+        <div class="col-sm-12 col-xs-12">
+          <small class="text-warning">
+            {getPredefinedDisplayText({ forDate, fromDate, toDate })}
+          </small>
+        </div>
+      );
+    };
+
     render() {
       const {
         isLoading,
@@ -937,7 +980,12 @@ export default function Reports(store, opts) {
                         </div>
                       )}
                     </div>
+
+                    <div class="clearfix">
+                      {this.renderPredefinedDurations()}
+                    </div>
                     <div class="clearfix">{this.renderSelectInterval()}</div>
+
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
                         {type === 'dateRange' &&
@@ -1081,4 +1129,13 @@ function getDateUnix(dateMoment) {
 
 function getTimeUnix(timeMoment) {
   return timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds');
+}
+
+function getPredefinedDisplayText({ fromDate, toDate, forDate }) {
+  if (forDate) {
+    return `Report will be generated for ${forDate}`;
+  } else if (fromDate && toDate) {
+    return `Report will be generate for data from ${fromDate} to ${toDate}`;
+  }
+  return null;
 }
