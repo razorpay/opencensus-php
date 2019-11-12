@@ -301,7 +301,7 @@ class CardPaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if (($code === 200) && (empty($responseBody[self::ERROR]) === true))
+        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
         {
             return true;
         }
@@ -323,7 +323,8 @@ class CardPaymentService
                 $verify);
         }
 
-        if (($verify->amountMismatch === true) and
+        if (($verify->match === true) and
+            ($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
             throw new Exception\RuntimeException(
