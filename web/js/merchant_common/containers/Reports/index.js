@@ -108,7 +108,7 @@ export default function Reports(store, opts) {
   @reduxForm({
     form: 'generateReports',
     initialValues: {
-      type: 'daily',
+      type: 'yesterday',
       date: moment(),
       startAt: moment().subtract('1', 'days'),
       endAt: moment(),
@@ -697,6 +697,117 @@ export default function Reports(store, opts) {
       }
     };
 
+    renderSelectDay = ({ name, withTime, label }) => {
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div class="form-group">
+            {label && <div class="title">{label}</div>}
+            <Field
+              name={name}
+              dateFormat="DD MMM, YYYY"
+              closeOnSelect={true}
+              component={ReduxDatetime}
+              placeholder="Select Date-Month-Year"
+              isValidDate={validYear}
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+          {withTime && this.renderSelectTime({ name: name + 'Time' })}
+        </div>
+      );
+    };
+
+    renderSelectTime = ({ name }) => (
+      <div className="form-group">
+        <Field
+          name={name}
+          component={ReduxDatetime}
+          closeOnSelect
+          dateFormat={false}
+          class="m-t"
+          onChange={this.enableDownloadButton}
+        />
+      </div>
+    );
+
+    renderSelectDateRange = () => {
+      const { dateRangeData } = this.props;
+      return (
+        <>
+          {this.renderSelectDay({
+            name: 'startAt',
+            withTime: dateRangeData.withTime,
+            label: 'Start at',
+          })}
+
+          {this.renderSelectDay({
+            name: 'endAt',
+            withTime: dateRangeData.withTime,
+            label: 'End at',
+          })}
+
+          <div className="col-sm-3 col-xs-12">
+            <div class="form-group m-t">
+              <div className="title" />
+              <div class="rzpCheckbox m-t">
+                <Field
+                  name="withTime"
+                  id="with-time"
+                  component="input"
+                  type="checkbox"
+                  onChange={this.enableDownloadButton}
+                />
+                <label for="with-time" class="icon i-check">
+                  Specify time
+                </label>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    renderSelectMonth = () => {
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div className="title">Select Month</div>
+          <div class="form-group">
+            <Field
+              name={entity === 'monthlyInvoice' ? 'invoiceDate' : 'date'}
+              component={ReduxDatetime}
+              dateFormat="MMM, YYYY"
+              closeOnSelect={true}
+              isValidDate={
+                entity === 'monthlyInvoice'
+                  ? this.validateInvoiceMonthYear
+                  : validYear
+              }
+              placeholder="Select Year-Month"
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+        </div>
+      );
+    };
+
+    renderSelectInterval = () => {
+      const { type } = this.props;
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+
+      if (type === 'monthly' || entity === 'monthlyInvoice') {
+        return this.renderSelectMonth();
+      } else if (type === 'daily') {
+        return this.renderSelectDay({ name: 'date', label: 'Select Date' });
+      } else if (type === 'dateRange') {
+        return this.renderSelectDateRange();
+      }
+    };
+
     render() {
       const {
         isLoading,
@@ -796,24 +907,9 @@ export default function Reports(store, opts) {
 
                   <div class="form-element">
                     <div class="clearfix">
-                      <div class="col-sm-3">
-                        <div class="title">PERIOD</div>
-                      </div>
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 visible-sm visible-lg">
-                              <div className="title">Start At</div>
-                            </div>
-                            <div class="col-sm- visible-lg visible-sm">
-                              <div className="title">End At</div>
-                            </div>
-                          </>
-                        )}
-                    </div>
-                    <div class="clearfix">
                       {entity === 'monthlyInvoice' || (
-                        <div class="col-sm-3 col-xs-12">
+                        <div class="col-sm-4 col-xs-12">
+                          <div class="title">PERIOD</div>
                           <div
                             class="form-group form-control"
                             disabled={
@@ -827,6 +923,9 @@ export default function Reports(store, opts) {
                               component="select"
                               onChange={this.enableDownloadButton}
                             >
+                              <option value="yesterday">Yesterday</option>
+                              <option value="last_7_days">Last 7 days</option>
+                              <option value="last_month">Last Month</option>
                               <option value="daily">Daily</option>
                               {!(
                                 isPartnerReport &&
@@ -835,128 +934,10 @@ export default function Reports(store, opts) {
                               <option value="dateRange">Custom</option>
                             </Field>
                           </div>
-                          {type === 'dateRange' && (
-                            <div class="form-group">
-                              <div class="rzpCheckbox">
-                                <Field
-                                  name="withTime"
-                                  id="with-time"
-                                  component="input"
-                                  type="checkbox"
-                                  onChange={this.enableDownloadButton}
-                                />
-                                <label for="with-time" class="icon i-check">
-                                  Specify time
-                                </label>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
-
-                      {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                        <div class="col-sm-4 col-xs-12">
-                          <div class="form-group">
-                            <Field
-                              name={
-                                entity === 'monthlyInvoice'
-                                  ? 'invoiceDate'
-                                  : 'date'
-                              }
-                              component={ReduxDatetime}
-                              dateFormat="MMM, YYYY"
-                              closeOnSelect={true}
-                              isValidDate={
-                                entity === 'monthlyInvoice'
-                                  ? this.validateInvoiceMonthYear
-                                  : validYear
-                              }
-                              placeholder="Select Year-Month"
-                              timeFormat={false}
-                              onChange={this.enableDownloadButton}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {type === 'daily' &&
-                        entity !== 'monthlyInvoice' && (
-                          <div class="col-sm-4 col-xs-12">
-                            <div class="form-group">
-                              <Field
-                                name="date"
-                                dateFormat="DD MMM, YYYY"
-                                closeOnSelect={true}
-                                component={ReduxDatetime}
-                                placeholder="Select Date-Month-Year"
-                                isValidDate={validYear}
-                                timeFormat={false}
-                                onChange={this.enableDownloadButton}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 col-xs-12">
-                              <div class="form-group">
-                                <Field
-                                  name="startAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Starts at"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={validYear}
-                                  closeOnSelect
-                                  onChange={this.enableDownloadButton}
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="startAtTime"
-                                    placeholder="Select Time"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                    onChange={this.enableDownloadButton}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              class="col-sm-4 col-xs-12"
-                              style={{ marginRight: '0' }}
-                            >
-                              <div class="form-group">
-                                <Field
-                                  name="endAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Ends At"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={isDateRangeEndAtValid(
-                                    dateRangeData.startAt
-                                  )}
-                                  closeOnSelect
-                                  onChange={this.enableDownloadButton}
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="endAtTime"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                    onChange={this.enableDownloadButton}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
                     </div>
+                    <div class="clearfix">{this.renderSelectInterval()}</div>
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
                         {type === 'dateRange' &&

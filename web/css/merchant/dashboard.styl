@@ -152,9 +152,15 @@
       line-height: 36px;
     }
 
-    .custom-date .custom-icon {
-      top: 12px;
-      right: 10px;
+    .custom-date {
+      position: relative;
+
+      .custom-icon {
+        right: 10px;
+        display: inline-block;
+        height: 100%;
+        line-height: 2.2;
+      }
     }
 
     .PowerSelect__TriggerInput {
@@ -196,7 +202,9 @@
 
       [class^='col-'] {
         padding: 0;
-        margin-right: 16px;
+        &:not(:last-child) {
+          margin-right: 16px;
+        }
       }
     }
   }
@@ -1979,26 +1987,26 @@ $stepIndicatorSize = 36px;
   }
 
   .success {
-    background: rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat;  
+    background: rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat;
   }
 
   .pending {
-    background: rgb(240,138,10) url('assets/instant_activations/pending_background.png') top left no-repeat;  
+    background: rgb(240,138,10) url('assets/instant_activations/pending_background.png') top left no-repeat;
   }
 
   .modal-body {
     padding: 24px;
 
     .modal-description {
-      margin-bottom: 30px; 
+      margin-bottom: 30px;
 
       > p {
         margin-bottom: 10px;
-      } 
+      }
     }
   }
 
-} 
+}
 
 // Instant Activations , Transactions helper
 .Modal-container--transactions-helper {
