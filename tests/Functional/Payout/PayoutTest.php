@@ -765,8 +765,6 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutToCardFundAccountUsingUpi()
     {
-        $this->markTestSkipped('Disabling Test since UPI is disabled temperorily in FTA');
-
         $this->fixtures->create(
             'fund_account',
             [
