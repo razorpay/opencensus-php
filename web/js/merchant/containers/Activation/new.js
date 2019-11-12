@@ -3,7 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
-import { activationDuration } from 'common/data';
+import { activationDuration } from 'merchant_common/helpers/data';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { LinkCard } from 'component/Cards';

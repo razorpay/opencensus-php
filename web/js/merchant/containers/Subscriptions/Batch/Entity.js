@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import Time from 'rzp/ui/Time';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import BatchStats from 'ui/StatsTable';
+import BatchStats from 'rzp/ui/StatsTable';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 

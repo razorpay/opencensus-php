@@ -8,7 +8,7 @@ import moment from 'moment';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
 import scrollTo from 'rzp/utils/scrollTo';
-import { prefixEntityValue } from 'common/data';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';

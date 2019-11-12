@@ -6,7 +6,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import ProgressBar from 'rzp/ui/ProgressBar';
 
-import { activationDuration } from 'common/data';
+import { activationDuration } from 'merchant_common/helpers/data';
 
 import {
   NEEDS_CLARIFICATION,

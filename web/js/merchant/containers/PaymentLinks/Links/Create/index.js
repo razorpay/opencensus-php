@@ -12,7 +12,7 @@ import Button, { AsyncBtn } from 'component/Button';
 
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinkFormFields, { getOptions } from './Fields';
+import PaymentLinkFormFields, { getCustomNotesOptions } from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
@@ -470,7 +470,8 @@ export default class CreateNewContainer extends React.Component {
     }
 
     if (this.props.user.isCustomNotesDropdownEnabled) {
-      const { type } = getOptions(this.props.user.current);
+      const { type } = getCustomNotesOptions();
+
       reqPayload.notes = {
         [type]: reqPayload.notes,
       };

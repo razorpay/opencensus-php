@@ -1,10 +1,11 @@
-import { addPrefixToObjectKeys } from 'common/util';
+import { addPrefixToObjectKeys } from 'rzp/utils/rzp-utils';
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
 import BingDataObj from 'rzp/utils/bingDataObj';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
 import {
   trackhubsContactUpdate,
@@ -98,6 +99,7 @@ const PROPRIETORSHIP = 1;
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
+const LLP = 6; // 'LLP'
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 const UNREGISTERED_TYPES = {
   11: true,
@@ -185,7 +187,7 @@ function getBeneficiaryInfo() {
   const currentBusinessType =
     this.state.dirty.business_type || this.props.data.business_type;
   if (isUnregisteredBusiness(this)) {
-    return 'Please ensure that the spelling is the same as your bank account';
+    return 'Please ensure that the spelling is the same as your bank account';
   } else {
     let text = 'Company';
 
@@ -193,8 +195,28 @@ function getBeneficiaryInfo() {
       text = 'Individual';
     }
 
-    return `The beneficiary name should be same as ${text} name`;
+    return `The beneficiary name should be same as ${text} name`;
   }
+}
+
+function hasSelectedBlacklistedCategory(activation) {
+  const { props, state } = activation;
+  const categories = props.categories;
+  if (isPresent(categories)) {
+    const selectedCategory =
+      state.dirty.business_category || props.data.business_category;
+    const subcategories =
+      selectedCategory && categories[selectedCategory]['subcategories'];
+    if (isPresent(subcategories)) {
+      const selectedSubcategory =
+        state.dirty.business_subcategory || props.data.business_subcategory;
+      return (
+        subcategories[selectedSubcategory] &&
+        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+      );
+    }
+  }
+  return false;
 }
 
 export {
@@ -215,4 +237,5 @@ export {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  hasSelectedBlacklistedCategory,
 };

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import { sendLink } from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
@@ -11,7 +11,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import StatsInfo from 'ui/StatsTable';
+import StatsInfo from 'rzp/ui/StatsTable';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';

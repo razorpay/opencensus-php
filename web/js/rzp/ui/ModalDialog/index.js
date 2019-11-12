@@ -2,7 +2,7 @@ import { Component } from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'rzp/modules/modals';
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'component/ErrorBoundary';
 import { classList } from 'common/util';
 
 Object.assign(Modal.defaultStyles.overlay, {

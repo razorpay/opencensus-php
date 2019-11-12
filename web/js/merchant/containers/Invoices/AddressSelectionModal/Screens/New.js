@@ -16,7 +16,7 @@ import {
   capitalize,
 } from 'rzp/utils/rzp-utils';
 import { track } from '../../ga';
-import Countries from 'common/countries.json';
+import Countries from 'merchant/utils/countries.json';
 
 const CountryNames = Object.keys(Countries);
 
