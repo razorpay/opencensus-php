@@ -315,6 +315,14 @@ class CardPaymentService
     {
         $verify = $this->verifyPayment($response);
 
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -325,14 +333,6 @@ class CardPaymentService
                     'gateway'    => $this->gateway
                 ]
             );
-        }
-
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
         }
 
         return $verify->getDataToTrace();
