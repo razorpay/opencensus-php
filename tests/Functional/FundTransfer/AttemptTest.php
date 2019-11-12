@@ -335,7 +335,7 @@ class AttemptTest extends TestCase
         $this->assertEquals(1, $content[$channel]['count']);
         $this->assertEquals(1, $content[$channel]['success']);
         $this->assertEquals(0, $content[$channel]['failed']);
-        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $fta['status']);
     }
 
     public function testYesbankRefundToInvalidCard()
