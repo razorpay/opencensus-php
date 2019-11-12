@@ -28,7 +28,7 @@ import CreditPullClose from './CreditPullClose';
 import CreditPullSuccess from './CreditPullSuccess';
 import ajax from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 
 const validate = values => {
   const errors = {};

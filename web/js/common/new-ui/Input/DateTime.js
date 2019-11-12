@@ -1,8 +1,8 @@
 import moment from 'moment';
-import Input, { Description } from 'component/Input';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
-import { classList } from 'common/util';
+import Input, { Description } from 'common/new-ui/Input';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class DateTime extends React.Component {
   state = {

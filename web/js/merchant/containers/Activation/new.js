@@ -7,7 +7,7 @@ import { activationDuration } from 'merchant_common/helpers/data';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { LinkCard } from 'common/new-ui/Cards';
-import ActivationWizard from 'merchant/components/merchant/Activation';
+import ActivationWizard from 'merchant/components/Activation';
 import OldActivationWizard from './index';
 import Button from 'common/new-ui/Button';
 
