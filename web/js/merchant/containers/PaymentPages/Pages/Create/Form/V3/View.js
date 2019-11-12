@@ -10,7 +10,7 @@ import {
   updateInFormItems,
   isFormItemOfTypeAmount,
   reorderFormItems,
-} from 'merchant/modules/wysiwyg';
+} from 'merchant/reducers/wysiwyg';
 import { constructFieldSchema } from '../UDF_Fields/V3';
 import { constructAmountField } from '../Amount_Fields/V3';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';

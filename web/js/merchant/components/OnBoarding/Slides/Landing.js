@@ -1,6 +1,6 @@
 import RTracking from 'react-tracking';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import DataList from 'merchant/components/DataList';
 

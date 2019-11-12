@@ -2,22 +2,22 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ModalDialog from 'rzp/ui/ModalDialog';
-import Notifications from 'rzp/ui/Notifications';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+import ModalDialog from 'common/ui/ModalDialog';
+import Notifications from 'common/ui/Notifications';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 import Sidebar from 'merchantLA/containers/Sidebar';
 import HeaderNav from 'merchantLA/components/HeaderNav';
 import Content from 'merchantLA/components/Content';
 import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as SessionActions from 'merchantLA/modules/session';
-import { applyTheme } from 'rzp/themes';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import * as SessionActions from 'merchantLA/reducers/session';
+import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchantLA/models/User';
-import { resizeWindow } from 'merchantLA/modules/app';
+import { resizeWindow } from 'merchantLA/reducers/app';
 
 @withRouter
 @connect(

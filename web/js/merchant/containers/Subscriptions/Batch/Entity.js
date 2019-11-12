@@ -2,15 +2,15 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
-import Time from 'rzp/ui/Time';
+import Time from 'common/ui/Time';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import BatchStats from 'rzp/ui/StatsTable';
+import BatchStats from 'common/ui/StatsTable';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/modules/batches';
+import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 

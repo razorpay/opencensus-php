@@ -1,5 +1,5 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { setTrackData } from 'common/utils/googleAnalytics';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const eventCategory = 'Dashboard - Payment Pages';
 

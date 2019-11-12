@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
-import { getFormattedAmountNew, getFormattedNumber } from 'rzp/utils/rzp-utils';
+import {
+  getFormattedAmountNew,
+  getFormattedNumber,
+} from 'common/utils/rzp-utils';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,

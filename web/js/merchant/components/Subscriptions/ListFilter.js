@@ -2,7 +2,7 @@ import { Field } from 'redux-form';
 import ListFilter from '../ListFilter';
 
 import { PowerSelect } from 'react-power-select';
-import { humanize } from 'rzp/utils/rzp-utils';
+import { humanize } from 'common/utils/rzp-utils';
 
 const statusList = [
   'created',

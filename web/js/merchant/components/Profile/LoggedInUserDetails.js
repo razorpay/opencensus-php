@@ -1,6 +1,6 @@
 import DetailRow from '../DetailRow';
-import { titleCase } from 'rzp/utils/rzp-utils';
-import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
+import { titleCase } from 'common/utils/rzp-utils';
+import { roles, agentRole, RBLRoles } from 'common/utils/constants';
 
 export default ({ loggedInUser, loggedInUserRole }) => {
   let ROLES = { ...roles, ...agentRole, ...RBLRoles };

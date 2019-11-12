@@ -1,13 +1,13 @@
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 import { daysLeftInExpiry } from 'merchant/utils/disputes';
 
 export default props => {

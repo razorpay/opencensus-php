@@ -1,16 +1,16 @@
 import { connect } from 'react-redux';
 
-import { findBy, filterBy } from 'rzp/utils/rzp-utils';
-import * as NotificationActions from 'rzp/modules/notifications';
+import { findBy, filterBy } from 'common/utils/rzp-utils';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import {
   fetchReminders,
   editRemindersMerchantConfigs,
   disableEnableReminders,
   createReminders,
-} from 'merchant/modules/reminders';
+} from 'merchant/reducers/reminders';
 
-import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
+import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
 import Setting from 'merchant/components/Reminders/Settings';
 
 @connect(

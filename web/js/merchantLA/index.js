@@ -3,10 +3,10 @@ import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
 
-import 'rzp/utils/polyfills';
+import 'common/utils/polyfills';
 import store from 'merchantLA/store';
 
-import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
+import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 
 import App from 'merchantLA/containers/App';
 

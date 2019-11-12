@@ -1,4 +1,4 @@
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 
 export default ({ disabled, type, isEnabled, onToggle }) => (
   <React.Fragment>

@@ -1,6 +1,6 @@
 import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
-import Alert from 'component/Alert';
+import Alert from 'common/new-ui/Alert';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {

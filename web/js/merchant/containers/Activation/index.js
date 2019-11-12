@@ -4,9 +4,9 @@ import RTracking from 'react-tracking';
 import QueryString from 'query-string';
 import { withRouter } from 'react-router-dom';
 
-import { Modal, ModalContent } from 'component/Modal';
-import { classList } from 'common/util';
-import Spinner from 'rzp/ui/Spinner';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { classList } from 'common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import KycForm from './new';

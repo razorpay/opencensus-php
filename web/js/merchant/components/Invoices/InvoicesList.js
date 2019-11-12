@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import TableBody from 'rzp/ui/TableBody';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
-import Button from 'component/Button';
+import { getCustomerDisplayName } from 'common/utils/rzp-utils';
+import Button from 'common/new-ui/Button';
 
 const InvoiceListItem = props => {
   let { invoice, onCopy } = props;

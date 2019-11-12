@@ -2,19 +2,19 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import * as CustomerActions from 'merchant/modules/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { fetchStates } from 'merchant/modules/states';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import * as CustomerActions from 'merchant/reducers/customers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
 import {
   isAddressValid,
   isValidZipcodeCountryWise,
   capitalize,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import { track } from '../../ga';
 import Countries from 'merchant/utils/countries.json';
 

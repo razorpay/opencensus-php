@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import LoaderDots from 'rzp/ui/LoaderDots';
+import Amount from 'common/ui/Amount';
+import LoaderDots from 'common/ui/LoaderDots';
 
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,
 } from 'merchant/components/StatusLabel';
 
-import { titleCase, formatFromNow } from 'rzp/utils/rzp-utils';
+import { titleCase, formatFromNow } from 'common/utils/rzp-utils';
 
 const StatusLabel = ({ status, entity, children, ...otherProps }) => {
   let Label =

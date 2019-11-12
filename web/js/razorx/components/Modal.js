@@ -4,7 +4,7 @@ import CSSTransition from 'react-transition-group/CSSTransition';
 
 import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { ModalMask, Modal } from 'component/Modal';
+import { ModalMask, Modal } from 'common/new-ui/Modal';
 
 const animObj = { enter: 300, exit: 300 };
 

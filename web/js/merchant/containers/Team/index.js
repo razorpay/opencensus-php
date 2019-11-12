@@ -1,13 +1,13 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import HeaderAction from 'common/ui/HeaderAction';
+import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 
-import { sendInvitation } from 'merchant/modules/invitation';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { sendInvitation } from 'merchant/reducers/invitation';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import InvitationsList from './Invitations/List';
 import MembersList from './Members/List';

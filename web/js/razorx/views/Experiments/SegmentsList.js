@@ -1,4 +1,4 @@
-import debounce from 'rzp/utils/debounce';
+import debounce from 'common/utils/debounce';
 import Field, { TextAreaField, SelectField } from 'razorx/components/ui/Field';
 import { notifyError } from 'razorx/components/Modal';
 

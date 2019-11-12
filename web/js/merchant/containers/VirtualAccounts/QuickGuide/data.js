@@ -1,4 +1,4 @@
-import { PossibleStatuses } from 'rzp/utils/constants';
+import { PossibleStatuses } from 'common/utils/constants';
 
 const { done } = PossibleStatuses;
 

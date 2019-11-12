@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
-import { titleCase, classList } from 'common/util';
+import { classList, titleCase } from 'common/utils/rzp-utils';
 import { formatDate } from 'razorx/helpers/utils';
 import { rexFetch, rexPatch } from 'razorx/helpers/fetch';
 import AsyncButton from 'razorx/components/ui/AsyncButton';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
 export default ({
   onClose,

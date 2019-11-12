@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, isBlank } from 'common/utils/rzp-utils';
 
 const rollKeyFields = ['id', 'delay_roll'];
 

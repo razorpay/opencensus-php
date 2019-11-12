@@ -1,6 +1,6 @@
-import Input from 'component/Input';
-import { states } from 'rzp/utils/constants';
-import { excludeFor_Indiv } from 'component/merchant/Activation/ActivationUtils';
+import Input from 'common/new-ui/Input';
+import { states } from 'common/utils/constants';
+import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
 
 var stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {

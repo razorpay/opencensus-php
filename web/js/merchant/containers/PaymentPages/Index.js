@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 

@@ -7,29 +7,29 @@ import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
-import debounce from 'rzp/utils/debounce';
+import debounce from 'common/utils/debounce';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 
-import Alert from 'rzp/ui/Forms/Alert';
-import DatePickerField from 'rzp/ui/Forms/DatePickerField';
-import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
-import { required } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
-import { titleCase, rupeesToPaise } from 'rzp/utils/rzp-utils';
+import Alert from 'common/ui/Forms/Alert';
+import DatePickerField from 'common/ui/Forms/DatePickerField';
+import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
+import { required } from 'common/utils/validators';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import {
   fetchAccountsApi,
   fetchAccounts,
-} from 'merchant/modules/marketplace/accounts';
+} from 'merchant/reducers/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import { createTransfer } from 'merchant/modules/payments/details';
-import { isHoliday, nextWorkingDay } from 'rzp/utils/bankHolidays';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
+import { createTransfer } from 'merchant/reducers/payments/details';
+import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
+import RadioButton from 'common/ui/Forms/RadioButton';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';

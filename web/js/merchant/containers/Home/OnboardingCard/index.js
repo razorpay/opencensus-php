@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { fetchKeys } from 'merchant/modules/keys';
+import { fetchKeys } from 'merchant/reducers/keys';
 
 import { LIVE_MODE } from './data';
 import InstantActivationsCard from './Instant';

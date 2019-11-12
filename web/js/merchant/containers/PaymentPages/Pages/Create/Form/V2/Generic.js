@@ -1,8 +1,8 @@
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button from 'component/Button';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
 import EditLayer from '../../EditLayer';
-import { classList, getValueOfKeyAtLevel } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import {
   getFieldTypes,
   mapFieldToIndex,

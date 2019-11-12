@@ -1,5 +1,5 @@
-import debounce from 'rzp/utils/debounce';
-import { classList } from 'common/util';
+import debounce from 'common/utils/debounce';
+import { classList } from 'common/utils/rzp-utils';
 
 function isJSONString(str) {
   try {

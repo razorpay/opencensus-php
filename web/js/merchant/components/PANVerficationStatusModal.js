@@ -1,5 +1,5 @@
 import React from 'react';
-import { ModalMask, Modal } from 'component/Modal';
+import { ModalMask, Modal } from 'common/new-ui/Modal';
 
 const PAN_FAILURE = 'PAN_FAILURE'; // timeout in PAN verification
 const PAN_SUCCESS = 'PAN_SUCCESS'; // timeout in PAN verification

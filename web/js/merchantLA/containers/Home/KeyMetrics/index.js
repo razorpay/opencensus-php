@@ -3,26 +3,26 @@ import { connect } from 'react-redux';
 import numeral from 'numeral';
 import moment from 'moment';
 
-import Amount from 'rzp/ui/Amount';
-import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
+import Amount from 'common/ui/Amount';
+import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import {
   titleCase,
   isDefined,
   getPercentage,
   paiseToRupees,
   getFixedNumber,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { showNotification } from 'rzp/modules/notifications';
-import { groupBy } from 'rzp/utils/rzp-utils';
-import Change from 'rzp/ui/Change';
+} from 'common/utils/numerals';
+import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { groupBy } from 'common/utils/rzp-utils';
+import Change from 'common/ui/Change';
 
-import { fetch } from 'merchantLA/modules/pokedex';
+import { fetch } from 'merchantLA/reducers/pokedex';
 import {
   API_ERROR,
   API_INVALID_RESP,

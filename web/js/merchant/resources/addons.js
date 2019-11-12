@@ -1,4 +1,4 @@
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 /*
   Description: Filter out extra values on basis of `resourceFields`

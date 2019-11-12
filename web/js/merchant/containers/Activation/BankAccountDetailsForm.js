@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required, validatePincodeLength } from 'rzp/utils/validators';
-import { states } from 'rzp/utils/constants';
-import { isWebkit } from 'rzp/utils/rzp-utils';
+import InputField from 'common/ui/Forms/InputField';
+import Fieldset from 'common/ui/Forms/Fieldset';
+import { required, validatePincodeLength } from 'common/utils/validators';
+import { states } from 'common/utils/constants';
+import { isWebkit } from 'common/utils/rzp-utils';
 
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number

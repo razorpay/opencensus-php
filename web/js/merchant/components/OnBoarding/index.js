@@ -4,7 +4,7 @@ import RTracking from 'react-tracking';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import {
   getIsAllowedResetBoarding,
