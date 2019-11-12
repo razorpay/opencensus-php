@@ -90,9 +90,32 @@ class Gateway extends Base\Gateway
 
         $this->saveCallbackResponse($content, $gatewayEntity);
 
+        $this->verifyCallback($gatewayEntity, $input);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback($gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $response = $verify->verifyResponseContent;
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -192,11 +215,8 @@ class Gateway extends Base\Gateway
 
     protected function createRequest($content)
     {
-        $request = $this->getStandardRequestArray();
 
-        $content = http_build_query($content);
-
-        $request['url'] .= '?' . $content;
+        $request = $this->getStandardRequestArray($content);
 
         return $request;
     }
