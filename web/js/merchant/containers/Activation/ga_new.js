@@ -1,5 +1,5 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
-import { mainFormTabs } from 'common/new-ui/merchant/Activation/ActivationFormMap';
+import { mainFormTabs } from 'merchant/components/Activation/ActivationFormMap';
 
 const eventCategory = 'Dashboard - Activation Form v2';
 

@@ -7,7 +7,7 @@ import { activationDuration } from 'merchant_common/helpers/data';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { LinkCard } from 'common/new-ui/Cards';
-import ActivationWizard from 'common/new-ui/merchant/Activation';
+import ActivationWizard from 'merchant/components/merchant/Activation';
 import OldActivationWizard from './index';
 import Button from 'common/new-ui/Button';
 
@@ -18,7 +18,7 @@ import { showKYCActivationSuccessModal } from 'merchant/reducers/home';
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
-import { LLPIN_BusinessTypes } from 'common/new-ui/merchant/Activation/ActivationFormMap';
+import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';

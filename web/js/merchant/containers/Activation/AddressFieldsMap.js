@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
 import { states } from 'common/utils/constants';
-import { excludeFor_Indiv } from 'common/new-ui/merchant/Activation/ActivationUtils';
+import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
 
 var stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
