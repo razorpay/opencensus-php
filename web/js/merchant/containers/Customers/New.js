@@ -689,7 +689,7 @@ AddCustomer.defaultProps = {
   showGSTN: true,
 };
 
-const validateZipCode = (country, zipcode) => {
+export const validateZipCode = (country, zipcode) => {
   if (zipcode && country && !isValidZipcodeCountryWise(country, zipcode)) {
     return 'Please enter a valid pin code for the selected country';
   }
