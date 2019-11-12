@@ -36,6 +36,12 @@ class FundTransfer extends Job
      */
     protected $ftaId;
 
+    //
+    // Yesbank upi request timeout is 180 sec
+    // so job timeout should be more than that
+    //
+    public $timeout = 200;
+
     public function __construct(string $mode, string $ftaId)
     {
         parent::__construct($mode);

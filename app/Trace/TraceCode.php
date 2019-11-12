@@ -1115,6 +1115,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
+    const QUEUE_JOB_TIMEOUT                                     = 'QUEUE_JOB_TIMEOUT';
 
     const RECOVERABLE_EXCEPTION                                 = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                                       = 'ERROR_EXCEPTION';

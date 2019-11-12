@@ -7,12 +7,12 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
