@@ -4,6 +4,7 @@ namespace RZP\Models\Vpa;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -15,8 +16,12 @@ class Validator extends Base\Validator
     {
         if (strpos($address, Entity::AROBASE) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid Address: ' . $address);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                $attribute,
+                [
+                    'vpa' => $address
+                ]);
         }
 
         list($left, $right) = explode(Entity::AROBASE, $address);
