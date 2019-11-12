@@ -1,4 +1,4 @@
-import { merge, remove, set, unshift } from 'rzp/utils/immutable';
+import { merge, remove, set, unshift } from 'common/utils/immutable';
 import { merchantFetch } from 'merchantLA/utils/ajax';
 
 export const TEAM_FETCH = 'TEAM_FETCH';

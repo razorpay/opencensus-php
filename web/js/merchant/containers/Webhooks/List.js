@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/components/Webhooks/List';
 import WebhookCreation from 'merchant/containers/Webhooks/New';

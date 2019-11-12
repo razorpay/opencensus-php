@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchSubventions as fetchAll } from 'merchant/reducers/collection';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import Amount from 'rzp/ui/Amount';
+import DataTable from 'common/ui/Table/DataTable';
+import Amount from 'common/ui/Amount';
 
-import { subventionId, createdAtShort } from 'rzp/ui/item/pair';
+import { subventionId, createdAtShort } from 'common/ui/item/pair';
 
 import ListFilter from '../../Commissions/Transactional/ListFilter';
 

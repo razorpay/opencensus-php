@@ -4,26 +4,26 @@ import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
 
-import Definition from 'rzp/ui/Definition';
-import Change from 'rzp/ui/Change';
-import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import { namedColors } from 'rzp/utils/chart/colors';
+import Definition from 'common/ui/Definition';
+import Change from 'common/ui/Change';
+import { BtnGroup, Btn } from 'common/ui/BtnGroup/index.js';
+import { namedColors } from 'common/utils/chart/colors';
 import {
   isDefined,
   titleCase,
   paiseToRupees,
   getPercentage,
-} from 'rzp/utils/rzp-utils';
-import debounce from 'rzp/utils/debounce';
-import { timeScale } from 'rzp/utils/chart/new.js';
-import takeScreenshot from 'rzp/utils/screenshot';
-import Group, { GroupItem } from 'rzp/ui/Group';
+} from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
+import { timeScale } from 'common/utils/chart/new.js';
+import takeScreenshot from 'common/utils/screenshot';
+import Group, { GroupItem } from 'common/ui/Group';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import GenericTooltip from 'rzp/ui/Tooltip';
+} from 'common/utils/numerals';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import GenericTooltip from 'common/ui/Tooltip';
 
 import { tabsMeta, breakdownVals, breakdownValsMap } from './data';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';

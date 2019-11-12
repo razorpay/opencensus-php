@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { constructFieldSchema } from '../UDF_Fields/V2';
 
 import {

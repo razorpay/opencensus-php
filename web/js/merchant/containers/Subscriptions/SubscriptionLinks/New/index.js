@@ -12,10 +12,10 @@ import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalContent } from 'component/Modal';
-import Form from 'component/Form';
-import Button, { AsyncBtn } from 'component/Button';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Form from 'common/new-ui/Form';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
 import {
   isPresent,
@@ -23,13 +23,13 @@ import {
   getURLQueryParams,
   stringToObj,
   deepClone,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
 import PlanDetails from '../common/PlanDetails';
 import Review from './Review';
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
 import {

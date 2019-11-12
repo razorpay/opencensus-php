@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
+import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
 
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';

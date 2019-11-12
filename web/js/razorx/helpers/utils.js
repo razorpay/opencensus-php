@@ -1,4 +1,4 @@
-import { snakeToTitleCase } from '../../common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 
 export const deepClone = o => {
   try {
@@ -51,7 +51,7 @@ export function keysToSentence(keys) {
       joiner = 'are';
     }
 
-    return snakeToTitleCase(key);
+    return titleCase(key);
   });
 
   joiner = joiner || (keys.length > 1 ? 'are' : 'is');

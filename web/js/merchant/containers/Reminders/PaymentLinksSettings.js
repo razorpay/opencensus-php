@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { findBy, filterBy } from 'rzp/utils/rzp-utils';
+import { findBy, filterBy } from 'common/utils/rzp-utils';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import {

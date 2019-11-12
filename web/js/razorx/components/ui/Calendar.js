@@ -3,7 +3,7 @@ import Calendar from 'rc-calendar';
 import DatePicker from 'rc-calendar/lib/Picker';
 import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
 import enUS from 'rc-calendar/lib/locale/en_US';
-import { disabledPastDates } from 'common/util';
+import { disabledPastDates } from 'common/utils/rzp-utils';
 
 export default class CalendarPicker extends Component {
   constructor(props) {

@@ -1,10 +1,10 @@
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Form from 'component/Form';
-import Input from 'component/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
-import Button from 'component/Button';
-import Alert from 'component/Alert';
+import Button from 'common/new-ui/Button';
+import Alert from 'common/new-ui/Alert';
 
 export default class extends React.PureComponent {
   state = {

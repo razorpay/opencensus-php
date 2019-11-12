@@ -1,4 +1,4 @@
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 import VirtualAccount from 'merchant/models/VirtualAccount';
 import {
   makeActionCollectionReducer,

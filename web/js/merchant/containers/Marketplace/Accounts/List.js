@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';

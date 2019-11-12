@@ -1,4 +1,4 @@
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 
 import Dispute from 'merchant/models/Dispute';
 

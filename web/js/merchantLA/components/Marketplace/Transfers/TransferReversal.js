@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Button from 'component/Button';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import DataTable from 'rzp/ui/Table/DataTable';
-import LoaderDots from 'rzp/ui/LoaderDots';
+import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import DataTable from 'common/ui/Table/DataTable';
+import LoaderDots from 'common/ui/LoaderDots';
 import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
 import { openModal } from 'merchant_common/reducers/modals';
 import RefundToCustomerModal from './RefundToCustomerModal';

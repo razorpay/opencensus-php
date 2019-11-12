@@ -1,5 +1,5 @@
 import ajax from 'merchant/utils/ajax';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';

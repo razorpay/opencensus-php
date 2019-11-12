@@ -7,12 +7,12 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { updateConfig } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
-import Amount from 'rzp/ui/Amount';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
+import Amount from 'common/ui/Amount';
 
-import { amount, required } from 'rzp/utils/validators';
-import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
+import { amount, required } from 'common/utils/validators';
+import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
 
 @connect(
   state => {

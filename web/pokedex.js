@@ -7,8 +7,8 @@ import { render } from 'react-dom';
 import { MemoryRouter as Router } from 'react-router-dom';
 import store from 'merchant/store';
 
-import 'rzp/utils/polyfills';
-import * as NotificationActions from 'rzp/modules/notifications';
+import 'common/utils/polyfills';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import * as SessionActions from 'merchant/reducers/session';
 import User, { setFeatures } from 'merchant/models/User';

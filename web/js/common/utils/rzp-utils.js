@@ -1,0 +1,1080 @@
+import moment from 'moment';
+import { acronyms, shortenText } from './acronyms';
+
+moment.updateLocale('en', {
+  relativeTime: {
+    s: 'few secs',
+    ss: '%s secs',
+    m: 'a min',
+    mm: '%d mins',
+  },
+});
+
+export function isMobileResolution() {
+  return window && window.innerWidth <= 768;
+}
+
+export function isFunction(value) {
+  return typeof value === 'function';
+}
+
+export function isDefined(value) {
+  return typeof value !== 'undefined';
+}
+
+/* Delimiters are space / underscore */
+export function titleCase(sentence) {
+  return (sentence || '')
+    .split(/\s+|_/)
+    .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+    .join(' ');
+}
+
+export function humanize(sentence) {
+  return titleCase(sentence.split('_').join(' '));
+}
+
+export function makeArray(obj) {
+  if (!obj) {
+    return [];
+  }
+  return Array.isArray(obj) ? obj : [obj];
+}
+
+export function arrayDiff(arr1, arr2) {
+  if (arr1.length < arr2.length) {
+    let tempArr = arr1;
+    arr1 = arr2;
+    arr2 = tempArr;
+  }
+
+  return arr1.reduce((prev, curr) => {
+    if (arr2.indexOf(curr) === -1) {
+      prev.push(curr);
+    }
+    return prev;
+  }, []);
+}
+
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
+  }
+  if (typeof value === 'string') {
+    value = value.trim();
+    return !value;
+  }
+  return isNone(value);
+}
+
+export function isPresent(obj) {
+  return !isBlank(obj);
+}
+
+export const isNone = value => {
+  return value === null || value === undefined;
+};
+
+export const findBy = (array, prop, value) => {
+  return array.find(item => {
+    return item[prop] === value;
+  });
+};
+
+export const filterBy = (array, prop, value) => {
+  return array.filter(item => {
+    return item[prop] === value;
+  });
+};
+
+export const mapBy = (array, prop) => {
+  return array.map(item => {
+    return item[prop];
+  });
+};
+
+/**
+ * Converst [{a: 'key', b: 'value'}] => {key: value}
+ * @param {Array} array
+ * @param {Function} iterator
+ */
+export const arrayToObject = (array = [], iterator) => {
+  return array.reduce((accumulator, currentItem) => {
+    const { key, value } = iterator(currentItem);
+    return {
+      ...accumulator,
+      [key]: value,
+    };
+  }, {});
+};
+
+export const groupBy = (records, colName) => {
+  const result = {};
+
+  records.forEach((record, index) => {
+    if (!record.hasOwnProperty(colName)) {
+      return;
+    }
+
+    const colValue = record[colName],
+      colRecords = (result[colValue] = result[colValue] || []);
+
+    colRecords.push(record);
+  });
+
+  return result;
+};
+
+export const pipe = (...funcs) => {
+  let first = funcs.shift();
+  return (...args) => {
+    return funcs.reduce((returnVal, currentFn) => {
+      return currentFn(returnVal);
+    }, first(...args));
+  };
+};
+
+export const normalizeDate = date => moment(date).format('D/M/Y');
+export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
+
+/*
+  calculates no of days from today for a given date
+  negative if date given date (in seconds) was of past
+ */
+export const daysFromToday = date =>
+  Math.ceil((Number(date) - new Date().getTime() / 1000) / 86400);
+
+export const normalizeBoolean = bool => {
+  if (bool === undefined) {
+    return bool;
+  }
+
+  return bool ? 1 : 0;
+};
+
+const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
+
+export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
+
+export const getFixedNumber = value => {
+  if (typeof value === 'number') {
+    value = value.toFixed(2);
+  }
+
+  const valueArr = value.split('.');
+
+  if (valueArr[1] == '00') {
+    value = valueArr[0].replace('.', '');
+  }
+
+  return value;
+};
+
+export const getFormattedNumber = value => {
+  if (typeof value === 'number') {
+    value = value.toFixed(2);
+  }
+
+  value = value.replace(numberFormatRegex, '$1,');
+
+  return getFixedNumber(value);
+};
+
+export const currencySymbols = {
+  INR: '₹',
+  USD: 'US$',
+};
+
+export const getFormattedAmountNew = (
+  amount,
+  showCurrency,
+  currency = 'INR'
+) => {
+  const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
+
+  return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
+};
+
+// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
+export const getFormattedAmount = amount => {
+  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
+};
+
+export const without = (source, keys) => {
+  keys = makeArray(keys);
+  return Object.keys(source).reduce((prev, key) => {
+    if (keys.indexOf(key) === -1) {
+      prev[key] = source[key];
+    }
+    return prev;
+  }, {});
+};
+
+export const pickProps = (source, keys) => {
+  keys = makeArray(keys);
+  return Object.keys(source).reduce(
+    (collector, key) => ({
+      ...collector,
+      ...(keys.indexOf(key) > -1 && { [key]: source[key] }),
+    }),
+    {}
+  );
+};
+
+export const rupeesToPaise = amount => {
+  amount = (Number(amount) * 100).toFixed(0);
+
+  return Number(amount);
+};
+
+export const paiseToRupees = amount => {
+  amount = (Number(amount) / 100).toFixed(2);
+
+  return Number(amount);
+};
+
+export const objectDiff = (oldObj = {}, newObj = {}) => {
+  return Object.keys(newObj).reduce((prev, key) => {
+    let value = newObj[key];
+    let oldValue = oldObj[key];
+
+    if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
+      prev[key] = value;
+    }
+    return prev;
+  }, {});
+};
+
+/*
+  * Convert the object to url query string
+  * Don't allow undefined, null and empty string as values
+  * Note: It doesn't handle nested object
+*/
+export const stringifyQueryParams = params => {
+  let queryString;
+  let queryElements = [];
+
+  for (let key in params) {
+    if (
+      params.hasOwnProperty(key) &&
+      params[key] != null &&
+      params[key] !== ''
+    ) {
+      queryElements.push(key + '=' + params[key]);
+    }
+  }
+
+  queryString = '?' + queryElements.join('&');
+  return queryString;
+};
+
+/*
+ * Convert the location into query params object
+ * Usually, passing url = this.props.location.search
+ * Use Case: utilize to populate filter form
+*/
+export const getURLQueryParams = (url = document.location.hash) => {
+  let search = url.split('?')[1];
+  let params = {};
+
+  if (search) {
+    params = search.split('&').reduce((prev, curr) => {
+      let [key, value] = curr.split('=');
+      prev[key] = value;
+      return prev;
+    }, {});
+  }
+
+  return params;
+};
+
+export const noop = () => {};
+
+export const colors = ['primary', 'success', 'info', 'warn', 'danger'];
+
+export const paymentStatusColor = {
+  captured: colors[1],
+  authorized: colors[2],
+  refunded: colors[3],
+  failed: colors[4],
+};
+
+export const intervals = [
+  {
+    value: 'day',
+    label: 'Daily',
+  },
+  {
+    value: 'week',
+    label: 'Weekly',
+  },
+  {
+    value: 'month',
+    label: 'Monthly',
+  },
+  {
+    value: 'year',
+    label: 'Yearly',
+  },
+];
+
+const periods = {
+  weekly: 'Week',
+  monthly: 'Month',
+  yearly: 'Year',
+  daily: 'Day',
+};
+
+export const getIntervalCycle = (interval, period) => {
+  if (interval === 1) {
+    return `Every ${periods[period]}`;
+  } else {
+    return `Once in ${interval} ${periods[period]}s`;
+  }
+};
+
+export const getCustomerDisplayName = ({ name, contact, email }) => {
+  let displayParts = [name, contact, email].filter(item => !isBlank(item));
+
+  return `${displayParts.join(' / ').replace('/ ', '(')}${
+    displayParts.length > 1 ? ')' : ''
+  }`;
+};
+
+/**
+ * Flattens an object.
+ * @param {Object} object
+ * @param {String} delimeter
+ */
+export const flattenObject = (object, delimeter = '.') => {
+  let keys = Object.keys(object);
+  let flat = {};
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let val = object[key];
+
+    // if the value is an object and not falsy (null)
+    if (typeof val === 'object' && !!val) {
+      var _obj = flattenObject(val, delimeter);
+      var _keys = Object.keys(_obj);
+      for (var j = 0; j < _keys.length; j++) {
+        flat[key + delimeter + _keys[j]] = _obj[_keys[j]];
+      }
+    } else {
+      flat[key] = val;
+    }
+  }
+  return flat;
+};
+
+/**
+ * Method to create a query string separated by | instead of &
+ * @param {Object} params
+ * @return {String}
+ */
+export const stringifyQueryParamsWithPipe = params => {
+  if (!params) return '';
+
+  params = flattenObject(params, '_');
+
+  return JSON.stringify(params)
+    .replace(/:/g, '=') // Replace : with =
+    .replace(/{/g, '') // Remove {
+    .replace(/}/g, '') // Remove }
+    .replace(/"/g, '') // Remove "
+    .replace(/,/g, '|'); // Replace , with |
+};
+
+/**
+ * Method to get eventCategory for Analytics based on the given pathname
+ * @param {String} pathname
+ * @return {String}
+ */
+export const getEventCategoryFromPath = pathname => {
+  // Remove slashes from path. Eg: /plans/ => plan
+  pathname = pathname && pathname.split('/').join('');
+  switch (pathname) {
+    case 'payments':
+      return 'Dashboard - Payments';
+    case 'refunds':
+      return 'Dashboard - Refunds';
+    case 'paymentlinks':
+      return 'Dashboard - Payment Links';
+    case 'orders':
+      return 'Dashboard - Orders';
+    case 'settlements':
+      return 'Dashboard - Settlements';
+    case 'invoices':
+    case 'items':
+      return 'Dashboard - Invoices';
+    case 'plans':
+    case 'subscriptions':
+      return 'Dashboard - Subscriptions';
+    case 'virtualaccounts':
+      return 'Dashboard - Smart Collect';
+    default:
+      return 'Dashboard - Home';
+  }
+};
+
+export const getPercentage = (divident, divisor) => {
+  let value = 0;
+
+  if (divident) {
+    value = getFixedNumber(divisor / divident * 100);
+  }
+
+  return Number(value);
+};
+
+export const getPercentages = (...args) => {
+  /*
+   * Given Number arguments, returns a dictionary
+   * with keys as given numbers and values as the
+   * percentage of value compared to sum
+   *
+   * eg:
+   * getPercentages(1,2,3); // => {1: "16.67", 2: "33.33", 3: "50"}
+   */
+
+  const sum = args.reduce((sum, item) => item + sum, 0);
+
+  return args.reduce((result, item) => {
+    result[item] = getPercentage(sum, item);
+
+    return result;
+  }, {});
+};
+
+export const getEMI = (principle, length, rate) => {
+  /*
+   * Calculates EMI given amount, interestRate and Number of months
+   *
+   * @param {Number} amount
+   * @param {Number} interestRate
+   * @param {Number} numMonths
+   *
+   * `amount` must be in paise , `interestRate` is a number
+   * representing the percentage and `numMonths` is positive integer >=1
+   */
+
+  if (!rate) {
+    return Math.ceil(principle / length);
+  }
+
+  rate /= 1200;
+
+  var multiplier = Math.pow(1 + rate, length);
+
+  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+};
+
+export const arrayToCsv = array => {
+  /*
+   * Converts array of arrays to csv
+   */
+
+  return array
+    .reduce((result, item) => {
+      return result.concat(Array.isArray(item) ? item.join(',') : String(item));
+    }, [])
+    .join('\n');
+};
+
+export const arrayToCsvDataUrl = array => {
+  /*
+   * converts array of arrays to csv data url
+   */
+
+  return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
+};
+
+/**
+ * @param {*} url
+ * Check if valid secure production URL (i.e, HTTPS)
+ */
+export const checkIfHTTPS = url => {
+  const regex = /^https:\/\//i;
+
+  return regex.test(url);
+};
+
+/**
+ *
+ * @param {*} url
+ * Add 'http' to the URL if http/https not there
+ */
+export const autoPrefixUrls = url => {
+  const regex = /^https?:\/\//i;
+  let tempUrl;
+  if (!url || url.length === 0) {
+    return url;
+  }
+
+  tempUrl = url.toLowerCase();
+
+  if (!regex.test(tempUrl)) {
+    url = 'http://' + url;
+  }
+  return url;
+};
+
+// Check if webkit browsers
+export const isWebkit =
+  typeof window !== 'undefined' &&
+  typeof window.getComputedStyle(document.documentElement)[
+    '-webkit-text-security'
+  ] === 'string'
+    ? true
+    : false;
+
+export { acronyms, shortenText };
+
+/**
+ * Returns the applicable GST groups, a corresponding mapping, and the rate per GST group.
+ * @param {Integer} slab Slab. eg: 50000 (5%, value is multiple of 10000)
+ * @param {Integer} serviceStateCode State Code of Service (Merchant)
+ * @param {Integer} supplyStateCode State Code of Supply (Customer)
+ * @param {Object} mapping TaxGroup_Slab => Razorpay_Tax_ID mapping
+ * @param {Boolean} isUT Whether or not any of the states is a Union Territory
+ * @return {Object}
+ *  @prop {Array} groups List of applicable groups
+ *  @prop {Object} mapping Mapping that was passed, but only the ones applicable
+ *  @prop {Integer} perGroup % rate per group
+ */
+export const getApplicableGSTForSlab = (
+  slab,
+  serviceStateCode,
+  supplyStateCode,
+  mapping,
+  isUT
+) => {
+  let mapKeys = Object.keys(mapping);
+
+  /**
+   * For different states, it is IGST.
+   * For same state, if it is a Union Territory, it is CGST+UTGST.
+   * For same state, if it not is a Union Territory, it is CGST+SGST.
+   */
+  let groups = ['IGST'];
+  if (serviceStateCode === supplyStateCode) {
+    groups = isUT ? ['CGST', 'UTGST'] : ['CGST', 'SGST'];
+  }
+
+  let applicable = {};
+  let perKey = slab / groups.length;
+  for (let i = 0; i < mapKeys.length; i++) {
+    let key = mapKeys[i];
+    for (let j = 0; j < groups.length; j++) {
+      let group = groups[j];
+      if (`${group}_${perKey}` === key) {
+        applicable[key] = mapping[key];
+      }
+    }
+  }
+
+  return {
+    groups,
+    mapping: applicable,
+    perGroup: perKey,
+  };
+};
+
+/**
+ * Returns the applicable GST groups, a corresponding mapping, and the rate per GST group for given slabs.
+ * @param {Array} slabs Slabs. eg: [0, 500, 1200, ...]
+ * @param {Integer} serviceStateCode State Code of Service (Merchant)
+ * @param {Integer} supplyStateCode State Code of Supply (Customer)
+ * @param {Boolean} isUT Whether or not any of the states is a Union Territory
+ * @return {Object}
+ *  @prop {Number} slab Slab eg. 500, 1200, ...
+ *    @prop {Array} groups List of applicable groups
+ *    @prop {Object} mapping Mapping that was passed, but only the ones applicable
+ *    @prop {Integer} perGroup % rate per group
+ */
+export const getGSTSlabs = (
+  slabs,
+  serviceStateCode,
+  supplyStateCode,
+  mapping,
+  isUT
+) => {
+  let toReturn = {};
+  slabs.forEach(slab => {
+    toReturn[slab] = getApplicableGSTForSlab(
+      slab,
+      serviceStateCode,
+      supplyStateCode,
+      mapping,
+      isUT
+    );
+  });
+  return toReturn;
+};
+
+/**
+ * Stringifies an address.
+ * @param {Object} addr
+ * @return {String}
+ */
+export const stringifyAddress = addr => {
+  let str = '';
+
+  // Add Line 1 and Line 2
+  if (addr.line1) {
+    str += `${addr.line1},\n`;
+  }
+  if (addr.line2) {
+    str += `${addr.line2},\n`;
+  }
+
+  // Generate and add last line (city, state, country)
+  let lastLine = [];
+  if (addr.city) {
+    lastLine.push(addr.city);
+  }
+  if (addr.state) {
+    lastLine.push(addr.state);
+  }
+  if (addr.country) {
+    let country = addr.country;
+    if (country.toLowerCase() === 'in') {
+      country = 'India';
+    } else {
+      country = country.toUpperCase();
+    }
+    lastLine.push(country);
+  }
+  str += lastLine.join(', ');
+
+  // Add zipcode
+  if (addr.zipcode) {
+    str += ` (${addr.zipcode})`;
+  }
+
+  return str;
+};
+
+/**
+ * Get human readable file size
+ * @param {*} fileSize in bytes in Binary prefixes
+ */
+export const readableFileSize = bytes => {
+  const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+  if (!bytes) return `0 bytes`;
+  var e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
+};
+
+/**
+ * Method to create a query string separated by | instead of &
+ * @param {Object} params
+ * @return {String}
+ */
+export const getKeysSeparatedByPipe = params => {
+  if (!params) return '';
+
+  params = flattenObject(params, '_');
+
+  let keys = Object.keys(params);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i],
+      val = params[key];
+
+    // Remove keys that don't contain a value.
+    if (val === null || val === undefined || val === '' || val == 0) {
+      delete params[key];
+    }
+  }
+
+  // Stringify all the other keys and return the string.
+  return Object.keys(params).join('|');
+};
+
+/**
+ * Remove all white spaces from a given string
+ **/
+export const trim = str => {
+  return str.replace(/\s+/g, '');
+};
+
+/**
+ * convert array of items to a sentence
+ * ex. item1, item2 and item3
+ */
+export const arrayToSentence = (arr = []) => {
+  if (arr.length === 1) {
+    return arr[0];
+  } else {
+    return arr.slice(0, arr.length - 1).join(', ') + ' and ' + arr.slice(-1);
+  }
+};
+
+export const pluralize = (str, length) => {
+  return length > 1 ? `${str}s` : str;
+};
+
+/**
+ * Capital-cases a string.
+ * @param {String} input
+ * @return {String}
+ */
+export const capitalize = input =>
+  !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+
+const countries = {
+  UK: 'united kingdom',
+  IND: 'india',
+};
+
+export const getCountryPINcodeType = (country = '') => {
+  const countryLowerCase = country.toLowerCase();
+
+  switch (countryLowerCase) {
+    case countries.UK: {
+      return 'text';
+    }
+    default: {
+      return 'number';
+    }
+  }
+};
+
+export const isValidZipcodeCountryWise = (country = '', zipcode) => {
+  if (!country) {
+    return false;
+  }
+
+  const countryLowerCase = country.toLowerCase();
+
+  switch (countryLowerCase) {
+    case countries.IND: {
+      return zipcode.length === 6;
+    }
+    case countries.UK: {
+      return zipcode.length >= 6 && zipcode.length <= 8;
+    }
+    default: {
+      return zipcode.length <= 8 && zipcode.length >= 3;
+    }
+  }
+};
+
+/**
+ * Checks the validity of an address.
+ * Line1, City, State, Country, Zipcode are required fields in an address.
+ * @param {Object} address
+ * @return {Bool}
+ */
+export const isAddressValid = (address, customValidator = {}) => {
+  const allKeys = Boolean(
+    address &&
+      address.line1 &&
+      address.city &&
+      address.state &&
+      address.country &&
+      address.zipcode
+  );
+
+  if (!allKeys) {
+    return false;
+  }
+
+  const { line1, line2, city, state, country, zipcode } = address;
+
+  const requiredFieldsLengthCheck = Boolean(
+    line1.length >= 10 &&
+      line1.length <= 255 &&
+      city.length >= 2 &&
+      city.length <= 32 &&
+      (customValidator.zipcode
+        ? customValidator.zipcode(country, zipcode)
+        : zipcode.length === 6) &&
+      state.length >= 2 &&
+      state.length <= 32 &&
+      country.length >= 2 &&
+      country.length <= 64
+  );
+
+  let optionalFieldsLengthCheck = true;
+  if (line2 && !(line2.length >= 5 && line2.length <= 255)) {
+    optionalFieldsLengthCheck = false;
+  }
+
+  const lengthCheck = requiredFieldsLengthCheck && optionalFieldsLengthCheck;
+
+  if (!lengthCheck) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Returns whether or not a GSTIN is valid.
+ * @param {String} gstin
+ * @return {Boolean}
+ */
+export const isValidGSTIN = gstin => {
+  // If GSTIN is not provided or it isn't 15-char long, it is invalid.
+  if (!gstin || gstin.length !== 15) {
+    return false;
+  }
+
+  /**
+   * 1st character ∈ {0,1,2,3} (3 for future)
+   * 2nd character ∈ {0...9}
+   * 3rd - 7th characters are alphabets
+   * 8th - 11th characters are numbers
+   * 12th character is an alphabet
+   * 13th character is a number
+   * 14th character is “Z”
+   * 15th character could be anything (alphabet or number)
+   */
+  let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][a-z0-9][a-z0-9]$/gi;
+  return regex.test(gstin);
+};
+
+export const subString = (str, length) => {
+  if (!str) {
+    return str;
+  }
+
+  if (str.length > length) {
+    return `${str.substr(0, length)} ...`;
+  } else {
+    return str;
+  }
+};
+
+/**
+ * Figure out if the given Tax is of type cess.
+ * @param {Tax} tax
+ * @return {Boolean}
+ */
+export const isTaxOfTypeCess = tax =>
+  Boolean(
+    tax &&
+      tax.name &&
+      tax.name.toLowerCase().startsWith('cess') &&
+      tax.rate_type === 'percentage'
+  );
+
+/**
+ * Calculates tax.
+ * @param {Number} base Amount.
+ * @param {Number} rate Rate
+ * @param {Boolean} inclusive Whether or not tax is inclusive
+ *
+ * eg:  base: 500
+ *      rate: 18 (18%)
+ *
+ * @return {Number} tax.
+ */
+export const calculateTax = (base, rate, inclusive = false) => {
+  if (inclusive) {
+    return base - base / (1 + rate / 100);
+  } else {
+    return base * (rate / 100);
+  }
+};
+
+// efficient sorting of any collection based on order
+export const getArraySorterFromArray = (
+  order = [],
+  getValue = item => item
+) => {
+  const orderMap = order.reduce((map, item, index) => {
+    map[item] = index;
+
+    return map;
+  }, {});
+
+  return (item1, item2) => {
+    return orderMap[getValue(item1)] - orderMap[getValue(item2)];
+  };
+};
+
+export const loadImage = (src, onLoad, onError) => {
+  if (!src || !Image) {
+    return;
+  }
+
+  const image = new Image();
+
+  if (onLoad) {
+    image.onload = onLoad;
+  }
+
+  if (onError) {
+    image.onerror = onError;
+  }
+
+  image.src = src;
+};
+
+/*
+* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+*
+* This is helper fn. as a work around for dispatching manual events on native elements.
+*
+* */
+export function setNativeValue(element, value) {
+  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+  const prototype = Object.getPrototypeOf(element);
+  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
+    prototype,
+    'value'
+  ).set;
+
+  if (valueSetter && valueSetter !== prototypeValueSetter) {
+    prototypeValueSetter.call(element, value);
+  } else {
+    valueSetter.call(element, value);
+  }
+}
+
+export const sanitizeHTML = str => {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+
+  return temp.innerHTML;
+};
+
+export const deepClone = o => {
+  try {
+    return JSON.parse(JSON.stringify(o));
+  } catch (err) {
+    console.log('Deepclone error: ', err);
+  }
+};
+
+/*
+ * Helper fn. to fetch IFSC bank details for IFSC code entered in field
+ * */
+export function getDetailsForIFSC(ifscCode) {
+  if (ifscCode.length !== 11) {
+    return null;
+  }
+
+  return axios('https://ifsc.razorpay.com/' + ifscCode).then(info => {
+    info = info.data;
+
+    if (info) {
+      info = {
+        Bank: info.BANK,
+        Branch: info.BRANCH,
+        City: info.CITY,
+        State: info.STATE,
+      };
+
+      return info;
+    }
+
+    return null; // Invalid IFSC code
+  });
+}
+
+/* Returns array with non-duplicate entries */
+export function uniqueArray(arr) {
+  if (!arr || !arr.length) {
+    return;
+  }
+
+  const map = {};
+
+  return arr.filter(item => !map[item] && (map[item] = true));
+}
+
+export function isMobileAndTablet() {
+  let check = false;
+
+  (function(a) {
+    if (
+      /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(
+        a
+      ) ||
+      /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+        a.substr(0, 4)
+      )
+    )
+      check = true;
+  })(navigator.userAgent || navigator.vendor || window.opera);
+
+  return check;
+}
+
+/**
+ *
+ * @param {String} path - path of data member with dots as string type
+ * @param {String} value - value of variable
+ * @param {Object} srcObj - object where value needs to be inserted
+ */
+export function stringToObj(path, value, srcObj) {
+  const newObj = srcObj ? deepClone(srcObj) : srcObj;
+  // for supporting sample[0][sampleKey]
+  const squareBracketPattern = /\[|\]/;
+  if (squareBracketPattern.test(path)) {
+    parts = path.split(squareBracketPattern).filter(pathEl => !!pathEl); //splitting with regex gives empty strings
+  } else {
+    parts = path.split('.');
+  }
+
+  let last = parts.pop();
+
+  // converts if numeric for array
+  last = isNaN(last) ? last : Number(last);
+  let obj = newObj;
+
+  while ((part = parts.shift())) {
+    // converts if numeric for array
+    part = isNaN(part) ? part : Number(part);
+
+    if (typeof obj[part] !== 'object') {
+      // assigning an array if upcoming part is number
+      obj[part] = isNaN(parts[0]) ? {} : [];
+    }
+    obj = obj[part];
+  }
+  obj[last] = value;
+  var parts, part;
+  return newObj;
+}
+
+export const addPrefixToObjectKeys = (prefix, data) => {
+  const newData = {};
+
+  for (const key in data) {
+    newData[`${prefix}${key}`] = data[key];
+  }
+
+  return newData;
+};
+
+const _arrayMoveMutate = (array, from, to) => {
+  array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
+};
+
+/* For swapping positions of 2 indices in an array */
+export const arrayMove = (array, from, to) => {
+  array = array.slice();
+  _arrayMoveMutate(array, from, to);
+  return array;
+};
+
+export function classList(...args) {
+  const classes = [];
+
+  for (var i = 0; i < args.length; i++) {
+    if (args[i]) {
+      if (args[i] instanceof Array) {
+        args[i] = args[i].join(' ');
+      }
+
+      classes.push(args[i]);
+    }
+  }
+
+  return classes.join(' ');
+}

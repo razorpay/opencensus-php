@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ItemsList from 'merchant/components/Items/ItemsList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
@@ -18,9 +18,9 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
-import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'common/utils/constants';
+import { stringifyQueryParams } from 'common/utils/rzp-utils';
 
 @connect(
   state => ({

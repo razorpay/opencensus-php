@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
-import InlineField from 'rzp/ui/Forms/InlineField';
-import InputField from 'rzp/ui/Forms/InputField';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
+import InlineField from 'common/ui/Forms/InlineField';
+import InputField from 'common/ui/Forms/InputField';
+import TypeAhead from 'common/ui/Select/TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
+import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
 import Item from 'merchant/models/Item';
 import { track } from './ga';
 

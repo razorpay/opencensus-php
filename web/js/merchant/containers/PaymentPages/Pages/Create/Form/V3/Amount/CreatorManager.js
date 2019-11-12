@@ -7,8 +7,8 @@ import {
   isMandatoryToBool,
   mapFieldToAmountFieldType,
 } from '../../Amount_Fields/V3';
-import { getCurrency } from 'rzp/ui/Amount';
-import { paiseToRupees } from 'rzp/utils/rzp-utils';
+import { getCurrency } from 'common/ui/Amount';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {

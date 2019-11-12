@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchantLA/utils/ajax';
-import { merge, set } from 'rzp/utils/immutable';
+import { merge, set } from 'common/utils/immutable';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 const FETCH_BALANCE = 'FETCH_BALANCE';

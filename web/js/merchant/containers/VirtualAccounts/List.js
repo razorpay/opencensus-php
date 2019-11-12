@@ -7,12 +7,12 @@ import {
   amountPaid,
   status,
   createdAt,
-} from 'rzp/ui/item/pair';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
+} from 'common/ui/item/pair';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'common/utils/constants';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 

@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import HeaderAction from 'common/ui/HeaderAction';
+import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 

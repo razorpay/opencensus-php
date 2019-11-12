@@ -2,18 +2,18 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
+import InputField from 'common/ui/Forms/InputField';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 import {
   isBlank,
   rupeesToPaise,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   fetchTransfer,
   fetchReversals,

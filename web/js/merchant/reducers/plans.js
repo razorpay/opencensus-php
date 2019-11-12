@@ -7,7 +7,7 @@ import {
   makeEntityReducer,
   updateEntity,
 } from 'merchant_common/reducers/entity';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 
 export const PLANS_FETCH = 'PLANS_FETCH';
 export const PLAN_CREATE = 'PLAN_CREATE';

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Alert from 'rzp/ui/Forms/Alert';
+import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';

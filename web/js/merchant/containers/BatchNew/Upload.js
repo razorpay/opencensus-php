@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 

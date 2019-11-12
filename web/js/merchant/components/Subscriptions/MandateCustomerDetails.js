@@ -1,4 +1,4 @@
-import Definition from 'rzp/ui/Definition';
+import Definition from 'common/ui/Definition';
 
 export default function MandateCustomerDetails({ customer }) {
   return !!customer ? (

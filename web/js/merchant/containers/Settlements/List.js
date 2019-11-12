@@ -2,21 +2,21 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link, NavLink } from 'react-router-dom';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchant/components/Settlements/List';
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   trackEarlySettlementRequests,
@@ -25,8 +25,8 @@ import {
 } from './ga';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import OndemandModal from './OndemandModal';
-import Amount from 'rzp/ui/Amount';
-import Button from 'component/Button';
+import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';

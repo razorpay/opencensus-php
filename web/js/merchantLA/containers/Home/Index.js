@@ -3,16 +3,16 @@ import { connect } from 'react-redux';
 import moment from 'moment';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { customRangeText } from 'rzp/ui/DateRangePicker';
+import { customRangeText } from 'common/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
   platformGroupingVals,
   groupByPlatform,
   OTHERS,
-} from 'rzp/utils/pokedex';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+} from 'common/utils/pokedex';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 
 import * as HomeActions from 'merchantLA/reducers/home';
 import { fetch } from 'merchantLA/reducers/pokedex';

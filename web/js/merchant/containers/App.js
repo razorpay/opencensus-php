@@ -2,11 +2,11 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ErrorBoundary from 'component/ErrorBoundary';
-import ModalDialog from 'rzp/ui/ModalDialog';
-import Notifications from 'rzp/ui/Notifications';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ModalDialog from 'common/ui/ModalDialog';
+import Notifications from 'common/ui/Notifications';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
@@ -29,8 +29,8 @@ import {
   updateMerchantLiveTransactionFlag,
 } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
-import { classList } from 'common/util';
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { classList } from 'common/utils/rzp-utils';
+import { setTrackData } from 'common/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';

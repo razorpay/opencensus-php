@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 import User from 'merchant/models/User';
 
@@ -14,7 +14,7 @@ import { updateSession } from 'merchant/reducers/session';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import {
   VerifyOtp,
   AskMobileNumber,

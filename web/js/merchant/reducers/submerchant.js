@@ -1,8 +1,8 @@
 import Submerchant from 'merchant/models/Submerchant';
 import { createLog, getLog, getFile } from 'merchant/reducers/reports';
 
-import { merge } from 'rzp/utils/immutable';
-import poll from 'rzp/utils/poll/longPoll';
+import { merge } from 'common/utils/immutable';
+import poll from 'common/utils/poll/longPoll';
 
 const SUB_MERCHANT_CREATE = 'SUB_MERCHANT_CREATE';
 const SUB_MERCHANT_FETCH_DETAILS = 'SUB_MERCHANT_FETCH_DETAILS';

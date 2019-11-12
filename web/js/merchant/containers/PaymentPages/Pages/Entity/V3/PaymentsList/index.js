@@ -11,7 +11,7 @@ import {
   customer,
   createdAtShort,
   status,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
 

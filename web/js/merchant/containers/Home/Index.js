@@ -3,18 +3,18 @@ import { connect } from 'react-redux';
 import moment from 'moment';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { customRangeText } from 'rzp/ui/DateRangePicker';
+import { customRangeText } from 'common/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
   platformGroupingVals,
   groupByPlatform,
   OTHERS,
-} from 'rzp/utils/pokedex';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+} from 'common/utils/pokedex';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { activationDuration } from 'merchant_common/helpers/data';
 
 import * as HomeActions from 'merchant/reducers/home';
@@ -43,7 +43,7 @@ import {
   iaActivations,
 } from './ga';
 
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';

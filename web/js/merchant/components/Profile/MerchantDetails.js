@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import Time from 'rzp/ui/Time';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import Time from 'common/ui/Time';
+import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
-import ProgressBar from 'rzp/ui/ProgressBar';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import ProgressBar from 'common/ui/ProgressBar';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';

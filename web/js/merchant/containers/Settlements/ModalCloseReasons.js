@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import { CLOSEOPTIONS } from './CloseReasons';
 
 @connect(state => ({ user: state.session.user }), {

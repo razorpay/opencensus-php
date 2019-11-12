@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
-import Alert from 'rzp/ui/Forms/Alert';
-import { without } from 'rzp/utils/rzp-utils';
+import Alert from 'common/ui/Forms/Alert';
+import { without } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ActivationActions from 'merchant/reducers/activation';
 import * as SessionActions from 'merchant/reducers/session';

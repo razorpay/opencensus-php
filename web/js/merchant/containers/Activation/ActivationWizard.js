@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { destroy } from 'redux-form';
 import WizardItem from './WizardItem';
 
-import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
+import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 
 import { track } from './ga';
 

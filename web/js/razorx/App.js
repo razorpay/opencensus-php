@@ -1,4 +1,4 @@
-import ErrorBoundary from 'component/ErrorBoundary';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';

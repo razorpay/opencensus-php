@@ -1,4 +1,4 @@
-import { merge, remove, set, unshift } from 'rzp/utils/immutable';
+import { merge, remove, set, unshift } from 'common/utils/immutable';
 import createReducer from 'merchant_common/reducers/createReducer';
 
 import Settlement from 'merchantLA/models/Settlement';

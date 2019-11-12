@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Button from '../../../../component/Button';
+import Button from 'common/new-ui/Button';
 
 import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
 } from 'merchant/reducers/collection';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import GenericPanel, {
   PanelBody,

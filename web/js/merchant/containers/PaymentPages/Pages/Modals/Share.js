@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Button, { AsyncBtn } from 'component/Button';
-import Form from 'component/Form';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import Input from 'component/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Input from 'common/new-ui/Input';
 
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import PPEmbedButtonView from './EmbedButton';
 
-import { isEmail, isPhone } from 'rzp/utils/validators';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { isEmail, isPhone } from 'common/utils/validators';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import { isMobileAndTablet } from 'rzp/utils/rzp-utils';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
 const twitterBase = 'https://twitter.com/share?url=';

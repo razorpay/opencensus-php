@@ -1,5 +1,5 @@
 export const testMerchantId = '10000000000000';
-import { snakeToTitleCase } from 'common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 
 export const activationDuration = '4-5 working days';
 
@@ -255,7 +255,7 @@ const statusPillClasses = {
 export const statusPill = (status, emptyValue = '--') => {
   return status ? (
     <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
-      {snakeToTitleCase(status)}
+      {titleCase(status)}
     </span>
   ) : (
     emptyValue

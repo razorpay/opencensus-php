@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Alert from 'rzp/ui/Forms/Alert';
-import Pager from 'rzp/ui/Pager';
+import HeaderAction from 'common/ui/HeaderAction';
+import Alert from 'common/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
 import AddOnsListFilter from 'merchant/components/AddOns/ListFilter';
 import AddOnsList from 'merchant/components/AddOns/List';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -19,7 +19,7 @@ import {
   planAmount,
   planBillingCycle,
   createdAt,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 @connect(
   state => {

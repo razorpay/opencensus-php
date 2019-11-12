@@ -1,4 +1,4 @@
-import { AsyncBtn } from 'component/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 export default ({ isSaveBtnDisable, onSaveClick, scheduledTime }) => (
   <div class="ReminderSettings-Footer">

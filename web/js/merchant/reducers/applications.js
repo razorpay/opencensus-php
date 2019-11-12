@@ -1,4 +1,4 @@
-import { set, merge, remove } from 'rzp/utils/immutable';
+import { set, merge, remove } from 'common/utils/immutable';
 import Application from 'merchant/models/Application';
 import { merchantFetch } from 'merchant/utils/ajax';
 

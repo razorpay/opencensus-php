@@ -1,4 +1,4 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import { set, merge, unshift, remove } from 'common/utils/immutable';
 import createReducer from 'merchant_common/reducers/createReducer';
 
 import Payment from 'merchant/models/Payment';

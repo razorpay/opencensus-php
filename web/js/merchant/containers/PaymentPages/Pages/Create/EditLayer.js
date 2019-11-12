@@ -1,5 +1,5 @@
-import { Info } from 'component/Input';
-import { classList } from 'common/util';
+import { Info } from 'common/new-ui/Input';
+import { classList } from 'common/utils/rzp-utils';
 
 export default ({ children, infoTxt, className, onClick, setRef, ...rest }) => (
   <div

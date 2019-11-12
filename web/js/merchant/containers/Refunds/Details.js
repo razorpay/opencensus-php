@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RefundDetails from 'merchant/components/Refunds/RefundDetails';
 import * as RefundActions from 'merchant/reducers/refunds/details';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(state => state.refund, RefundActions)
 export default class RefundDetailsContainer extends Component {

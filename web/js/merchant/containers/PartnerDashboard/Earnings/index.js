@@ -5,9 +5,9 @@ import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import { fetchCommissionBalances } from 'merchant/reducers/commission';
 
-import Amount from 'rzp/ui/Amount';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import { isPresent } from 'rzp/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import HeaderAction from 'common/ui/HeaderAction';
+import { isPresent } from 'common/utils/rzp-utils';
 
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';

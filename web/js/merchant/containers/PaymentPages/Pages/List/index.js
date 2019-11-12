@@ -1,11 +1,11 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import RTracking from 'react-tracking';
 
-import Pager from 'rzp/ui/Pager';
-import Spinner from 'rzp/ui/Spinner';
+import Pager from 'common/ui/Pager';
+import Spinner from 'common/ui/Spinner';
 import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
@@ -31,10 +31,10 @@ import {
 import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
 
 import { fetchPaymentPagesList } from '../model';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
 @withRouter
 @connect(

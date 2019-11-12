@@ -2,18 +2,23 @@ import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import DataTable from 'rzp/ui/Table/DataTable';
+import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
-import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
+import {
+  batchIdLink,
+  totalCount,
+  batchName,
+  status,
+} from 'common/ui/item/pair';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import { luminateRow } from 'merchant/reducers/app';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { batchDownload } from 'merchant/reducers/batches';
-import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';
+import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 const batchStatus = {

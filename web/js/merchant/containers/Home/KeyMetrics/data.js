@@ -6,15 +6,15 @@ import {
   paiseToRupees,
   arrayToCsvDataUrl,
   groupBy,
-} from 'rzp/utils/rzp-utils';
-import colors from 'rzp/utils/chart/colors.js';
+} from 'common/utils/rzp-utils';
+import colors from 'common/utils/chart/colors.js';
 import {
   globalGroupTitleMap,
   groupByPlatform,
   getDefaultFilter,
   getDefaultPaymentFilter,
   platformGroupingVals,
-} from 'rzp/utils/pokedex';
+} from 'common/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 

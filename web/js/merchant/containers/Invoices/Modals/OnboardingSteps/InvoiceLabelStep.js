@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
-import RadioButton from 'rzp/ui/Forms/RadioButton';
+import RadioButton from 'common/ui/Forms/RadioButton';
 
 import { updateConfig } from 'merchant/reducers/config';
 

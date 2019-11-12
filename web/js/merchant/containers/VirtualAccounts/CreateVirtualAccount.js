@@ -4,13 +4,13 @@ import { TypeAhead } from 'react-power-select';
 import AsyncButton from 'react-async-button';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy } from 'common/utils/rzp-utils';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
+import ModalHeader from 'common/ui/ModalHeader';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import QuickAddComponent from 'common/ui/Select/QuickAdd';
 
-import Input, { Label, Description } from 'component/Input';
+import Input, { Label, Description } from 'common/new-ui/Input';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as ModalActions from 'merchant_common/reducers/modals';

@@ -1,6 +1,6 @@
 import ajax from 'merchant/utils/ajax';
-import { set, merge } from 'rzp/utils/immutable';
-import { createLineData } from 'rzp/utils/chart/index.js';
+import { set, merge } from 'common/utils/immutable';
+import { createLineData } from 'common/utils/chart/index.js';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 // graph data

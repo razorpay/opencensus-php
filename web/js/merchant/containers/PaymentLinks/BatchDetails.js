@@ -3,15 +3,15 @@ import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import { fetchPaymentLinkBatchesDetails as fetchBatchDetails } from 'merchant/reducers/batches';
-import { pluralize } from 'rzp/utils/rzp-utils';
+import { pluralize } from 'common/utils/rzp-utils';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import BatchStats from 'rzp/ui/StatsTable';
+import BatchStats from 'common/ui/StatsTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import DataTable from 'rzp/ui/Table/DataTable';
-import ListToggler from 'rzp/ui/Toggler/ListToggler';
-import Time from 'rzp/ui/Time';
-import { amount, status } from 'rzp/ui/item/pair';
+import DataTable from 'common/ui/Table/DataTable';
+import ListToggler from 'common/ui/Toggler/ListToggler';
+import Time from 'common/ui/Time';
+import { amount, status } from 'common/ui/item/pair';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');

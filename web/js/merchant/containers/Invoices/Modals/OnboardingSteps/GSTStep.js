@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
-import RadioButton from 'rzp/ui/Forms/RadioButton';
-import InputField from 'rzp/ui/Forms/InputField';
+import RadioButton from 'common/ui/Forms/RadioButton';
+import InputField from 'common/ui/Forms/InputField';
 
 import { saveGST } from 'merchant/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
-import LocalStorageService from 'rzp/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('gstStepOnboarding');

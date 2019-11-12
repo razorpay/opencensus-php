@@ -4,16 +4,16 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
-import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
+import Alert from 'common/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import RadioButton from 'common/ui/Forms/RadioButton';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
 import { SingleDatePicker } from 'react-dates';
-import { nextWorkingDay, isHoliday } from 'rzp/utils/bankHolidays';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { nextWorkingDay, isHoliday } from 'common/utils/bankHolidays';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from 'merchant/components/Fee';

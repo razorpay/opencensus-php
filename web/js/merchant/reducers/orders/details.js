@@ -1,5 +1,5 @@
 import Order from 'merchant/models/Order';
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 
 const ORDER_FETCH = 'ORDER_FETCH';
 const ORDER_PAYMENTS_FETCH = 'ORDER_PAYMENTS_FETCH';

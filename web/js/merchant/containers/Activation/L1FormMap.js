@@ -1,8 +1,8 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { validatePANCard, isUrlLenient } from 'rzp/utils/validators';
+import { validatePANCard, isUrlLenient } from 'common/utils/validators';
 
 import AddressFields from './AddressFieldsMap';
 

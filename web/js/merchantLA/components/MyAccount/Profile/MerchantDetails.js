@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Time from 'rzp/ui/Time';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import Time from 'common/ui/Time';
+import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 const businessTypeMap = {

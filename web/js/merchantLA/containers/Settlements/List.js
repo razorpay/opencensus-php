@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchantLA/components/Settlements/List';
 import SettlementsListFilter from 'merchantLA/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchantLA/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { fetchBalanceAction } from 'merchantLA/reducers/credits';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 
 @connect(
   state => ({

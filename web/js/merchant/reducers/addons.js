@@ -8,7 +8,7 @@ import {
   makeEntityReducer,
   updateEntity,
 } from 'merchant_common/reducers/entity';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 import { formatFields } from 'merchant/resources/addons';
 import { merchantFetch } from 'merchant/utils/ajax';
 

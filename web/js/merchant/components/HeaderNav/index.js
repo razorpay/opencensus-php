@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 
 import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
-import NotificationsDropdown from 'rzp/ui/NotificationsDropdown';
+import NotificationsDropdown from 'common/ui/NotificationsDropdown';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 
 import ShowWhen from 'merchant/components/ShowWhen';

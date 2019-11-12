@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
 
-import { AmountTooltip } from 'rzp/ui/Amount';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { AmountTooltip } from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 

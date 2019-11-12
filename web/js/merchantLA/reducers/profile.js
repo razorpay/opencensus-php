@@ -1,5 +1,5 @@
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 
 export const updatePassword = data => {
   return ajax({

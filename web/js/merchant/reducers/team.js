@@ -1,4 +1,4 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import { set, merge, unshift, remove } from 'common/utils/immutable';
 import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
 import {
   makeActionCollectionReducer,

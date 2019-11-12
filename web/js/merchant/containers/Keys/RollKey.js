@@ -2,14 +2,14 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import { isBlank } from 'common/utils/rzp-utils';
 import { generateKey } from 'merchant/reducers/keys';
-import { required, phone, email } from 'rzp/utils/validators';
+import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
+import RadioButton from 'common/ui/Forms/RadioButton';
 
 @connect(state => state.session, { closeModal })
 @reduxForm({

@@ -1,6 +1,6 @@
 import React from 'react';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import { classList } from 'common/util';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { classList } from 'common/utils/rzp-utils';
 
 const SwitchMode = ({ mode, modeFormatted, onSwitchMode }) => {
   return (

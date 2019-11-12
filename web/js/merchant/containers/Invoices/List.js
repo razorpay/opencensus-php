@@ -1,13 +1,13 @@
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { RZPFeatures } from 'common/utils/constants';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import Pager from 'rzp/ui/Pager';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import * as InvoiceActions from 'merchant/reducers/invoices/list';

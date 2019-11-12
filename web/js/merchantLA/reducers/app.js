@@ -1,4 +1,4 @@
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';

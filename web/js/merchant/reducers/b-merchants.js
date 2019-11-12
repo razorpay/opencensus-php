@@ -1,5 +1,5 @@
 import BMerchant from 'merchant/models/BMerchant';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 export const BMERCHANT_FETCH = 'BMERCHANT_FETCH';

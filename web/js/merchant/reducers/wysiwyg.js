@@ -8,9 +8,9 @@ import {
   updateItem,
   push,
   deepMerge,
-} from 'rzp/utils/immutable';
+} from 'common/utils/immutable';
 
-import { paiseToRupees, arrayMove } from 'rzp/utils/rzp-utils';
+import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
 
 // TODO: Remove dependency from here

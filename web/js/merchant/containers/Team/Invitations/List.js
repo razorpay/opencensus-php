@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import { role } from 'rzp/ui/item/pair';
+import DataTable from 'common/ui/Table/DataTable';
+import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
 import { fetchInvitations as fetchAll } from 'merchant/reducers/collection';

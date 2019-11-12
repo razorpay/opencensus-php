@@ -2,9 +2,9 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required } from 'rzp/utils/validators';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
+import { required } from 'common/utils/validators';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 

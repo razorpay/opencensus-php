@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import { AsyncBtn } from 'component/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 

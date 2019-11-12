@@ -10,7 +10,7 @@ import CreateTestPayment from './CreateTestPayment';
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(

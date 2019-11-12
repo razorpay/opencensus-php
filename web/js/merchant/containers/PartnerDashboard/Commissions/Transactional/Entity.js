@@ -1,16 +1,16 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
-import Amount from 'rzp/ui/Amount';
-import DualBreakup from 'rzp/ui/FeeBreakup';
-import Alert from 'rzp/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
+import Amount from 'common/ui/Amount';
+import DualBreakup from 'common/ui/FeeBreakup';
+import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { fetchCommission } from 'merchant/reducers/commission';
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 
 @connect(
   state => ({

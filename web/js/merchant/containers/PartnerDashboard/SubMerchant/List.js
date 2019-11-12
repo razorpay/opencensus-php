@@ -10,18 +10,18 @@ import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
 import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import { getTime } from 'rzp/ui/item';
+import { getTime } from 'common/ui/item';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import {
   submerchant as submerchantColumn,
   submerchantId as id,
   email as emailColumn,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';

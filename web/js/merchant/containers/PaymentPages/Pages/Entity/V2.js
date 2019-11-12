@@ -2,17 +2,17 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
-import { keysToSentence } from 'rzp/utils/rzp-utils';
+import { keysToSentence } from 'common/utils/rzp-utils';
 
 import { sendLink } from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Definition from 'rzp/ui/Definition';
+import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import StatsInfo from 'rzp/ui/StatsTable';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import StatsInfo from 'common/ui/StatsTable';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -24,7 +24,7 @@ import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
 import ShareView from '../Modals/Share';
 import PPEmbedButtonView from '../Modals/EmbedButton';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 const MAX_API_COUNT = 100;
 

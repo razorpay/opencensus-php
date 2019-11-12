@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import Tooltip from 'rzp/ui/Tooltip';
-import { getFormattedNumber, getFormattedAmountNew } from 'rzp/utils/rzp-utils';
-import { globalGroupTitleMap as groupTitleMap } from 'rzp/utils/pokedex';
+import Tooltip from 'common/ui/Tooltip';
+import {
+  getFormattedNumber,
+  getFormattedAmountNew,
+} from 'common/utils/rzp-utils';
+import { globalGroupTitleMap as groupTitleMap } from 'common/utils/pokedex';
 
 import { bankNames } from '../data';
 import renderTreemap from './renderTreemap';

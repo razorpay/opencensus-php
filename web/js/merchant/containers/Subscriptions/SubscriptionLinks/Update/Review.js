@@ -1,4 +1,4 @@
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 
 export default function UpdateSubscriptionLinkReview(props) {
   const changes = changeData(props);

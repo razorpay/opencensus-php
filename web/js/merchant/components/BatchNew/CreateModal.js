@@ -1,11 +1,11 @@
 import { Component, Fragment } from 'react';
 import { Field, reduxForm } from 'redux-form';
 
-import InputField from 'rzp/ui/Forms/InputField';
-import TableSlider from 'rzp/ui/TableSlider';
+import InputField from 'common/ui/Forms/InputField';
+import TableSlider from 'common/ui/TableSlider';
 import AsyncButton from 'react-async-button';
 
-import { required } from 'rzp/utils/validators';
+import { required } from 'common/utils/validators';
 @reduxForm({
   form: 'createBatch',
 })

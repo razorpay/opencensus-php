@@ -4,8 +4,8 @@ import { render } from 'react-dom';
 
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import Button, { AsyncBtn } from 'component/Button';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Svelte from './Svelte';
 import DetailsView from './Details';
 import FormView from './Form';
@@ -15,7 +15,7 @@ import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPage,
@@ -31,7 +31,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
 import { validateUISchema as validateUISchemaV3 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V3';
 
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,

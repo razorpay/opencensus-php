@@ -1,9 +1,9 @@
 import { Component, Children } from 'react';
 import { connect } from 'react-redux';
-import { Tour, TourStep, TourStepTitle, TourStepBody } from 'rzp/ui/Tour';
+import { Tour, TourStep, TourStepTitle, TourStepBody } from 'common/ui/Tour';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import LocalStorageService from 'rzp/utils/localStorage';
-import scrollTo from 'rzp/utils/scrollTo';
+import LocalStorageService from 'common/utils/localStorage';
+import scrollTo from 'common/utils/scrollTo';
 
 import { showOrHideTour } from 'merchant/reducers/session';
 

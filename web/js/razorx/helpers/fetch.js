@@ -1,6 +1,6 @@
 import adminFetch from 'razorx/helpers/admin-fetch';
 import { AppStore } from 'razorx/store';
-import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
+import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { notifyError } from 'razorx/components/Modal';
 
 /*

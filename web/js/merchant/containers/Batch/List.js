@@ -1,10 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import DataTable from 'rzp/ui/Table/DataTable';
+import DataTable from 'common/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
-import { batchId, totalCount, status, createdAt } from 'rzp/ui/item/pair';
+import { batchId, totalCount, status, createdAt } from 'common/ui/item/pair';
 import { batchDownload } from 'merchant/reducers/batches';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';

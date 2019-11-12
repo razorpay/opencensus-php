@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import moment from 'moment';
 
-import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { fetchCreditById } from 'merchant/reducers/credits';

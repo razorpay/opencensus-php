@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import Slider from 'component/Slider';
+import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';

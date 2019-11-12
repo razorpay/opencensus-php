@@ -1,4 +1,4 @@
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
 import { SubscriptionItem } from 'merchant/models/Item';
 import {

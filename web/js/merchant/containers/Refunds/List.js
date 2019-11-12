@@ -12,9 +12,9 @@ import {
   amount,
   createdAt,
   public_status,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 @connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {

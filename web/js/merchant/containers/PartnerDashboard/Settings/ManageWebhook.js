@@ -4,7 +4,7 @@ import { fetchAppWebhooks } from 'merchant/reducers/applications';
 
 import CreateWebhook from 'merchant/containers/Webhooks/New';
 
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 
 export default class ManageWebhook extends Component {
   state = {

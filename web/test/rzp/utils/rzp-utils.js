@@ -1,8 +1,8 @@
 require('it-each')();
 const expect = require('chai').expect;
-import { isFunction } from 'rzp/utils/rzp-utils';
+import { isFunction } from 'common/utils/rzp-utils';
 
-describe('rzp/utils/rzp-utils Fn: isFunction', function() {
+describe('common/utils/rzp-utils Fn: isFunction', function() {
   const falseValues = [
     2,
     2.3,

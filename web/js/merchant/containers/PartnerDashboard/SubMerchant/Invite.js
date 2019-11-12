@@ -4,12 +4,12 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
-import { required, email } from 'rzp/utils/validators';
+import { required, email } from 'common/utils/validators';
 import { invite as inviteSubmerchant } from 'merchant/reducers/submerchant';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
 
 @connect(state => ({ ...state.submerchant.item }), {
   closeModal,

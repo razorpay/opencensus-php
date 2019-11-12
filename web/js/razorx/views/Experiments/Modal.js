@@ -1,6 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
-import debounce from 'rzp/utils/debounce';
+import debounce from 'common/utils/debounce';
 import {
   openModal,
   closeModal,
@@ -14,7 +14,7 @@ import Field, {
   SelectField,
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
-import { ModalContent } from 'component/Modal';
+import { ModalContent } from 'common/new-ui/Modal';
 import JSONEdit from 'razorx/components/JSONEdit';
 
 import { rexFetch, rexPost, rexPut } from 'razorx/helpers/fetch';

@@ -2,16 +2,16 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector, change } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import { required } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import { required } from 'common/utils/validators';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import ShowWhen from 'merchant/components/ShowWhen';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 // Decorate with connect to read form values
 const selector = formValueSelector('newAccount');

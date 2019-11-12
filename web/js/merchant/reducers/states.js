@@ -1,4 +1,4 @@
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 import State from 'merchant/models/State';
 
 const STATES_FETCH = 'STATES_FETCH';

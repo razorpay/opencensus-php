@@ -1,4 +1,4 @@
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 import {
   getActionName,
   makeCollectionReducer,
@@ -13,7 +13,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
 
-//Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/rzp/modules/collection.js
+//Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/merchant_common/reducers/collection.js
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';

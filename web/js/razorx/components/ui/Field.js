@@ -5,7 +5,7 @@ import {
   authTypes,
   authGateway,
 } from 'merchant_common/helpers/data';
-import { prevent, classList } from 'common/util';
+import { prevent, classList } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 import CalendarPicker from 'razorx/components/ui/Calendar';

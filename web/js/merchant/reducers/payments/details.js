@@ -1,5 +1,5 @@
 import Payment from 'merchant/models/Payment';
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const PAYMENT_FETCH = 'PAYMENT_FETCH';

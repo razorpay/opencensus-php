@@ -1,5 +1,5 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
-import { set, merge, unshift } from 'rzp/utils/immutable';
+import { set, merge, unshift } from 'common/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';

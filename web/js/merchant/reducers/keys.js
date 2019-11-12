@@ -1,4 +1,4 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import { set, merge, unshift, remove } from 'common/utils/immutable';
 import Key from 'merchant/models/Key';
 
 const KEYS_FETCH = 'KEYS_FETCH';

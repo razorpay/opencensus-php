@@ -5,13 +5,13 @@ import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import Amount from 'rzp/ui/Amount';
-import Alert from 'rzp/ui/Forms/Alert';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
-import Spinner from 'rzp/ui/Spinner';
-import InlineField from 'rzp/ui/Forms/InlineField';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Amount from 'common/ui/Amount';
+import Alert from 'common/ui/Forms/Alert';
+import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
+import TypeAhead from 'common/ui/Select/TypeAhead';
+import Spinner from 'common/ui/Spinner';
+import InlineField from 'common/ui/Forms/InlineField';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   findBy,
   getKeysSeparatedByPipe,
@@ -22,7 +22,7 @@ import {
   calculateTax,
   isBlank,
   getURLQueryParams,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemTable from './LineItemTable';
@@ -49,7 +49,7 @@ import { SingleDatePicker } from 'react-dates';
 import AddressSelectionModal from 'merchant/containers/Invoices/AddressSelectionModal/index';
 import EditInvoiceLabelModal from 'merchant/containers/Invoices/Modals/Merchant/EditInvoiceLabel';
 import AddressDisplay from 'merchant/components/AddressDisplay';
-import * as constants from 'rzp/utils/constants';
+import * as constants from 'common/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/reducers/app';
 import {
@@ -63,7 +63,7 @@ import {
 } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 function validate(values) {
   let errors = {

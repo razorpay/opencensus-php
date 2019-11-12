@@ -2,24 +2,24 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-import InputField from 'rzp/ui/Forms/InputField';
-import { RadioGroup } from 'rzp/ui/Forms/RadioGroup';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import ReduxDatetime from 'common/ui/ReduxDatetime';
+import InputField from 'common/ui/Forms/InputField';
+import { RadioGroup } from 'common/ui/Forms/RadioGroup';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 import {
   required,
   mobile,
   pinCode,
   maxLength,
   name,
-} from 'rzp/utils/validators';
+} from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { states } from 'rzp/utils/constants';
+import { states } from 'common/utils/constants';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import bMerchantReducer from 'merchant/reducers/b-merchants';
-import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
+import CheckBoxField from 'common/ui/Forms/CheckboxField';
 import {
   VerifyOtp,
   AskMobileNumber,

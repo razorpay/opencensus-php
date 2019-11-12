@@ -1,6 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { set } from 'rzp/utils/immutable';
+import { set } from 'common/utils/immutable';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ReferralsList from 'merchant/components/Referrals/ReferralsList';

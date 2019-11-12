@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import TableBody from 'rzp/ui/TableBody';
-import Time from 'rzp/ui/Time';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
 import Key from 'merchant/models/Key';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 // import RegenerateKey from 'merchant/models/Key'

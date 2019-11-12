@@ -1,4 +1,4 @@
-import { set, merge, unshift } from 'rzp/utils/immutable';
+import { set, merge, unshift } from 'common/utils/immutable';
 import Tax from 'merchant/models/Tax';
 
 export const TAXES_FETCH = 'TAXES_FETCH';

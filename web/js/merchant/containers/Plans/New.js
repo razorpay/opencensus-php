@@ -4,11 +4,11 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import Input from 'component/Input';
-import InputField from 'rzp/ui/Forms/InputField';
-import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
-import Alert from 'rzp/ui/Forms/Alert';
-import { required } from 'rzp/utils/validators';
+import Input from 'common/new-ui/Input';
+import InputField from 'common/ui/Forms/InputField';
+import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
+import Alert from 'common/ui/Forms/Alert';
+import { required } from 'common/utils/validators';
 import { savePlan } from 'merchant/reducers/plans';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
@@ -21,7 +21,7 @@ import {
   getEventCategoryFromPath,
   getURLQueryParams,
   paiseToRupees,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 const selector = formValueSelector('newPlan');
 

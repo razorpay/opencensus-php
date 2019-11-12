@@ -2,15 +2,15 @@ import { connect } from 'react-redux';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
 import DocsLink from 'merchant/components/DocsLink';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
-import { titleCase } from 'common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 import { fetchTokens as fetchAll } from 'merchant/reducers/collection';
 
-import { tokenId, createdAt } from 'rzp/ui/item/pair';
+import { tokenId, createdAt } from 'common/ui/item/pair';
 
 import ListFilter from './ListFilter';
 

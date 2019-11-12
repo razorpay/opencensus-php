@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { Field, reduxForm } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import { isBlank } from 'common/utils/rzp-utils';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
-import { required, phone, email } from 'rzp/utils/validators';
+import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 @connect(state => state.session, { closeModal })

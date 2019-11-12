@@ -1,4 +1,4 @@
-import { set, merge, push } from 'rzp/utils/immutable';
+import { set, merge, push } from 'common/utils/immutable';
 import Referral from 'merchant/models/Referral';
 
 const REFERRALS_FETCH = 'REFERRALS_FETCH';

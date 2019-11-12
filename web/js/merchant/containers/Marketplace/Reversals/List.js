@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
-import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
+import { RZPFeatures } from 'common/utils/constants';
+import { reversalId, transferId, amount, createdAt } from 'common/ui/item/pair';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import DocsLink from 'merchant/components/DocsLink';
 import { fetchReversals as fetchAll } from 'merchant/reducers/collection';

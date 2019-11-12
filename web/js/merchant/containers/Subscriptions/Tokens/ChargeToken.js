@@ -2,18 +2,18 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { isAmount } from 'rzp/utils/validators';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { isAmount } from 'common/utils/validators';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
-import Form from 'component/Form';
-import Input from 'component/Input';
-import { AsyncBtn } from 'component/Button';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 import { chargeToken } from 'merchant/reducers/token';
-import { AmountTooltip } from 'rzp/ui/Amount';
+import { AmountTooltip } from 'common/ui/Amount';
 
 @withRouter
 @connect(null, { chargeToken, showNotification })

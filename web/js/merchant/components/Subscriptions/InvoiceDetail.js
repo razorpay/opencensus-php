@@ -1,12 +1,12 @@
 import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import { titleCase } from 'common/utils/rzp-utils';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import { paymentId, status, createdAt } from 'rzp/ui/item/pair';
-import DataTable from 'rzp/ui/Table/DataTable';
+import { paymentId, status, createdAt } from 'common/ui/item/pair';
+import DataTable from 'common/ui/Table/DataTable';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AsyncButton from 'react-async-button';

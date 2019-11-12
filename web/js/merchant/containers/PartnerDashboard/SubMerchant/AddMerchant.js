@@ -7,10 +7,10 @@ import { create } from 'merchant/reducers/submerchant';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
 
-import { required } from 'rzp/utils/validators';
+import { required } from 'common/utils/validators';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import { trackAddNewMerchantEvents } from '../ga';

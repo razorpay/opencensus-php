@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 
 @connect(
   state => {

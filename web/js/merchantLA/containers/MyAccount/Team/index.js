@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { Redirect } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import { fetchTeamDetails } from 'merchantLA/reducers/team';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import NewInvitation from './NewInvitation';

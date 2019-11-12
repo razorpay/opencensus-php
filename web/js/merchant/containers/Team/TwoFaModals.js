@@ -2,13 +2,13 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { OtpInput } from 'merchant/components/OtpInput';
 import { Field, reduxForm } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required, phone, mobile } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import { required, phone, mobile } from 'common/utils/validators';
 
 @connect(null, { showNotification })
 class VerifyOtp extends Component {

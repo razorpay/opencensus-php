@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PlanDetails from 'merchant/components/Plans/Details';
 import { fetchPlan as fetchItem } from 'merchant/reducers/plans';
 import { fetchSubscriptionsByPlanId as fetchSubscriptions } from 'merchant/reducers/plans';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(
   state => ({

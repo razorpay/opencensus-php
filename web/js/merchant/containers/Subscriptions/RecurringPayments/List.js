@@ -5,7 +5,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
 import PaymentListFilter from 'merchant/components/Payments/PaymentsListFilter';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 
 @connect(state => ({ ...state.payments }), { fetchAll })

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 import EditWebsite, {
   SuccessModalContent,

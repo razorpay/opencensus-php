@@ -1,4 +1,4 @@
-import { merge } from 'rzp/utils/immutable';
+import { merge } from 'common/utils/immutable';
 
 const MODAL_OPEN = 'MODAL_OPEN';
 const MODAL_CLOSE = 'MODAL_CLOSE';

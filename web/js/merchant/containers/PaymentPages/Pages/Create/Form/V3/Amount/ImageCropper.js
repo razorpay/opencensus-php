@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Croppie from 'croppie';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import CreatorModal from '../CreatorModal';
 import FileUpload from 'merchant/components/File/Upload';
 import { uploadImageInDescription } from '../../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 

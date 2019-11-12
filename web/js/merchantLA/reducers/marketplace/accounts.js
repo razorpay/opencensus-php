@@ -1,5 +1,5 @@
 import ajax from 'merchantLA/utils/ajax';
-import { merge, set, unshift } from 'rzp/utils/immutable';
+import { merge, set, unshift } from 'common/utils/immutable';
 
 export const saveAccount = data => {
   return {

@@ -11,9 +11,9 @@ import {
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { pickProps } from 'rzp/utils/rzp-utils';
+import { pickProps } from 'common/utils/rzp-utils';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 import NewInvitation from '../NewInvitation';
 

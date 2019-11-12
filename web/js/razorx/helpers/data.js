@@ -1,4 +1,4 @@
-import { snakeToTitleCase } from 'common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const statusPillClasses = {
   terminated: 'label-danger',
@@ -8,7 +8,7 @@ const statusPillClasses = {
 export const statusPill = (status, emptyValue = '--') => {
   return status ? (
     <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
-      {snakeToTitleCase(status)}
+      {titleCase(status)}
     </span>
   ) : (
     emptyValue

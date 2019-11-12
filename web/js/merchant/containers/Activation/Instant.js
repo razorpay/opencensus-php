@@ -6,15 +6,18 @@ import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-import { ModalAsideNav } from 'component/Wizard';
-import { prevent } from 'common/util';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { autoPrefixUrls, addPrefixToObjectKeys } from 'rzp/utils/rzp-utils';
-import { trackFormFields } from 'rzp/utils/track-utils';
-import { classList } from 'common/util';
+import {
+  autoPrefixUrls,
+  addPrefixToObjectKeys,
+  prevent,
+} from 'common/utils/rzp-utils';
+import { trackFormFields } from 'common/utils/track-utils';
+import { classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
@@ -22,7 +25,7 @@ import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
   trackTaboola,
-} from 'rzp/utils/googleAnalytics';
+} from 'common/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -30,7 +33,7 @@ import {
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
-import BingDataObj from 'rzp/utils/bingDataObj';
+import BingDataObj from 'common/utils/bingDataObj';
 
 function defaultFieldProps(f) {
   const self = this;

@@ -1,25 +1,25 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Alert from 'component/Alert';
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
+import Alert from 'common/new-ui/Alert';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import { Modal, ModalContent } from 'component/Modal';
-import { ModalAsideNav } from 'component/Wizard';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
 import PaymentLinkFormFields, { getCustomNotesOptions } from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
 
-import { onChangeNotes } from 'component/Input/PairList';
+import { onChangeNotes } from 'common/new-ui/Input/PairList';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -31,14 +31,18 @@ import {
 } from 'merchant/reducers/reminders';
 import { luminateRow } from 'merchant/reducers/app';
 
-import { getURLQueryParams, paiseToRupees, findBy } from 'rzp/utils/rzp-utils';
+import {
+  getURLQueryParams,
+  paiseToRupees,
+  findBy,
+} from 'common/utils/rzp-utils';
 import {
   trackOpenCreateForm,
   closePaymentLinkForm,
   trackSaveDuplicatePaymentLink,
 } from '../ga';
 
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 
 const FORM_FIELDS = {
   title: 'Payment Link',

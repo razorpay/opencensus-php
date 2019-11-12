@@ -1,4 +1,4 @@
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import CommissionsDailyList from '../../Commissions/Daily/List';
 
 const amountColumn = {

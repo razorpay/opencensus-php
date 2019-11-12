@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 import { fetchPartnerApplication } from 'merchant/reducers/applications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 import DetailRow from 'merchant/components/DetailRow';
 
 import ManageWebhook from './ManageWebhook';

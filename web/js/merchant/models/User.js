@@ -1,13 +1,12 @@
 import ajax from 'merchant/utils/ajax';
-import { filterBy } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { filterBy } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'common/utils/constants';
 
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import LocalStorageService from 'rzp/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
-import { getExperiment } from 'common/util';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 import {
   roleEditPermissions,
@@ -443,6 +442,10 @@ export default class User {
   get isSellerAppRole() {
     const userRole = this.userRole;
     return ['sellerapp', 'sellerapp_plus'].indexOf(userRole) > -1;
+  }
+
+  get isSupportCallEnabled() {
+    return this.getExpStatus('support_call');
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

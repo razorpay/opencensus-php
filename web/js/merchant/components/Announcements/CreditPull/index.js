@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';

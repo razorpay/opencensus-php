@@ -32,7 +32,7 @@ import {
 } from 'merchant/reducers/subscriptions';
 
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';

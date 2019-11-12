@@ -1,4 +1,4 @@
-import { merge } from 'rzp/utils/immutable';
+import { merge } from 'common/utils/immutable';
 
 const SLIDER_OPEN = 'SLIDER_OPEN';
 const SLIDER_CLOSE = 'SLIDER_CLOSE';

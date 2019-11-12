@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
-import Slider, { SliderDots } from 'component/Slider';
+import Slider, { SliderDots } from 'common/new-ui/Slider';
 
 import {
   handleProductQuickGuide,

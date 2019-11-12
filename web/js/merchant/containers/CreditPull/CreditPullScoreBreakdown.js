@@ -1,5 +1,5 @@
 import React from 'react';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 
 function CreditPullScoreBreakdown({ title, total, rowData, amount }) {
   return (

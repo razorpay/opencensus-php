@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import Alert from 'rzp/ui/Forms/Alert';
-import Spinner from 'rzp/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';

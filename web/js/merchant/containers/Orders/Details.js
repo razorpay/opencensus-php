@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import OrderDetails from 'merchant/components/Orders/OrderDetails';
 import * as OrderActions from 'merchant/reducers/orders/details';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(state => state.order, OrderActions)
 export default class OrderDetailsContainer extends Component {

@@ -2,14 +2,14 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { required } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import { required } from 'common/utils/validators';
 import { saveAddOn } from 'merchant/reducers/addons';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { AmountTooltip } from 'rzp/ui/Amount';
+import { AmountTooltip } from 'common/ui/Amount';
 
 @connect(null, {
   saveAddOn,

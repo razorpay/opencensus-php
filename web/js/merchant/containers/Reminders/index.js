@@ -6,9 +6,9 @@ import {
   fetchRemindersMerchantConfigs,
 } from 'merchant/reducers/reminders';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 

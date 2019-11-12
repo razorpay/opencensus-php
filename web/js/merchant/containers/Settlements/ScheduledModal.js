@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import ajax from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { closeModal } from 'merchant_common/reducers/modals';
-import Button, { AsyncBtn } from 'component/Button';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { updateFeatures } from 'merchant/reducers/config';
 import User, { setFeatures } from 'merchant/models/User';
 import * as SessionActions from 'merchant/reducers/session';

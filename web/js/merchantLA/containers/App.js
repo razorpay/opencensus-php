@@ -2,10 +2,10 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ModalDialog from 'rzp/ui/ModalDialog';
-import Notifications from 'rzp/ui/Notifications';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+import ModalDialog from 'common/ui/ModalDialog';
+import Notifications from 'common/ui/Notifications';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 import Sidebar from 'merchantLA/containers/Sidebar';
 import HeaderNav from 'merchantLA/components/HeaderNav';
 import Content from 'merchantLA/components/Content';

@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
+import Breadcrumb, { BreadcrumbItem } from 'common/ui/Breadcrumb';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 

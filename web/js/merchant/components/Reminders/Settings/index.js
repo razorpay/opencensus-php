@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter, Prompt } from 'react-router-dom';
 
-import { findBy, objectDiff, isBlank } from 'rzp/utils/rzp-utils';
+import { findBy, objectDiff, isBlank } from 'common/utils/rzp-utils';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';

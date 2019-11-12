@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SettlementDetails from 'merchantLA/components/Settlements/Details';
 import * as SettlementActions from 'merchantLA/reducers/settlements/details';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(state => state.settlement, SettlementActions)
 export default class SettlementDetailsContainer extends Component {

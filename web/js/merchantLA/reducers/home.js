@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
-import { merge, set } from 'rzp/utils/immutable';
-import { createLineData } from 'rzp/utils/chart/index.js';
+import { merge, set } from 'common/utils/immutable';
+import { createLineData } from 'common/utils/chart/index.js';
 
 // graph data
 // fetched everytime date is changed

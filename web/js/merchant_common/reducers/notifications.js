@@ -1,4 +1,4 @@
-import { set, merge, remove, unshift } from 'rzp/utils/immutable';
+import { set, merge, remove, unshift } from 'common/utils/immutable';
 
 const NOTIFICATION_SHOW = 'NOTIFICATION_SHOW';
 const NOTIFICATION_HIDE = 'NOTIFICATION_HIDE';

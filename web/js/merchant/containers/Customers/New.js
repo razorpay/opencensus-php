@@ -3,17 +3,17 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
   isValidZipcodeCountryWise,
   isValidGSTIN,
-} from 'rzp/utils/rzp-utils';
-import { email, phone, validateGSTIN } from 'rzp/utils/validators';
+} from 'common/utils/rzp-utils';
+import { email, phone, validateGSTIN } from 'common/utils/validators';
 
 import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'merchant_common/reducers/modals';

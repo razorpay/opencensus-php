@@ -6,7 +6,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import List from './Screens/List';
 import New from './Screens/New';
 
-import { capitalize } from 'rzp/utils/rzp-utils';
+import { capitalize } from 'common/utils/rzp-utils';
 import { track } from '../ga';
 
 @connect(null, {

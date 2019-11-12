@@ -1,7 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
-import { set, merge } from 'rzp/utils/immutable';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { set, merge } from 'common/utils/immutable';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';

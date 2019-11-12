@@ -1,4 +1,4 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import { set, merge, unshift, remove } from 'common/utils/immutable';
 import Invoice from 'merchant/models/Invoice';
 
 export const INVOICES_FETCH = 'INVOICES_FETCH';

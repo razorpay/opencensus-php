@@ -1,6 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import Activation from 'merchant/models/Activation';
-import { set, merge, push } from 'rzp/utils/immutable';
+import { set, merge, push } from 'common/utils/immutable';
 
 const initialState = {
   loading: false,

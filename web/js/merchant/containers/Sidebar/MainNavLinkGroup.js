@@ -1,7 +1,7 @@
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default function MainNavLinkGroup({
   additionalCondition,

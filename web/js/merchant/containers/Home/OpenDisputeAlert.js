@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Link } from 'react-router-dom';
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 
 // NOTE: this component is not being used currently but will be used in future
 import { fetchOpen as fetchOpenDisputes } from 'merchant/reducers/disputes/details';
