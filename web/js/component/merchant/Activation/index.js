@@ -207,7 +207,7 @@ export default class ActivationWizard extends React.Component {
 
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-      if (!props.data.need_kyc) {
+      if (props.data['activation_status'] === 'needs_clarification') {
         FORM_TABS.push('Needs Clarification');
         const ndcFields = getNeedsClarificationTabsData(
           mainFormTabsContent,
@@ -886,8 +886,6 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
-  submitNeedsClarification = async currenActiveTab => {};
-
   get formData() {
     const currentDirty = this.state.dirty;
     const reqData = {};
@@ -1010,6 +1008,34 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
+  submitClarifications = () => {
+    const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
+    const hasFilledDetails =
+      this.state.dirty && Object.keys(this.state.dirty).length > 0;
+    const reqData = {
+      submit: 1,
+    };
+    if (hasFilledDetails) {
+      const fieldNames = needsClarificationFields.map(field => field.name);
+      fieldNames.forEach(fieldName => {
+        if (this.state.dirty[fieldName]) {
+          reqData[fieldName] = this.state.dirty[fieldName];
+        }
+      });
+    }
+    this.props
+      .save(reqData)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'Success',
+            message: 'Clarifications Submitted Successfully',
+          });
+        }
+      })
+      .catch(err => {});
+  };
+
   /*
   * Fadeout based loader text.
   * Default delay = 7 sec
@@ -1021,9 +1047,6 @@ export default class ActivationWizard extends React.Component {
   };
 
   onChange = ({ target }) => {
-    if (!Boolean(target.name)) {
-      return;
-    }
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     let fieldName = target.name;
@@ -1227,8 +1250,15 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  get isFormLocked() {
+    return (
+      !!this.props.data.locked ||
+      this.props.data.activation_status === 'needs_clarification'
+    );
+  }
+
   render() {
-    const isFormLocked = !!this.props.data.locked;
+    const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
 
@@ -1562,12 +1592,12 @@ export default class ActivationWizard extends React.Component {
         {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
           <footer>
             <AsyncBtn.Primary
-              disabled={this.state.ndcSubmissionInProgress}
-              onClick={this.saveCurrentTab}
+              // disabled={this.state.ndcSubmissionInProgress}
+              onClick={this.submitClarifications}
               pendingState={'Verifying'}
-              name={'submit-and-verify'}
+              name={'Save Clarifications'}
             >
-              Submit and Verify
+              Submit Clarifications
             </AsyncBtn.Primary>
           </footer>
         )}
@@ -1683,7 +1713,7 @@ function ActivationField(field) {
     key = _name;
   }
 
-  const isFormLocked = !!this.props.data.locked;
+  const isFormLocked = this.isFormLocked;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;
