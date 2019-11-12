@@ -8,7 +8,7 @@ import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { keysToSentence } from 'rzp/utils/rzp-utils';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 

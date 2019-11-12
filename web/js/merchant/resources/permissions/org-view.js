@@ -18,7 +18,6 @@ const HDFC_restrictedModules = [
 
 const HDFC_restrictedFeatures = [
   'flashcheckout',
-  'monthlyInvoice',
   'current_balance',
   'card_refunds',
   'external_links',

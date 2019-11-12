@@ -16,7 +16,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { ModalMask } from 'component/Modal';
 import Button from 'component/Button';
-import Amount from 'ui/Amount';
+import Amount from 'rzp/ui/Amount';
 
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 

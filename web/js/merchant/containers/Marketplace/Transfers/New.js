@@ -12,7 +12,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
-import { prefixEntityValue } from 'common/data';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
 
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';

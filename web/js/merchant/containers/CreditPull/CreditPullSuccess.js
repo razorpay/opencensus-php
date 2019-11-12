@@ -4,7 +4,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { Bar } from 'react-chartjs-2';
 import AsyncButton from 'react-async-button';
-import Amount from 'ui/Amount';
+import Amount from 'rzp/ui/Amount';
 import CreditPullAdditionalReport from './CreditPullAdditionalReport';
 import { showNotification } from 'rzp/modules/notifications';
 import CloseReasons from '../../components/CloseReasons';

@@ -15,7 +15,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 import * as ModalActions from 'rzp/modules/modals';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { activationDuration } from 'common/data';
+import { activationDuration } from 'merchant_common/helpers/data';
 
 import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';

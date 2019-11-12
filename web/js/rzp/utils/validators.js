@@ -63,7 +63,7 @@ export const isValidPinCode = pinCode => {
 
 export const isValidName = name => {
   name = name || '';
-  let nameRegExp = new RegExp(/^[a-zA-Z]+$/);
+  let nameRegExp = new RegExp(/^[a-zA-Z ]+$/);
   return nameRegExp.test(name);
 };
 

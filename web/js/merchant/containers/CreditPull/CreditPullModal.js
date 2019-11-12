@@ -26,7 +26,7 @@ import {
 } from 'merchant/containers/Team/TwoFaModals';
 import CreditPullClose from './CreditPullClose';
 import CreditPullSuccess from './CreditPullSuccess';
-import ajax from '../../../merchantLA/utils/ajax';
+import ajax from 'merchant/utils/ajax';
 
 const validate = values => {
   const errors = {};

@@ -72,7 +72,7 @@ export const totalCount = { title: 'Count', value: item => item.total_count };
 
 export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
-export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
+export const rzpOrderId = { title: 'Razorpay Order Id', value: id.order };
 export const refundId = { title: 'Refund Id', value: id.refund };
 export const refundMode = {
   title: 'Mode',
