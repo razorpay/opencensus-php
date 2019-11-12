@@ -7,7 +7,7 @@ import { ModalAsideNav } from 'component/Wizard';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, stringToObj } from 'rzp/utils/rzp-utils';
 
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
@@ -18,8 +18,6 @@ import {
 } from 'merchant/modules/subscriptions';
 
 import { showNotification } from 'rzp/modules/notifications';
-
-import { stringToObj } from 'common/util';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';

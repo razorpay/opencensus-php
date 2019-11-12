@@ -1,5 +1,5 @@
 import Input from 'component/Input';
-import { getDetailsForIFSC } from 'common/util';
+import { getDetailsForIFSC } from 'rzp/utils/rzp-utils';
 import { validatePANCard, validateIFSC } from 'rzp/utils/validators';
 
 // This is as per the value saved in BE database

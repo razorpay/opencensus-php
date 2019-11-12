@@ -44,7 +44,7 @@ module.exports = {
     pokedex: './pokedex.js',
     merchantLA: './js/merchantLA/index.js',
     merchant: './js/merchant/index.js',
-    razorx: './js/razorx/razorx.js',
+    razorx: './js/razorx/index.js',
   },
 
   output: {

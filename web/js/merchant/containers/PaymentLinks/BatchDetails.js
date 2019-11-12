@@ -6,7 +6,7 @@ import { fetchPaymentLinkBatchesDetails as fetchBatchDetails } from 'merchant/mo
 import { pluralize } from 'rzp/utils/rzp-utils';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import BatchStats from 'ui/StatsTable';
+import BatchStats from 'rzp/ui/StatsTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';

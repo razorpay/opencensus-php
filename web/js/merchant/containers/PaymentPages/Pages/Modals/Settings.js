@@ -4,7 +4,6 @@ import Button, { AsyncBtn } from 'component/Button';
 import Input from 'component/Input';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { lenientUrl } from 'rzp/utils/validators';
-import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
 import { validateSlug } from 'rzp/utils/validators';
 import { trackPageSettingsData } from '../ga';
 
@@ -187,12 +186,13 @@ export default class extends React.Component {
                   readOnly
                   hidden
                 />
-                <DateField
+                <Input.DateTime
                   label="Page Expiry Date"
+                  checkboxFieldLabel="No Expiry"
                   className="Input--vTop Input--expiryby"
-                  updateDate={this.updateDate}
-                  expire_by={expire_by}
+                  value={expire_by}
                   defaultValue={expire_by}
+                  onChange={this.updateDate}
                   isInline
                 />
               </div>
