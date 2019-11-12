@@ -1,6 +1,6 @@
 // Parent control the width of ActivationWizard component
 $height = 600px
-
+$warningFill = #ffa665
 .ActivationContainer
   position: relative
   width: 92%
@@ -24,7 +24,7 @@ $side-width = 240px
     svg
       width: 23px
       height: 19px
-      fill: #ffa665
+      fill: $warningFill
       vertical-align: top
       margin-right: 4px
       transform: scale(0.8)
@@ -543,3 +543,13 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     
     .subfooter
         width: 100%
+.ndc-reasons
+  background-color: #F6F6F6
+  padding:12px
+  border: solid 1px rgba(0, 0, 0, 0.05)
+  i
+    color: $warningFill
+    font-size: 22px
+    position: relative
+    top:5px
+    margin-right:10px

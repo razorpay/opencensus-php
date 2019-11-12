@@ -1369,7 +1369,10 @@ export default class ActivationWizard extends React.Component {
             let secondaryMsg = 'For any clarifications, you can';
             const ticketLink = <Link to="#ticket">write to support</Link>;
 
-            if (showFormDisabledAlert) {
+            if (
+              showFormDisabledAlert &&
+              this.state.activeTab !== NEEDS_CLARIFICATION_STEP
+            ) {
               if (isFormActivated) {
                 // **1. Alert: Account Activated
 
@@ -1735,17 +1738,30 @@ function ActivationField(field) {
     if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
     else rest.propagatedError = '';
   }
-
   return (
-    <Component
-      key={key}
-      data-name={_name}
-      defaultValue={defaultValue}
-      disabled={isComponentDisabled}
-      autoRender={_autoRenderImpure}
-      required={typeof required === 'function' ? required(this) : required}
-      {...rest}
-    />
+    <>
+      {this.state.activeTab === NEEDS_CLARIFICATION_STEP &&
+        rest.reasons &&
+        rest.reasons.length > 0 && (
+          <div className="ndc-reasons">
+            {rest.reasons.map((r, i) => (
+              <div key={i}>
+                <i class="i i-info-circle" />
+                {r}
+              </div>
+            ))}
+          </div>
+        )}
+      <Component
+        key={key}
+        data-name={_name}
+        defaultValue={defaultValue}
+        disabled={isComponentDisabled}
+        autoRender={_autoRenderImpure}
+        required={typeof required === 'function' ? required(this) : required}
+        {...rest}
+      />
+    </>
   );
 }
 
