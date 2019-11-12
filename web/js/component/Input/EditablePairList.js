@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Label, inputClass } from './index';
 import { classList } from 'common/util';
 import Button, { AsyncBtn } from 'component/Button';
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'component/ErrorBoundary';
 
 /* Pair is key-value pair*/
 export default class EditablePairsList extends React.PureComponent {

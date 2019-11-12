@@ -50,6 +50,7 @@ import {
   updateHubSpotContactsProperties,
   UNREGISTERED_TYPES,
   isL1Completed,
+  hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 import QueryString from 'query-string';
 import { NEEDS_CLARIFICATION } from 'merchant/containers/Home/OnboardingCard/data';
@@ -206,7 +207,7 @@ export default class ActivationWizard extends React.Component {
 
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-      if (!props.data.need_kyc) {
+      if (props.data['activation_status'] === 'needs_clarification') {
         FORM_TABS.push('Needs Clarification');
         const ndcFields = getNeedsClarificationTabsData(
           mainFormTabsContent,
@@ -254,6 +255,12 @@ export default class ActivationWizard extends React.Component {
 
           a.onChange = (file, progressTracker) => {
             const filename = a.getName ? a.getName(this) : a.name;
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+                name: filename,
+              })
+            );
+
             return props
               .saveFile(
                 filename,
@@ -455,15 +462,20 @@ export default class ActivationWizard extends React.Component {
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
   @RTracking((props, state) => {
-    const { tracking } = props;
-    const fields = trackFormFields(props.data, state.dirty);
-    return fields.forEach(field =>
-      tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.provide_details', {
-          ...field,
-        })
-      )
-    );
+    try {
+      const activation = { props, state };
+      const { tracking } = props;
+      if (isL1Completed(activation)) {
+        const fields = trackFormFields(props.data, state.dirty);
+        return fields.forEach(field =>
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated('kyc.provide_details', {
+              ...field,
+            })
+          )
+        );
+      }
+    } catch (err) {}
   })
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
@@ -700,25 +712,6 @@ export default class ActivationWizard extends React.Component {
     return businessType == 2 || businessType == 11;
   }
 
-  get hasSelectedBlacklistedCategory() {
-    const categories = this.props.categories;
-    if (isPresent(categories)) {
-      const selectedCategory =
-        this.state.dirty.business_category || this.props.data.business_category;
-      const subcategories =
-        selectedCategory && categories[selectedCategory]['subcategories'];
-      if (isPresent(subcategories)) {
-        const selectedSubcategory =
-          this.state.dirty.business_subcategory ||
-          this.props.data.business_subcategory;
-        return (
-          subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
-        );
-      }
-    }
-    return false;
-  }
-
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -802,9 +795,28 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  trackSubmitL1 = data => {
+    const { tracking } = this.props;
+    try {
+      isPresent(data) &&
+        Object.keys(data).forEach(dataKey =>
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated('act.provide_act_details', {
+              value: data[dataKey],
+              name: dataKey,
+            })
+          )
+        );
+    } catch (e) {}
+  };
+
   submitL1 = async currenActiveTab => {
     const data = this.formData;
+
+    this.trackSubmitL1(data);
+
     this.setState({ callingL1Api: true });
+
     try {
       let response = await this.props.submitL1Form({
         data,
@@ -873,8 +885,6 @@ export default class ActivationWizard extends React.Component {
       return err;
     }
   };
-
-  submitNeedsClarification = async currenActiveTab => {};
 
   get formData() {
     const currentDirty = this.state.dirty;
@@ -998,6 +1008,34 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
+  submitClarifications = () => {
+    const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
+    const hasFilledDetails =
+      this.state.dirty && Object.keys(this.state.dirty).length > 0;
+    const reqData = {
+      submit: 1,
+    };
+    if (hasFilledDetails) {
+      const fieldNames = needsClarificationFields.map(field => field.name);
+      fieldNames.forEach(fieldName => {
+        if (this.state.dirty[fieldName]) {
+          reqData[fieldName] = this.state.dirty[fieldName];
+        }
+      });
+    }
+    this.props
+      .save(reqData)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'Success',
+            message: 'Clarifications Submitted Successfully',
+          });
+        }
+      })
+      .catch(err => {});
+  };
+
   /*
   * Fadeout based loader text.
   * Default delay = 7 sec
@@ -1009,9 +1047,6 @@ export default class ActivationWizard extends React.Component {
   };
 
   onChange = ({ target }) => {
-    if (!Boolean(target.name)) {
-      return;
-    }
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     let fieldName = target.name;
@@ -1215,10 +1250,19 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  get isFormLocked() {
+    return (
+      !!this.props.data.locked ||
+      this.props.data.activation_status === 'needs_clarification'
+    );
+  }
+
   render() {
-    const isFormLocked = !!this.props.data.locked;
+    const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
+
+    const { tracking } = this.props;
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
@@ -1514,7 +1558,7 @@ export default class ActivationWizard extends React.Component {
                     <AsyncBtn.Primary
                       disabled={
                         this.state.callingL1Api ||
-                        this.hasSelectedBlacklistedCategory
+                        hasSelectedBlacklistedCategory(this)
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}
@@ -1531,7 +1575,12 @@ export default class ActivationWizard extends React.Component {
                   !this.props.user.instantActivation.isBlacklistFlow && (
                     <Button.Primary
                       disabled={!this.isAllTabsValid()}
-                      onClick={this.toggleSubmitLayer}
+                      onClick={() => {
+                        tracking.trackEvent(
+                          window.rzpQ.onbr().initiated('kyc.save_documents')
+                        );
+                        this.toggleSubmitLayer();
+                      }}
                     >
                       Submit Form
                     </Button.Primary>
@@ -1543,12 +1592,12 @@ export default class ActivationWizard extends React.Component {
         {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
           <footer>
             <AsyncBtn.Primary
-              disabled={this.state.ndcSubmissionInProgress}
-              onClick={this.saveCurrentTab}
+              // disabled={this.state.ndcSubmissionInProgress}
+              onClick={this.submitClarifications}
               pendingState={'Verifying'}
-              name={'submit-and-verify'}
+              name={'Save Clarifications'}
             >
-              Submit and Verify
+              Submit Clarifications
             </AsyncBtn.Primary>
           </footer>
         )}
@@ -1664,7 +1713,7 @@ function ActivationField(field) {
     key = _name;
   }
 
-  const isFormLocked = !!this.props.data.locked;
+  const isFormLocked = this.isFormLocked;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;

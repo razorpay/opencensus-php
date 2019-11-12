@@ -389,7 +389,6 @@ export default props => {
                 ) : (
                   <EditBusinessSegment
                     isRoleAllowedEdit={isRoleAllowedEdit}
-                    merchantId={user.current}
                     value={invoice.notes}
                     editFn={editPaymentLink}
                     entityId={invoice.id}

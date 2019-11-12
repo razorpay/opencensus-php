@@ -433,7 +433,7 @@ export default class User {
   }
 
   get isCustomNotesDropdownEnabled() {
-    return this.getExpStatus('custom_notes');
+    return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
@@ -443,6 +443,12 @@ export default class User {
   get isSellerAppRole() {
     const userRole = this.userRole;
     return ['sellerapp', 'sellerapp_plus'].indexOf(userRole) > -1;
+  }
+
+  get isUnregisteredBusiness() {
+    const userBusinessType = Number(this.business_type);
+    const UNREGISTERED_BUSINESS_TYPES = [2, 11];
+    return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

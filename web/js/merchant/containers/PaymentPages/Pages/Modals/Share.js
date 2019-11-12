@@ -11,7 +11,7 @@ import PPEmbedButtonView from './EmbedButton';
 import { isEmail, isPhone } from 'rzp/utils/validators';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
-import { isMobileAndTablet } from 'common/util';
+import { isMobileAndTablet } from 'rzp/utils/rzp-utils';
 
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
 const twitterBase = 'https://twitter.com/share?url=';
