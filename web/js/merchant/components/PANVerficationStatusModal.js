@@ -25,13 +25,10 @@ const MODAL_CONTENT = {
     title: 'Account Activated',
     subtitle: 'PAN successfully verified',
     body: () => (
-      <>
-        <p>
-          You can start accepting payment now by integrating with a website/app
-          or using other products.
-        </p>
-        <p>You can accept upto ₹10,000 per transaction. know more</p>
-      </>
+      <p>
+        Congratulations! You are ready to accept payments. You can integrate
+        with a website/app or use one of our products.
+      </p>
     ),
     background: 'success',
   },
