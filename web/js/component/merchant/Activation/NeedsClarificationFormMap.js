@@ -29,6 +29,15 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
         }
       }
       allFieldsHash[field].reasons = reasons;
+      if (
+        typeof allFieldsHash[field].dependsOnFields !== 'undefined' &&
+        Array.isArray(allFieldsHash[field].dependsOnFields)
+      ) {
+        //Push all depending fields first
+        allFieldsHash[field].dependsOnFields.forEach(dField => {
+          kycTabContent.push(allFieldsHash[dField]);
+        });
+      }
       kycTabContent.push(allFieldsHash[field]);
     }
   }

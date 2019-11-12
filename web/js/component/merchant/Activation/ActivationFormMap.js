@@ -664,6 +664,7 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    dependsOnFields: ['address_proof'],
   },
   {
     label: 'Last Page',
@@ -680,6 +681,7 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    dependsOnFields: ['address_proof'],
   },
 ];
 
