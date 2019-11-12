@@ -1,4 +1,3 @@
-export const testMerchantId = '10000000000000';
 import { titleCase } from 'common/utils/rzp-utils';
 
 export const activationDuration = '4-5 working days';
@@ -79,30 +78,6 @@ export const networks = {
   RUPAY: 'RuPay',
   VISA: 'Visa',
   UNP: 'Union Pay',
-};
-
-export const cardSteps = {
-  authorisation: 'Authorisation',
-  authentication: 'Authentication',
-};
-
-export const authTypes = {
-  _3DS: '3ds',
-  HEADLESS_OTP: 'headless_otp',
-  IVR: 'ivr',
-  OTP: 'otp',
-};
-
-export const authGateway = {
-  mpi_blade: 'Blade',
-  mpi_enstage: 'Endstage',
-};
-
-export const gatewayAcquirers = {
-  axis: 'Axis',
-  hdfc: 'HDFC',
-  amex: 'Amex',
-  icic: 'ICICI',
 };
 
 export const gateways = {
