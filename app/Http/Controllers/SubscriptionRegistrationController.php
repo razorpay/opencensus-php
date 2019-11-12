@@ -101,4 +101,13 @@ class SubscriptionRegistrationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function notifyInvoicesOfBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $this->service()->notifyInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json([]);
+    }
 }

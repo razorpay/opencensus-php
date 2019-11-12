@@ -12,8 +12,10 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settings;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
+use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Core extends Base\Core
 {
@@ -512,5 +514,20 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoice);
 
         return ['success' => $response];
+    }
+
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
+    {
+        //
+        // Settings module captures whether notification for this batch has
+        // been already sent or not.
+        //
+        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
+
+        $settingsAccessor->upsert($input)->save();
+
+        InvoiceBatchNotifyJob::dispatch($this->mode, $batch->getId(), $input);
     }
 }
