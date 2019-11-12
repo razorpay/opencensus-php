@@ -448,6 +448,12 @@ export default class User {
     return this.getExpStatus('support_call');
   }
 
+  get isUnregisteredBusiness() {
+    const userBusinessType = Number(this.business_type);
+    const UNREGISTERED_BUSINESS_TYPES = [2, 11];
+    return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)

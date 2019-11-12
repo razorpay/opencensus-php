@@ -3,9 +3,8 @@ import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { lenientUrl } from 'common/utils/validators';
+import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
-import { validateSlug } from 'common/utils/validators';
 import { trackPageSettingsData } from '../ga';
 
 import PPEmbedButtonView from '../Modals/EmbedButton';
@@ -187,12 +186,13 @@ export default class extends React.Component {
                   readOnly
                   hidden
                 />
-                <DateField
+                <Input.DateTime
                   label="Page Expiry Date"
+                  checkboxFieldLabel="No Expiry"
                   className="Input--vTop Input--expiryby"
-                  updateDate={this.updateDate}
-                  expire_by={expire_by}
+                  value={expire_by}
                   defaultValue={expire_by}
+                  onChange={this.updateDate}
                   isInline
                 />
               </div>

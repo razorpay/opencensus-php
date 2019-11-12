@@ -24,8 +24,11 @@ export default RTracking((state, props, args) => {
     actionCopy = 'Activate your account';
     trackingIntent = 'act.form_fill';
     if (isL1Submitted) {
-      actionCopy = user.isActivated ? 'Accept Payments' : 'Submit KYC';
+      actionCopy = 'Submit KYC';
       if (user.isActivated) {
+        actionCopy = user.isUnregisteredBusiness
+          ? 'Submit KYC'
+          : 'Accept Payments';
         trackingIntent = 'dash.accept_payments';
       }
     }
@@ -85,7 +88,8 @@ export default RTracking((state, props, args) => {
                 <div className="activation-bar-content activation-status-secondary">
                   {user.activation_progress < 100 &&
                   isL1Submitted &&
-                  user.isActivated ? (
+                  user.isActivated &&
+                  !user.isUnregisteredBusiness ? (
                     <div className="activation-bar-text">
                       Click here to know more
                     </div>

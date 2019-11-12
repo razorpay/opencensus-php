@@ -25,6 +25,7 @@ import {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 
 // This is as per the value saved in BE database
@@ -62,14 +63,14 @@ const ADDRESS_PROOF_TYPES = {
     frontView: 'Front',
     backView: 'Back',
   },
-  driver_license: {
-    value: 'driver_license',
-    label: "Driver's License",
-    front: true,
-    back: false,
-    frontView: 'Front',
-    backView: 'Back',
-  },
+  // driver_license: {
+  //   value: 'driver_license',
+  //   label: "Driver's License",
+  //   front: true,
+  //   back: false,
+  //   frontView: 'Front',
+  //   backView: 'Back',
+  // },
 };
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
@@ -186,6 +187,20 @@ const businessModel = [
         }
 
         return this.options;
+      },
+      description: activation => {
+        if (hasSelectedBlacklistedCategory(activation)) {
+          return (
+            <div class="warning-svg red">
+              {WarningSvg()}
+              <span>
+                We do not have the support for your business category selected
+                as of now.
+              </span>
+            </div>
+          );
+        }
+        return '';
       },
       _when: activation => {
         let { state, props } = activation;
