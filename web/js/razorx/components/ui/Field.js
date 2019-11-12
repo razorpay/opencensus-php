@@ -4,7 +4,7 @@ import {
   cardSteps,
   authTypes,
   authGateway,
-} from 'merchant_common/helpers/data';
+} from 'razorx/helpers/data';
 import { prevent, classList } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
@@ -196,70 +196,6 @@ export class Switch extends Component {
     );
   }
 }
-
-export function SelectMode({ defaultValue = 'live', ...props }) {
-  return (
-    <SelectField
-      name="mode"
-      label="Mode"
-      defaultValue={defaultValue}
-      {...props}
-    >
-      <option value="test">Test</option>
-      <option value="live">Live</option>
-    </SelectField>
-  );
-}
-
-export function SelectMethod(props) {
-  return (
-    <SelectField name="method" label="Method" {...props}>
-      <option value="" />
-      {Object.keys(methods).map(m => (
-        <option value={m} key={m}>
-          {methods[m]}
-        </option>
-      ))}
-    </SelectField>
-  );
-}
-
-export const SelectCardStep = props => {
-  return (
-    <SelectField name="cardstep" label="Step" {...props}>
-      {Object.keys(cardSteps).map((s, idx) => (
-        <option value={s} key={idx}>
-          {cardSteps[s]}
-        </option>
-      ))}
-    </SelectField>
-  );
-};
-
-export const SelectAuthType = props => {
-  return (
-    <SelectField name="authtype" label="Auth Type" {...props}>
-      {Object.keys(authTypes).map((at, idx) => (
-        <option value={at} key={idx}>
-          {authTypes[at]}
-        </option>
-      ))}
-    </SelectField>
-  );
-};
-
-export const SelectAuthenticationGateway = props => {
-  return (
-    <SelectField name="authgateway" label="Auth Gateway" {...props}>
-      <option value={null} />
-      {Object.keys(authGateway).map((ag, idx) => (
-        <option value={ag} key={idx}>
-          {authGateway[ag]}
-        </option>
-      ))}
-    </SelectField>
-  );
-};
 
 class SearchableSelect extends Component {
   static defaultProps = {
