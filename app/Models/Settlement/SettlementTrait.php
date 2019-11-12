@@ -64,8 +64,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'There won\'t be any settlement',
-                    'reason' => 'merchant is suspended',
+                    'remark' => 'Settlemenmt is not enabled',
+                    'reason' => 'Only active merchants can get settlements',
                 ]
             ];
         }
@@ -82,8 +82,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'There won\'t be any settlement',
-                    'reason' => 'merchant funds are on hold with reason \"'
+                    'remark' => 'Settlements are on hold',
+                    'reason' => 'Merchant funds are on hold with reason \"'
                         . ($merchant->getHoldFundsReason() ?? 'unknown') . '\"',
                 ]
             ];
@@ -114,7 +114,7 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'There won\'t be any settlement',
+                    'remark' => 'Settlement will be skipped',
                     'reason' => 'merchant doesnt have a active bank account registered',
                 ]
             ];
@@ -125,8 +125,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'There won\'t be any settlement',
-                    'reason' => 'settlements skipped based on merchant preference',
+                    'remark' => 'Settlement will be skipped',
+                    'reason' => 'Settlements skipped based on merchant preference',
                 ]
             ];
         }

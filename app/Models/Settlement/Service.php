@@ -60,15 +60,15 @@ class Service extends Base\Service
         if ($response['settlement_amount'] < 100)
         {
             $response += [
-                'reason' => 'settlement might get skipped',
-                'detail' => 'settlement amount is less than 1 rupee'
+                'caption' => 'Settlement might get skipped',
+                'reason'  => 'Settlement amount is less than 1 rupee'
             ];
         }
         else if ($response['settlement_amount'] > $balance->getBalance())
         {
             $response += [
-                'reason' => 'settlement might get skipped',
-                'detail' => 'settlement amount is more than the available live balance',
+                'caption' => 'Settlement might get skipped',
+                'reason'  => 'Settlement amount is more than the available live balance',
             ];
         }
 

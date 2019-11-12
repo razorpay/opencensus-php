@@ -1623,13 +1623,13 @@ class Repository extends Base\Repository
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $query = $this->newQuery()
-            ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
-            ->where($transactionMerchantId, $merchantId)
-            ->where($transactionOnHold, 0)
-            ->where($transactionSettled, 0)
-            ->where($transactionType, '!=', Type::SETTLEMENT)
-            ->whereNotNull($transactionSettledAt)
-            ->where($transactionSettledAt, '<=', $timestamp);
+                      ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
+                      ->where($transactionMerchantId, $merchantId)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt)
+                      ->where($transactionSettledAt, '<=', $timestamp);
 
         if ($balance->isTypePrimary() === true)
         {

@@ -53,6 +53,7 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::BALANCE_TYPE, $balanceType)
                     ->where(Entity::COMPLETED, 0)
+                    ->orderBy(Entity::BUCKET_TIMESTAMP)
                     ->first();
     }
 }
