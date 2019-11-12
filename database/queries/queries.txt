@@ -5500,3 +5500,11 @@ ALTER TABLE fund_account_validations
 
 ALTER TABLE fund_account_validations
     CHANGE COLUMN amount amount bigint NULL;
+
+ALTER TABLE `mozart`
+    ADD INDEX `mozart_payment_id_index` (`payment_id`),
+    ADD INDEX `mozart_refund_id_index` (`refund_id`),
+    ADD INDEX `mozart_created_at_index` (`created_at`);
+
+ALTER TABLE `terminals`
+    ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
