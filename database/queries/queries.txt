@@ -168,6 +168,9 @@ ALTER TABLE netbanking
     ADD COLUMN date VARCHAR(255) AFTER reference1,
     ADD COLUMN refund_id CHAR(14) AFTER date;
 
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_refund_id_index` (`refund_id`);
+
 ALTER TABLE billdesk
     ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
 
