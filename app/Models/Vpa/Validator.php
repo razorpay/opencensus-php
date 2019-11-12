@@ -8,7 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-zA-Z0-9][a-zA-Z0-9\.-]{2,}@[a-zA-Z]+"|custom',
+        Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-zA-Z0-9]{1,}@[a-zA-Z]+"|custom',
     ];
 
     public function validateAddress(string $attribute, string $address)
@@ -21,10 +21,10 @@ class Validator extends Base\Validator
 
         list($left, $right) = explode(Entity::AROBASE, $address);
 
-        if (strlen($left) < 3)
+        if (strlen($left) < 1)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Handle must be at least three characters: ' . $address);
+                'Handle must be at least 1 character: ' . $address);
         }
     }
 }

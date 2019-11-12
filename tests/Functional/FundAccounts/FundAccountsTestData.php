@@ -448,4 +448,28 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testCreateSingleCharacterHandleOfVpa' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+        ],
+    ],
 ];
