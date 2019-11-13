@@ -7,6 +7,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\BankAccount;
 
 /**
  * @property Vpa\Entity $payer
@@ -710,6 +711,11 @@ class Entity extends Base\Entity
     public function payee()
     {
         return $this->morphTo(self::PAYEE)->withTrashed();
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount\Entity::class)->withTrashed();
     }
 
     public function upi()
