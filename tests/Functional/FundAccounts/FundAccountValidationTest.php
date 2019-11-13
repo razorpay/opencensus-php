@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use \RZP\Constants;
-use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -487,6 +486,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWithAccountNumberAndVpa()
     {
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
@@ -507,9 +508,13 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(10000000, $balance['balance']);
 
         // validate fund account validation last entry
-        $this->assertEquals($balance['id'], $fav['balance_id']);
-        $this->assertEquals('10000000000000', $fav['merchant_id']);
-        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav['entity']);
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+        // getting set in job worker
+        $this->assertEquals('active', $fav[Entity::RESULTS][Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $fav[Entity::RESULTS][Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $fav[Entity::STATUS]);
 
         // no transaction should be created for 0 fee
         $this->assertNotEquals($fav['id'], $txn['entity_id']);

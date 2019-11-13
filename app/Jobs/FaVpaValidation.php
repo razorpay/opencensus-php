@@ -59,10 +59,10 @@ class FaVpaValidation extends Job
                 throw new LogicException("Invalid fund account type");
             }
 
-            $vpaInput = [
-                'vpa'         => $fundAccount->account->getAddress(),
-                'merchant_id' => $fundAccount->getMerchantId(),
-            ];
+            $vpaInput = [ 'vpa' => $fundAccount->account->getAddress() ];
+
+            // payment service requires merchant to be set
+            app('basicauth')->setMerchantById($fundAccount->getMerchantId());
 
             $data = $this->getVpaValidateResponse($vpaInput);
 
