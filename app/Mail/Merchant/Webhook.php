@@ -72,20 +72,24 @@ class Webhook extends Mailable
             'url' => $this->webhook['url'],
         ];
 
-        $data['error_message'] = $this->options['errorMessage'];
-
-        if (empty($data['error_message']) === true)
-        {
-            $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
-        }
-
         $data['date'] = date('d-M-Y H:m:s T');
 
-        $eventData = json_decode($this->options['event'], true);
+        if ($this->options['type'] !== 'deactivate_from_stork')
+        {
 
-        $data['event'] = $eventData['event'];
+            $data['error_message'] = $this->options['errorMessage'];
 
-        $this->setEntityData($data, $eventData);
+            if (empty($data['error_message']) === true)
+            {
+                $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
+            }
+
+            $eventData = json_decode($this->options['event'], true);
+
+            $data['event'] = $eventData['event'];
+
+            $this->setEntityData($data, $eventData);
+        }
 
         $data['mode'] = $this->options['mode'];
 
@@ -137,6 +141,10 @@ class Webhook extends Mailable
             $subject .= 'Webhook failed for ' . $subjectName;
         }
         else if ($this->options['type'] === 'deactivate')
+        {
+            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
+        }
+        else if ($this->options['type'] === 'deactivate_from_stork')
         {
             $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
         }

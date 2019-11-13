@@ -57,4 +57,13 @@ class WebhookController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function webhookDeactivateFromStork($id)
+    {
+        $input = Request::all();
+
+        $this->service()->webhookDeactivateFromStork($id, $input);
+
+        return ApiResponse::json([]);
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
+use Mail;
+
 use RZP\Jobs;
 use RZP\Models;
 use RZP\Exception;
@@ -11,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 class Core extends Base\Core
 {
@@ -178,5 +181,45 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::STORK_WEBHOOK_MIGRATE_SUMMARY, $summary);
 
         return $summary;
+    }
+
+    public function webhookDeactivateFromStork($id, $input)
+    {
+
+        $webhook = $this->repo->webhook->findOrFailPublic($id);
+
+        $this->disableWebhook($webhook);
+
+        $options = [
+            'mode'         => $input['mode'],
+            'type'         => "deactivate_from_stork",
+        ];
+
+        $this->sendMail($webhook, $options);
+    }
+
+    public function sendMail($webhook, $options)
+    {
+        $merchant = $webhook->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $merchant = $merchant->toArrayPublic();
+
+        $webhook = $webhook->toArrayPublic();
+
+        $webhookMail = new WebhookMail($webhook, $merchant, $options);
+
+        Mail::send($webhookMail);
+    }
+
+    protected function disableWebhook(Entity $webhook)
+    {
+        $webhook->deactivate();
+
+        $this->repo->saveOrFail($webhook);
     }
 }
