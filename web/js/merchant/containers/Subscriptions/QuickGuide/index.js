@@ -1,8 +1,4 @@
-import {
-  PossibleStatuses,
-  RZPFeatures,
-  SubscriptionsStates,
-} from 'common/utils/constants';
+import { PossibleStatuses, RZPFeatures } from 'common/utils/constants';
 
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
@@ -17,6 +13,16 @@ import QuickStepGuide, {
 import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
+
+const SubscriptionsStates = {
+  ACTIVE: 'active',
+  CREATED: 'created',
+  PENDING: 'pending',
+  AUTHENTICATED: 'authenticated',
+  HALTED: 'halted',
+  EXPIRED: 'expired',
+  COMPLETED: 'completed',
+};
 
 @QuickGuide({
   feature: RZPFeatures.SUBSCRIPTIONS,

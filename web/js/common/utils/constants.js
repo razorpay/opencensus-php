@@ -121,13 +121,3 @@ export const RZPFeatures = {
   PL: 'payment_links',
   INVOICE: 'invoices',
 };
-
-export const SubscriptionsStates = {
-  ACTIVE: 'active',
-  CREATED: 'created',
-  PENDING: 'pending',
-  AUTHENTICATED: 'authenticated',
-  HALTED: 'halted',
-  EXPIRED: 'expired',
-  COMPLETED: 'completed',
-};

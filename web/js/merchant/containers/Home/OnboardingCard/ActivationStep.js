@@ -6,7 +6,7 @@ import LocalStorageService from 'common/utils/localStorage';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ProgressBar from 'common/ui/ProgressBar';
 
-import { activationDuration } from 'merchant_common/helpers/data';
+import { activationDuration } from 'merchant/helpers/data';
 
 import {
   NEEDS_CLARIFICATION,
