@@ -18,6 +18,7 @@ import * as SessionActions from 'merchantLA/reducers/session';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
+import rolesList from 'merchantLA/helpers/permissions/roles-list';
 
 @withRouter
 @connect(
@@ -226,10 +227,10 @@ export default class App extends Component {
       pathname === '/dashboard_v2'
     ) {
       switch (role) {
-        case 'sellerapp':
+        case [rolesList.SELLERAPP]:
           let url = '/paymentlinks';
           return this.props.history.replace(url);
-        case 'support':
+        case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
 
         case null:

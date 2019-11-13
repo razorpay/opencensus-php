@@ -8,9 +8,9 @@ import { removeMember, updateMember } from 'merchant/reducers/team';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { pickProps } from 'common/utils/rzp-utils';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import ModalHeader from 'common/ui/ModalHeader';
-
 import NewInvitation from '../NewInvitation';
 
 @connect(null, {
@@ -125,7 +125,7 @@ export default class MembersActions extends Component {
 }
 
 function isOwner(member) {
-  return member.role === 'owner';
+  return member.role === rolesList.OWNER;
 }
 
 function getToBePickedUpFields(visibleFields, alwaysPickedUpFields) {

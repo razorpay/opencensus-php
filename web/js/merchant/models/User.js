@@ -8,12 +8,13 @@ import { getOrg, getMode } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   roleEditPermissions,
   roleViewPermissions,
   antiOrgsModules,
   antiOrgsFeatures,
-} from '../resources/permissions';
+} from 'merchant/helpers/permissions';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -441,7 +442,9 @@ export default class User {
 
   get isSellerAppRole() {
     const userRole = this.userRole;
-    return ['sellerapp', 'sellerapp_plus'].indexOf(userRole) > -1;
+    return (
+      [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1
+    );
   }
 
   get isSupportCallEnabled() {

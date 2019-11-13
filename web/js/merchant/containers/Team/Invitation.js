@@ -12,7 +12,9 @@ import {
   fetchTeamDetails,
 } from 'merchant/reducers/team';
 
-let ROLES = without(roles, 'owner');
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
+let ROLES = without(roles, rolesList.OWNER);
 @connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
@@ -101,12 +103,12 @@ export default class EditInvitation extends Component {
     } else if (user.isRBLRoleEnabled) {
       allRoles = { ...allRoles, ...RBLRoles };
 
-      if (user.role === 'rbl_supervisor') {
+      if (user.role === rolesList.RBL_SUPERVISOR) {
         allRoles = { ...allRoles, ...RBLRoles };
 
         isAllowedEdit = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
 
-        if (invite.role === 'rbl_agent') {
+        if (invite.role === rolesList.RBL_AGENT) {
           isAllowedEdit = true;
           allRoles = { rbl_agent: RBLRoles.rbl_agent };
         }

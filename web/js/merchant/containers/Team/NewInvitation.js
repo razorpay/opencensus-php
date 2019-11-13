@@ -11,6 +11,7 @@ import { without } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 const selector = formValueSelector('newInvitation');
 @connect(
@@ -29,7 +30,7 @@ const selector = formValueSelector('newInvitation');
   form: 'newInvitation',
   initialValues: {
     email: '',
-    role: 'manager',
+    role: rolesList.MANAGER,
   },
 })
 export default class NewInvitation extends Component {
@@ -67,10 +68,10 @@ export default class NewInvitation extends Component {
   };
 
   filterRoles = () => {
-    const rolesToRemove = ['owner'];
+    const rolesToRemove = [rolesList.OWNER];
 
     if (!this.props.user.isEnhancedEPOSEnabled) {
-      rolesToRemove.push('sellerapp_plus');
+      rolesToRemove.push(rolesList.SELLERAPP_PLUS);
     }
 
     return without(roles, rolesToRemove);
@@ -90,7 +91,7 @@ export default class NewInvitation extends Component {
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
     } else {
-      if (user.role === 'rbl_supervisor') {
+      if (user.role === rolesList.RBL_SUPERVISOR) {
         ROLES = { rbl_agent: RBLRoles.rbl_agent }; // RBL Supervisor can only invite rbl_agent
       } else if (user.isRBLRoleEnabled) {
         ROLES = { ...ROLES, ...RBLRoles }; // Allowed only for roles with edit access as per permissions map
