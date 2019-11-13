@@ -105,6 +105,9 @@ class Repository extends Base\Repository
     {
         $endOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, Timezone::IST)->endOfMonth();
 
+        //
+        // getting all distinct merchant ids for whom the invoice is generated for a given month and year
+        //
         $invoiceMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
         $invoiceMonth      = $this->dbColumn(Entity::MONTH);
         $invoiceYear       = $this->dbColumn(Entity::YEAR);
@@ -115,6 +118,9 @@ class Repository extends Base\Repository
                                           ->where($invoiceMonth, $month)
                                           ->where($invoiceYear, $year);
 
+        //
+        // checking missing MIDS from the active merchant list
+        //
         $activatedAt = $this->repo->merchant->dbColumn(Merchant\Entity::ACTIVATED_AT);
         $merchantId  = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $orgId       = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
