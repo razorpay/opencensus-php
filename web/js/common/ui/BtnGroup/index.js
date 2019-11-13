@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { checkChildrenType } from 'common/utils/rzp-react-utils';
+import { checkChildrenType } from 'common/utils/react-utils';
 
 export class Btn extends Component {
   constructor(props) {

@@ -16,7 +16,7 @@ import {
   addPrefixToObjectKeys,
   prevent,
 } from 'common/utils/rzp-utils';
-import { trackFormFields } from 'common/utils/track-utils';
+import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import { classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
@@ -219,7 +219,7 @@ export default class ActivationWizard extends React.Component {
 
   @RTracking((props, state) => {
     const { tracking } = props;
-    const fields = trackFormFields(props.data, state.dirty);
+    const fields = trackDiffInFormFields(props.data, state.dirty);
     return fields.forEach(field =>
       tracking.trackEvent(
         window.rzpQ.onbr().initiated('act.provide_act_details', {

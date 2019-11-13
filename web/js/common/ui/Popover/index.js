@@ -5,10 +5,7 @@
 
 import React, { Component } from 'react';
 
-import {
-  isChildSameType,
-  checkChildrenType,
-} from 'common/utils/rzp-react-utils';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 import Tooltip from 'common/ui/Tooltip';
 
 class PopoverTitle extends Component {

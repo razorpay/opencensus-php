@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 
-import {
-  isChildSameType,
-  checkChildrenType,
-} from 'common/utils/rzp-react-utils';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
 class Tab extends Component {
   constructor(props) {

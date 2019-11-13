@@ -1,6 +1,6 @@
-import { pickProps } from './rzp-utils';
+import { pickProps } from 'common/utils/rzp-utils';
 
-export function trackFormFields(oldValues, newValues) {
+export function trackDiffInFormFields(oldValues, newValues) {
   const changedFields = Object.keys(newValues);
   const existingValues = pickProps(oldValues, changedFields);
   const fieldEvents = Object.keys(newValues).map(key => {
