@@ -126,6 +126,8 @@ class Core extends Base\Core
             if($input['order_amount'] !== null)
             {
                 $payment->setAmount($input['order_amount']);
+                
+                $payment->setBaseAmount($input['order_amount']);
             }
 
             $order = $payment->order;
