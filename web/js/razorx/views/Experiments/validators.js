@@ -8,7 +8,7 @@ export const initJSONObj = {
   segments: [
     {
       variant: '',
-      type: '// Eg: String: whitelist, blacklist, ramp, context-ramp',
+      type: '// Eg: String: whitelist, blacklist, ramp, contextramp',
       ids: [],
       weight: '// Eg: Number: 1(=> 0.001%)',
     },
@@ -54,15 +54,15 @@ const required = {
 
       const isTypeInvalid =
         !s.type ||
-        ['whitelist', 'blacklist', 'ramp', 'context-ramp'].indexOf(s.type) ===
+        ['whitelist', 'blacklist', 'ramp', 'contextramp'].indexOf(s.type) ===
           -1;
       if (isTypeInvalid) {
         errorMsg =
-          'type must be one of [whitelist, blacklist, ramp, context-ramp]';
+          'type must be one of [whitelist, blacklist, ramp, contextramp]';
         return false;
       }
 
-      if (['whitelist', 'blacklist', 'context-ramp'].indexOf(s.type) !== -1) {
+      if (['whitelist', 'blacklist', 'contextramp'].indexOf(s.type) !== -1) {
         const isIdInvalid = !s.ids || !(s.ids instanceof Array);
         if (isIdInvalid) {
           errorMsg = 'Invalid Array of ids';
@@ -73,7 +73,7 @@ const required = {
         return false;
       }
 
-      if (['ramp', 'context-ramp'].indexOf(s.type) !== -1) {
+      if (['ramp', 'contextramp'].indexOf(s.type) !== -1) {
         const isWeightInvalid =
           !s.weight ||
           typeof s.weight !== 'number' ||
