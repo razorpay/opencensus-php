@@ -10,6 +10,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
+import { validateZipCode } from 'merchant/containers/Customers/New';
 import {
   isAddressValid,
   isValidZipcodeCountryWise,
@@ -207,6 +208,24 @@ export default class New extends Component {
     });
   };
 
+  validateAddress = address => {
+    const zipcodeError = validateZipCode(address.country, address.zipcode);
+
+    if (zipcodeError) {
+      this.setState({
+        errors: [zipcodeError],
+      });
+
+      return;
+    }
+
+    if (this.state.errors && this.state.errors.length) {
+      this.setState({
+        errors: [],
+      });
+    }
+  };
+
   render() {
     const {
       header,
@@ -271,6 +290,7 @@ export default class New extends Component {
               showDisabledCountry={true}
               hideCountry={!isInttCurrenciesEnabled}
               trackSelectCountry={trackSelectCountry}
+              validateAddress={this.validateAddress}
               {...extraProps}
             />
 
