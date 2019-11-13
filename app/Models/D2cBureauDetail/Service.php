@@ -136,7 +136,7 @@ class Service extends Base\Service
                     $maxLoanAmount = (int) $maxLoanAmount;
                 }
 
-                return $report->toArrayPublic() + [
+                return $report->toArrayForDashboard() + [
                         'max_loan_amount'   => $maxLoanAmount,
                     ];
             });

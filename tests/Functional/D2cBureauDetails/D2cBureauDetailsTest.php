@@ -136,8 +136,8 @@ class D2cBureauDetailsTest extends TestCase
             'user_id'               => $this->user->getId(),
             'd2c_bureau_detail_id'  => D2cBureauDetail\Entity::verifyIdAndStripSign($response['id']),
             'provider'              => 'experian',
-            'score'                 => 752,
-            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
+//            'score'                 => 752,
+//            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
             'ufh_file_id'           => 'rzp_file_mock_id_1000000_bureau_report',
 //                'created_at'        => 1571374473
         ], $d2cBureauReport);
