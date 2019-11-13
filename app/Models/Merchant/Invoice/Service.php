@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -85,5 +87,20 @@ class Service extends Base\Service
         $invoices = $this->repo->merchant_invoice->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();
+    }
+
+    public function verify(array $input)
+    {
+        (new Validator)->validateInput(Validator::VERIFY, $input);
+
+        $previousMonthTimestamp = Carbon::now(Timezone::IST)->subMonth(1);
+
+        $year = $input['year'] ?? $previousMonthTimestamp->year;
+
+        $month = $input['month'] ?? $previousMonthTimestamp->month;
+
+        $data = (new Core)->verify($year, $month);
+
+        return $data;
     }
 }

@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
@@ -394,5 +395,37 @@ class Core extends Base\Core
             [
                 'count' => $skip,
             ]);
+    }
+
+    /**
+     * verify if the invoice is generated correctly for all the eligible merchant
+     * else raise an slack alert and log the missing ids
+     *
+     * @param int $year
+     * @param int $month
+     */
+    public function verify(int $year, int $month): array
+    {
+        $result = $this->repo->merchant_invoice->verify($year, $month);
+
+        if ($result->isEmpty() === true)
+        {
+            return [];
+        }
+
+        $this->trace->error(
+            TraceCode::MERCHANT_INVOICE_CREATION_SKIPPED,
+            [
+                'count'        => $result->count(),
+                'merchant_ids' => $result->toArray(),
+            ]);
+
+        (new SlackNotification)->send(
+            'merchant_invoice_alert',
+            [
+                'total_invoice_skipped' => $result->count(),
+            ]);
+
+        return $result->toArray();
     }
 }
