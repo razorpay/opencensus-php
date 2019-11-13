@@ -50,7 +50,7 @@ class Processor extends Base\Core
 
     const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
-    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 900;
 
     public function __construct()
     {

@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
+use File;
+
 use App;
+
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -11,15 +14,23 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
+use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Org\Preferences;
+use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
+use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
+    const STORE_TYPE = 'file';
+
+    const DASHBOARD_FILE_URL = '%sufh/file/%s';
+
     public function create(array $input, Merchant\Entity $merchant, Balance\Entity $balance = null): Entity
     {
         $invoiceEntity = new Entity;
@@ -229,6 +240,95 @@ class Core extends Base\Core
         });
 
         return $count;
+    }
+
+
+    public function generateInvoiceReport($input)
+    {
+        $data = (new BankingInvoiceReport)->getInvoiceReport($input);
+
+        $invoiceEntity = (new Repository)->findByIdAndMerchantId($data[Entity::ID], $this->merchant->getId());
+
+        $pathToTemporaryFile = (new PdfGenerator)->generate($data);
+
+        $fileAccessUrl = $this->uploadViaUfh($pathToTemporaryFile, $invoiceEntity);
+
+        return [
+            $fileAccessUrl,
+            $data,
+        ];
+    }
+
+    public function sendInvoiceEmail($fileId, $data , $emailAddresses)
+    {
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($fileId);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST,
+            [
+                'file_id'             =>  $fileId,
+                'file_access_url'     =>  $fileAccessUrl,
+                'data'                =>  $data,
+                'email_addresses'     =>  $emailAddresses,
+            ]);
+
+
+        $mailable = new MerchantBankingInvoice($fileAccessUrl,
+                                               $data,
+                                               $emailAddresses);
+
+        \Mail::queue($mailable);
+    }
+
+    protected function uploadViaUfh(string $pathToTemporaryFile, Entity $entity)
+    {
+        $ufhService = $this->app['ufh.service'];
+
+        $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
+
+        $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                     $name = File::name($pathToTemporaryFile),
+                                                     self::STORE_TYPE,
+                                                     $entity);
+
+        $this->trace->info(
+            TraceCode::UFH_RESPONSE,
+            [
+                'merchant_invoice_id'   => $entity->getId(),
+                'ufh_response'          => $response,
+            ]);
+
+        return $response;
+    }
+
+    protected function getUploadedFileInstance(string $path)
+    {
+        $name = File::name($path);
+
+        $extension = File::extension($path);
+
+        $originalName = $name . '.' . $extension;
+
+        $mimeType = File::mimeType($path);
+
+        $size = File::size($path);
+
+        $error = null;
+
+        // Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        // reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        // creating the UploadedFile instance in test mode.
+
+        $test = true;
+
+        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+
+        return $object;
+    }
+
+    protected function getDashboardFileAccessUrl(string $fileId = null)
+    {
+        return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
 
     public function processMerchantInvoice($mode, $year, $month, $merchantIds = [], $isCorrection = false)

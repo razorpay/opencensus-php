@@ -503,13 +503,37 @@ class Gateway extends Mindgate\Gateway
         string $type = Type::PAY): array
     {
         return [
-            Entity::VPA                 => $input[Fields::GATEWAY_INPUT][Entity::VPA],
+            Entity::VPA                 => $this->maskVpaHandle($input[Fields::GATEWAY_INPUT][Entity::VPA]),
             Entity::TYPE                => $type,
             Entity::ACTION              => $action,
             Entity::MERCHANT_REFERENCE  => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
             Entity::AMOUNT              => $input[Fields::GATEWAY_INPUT][Entity::AMOUNT],
             Entity::PAYMENT_ID          => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
         ];
+    }
+
+    /**
+     * Masks the username part of the Vpa handle Except for last four digits
+     * e.g $vpaHandle = 'ccpay.12676372617@okhdfcbank'
+     * returns XXXXXXXXXXXXX2617@okhdfcbank
+     *
+     * @param $vpaHandle
+     * @return mixed
+     */
+    public function maskVpaHandle($vpaHandle)
+    {
+        if (empty($vpaHandle) === false)
+        {
+            $endPos = strrpos($vpaHandle, '@');
+
+            $subStr = substr($vpaHandle, 0, $endPos);
+
+            $replacement = mask_except_last4($subStr);
+
+            return substr_replace($vpaHandle, $replacement, 0, $endPos);
+        }
+
+        return $vpaHandle;
     }
 
     protected function getGatewayMerchantId(array $input)

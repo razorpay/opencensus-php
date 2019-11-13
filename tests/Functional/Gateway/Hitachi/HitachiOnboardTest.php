@@ -7,6 +7,8 @@ use Mockery;
 use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\TerminalFields;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class HitachiOnboardTest extends TestCase
@@ -43,6 +45,34 @@ class HitachiOnboardTest extends TestCase
         $this->createMerchants();
 
         $data =$this->getDefaultInput();
+
+        $response = $this->onboard($this->merchantId, $data);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals($response['gateway'], 'hitachi');
+
+        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
+    }
+
+    // Should add default merchant details if not present
+    public function testOnboardWhenRequiredMerchantDetailsAreMissing()
+    {
+        $this->createMerchants();
+
+        $data = $this->getDefaultInput();
+
+        $merchant = (new MerchantRepo)->findOrFailPublic($this->merchantId);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_ADDRESS] =  null;
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_STATE]   =  "dasf";
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_PIN]     =  "123";
+        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  null;
+        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  null;
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_CITY]    =  null;
+        $merchantDetail->save();
 
         $response = $this->onboard($this->merchantId, $data);
 

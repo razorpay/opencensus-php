@@ -36,6 +36,12 @@ class FundTransfer extends Job
      */
     protected $ftaId;
 
+    //
+    // Yesbank upi request timeout is 180 sec
+    // so job timeout should be more than that
+    //
+    public $timeout = 200;
+
     public function __construct(string $mode, string $ftaId)
     {
         parent::__construct($mode);
@@ -272,9 +278,7 @@ class FundTransfer extends Job
 
         if ((empty($sla) === false) and
             ($fta->getSourceType() === Attempt\Type::PAYOUT) and
-            (((int) $sla) <= $duration) and
-            (($fta->getMode() === FTA\Mode::IMPS) or
-                ($fta->getMode() === FTA\Mode::IFT)))
+            (((int) $sla) <= $duration))
         {
             $this->trace->info(
                 TraceCode::FTA_SLA_EXPIRED,

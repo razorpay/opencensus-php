@@ -17,6 +17,7 @@ use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\PGPEncryption;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Settlement\Settlement as SettlementMail;
@@ -31,7 +32,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     const BEAM_FILE_TYPE      = 'settlement';
 
-    const BENE_DEFAULT_NAME      = 'Not Available';
+    const BENE_DEFAULT_NAME   = 'Not Available';
+
+    const RZP_FILE_MIME_TYPE  = 'text/plain';
 
     protected $id;
 
@@ -161,30 +164,56 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $creator = new FileStore\Creator;
 
-        $file = $creator->extension(FileStore\Format::TXT)
-                        ->content($textContent)
-                        ->name($fileName)
-                        ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                        ->headers(false)
-                        ->metadata($metadata)
-                        ->encrypt(Type::PGP_ENCRYPTION,
-                            [
-                                PGPEncryption::PUBLIC_KEY  => $this->encryptionKey,
-                                PGPEncryption::USE_ARMOR   => 1
-                            ])
-                        ->save();
+        $this->trace->info(TraceCode::FTA_FILE_CREATED_IN_S3);
 
-        $creator = new FileStore\Creator;
+        try
+        {
+            $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_INIT);
 
-        $rzpFile = $creator->extension(FileStore\Format::TXT)
-                           ->content($textContent)
-                           ->name($fileName)
-                           ->store(FileStore\Store::S3)
-                           ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                           ->headers(false)
-                           ->metadata($metadata)
-                           ->save();
+            $file = $creator->extension(FileStore\Format::TXT)
+                            ->content($textContent)
+                            ->name($fileName)
+                            ->store(FileStore\Store::S3)
+                            ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                            ->headers(false)
+                            ->metadata($metadata)
+                            ->encrypt(Type::PGP_ENCRYPTION,
+                                [
+                                    PGPEncryption::PUBLIC_KEY  => $this->encryptionKey,
+                                    PGPEncryption::USE_ARMOR   => 1
+                                ])
+                            ->save();
+
+            $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_COMPLETE);
+
+            $creator = new FileStore\Creator;
+
+            $this->trace->info(TraceCode::FTA_UNENCRYPTED_FILE_CREATE_IN_S3_INIT);
+
+            $rzpFile = $creator->extension(FileStore\Format::TXT)
+                               ->mime(self::RZP_FILE_MIME_TYPE)
+                               ->content($textContent)
+                               ->name($fileName)
+                               ->store(FileStore\Store::S3)
+                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                               ->headers(false)
+                               ->metadata($metadata)
+                               ->save();
+
+            $this->trace->info(TraceCode::FTA_UNENCRYPTED_FILE_CREATE_IN_S3_COMPLETE);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FUND_TRANSFER_FILE_UPLOAD_FAILED,
+                [
+                    'file' => $fileName,
+                ]);
+
+            throw  $exception;
+        }
 
         return [$file, $rzpFile];
     }

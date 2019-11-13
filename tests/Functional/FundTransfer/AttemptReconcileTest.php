@@ -836,4 +836,36 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('FAILED', $fta['bank_status_code']);
     }
+
+    public function testSettlementMerchantFailureForYesbank()
+    {
+        $channel = Channel::YESBANK;
+
+        $failure = 'merchant_error';
+
+        $this->createDataAndAssertInitiateOnlineTransferResponse(
+            $channel,
+            Attempt\Purpose::SETTLEMENT,
+            1,
+            Attempt\Type::SETTLEMENT,
+            false);
+
+        $this->reconcileOnlineSettlements($channel, $failure);
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
+        $this->assertEquals('npci:E449', $fta['bank_response_code']);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $this->assertEquals(Settlement\Status::FAILED, $settlement['status']);
+
+        $merchant = $this->getEntityById('merchant', '10000000000000', true);
+
+        $this->assertEquals(true, $merchant['hold_funds']);
+        $this->assertEquals('bank account/transaction was rejected from bank', $merchant['hold_funds_reason']);
+    }
 }
