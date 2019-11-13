@@ -2,7 +2,6 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
-use Respect\Validation\Rules\In;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
