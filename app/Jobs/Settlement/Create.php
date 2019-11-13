@@ -202,7 +202,7 @@ class Create extends Job
     {
         $redis = app('redis')->connection();
 
-        $count = (int) $redis->hincrby($this->channelWiseCountKey, $channel, 1);
+        $count = (int) $redis->hget($this->channelWiseCountKey, $channel);
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
