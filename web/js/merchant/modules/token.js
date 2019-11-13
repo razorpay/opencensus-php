@@ -25,11 +25,8 @@ export const deleteToken = id => ({
 
 export const resubmitNACHFile = id => {
   return merchantFetch({
-    url: 'token.registration/paper_mandate/authenticate/proxy',
+    url: `token.registration/paper_mandate/token/${id}/retry`,
     method: 'post',
-    data: {
-      order: id,
-    },
   });
 };
 

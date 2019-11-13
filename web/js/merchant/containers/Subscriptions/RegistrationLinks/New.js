@@ -125,7 +125,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     const isNACH = this.state.formFields.mandateMethod === 'nach';
     if (isNACH) {
       this.DEFAULT_MAX_AMOUNT = 10000000;
-      this.DEFAULT_FIRST_CHARGE = 300000;
 
       return isNACH;
     }
