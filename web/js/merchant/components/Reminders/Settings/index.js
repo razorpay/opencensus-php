@@ -88,7 +88,9 @@ export default class ReminderSetting extends React.Component {
 
         this.props.showNotification({
           type: 'success',
-          message: `Reminders disabled for ${this.typeInLowerCase}`,
+          message: `Reminders ${
+            this.state.isEnabled ? 'disabled' : 'enabled'
+          } for ${this.typeInLowerCase}`,
         });
       })
       .catch(({ errors }) => {
