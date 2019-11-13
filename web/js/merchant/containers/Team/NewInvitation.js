@@ -6,7 +6,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 
 import { required, email, phone } from 'common/utils/validators';
-import { roles, agentRole, RBLRoles } from 'common/utils/constants';
+import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 import { without } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';

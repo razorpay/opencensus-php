@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import Pager from 'common/ui/Pager';

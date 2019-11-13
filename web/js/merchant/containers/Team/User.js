@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { roles, agentRole, RBLRoles } from 'common/utils/constants';
+import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 import { without } from 'common/utils/rzp-utils';
 import {
   updateUser,

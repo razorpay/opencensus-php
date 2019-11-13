@@ -34,7 +34,7 @@ import { fetchPaymentPagesList } from '../model';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 @withRouter
 @connect(

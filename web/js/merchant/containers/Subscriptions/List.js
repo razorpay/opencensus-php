@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';

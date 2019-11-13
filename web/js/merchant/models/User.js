@@ -1,6 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'common/utils/rzp-utils';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import LocalStorageService from 'common/utils/localStorage';

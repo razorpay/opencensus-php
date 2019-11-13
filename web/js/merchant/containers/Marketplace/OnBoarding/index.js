@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
 import Button from 'common/new-ui/Button';

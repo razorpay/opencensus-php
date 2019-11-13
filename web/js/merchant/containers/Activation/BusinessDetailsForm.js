@@ -15,7 +15,7 @@ import {
   lenientUrl,
   validateGSTIN,
 } from 'common/utils/validators';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 
 import { getPincodeDetails } from 'merchant/reducers/activation';
 

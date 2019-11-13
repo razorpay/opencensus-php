@@ -3,7 +3,7 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 
 import { classList } from 'common/utils/rzp-utils';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
