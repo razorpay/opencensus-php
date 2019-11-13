@@ -215,7 +215,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function notifyInvoicesOfBatch(string $batchId, array $input)
+    public function notifyAuthLinksOfBatch(string $batchId, array $input)
     {
         try
         {
