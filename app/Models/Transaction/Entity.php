@@ -74,7 +74,6 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE            = 'source';
     const ACCOUNT_BALANCE   = 'account_balance';
-    const SETTLEMENT        = 'settlement';
 
     protected static $sign = 'txn';
 
@@ -121,7 +120,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
-        self::SETTLEMENT
     ];
 
     protected $publicSetters = [

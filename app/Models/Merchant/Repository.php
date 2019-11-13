@@ -184,6 +184,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantsCountWithPricingPlanId($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->count();
+    }
+
     public function isMerchantIdRequiredForFetch()
     {
         return false;

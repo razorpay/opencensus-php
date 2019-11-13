@@ -566,7 +566,8 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * This function tests updating of a visible merchant feature: es_automatic
+     * This function tests updating of a visible merchant feature: es_automatic.
+     * Should fail if feature es_on_demand is not added to the merchant.
      */
     public function testEnableEsAutomaticFeaturesFailure()
     {
@@ -627,6 +628,19 @@ class FeaturesTest extends TestCase
      */
     public function testAddMerchantEditableFeaturesOnTest()
     {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature es_automatic.
+     * It will delete feature es_on_demand in the process.
+     */
+    public function testAddMerchantEsAutomaticFeatureOnTest()
+    {
+        $this->addFeatures(Mode::TEST, false, [Constants::ES_ON_DEMAND]);
+
         $this->ba->proxyAuthTest();
 
         $this->startTest();

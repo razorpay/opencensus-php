@@ -200,7 +200,7 @@ class VpaTest extends TestCase
         $this->assertTrue($vpa->refresh()->trashed());
 
         // Pending collect transaction should be deleted
-        $this->assertTrue($vpa->refresh()->trashed());
+        $this->assertTrue($transaction->refresh()->trashed());
     }
 
     public function testSetDefault()

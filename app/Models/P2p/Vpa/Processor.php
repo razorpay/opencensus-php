@@ -69,16 +69,25 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::ADD_SUCCESS, $input, true);
 
-        $vpa = $this->core->createOrUpdate($this->input->get(Entity::VPA));
-
         $bankAccountId = array_get($this->input->get(Entity::BANK_ACCOUNT), Entity::ID);
+        $bankAccount   = null;
 
         if (is_null($bankAccountId) === false)
         {
             $bankAccount = (new BankAccount\Core)->fetch($bankAccountId);
-
-            $this->core->assignBankAccount($vpa, $bankAccount);
         }
+
+        $vpa = $this->repo()->transaction(function() use ($bankAccount)
+        {
+            $vpa = $this->core->createOrUpdate($this->input->get(Entity::VPA));
+
+            if (is_null($bankAccount) === false)
+            {
+                $this->core->assignBankAccount($vpa, $bankAccount);
+            }
+
+            return $vpa;
+        });
 
         return $vpa->toArrayPublic();
     }
@@ -137,7 +146,10 @@ class Processor extends Base\Processor
 
         $vpa = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID]);
 
-        $this->core->setDefaultVpa($vpa);
+        $vpa = $this->repo()->transaction(function() use ($vpa)
+        {
+            return $this->core->setDefaultVpa($vpa);
+        });
 
         return $vpa->toArrayPublic();
     }

@@ -152,5 +152,8 @@ add_cron "*/15 * * * *"      "merchant_es_sync_live"         POST "$BASE_URL/mer
 # Daily: Dynamic netbanking URL update in status cake
 # add_cron "0 0 * * *"        "dynamic_netbanking_url_update"  POST "$BASE_URL/payment/netbanking/statuscake/urlsync"      "driver=statuscake"             $LIVE_AUTH
 
+# Banking account statement
+# add_cron "0 * * * *"        "banking_account_statement"      POST  "BASE_URL/banking_account_statement/process"        ""                               $LIVE_AUTH
+
 # Install the generated crontab
 crontab $TMP_CRONTAB

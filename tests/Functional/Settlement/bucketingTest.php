@@ -359,4 +359,3 @@ class BucketingTest extends TestCase
         Carbon::setTestNow($timestamp);
     }
 }
-
