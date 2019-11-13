@@ -97,7 +97,7 @@ class SubscriptionRegistrationController extends Controller
 
     public function cancelAuthLink(string $id)
     {
-        $invoice = $this->service()->cancelInvoice($id);
+        $invoice = $this->service()->cancelAuthLink($id);
 
         return ApiResponse::json($invoice);
     }
