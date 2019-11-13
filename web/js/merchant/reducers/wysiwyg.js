@@ -202,7 +202,6 @@ export default function(state = initialState, action) {
           isPageDirty: false,
         };
       } else {
-        console.log('state.paymentPageEntity.......', state.paymentPageEntity);
         return {
           ...state,
           isPageDirty:

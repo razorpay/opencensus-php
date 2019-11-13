@@ -1078,3 +1078,44 @@ export function classList(...args) {
 
   return classes.join(' ');
 }
+
+/**
+ *
+ * @param {Object}, keys: Objet keys to be converted into sentence.
+ * Returns comma separated sentence ending in is/are.
+ */
+export function keysToSentence(keys) {
+  if (typeof keys !== 'object' || !Object.keys(keys).length) {
+    return;
+  }
+
+  let joiner;
+
+  keys = Object.keys(keys).map(key => {
+    if (key[key.length - 1] === 's') {
+      // plural term
+      joiner = 'are';
+    }
+
+    return titleCase(key);
+  });
+
+  joiner = joiner || (keys.length > 1 ? 'are' : 'is');
+
+  let sentence = keys[0];
+
+  for (let i = 1; i < keys.length; i++) {
+    if (i === keys.length - 1) {
+      sentence = sentence + ' and ' + keys[i];
+    } else {
+      sentence = sentence + ', ' + keys[i];
+    }
+  }
+
+  return sentence + ' ' + joiner;
+}
+
+export const prevent = e => {
+  e.preventDefault();
+  e.stopPropagation();
+};
