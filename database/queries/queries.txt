@@ -168,6 +168,9 @@ ALTER TABLE netbanking
     ADD COLUMN date VARCHAR(255) AFTER reference1,
     ADD COLUMN refund_id CHAR(14) AFTER date;
 
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_refund_id_index` (`refund_id`);
+
 ALTER TABLE billdesk
     ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
 
@@ -5379,6 +5382,7 @@ add column `kyc_additional_details` JSON NULL;
 ALTER TABLE pricing
     ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer
 
+
 ALTER TABLE `transfers`
 ADD COLUMN `status` VARCHAR(255) NOT NULL DEFAULT 'processed' AFTER `source_type`,
 ADD COLUMN `message` VARCHAR(255) DEFAULT NULL AFTER `recipient_settlement_id`,
@@ -5391,6 +5395,10 @@ ALTER TABLE `addresses`
 
 ALTER TABLE merchant_documents
     ADD COLUMN `ocr_verify` varchar(30) DEFAULT NULL AFTER `entity_type`;
+
+ALTER TABLE invoices
+    ADD `reminder_id` CHAR(14) DEFAULT NULL AFTER `status`,
+    ADD `reminder_status` VARCHAR(255) DEFAULT NULL AFTER `reminder_id`;
 
 ALTER TABLE partner_configs
     ADD COLUMN tds_percentage INT(11) NOT NULL DEFAULT 500 AFTER settle_to_partner,
@@ -5428,6 +5436,9 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE merchant_details
     ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
+
+ALTER TABLE `settlement_details`
+    MODIFY COLUMN `component` varchar(255);
 
 -- P2P - Adding Indices
 
@@ -5483,3 +5494,17 @@ ALTER TABLE `p2p_concerns`
     ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
 
 -- P2P - Adding Indices
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN currency currency CHAR(3) NULL;
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN amount amount bigint NULL;
+
+ALTER TABLE `mozart`
+    ADD INDEX `mozart_payment_id_index` (`payment_id`),
+    ADD INDEX `mozart_refund_id_index` (`refund_id`),
+    ADD INDEX `mozart_created_at_index` (`created_at`);
+
+ALTER TABLE `terminals`
+    ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
