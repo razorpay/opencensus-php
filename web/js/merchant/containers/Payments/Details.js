@@ -5,21 +5,21 @@ import { withRouter } from 'react-router-dom';
 import { findDOMNode } from 'react-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import * as PaymentActions from 'merchant/modules/payments/details';
-import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 import RefundModal from './RefundModal';
 
-import { expandSlider, compactSlider } from 'rzp/modules/slider';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
 
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(

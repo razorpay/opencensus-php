@@ -1,10 +1,10 @@
 import CreatorModal from './CreatorModal';
 import EditLayer from '../../EditLayer';
-import Input from 'component/Input';
-import Button from 'component/Button';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
 
-import { classList } from 'common/util';
-import { getCurrency } from 'rzp/ui/Amount';
+import { classList } from 'common/utils/rzp-utils';
+import { getCurrency } from 'common/ui/Amount';
 
 export default class FormFooter extends React.PureComponent {
   state = {

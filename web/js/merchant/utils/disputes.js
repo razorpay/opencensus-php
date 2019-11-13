@@ -1,4 +1,4 @@
-import { daysFromToday } from 'rzp/utils/rzp-utils';
+import { daysFromToday } from 'common/utils/rzp-utils';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);

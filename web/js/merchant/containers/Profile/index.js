@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import Alert from 'rzp/ui/Forms/Alert';
-import Spinner from 'rzp/ui/Spinner';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import * as ProfileActions from 'merchant/modules/profile';
+import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import User from 'merchant/models/User';
@@ -15,13 +15,13 @@ import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/components/Profile/LoggedInUserDetails';
 import Invitations from 'merchant/components/Profile/Invitations';
 import BankAccountDetailsChange from './BankAccountDetailsChange';
-import { fetchUser } from 'merchant/modules/session';
+import { fetchUser } from 'merchant/reducers/session';
 import PasswordForm from './PasswordForm';
 import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
 
-import { updateDisplayName } from 'merchant/modules/profile';
-import { updateSession } from 'merchant/modules/session';
+import { updateDisplayName } from 'merchant/reducers/profile';
+import { updateSession } from 'merchant/reducers/session';
 
 @connect(
   state => {

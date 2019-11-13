@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 @connect(state => ({
   isMobileResolution: state.app.isMobileResolution,

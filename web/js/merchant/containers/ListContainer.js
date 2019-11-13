@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
-import { trimDeep } from 'rzp/utils/validators';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { trimDeep } from 'common/utils/validators';
 
 export default class ListContainer extends Component {
   static SKIP = 0;

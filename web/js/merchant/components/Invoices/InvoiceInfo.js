@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import Time from 'rzp/ui/Time';
-import Clipboard from 'rzp/ui/Clipboard';
-import { titleCase } from 'rzp/utils/rzp-utils';
-import Table from 'rzp/ui/Table/Index';
-import { paymentId, amount, createdAt } from 'rzp/ui/item/pair';
+import Time from 'common/ui/Time';
+import Clipboard from 'common/ui/Clipboard';
+import { titleCase } from 'common/utils/rzp-utils';
+import Table from 'common/ui/Table/Index';
+import { paymentId, amount, createdAt } from 'common/ui/item/pair';
 
 const notificationClassMap = {
   sent: 'text-success',

@@ -1,6 +1,6 @@
-import { onChangeNotes } from 'component/Input/PairList';
-import Input from 'component/Input';
-import { AsyncBtn } from 'component/Button';
+import { onChangeNotes } from 'common/new-ui/Input/PairList';
+import Input from 'common/new-ui/Input';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 export default class EditNotes extends React.Component {
   state = this.resetState();

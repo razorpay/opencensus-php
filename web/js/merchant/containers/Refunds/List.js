@@ -5,16 +5,16 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
-import { fetchRefunds as fetchAll } from 'merchant/modules/collection';
+import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
 import {
   refundId,
   paymentId,
   amount,
   createdAt,
   public_status,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 @connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {

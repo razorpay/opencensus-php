@@ -5,12 +5,12 @@ import Legend, {
   LegendLabel,
   LegendTitle,
   LegendContent,
-} from 'rzp/ui/Legend';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+} from 'common/ui/Legend';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+} from 'common/utils/numerals';
 
 import Tooltip from 'merchant/components/Home/Tooltip';
 

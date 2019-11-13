@@ -3,11 +3,11 @@ import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import debounce from 'rzp/utils/debounce';
-import takeScreenshot from 'rzp/utils/screenshot';
-import { showNotification } from 'rzp/modules/notifications';
+import debounce from 'common/utils/debounce';
+import takeScreenshot from 'common/utils/screenshot';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { fetch } from 'merchantLA/modules/pokedex';
+import { fetch } from 'merchantLA/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,

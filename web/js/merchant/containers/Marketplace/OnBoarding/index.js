@@ -1,16 +1,16 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
-import Slider, { SliderDots } from 'component/Slider';
-import Button from 'component/Button';
+import Slider, { SliderDots } from 'common/new-ui/Slider';
+import Button from 'common/new-ui/Button';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { fetchUser } from 'merchant/modules/session';
-import { openModal, closeModal } from 'rzp/modules/modals';
+} from 'merchant/reducers/onboarding';
+import { fetchUser } from 'merchant/reducers/session';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';

@@ -1,6 +1,6 @@
-import TableBody from 'rzp/ui/TableBody';
-import Time from 'rzp/ui/Time';
-import CheckIcon from 'rzp/ui/CheckIcon';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import CheckIcon from 'common/ui/CheckIcon';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ReferralsListItem = props => {

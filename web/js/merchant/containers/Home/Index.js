@@ -2,24 +2,24 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
-import { showNotification } from 'rzp/modules/notifications';
-import { customRangeText } from 'rzp/ui/DateRangePicker';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { customRangeText } from 'common/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
   platformGroupingVals,
   groupByPlatform,
   OTHERS,
-} from 'rzp/utils/pokedex';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
-import * as ModalActions from 'rzp/modules/modals';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+} from 'common/utils/pokedex';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { activationDuration } from 'merchant_common/helpers/data';
 
-import * as HomeActions from 'merchant/modules/home';
-import { fetch } from 'merchant/modules/pokedex';
-import { fetchPayments } from 'merchant/modules/collection';
+import * as HomeActions from 'merchant/reducers/home';
+import { fetch } from 'merchant/reducers/pokedex';
+import { fetchPayments } from 'merchant/reducers/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -43,7 +43,7 @@ import {
   iaActivations,
 } from './ga';
 
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';

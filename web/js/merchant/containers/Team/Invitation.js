@@ -2,15 +2,15 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
-import { without } from 'rzp/utils/rzp-utils';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { roles, agentRole, RBLRoles } from 'common/utils/constants';
+import { without } from 'common/utils/rzp-utils';
 import {
   resendInvitation,
   updateInvitation,
   cancelInvitation,
   fetchTeamDetails,
-} from 'merchant/modules/team';
+} from 'merchant/reducers/team';
 
 let ROLES = without(roles, 'owner');
 @connect(state => state.session, {

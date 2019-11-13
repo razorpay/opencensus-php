@@ -6,16 +6,16 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
-import scrollTo from 'rzp/utils/scrollTo';
+import { titleCase } from 'common/utils/rzp-utils';
+import scrollTo from 'common/utils/scrollTo';
 import { prefixEntityValue } from 'merchant_common/helpers/data';
-import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import AccountsList from 'rzp/ui/AccountsList/index.js';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import debounce from 'rzp/utils/debounce';
+import ReduxDatetime from 'common/ui/ReduxDatetime';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import AccountsList from 'common/ui/AccountsList/index.js';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import debounce from 'common/utils/debounce';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';

@@ -1,14 +1,14 @@
 import { connect } from 'react-redux';
 import { withRouter, NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
-import { RZPFeatures } from 'rzp/utils/constants';
-import { getKeysSeparatedByPipe, findBy } from 'rzp/utils/rzp-utils';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
+import { RZPFeatures } from 'common/utils/constants';
+import { getKeysSeparatedByPipe, findBy } from 'common/utils/rzp-utils';
 
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { fetchReminders } from 'merchant/modules/reminders';
+import * as InvoiceActions from 'merchant/reducers/invoices/list';
+import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';

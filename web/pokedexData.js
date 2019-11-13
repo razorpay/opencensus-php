@@ -1,10 +1,10 @@
-import { groupBy } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { groupBy } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getBankName } from 'merchant/containers/Home/PaymentMethods/data';
 
-import { globalGroupTitleMap, getDefaultFilter } from 'rzp/utils/pokedex';
+import { globalGroupTitleMap, getDefaultFilter } from 'common/utils/pokedex';
 
 const RETRIES = 'retries',
   PAYMENT_METHODS = 'paymentMethods',

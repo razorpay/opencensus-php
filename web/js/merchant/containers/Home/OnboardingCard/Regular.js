@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import LocalStorageService from 'rzp/utils/localStorage';
+import Group, { GroupItem } from 'common/ui/Group';
+import LocalStorageService from 'common/utils/localStorage';
 
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 

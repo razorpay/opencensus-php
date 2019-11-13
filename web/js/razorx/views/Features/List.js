@@ -1,4 +1,4 @@
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import { formatDate } from 'razorx/helpers/utils';
 import { Link } from 'react-router-dom';
 import Collection from 'razorx/model/collection';

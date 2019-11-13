@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Alert from 'rzp/ui/Forms/Alert';
+import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as KeyActions from 'merchant/modules/keys';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as KeyActions from 'merchant/reducers/keys';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import RollKey from './RollKey';
 import NewKey from './NewKey';
 

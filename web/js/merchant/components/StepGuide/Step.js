@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
-import { PossibleStatuses } from 'rzp/utils/constants';
+import { PossibleStatuses } from 'common/utils/constants';
 
 export default class Step extends React.Component {
   static defaultProps = {

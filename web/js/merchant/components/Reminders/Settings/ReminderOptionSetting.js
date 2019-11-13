@@ -1,6 +1,6 @@
-import { findBy, filterBy } from 'rzp/utils/rzp-utils';
+import { findBy, filterBy } from 'common/utils/rzp-utils';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import { PowerSelect } from 'react-power-select';
 

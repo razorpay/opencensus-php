@@ -1,6 +1,6 @@
-import { classList } from 'common/util';
-import Input from 'component/Input';
-import debounce from 'rzp/utils/debounce';
+import { classList } from 'common/utils/rzp-utils';
+import Input from 'common/new-ui/Input';
+import debounce from 'common/utils/debounce';
 
 export default class extends React.Component {
   autoAdjustHeight(target) {

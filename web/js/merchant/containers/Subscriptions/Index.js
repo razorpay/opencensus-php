@@ -1,18 +1,18 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-import { fetchPlans } from 'merchant/modules/plans';
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import { fetchPlans } from 'merchant/reducers/plans';
+import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import PlansList from 'merchant/containers/Plans/List';
 import TestModeBanner from 'merchant/containers/TestModeBanner';

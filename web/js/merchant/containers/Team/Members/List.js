@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import { role } from 'rzp/ui/item/pair';
+import DataTable from 'common/ui/Table/DataTable';
+import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchTeam as fetchAll } from 'merchant/modules/team';
-import { unlockMember } from 'merchant/modules/team';
+import { fetchTeam as fetchAll } from 'merchant/reducers/team';
+import { unlockMember } from 'merchant/reducers/team';
 
 import Actions from './Actions';
 

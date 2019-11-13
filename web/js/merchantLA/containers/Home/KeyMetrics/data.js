@@ -5,16 +5,16 @@ import {
   isDefined,
   paiseToRupees,
   arrayToCsvDataUrl,
-} from 'rzp/utils/rzp-utils';
-import colors from 'rzp/utils/chart/colors.js';
-import { groupBy } from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
+import colors from 'common/utils/chart/colors.js';
+import { groupBy } from 'common/utils/rzp-utils';
 import {
   globalGroupTitleMap,
   groupByPlatform,
   getDefaultFilter,
   getDefaultPaymentFilter,
-} from 'rzp/utils/pokedex';
-import { platformGroupingVals } from 'rzp/utils/pokedex';
+} from 'common/utils/pokedex';
+import { platformGroupingVals } from 'common/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 

@@ -1,8 +1,8 @@
 require('it-each')();
 const expect = require('chai').expect;
-import { isInteger } from 'rzp/utils/validators';
+import { isInteger } from 'common/utils/validators';
 
-describe('rzp/utils/validators Fn: isInteger', function() {
+describe('common/utils/validators Fn: isInteger', function() {
   const trueValues = [0, 5, '0', '5'];
   const falseValues = [
     5.3,

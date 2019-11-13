@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsListFilter';
-import DataTable from 'rzp/ui/Table/DataTable';
+import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchReversals as fetchAll } from 'merchantLA/modules/collection';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { fetchReversals as fetchAll } from 'merchantLA/reducers/collection';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import {
   reversalId,

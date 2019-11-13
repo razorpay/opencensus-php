@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { PossibleStatuses, RZPFeatures } from 'rzp/utils/constants';
+import { PossibleStatuses, RZPFeatures } from 'common/utils/constants';
 
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,

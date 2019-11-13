@@ -2,7 +2,7 @@ import {
   PossibleStatuses,
   RZPFeatures,
   SubscriptionsStates,
-} from 'rzp/utils/constants';
+} from 'common/utils/constants';
 
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,

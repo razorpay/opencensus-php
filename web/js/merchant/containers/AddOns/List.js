@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Alert from 'rzp/ui/Forms/Alert';
-import Pager from 'rzp/ui/Pager';
+import HeaderAction from 'common/ui/HeaderAction';
+import Alert from 'common/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
 import AddOnsListFilter from 'merchant/components/AddOns/ListFilter';
 import AddOnsList from 'merchant/components/AddOns/List';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchAddOns, deleteAddOn } from 'merchant/modules/addons';
-import * as ModalActions from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
+import { fetchAddOns, deleteAddOn } from 'merchant/reducers/addons';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
 import AddOnCreation from 'merchant/containers/AddOns/New';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import {
   planId,
@@ -19,7 +19,7 @@ import {
   planAmount,
   planBillingCycle,
   createdAt,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 @connect(
   state => {

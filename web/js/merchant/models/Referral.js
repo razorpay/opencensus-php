@@ -1,6 +1,6 @@
 import Entity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, isBlank } from 'common/utils/rzp-utils';
 
 export default class Referral extends Entity {
   resourceUrl = 'referrals';

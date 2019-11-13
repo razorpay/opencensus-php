@@ -1,5 +1,5 @@
-import Input from 'component/Input';
-import Button from 'component/Button';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
 
 export default class extends React.PureComponent {
   state = { isEditable: false };

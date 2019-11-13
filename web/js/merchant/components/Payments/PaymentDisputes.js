@@ -1,11 +1,11 @@
 import React from 'react';
 
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { dispute as Id } from 'rzp/ui/item/id';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { dispute as Id } from 'common/ui/item/id';
+import { titleCase } from 'common/utils/rzp-utils';
 import { DisputeStatusLabel as StatusLabel } from 'merchant/components/StatusLabel';
 
 export default ({ disputes }) => {

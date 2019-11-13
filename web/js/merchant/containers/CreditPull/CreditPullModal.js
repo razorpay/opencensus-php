@@ -2,24 +2,24 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-import InputField from 'rzp/ui/Forms/InputField';
-import { RadioGroup } from 'rzp/ui/Forms/RadioGroup';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import ReduxDatetime from 'common/ui/ReduxDatetime';
+import InputField from 'common/ui/Forms/InputField';
+import { RadioGroup } from 'common/ui/Forms/RadioGroup';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 import {
   required,
   mobile,
   pinCode,
   maxLength,
   name,
-} from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
-import { states } from 'rzp/utils/constants';
-import * as MerchantActions from 'merchant/modules/b-merchants';
-import * as ModalActions from 'rzp/modules/modals';
-import bMerchantReducer from 'merchant/modules/b-merchants';
-import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
+} from 'common/utils/validators';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { states } from 'common/utils/constants';
+import * as MerchantActions from 'merchant/reducers/b-merchants';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import bMerchantReducer from 'merchant/reducers/b-merchants';
+import CheckBoxField from 'common/ui/Forms/CheckboxField';
 import {
   VerifyOtp,
   AskMobileNumber,
@@ -27,6 +27,8 @@ import {
 import CreditPullClose from './CreditPullClose';
 import CreditPullSuccess from './CreditPullSuccess';
 import ajax from 'merchant/utils/ajax';
+import User from 'merchant/models/User';
+import { updateSession } from 'merchant/reducers/session';
 
 const validate = values => {
   const errors = {};
@@ -51,6 +53,7 @@ const validate = values => {
     ...MerchantActions,
     ...ModalActions,
     bMerchantReducer,
+    updateSession,
   }
 )
 @reduxForm({
@@ -188,55 +191,10 @@ export default class CreditPullModal extends Component {
               mobile,
               tokenStuff,
               merchantId
-            )
-              .then(({ data: { report, score, max_loan_amount } }) => {
-                clearTimeout(this.timer);
-                this.openReportScreen(report, score, max_loan_amount);
-              })
-              .catch(errorResponse => {
-                let {
-                  error_wrong_otp,
-                  error_wrong_phone,
-                  error_wrong_merchant,
-                  error_max_attempts,
-                  error_otp_required,
-                  error_otp_length,
-                } = this.errorMessages;
-                const error = (errorResponse.errors || [])[0];
-                let gaPayload = {
-                  eventAction: `Error`,
-                  eventLabel: `${error} ? ${error} : "Some unexpected error occurred"`,
-                };
-                this.fireGAEvent(gaPayload);
-                if (
-                  error === error_wrong_otp ||
-                  error === error_otp_required ||
-                  error === error_otp_length
-                ) {
-                  throw errorResponse;
-                } else if (error === error_wrong_phone) {
-                  this.props.showNotification({
-                    type: 'error',
-                    message: error,
-                    hidePrevious: true,
-                  });
-                } else if (
-                  error === error_wrong_merchant ||
-                  error === error_max_attempts
-                ) {
-                  clearTimeout(this.timer);
-                  this.props.closeModal();
-                  this.openErrorScreen(error);
-                } else {
-                  clearTimeout(this.timer);
-                  this.props.showNotification({
-                    type: 'error',
-                    message: 'Some unexpected error occurred',
-                    hidePrevious: true,
-                  });
-                  this.props.closeModal();
-                }
-              });
+            ).then(([{ report, score, max_loan_amount }, userResponse]) => {
+              this.props.updateSession({ user: userResponse.data });
+              this.openReportScreen(report, score, max_loan_amount);
+            });
           }}
           onResend={() => {
             return this.sendReqForOtp(mobile, tokenStuff).then(() => {
@@ -292,7 +250,57 @@ export default class CreditPullModal extends Component {
       },
       {},
       '/merchant/api'
-    );
+    )
+      .then(({ data }) => {
+        clearTimeout(this.timer);
+        let updatedUser = new User(this.props.user);
+        return Promise.all([data, updatedUser.fetch()]);
+      })
+      .catch(errorResponse => {
+        this.handleOTPError(errorResponse);
+      });
+  };
+
+  handleOTPError = errorResponse => {
+    let {
+      error_wrong_otp,
+      error_wrong_phone,
+      error_wrong_merchant,
+      error_max_attempts,
+      error_otp_required,
+      error_otp_length,
+    } = this.errorMessages;
+    const error = (errorResponse.errors || [])[0];
+    let gaPayload = {
+      eventAction: `Error`,
+      eventLabel: `${error} ? ${error} : "Some unexpected error occurred"`,
+    };
+    this.fireGAEvent(gaPayload);
+    if (
+      error === error_wrong_otp ||
+      error === error_otp_required ||
+      error === error_otp_length
+    ) {
+      throw errorResponse;
+    } else if (error === error_wrong_phone) {
+      this.props.showNotification({
+        type: 'error',
+        message: error,
+        hidePrevious: true,
+      });
+    } else if (error === error_wrong_merchant || error === error_max_attempts) {
+      clearTimeout(this.timer);
+      this.props.closeModal();
+      this.openErrorScreen(error);
+    } else {
+      clearTimeout(this.timer);
+      this.props.showNotification({
+        type: 'error',
+        message: 'Some unexpected error occurred',
+        hidePrevious: true,
+      });
+      this.props.closeModal();
+    }
   };
 
   initialAlign = () => {

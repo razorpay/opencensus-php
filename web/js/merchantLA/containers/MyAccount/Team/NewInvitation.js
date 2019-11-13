@@ -2,11 +2,11 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required, email } from 'rzp/utils/validators';
-import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'merchantLA/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import InputField from 'common/ui/Forms/InputField';
+import { required, email } from 'common/utils/validators';
+import { without } from 'common/utils/rzp-utils';
+import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('newInvitation');
 @connect(

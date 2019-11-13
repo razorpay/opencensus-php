@@ -1,5 +1,5 @@
-import Time from 'rzp/ui/Time';
-import TableBody from 'rzp/ui/TableBody';
+import Time from 'common/ui/Time';
+import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const WebhooksListItem = ({ webhook }) => {

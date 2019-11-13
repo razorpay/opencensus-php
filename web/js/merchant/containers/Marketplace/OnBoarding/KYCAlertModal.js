@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 export default ({ user, switchToTestMode, closeModal }) => {
   if (user.activation_status === 'under_review') {

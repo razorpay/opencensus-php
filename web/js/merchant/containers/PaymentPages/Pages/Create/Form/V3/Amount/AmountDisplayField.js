@@ -1,5 +1,5 @@
 import { sortableHandle } from 'react-sortable-hoc';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
@@ -9,7 +9,7 @@ import {
   isMandatoryToBool,
 } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
-import { getCurrency } from 'rzp/ui/Amount';
+import { getCurrency } from 'common/ui/Amount';
 
 const DragHandle = sortableHandle(() => (
   <span class="dragHandle">

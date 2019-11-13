@@ -1,18 +1,18 @@
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
-import { AsyncBtn } from 'component/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { updateFeatures } from 'merchant/modules/config';
+import { updateFeatures } from 'merchant/reducers/config';
 import {
   saveOnboarding,
   handleProductQuickGuide,
-} from 'merchant/modules/onboarding';
-import { fetchUser } from 'merchant/modules/session';
+} from 'merchant/reducers/onboarding';
+import { fetchUser } from 'merchant/reducers/session';
 
 import { setOnBoardingDataInLocalState } from './utils';
 

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import DataTable from 'rzp/ui/Table/DataTable';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import DataTable from 'common/ui/Table/DataTable';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
+import { refundId, amount, createdAt } from 'common/ui/item/pair';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';

@@ -1,4 +1,4 @@
-import { getDefaultPaymentFilter } from 'rzp/utils/pokedex';
+import { getDefaultPaymentFilter } from 'common/utils/pokedex';
 
 const paymentMethodsColumns = [
   'method',

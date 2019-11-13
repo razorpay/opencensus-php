@@ -1,4 +1,4 @@
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 export function NoConnectedApps(props) {
   return (

@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 
 import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
 import { daysLeftInExpiry } from 'merchant/utils/disputes';
-import { fetchDisputes as fetchAll } from 'merchant/modules/collection';
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import { titleCase } from 'common/util';
-import { getTime } from 'rzp/ui/item';
+import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
+import { titleCase } from 'common/utils/rzp-utils';
+import { getTime } from 'common/ui/item';
 import ListContainer from '../ListContainer';
 import ShowWhen from 'merchant/components/ShowWhen';
 import {
@@ -16,7 +16,7 @@ import {
   amount,
   status,
   createdAt as createdAtProperty,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 const type = {
   title: 'Type',

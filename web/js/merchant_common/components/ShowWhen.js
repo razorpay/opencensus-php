@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy } from 'common/utils/rzp-utils';
 import { Route, Redirect } from 'react-router-dom';
 
 function convertToArray(arrayOrString) {

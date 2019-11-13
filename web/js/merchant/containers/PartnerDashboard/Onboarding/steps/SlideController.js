@@ -1,6 +1,6 @@
 import React from 'react';
-import { SliderDots } from 'component/Slider';
-import { classList } from 'common/util';
+import { SliderDots } from 'common/new-ui/Slider';
+import { classList } from 'common/utils/rzp-utils';
 
 const SlideController = ({
   sliderProps,

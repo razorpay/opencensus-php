@@ -1,18 +1,18 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'common/utils/constants';
 
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { updateFeatures } from 'merchant/modules/config';
-import { fetchTransfers } from 'merchant/modules/collection';
-import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
+} from 'merchant/reducers/onboarding';
+import { updateFeatures } from 'merchant/reducers/config';
+import { fetchTransfers } from 'merchant/reducers/collection';
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 

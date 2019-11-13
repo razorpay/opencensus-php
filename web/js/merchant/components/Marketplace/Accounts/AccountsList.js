@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 
-import Time from 'rzp/ui/Time';
-import TableBody from 'rzp/ui/TableBody';
+import Time from 'common/ui/Time';
+import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { classList } from 'common/util';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { classList } from 'common/utils/rzp-utils';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
 

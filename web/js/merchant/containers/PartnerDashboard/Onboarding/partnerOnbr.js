@@ -1,16 +1,16 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import Slider from 'component/Slider';
+import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
 import S3 from './steps/S3';
 import User from 'merchant/models/User';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 @withRouter
 @connect(

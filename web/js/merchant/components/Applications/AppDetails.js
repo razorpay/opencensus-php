@@ -1,6 +1,6 @@
-import Time from 'rzp/ui/Time';
+import Time from 'common/ui/Time';
 import { NavLink } from 'react-router-dom';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 export function AppDetailsLoader() {
   return (

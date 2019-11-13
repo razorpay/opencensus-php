@@ -3,8 +3,8 @@ import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
-import Slider from 'rzp/ui/Slider';
-import { ModalMask } from 'component/Modal';
+import Slider from 'common/ui/Slider';
+import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
@@ -23,14 +23,14 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import ErrorBoundary from 'component/ErrorBoundary';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchant/modules/app';
-import { openSlider } from 'rzp/modules/slider';
+} from 'merchant/reducers/app';
+import { openSlider } from 'merchant_common/reducers/slider';
 
 import store from 'merchant/store';
 
@@ -363,6 +363,8 @@ export default class Content extends Component {
   };
 
   render() {
+    const { user } = this.props;
+
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
@@ -409,7 +411,7 @@ export default class Content extends Component {
         {BaseView}
         {DetailView}
         {ModalFormView}
-        <Support />
+        <Support user={user} />
       </main>
     );
   }

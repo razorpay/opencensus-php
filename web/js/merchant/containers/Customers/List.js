@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CustomersList from 'merchant/components/Customers/CustomersList';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as CustomerActions from 'merchant/modules/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
-import { luminateRow } from 'merchant/modules/app';
+import * as CustomerActions from 'merchant/reducers/customers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import { luminateRow } from 'merchant/reducers/app';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => ({ ...state.customers, mode: state.session.mode }), {

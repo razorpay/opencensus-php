@@ -1,4 +1,4 @@
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import CreatorManager from './CreatorManager';
 import EditLayer from '../../../EditLayer';
 

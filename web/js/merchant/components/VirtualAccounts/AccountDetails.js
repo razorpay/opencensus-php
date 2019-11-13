@@ -1,4 +1,4 @@
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 export default ({ virtualaccount, onCopy }) => {
   let bankAccount = virtualaccount.receivers[0];

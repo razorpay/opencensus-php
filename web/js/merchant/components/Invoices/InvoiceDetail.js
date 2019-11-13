@@ -1,22 +1,22 @@
 import { NavLink, Link } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
-import Spinner from 'rzp/ui/Spinner';
-import Banner from 'rzp/ui/Banner';
-import DataTable from 'rzp/ui/Table/DataTable';
-import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Banner from 'common/ui/Banner';
+import DataTable from 'common/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'common/ui/item/pair';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
-import Button, { AsyncBtn } from 'component/Button';
-import Input from 'component/Input';
-import Stepper from 'component/Stepper';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import Stepper from 'common/new-ui/Stepper';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import Tooltip from 'rzp/ui/Tooltip';
+import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 
 import {
