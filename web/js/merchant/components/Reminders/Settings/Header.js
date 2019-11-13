@@ -14,7 +14,7 @@ export default ({ disabled, type, isEnabled, onToggle }) => (
     <span class="status-text">{isEnabled ? 'Enabled' : 'Disabled'}</span>
 
     <p class="description">
-      Send automated reminders to unpaid {type} and get paid on time.
+      Send automated reminders for unpaid {type} and get paid on time.
     </p>
   </React.Fragment>
 );
