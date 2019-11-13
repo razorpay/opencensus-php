@@ -194,6 +194,12 @@ class Core extends Base\Core
             return;
         }
 
+        // no poa verification for linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $documents = $merchant->merchantDocuments;
 
         $isOcrVerified = false;
@@ -1518,8 +1524,14 @@ class Core extends Base\Core
             return;
         }
 
+        // no penny testing for linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         // if bank detail is already verified then skip penny testing
-        if ($merchantDetails->isBankDetailStatusVerified())
+        if ($merchantDetails->isBankDetailStatusVerified() === true)
         {
             return;
         }
