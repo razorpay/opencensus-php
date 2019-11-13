@@ -55,6 +55,7 @@ import {
 } from './ActivationUtils';
 import QueryString from 'query-string';
 import { NEEDS_CLARIFICATION } from 'merchant/containers/Home/OnboardingCard/data';
+import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 
 /*
 *             Main-form        LA-form
@@ -283,6 +284,7 @@ export default class ActivationWizard extends React.Component {
                 );
 
                 this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+                this.updateFileInDirty(filename);
               });
           };
         }
@@ -292,6 +294,12 @@ export default class ActivationWizard extends React.Component {
   componentDidUpdate() {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
+
+  updateFileInDirty = filename => {
+    this.setState(prevState => ({
+      dirty: { ...prevState.dirty, [filename]: 'fakepath' },
+    }));
+  };
 
   componentDidMount() {
     addDropShield('.Activation--wizard');
@@ -713,6 +721,31 @@ export default class ActivationWizard extends React.Component {
       this.state.dirty.business_type || this.props.data.business_type;
 
     return businessType == 2 || businessType == 11;
+  }
+
+  get isFormLocked() {
+    return (
+      !!this.props.data.locked ||
+      this.props.data.activation_status === 'needs_clarification'
+    );
+  }
+
+  get hasFilledClarificationDetails() {
+    if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+      const needsClarificationContent =
+        FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP];
+      const needsClarificationFieldNames = needsClarificationContent.map(
+        field => field.name
+      );
+
+      const currentDirty = this.state.dirty; // currently filled data will be in this.state.dirty
+      const currentFilledFieldNames = currentDirty && Object.keys(currentDirty);
+
+      const hasFilledEverything = needsClarificationFieldNames.every(field =>
+        currentFilledFieldNames.includes(field)
+      );
+      return hasFilledEverything ? false : true;
+    }
   }
 
   /*
@@ -1253,13 +1286,6 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
-  get isFormLocked() {
-    return (
-      !!this.props.data.locked ||
-      this.props.data.activation_status === 'needs_clarification'
-    );
-  }
-
   render() {
     const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
@@ -1595,7 +1621,7 @@ export default class ActivationWizard extends React.Component {
         {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
           <footer>
             <AsyncBtn.Primary
-              // disabled={this.state.ndcSubmissionInProgress}
+              disabled={this.hasFilledClarificationDetails}
               onClick={this.submitClarifications}
               pendingState={'Verifying'}
               name={'Save Clarifications'}
