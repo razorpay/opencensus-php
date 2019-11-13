@@ -254,6 +254,9 @@ function TimeStamps({ token }) {
   );
 }
 
+@connect(null, {
+  showNotification,
+})
 class ErrorMessage extends React.PureComponent {
   static defaultProps = {
     recurringDetails: {
@@ -262,9 +265,16 @@ class ErrorMessage extends React.PureComponent {
   };
 
   resubmitNACHFile = () => {
-    return resubmitNACHFile(this.props.id).then(() => {
-      trackClickResubmitNachForm();
-    });
+    return resubmitNACHFile(this.props.id)
+      .then(() => {
+        trackClickResubmitNachForm();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   render() {
@@ -278,7 +288,7 @@ class ErrorMessage extends React.PureComponent {
 
           <AsyncBtn.Primary
             onClick={this.resubmitNACHFile}
-            pendingState="Resubmitting"
+            pendingState="Resubmitting..."
             class="btn"
           >
             Resubmit
