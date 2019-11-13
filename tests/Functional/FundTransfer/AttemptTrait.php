@@ -21,17 +21,17 @@ trait AttemptTrait
     use PaymentTrait;
     use SettlementTrait;
 
-    protected function initiateTransfer(string $channel, string $purpose, string $sourceType, bool $failureTest = false)
+    protected function initiateTransfer(string $channel, string $purpose, string $sourceType, string $failureTest = "")
     {
         $content['purpose'] = $purpose;
 
         $request = [
-            'url'       => '/fund_transfer_attempts/initiate/'.$channel,
+            'url'       => '/fund_transfer_attempts/initiate/' . $channel,
             'method'    => 'POST',
             'content'   =>  [
-                Attempt\Entity::PURPOSE => $purpose,
+                Attempt\Entity::PURPOSE     => $purpose,
                 Attempt\Entity::SOURCE_TYPE => $sourceType,
-                'failed_response'       => (int) $failureTest,
+                'failed_response'           => $failureTest,
             ]
         ];
 

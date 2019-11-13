@@ -184,6 +184,26 @@ class Core extends Base\Core
     }
 
     /**
+     * Get All Settlement schedules assigned to merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @param $international
+     *
+     * @return null|Entity
+     */
+    public function getMerchantSettlementScheduleTasks(Merchant\Entity $merchant, bool $international = false)
+    {
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchantAndInternational(
+                                  $merchant,
+                                  Type::SETTLEMENT,
+                                  $international);
+
+        return $scheduleTasks;
+    }
+
+    /**
      * Get the next applicable time for a method, based
      * on the schedule assigned to a merchant
      *

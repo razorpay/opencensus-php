@@ -40,11 +40,13 @@ abstract class BaseGatewayProcessor
 
     abstract public function processTerminalData($terminaldata, $merchant);
 
-    abstract public function validateGatewayInput($gatewayInput, $merchant);
+    abstract public function validateGatewayInput($gatewayInput, $merchantDetail);
 
     abstract public function checkDbConstraints($input, $merchant);
 
     abstract public function getLockResource($merchant, $gateway, $gatewayInput);
+
+    abstract public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail);
 
     public function getGatewayName()
     {

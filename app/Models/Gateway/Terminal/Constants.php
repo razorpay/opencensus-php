@@ -13,6 +13,14 @@ class Constants
     const MASTERCARD = 'mastercard';
     const RUPAY      = 'rupay';
 
+    // Default merchant details for merchant onboarding
+    const DEFAULT_BUSINESS_OPERATION_ADDRESS      = 'SJR Cyber Laskar, Hosur Rd, Opp Adugodi Police Station, Bengaluru';
+    const DEFAULT_BUSINESS_OPERATION_STATE        = 'Karnataka';
+    const DEFAULT_BUSINESS_OPERATION_PIN          = '560030';
+    const DEFAULT_BUSINESS_DBA                    = 'Razorpay';
+    const DEFAULT_BUSINESS_NAME                   = 'Razorpay';
+    const DEFAULT_BUSINESS_OPERATION_CITY         = 'Bengaluru';
+
     // Response
     const DATA                          =   'data';
     const RES_CODE                      =   'res_code';
