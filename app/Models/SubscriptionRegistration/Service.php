@@ -7,6 +7,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Jobs\Job;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
@@ -211,5 +212,12 @@ class Service extends Base\Service
         $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
         return $invoice->toArrayPublic();
+    }
+
+    public function cancelAuthLinksOfBatch(string $batchId)
+    {
+        $batch = (new Batch\Service())->fetchBatchById($batchId);
+
+        return (new Invoice\Core())->cancelInvoicesOfBatch($batch);
     }
 }
