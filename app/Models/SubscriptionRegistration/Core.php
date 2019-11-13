@@ -500,14 +500,7 @@ class Core extends Base\Core
 
         $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
-        $pdfPath = null;
-
-        if ($medium === Invoice\NotifyMedium::EMAIL)
-        {
-            $pdfPath = (new Invoice\Core())->getFreshInvoicePdfFilePath($invoice);
-        }
-
-        $response = (new Invoice\Notifier($invoice, $pdfPath))->$func();
+        $response = (new Invoice\Notifier($invoice))->$func();
 
         $this->repo->saveOrFail($invoice);
 
