@@ -64,8 +64,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'Settlemenmt is not enabled',
-                    'reason' => 'Only active merchants can get settlements',
+                    'caption' => 'Settlemenmt is not enabled',
+                    'reason'  => 'Only active merchants can get settlements',
                 ]
             ];
         }
@@ -82,8 +82,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'Settlements are on hold',
-                    'reason' => 'Merchant funds are on hold with reason \"'
+                    'caption' => 'Settlements are on hold',
+                    'reason'  => 'Merchant funds are on hold with reason \"'
                         . ($merchant->getHoldFundsReason() ?? 'unknown') . '\"',
                 ]
             ];
@@ -114,8 +114,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'Settlement will be skipped',
-                    'reason' => 'merchant doesnt have a active bank account registered',
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'merchant doesnt have a active bank account registered',
                 ]
             ];
         }
@@ -125,8 +125,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'Settlement will be skipped',
-                    'reason' => 'Settlements skipped based on merchant preference',
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Settlements skipped based on merchant preference',
                 ]
             ];
         }
@@ -168,8 +168,8 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'remark' => 'There won\'t be any settlement',
-                    'reason' => 'bank account created yesterday. bank account was created/updated at '
+                    'caption' => 'There won\'t be any settlement',
+                    'reason'  => 'bank account created yesterday. bank account was created/updated at '
                         . $createdAt
                         . '. It would require a day (except bank holidays)'
                         . ' to register the same with our banking partners'

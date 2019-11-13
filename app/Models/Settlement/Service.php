@@ -42,7 +42,9 @@ class Service extends Base\Service
 
         if ($status === false)
         {
-            return $response + $data;
+            return $response +[
+                'no_settlement' =>  $data
+            ];
         }
 
         $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
@@ -61,15 +63,19 @@ class Service extends Base\Service
         if ($response['settlement_amount'] < 100)
         {
             $response += [
-                'caption' => 'Settlement might get skipped',
-                'reason'  => 'Settlement amount is less than 1 rupee'
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is less than 1 rupee'
+                ],
             ];
         }
         else if ($response['settlement_amount'] > $balance->getBalance())
         {
             $response += [
-                'caption' => 'Settlement might get skipped',
-                'reason'  => 'Settlement amount is more than the available live balance',
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is more than the available live balance',
+                ]
             ];
         }
 
