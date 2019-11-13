@@ -42,7 +42,7 @@ class Service extends Base\Service
 
         if ($status === false)
         {
-            return $response +[
+            return $response + [
                 'no_settlement' =>  $data
             ];
         }

@@ -404,7 +404,7 @@ class Core extends Base\Core
         // also set the hour anchor to 9 AM as in that settlement cycle
         // we'll be settling the amount for this merchant
         //
-        if (Holidays::isWorkingDay($timestamp) === true)
+        if (Holidays::isWorkingDay($timestamp) === false)
         {
             $timestamp = Holidays::getNthWorkingDayFrom($timestamp, 1)->addHours(9);
         }
