@@ -23,7 +23,7 @@ import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/components/AddressEntry.js';
 
-import Countries from 'merchant/utils/countries.json';
+import Countries from 'merchant/helpers/countries.json';
 
 @connect(
   state => {
