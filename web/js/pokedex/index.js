@@ -26,7 +26,7 @@ import {
   populateSourceFilters,
   paymentMethodFilterVals,
   sourceFilterVals,
-} from './pokedexData';
+} from 'pokedex/utils/data';
 
 window.RZP = window.RZP || {};
 
