@@ -55,7 +55,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 
@@ -134,7 +134,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 
@@ -152,7 +152,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -166,7 +166,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -180,7 +180,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -194,7 +194,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -208,7 +208,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
