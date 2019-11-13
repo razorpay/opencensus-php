@@ -20,6 +20,7 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
+
     public function getMerchantSettlementAmount($input)
     {
         // todo: response structure has to be finalized
@@ -30,7 +31,7 @@ class Service extends Base\Service
         $balance = $this->merchant->getBalanceByType($balanceType);
 
         $response = [
-            'balance_amount'    => $balance->getBalance(),
+            'balance'           => $balance->getBalance(),
             'settlement_amount' => 0,
         ];
 
@@ -51,7 +52,7 @@ class Service extends Base\Service
             $balance,
             $nextSettlementTime);
 
-        $response += $settlementDetails;
+        $response = array_merge($response, $settlementDetails);
 
         //
         // settlement amount should be atleast 1rs
