@@ -1770,6 +1770,11 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->find($input['merchant_id']);
         }
 
+        if (isset($input['merchant_id']))
+        {
+            unset($input['merchant_id']);
+        }
+
         $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
