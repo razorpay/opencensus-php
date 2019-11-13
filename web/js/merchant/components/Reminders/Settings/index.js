@@ -225,7 +225,7 @@ export default class ReminderSetting extends React.Component {
         withExpireByConfigs,
         withOutExpireByConfigs,
       } = this.state,
-      { type, totalUnpaidLinks } = this.props;
+      { type, totalUnpaidLinks, maxReminderCount } = this.props;
 
     return (
       <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
@@ -250,6 +250,7 @@ export default class ReminderSetting extends React.Component {
                 <ReminderOptionSetting
                   isExpiry
                   name="with_expiry"
+                  maxReminderCount={maxReminderCount}
                   remindersList={withExpireByConfigs}
                   onChange={this.onChange('withExpiry')}
                   selectedReminders={settings.withExpiry}
@@ -258,6 +259,7 @@ export default class ReminderSetting extends React.Component {
                 <ReminderOptionSetting
                   name="with_out_expiry"
                   onChange={this.onChange('withOutExpiry')}
+                  maxReminderCount={maxReminderCount}
                   selectedReminders={settings.withOutExpiry}
                   remindersList={withOutExpireByConfigs}
                 />

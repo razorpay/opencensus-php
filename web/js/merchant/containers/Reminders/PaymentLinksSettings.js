@@ -157,6 +157,7 @@ export default class PaymentLinksSettings extends React.Component {
           isEnabled={this.props.paymentLinkReminder.active}
           channels={this.props.channels}
           onSaveClick={this.saveSettings}
+          maxReminderCount={this.props.paymentLinkReminder.max_reminder_count}
           disableEnableReminders={this.disableEnableReminders}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
           withExpiry={this.props.withExpireByMerchantConfigs}

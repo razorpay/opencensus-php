@@ -38,13 +38,21 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   render() {
-    const { name, isExpiry, remindersList, selectedReminders } = this.props;
+    const {
+      name,
+      isExpiry,
+      remindersList,
+      selectedReminders,
+      maxReminderCount,
+    } = this.props;
 
     const label = isExpiry
       ? 'For links with expiry'
       : 'For links without expiry';
 
-    const showAddBtn = selectedReminders.length != remindersList.length;
+    const showAddBtn =
+      selectedReminders.length != remindersList.length &&
+      selectedReminders.length < maxReminderCount;
 
     return (
       <div class="setting">
