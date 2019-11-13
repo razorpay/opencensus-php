@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use Queue;
 use \RZP\Constants;
+use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -486,6 +488,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWithAccountNumberAndVpa()
     {
+        Queue::fake();
+
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
@@ -511,15 +515,23 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
         $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
         $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
-        // getting set in job worker
-        $this->assertEquals('active', $fav[Entity::RESULTS][Entity::ACCOUNT_STATUS]);
-        $this->assertEquals('Razorpay Customer', $fav[Entity::RESULTS][Entity::REGISTERED_NAME]);
-        $this->assertEquals('completed', $fav[Entity::STATUS]);
 
         // no transaction should be created for 0 fee
         $this->assertNotEquals($fav['id'], $txn['entity_id']);
 
         // no fta
         $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
     }
 }
