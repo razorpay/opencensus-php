@@ -208,7 +208,9 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
       if (props.data['activation_status'] === 'needs_clarification') {
-        FORM_TABS.push('Needs Clarification');
+        if (FORM_TABS.indexOf('Needs Clarification') === -1) {
+          FORM_TABS.push('Needs Clarification');
+        }
         const ndcFields = getNeedsClarificationTabsData(
           mainFormTabsContent,
           props.data.kyc_clarification_reasons
@@ -1607,6 +1609,10 @@ export default class ActivationWizard extends React.Component {
 
   // returns validity
   tabValidity(i) {
+    //Special handling for NDC tab
+    if (i === NEEDS_CLARIFICATION_STEP) {
+      return false;
+    }
     return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)
