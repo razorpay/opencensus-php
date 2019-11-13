@@ -2,9 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
-use mysql_xdevapi\Exception;
 use RZP\Constants;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -15,9 +13,6 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
-
 
 class Core extends Base\Core
 {
