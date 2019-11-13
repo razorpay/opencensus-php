@@ -204,7 +204,11 @@ class Service extends Base\Service
             Constants\Entity::SUBSCRIPTION_REGISTRATION
         );
 
-        $invoice = $this->core->cancelAuthLink($invoice);
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
         return $invoice->toArrayPublic();
     }

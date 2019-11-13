@@ -233,7 +233,6 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
-        'cancelAuthLink',
 
         // Notifier's actions
         'notifyInvoiceIssued',

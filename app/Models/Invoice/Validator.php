@@ -755,12 +755,6 @@ class Validator extends Base\Validator
 
                 break;
 
-            case 'cancelAuthLink':
-                $allowedStatuses = [
-                    Status::ISSUED,
-                ];
-                break;
-
             default:
                 $allowedStatuses = [
                     Status::DRAFT,
