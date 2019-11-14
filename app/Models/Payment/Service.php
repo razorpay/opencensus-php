@@ -1765,11 +1765,15 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        // If the caller is from Jobs, merchant id is set to null
-        // This is quick fix to solve the problem
+        /**
+         * - Doing this for calls from FAVpaValidation Worker since merchant is not set in async processing
+         * - Tried with basicauth but has related issues of repo null
+         *
+         */
+
         if ($merchant === null and isset($input['merchant_id']))
         {
-            $merchant = $this->repo->merchant->find($input['merchant_id']);
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
         }
 
         if (isset($input['merchant_id']))
