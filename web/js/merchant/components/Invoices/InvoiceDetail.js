@@ -18,6 +18,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import {
   EditExpiry,
@@ -160,7 +161,7 @@ export default props => {
                 <i class="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
-              {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
+              {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button class="btn Button--primary" onClick={props.onIssue}>

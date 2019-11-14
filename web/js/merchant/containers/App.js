@@ -32,6 +32,7 @@ import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/utils/rzp-utils';
 import { setTrackData } from 'common/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import initChat from 'merchant/chat';
 import RTracking from 'react-tracking';
@@ -340,11 +341,12 @@ export default class App extends Component {
       pathname === '/dashboard_v2'
     ) {
       switch (role) {
-        case 'sellerapp':
-        case 'agent':
+        case [rolesList.SELLERAPP]:
+        case [rolesList.AGENT]:
           let url = '/paymentlinks';
           return this.props.history.replace(url);
-        case 'support':
+
+        case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
 
         case null:

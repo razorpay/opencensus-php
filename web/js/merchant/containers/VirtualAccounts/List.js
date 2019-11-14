@@ -9,7 +9,7 @@ import {
   createdAt,
 } from 'common/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';

@@ -6,7 +6,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { autoPrefixUrls, isPresent, prevent } from 'common/utils/rzp-utils';
-import { trackFormFields } from 'common/utils/track-utils';
+import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { classList } from 'common/utils/rzp-utils';
 import {
@@ -456,7 +456,7 @@ export default class ActivationWizard extends React.Component {
       const activation = { props, state };
       const { tracking } = props;
       if (isL1Completed(activation)) {
-        const fields = trackFormFields(props.data, state.dirty);
+        const fields = trackDiffInFormFields(props.data, state.dirty);
         return fields.forEach(field =>
           tracking.trackEvent(
             window.rzpQ.onbr().initiated('kyc.provide_details', {

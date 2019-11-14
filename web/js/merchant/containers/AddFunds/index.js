@@ -10,7 +10,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
-import addFunds from 'merchant/utils/addfunds';
+import addFunds from './model';
 
 @connect(state => state.session, {
   ...NotificationsActions,

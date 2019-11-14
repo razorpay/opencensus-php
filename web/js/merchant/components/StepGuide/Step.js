@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
-
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
-import { PossibleStatuses } from 'common/utils/constants';
+import { PossibleStatuses } from 'merchant/helpers/data';
 
 export default class Step extends React.Component {
   static defaultProps = {
@@ -15,7 +13,6 @@ export default class Step extends React.Component {
 
   render() {
     const { status, title, content } = this.props;
-
     const isLoading = status === PossibleStatuses.loading;
 
     return (

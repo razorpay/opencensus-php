@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { reversalId, transferId, amount, createdAt } from 'common/ui/item/pair';
 
 import DataTable from 'common/ui/Table/DataTable';

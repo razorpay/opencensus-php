@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { checkChildrenType } from 'common/utils/rzp-react-utils';
+import { checkChildrenType } from 'common/utils/react-utils';
 import LegendItem, {
   LegendLabel,
   LegendTitle,

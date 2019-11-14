@@ -19,7 +19,7 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 
 @connect(

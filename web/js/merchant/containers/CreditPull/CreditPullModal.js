@@ -15,7 +15,7 @@ import {
   name,
 } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import bMerchantReducer from 'merchant/reducers/b-merchants';

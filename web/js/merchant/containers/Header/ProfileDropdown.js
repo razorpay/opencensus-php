@@ -19,6 +19,8 @@ import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
 @withRouter
 @connect(
   state => {
@@ -257,7 +259,7 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
-            {user.role === 'owner' &&
+            {user.role === rolesList.OWNER &&
               user.partner_type === null && (
                 <div class="media loggedin-as">
                   <div class="media-body">

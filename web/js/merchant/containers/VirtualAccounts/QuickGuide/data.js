@@ -1,4 +1,4 @@
-import { PossibleStatuses } from 'common/utils/constants';
+import { PossibleStatuses } from 'merchant/helpers/data';
 
 const { done } = PossibleStatuses;
 

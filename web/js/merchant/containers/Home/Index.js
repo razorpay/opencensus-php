@@ -15,7 +15,8 @@ import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import { activationDuration } from 'merchant_common/helpers/data';
+import { activationDuration } from 'merchant/helpers/data';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
@@ -175,7 +176,9 @@ export default class HomeContainer extends Component {
     }
 
     const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
+        user.role
+      ) >= 0);
 
     const showOnboardingBanner =
         hasAccessToOnboardingBanner &&

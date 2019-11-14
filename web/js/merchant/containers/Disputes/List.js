@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
-import { daysLeftInExpiry } from 'merchant/utils/disputes';
+import { daysLeftInExpiry } from 'merchant/components/Disputes/Details';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
