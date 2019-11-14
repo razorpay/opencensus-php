@@ -20,10 +20,9 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
-
     public function getMerchantSettlementAmount($input)
     {
-        // todo: response structure has to be finalized
+
         (new Validator)->validateInput('settlement_amount', $input);
 
         $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;

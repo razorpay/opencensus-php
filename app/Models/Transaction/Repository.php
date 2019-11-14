@@ -24,12 +24,15 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     protected $entity = 'transaction';
 
     protected $signedIds = [
@@ -1610,7 +1613,6 @@ class Repository extends Base\Repository
         Balance\Entity $balance,
         int $timestamp)
     {
-        // TODO: check with product if the response can be cached for sometime here
         $startTime = microtime(true);
 
         $transactionType        = $this->dbColumn(Entity::TYPE);
@@ -1642,6 +1644,12 @@ class Repository extends Base\Repository
         {
             $query->where($transactionBalanceId, $balance->getId());
         }
+
+        $cacheTag = $merchantId . '_' . $balance->getType() . '_' . $timestamp;
+
+        // caching the result for 60 sec
+        $query->remember(1)
+              ->cachetags($cacheTag);
 
         $results = $query->first();
 
