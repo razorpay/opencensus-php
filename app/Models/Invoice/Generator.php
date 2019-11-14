@@ -440,7 +440,7 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        if ($order === null)
+        if (empty($order) === true)
         {
             $orderAmount    = $this->invoice->getAmount();
             $orderCurrency  = $this->invoice->getCurrency();
@@ -474,7 +474,7 @@ class Generator extends Base\Core
 
             $order = (new Order\Core)->create($orderInput, $this->merchant, $partialPayment);
 
-            $this->setOrder($order);
+            $this->invoice->order()->associate($order);
         }
 
         return;
@@ -484,9 +484,12 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        $this->invoice->order()->associate($order);
+        if (empty($order) === false)
+        {
+            $this->invoice->order()->associate($order);
 
-        assertTrue($this->invoice->getAmount() === $order->getAmount());
+            assertTrue($this->invoice->getAmount() === $order->getAmount());
+        }
     }
 
     protected function setInvoiceCreator(Entity $invoice)

@@ -1337,7 +1337,7 @@ class Entity extends Base\PublicEntity
      */
     public function getAmountPaidAttribute()
     {
-        if ($this->getOrderId() === null)
+        if (empty($this->order) === true)
         {
             return null;
         }
@@ -1353,7 +1353,7 @@ class Entity extends Base\PublicEntity
      */
     public function getAmountDueAttribute()
     {
-        if ($this->getOrderId() === null)
+        if (empty($this->order) === true)
         {
             return null;
         }
