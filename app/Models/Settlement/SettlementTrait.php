@@ -64,7 +64,7 @@ trait SettlementTrait
             return [
                 false,
                 [
-                    'caption' => 'Settlemenmt is not enabled',
+                    'caption' => 'Settlement is not enabled',
                     'reason'  => 'Only active merchants can get settlements',
                 ]
             ];
@@ -115,7 +115,7 @@ trait SettlementTrait
                 false,
                 [
                     'caption' => 'Settlement will be skipped',
-                    'reason'  => 'merchant doesnt have a active bank account registered',
+                    'reason'  => 'Merchant doesnt have a active bank account registered',
                 ]
             ];
         }
@@ -169,7 +169,7 @@ trait SettlementTrait
                 false,
                 [
                     'caption' => 'There won\'t be any settlement',
-                    'reason'  => 'bank account created yesterday. bank account was created/updated at '
+                    'reason'  => 'Bank account created yesterday. bank account was created/updated at '
                         . $createdAt
                         . '. It would require a day (except bank holidays)'
                         . ' to register the same with our banking partners'
