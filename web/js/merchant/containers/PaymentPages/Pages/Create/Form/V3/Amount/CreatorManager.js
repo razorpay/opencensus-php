@@ -144,7 +144,10 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       };
 
       // Update amount item
-      this.props.onSubmitAmountField(combinedFormData, this.props.index);
+      this.props.onSubmitAmountField(
+        combinedFormData,
+        this.props.indexInRenderOrder
+      );
 
       // Update currency for payment page entity
       this.props.updateData({
@@ -196,7 +199,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
     render() {
       const {
-        index,
+        indexInRenderOrder,
         validateSameTitleExists,
         onDeleteFormItem,
         isPaymentPageEditMode,
@@ -222,7 +225,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           />
           {isBaseFormOpened && (
             <BaseFormModal
-              index={index}
+              indexInRenderOrder={indexInRenderOrder}
               field={field}
               fieldType={fieldType}
               currency={currency}
@@ -271,13 +274,13 @@ class BaseFormModal extends React.PureComponent {
   };
 
   onDeleteFormItem = () => {
-    this.props.onDeleteFormItem(this.props.index);
+    this.props.onDeleteFormItem(this.props.indexInRenderOrder);
     this.props.closeFormModal();
   };
 
   render() {
     const {
-      index,
+      indexInRenderOrder,
       field,
       fieldType,
       currency,
@@ -296,7 +299,7 @@ class BaseFormModal extends React.PureComponent {
         <BaseForm
           field={field}
           fieldType={fieldType}
-          selfIndex={index}
+          selfIndex={indexInRenderOrder}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}
