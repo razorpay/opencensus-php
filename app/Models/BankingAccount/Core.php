@@ -263,6 +263,8 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
+        $oldStatus = $bankingAccount->getStatus();
+
         $bankingAccount->edit($input);
 
         if (empty($input[Entity::STATUS]) === false)
@@ -302,7 +304,11 @@ class Core extends Base\Core
         // relations. So explicitly fetching this relation here
         $bankingAccount->load('bankingAccountDetails');
 
-        if (empty($input[Entity::STATUS]) === false)
+        // we need to store change log only when the
+        // status has changed.
+        $newStatus = $bankingAccount->getStatus();
+
+        if ($oldStatus !== $newStatus)
         {
             $stateCore = new State\Core;
 
@@ -395,7 +401,7 @@ class Core extends Base\Core
             $stateCore = new State\Core;
 
             $content = [
-                Entity::STATUS              => Status::ACTIVATED,
+                Entity::STATUS => Status::ACTIVATED,
             ];
 
             $this->trace->info(
@@ -406,6 +412,8 @@ class Core extends Base\Core
                 ]);
 
             $stateCore->createForMakerAndEntity($content, $bankingAccount->merchant, $bankingAccount);
+
+            return $bankingAccount;
         });
 
         return $bankingAccount;
@@ -481,6 +489,11 @@ class Core extends Base\Core
             ]);
 
         return $response;
+    }
+
+    public function getActivationStatusChangeLog(Entity $bankingAccount)
+    {
+        return $bankingAccount->getActivationStatusChangeLog();
     }
 
     protected function getBalanceAttributesToSave(Entity $bankingAccount)
