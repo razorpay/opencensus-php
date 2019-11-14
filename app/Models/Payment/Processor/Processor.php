@@ -301,11 +301,7 @@ class Processor
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
 
-            if($payment->offers()->count() > 0)
-            {
-                $this->incrementOfferUsageCount($payment);
-            }
-
+            $this->incrementOfferUsageCount($payment);
 
             $this->logRequestTime($payment, $startTime);
 
