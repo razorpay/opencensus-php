@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -35,7 +36,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
         Entity::CUSTOMER_ID                        => 'filled|public_id|size:19',
         Entity::NOTES                              => 'sometimes|notes',
-        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi',
+        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi,nach',
         Entity::BANK                               => 'filled',
         Entity::DISCOUNT                           => 'sometimes|boolean',
         Entity::OFFERS                             => 'sometimes|array',
@@ -73,7 +74,8 @@ class Validator extends Base\Validator
         $amount = $input['amount'];
 
         if ((isset($input[Entity::METHOD]) === false) or
-            ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
+            (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
+                ($input[Entity::METHOD] !== Payment\Method::NACH)))
         {
             $this->validateInputValues('min_amount_check', $input);
         }

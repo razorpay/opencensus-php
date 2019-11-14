@@ -94,4 +94,32 @@ class SubscriptionRegistrationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function paperMandateAuthenticate()
+    {
+        $data = $this->service()->paperMandateAuthenticate($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function paperMandateValidate()
+    {
+        $data = $this->service()->paperMandateValidate($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getUploadedPaperMandateForm()
+    {
+        $data = $this->service()->getUploadedPaperMandateForm($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchAuthLinkInternal(string $id)
+    {
+        $data = $this->service()->fetchAuthLinkInternal($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
 }

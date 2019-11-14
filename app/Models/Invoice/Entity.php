@@ -26,9 +26,10 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 
 /**
- * @property Subscription\Entity $subscription
- * @property Order\Entity        $order
- * @property Merchant\Entity     $merchant
+ * @property Subscription\Entity             $subscription
+ * @property Order\Entity                    $order
+ * @property Merchant\Entity                 $merchant
+ * @property SubscriptionRegistration\Entity $tokenRegistration
  */
 class Entity extends Base\PublicEntity
 {
@@ -331,6 +332,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::SUBSCRIPTION_ID,
         self::ORDER_ID,
+        self::ORDER,
         self::PAYMENT_ID,
         self::DUE_BY,
         self::EXPIRED_AT,
@@ -606,6 +608,23 @@ class Entity extends Base\PublicEntity
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function toArrayPublic()
+    {
+        $publicArray = parent::toArrayPublic();
+
+        $order = $this->order;
+
+        if (($order !== null) and
+            ($order->getMethod() === Payment\Method::NACH))
+        {
+            $nachFormUrl = $order->toArrayPublic()[Order\Entity::TOKEN][SubscriptionRegistration\Entity::NACH_FORM_URL] ?? null;
+
+            $publicArray[SubscriptionRegistration\Entity::NACH_FORM_URL] = $nachFormUrl;
+        }
+
+        return $publicArray;
     }
 
     public function getPublicCustomerId()
@@ -1638,6 +1657,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphTo();
     }
+
+    public function tokenRegistration()
+    {
+        return $this->morphTo('entity');
+    }
+
     /**
      * Gets the most recent invoice pdf file, or null
      *

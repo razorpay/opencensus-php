@@ -82,6 +82,7 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';

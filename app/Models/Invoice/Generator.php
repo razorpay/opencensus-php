@@ -458,7 +458,8 @@ class Generator extends Base\Core
             if (($this->externalEntity !== null) and
                 ($this->invoice->isTypeOfSubscriptionRegistration() === true))
             {
-                if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+                if (($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE) or
+                    ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::NACH))
                 {
                     $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
                 }
