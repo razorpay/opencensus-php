@@ -176,6 +176,12 @@ export default class ActivationWizard extends React.Component {
       props.user.instantActivation.isL1Submitted
         ? 'KYC Form'
         : 'Activation Form';
+
+    this.formDescription =
+      props.user.showInstantActivation &&
+      props.user.instantActivation.isL1Submitted
+        ? 'Complete and submit the form to enable settlements.'
+        : 'Complete and submit the form to accept payments.';
   }
 
   prepareTabs(props) {
@@ -1298,9 +1304,7 @@ export default class ActivationWizard extends React.Component {
           title={this.formName}
           description={
             !this.isLinkedAccountForm &&
-            !isFormSubmitted && (
-              <p>Complete and submit the form to start accepting payments.</p>
-            )
+            !isFormSubmitted && <p>{this.formDescription}</p>
           }
           tabs={FORM_TABS}
           moreTabs={moreTabs}

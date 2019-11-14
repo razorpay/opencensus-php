@@ -90,7 +90,7 @@ function updateHubSpotContactsProperties(data, extra, prefix) {
   trackhubsContactUpdate(trackData);
 }
 
-const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
+const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const INDIVIDUAL = 2; // Legacy Type, Now combined under Unregistered Type
 const PROPRIETORSHIP = 1;
 const NGO = 7; // 'NGO'
@@ -139,7 +139,7 @@ function excludeFor_CompanyPan(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
   return (
-    [INDIVIDUAL, NOT_YET_REGISTERED, PROPRIETORSHIP].indexOf(
+    [INDIVIDUAL, NOT_REGISTERED, PROPRIETORSHIP].indexOf(
       Number(currentBusinessType)
     ) === -1
   );
@@ -196,6 +196,30 @@ function getBeneficiaryInfo() {
   }
 }
 
+function getBillingLabelInfo() {
+  let text = '';
+  if (isUnregisteredBusiness(this)) {
+    text =
+      'Enter the brand name your customers are familiar with or you want to use in future.';
+  } else {
+    text =
+      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.';
+  }
+  return text;
+}
+
+function getAccountNumberInfo() {
+  let text = '';
+  if (isUnregisteredBusiness(this)) {
+    text =
+      'Please ensure the Bank details you are entering are of the same person as the PAN.';
+  } else {
+    text =
+      'Should be a current bank account of the company to which your payments will be settled.';
+  }
+  return text;
+}
+
 function hasSelectedBlacklistedCategory(activation) {
   const { props, state } = activation;
   const categories = props.categories;
@@ -234,5 +258,7 @@ export {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  getBillingLabelInfo,
+  getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
 };

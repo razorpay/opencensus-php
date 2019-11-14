@@ -26,6 +26,8 @@ import {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  getBillingLabelInfo,
+  getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 
@@ -38,7 +40,7 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
+const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const ADDRESS_PROOF_TYPES = {
   aadhar: {
     value: 'aadhar',
@@ -121,7 +123,7 @@ const RegisteredBusinessTypeOptions = [
 ];
 
 const UnregisteredBusinessTypeOptions = [
-  { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
+  { label: 'Not Registered', name: NOT_REGISTERED },
 ];
 
 const DefaultBusinessTypeOptions = [
@@ -239,8 +241,7 @@ const businessModel = [
   {
     label: 'Billing Label',
     name: 'business_dba',
-    info:
-      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
+    info: getBillingLabelInfo,
   },
   [
     {
@@ -385,7 +386,6 @@ const businessDetails = [
       },
       getLabel: activation =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
-      className: 'Input--vTop Input--capitalize',
       _disabledWhen: isActivatedUnreg,
       checkValidityFromAPI: activation => {
         const errMsg =
@@ -487,8 +487,7 @@ const bankAccountFields = [
     {
       name: 'bank_account_number',
       label: 'Account Number',
-      info:
-        'Should be a current bank account of the company to which your payments will be settled.',
+      info: getAccountNumberInfo,
       autoComplete: 'new-password',
       type: 'password',
       onPaste: function(e) {
