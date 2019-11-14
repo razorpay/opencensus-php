@@ -215,6 +215,7 @@ export default class CreateNewContainer extends React.Component {
         // Object, cuz dirty is also object
         hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
+      isLoading: false,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -227,10 +228,6 @@ export default class CreateNewContainer extends React.Component {
   }
 
   fetchIfIntentDuplicate(invoiceId) {
-    this.setState({
-      fetchingInvoice: true,
-    });
-
     this.props
       .fetchInvoice(invoiceId)
       .then(data => {
@@ -248,7 +245,6 @@ export default class CreateNewContainer extends React.Component {
         }));
 
         this.setState({
-          fetchingInvoice: false,
           dirty: {
             currency: data.currency,
             description: data.description,
@@ -281,24 +277,42 @@ export default class CreateNewContainer extends React.Component {
   }
 
   componentDidMount() {
-    const searchQuery = getURLQueryParams(this.props.location.search);
-    if (searchQuery.duplicate_id) {
-      this.fetchIfIntentDuplicate(searchQuery.duplicate_id);
-    }
-
     this.toggleDisableState();
 
-    if (!this.props.reminders.reminders.items.length) {
-      this.props.fetchReminders();
-    }
-
-    if (!this.props.reminders.merchant_config.items.length) {
-      this.props.fetchRemindersMerchantConfigs();
-    }
+    this.prepareDataForPaymentLinkCreation()
+      .then(() => {
+        this.setState({
+          isLoading: false,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isLoading: false,
+        });
+      });
   }
 
   componentDidUpdate() {
     this.toggleDisableState();
+  }
+
+  prepareDataForPaymentLinkCreation() {
+    const promiseList = [];
+
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
+    }
+
+    if (!this.props.reminders.reminders.items.length) {
+      promiseList.push(this.props.fetchReminders());
+    }
+
+    if (!this.props.reminders.merchant_config.items.length) {
+      promiseList.push(this.props.fetchRemindersMerchantConfigs());
+    }
+
+    return Promise.all(promiseList);
   }
 
   toggleDisableState() {
@@ -605,6 +619,11 @@ export default class CreateNewContainer extends React.Component {
         f.label = f.label(this);
       }
 
+      let defaultChecked = f.defaultChecked;
+      if (typeof defaultChecked === 'function') {
+        f.defaultChecked = defaultChecked(this);
+      }
+
       return WizardFields.call(this, f);
     });
   }
@@ -667,7 +686,7 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
-        fetchingInvoice={this.state.fetchingInvoice}
+        fetchingInvoice={this.state.isLoading}
       />
     );
 
@@ -693,7 +712,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { disableSubmit, mode, fetchingInvoice } = this.props;
+    const { disableSubmit, mode, isLoading } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -708,7 +727,7 @@ class CreateWizard extends React.Component {
             </Alert.Warning>
           )}
 
-          {fetchingInvoice ? (
+          {isLoading ? (
             <div className="page-center">
               <Spinner />
             </div>
@@ -725,7 +744,7 @@ class CreateWizard extends React.Component {
           )}
         </main>
 
-        {!fetchingInvoice && (
+        {!isLoading && (
           /* FORM FOOTER */
           <footer>
             {/* Action Button 1 */}

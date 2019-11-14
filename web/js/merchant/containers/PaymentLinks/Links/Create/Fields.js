@@ -274,6 +274,9 @@ export default [
       );
     },
     _cmp: Input.Check,
+    defaultChecked: form => {
+      return form.props.paymentLinksRemindersSettings.isEnabled;
+    },
     label: 'Reminders',
     _when: function(form) {
       return (
