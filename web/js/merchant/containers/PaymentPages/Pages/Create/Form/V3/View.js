@@ -42,6 +42,7 @@ class SortableFormItemsList extends React.Component {
             return (
               <Sortable_AmountDisplayField
                 key={fi.item.name}
+                index={idx}
                 indexInRenderOrder={idx}
                 field={fi}
                 currency={currency}
@@ -57,6 +58,7 @@ class SortableFormItemsList extends React.Component {
             return (
               <Sortable_UDFDisplayField
                 key={fi.name}
+                index={idx}
                 indexInRenderOrder={idx}
                 field={fi}
                 isListSorting={isListSorting}
