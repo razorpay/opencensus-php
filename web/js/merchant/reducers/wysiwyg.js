@@ -17,6 +17,13 @@ import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/m
 import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/preAddedFields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
+const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
+const UPDATE_DATA = 'UPDATE_DATA';
+const DELETE_IN_FORM_ITEMS = 'DELETE_IN_FORM_ITEMS';
+const UPDATE_IN_FORM_ITEMS = 'UPDATE_IN_FORM_ITEMS';
+const ADD_IN_FORM_ITEMS = 'ADD_IN_FORM_ITEMS';
+const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
+const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
 
 export const isFormItemOfTypeAmount = formItem =>
   formItem.hasOwnProperty('item');
@@ -33,10 +40,10 @@ export const updateTemplateType = (data, templateKey) => {
   );
 };
 
-export const fetchPaymentPage = id => {
+export const fetchPaymentPage = (id, isIntentDuplicate) => {
   if (!id) {
     return {
-      type: 'UPDATE_DATA',
+      type: UPDATE_DATA,
       formItems: {
         id: null, // To handle case where intial UI schema to be shown
       },
@@ -46,19 +53,24 @@ export const fetchPaymentPage = id => {
   return {
     type: FETCH_ENTITY,
     payload: fetchPaymentPageEntity(id),
+    isIntentDuplicate: isIntentDuplicate,
     isPPMLIEnabled: store.getState().session.user.isPPMLIEnabled,
     id,
   };
 };
 
 export const updateData = (formItem, isPageDirty) => ({
-  type: 'UPDATE_DATA',
+  type: UPDATE_DATA,
   formItems: formItem,
   isPageDirty,
 });
 
+export const refreshPageData = () => ({
+  type: REFRESH_PAGE_DATA,
+});
+
 export const deleteInFormItems = index => ({
-  type: 'DELETE_IN_FORM_ITEMS',
+  type: DELETE_IN_FORM_ITEMS,
   index,
 });
 
@@ -68,18 +80,18 @@ export const updateInFormItems = ({ formItem, index }) => {
   }
 
   return {
-    type: 'UPDATE_IN_FORM_ITEMS',
+    type: UPDATE_IN_FORM_ITEMS,
     payload: { index, formItem },
   };
 };
 
 export const addInFormItems = formItem => ({
-  type: 'ADD_IN_FORM_ITEMS',
+  type: ADD_IN_FORM_ITEMS,
   formItem,
 });
 
 export const markDataSaved = _ => ({
-  type: 'MARK_DATA_SAVED',
+  type: MARK_DATA_SAVED,
 });
 
 let initialState = {
@@ -103,7 +115,7 @@ export const reorderFormItems = ({
   newIndex: newIndexInFormItems,
 }) => {
   return {
-    type: 'REORDER_FORM_ITEMS',
+    type: REORDER_FORM_ITEMS,
     payload: { oldIndexInFormItems, newIndexInFormItems },
   };
 };
@@ -152,6 +164,17 @@ export default function(state = initialState, action) {
           }
         });
 
+        // 1-1. If intention while fetching is to duplicate, then remove id for each of payment page item
+        if (action.isIntentDuplicate) {
+          entityData.payment_page_items.forEach(fi => {
+            // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
+
+            delete fi.id;
+            delete fi.payment_link_id;
+            delete fi.item.id;
+          });
+        }
+
         formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
 
         formItems.sort(function(a, b) {
@@ -174,23 +197,40 @@ export default function(state = initialState, action) {
 
         entityData.times_paid = amountItem.quantity_sold;
         entityData.quantity = amountItem.stock;
-        entityData.paymentPageItemId = amountItem.id;
+
+        // 1-2. If intention while fetching is to duplicate, then remove id for each of payment page item
+        if (!action.isIntentDuplicate) {
+          entityData.paymentPageItemId = amountItem.id;
+        }
+
         entityData.settings.allow_multiple_units = amountItem.min_purchase == 1;
 
         formItems = udfSchema;
       }
 
-      return {
+      // 2. If intention while fetching is to duplicate, then delete id
+      if (!action.isIntentDuplicate) {
+        delete entityData.id;
+        // Remove payment page id
+      }
+
+      const storeState = {
         paymentPageEntity: entityData,
-        payment_page_id: entityData.id,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
+
+      // 3. If intention while fetching is to duplicate, then don't add payment_page_id
+      if (!action.isIntentDuplicate) {
+        storeState.payment_page_id = entityData.id;
+      }
+
+      return storeState;
     }
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
-    case 'UPDATE_DATA':
+    case UPDATE_DATA:
       if (action.formItems.hasOwnProperty('id')) {
         // re-Initialise FE if ID is changed to other ID/null
         return {
@@ -214,14 +254,14 @@ export default function(state = initialState, action) {
         };
       }
 
-    case 'DELETE_IN_FORM_ITEMS':
+    case DELETE_IN_FORM_ITEMS:
       return {
         ...state,
         isPageDirty: true,
         FORM_ITEMS: removeItem(state.FORM_ITEMS, action.index), // Position of items is not updated until page is created(/saved)
       };
 
-    case 'UPDATE_IN_FORM_ITEMS': {
+    case UPDATE_IN_FORM_ITEMS: {
       // Insert in starting of the form items
       let formItems;
 
@@ -242,20 +282,20 @@ export default function(state = initialState, action) {
       };
     }
 
-    case 'ADD_IN_FORM_ITEMS':
+    case ADD_IN_FORM_ITEMS:
       return {
         ...state,
         isPageDirty: true,
         FORM_ITEMS: push(state.FORM_ITEMS, action.formItem), // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
       };
 
-    case 'MARK_DATA_SAVED':
+    case MARK_DATA_SAVED:
       return {
         ...state,
         isPageDirty: false,
       };
 
-    case 'REORDER_FORM_ITEMS':
+    case REORDER_FORM_ITEMS:
       return {
         ...state,
         FORM_ITEMS: arrayMove(
@@ -263,6 +303,11 @@ export default function(state = initialState, action) {
           action.payload.oldIndexInFormItems,
           action.payload.newIndexInFormItems
         ),
+      };
+
+    case REFRESH_PAGE_DATA:
+      return {
+        ...initialState,
       };
 
     default:

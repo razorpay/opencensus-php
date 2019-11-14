@@ -222,11 +222,23 @@ export default class PaymentPagesV3Entity extends React.Component {
                 {isRoleAllowedEdit && (
                   <Link
                     class="btn Button--primary--invert btn-sm"
+                    to={`/paymentpages/new?duplicate_id=${
+                      paymentPageEntity.id
+                    }`}
+                  >
+                    Duplicate Page
+                  </Link>
+                )}
+
+                {isRoleAllowedEdit && (
+                  <Link
+                    class="btn Button--primary--invert btn-sm m-l"
                     to={`/paymentpages/${paymentPageEntity.id}/edit`}
                   >
                     Edit
                   </Link>
                 )}
+
                 {isRoleAllowedEdit &&
                   isActive && (
                     <button
