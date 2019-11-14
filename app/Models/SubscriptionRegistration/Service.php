@@ -204,9 +204,11 @@ class Service extends Base\Service
             Constants\Entity::SUBSCRIPTION_REGISTRATION
         );
 
-        $subscriptionRegistration = $invoice->entity;
-
-        $invoice->entity()->associate($subscriptionRegistration);
+        //
+        // This is necessary for now. Will be removed
+        // after a better solution is found.
+        //
+        $invoice->entity;
 
         $data = $this->core->sendNotification($invoice, $medium);
 
