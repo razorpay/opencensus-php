@@ -35,7 +35,7 @@ const initState = {
     showNotification,
   }
 )
-export default class ReminderSetting extends React.Component {
+export default class ReminderSettings extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
