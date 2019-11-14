@@ -13,7 +13,7 @@ import Button from 'common/new-ui/Button';
 
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { showKYCActivationSuccessModal } from 'merchant/reducers/home';
+import { showKYCStatusModal } from 'merchant/reducers/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
@@ -40,7 +40,7 @@ const successImg = '/img/activation/submit-success.svg';
   {
     showNotification,
     updateSession,
-    showKYCActivationSuccessModal,
+    showKYCStatusModal,
   }
 )
 export default class ActivationContainer extends React.Component {
@@ -404,7 +404,9 @@ export default class ActivationContainer extends React.Component {
         modalClass = 'Activation--success';
         content = <SuccessScreen />;
       } else {
-        this.props.showKYCActivationSuccessModal();
+        this.props.showKYCStatusModal({
+          modalType: 'KYC_ACTIVATION_SUBMIT_SUCCESS',
+        });
         this.props.history.replace(`/`);
         content = null;
       }

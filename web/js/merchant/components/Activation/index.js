@@ -36,6 +36,7 @@ import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
   showPANStatusModal,
+  showKYCStatusModal,
 } from 'merchant/reducers/home';
 import {
   submitL1Form,
@@ -54,7 +55,6 @@ import {
   hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 import QueryString from 'query-string';
-import { NEEDS_CLARIFICATION } from 'merchant/containers/Home/OnboardingCard/data';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 
 /*
@@ -137,6 +137,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     showPANStatusModal,
     submitL1Form,
     submitL1FormSuccess,
+    showKYCStatusModal,
   }
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -1049,7 +1050,7 @@ export default class ActivationWizard extends React.Component {
     const hasFilledDetails =
       this.state.dirty && Object.keys(this.state.dirty).length > 0;
     const reqData = {
-      submit: 1,
+      submit: '1',
     };
     if (hasFilledDetails) {
       const fieldNames = needsClarificationFields.map(field => field.name);
@@ -1061,12 +1062,12 @@ export default class ActivationWizard extends React.Component {
     }
     this.props
       .save(reqData)
-      .then(data => {
-        if (data) {
-          this.props.showNotification({
-            type: 'Success',
-            message: 'Clarifications Submitted Successfully',
+      .then(response => {
+        if (response.success) {
+          this.props.showKYCStatusModal({
+            modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
           });
+          this.props.history.replace(`/`);
         }
       })
       .catch(err => {});
