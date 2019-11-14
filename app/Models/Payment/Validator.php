@@ -421,16 +421,13 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVpa($attribute, $vpa)
+    public function validateVpa($attribute, $vpa)
     {
-        // calling the common validator to verify
-        // length and pattern of vpa
-        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+        (new Base\VpaValidator)->validateVpa($vpa);
 
         $vpaParts = explode('@', $vpa);
 
-        if ((ProviderCode::validate($vpaParts[1]) === false) or
-            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
+        if (ProviderCode::validate($vpaParts[1]) === false)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(

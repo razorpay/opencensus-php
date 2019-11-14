@@ -3,33 +3,15 @@
 namespace RZP\Models\Vpa;
 
 use RZP\Base;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-zA-Z0-9]{1,}@[a-zA-Z]+"|custom',
+        Entity::ADDRESS => 'required|string|custom',
     ];
 
     public function validateAddress(string $attribute, string $address)
     {
-        if (strpos($address, Entity::AROBASE) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-                $attribute,
-                [
-                    'vpa' => $address
-                ]);
-        }
-
-        list($left, $right) = explode(Entity::AROBASE, $address);
-
-        if (strlen($left) < 1)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Handle must be at least 1 character: ' . $address);
-        }
+        (new Base\VpaValidator)->validateVpa($address);
     }
 }
