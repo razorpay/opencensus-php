@@ -666,4 +666,14 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function checkTransferStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
+            Requests::POST,
+            $input);
+    }
 }
