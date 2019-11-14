@@ -250,6 +250,7 @@ class Gateway
     const MCC_FILTER_GATEWAYS = [
         self::HDFC,
         self::HITACHI,
+        self::CARD_FSS,
     ];
 
     /**

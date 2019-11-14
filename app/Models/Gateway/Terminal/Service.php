@@ -55,9 +55,13 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+        $merchantDetail = $merchant->merchantDetail->toArray();
 
-        return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput);
+        $gatewayProcessor->addDefaultValueToMerchantDetailIfApplicable($merchantDetail);
+
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchantDetail);
+
+        return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail);
     }
 
     public function onboardMerchantAsync(Merchant $merchant, $input)
@@ -70,16 +74,16 @@ class Service extends Base\Service
 
         $gatewayProcessor = GatewayFactory::build($gateway);
 
-        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+        $merchantDetail = $merchant->merchantDetail->toArray();
+
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchantDetail);
 
         return $this->performOnboardingAsync($merchant, $gatewayProcessor, $gatewayInput);
     }
 
-    protected function performOnboarding($merchant, $gatewayProcessor, $gatewayInput)
+    protected function performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail)
     {
         $gateway = $gatewayProcessor->getGatewayName();
-
-        $merchantDetail = $merchant->merchantDetail->toArray();
 
         $lockResource = $gatewayProcessor->getLockResource($merchant, $gateway, $gatewayInput);
 

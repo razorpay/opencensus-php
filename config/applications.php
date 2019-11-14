@@ -385,6 +385,13 @@ return [
         'secret'   => env('HUBSPOT_SECRET'),
     ],
 
+    'hyper_verge' => [
+        'url'     => env('HYPERVERGE_URL'),
+        'app_id'  => env('HYPERVERGE_APP_ID'),
+        'app_key' => env('HYPERVERGE_APP_KEY'),
+        'mock'    => env('HYPERVERGE_MOCK', false),
+    ],
+
     'mtu_lambda' => [
         'secret'        => env('MTU_LAMBDA_SECRET'),
     ],

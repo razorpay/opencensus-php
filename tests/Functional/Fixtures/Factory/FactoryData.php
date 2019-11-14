@@ -1030,6 +1030,12 @@ final class FactoryData
             'customer_id' => '100000customer',
         ]);
 
+        $factory(\RZP\Models\PaperMandate\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
+        ]);
+
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
             'active'       => true,

@@ -56,6 +56,7 @@ class Event
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
+    const TRANSACTION_UPDATED               = 'transaction.updated';
     const REFUND_CREATED                    = 'refund.created';
     const TRANSFER_PROCESSED                = 'transfer.processed';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
@@ -72,7 +73,6 @@ class Event
     const ACCOUNT_REJECTED                  = 'account.rejected';
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
-
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -116,6 +116,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
@@ -181,6 +182,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
         self::TERMINAL_ACTIVATED,
@@ -244,7 +246,7 @@ class Event
         self::PAYOUT_FAILED                     => 42,
         self::REFUND_CREATED                    => 43,
         self::TERMINAL_ACTIVATED                => 44,
-        self::TERMINAL_FAILED                   => 45,  
+        self::TERMINAL_FAILED                   => 45,
         self::TRANSFER_PROCESSED                => 46,
         self::ACCOUNT_SUSPENDED                 => 47,
         self::ACCOUNT_FUNDS_HOLD                => 48,
@@ -258,6 +260,7 @@ class Event
         self::ACCOUNT_REJECTED                  => 56,
         self::ACCOUNT_PAYMENTS_ENABLED          => 57,
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
+        self::TRANSACTION_UPDATED               => 59,
     ];
 
     /**
@@ -303,6 +306,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => [Product::PRIMARY],
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
+        self::TRANSACTION_UPDATED               => [Product::BANKING],
         self::REFUND_CREATED                    => [Product::PRIMARY],
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
@@ -365,6 +369,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Entity::REFUND,
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
+        self::TRANSACTION_UPDATED               => Entity::TRANSACTION,
         self::REFUND_CREATED                    => Entity::REFUND,
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,

@@ -35,7 +35,15 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::SCORE,
         self::REPORT,
+        self::INTERESTED,
         self::CREATED_AT,
+    ];
+
+    // merchant credit report should be exposed to least number of people in org.
+    // score & report have been added to hidden to hide them from admin dashboard.
+    protected $hidden = [
+        self::SCORE,
+        self::REPORT,
     ];
 
     protected $fillable = [
@@ -43,8 +51,13 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::SCORE,
         self::REPORT,
+        self::INTERESTED,
         self::UFH_FILE_ID,
         self::CREATED_AT,
+    ];
+
+    protected $casts = [
+        self::INTERESTED     => 'bool',
     ];
 
     public function merchant()
@@ -60,5 +73,10 @@ class Entity extends Base\PublicEntity
     public function d2cBureauDetail()
     {
         return $this->belongsTo(\RZP\Models\D2cBureauDetail\Entity::class);
+    }
+
+    public function toArrayForDashboard()
+    {
+        return $this->makeVisible([self::SCORE, self::REPORT])->toArrayPublic();
     }
 }

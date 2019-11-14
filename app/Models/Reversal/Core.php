@@ -190,14 +190,9 @@ class Core extends Base\Core
 
         return $this->repo->transaction(function() use ($reversal)
         {
-            $skipTxn = $this->shouldSkipReversalTransaction($reversal);
+            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
 
-            if ($skipTxn === false)
-            {
-                $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
-
-                $this->repo->saveOrFail($txn);
-            }
+            $this->repo->saveOrFail($txn);
 
             $this->repo->saveOrFail($reversal);
 
@@ -357,12 +352,14 @@ class Core extends Base\Core
      * @param \RZP\Models\Payout\Entity $payout
      *
      * @return Entity
+     * @throws Exception\LogicException
      */
     private function reverseMerchantPayout(Payout\Entity $payout): Entity
     {
         $reversalInput = [
             Entity::AMOUNT   => $payout->getAmount() + $payout->getFees(),
             Entity::CURRENCY => $payout->getCurrency(),
+            Entity::UTR      => ($payout->getReturnUtr() ?? $payout->getUtr()),
         ];
 
         $reversal = $this->create($reversalInput);
@@ -370,11 +367,19 @@ class Core extends Base\Core
         $reversal->setChannel($payout->getChannel());
 
         $reversal->merchant()->associate($payout->merchant);
+
         $reversal->entity()->associate($payout);
 
         $reversal->balance()->associate($payout->balance);
 
-        $reversal = $this->createTransactionFromPayoutReversal($reversal);
+        $skipTxn = $this->shouldSkipReversalTransaction($reversal);
+
+        if ($skipTxn === false)
+        {
+            $reversal = $this->createTransactionFromPayoutReversal($reversal);
+        }
+
+        $this->repo->saveOrFail($reversal);
 
         return $reversal;
     }
@@ -383,8 +388,9 @@ class Core extends Base\Core
      * Process Customer Refund if applicable
      *
      * @param Transfer\Entity $transfer
-     * @param array           $input
-     * @param Entity          $reversal
+     * @param array $input
+     * @param Entity $reversal
+     * @throws Exception\BadRequestException
      */
     protected function customerRefundIfApplicable(Transfer\Entity $transfer, array $input, Reversal\Entity $reversal)
     {
@@ -440,8 +446,11 @@ class Core extends Base\Core
     protected function shouldSkipReversalTransaction(Reversal\Entity $reversal): bool
     {
         $balance     = $reversal->balance;
+
         $type        = optional($balance)->getType();
+
         $accountType = optional($balance)->getAccountType();
+
         $channel     = optional($balance)->getChannel();
 
         //

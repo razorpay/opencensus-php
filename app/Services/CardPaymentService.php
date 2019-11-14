@@ -3,7 +3,6 @@
 namespace RZP\Services;
 
 use App;
-
 use RZP\Exception;
 use Requests_Session;
 use RZP\Error\ErrorCode;
@@ -323,8 +322,7 @@ class CardPaymentService
                 $verify);
         }
 
-        if (($verify->match === true) and
-            ($verify->amountMismatch === true) and
+        if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
             throw new Exception\RuntimeException(
@@ -351,14 +349,20 @@ class CardPaymentService
 
         $this->checkApiSuccess($verify);
 
-        $this->checkAmountMismatch($verify);
-
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        if (($verify->match === true) and
+            ($verify->apiSuccess === false))
+        {
+            return $verify;
+        }
+
+        $this->checkAmountMismatch($verify);
 
         return $verify;
     }
