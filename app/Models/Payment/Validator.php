@@ -423,7 +423,7 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
-        (new Base\VpaValidator)->validateVpa($vpa);
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
 
         $vpaParts = explode('@', $vpa);
 
