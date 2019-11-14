@@ -2943,6 +2943,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->offers()->attach($offer);
     }
 
+    public function dissociateOffer(Offer\Entity $offer)
+    {
+        $this->offers()->detach($offer);
+    }
+
     /**
      * Works cos we only associate one offer with payment
      * @return Offer\Entity
