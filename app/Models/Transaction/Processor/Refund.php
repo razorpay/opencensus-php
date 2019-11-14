@@ -63,6 +63,7 @@ class Refund extends Base
     protected function getSettledAtTimestampForRefund()
     {
         $payment = $this->source->payment;
+        $refund  = $this->source;
 
         if ($payment->hasBeenCaptured())
         {
@@ -70,10 +71,19 @@ class Refund extends Base
 
             $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-            if (($paymentTxn->isSettled() === true) or
-                (is_null($paymentTxn->getSettledAt()) === true))
+            if ($paymentTxn->isSettled() === true)
             {
                 return $nowTimestamp;
+            }
+            else if (is_null($paymentTxn->getSettledAt()) === true)
+            {
+                if (($payment->isAuthorized() === true) and
+                    ($refund->isDirectSettlementWithoutRefund() === true))
+                {
+                    return $nowTimestamp;
+                }
+
+                return null;
             }
             else
             {
@@ -89,7 +99,7 @@ class Refund extends Base
         $payment = $this->source->payment;
         $refund  = $this->source;
 
-        if (($payment->isAuthorized() === true) and
+        if (($payment->isAuthorized() === true) or
             ($refund->isDirectSettlementWithoutRefund() === false))
         {
             return false;
