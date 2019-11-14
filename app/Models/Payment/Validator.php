@@ -421,7 +421,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateVpa($attribute, $vpa)
+    protected function validateVpa($attribute, $vpa)
     {
         (new Base\VpaValidator)->validateVpa($vpa);
 
