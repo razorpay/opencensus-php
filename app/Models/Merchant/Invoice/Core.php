@@ -11,7 +11,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
@@ -19,6 +18,7 @@ use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Org\Preferences;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
@@ -424,7 +424,9 @@ class Core extends Base\Core
             'merchant_invoice_alert',
             [
                 'total_invoice_skipped' => $result->count(),
-            ]);
+            ],
+            null,
+            $result->count());
 
         return $result->toArray();
     }
