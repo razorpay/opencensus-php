@@ -120,21 +120,7 @@ class Core extends Base\Core
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
 
-            //In case of discounted offer where Rzp modifies the amount, if offer validations fails
-            //and merchant does not want to block payment for that offer, setting the original order amount
-            //again for payment amount.
-            if($input['order_amount'] !== null)
-            {
-                $payment->setAmount($input['order_amount']);
-
-                $payment->setBaseAmount($input['order_amount']);
-            }
-
-            $order = $payment->order;
-
-            $order->setDiscount(false);
-
-            $payment->dissociateOffer($offer);
+            $this->revertOfferPaymentInput($offer,  $payment,  $input);
 
         }
 
@@ -144,6 +130,29 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId(),
                 'offer_id'   => $offer->getId()
             ]);
+    }
+
+    public function revertOfferPaymentInput(Entity $offer, Payment\Entity $payment, array $input)
+    {
+        //In case of discounted offer where Rzp modifies the amount, if offer validations fails
+        //and merchant does not want to block payment for that offer, setting the original order amount
+        //again for payment amount.
+        if($input['order_amount'] !== null)
+        {
+            $payment->setAmount($input['order_amount']);
+
+            $payment->setBaseAmount($input['order_amount']);
+        }
+
+        $order = $payment->order;
+
+        //Setting discount flag to false to avoid modify amount to discounted amount while capturing the
+        // payment.
+        $order->setDiscount(false);
+
+        //As offer is not applicable, dissociating it
+        $payment->dissociateOffer($offer);
+
     }
 
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
