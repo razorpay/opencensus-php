@@ -182,6 +182,7 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        self::PASSWORD,
     ];
 
     protected $public = [
