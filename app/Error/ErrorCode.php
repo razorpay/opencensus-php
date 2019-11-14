@@ -1264,6 +1264,7 @@ class ErrorCode
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
+    const GATEWAY_VERIFY_REFUND_IN_PROCESSING                                       = 'GATEWAY_VERIFY_REFUND_IN_PROCESSING';
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                     = 'REFUND_MANUALLY_CONFIRMED_UNPROCESSED';
     const REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED';
