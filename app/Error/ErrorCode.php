@@ -871,6 +871,7 @@ class ErrorCode
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
 
+    const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
     const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
@@ -887,6 +888,8 @@ class ErrorCode
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
+    const SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED                        = 'SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED';
+    const SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN                          = 'SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_MISSING_HANDLER                                              = 'SERVER_ERROR_MISSING_HANDLER';
@@ -1307,6 +1310,8 @@ class ErrorCode
     const SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR                                   = 'SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR';
 
     const SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED                                 = 'SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED';
+    const SERVER_ERROR_TRANSACTION_WRONG_SOURCE                                     = 'SERVER_ERROR_TRANSACTION_WRONG_SOURCE';
+    const SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE                                   = 'SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE';
 
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';

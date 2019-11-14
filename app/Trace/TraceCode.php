@@ -154,6 +154,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_INVALID_TEMPORARY_SESSION                     = 'PAYMENT_INVALID_TEMPORARY_SESSION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE                 = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                            = 'TRANSACTION_AMOUNT_CREDITS';
+    const DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS                = 'DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS';
+    const DUMMY_TRANSACTION_DETAILS                             = 'DUMMY_TRANSACTION_DETAILS';
     const CREDITS_EXPIRED                                       = 'CREDITS_EXPIRED';
     const CREDITS_ADDED                                         = 'CREDITS_ADDED';
     const SCHEDULE_TASK_CREATE_REQUEST                          = 'SCHEDULE_TASK_CREATE_REQUEST';
@@ -582,6 +584,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_INVALID_API_SECRET                        = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED                   = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_INVALID_CLIENT_KEY                        = 'BAD_REQUEST_INVALID_CLIENT_KEY';
+    const BAS_ENTRY_FOR_A_FAILED_PAYOUT                         = 'BAS_ENTRY_FOR_A_FAILED_PAYOUT';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER                    = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
 
     const RUNTIME_ERROR                                         = 'RUNTIME_ERROR';
@@ -1052,6 +1055,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
     const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
     const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
+    const TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED             = 'TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED';
+    const TRANSACTION_FOUND_DURING_PAYOUT_REVERSED              = 'TRANSACTION_FOUND_DURING_PAYOUT_REVERSED';
+    const PAYOUT_PROCESS_VIA_PAYOUT_REVERSE                     = 'PAYOUT_PROCESS_VIA_PAYOUT_REVERSE';
     const ADDING_MEMBER_TO_MAILING_LIST                         = 'ADDING_MEMBER_TO_MAILING_LIST';
     const ADDED_MEMBER_TO_MAILING_LIST                          = 'ADDED_MEMBER_TO_MAILING_LIST';
     const DELETING_MEMBER_FROM_MAILING_LIST                     = 'DELETING_MEMBER_FROM_MAILING_LIST';
@@ -1062,6 +1068,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_METRIC_PUSH_EXCEPTION                          = 'PAYOUT_METRIC_PUSH_EXCEPTION';
     const PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED        = 'PAYOUT_ERROR_CODE_MAPPING_BANK_STATUS_REQUIRED';
     const PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE     = 'PAYOUT_PUBLIC_ERROR_CODE_UNKNOWN_BANK_STATUS_CODE';
+    const PAYOUT_HAS_TRANSACTION_BUT_NO_MAPPING_TO_BAS          = 'PAYOUT_HAS_TRANSACTION_BUT_NO_MAPPING_TO_BAS';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -2145,6 +2152,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXTERNAL_TXN_CREATION_FAILED                          = 'EXTERNAL_TXN_CREATION_FAILED';
     const EXTERNAL_TXN_CREATION_INITIATED                       = 'EXTERNAL_TXN_CREATION_INITIATED';
     const EXTERNAL_SAVE                                         = 'EXTERNAL_SAVE';
+    const EXTERNAL_DELETE_REQUEST                               = 'EXTERNAL_DELETE_REQUEST';
 
     const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
