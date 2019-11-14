@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Order\Entity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -211,6 +212,25 @@ class Core extends Base\Core
         }
 
         return $offer;
+    }
+
+    public function validateDefaultOfferForOrder(Entity $order, offer\Entity $offer)
+    {
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkValidityOnOrder($order) === true)
+        {
+            return $offer;
+        }
+    }
+
+    public function fetchDefaultOffers()
+    {
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($this->merchant->getId());
+
+        return $defaultOffers;
     }
 
     public function fetchSharedOffers()

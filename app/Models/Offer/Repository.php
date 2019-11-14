@@ -69,6 +69,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAllDefaultOffersForMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::DEFAULT_OFFER, '=', true)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->get();
+    }
+
     /**
      * Build a query based upon the attribute set in the new offer entity,
      * to check whether an offer exists with the same condition.

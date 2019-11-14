@@ -19,6 +19,7 @@ class Validator extends Base\Validator
     const CASHBACK_CRITERIA = 'cashback_criteria';
     const OFFER_PERIOD      = 'offer_period';
     const EMI_ISSUER        = 'emi_issuer';
+    const MERCHANT_CATEGORY = 'merchant_category';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -51,6 +52,8 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
         Entity::BLOCK               => 'required|boolean',
         Entity::ACTIVE              => 'filled|boolean',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
     ];
 
     protected static $createBulkRules = [
@@ -76,6 +79,8 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'required|string',
         Entity::BLOCK               => 'required|boolean',
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
     ];
 
     protected static $editRules = [
@@ -99,6 +104,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
+        self::MERCHANT_CATEGORY,
     ];
 
     protected static $emiSubventionValidators = [
@@ -400,5 +406,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid issuer name: '. $input[Entity::ISSUER]);
         }
+    }
+
+    protected function validateMerchantCategory(array $input)
+    {
+
     }
 }

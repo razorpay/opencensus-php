@@ -393,7 +393,7 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        if ($order->isDiscountApplicable() === false && $this->offer->getOfferType() !== $this->offer::INSTANT)
         {
             return;
         }

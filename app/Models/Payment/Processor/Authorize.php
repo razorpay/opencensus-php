@@ -3870,12 +3870,12 @@ trait Authorize
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        $this->offer = $payment->getOffer();
+
+        if ($order->isDiscountApplicable() === false && $this->offer->getOfferType() !== $this->offer::INSTANT)
         {
             return;
         }
-
-        $this->offer = $payment->getOffer();
 
         if ($this->offer === null)
         {

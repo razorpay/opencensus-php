@@ -700,6 +700,7 @@ final class Route
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
+        'offer_validate'                           => ['post',     '/validate/offer',                                'OfferController@validateOffer'                                     ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_all'                       => ['get',      'currency/all',                                   'CurrencyController@getAllCurrency'                                 ],
         'currency_fetch_all_proxy'                 => ['get',      'currency/all/proxy',                             'CurrencyController@getAllCurrency'                                 ],

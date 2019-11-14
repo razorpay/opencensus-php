@@ -211,6 +211,39 @@ class OffersPaymentTest extends TestCase
 
     }
 
+    public function testCashbackOfferWithInstantOffer()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['601200'],'block' => false, 'type' => 'instant']);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false, 'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer2);
+
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+
+    }
+
     public function testOfferApplicableWithPaymentBlockedFlagNotSet()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);

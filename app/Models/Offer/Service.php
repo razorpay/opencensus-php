@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Entity;
 
 class Service extends Base\Service
 {
@@ -137,5 +138,22 @@ class Service extends Base\Service
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+    }
+
+    public function validateOffer(array $input)
+    {
+        $payment = new Entity();
+
+        $payment->build($input);
+
+        $verbose = true;
+
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($input[Entity::OFFER_ID], $this->merchant);
+
+        $payment->associateOffer($offer);
+
+        $checker = new Checker($offer, $verbose);
+
+        return $checker->checkApplicabilityForPayment($payment);
     }
 }
