@@ -152,7 +152,6 @@ export default class CreateNewAuthLinkContainer extends Component {
           data.mandateMethod === 'emandate' && !!data.mandateMaxAmount
             ? rupeesToPaise(data.mandateMaxAmount)
             : undefined,
-        auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
           : undefined,
