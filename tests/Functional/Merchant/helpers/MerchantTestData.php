@@ -3320,6 +3320,74 @@ return [
         ]
     ],
 
+    'testEnableEsScheduledSuccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledUnknownScheduleFailure' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Schedule not found in database.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE,
+        ],
+    ],
+
+    'testEnableEsScheduledUneditableFeature' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEnableEsScheduledEsautomaticPricingUnavailable' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
+        ],
+    ],
+
     'testPutEmiMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',

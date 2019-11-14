@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\FundAccount;
 
+use RZP\Models\FundAccount\Type;
+
 trait FundAccountTrait
 {
     protected function getDefaultFundAccountBankAccountArray()
@@ -17,9 +19,16 @@ trait FundAccountTrait
         ];
     }
 
-    protected function buildFundAccountBankAccountRequest()
+    protected function buildFundAccountRequest($type = Type::BANK_ACCOUNT)
     {
-        $fundAccount = $this->getDefaultFundAccountBankAccountArray();
+        if ($type === Type::VPA)
+        {
+            $fundAccount = $this->getDefaultFundAccountVPAArray();
+        }
+        else
+        {
+            $fundAccount = $this->getDefaultFundAccountBankAccountArray();
+        }
 
         $request = [
             'method'  => 'POST',
@@ -34,7 +43,7 @@ trait FundAccountTrait
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $request = $this->buildFundAccountBankAccountRequest();
+        $request = $this->buildFundAccountRequest(Type::BANK_ACCOUNT);
 
         $this->ba->privateAuth($key);
 
@@ -45,5 +54,33 @@ trait FundAccountTrait
         $this->assertArraySelectiveEquals($expectedFundAccount, $content);
 
         return $content;
+    }
+
+    protected function createFundAccountVpa($key = null)
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $request = $this->buildFundAccountRequest(Type::VPA);
+
+        $this->ba->privateAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $expectedFundAccount = $this->getDefaultFundAccountVPAArray();
+
+        $this->assertArraySelectiveEquals($expectedFundAccount, $content);
+
+        return $content;
+    }
+
+    protected function getDefaultFundAccountVPAArray()
+    {
+        return [
+            'account_type' => 'vpa',
+            'contact_id'   => 'cont_1000000contact',
+            'details'      => [
+                "address" => "jayesh@upi"
+            ],
+        ];
     }
 }

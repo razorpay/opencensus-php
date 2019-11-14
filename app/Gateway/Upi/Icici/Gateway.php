@@ -751,7 +751,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+        $verify->verifyResponseContent = $content;
 
         return $status;
     }

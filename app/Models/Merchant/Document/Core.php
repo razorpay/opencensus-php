@@ -102,16 +102,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($document);
         });
 
-
-        $eventAttributes = [];
-
-        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
-        {
-            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
-        }
-
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
+        $this->pushEventsAndMetrics($merchant, $input);
 
         return $merchantDetailCore->createResponse($merchantDetails);
     }
@@ -224,6 +215,11 @@ class Core extends Base\Core
             $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);
         }
 
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $document->getDocumentType()
+                            ]);
+
         $this->setOcrVerificationStatus($document, $ocrMatchingPercentage);
     }
 
@@ -284,5 +280,22 @@ class Core extends Base\Core
             $ocrVerifiedStatus = OcrVerificationStatus::VERIFIED;
         }
         $document->setOcrVerify($ocrVerifiedStatus);
+    }
+
+    protected function pushEventsAndMetrics(Merchant\Entity $merchant, array $input)
+    {
+        $eventAttributes = [];
+
+        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
+        {
+            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
+        }
+
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $input[Entity::DOCUMENT_TYPE]
+                            ]);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
 }

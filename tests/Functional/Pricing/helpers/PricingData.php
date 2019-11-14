@@ -90,6 +90,182 @@ return [
         ],
     ],
 
+    'testAddBulkPlanRules' => [
+        'request'  => [
+            'content' => [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'netbanking',
+                    'payment_method_type'   => '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'upi',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfn'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esondemand',
+                    'payment_method'        => 'netbanking',
+                    'payment_method_type'   => '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXdcdLaM'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'emandate',
+                    'payment_method_type'   => '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXdcdqaM'
+                ],
+            ],
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM'
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The new rule matches with an active existing rule',
+                            'code'          => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfn',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The payment method type field may be sent only when payment method is card',
+                            'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXdcdLaM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'Not a valid Pricing feature: esondemand',
+                            'code'          => 'SERVER_ERROR_INVALID_ARGUMENT'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXdcdqaM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'Not a valid Payment method for early settlement: emandate',
+                            'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
+                        ]
+                    ],
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAddBulkPlanRulesReplicatePlan' => [
+        'request'  => [
+            'content' => [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'netbanking',
+                    'payment_method_type'   => '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'esautomatic',
+                    'payment_method'        => 'upi',
+                    'payment_method_type'   => '',
+                    'payment_network'       => '',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM'
+                ]
+            ],
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'entity'    => 'collection',
+                'count'     => 3,
+                'items'=> [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM'
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLfM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The new rule matches with an active existing rule',
+                            'code'          => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
+                        ]
+                    ]
+                ]
+            ],
+            'status_code'   => 200,
+        ]
+    ],
+
     'testBulkPricingPlanOfMultipleTypes' => [
         'request'  => [
             'content' => [

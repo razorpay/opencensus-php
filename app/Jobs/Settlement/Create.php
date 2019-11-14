@@ -49,6 +49,13 @@ class Create extends Job
     protected $params;
 
     /**
+     * if the job takes more time then it'll be terminated
+     *
+     * @var int
+     */
+    public $timeout = 900;
+
+    /**
      * Here, we fetch merchantId and their corresponding unsettled transactionIds.
      *
      * @param string $mode

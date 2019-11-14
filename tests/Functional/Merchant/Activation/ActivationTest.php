@@ -39,7 +39,6 @@ class ActivationTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 
         parent::setUp();
-
         $this->setupMockDns();
 
         $this->fixtures->create('org:hdfc_org');
@@ -108,6 +107,17 @@ class ActivationTest extends TestCase
         $this->assertEquals($legalEntity->getMcc(), 5691);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+    }
+
+    public function testPostInstantActivationForUnregisteredRazorxOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
     }
 
     public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
@@ -565,7 +575,7 @@ class ActivationTest extends TestCase
 
     public function testKycUnregisteredCanSubmitWithDL()
     {
-        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT]);
+        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK]);
     }
 
     public function testKycUnregisteredCanSubmitWithVoterId()
@@ -595,8 +605,6 @@ class ActivationTest extends TestCase
         $this->fixtures->create('merchant_detail', $data);
 
         $testSuit = 'validateUnregisteredKycSubmission';
-
-        $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -1387,12 +1395,13 @@ class ActivationTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   ['business_type'           => 2,
                                                    'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'pankaj k',
                                                    'poa_verification_status' => 'verified',
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
         $attribute = [
-            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
+            ValidationEntity::REGISTERED_NAME => "p kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
@@ -1443,6 +1452,27 @@ class ActivationTest extends TestCase
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    public function testFailureBankDetailsVerificationForBankNameMismatchCase()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'puneet jain',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],

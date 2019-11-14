@@ -50,6 +50,10 @@ class CreateMozartGateway extends Migration
 
             $table->json(Mozart::RAW)
                 ->nullable();
+
+            $table->index(Mozart::PAYMENT_ID);
+            $table->index(Mozart::REFUND_ID);
+            $table->index(Mozart::CREATED_AT);
         });
     }
 

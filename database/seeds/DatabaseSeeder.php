@@ -342,7 +342,12 @@ class DatabaseSeeder extends Seeder
                     'contact_name'   => 'Test Account',
                     'contact_email'  => 'test@razorpay.com',
                     'contact_mobile' => '9876543210',
-
+                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_ADDRESS  => 'Flat no 12, opp Adugodi Police Station',
+                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_CITY  => 'Bangalore',
+                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE  => 'KA',
+                    RZP\Models\Merchant\Detail\Entity::BUSINESS_REGISTERED_PIN  => '560030',
+                    RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN  => 'ABCDE1234F',
+                    RZP\Models\Merchant\Detail\Entity::PROMOTER_PAN_NAME  => 'John Doe',
                     'created_at'     => 1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'     => $currentTime,
                     )

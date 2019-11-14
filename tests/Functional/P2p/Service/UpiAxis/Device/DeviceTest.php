@@ -199,8 +199,8 @@ class DeviceTest extends TestCase
         $helper->deregisterDevice();
 
         $this->assertTrue($deviceToken->refresh()->trashed());
-        $this->assertTrue($bankAccount->refresh()->trashed());
-        $this->assertTrue($vpa->refresh()->trashed());
+        $this->assertFalse($bankAccount->refresh()->trashed());
+        $this->assertNull($vpa->refresh()->getBankAccountId());
         $this->assertTrue($transaction->refresh()->isCreated());
         $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }

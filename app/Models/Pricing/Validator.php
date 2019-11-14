@@ -138,6 +138,11 @@ class Validator extends Base\Validator
                 FundAccount\Validation\FundAccountType::validate($method);
 
                 break;
+
+            case Pricing\Feature::ESAUTOMATIC:
+                Payment\Method::validateEsMethod($method);
+
+                break;
         }
     }
 

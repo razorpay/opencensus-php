@@ -335,7 +335,7 @@ class AttemptTest extends TestCase
         $this->assertEquals(1, $content[$channel]['count']);
         $this->assertEquals(1, $content[$channel]['success']);
         $this->assertEquals(0, $content[$channel]['failed']);
-        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $fta['status']);
     }
 
     public function testYesbankRefundToInvalidCard()
@@ -765,5 +765,29 @@ class AttemptTest extends TestCase
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+    }
+
+    public function testSettlementFileCreationAxis2()
+    {
+        Queue::fake();
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->createDataAndAssertInitiateTransferSuccess(
+            Channel::AXIS2, 1, Attempt\Type::SETTLEMENT);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+
+        $fileStore = $this->getEntities("file_store", [
+            'type' => 'fund_transfer_default'
+        ],true);
+
+        $this->assertEquals("1", $fileStore['count']);
+        $this->assertEquals("text/plain", $fileStore['items'][0]['mime']);
+        $this->assertEquals("rzp-api-settlement", $fileStore['items'][0]['bucket']);
     }
 }

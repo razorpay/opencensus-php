@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
@@ -15,7 +16,8 @@ use RZP\Models\FundAccount\Validation\AccountStatus as FundAccountValidationAcco
 class PennyTesting extends Base\Core
 {
 
-    const OCR_MATCH_PERCENTAGE = 'ocr_match_percentage';
+    const OCR_MATCH_PERCENTAGE_WITH_PAN       = 'ocr_match_percentage_with_pan';
+    const OCR_MATCH_PERCENTAGE_WITH_BANK_NAME = 'ocr_match_percentage_with_bank_name';
 
     /**
      * Make penny testing attempt
@@ -107,18 +109,30 @@ class PennyTesting extends Base\Core
      */
     protected function updateBankDetailVerificationStatus(array $input, Entity $merchantDetails): void
     {
-        $ocrMatchingPercentage = get_similar_text_percent($merchantDetails->getPromoterPanName(), $input[Constants::REGISTERED_NAME]);
+        $ocrMatchPercentWithPan = get_similar_text_percent($merchantDetails->getPromoterPanName(), $input[Constants::REGISTERED_NAME]);
+
+        $ocrMatchPercentWithBankAccount = get_similar_text_percent($merchantDetails->getPromoterPanName(), $merchantDetails->getBankAccountName());
 
         $bankAccountValidationStatus = BankDetailsVerificationStatus::FAILED;
 
-        if ($this->isValidBankAccount($input[Constants::ACCOUNT_STATUS], $ocrMatchingPercentage) === true)
+        $isValidBankAccount = $this->isValidBankAccount($input[Constants::ACCOUNT_STATUS],
+                                                           $ocrMatchPercentWithPan,
+                                                           $ocrMatchPercentWithBankAccount);
+
+        if ($isValidBankAccount === true)
         {
             $bankAccountValidationStatus = BankDetailsVerificationStatus::VERIFIED;
         }
 
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $bankAccountValidationStatus
+                            ]);
+
         $this->trace->info(TraceCode::MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING, [
-            Entity::BANK_DETAILS_VERIFICATION_STATUS => $bankAccountValidationStatus,
-            self::OCR_MATCH_PERCENTAGE               => $ocrMatchingPercentage
+            Entity::BANK_DETAILS_VERIFICATION_STATUS  => $bankAccountValidationStatus,
+            self::OCR_MATCH_PERCENTAGE_WITH_PAN       => $ocrMatchPercentWithPan,
+            self::OCR_MATCH_PERCENTAGE_WITH_BANK_NAME => $ocrMatchPercentWithBankAccount
         ]);
 
         $merchantDetails->setBankDetailsVerificationStatus($bankAccountValidationStatus);
@@ -179,13 +193,15 @@ class PennyTesting extends Base\Core
 
     /**
      * @param $accountStatus
-     * @param $ocrMatchingPercentage
+     * @param $ocrMatchPercentWithPan
+     * @param $ocrMatchPercentWithBankAccount
      *
      * @return bool
      */
-    private function isValidBankAccount($accountStatus, $ocrMatchingPercentage): bool
+    private function isValidBankAccount($accountStatus, $ocrMatchPercentWithPan, $ocrMatchPercentWithBankAccount): bool
     {
         return ($accountStatus === FundAccountValidationAccountStatus::ACTIVE) and
-               ($ocrMatchingPercentage >= BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD);
+               ($ocrMatchPercentWithPan >= BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN) and
+               ($ocrMatchPercentWithBankAccount >= BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT);
     }
 }

@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -190,8 +191,9 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array $input
+     * @param array           $input
      * @param Merchant\Entity $merchant
+     *
      * @return Entity
      */
     protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
@@ -204,6 +206,12 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
+            $inputValidator = $validation->getValidator();
+
+            $inputValidator->validateAmount($validation, $input);
+
+            $inputValidator->validateCurrency($validation, $input);
+
             $processor = Processor\Factory::get($validation);
 
             $processor->setDefaultValuesForValidation();
@@ -212,38 +220,63 @@ class Core extends Base\Core
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 
-            $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+            $txn = $this->createTransactionIfApplicable($validation, $merchant, $processor);
 
-            // Transaction might fail because of concurrent request verifying and changing balance at the same time.
-            try
+            if ($txn !== null)
             {
-                $txn = $processor->createTransaction();
+                $validation->setFees($txn->getFee());
+                $validation->setTax($txn->getTax());
+
+                $this->repo->saveOrFail($validation);
             }
-            catch (Exception\LogicException $e)
-            {
-                if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
-                {
-                    $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
-                        null,
-                        null);
-                }
-
-                throw $e;
-            }
-
-            $validation->setFees($txn->getFee());
-
-            $validation->setTax($txn->getTax());
-
-            $this->repo->saveOrFail($validation);
 
             return $validation;
         });
 
         return $validation;
+    }
+
+    /**
+     * @param Entity          $validation
+     * @param Merchant\Entity $merchant
+     * @param Processor\Base  $processor
+     *
+     * @return \RZP\Models\Transaction\Entity|null
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    protected function createTransactionIfApplicable(Entity $validation,
+                                                     Merchant\Entity $merchant,
+                                                     Processor\Base $processor)
+    {
+        if ($validation->getFundAccountType() === FundAccount\Type::VPA)
+        {
+            return null;
+        }
+
+        $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+
+        // Transaction might fail because of concurrent request verifying and changing balance at the same time.
+        try
+        {
+            $txn = $processor->createTransaction();
+        }
+        catch (Exception\LogicException $e)
+        {
+            if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
+            {
+                $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                    null,
+                    null);
+            }
+
+            throw $e;
+        }
+
+        return $txn;
     }
 
     /**
@@ -300,6 +333,12 @@ class Core extends Base\Core
         $processor->updateStatusAfterFtaRecon($input);
     }
 
+    /**
+     * @param Entity          $validation
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
     private function verifyFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant)
     {
         if ($merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
@@ -327,6 +366,7 @@ class Core extends Base\Core
         {
             return;
         }
+
         throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
                 null,

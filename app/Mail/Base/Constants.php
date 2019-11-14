@@ -96,6 +96,6 @@ class Constants
         self::MERCHANT_ONBOARDING     => 'support@razorpay.com',
         self::LINKED_ACCOUNT_REVERSAL => 'Linked Account Refunds File',
         self::RAZORPAY_X              => 'RazorpayX',
-        self::CAPITAL_SUPPORT         => 'Razorpay Capital Team'
+        self::CAPITAL_SUPPORT         => 'Razorpay Capital'
     ];
 }

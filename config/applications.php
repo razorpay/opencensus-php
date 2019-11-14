@@ -273,7 +273,6 @@ return [
         'api_key' => env('PINCODE_SEARCH_API_KEY')
     ],
 
-
     'shield' => [
         'mock'    => env('SHIELD_MOCK', false),
         'url'     => env('SHIELD_BASE_URL'),
@@ -341,14 +340,18 @@ return [
         'mock'   => env('FTS_MOCK', false),
         'secret' => env('APP_FTS_SECRET'),
         'test'   => [
-            'url'               => env('FTS_URL_TEST'),
-            'fts_key'           => env('FTS_KEY_TEST'),
-            'fts_secret'        => env('FTS_SECRET_TEST'),
+            'url'                     => env('FTS_URL_TEST'),
+            'fts_key'                 => env('FTS_KEY_TEST'),
+            'fts_secret'              => env('FTS_SECRET_TEST'),
+            'fts_dashboard_key'       => env('FTS_DASHBOARD_KEY_TEST'),
+            'fts_dashboard_secret'    => env('FTS_DASHBOARD_SECRET_TEST'),
         ],
         'live'   => [
-            'url'               => env('FTS_URL_LIVE'),
-            'fts_key'           => env('FTS_KEY_LIVE'),
-            'fts_secret'        => env('FTS_SECRET_LIVE'),
+            'url'                     => env('FTS_URL_LIVE'),
+            'fts_key'                 => env('FTS_KEY_LIVE'),
+            'fts_secret'              => env('FTS_SECRET_LIVE'),
+            'fts_dashboard_key'       => env('FTS_DASHBOARD_KEY_LIVE'),
+            'fts_dashboard_secret'    => env('FTS_DASHBOARD_SECRET_LIVE'),
         ],
     ],
 
@@ -396,4 +399,8 @@ return [
         ],
     ],
 
+
+    'automation' => [
+        'secret' => env('AUTOMATION_API_SECRET'),
+    ],
 ];

@@ -45,6 +45,18 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
+
+    const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
+
+    const FUND_ACCOUNT_STATUS_FETCH_URI  = '/admin/account/status';
+
+    const FUND_TRANSFER_STATUS_FETCH_URI = '/admin/transfer/status';
+
+    const FUND_TRANSFER_ATTEMPTS_UPDATE_URI = '/admin/attempts/update';
+
+    const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/admin/transfers/status';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
@@ -295,5 +307,12 @@ class Base
         $response->body = $content;
 
         return $response;
+    }
+
+    protected function setDashboardAuth()
+    {
+        $this->key     = $this->config[$this->mode]['fts_dashboard_key'];
+
+        $this->secret  = $this->config[$this->mode]['fts_dashboard_secret'];
     }
 }

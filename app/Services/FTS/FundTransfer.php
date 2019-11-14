@@ -2,6 +2,8 @@
 
 namespace RZP\Services\FTS;
 
+use Requests;
+
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -224,12 +226,12 @@ class FundTransfer extends Base
      */
     protected function addBankAccountDetails(array $request):array
     {
-        $ftsAccountId = $this->fta->bankAccount->getFtsFundAccountId();
-
-        if (empty($ftsAccountId) === false)
-        {
-            return $this->addFTSFundAccountId($request, $ftsAccountId);
-        }
+//        $ftsAccountId = $this->fta->bankAccount->getFtsFundAccountId();
+//
+//        if (empty($ftsAccountId) === false)
+//        {
+//            return $this->addFTSFundAccountId($request, $ftsAccountId);
+//        }
 
         $accountType = $this->fta->bankAccount->getAccountType();
 
@@ -314,7 +316,7 @@ class FundTransfer extends Base
     {
         $this->updateFTA($responseBody);
 
-        $this->updatePaymentInstrumentByType($responseBody, $type);
+//        $this->updatePaymentInstrumentByType($responseBody, $type);
     }
 
     /**
@@ -336,27 +338,27 @@ class FundTransfer extends Base
         $this->updateSource($ftsTransferId);
     }
 
-    /**
-     * @param array $responseBody
-     * @param string $type
-     */
-    protected function updatePaymentInstrumentByType(array $responseBody, string $type)
-    {
-        switch ($type)
-        {
-            case Constants::BANK_ACCOUNT:
-                (new BankAccountCore)->updateBankAccountWithFtsId(
-                    $this->fta->bankAccount,
-                    $responseBody[Constants::FUND_ACCOUNT_ID]);
-
-                break;
-
-            case Constants::VPA:
-                (new VPACore)->updateVpaWithFtsId($this->fta->vpa, $responseBody[Constants::FUND_ACCOUNT_ID]);
-
-                break;
-        }
-    }
+//    /**
+//     * @param array $responseBody
+//     * @param string $type
+//     */
+//    protected function updatePaymentInstrumentByType(array $responseBody, string $type)
+//    {
+//        switch ($type)
+//        {
+//            case Constants::BANK_ACCOUNT:
+//                (new BankAccountCore)->updateBankAccountWithFtsId(
+//                    $this->fta->bankAccount,
+//                    $responseBody[Constants::FUND_ACCOUNT_ID]);
+//
+//                break;
+//
+//            case Constants::VPA:
+//                (new VPACore)->updateVpaWithFtsId($this->fta->vpa, $responseBody[Constants::FUND_ACCOUNT_ID]);
+//
+//                break;
+//        }
+//    }
 
     /**
      * @param $ftsTransferId
@@ -392,7 +394,7 @@ class FundTransfer extends Base
                     'card_id' => $card->getId()
                 ]);
 
-            (new SlackNotification())->send(
+            (new SlackNotification)->send(
                 'Vault token missing',
                 [
                     'card_id' => $card->getId()
@@ -545,6 +547,16 @@ class FundTransfer extends Base
         return $sla;
     }
 
+    public function bulkUpdateFtsAttempts(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
+            Requests::PATCH,
+            $input);
+    }
+
     public function shouldAllowTransfersViaFts()
     {
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
@@ -643,5 +655,15 @@ class FundTransfer extends Base
         }
 
         return $isHoliday;
+    }
+
+    public function getBulkTransferStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
+            Requests::POST,
+            $input);
     }
 }
