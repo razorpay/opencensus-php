@@ -178,6 +178,8 @@ class Job implements ShouldQueue
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
 
+        $app['basicauth']->init();
+
         //
         // We need to set the appAuth, if it was set when this job was pushed to the queue.
         // This is needed when we want to create child recon batches while processing a
