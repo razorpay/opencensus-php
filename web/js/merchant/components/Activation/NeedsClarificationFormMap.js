@@ -1,12 +1,18 @@
+import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
 export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
   const allFieldsHash = {};
-  const kycReasonDescriptions = {};
+  const kycFieldsMap = {};
   const kycTabContent = [];
 
   const addField = f => {
     allFieldsHash[f.name || f._name] = f;
   };
-
+  const addToKYCTab = field => {
+    if (!Boolean(kycFieldsMap[field])) {
+      kycTabContent.push(allFieldsHash[field]);
+      kycFieldsMap[field] = true;
+    }
+  };
   const scanFields = fields => {
     for (let f of fields) {
       if (Array.isArray(f)) {
@@ -17,6 +23,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     }
   };
   scanFields(allFieldsMap);
+  scanFields(ndcFields);
 
   for (let field in needsKyc.clarification_reasons) {
     let reasons = [];
@@ -28,28 +35,26 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
           );
         }
       }
-      allFieldsHash[field].reasons = reasons;
+
       if (
-        typeof allFieldsHash[field].dependsOnFields !== 'undefined' &&
-        Array.isArray(allFieldsHash[field].dependsOnFields)
+        typeof allFieldsHash[field].linkedfields !== 'undefined' &&
+        Array.isArray(allFieldsHash[field].linkedfields)
       ) {
         //Push all depending fields first
-        allFieldsHash[field].dependsOnFields.forEach(dField => {
-          kycTabContent.push(allFieldsHash[dField]);
+        allFieldsHash[field].linkedfields.forEach((dField, i) => {
+          //Add all the reasons for this fields to first dependent field only
+          if (i === 0) {
+            allFieldsHash[dField].reasons = reasons;
+          }
+          addToKYCTab(dField);
         });
+      } else {
+        //Add reasons to main field if there are no dependent fields
+        allFieldsHash[field].reasons = reasons;
       }
-      kycTabContent.push(allFieldsHash[field]);
+      addToKYCTab(field);
     }
   }
-
-  console.log(
-    `Dynamically generate`,
-    // allFieldsMap,
-    // needsKyc,
-    // kycReasonDescriptions,
-    // allFieldsHash,
-    kycTabContent
-  );
   return kycTabContent;
 };
 

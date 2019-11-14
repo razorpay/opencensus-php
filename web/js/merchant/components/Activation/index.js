@@ -181,7 +181,12 @@ export default class ActivationWizard extends React.Component {
         ? 'KYC Form'
         : 'Activation Form';
   }
-
+  isNeedsClarificationMode() {
+    return this.props.data.activation_status === 'needs_clarification';
+  }
+  isOnKYCTab() {
+    return this.state.activeTab === NEEDS_CLARIFICATION_STEP;
+  }
   prepareTabs(props) {
     const { tracking } = props;
     if (this.isLinkedAccountForm) {
@@ -241,54 +246,59 @@ export default class ActivationWizard extends React.Component {
       SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
+    const prepareFileFields = a => {
+      if (a._cmp === undefined || a._cmp === Input.File) {
+        a._cmp = Input.File;
+        a._accept = ['pdf', 'image'];
+        a._showAcceptInfo = false;
+        a._showStagedFileStatus = false;
+
+        if (!a.hasOwnProperty('required')) {
+          a.required = true;
+        }
+
+        a.onChange = (file, progressTracker) => {
+          const filename = a.getName ? a.getName(this) : a.name;
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+              name: filename,
+            })
+          );
+
+          return props
+            .saveFile(
+              filename,
+              file,
+              progressTracker,
+              a.destinationUrl || null,
+              a.uploadAs || null
+            )
+            .then(() => {
+              updateHubSpotContactsProperties({
+                [filename]: true,
+              });
+
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.upload_document', {
+                  name: filename,
+                })
+              );
+
+              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              this.updateFileInDirty(filename);
+            });
+        };
+      }
+    };
     /*
     * All document fields in activation form to have same footprint.
     * Adding onChange listener to all document upload fields.
     * */
+
     DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
-        if (a._cmp === undefined || a._cmp === Input.File) {
-          a._cmp = Input.File;
-          a._accept = ['pdf', 'image'];
-          a._showAcceptInfo = false;
-          a._showStagedFileStatus = false;
-
-          if (!a.hasOwnProperty('required')) {
-            a.required = true;
-          }
-
-          a.onChange = (file, progressTracker) => {
-            const filename = a.getName ? a.getName(this) : a.name;
-            tracking.trackEvent(
-              window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
-                name: filename,
-              })
-            );
-
-            return props
-              .saveFile(
-                filename,
-                file,
-                progressTracker,
-                a.destinationUrl || null
-              )
-              .then(() => {
-                updateHubSpotContactsProperties({
-                  [filename]: true,
-                });
-
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('kyc.upload_document', {
-                    name: filename,
-                  })
-                );
-
-                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-                this.updateFileInDirty(filename);
-              });
-          };
-        }
-      });
+      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
+    NEEDS_CLARIFICATION_STEP &&
+      FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
 
   componentDidUpdate() {
@@ -724,14 +734,11 @@ export default class ActivationWizard extends React.Component {
   }
 
   get isFormLocked() {
-    return (
-      !!this.props.data.locked ||
-      this.props.data.activation_status === 'needs_clarification'
-    );
+    return !!this.props.data.locked || this.isNeedsClarificationMode();
   }
 
   get hasFilledClarificationDetails() {
-    if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+    if (this.isOnKYCTab()) {
       const needsClarificationContent =
         FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP];
       const needsClarificationFieldNames = needsClarificationContent.map(
@@ -1428,10 +1435,7 @@ export default class ActivationWizard extends React.Component {
             let secondaryMsg = 'For any clarifications, you can';
             const ticketLink = <Link to="#ticket">write to support</Link>;
 
-            if (
-              showFormDisabledAlert &&
-              this.state.activeTab !== NEEDS_CLARIFICATION_STEP
-            ) {
+            if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated) {
                 // **1. Alert: Account Activated
 
@@ -1442,7 +1446,7 @@ export default class ActivationWizard extends React.Component {
                     For any changes, please {ticketLink}.
                   </React.Fragment>
                 );
-              } else if (data.activation_status === 'needs_clarification') {
+              } else if (this.isNeedsClarificationMode()) {
                 // **2. Alert: Need clarification
                 let clarificationMode = this.props.data.clarification_mode;
                 let subMsg;
@@ -1618,7 +1622,7 @@ export default class ActivationWizard extends React.Component {
             )}
           </footer>
         )}
-        {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
+        {this.isOnKYCTab() && (
           <footer>
             <AsyncBtn.Primary
               disabled={this.hasFilledClarificationDetails}
@@ -1736,7 +1740,7 @@ function ActivationField(field) {
     /*
     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
     * */
-    if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+    if (this.isOnKYCTab()) {
       defaultValue = null;
     } else {
       defaultValue = this.state.dirty[key] || this.props.data[key];
@@ -1756,7 +1760,7 @@ function ActivationField(field) {
     isComponentDisabled = true;
   }
   //Always keep fields on needs clarification unlocked
-  if (this.state.activeTab === NEEDS_CLARIFICATION_STEP) {
+  if (this.isOnKYCTab()) {
     isComponentDisabled = false;
   }
   // Show bank account number if it's activated/locked
@@ -1803,7 +1807,7 @@ function ActivationField(field) {
   }
   return (
     <>
-      {this.state.activeTab === NEEDS_CLARIFICATION_STEP &&
+      {this.isOnKYCTab() &&
         rest.reasons &&
         rest.reasons.length > 0 && (
           <div className="ndc-reasons">

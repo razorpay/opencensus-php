@@ -256,7 +256,7 @@ export default class ActivationContainer extends React.Component {
     this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
-  saveFile = (fieldName, file, progressTracker, destinationUrl) => {
+  saveFile = (fieldName, file, progressTracker, destinationUrl, uploadAs) => {
     const url =
       Boolean(destinationUrl) &&
       typeof destinationUrl === 'string' &&
@@ -277,13 +277,15 @@ export default class ActivationContainer extends React.Component {
       form_12a_url: 'form_12a_url',
       form_80g_url: 'form_80g_url',
     };
-    //If field name doesn't exist in mapping use document type and generice file name
-    if (!Boolean(fieldNameMapping[fieldName])) {
+    if (typeof uploadAs === 'string') {
+      fieldName = uploadAs;
+    }
+    //If field name doesn't exist in mapping use document type and generic file name
+    if (Boolean(uploadAs) || !Boolean(fieldNameMapping[fieldName])) {
       formData.append('document_type', fieldName);
       fieldName = 'file';
     }
     formData.append(fieldName, file);
-
     return merchantFetch({
       url: url,
       method: 'post',
