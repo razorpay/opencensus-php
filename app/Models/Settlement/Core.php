@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
@@ -352,7 +353,10 @@ class Core extends Base\Core
      * @param int                  $timestamp
      * @return array
      */
-    public function getMerchantSettlementAmount(MerchantModel\Entity $merchant, Balance\Entity $balance, int $timestamp = 0)
+    public function getMerchantSettlementAmount(
+        MerchantModel\Entity $merchant,
+        Balance\Entity $balance,
+        int $timestamp = 0)
     {
         $isMerchantSettlementScheduled = ($timestamp !== 0);
 
@@ -372,7 +376,9 @@ class Core extends Base\Core
         // In case merchant is not bucketed and has valid settlement amount
         // then enqueue him for bucketing so the settlement can go as expected
         //
-        if (($isMerchantSettlementScheduled === false) and ($settlementAmount <= $balance->getBalance()))
+        if (($isMerchantSettlementScheduled === false) and
+            ($settlementAmount <= $balance->getBalance()) and
+            ($settlementAmount >= 100))
         {
             Bucket::dispatch($this->mode, '', $merchant->getId(), $timestamp->getTimestamp());
         }
@@ -395,8 +401,8 @@ class Core extends Base\Core
         //
         // If there is not future bucket for settlement for the merchant then consider the current timestamp
         //
-        $timestamp = ($timestamp === 0) ?
-            $timestamp = Carbon::now(Timezone::IST) : Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $timestamp = ($timestamp === 0) ? Preference::getCeilTimestamp(Carbon::now(Timezone::IST)) :
+                                            Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
         //
         // If the timestamp given is a holiday then calculate the next working day
