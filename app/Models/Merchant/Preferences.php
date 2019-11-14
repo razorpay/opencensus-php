@@ -113,6 +113,10 @@ class Preferences
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
     const MID_BOB                   = 'CxOgfvYhxGztjJ';
+    const MID_IMPACT_SCHOOL_ARCH    = 'D89MU9wL8ptnEM';
+    const MID_VEL_TECH_HIGH_TECH    = 'CxrfYIK8mrctAN';
+    const MID_MSRIT_EXAM_FEES_VFH   = 'CxqX32TCfZaHnQ';
+    const MID_INST_ENG_AND_TECH_LKO = 'D88kPwDCDxbBu3';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
@@ -276,6 +280,10 @@ class Preferences
         self::MID_SDM_YOGA_AND_NATURE,
         self::MID_ARMY_PUBLIC_SCHOOL,
         self::MID_MSR_LAW_CLG_VFH,
+        self::MID_IMPACT_SCHOOL_ARCH,
+        self::MID_VEL_TECH_HIGH_TECH,
+        self::MID_MSRIT_EXAM_FEES_VFH,
+        self::MID_INST_ENG_AND_TECH_LKO,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [
