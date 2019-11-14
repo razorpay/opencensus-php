@@ -631,6 +631,13 @@ class FundTransfer extends Base
             }
         }
 
+        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
+        {
+            $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                      ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+        }
+
         return [false, 'NEFT/RTGS transfer check failed'];
     }
 
@@ -647,9 +654,8 @@ class FundTransfer extends Base
             $isHoliday = true;
         }
 
-        if ((($sourceType === FundTransferAttempt\Type::PAYOUT) and
-            ($this->fta->source->isBalanceTypeBanking() === true)) and
-            (TransferHoliday::isWorkingDay($currentDateTime) === true))
+        if (($sourceType === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
         {
             $isHoliday = false;
         }
