@@ -1,11 +1,11 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import RTracking from 'react-tracking';
 
-import Pager from 'rzp/ui/Pager';
-import Spinner from 'rzp/ui/Spinner';
+import Pager from 'common/ui/Pager';
+import Spinner from 'common/ui/Spinner';
 import { withRouter } from 'react-router-dom';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
@@ -18,11 +18,11 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentPagesV2List from './V2';
 import PaymentPagesV3List from './V3';
 
-import { populateRPLReduxList } from 'merchant/modules/invoices/list';
+import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import {
   getIsPaymentPagesEnabled,
@@ -31,10 +31,10 @@ import {
 import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
 
 import { fetchPaymentPagesList } from '../model';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { showNotification } from 'rzp/modules/notifications';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 @withRouter
 @connect(

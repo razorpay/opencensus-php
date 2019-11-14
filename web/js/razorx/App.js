@@ -1,24 +1,27 @@
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { ShowWhenRoute } from 'razorx/components/ShowWhen';
-import AsyncButton from 'ui/AsyncButton';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 
-import { notifyError } from 'common/modal';
+import { notifyError } from 'razorx/components/Modal';
 import MainNavLink from 'razorx/components/MainNavLink';
 
 import user, { org } from 'razorx/user';
 
-import Experiments from './experiments';
-import Features from './features';
-import WorkflowRequestsList from './workflow_requests/List';
-import WorkflowRequestsEntity from './workflow_requests/Entity';
-import MerchantEvaluation from './merchant_evaluation';
+import Experiments from 'razorx/views/Experiments';
+import Features from 'razorx/views/Features';
+import WorkflowRequestsList from 'razorx/views/WorkflowRequests/List';
+import WorkflowRequestsEntity from 'razorx/views/WorkflowRequests/Entity';
+import MerchantEvaluation from 'razorx/views/MerchantEvaluation';
 
-import ModalContainer, { openSlider, closeSlider } from 'common/modal';
+import ModalContainer, {
+  openSlider,
+  closeSlider,
+} from 'razorx/components/Modal';
 
-import fetch from 'common/fetch';
+import adminFetch from 'razorx/helpers/admin-fetch';
 
 @withRouter
 export default class RazorXApp extends React.Component {
@@ -27,7 +30,7 @@ export default class RazorXApp extends React.Component {
   }
 
   handleLogout = () => {
-    return fetch({
+    return adminFetch({
       url: '/admin/user/logout',
     }).then(r => {
       window.location.reload();

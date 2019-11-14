@@ -1,4 +1,4 @@
-import TableBody from 'rzp/ui/TableBody';
+import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const CustomersListItem = ({ customer, onEdit }) => {

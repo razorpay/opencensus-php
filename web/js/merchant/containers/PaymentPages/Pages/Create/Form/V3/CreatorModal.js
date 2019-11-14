@@ -1,5 +1,5 @@
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { classList } from 'common/util';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { classList } from 'common/utils/rzp-utils';
 
 /* Position-awared Modal which opens over the field being edited / in the middle of screen */
 const CreatorModal = ({

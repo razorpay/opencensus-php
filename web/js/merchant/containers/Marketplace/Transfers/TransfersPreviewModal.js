@@ -1,6 +1,9 @@
-import TimedSlider, { TimedSlide, TimedSliderTabs } from 'rzp/ui/TimedSlider';
+import TimedSlider, {
+  TimedSlide,
+  TimedSliderTabs,
+} from 'common/ui/TimedSlider';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 export default ({ closeModal }) => (
   <div class="TransfersPreviewModal">

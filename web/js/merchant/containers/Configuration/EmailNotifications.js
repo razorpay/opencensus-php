@@ -2,9 +2,9 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import { showNotification } from 'rzp/modules/notifications';
-import { required } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { required } from 'common/utils/validators';
 
 @connect(state => state.config, { showNotification })
 @reduxForm({})

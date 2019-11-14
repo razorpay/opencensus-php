@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { classList } from 'common/util';
+import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
+import { classList } from 'common/utils/rzp-utils';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import { sendLink } from '../../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Definition from 'rzp/ui/Definition';
+import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { addPollInstance, saveReportConfigs } from 'merchant/modules/reports';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 import { exportReportCSV } from '../../model';
 
@@ -28,7 +28,7 @@ import PPEmbedButtonView from '../../Modals/EmbedButton';
 
 import PaymentsList from './PaymentsList';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 // import dummyEntityData from '../../Create/dummy_paymentpageentity';
 

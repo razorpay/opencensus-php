@@ -1,4 +1,4 @@
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 export default props => (
   <Button.Transparent class="btn-link remove-btn" {...props}>

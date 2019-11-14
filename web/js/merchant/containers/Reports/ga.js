@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { setTrackData } from 'common/utils/googleAnalytics';
 import moment from 'moment';
 
 const track = setTrackData({ eventCategory: 'Dashboard - Reports V2' });

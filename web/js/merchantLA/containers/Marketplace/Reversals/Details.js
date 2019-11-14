@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchReversal } from 'merchantLA/modules/marketplace/reversal';
+import { fetchReversal } from 'merchantLA/reducers/marketplace/reversal';
 import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
 
 import setGaTrack from './ga';

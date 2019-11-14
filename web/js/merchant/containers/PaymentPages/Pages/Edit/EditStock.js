@@ -1,6 +1,6 @@
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-import { isInteger } from 'rzp/utils/validators';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { isInteger } from 'common/utils/validators';
 
 export default class EditStock extends React.Component {
   state = this.resetState(this.props);

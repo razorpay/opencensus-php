@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/containers/Settlements/ScheduledModal';
 import { connect } from 'react-redux';
-import * as ModalActions from 'rzp/modules/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcement';
 
 @connect(state => ({}), {

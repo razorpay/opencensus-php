@@ -2,25 +2,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ItemsList from 'merchant/components/Items/ItemsList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as ModalActions from 'rzp/modules/modals';
-import * as ItemActions from 'merchant/modules/items';
-import { fetchInvoices } from 'merchant/modules/invoices/list';
-import { luminateRow } from 'merchant/modules/app';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as ItemActions from 'merchant/reducers/items';
+import { fetchInvoices } from 'merchant/reducers/invoices/list';
+import { luminateRow } from 'merchant/reducers/app';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
-import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
+} from 'merchant/reducers/onboarding';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { stringifyQueryParams } from 'common/utils/rzp-utils';
 
 @connect(
   state => ({

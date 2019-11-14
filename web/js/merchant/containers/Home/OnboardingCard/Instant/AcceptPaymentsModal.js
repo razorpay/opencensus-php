@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import ProductsModal from 'merchant/components/ProducsModal';
 import TransactionsModal from 'merchant/components/TransactionsHelperModal';
 import { trackTransactionsHelper, trackProductsModal } from './ga';
-import { showProductsModal, hideProductsModal } from 'merchant/modules/home';
+import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 
 let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
 

@@ -1,4 +1,4 @@
-import colors, { namedColors } from 'rzp/utils/chart/colors';
+import colors, { namedColors } from 'common/utils/chart/colors';
 
 const API_ERROR = {
     error: 'An error occured while fetching data from the server',

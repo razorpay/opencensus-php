@@ -1,13 +1,13 @@
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import Definition from 'rzp/ui/Definition';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import Definition from 'common/ui/Definition';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
-import Table from 'rzp/ui/Table/Index';
-import { paymentId, amount } from 'rzp/ui/item/pair';
+import Table from 'common/ui/Table/Index';
+import { paymentId, amount } from 'common/ui/item/pair';
 
 export default props => {
   let {

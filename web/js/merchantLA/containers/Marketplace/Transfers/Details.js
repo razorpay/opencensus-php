@@ -7,10 +7,10 @@ import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details
 import {
   fetchTransfer,
   fetchReversals,
-} from 'merchantLA/modules/marketplace/transfer';
-import * as ModalActions from 'rzp/modules/modals';
-import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import { showNotification } from 'rzp/modules/notifications';
+} from 'merchantLA/reducers/marketplace/transfer';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import setGaTrack from './ga';
 
 const gaEvents = setGaTrack('LA Dashboard - Transfers');

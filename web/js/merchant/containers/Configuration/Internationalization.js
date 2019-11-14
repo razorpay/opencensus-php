@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import { Link } from 'react-router-dom';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import { merchantFetch } from 'merchant/utils/ajax';
-import Alert from 'component/Alert';
+import Alert from 'common/new-ui/Alert';
 import User from 'merchant/models/User';
 
 const CUSTOM_MSG = {

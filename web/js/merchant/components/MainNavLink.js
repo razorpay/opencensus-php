@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { setActivePageName, toggleMobileMenu } from 'merchant/modules/app';
+import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
 
 @connect(
   state => {

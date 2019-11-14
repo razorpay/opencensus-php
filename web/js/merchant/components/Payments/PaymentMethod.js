@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import React from 'react';
 
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { titleCase, getEMI } from 'rzp/utils/rzp-utils';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { titleCase, getEMI } from 'common/utils/rzp-utils';
 
 /*
  * Design:

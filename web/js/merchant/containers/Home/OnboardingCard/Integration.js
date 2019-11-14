@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
-import LocalStorageService from 'rzp/utils/localStorage';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { titleCase } from 'common/utils/rzp-utils';
+import LocalStorageService from 'common/utils/localStorage';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import {

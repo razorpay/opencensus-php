@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount } from 'common/utils/rzp-utils';
 
 export default class Settlement extends GenericEntity {
   resourceUrl = 'settlements';

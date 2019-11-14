@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import Payment from './Payment';
 import ajax from 'merchant/utils/ajax';
 

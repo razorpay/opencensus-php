@@ -1,25 +1,23 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import Form from 'component/Form';
-import Spinner from 'rzp/ui/Spinner';
-import { ModalAsideNav } from 'component/Wizard';
-import Button, { AsyncBtn } from 'component/Button';
-import { Modal, ModalContent } from 'component/Modal';
+import Form from 'common/new-ui/Form';
+import Spinner from 'common/ui/Spinner';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
 
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, stringToObj } from 'common/utils/rzp-utils';
 
-import { fetchPlans } from 'merchant/modules/plans';
-import { fetchItems } from 'merchant/modules/items';
+import { fetchPlans } from 'merchant/reducers/plans';
+import { fetchItems } from 'merchant/reducers/items';
 import {
   fetchSubscription,
   updateSubscription,
   fetchScheduledChanges,
-} from 'merchant/modules/subscriptions';
+} from 'merchant/reducers/subscriptions';
 
-import { showNotification } from 'rzp/modules/notifications';
-
-import { stringToObj } from 'common/util';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';

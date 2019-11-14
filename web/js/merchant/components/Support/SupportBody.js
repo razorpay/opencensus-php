@@ -1,7 +1,7 @@
 import { Component } from 'react';
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 
-import { getExperiment, classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/containers/Support/ga';
 
 export default class SupportBody extends Component {
@@ -65,7 +65,12 @@ export default class SupportBody extends Component {
   };
 
   render() {
-    const { notifyCount, isOpened, onToggle } = this.props;
+    const {
+      notifyCount,
+      isOpened,
+      onToggle,
+      isSupportCallEnabled,
+    } = this.props;
     const { handleClick, openDashboardGuide } = this;
     let shouldDisable = !isWorkingDay();
 
@@ -109,7 +114,7 @@ export default class SupportBody extends Component {
               </li>
             ) : null
           ) : null}
-          {getExperiment('support_call') === 'on' ? (
+          {isSupportCallEnabled ? (
             <li
               class={`support-item p-all call ${
                 shouldDisable ? 'disabled' : ''

@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
-import { create } from 'merchant/modules/submerchant';
-import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
+import { create } from 'merchant/reducers/submerchant';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
 
-import { required } from 'rzp/utils/validators';
+import { required } from 'common/utils/validators';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import { trackAddNewMerchantEvents } from '../ga';

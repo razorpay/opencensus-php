@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import Amount from 'rzp/ui/Amount';
-import TableBody from 'rzp/ui/TableBody';
-import Time from 'rzp/ui/Time';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Amount from 'common/ui/Amount';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { trackListActions } from '../ga';
 

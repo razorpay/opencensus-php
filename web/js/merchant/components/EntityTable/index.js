@@ -1,8 +1,8 @@
 import moment from 'moment';
 
-import Banner from 'rzp/ui/Banner';
-import DataTable from 'rzp/ui/Table/DataTable';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import Banner from 'common/ui/Banner';
+import DataTable from 'common/ui/Table/DataTable';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 const dateFormat = 'DD MMM YYYY';
 

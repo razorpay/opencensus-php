@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { normalizeBoolean } from 'rzp/utils/rzp-utils';
+import { normalizeBoolean } from 'common/utils/rzp-utils';
 
 export default class Webhook extends GenericEntity {
   resourceUrl = 'webhooks';

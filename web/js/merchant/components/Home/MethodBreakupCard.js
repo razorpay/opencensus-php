@@ -1,5 +1,5 @@
-import { titleCase, colors } from 'rzp/utils/rzp-utils';
-import LoaderDots from 'rzp/ui/LoaderDots';
+import { titleCase, colors } from 'common/utils/rzp-utils';
+import LoaderDots from 'common/ui/LoaderDots';
 
 export default ({ data, loading, error }) => {
   let methodBreakup = [null];

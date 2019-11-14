@@ -1,8 +1,8 @@
 import Reportsx from 'merchant_common/containers/Reports';
 import store from 'merchant/store';
 import * as datax from 'merchant/containers/Reports/data';
-import * as modelActions from 'merchant/modules/reports';
-import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
+import * as modelActions from 'merchant/reducers/reports';
+import { fetchAccountsApi } from 'merchant/reducers/marketplace/accounts';
 import * as ga from './ga';
 
 // TODO: need better method for an empty custom configs
