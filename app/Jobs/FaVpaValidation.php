@@ -60,6 +60,7 @@ class FaVpaValidation extends Job
             }
 
             // payment service requires merchant to be set
+            app('basicauth')->setModeAndDbConnection($this->mode);
             app('basicauth')->setMerchantById($fundAccount->getMerchantId());
 
             $vpaInput = ['vpa' => $fundAccount->account->getAddress()];
