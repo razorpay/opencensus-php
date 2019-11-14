@@ -1116,7 +1116,6 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::CARDLESS_EMI,
