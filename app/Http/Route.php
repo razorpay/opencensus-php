@@ -1306,6 +1306,7 @@ final class Route
         'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
+        'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
 
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
@@ -2041,6 +2042,7 @@ final class Route
         'd2c_bureau_details_fetch',
         'd2c_bureau_details_patch',
         'd2c_bureau_details_otp_submit',
+        'd2c_bureau_reports_patch',
         'update_partner_type',
     ];
 

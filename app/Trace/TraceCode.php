@@ -2240,6 +2240,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
     const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
+    const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
