@@ -40,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'shared_terminal',
         'auth_type',
         'bharat_qr',
         'direct_settlement',
@@ -602,6 +603,39 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    public function sharedTerminalFilter(Terminal\Entity $currentTerminal, array $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        $currentGateway = $currentTerminal->getGateway();
+
+        $directTerminalsOnSameGateway = false;
+
+        foreach ($applicableTerminals as $terminal)
+        {
+            if (($terminal->isDirectForMerchant() === true) and
+                ($terminal->getGateway() === $currentGateway))
+            {
+                // breaking once we get direct terminal on the same gateway as of current terminal
+                $directTerminalsOnSameGateway = true;
+                break;
+            }
+        }
+
+        if (($directTerminalsOnSameGateway === true) and
+             ($currentTerminal->isShared() === true))
+        {
+            return false ;
         }
 
         return true;
