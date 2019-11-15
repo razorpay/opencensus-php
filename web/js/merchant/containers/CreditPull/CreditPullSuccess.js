@@ -9,6 +9,7 @@ import CreditPullAdditionalReport from './CreditPullAdditionalReport';
 import { showNotification } from 'rzp/modules/notifications';
 import CloseReasons from '../../components/CloseReasons';
 import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
+import ajax from 'merchant/utils/ajax';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -84,24 +85,44 @@ export default class CreditPullSuccess extends Component {
       eventAction: consent === 0 ? 'Not Interested' : 'Interested',
     });
     this.props.closeModal();
-    if (consent === 0) {
-      this.props.openModal({
-        component: (
-          <CloseReasons
-            eventCategory="Dashboard - D2C"
-            eventAction="Reason- Not Interested"
-            closeReasons={CLOSE_OPTIONS}
-          />
-        ),
-        size: 'small',
+    ajax(
+      {
+        url: `d2c_bureau_reports/${this.props.reportId}`,
+        method: 'patch',
+        data: {
+          interested: consent,
+        },
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(() => {
+        if (consent === 0) {
+          this.props.openModal({
+            component: (
+              <CloseReasons
+                eventCategory="Dashboard - D2C"
+                eventAction="Reason- Not Interested"
+                closeReasons={CLOSE_OPTIONS}
+              />
+            ),
+            size: 'small',
+          });
+        } else {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Recorded your feedback',
+            hidePrevious: true,
+          });
+        }
+      })
+      .catch(() => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Error while recording your feedback',
+          hidePrevious: true,
+        });
       });
-    } else {
-      this.props.showNotification({
-        type: 'success',
-        message: 'Recorded your feedback',
-        hidePrevious: true,
-      });
-    }
   };
 
   render() {

@@ -191,10 +191,15 @@ export default class CreditPullModal extends Component {
               mobile,
               tokenStuff,
               merchantId
-            ).then(([{ report, score, max_loan_amount }, userResponse]) => {
-              this.props.updateSession({ user: userResponse.data });
-              this.openReportScreen(report, score, max_loan_amount);
-            });
+            ).then(
+              ([
+                { report, score, max_loan_amount, id: reportId },
+                userResponse,
+              ]) => {
+                this.props.updateSession({ user: userResponse.data });
+                this.openReportScreen(report, score, max_loan_amount, reportId);
+              }
+            );
           }}
           onResend={() => {
             return this.sendReqForOtp(mobile, tokenStuff).then(() => {
@@ -223,13 +228,14 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = (report, score, maxLoan) => {
+  openReportScreen = (report, score, maxLoan, reportId) => {
     this.props.openModal({
       component: (
         <CreditPullSuccess
           score={score}
           report={JSON.parse(report)}
           maxLoan={maxLoan}
+          reportId={reportId}
         />
       ),
       size: 'large',
