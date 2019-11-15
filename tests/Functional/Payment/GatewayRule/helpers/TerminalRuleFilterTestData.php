@@ -1355,7 +1355,6 @@ return [
         'expected_terminal_ids' => [
             '1000HdfcDirect',
             '1000AxisDirect',
-            '1000HdfcShared',
         ],
     ],
 

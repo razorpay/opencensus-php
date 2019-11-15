@@ -1255,7 +1255,7 @@ class TerminalSelectionTest extends TestCase
             'merchant_id' => '10000000000000'
         ]);
 
-        $expectedTerminalIds = ['1000HdfcDirect', 'SharedTrmnl124'];
+        $expectedTerminalIds = ['1000HdfcDirect'];
 
         $this->runTestCase($expectedTerminalIds);
     }
