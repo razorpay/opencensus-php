@@ -53,11 +53,9 @@ let initialState = {
     showAcceptPayments: false,
     showProductsModal: false,
     showPANStatus: false,
-    kycStatusModal: {
-      show: false,
-      modalType: '',
-    },
+    showKYCStatus: false,
   },
+  kycStatusModalType: '',
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -281,11 +279,9 @@ export default function(state = initialState, action) {
         ...state,
         instantActivations: {
           ...state.instantActivations,
-          kycStatusModal: merge(state.instantActivations.kycStatusModal, {
-            show: true,
-            modalType: action.payload.modalType,
-          }),
+          showKYCStatus: true,
         },
+        kycStatusModalType: action.payload.modalType,
       };
 
     case `HIDE_KYC_STATUS_MODAL`:
@@ -293,11 +289,9 @@ export default function(state = initialState, action) {
         ...state,
         instantActivations: {
           ...state.instantActivations,
-          kycStatusModal: merge(state.instantActivations.kycStatusModal, {
-            show: false,
-            modalType: '',
-          }),
+          showKYCStatus: false,
         },
+        kycStatusModalType: '',
       };
 
     case `SHOW_KYC_DETAILS`:

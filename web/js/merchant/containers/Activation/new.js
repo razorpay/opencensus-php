@@ -405,7 +405,7 @@ export default class ActivationContainer extends React.Component {
         content = <SuccessScreen />;
       } else {
         this.props.showKYCStatusModal({
-          modalType: 'KYC_ACTIVATION_SUBMIT_SUCCESS',
+          modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
         });
         this.props.history.replace(`/`);
         content = null;

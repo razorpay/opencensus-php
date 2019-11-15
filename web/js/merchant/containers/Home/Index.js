@@ -115,7 +115,8 @@ const keymetricsSectionTitle = 'Transactions Overview',
         state.home.instantActivations.showInstantActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
       showPANStatus: state.home.instantActivations.showPANStatus,
-      kycStatusModal: state.home.instantActivations.kycStatusModal,
+      showKYCStatus: state.home.instantActivations.showKYCStatus,
+      kycStatusModalType: state.home.kycStatusModalType,
     };
   },
   {
@@ -645,7 +646,8 @@ export default class HomeContainer extends Component {
       hideKYCDetailsModal,
       tracking,
       showPANStatus,
-      kycStatusModal,
+      showKYCStatus,
+      kycStatusModalType,
     } = this.props;
 
     const { activation_flow } = user;
@@ -827,7 +829,7 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
-        {kycStatusModal.show && (
+        {showKYCStatus && (
           <KYCStatusModal
             onClose={() => {
               iaActivations.trackClose(activation_flow);
@@ -839,7 +841,7 @@ export default class HomeContainer extends Component {
             }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
             user={user}
-            modalType={kycStatusModal.modalType}
+            modalType={kycStatusModalType}
           />
         )}
         {showPANStatus && (
