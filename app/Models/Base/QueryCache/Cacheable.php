@@ -19,6 +19,16 @@ use RZP\Models\Base\QueryCache\CacheQueryBuilder;
 trait Cacheable
 {
     /**
+     * Gives the cache tag which in join of all the variable passed and prefixed with entity name
+     *
+     * @return string
+     */
+    public static function getCacheTag(): string
+    {
+        return implode('_', func_get_args());
+    }
+
+    /**
      * Get a new query builder instance for the connection.
      *
      * @return CacheQueryBuilder;

@@ -24,15 +24,12 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
-use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
-    use CacheQueries;
-
     protected $entity = 'transaction';
 
     protected $signedIds = [
@@ -1615,6 +1612,18 @@ class Repository extends Base\Repository
     {
         $startTime = microtime(true);
 
+        $cacheTag = Entity::getCacheTag($this->entity, $merchantId, $balance->getType(), $timestamp);
+
+        $result = $this->app['cache']->get($cacheTag);
+
+        //
+        // return the data if data available in cache
+        //
+        if ($result !== null)
+        {
+            return $result;
+        }
+
         $transactionType        = $this->dbColumn(Entity::TYPE);
         $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionCredit      = $this->dbColumn(Entity::CREDIT);
@@ -1645,13 +1654,12 @@ class Repository extends Base\Repository
             $query->where($transactionBalanceId, $balance->getId());
         }
 
-        $cacheTag = $merchantId . '_' . $balance->getType() . '_' . $timestamp;
-
-        // caching the result for 60 sec
-        $query->remember(1)
-              ->cachetags($cacheTag);
-
         $results = $query->first();
+
+        //
+        // caching the data for a minute
+        //
+        $this->app['cache']->put($cacheTag, $results, 1);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN,

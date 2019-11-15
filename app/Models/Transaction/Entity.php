@@ -15,7 +15,6 @@ use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
-use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * Class Entity
@@ -26,8 +25,6 @@ use RZP\Models\Base\QueryCache\Cacheable;
  */
 class Entity extends Base\PublicEntity
 {
-    use Cacheable;
-
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
     const AMOUNT              = 'amount';
