@@ -56,7 +56,7 @@ class CreateOffers extends Migration
                     ->default(0);
 
             $table->string(Offer::TYPE, 15)
-                  ->default(Offer::DEFERRED);
+                  ->default(Offer::INSTANT);
 
             $table->integer(Offer::PERCENT_RATE)
                   ->nullable();

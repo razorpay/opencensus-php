@@ -398,7 +398,7 @@ trait Capture
             return;
         }
 
-        if($payment->getOffer()->getOfferType() !== 'instant')
+        if($payment->getOffer()->getOfferType() !== \RZP\Models\Offer\Constants::INSTANT_OFFER)
         {
             return;
         }

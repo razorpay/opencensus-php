@@ -1177,8 +1177,9 @@ class Processor
 
         if (($this->offer !== null) and
             ($order->isDiscountApplicable() === true) and
-            ($this->offer->getOfferType() === 'instant'))
+            ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
+
             $orderAmount = $order->getAmount();
 
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);

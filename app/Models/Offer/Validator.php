@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Emi;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -20,6 +21,7 @@ class Validator extends Base\Validator
     const OFFER_PERIOD      = 'offer_period';
     const EMI_ISSUER        = 'emi_issuer';
     const MERCHANT_CATEGORY = 'merchant_category';
+    const OFFER_FEATURE_BLOCK = 'offer_feature_block';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -105,6 +107,7 @@ class Validator extends Base\Validator
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
         self::MERCHANT_CATEGORY,
+        self::OFFER_FEATURE_BLOCK,
     ];
 
     protected static $emiSubventionValidators = [
@@ -411,5 +414,16 @@ class Validator extends Base\Validator
     protected function validateMerchantCategory(array $input)
     {
 
+    }
+
+    protected function validateOfferFeatureBlock(array $input)
+    {
+        $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
+
+        if($hasBlockingFeature)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for Merchant ');
+        }
     }
 }

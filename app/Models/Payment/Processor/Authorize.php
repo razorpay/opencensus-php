@@ -3880,7 +3880,7 @@ trait Authorize
             return;
         }
 
-        if($payment->getOffer()->getOfferType() !== 'instant')
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }

@@ -258,6 +258,8 @@ class Constants
      */
     const X_PRO_INVITE  = 'x_pro_invite';
 
+    const BLOCK_OFFER_CREATION  ='block_offer_creation';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
