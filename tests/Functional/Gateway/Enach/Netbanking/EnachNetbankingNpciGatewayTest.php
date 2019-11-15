@@ -626,7 +626,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         // Tests a case where there is no match against gateway_reference_id in enach table
         // Db query will fail and batch gracefully handles this and continues its execution.
 
-        // this should ideally not happen now since verify is implemented
         $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);

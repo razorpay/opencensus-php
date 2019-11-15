@@ -4,7 +4,6 @@ namespace RZP\Services\FTS;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -16,6 +15,8 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Jobs\FTS\CreateAccount as Account;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class CreateAccount extends Base
 {
@@ -64,19 +65,25 @@ class CreateAccount extends Base
 
         $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_CREATE_URI, 'POST', $input);
 
-        $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
-            $response['body'][Constants::FUND_ACCOUNT_ID] : null;
-
-        if (empty(trim($ftsFundAccountId)) === false)
+        if ($type === Constants::BANKING_ACCOUNT)
         {
-            $this->saveFtsAccountId($ftsFundAccountId, $type);
+            $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
+                $response['body'][Constants::FUND_ACCOUNT_ID] : null;
+
+            if (empty(trim($ftsFundAccountId)) === false)
+            {
+                $this->saveFtsAccountId($ftsFundAccountId, $type);
+            }
         }
 
         return $response;
     }
 
-    public function createSourceAccount(string $id, string $ftsAccountId, array $content,
-                                        string $product, string $channel = 'ICICI')
+    public function createSourceAccount(string $id,
+                                        string $ftsAccountId,
+                                        array $content,
+                                        string $product,
+                                        string $channel = 'ICICI')
     {
         $input = $this->getSourceAccountRequestBody($product, $ftsAccountId, $channel, $content);
 
@@ -181,7 +188,7 @@ class CreateAccount extends Base
             Constants::BENEFICIARY_STATE          => IndianStates::getStateCode($ba->getBeneficiaryState()),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
-            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode($ba->getBeneficiaryCountry()),
+            Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode(strtolower($ba->getBeneficiaryCountry())),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
         ];
     }
@@ -216,52 +223,34 @@ class CreateAccount extends Base
      * to account entities of specific types
      *
      * @param $ftsAccountId
-     * @param $type
-     * @throws LogicException
      */
-    public function saveFtsAccountId($ftsAccountId, $type)
+    public function saveFtsAccountId($ftsAccountId)
     {
-        switch ($type)
-        {
-            case Constants::BANK_ACCOUNT:
-                $this->bankAccountCore->updateBankAccountWithFtsId($this->account, $ftsAccountId);
-
-                break;
-
-            case Constants::VPA:
-                $this->vpaCore->updateVpaWithFtsId($this->account, $ftsAccountId);
-
-                break;
-
-            case Constants::BANKING_ACCOUNT:
-                $this->bankingAccountCore->updateBankingAccountWithFtsId($this->account, $ftsAccountId);
-
-                break;
-
-            default:
-                throw new LogicException('Account Type is not supported ' . $type);
-        }
+             $this->bankingAccountCore->updateBankingAccountWithFtsId($this->account, $ftsAccountId);
     }
 
-    protected function getSourceAccountRequestBody(string $product, string $fundAccountId, string $channel, array $content)
+    protected function getSourceAccountRequestBody(string $product,
+                                                   string $fundAccountId,
+                                                   string $channel,
+                                                   array $content)
     {
         $request = [
             Constants::PRODUCT              => $product,
             Constants::CREDENTIALS          => $content[Constants::CREDENTIALS],
             Constants::MOZART_IDENTIFIER    => $content[Constants::MOZART_IDENTIFIER],
             Constants::FUND_ACCOUNT_ID      => intval($fundAccountId),
-            Constants::CHANNEL              => strtoupper($channel)
+            Constants::CHANNEL              => strtoupper($channel),
+            Constants::CONFIGURATION        => $content[Constants::CONFIGURATION],
         ];
 
         return $request;
     }
 
-
     public function callFtsCreateAccount(PublicEntity $account, string $product)
     {
         try
         {
-            Account::dispatch($this->mode, $account->getId(), $account->getEntityName(), $product);
+            Account::dispatch($this->mode, $account->getId(), $account->getEntityName(), $product)->delay(5);
 
             $this->trace->info(
                 TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,
@@ -297,7 +286,7 @@ class CreateAccount extends Base
                     'card_id' => $card->getId()
                 ]);
 
-            (new SlackNotification())->send(
+            (new SlackNotification)->send(
                 'Vault token missing',
                 [
                     'card_id' => $card->getId()

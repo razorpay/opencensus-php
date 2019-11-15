@@ -118,8 +118,15 @@ class Core extends Base\Core
         if ($vpa instanceof Entity)
         {
             // Deleted VPA can available for the same device
-            if ($vpa->getDeviceId() === $this->context()->getDevice()->getId())
+            if (($vpa->getDeviceId() === $this->context()->getDevice()->getId()) and
+                ($vpa->trashed() === true))
             {
+                $vpa->bankAccount()->dissociate();
+
+                $vpa->setDefault(false);
+
+                $this->handleDefaultVpa($vpa);
+
                 $vpa->restore();
 
                 return $vpa;
@@ -229,6 +236,20 @@ class Core extends Base\Core
     public function delete(Entity $vpa)
     {
         $this->repo->deleteOrFail($vpa);
+    }
+
+    public function deregister()
+    {
+        $success = $this->repo->newP2pQuery()
+                        ->withTrashed()
+                        ->update([
+                            Entity::BANK_ACCOUNT_ID => null,
+                        ]);
+
+        if (empty($success) === true)
+        {
+            throw $this->logicException('Failed to unlink the VPAs');
+        }
     }
 
     /**

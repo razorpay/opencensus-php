@@ -40,4 +40,13 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function getBankingInvoices()
+    {
+        $input = Request::all();
+
+        $invoices = $this->service()->fetchMultipleBankingInvoices($input);
+
+        return ApiResponse::json($invoices);
+    }
 }

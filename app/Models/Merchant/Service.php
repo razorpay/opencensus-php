@@ -41,7 +41,8 @@ use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use RZP\Constants\{Mode, Entity as CE};
+use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -56,6 +57,7 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
+    const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
     /**
      * Creates a merchant and saves in database
@@ -1725,6 +1727,90 @@ class Service extends Base\Service
         }
 
         return $scheduledPricing->toArrayPublic();
+    }
+
+    public function enableScheduledEs(): array
+    {
+        $this->repo->transactionOnLiveAndTest(function ()
+        {
+            $userRole = $this->repo
+                             ->merchant
+                             ->getMerchantUserMapping(
+                                 $this->merchant->getId(),
+                                 $this->user->getId(),
+                                 null,
+                                 Product::PRIMARY)
+                             ->pivot
+                             ->role;
+
+            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                        'role',
+                                                        $userRole);
+            }
+
+            $this->getScheduledEarlySettlementPricingForMerchant();
+
+            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+
+            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                    Schedule\Period::HOURLY,
+                                                    1,
+                                                    null,
+                                                    0,
+                                                    0,
+                                                    ScheduleTask\Type::SETTLEMENT);
+
+            if ($schedule === null)
+            {
+                throw new Exception\LogicException(
+                    'Schedule for Scheduled Automatic settlement was not found.',
+                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+                );
+            }
+
+            foreach ($scheduledTasks as $scheduledTask)
+            {
+                $input = [
+                    ScheduleTask\Entity::METHOD      => $scheduledTask[ScheduleTask\Entity::METHOD],
+                    ScheduleTask\Entity::TYPE        => $scheduledTask[ScheduleTask\Entity::TYPE],
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+                ];
+
+                $this->app['workflow']->skipWorkflows(function() use ($input)
+                {
+                    (new ScheduleTask\Core)->createOrUpdate($this->merchant, $this->merchant, $input);
+                });
+            }
+
+            $this->deleteTag($this->merchant->getId(), self::ES_ON_DEMAND_ANNOUNCEMENT_TAG);
+
+            $this->addOrRemoveMerchantFeatures([
+                                                    Entity::FEATURES => [
+                                                        Feature\Constants::ES_AUTOMATIC => 1
+                                                    ],
+                                                    Feature\Entity::SHOULD_SYNC => 1]);
+
+            $tags = $this->merchant->tagNames();
+
+            array_walk($tags, function(& $tag)
+            {
+                $tag = substr($tag, 0, 2);
+            });
+
+            if (in_array('KA', $tags) === true)
+            {
+                // for key accounts, send Feature enabled mail to Capital product team
+                $data['merchant'] = $this->merchant->toArrayPublic();
+
+                $esNotifyEmail = new EsEnabledNotify($data);
+
+                Mail::queue($esNotifyEmail);
+            }
+        });
+
+        return ['success' => true];
     }
 
     public function addOrRemoveMerchantFeatures(array $input)

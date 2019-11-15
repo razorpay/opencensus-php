@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
+use RZP\Models\P2p\Device\Entity;
 use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
+
 
 class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 {
@@ -55,10 +57,13 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     public function getToken(Response $response)
     {
         $response->setData([
-            'gateway_data' => [
-                'token'     => 'I_AM_REFRESTED_TOKEN',
-                'payload'   => '<payload>And_i_am_refreshed_payload</payload>'
-            ],
+            Entity::DEVICE_TOKEN => [
+                Entity::ID            => $this->getContextDeviceToken()->get(Entity::ID),
+                'gateway_data' => [
+                    'token'     => 'I_AM_REFRESTED_TOKEN',
+                    'payload'   => '<payload>And_i_am_refreshed_payload</payload>'
+                ],
+            ]
         ]);
 
         return $response;

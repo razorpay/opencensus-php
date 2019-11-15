@@ -289,28 +289,18 @@ class Processor extends VirtualAccount\Processor
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
-        $order = $this->virtualAccount->entity;
-
         if ($this->virtualAccount->hasOrder() === true)
         {
+            $order = $this->virtualAccount->entity;
 
             $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
         }
 
         $merchant = $this->virtualAccount->merchant;
 
-        if ($merchant->isFeeBearerCustomerOrDynamic() === true)
+        if ($merchant->isFeeBearerCustomer() === true)
         {
-            if ($this->virtualAccount->hasOrder() === true)
-            {
-                $amount = $order->getAmountDue();
-            }
-            else
-            {
-                $amount = $bankTransfer->getAmount();
-            }
-
-            $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($amount, $merchant);
+            $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $merchant);
         }
 
         return $paymentArray;

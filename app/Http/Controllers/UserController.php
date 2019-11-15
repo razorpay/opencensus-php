@@ -164,6 +164,13 @@ class UserController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function sendOtpWithContact()
+    {
+        $response = $this->service()->sendOtpWithContact($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function verifyContactWithOtp()
     {
         $response = $this->service()->verifyContactWithOtp($this->input);

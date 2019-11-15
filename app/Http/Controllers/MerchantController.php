@@ -584,6 +584,13 @@ class MerchantController extends Controller
         return (new Report\Types\InvoiceReport)->getInvoiceReport($input);
     }
 
+    public function generateBankingInvoice()
+    {
+        $input = Request::all();
+
+        return $this->service('merchant_invoice')->requestBankingInvoice($input);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday
@@ -712,6 +719,13 @@ class MerchantController extends Controller
     public function getScheduledEarlySettlementPricingForMerchant()
     {
         $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
+    public function enableScheduledEs()
+    {
+        $data = $this->service()->enableScheduledEs();
 
         return ApiResponse::json($data);
     }

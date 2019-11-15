@@ -904,9 +904,7 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);
 
-        $upiPaymentType = $gatewayEntity[Entity::TYPE];
-
-        $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $upiPaymentType);
+        $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $gatewayEntity);
 
         $content = json_encode($verifyRequestArray);
 
@@ -961,7 +959,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function getVerifyRefundRequestArray($input, $upiPaymentType)
+    public function getVerifyRefundRequestArray(array $input, Entity $gatewayEntity)
     {
         //
         // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
@@ -983,11 +981,11 @@ class Gateway extends Base\Gateway
         $data = [
             Fields::MERCH_ID       => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID  => $this->getMerchantId2(),
-            Fields::UNQ_TXN_ID     => $input['refund']['payment_id'],
+            Fields::UNQ_TXN_ID     => $this->getUniqueTransactionId($gatewayEntity),
             Fields::TXN_REFUND_ID  => $input['refund']['id'] . $attempts,
         ];
 
-        if ($upiPaymentType === Base\Type::PAY)
+        if ($gatewayEntity->getType() === Base\Type::PAY)
         {
             list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
@@ -1041,15 +1039,13 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $upiPaymentType = $gatewayEntity[Entity::TYPE];
-
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
 
-        $attributes[Entity::TYPE] = $upiPaymentType;
+        $attributes[Entity::TYPE] = $gatewayEntity->getType();
 
         $refund = $this->createGatewayPaymentEntity($attributes);
 
-        $request =  $this->getRefundRequestArray($input, $upiPaymentType);
+        $request =  $this->getRefundRequestArray($input, $gatewayEntity);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -1092,7 +1088,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getRefundRequestArray(array $input, string $type): array
+    protected function getRefundRequestArray(array $input, Entity $gatewayEntity): array
     {
         $data = [
             Fields::MERCH_ID            => $this->getMerchantId(),
@@ -1100,12 +1096,12 @@ class Gateway extends Base\Gateway
             Fields::TXN_REFUND_ID       => $this->getRefundId($input['refund']),
             Fields::MOB_NO              => $this->getMobileNumber(),
             Fields::TXN_REFUND_AMOUNT   => $this->formatAmount($input['refund']['amount']),
-            Fields::UNQ_TXN_ID          => $input['payment']['id'],
+            Fields::UNQ_TXN_ID          => $this->getUniqueTransactionId($gatewayEntity),
             Fields::REFUND_REASON       => $this->getRefundRemark($input),
             Fields::S_ID                => '',
         ];
 
-        if ($type === Base\Type::PAY)
+        if ($gatewayEntity->getType() === Base\Type::PAY)
         {
             list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
@@ -1129,6 +1125,7 @@ class Gateway extends Base\Gateway
                 'refund_id'         => $input['refund']['id'],
                 'terminal_id'       => $input['terminal']['id'],
             ]);
+
         return $request;
     }
 
@@ -1142,6 +1139,13 @@ class Gateway extends Base\Gateway
     protected function getRefundId(array $refund)
     {
         return $refund['id'] . ($refund['attempts'] ?: '');
+    }
+
+    protected function getUniqueTransactionId(Entity $gatewayPayment)
+    {
+        $uniqueTxnId = $gatewayPayment->getMerchantReference() ?? $gatewayPayment->getPaymentId();
+
+        return $uniqueTxnId;
     }
 
     /**

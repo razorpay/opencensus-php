@@ -217,6 +217,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CARDLESS_EMI);
             $table->index(Terminal::STATUS);
             $table->index(Terminal::ORG_ID);
+            $table->index(Terminal::BANK_TRANSFER);
         });
     }
 

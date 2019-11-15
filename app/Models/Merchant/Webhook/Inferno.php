@@ -545,11 +545,8 @@ class Inferno
     /**
      * If the number of job attempts is greater than the max attempts,
      * we delete the job.
-     * If the last successful webhook hit was more than 24 hours ago,
-     * We deactivate the webhook. We send a deactivation email.
-     * We do not send any failure email in this case.
      *
-     * In every other case, we send a failure email.
+     * we send a failure email.
      *
      * @param Entity $webhook
      */
@@ -561,38 +558,7 @@ class Inferno
         {
             $deleteJobFlag = true;
         }
-
-        $lastSuccessDifference = $webhook->getTimeDifferenceFromLastSuccessInHour();
-
-        $toDisableWebhook =
-            (($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) and
-             ($webhook->disableOnFailure() === true));
-
-        // If (LSA - current time) > 24hrs, and.
-        // webhook disable_on_failure is set to true
-        // we mark webhook deactivated.
-        if ($toDisableWebhook === true)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_DEACTIVATE,
-                [
-                    'webhook_id'  => $webhook->getId(),
-                    'merchant_id' => $webhook->merchant->getId(),
-                ]
-            );
-
-            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL);
-
-            $this->disableWebhook($webhook);
-
-            $this->sendEmail($webhook, 'deactivate');
-
-            $deleteJobFlag = true;
-        }
-        else
-        {
-            $this->sendEmail($webhook, 'failure');
-        }
+        $this->sendEmail($webhook, 'failure');
 
         $this->updateJob($deleteJobFlag);
     }

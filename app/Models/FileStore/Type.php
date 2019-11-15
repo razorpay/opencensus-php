@@ -168,6 +168,7 @@ class Type
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
     const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
     const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
     const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
     const MERCHANT_PASSPORT_BACK                = 'passport_back';
@@ -299,6 +300,7 @@ class Type
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
             self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_DRIVER_LICENSE_BACK,
             self::MERCHANT_AADHAR_FRONT,
             self::MERCHANT_AADHAR_BACK,
             self::MERCHANT_PASSPORT_FRONT,
@@ -502,7 +504,7 @@ class Type
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_DEFAULT
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BEAM_BUCKET_CONFIG => [

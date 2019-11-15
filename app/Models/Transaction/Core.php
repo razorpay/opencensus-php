@@ -225,7 +225,7 @@ class Core extends Base\Core
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            if ($payment->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
@@ -347,7 +347,7 @@ class Core extends Base\Core
 
         $txn->setFeeModel($merchant->getFeeModel());
 
-        $txn->setFeeBearer($payment->getFeeBearer());
+        $txn->setFeeBearer($merchant->getFeeBearer());
 
         $amount = $payment->getBaseAmount();
         $txn->setAmount($amount);
@@ -1424,6 +1424,11 @@ class Core extends Base\Core
         $this->app->events->fire('api.transaction.created', $txn);
     }
 
+    public function dispatchEventForTransactionUpdated(Entity $txn)
+    {
+        $this->app->events->fire('api.transaction.updated', $txn);
+    }
+
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
         if ($feesSplit->isEmpty() === true)
@@ -1454,7 +1459,7 @@ class Core extends Base\Core
                     TraceCode::FEES_BREAKUP_CREATED,
                     [
                         'transaction_id' => $txn->getId(),
-                        'source_id'      => $txn->getEntityId()
+                        'source_id'      => $txn->source->getPublicId(),
                     ]);
             });
         }
@@ -1478,7 +1483,6 @@ class Core extends Base\Core
                 ]);
         }
     }
-
 
     //Async Update Merchant Balance
     public function asyncUpdateMerchantBalance($payment, $txn)

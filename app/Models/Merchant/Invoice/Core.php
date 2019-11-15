@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
-use Carbon\Carbon;
+use File;
 
+use App;
+
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -11,14 +14,23 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
+use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Org\Preferences;
+use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
+use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Merchant\Preferences as MerchantPreferences;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
+    const STORE_TYPE = 'file';
+
+    const DASHBOARD_FILE_URL = '%sufh/file/%s';
+
     public function create(array $input, Merchant\Entity $merchant, Balance\Entity $balance = null): Entity
     {
         $invoiceEntity = new Entity;
@@ -51,15 +63,17 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('create_queue', $input);
 
-        // Get invoice date
-        if ((isset($input['month']) === true) and
-            (isset($input['year']) === true))
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $previousMonth->year;
+
+        $month = $previousMonth->month;
+
+        if ((isset($input['month']) === true) and (isset($input['year']) === true))
         {
-            $invoiceDate = Carbon::createFromDate($input['year'], $input['month'], 1, Timezone::IST);
-        }
-        else
-        {
-            $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
+            $year  = $input['year'];
+
+            $month =  $input['month'];
         }
 
         //
@@ -71,75 +85,24 @@ class Core extends Base\Core
                         (bool) $input['correction'] :
                         false;
 
-        // Get merchants
-        $merchantIds = [];
-
+        //
+        // in case merchant id is given in the request then dont have to spawn the k8s job
+        // can directly queue the mid and generate the invoice
+        //
         if (isset($input['merchant_ids']) === true)
         {
             $merchantIds = $input['merchant_ids'];
+
+            $this->processMerchantInvoice($this->mode, $year, $month, $merchantIds, $isCorrection);
         }
-
-        //
-        // merchant_ids_excluded is an array of merchant ids coming from input,
-        // for which invoice shouldn't be generated.
-        //
-        $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
-                               (array_merge($input['merchant_ids_excluded'],
-                                            Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)) :
-                               Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS;
-
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
-            [
-                'month'                 => $invoiceDate->month,
-                'year'                  => $invoiceDate->year,
-                'is_correction'         => $isCorrection,
-                'merchant_ids'          => $merchantIds,
-                'merchant_ids_excluded' => $merchantIdsExcluded,
-                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
-            ]);
-
-        $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
-
-        $batchSize = 10000;
-
-        $skip = 0;
-
-        $defaultDelay = 0;
-
-        do
+        else
         {
-            $merchantIdsToEnqueue = $this->repo
-                                         ->merchant
-                                         ->fetchActivatedMerchantsBeforeTimestamp(
-                                             $batchSize,
-                                             $skip,
-                                             $endTimestamp,
-                                             $merchantIds,
-                                             $merchantIdsExcluded);
+            $year = (string) $year;
 
-            $count = count($merchantIdsToEnqueue);
+            $month = (string) $month;
 
-            $skip += $count;
-
-            foreach ($merchantIdsToEnqueue as $merchantId)
-            {
-                MerchantInvoiceJob::dispatch(
-                    $merchantId,
-                    $invoiceDate->month,
-                    $invoiceDate->year,
-                    $this->mode,
-                    $isCorrection)
-                    // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
-                                  ->delay($defaultDelay++ % 901);
-            }
-        } while($count === $batchSize);
-
-        $this->trace->info(
-            TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
-            [
-                'count' => $skip,
-            ]);
+            $this->app->k8s_client->createInvoiceJob($this->mode, $year, $month);
+        }
     }
 
     public function queueCorrectionInvoiceInvoice(array $input)
@@ -277,5 +240,159 @@ class Core extends Base\Core
         });
 
         return $count;
+    }
+
+
+    public function generateInvoiceReport($input)
+    {
+        $data = (new BankingInvoiceReport)->getInvoiceReport($input);
+
+        $invoiceEntity = (new Repository)->findByIdAndMerchantId($data[Entity::ID], $this->merchant->getId());
+
+        $pathToTemporaryFile = (new PdfGenerator)->generate($data);
+
+        $fileAccessUrl = $this->uploadViaUfh($pathToTemporaryFile, $invoiceEntity);
+
+        return [
+            $fileAccessUrl,
+            $data,
+        ];
+    }
+
+    public function sendInvoiceEmail($fileId, $data , $emailAddresses)
+    {
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($fileId);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST,
+            [
+                'file_id'             =>  $fileId,
+                'file_access_url'     =>  $fileAccessUrl,
+                'data'                =>  $data,
+                'email_addresses'     =>  $emailAddresses,
+            ]);
+
+
+        $mailable = new MerchantBankingInvoice($fileAccessUrl,
+                                               $data,
+                                               $emailAddresses);
+
+        \Mail::queue($mailable);
+    }
+
+    protected function uploadViaUfh(string $pathToTemporaryFile, Entity $entity)
+    {
+        $ufhService = $this->app['ufh.service'];
+
+        $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
+
+        $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                     $name = File::name($pathToTemporaryFile),
+                                                     self::STORE_TYPE,
+                                                     $entity);
+
+        $this->trace->info(
+            TraceCode::UFH_RESPONSE,
+            [
+                'merchant_invoice_id'   => $entity->getId(),
+                'ufh_response'          => $response,
+            ]);
+
+        return $response;
+    }
+
+    protected function getUploadedFileInstance(string $path)
+    {
+        $name = File::name($path);
+
+        $extension = File::extension($path);
+
+        $originalName = $name . '.' . $extension;
+
+        $mimeType = File::mimeType($path);
+
+        $size = File::size($path);
+
+        $error = null;
+
+        // Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        // reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        // creating the UploadedFile instance in test mode.
+
+        $test = true;
+
+        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+
+        return $object;
+    }
+
+    protected function getDashboardFileAccessUrl(string $fileId = null)
+    {
+        return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
+    }
+
+    public function processMerchantInvoice($mode, $year, $month, $merchantIds = [], $isCorrection = false)
+    {
+        //
+        // merchant_ids_excluded is an array of merchant ids coming from input,
+        // for which invoice shouldn't be generated.
+        //
+        $merchantIdsExcluded = MerchantPreferences::NO_MERCHANT_INVOICE_MIDS;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
+            [
+                'month'                 => $month,
+                'year'                  => $year,
+                'is_correction'         => $isCorrection,
+                'merchant_ids'          => $merchantIds,
+                'merchant_ids_excluded' => $merchantIdsExcluded,
+                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
+                'mode'                  => $mode
+            ]);
+
+        $endTimestamp =  Carbon::createFromDate($year, $month, 1, Timezone::IST)
+                                ->endOfMonth()
+                                ->getTimestamp();
+
+        $batch = 10000;
+
+        $skip = 0;
+
+        $i = 0;
+
+        do
+        {
+            $merchantIdsToEnqueue = $this->repo
+                                         ->merchant
+                                         ->fetchActivatedMerchantsBeforeTimestamp(
+                                             $batch,
+                                             $skip,
+                                             $endTimestamp,
+                                             $merchantIds,
+                                             $merchantIdsExcluded);
+
+            $count = count($merchantIdsToEnqueue);
+
+            $skip += $count;
+
+            foreach ($merchantIdsToEnqueue as $merchantId)
+            {
+                MerchantInvoiceJob::dispatch(
+                                            $merchantId,
+                                            $month,
+                                            $year,
+                                            $mode,
+                                            $isCorrection)
+                                            // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                                            ->delay($i++ % 901);
+            }
+        } while($batch === $count);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
+            [
+                'count' => $skip,
+            ]);
     }
 }

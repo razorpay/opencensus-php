@@ -81,6 +81,7 @@ class Entity
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
+    const PAPER_MANDATE             = 'paper_mandate';
 
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
@@ -117,12 +118,15 @@ class Entity
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
+    const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
+    const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
 
     // heimdall
     const ORG                   = 'org';
@@ -220,6 +224,7 @@ class Entity
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_YESB        = 'netbanking_yesb';
+    const NETBANKING_KVB         = 'netbanking_kvb';
     const PAYLATER               = 'paylater';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
@@ -288,6 +293,11 @@ class Entity
     const SUBSCRIPTIONS_UPDATE_REQUEST   = 'subscription_update_request';
     // Service: Stork
     const STORK_WEBHOOK = 'stork.webhook';
+
+    const FTS_TRANSFERS                  = 'fts.transfers';
+    const FTS_ATTEMPTS                   = 'fts.attempts';
+    const FTS_FUND_ACCOUNT               = 'fts.fund_accounts';
+    const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
 
     const COMMISSION = 'commission';
 
@@ -435,10 +445,15 @@ class Entity
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
+        self::PAPER_MANDATE             => \RZP\Models\PaperMandate::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
         self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
+        self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
+        self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
+        self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
+        self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -506,6 +521,7 @@ class Entity
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
         self::NETBANKING_YESB        => \RZP\Gateway\Mozart::class,
+        self::NETBANKING_KVB         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -646,6 +662,10 @@ class Entity
         self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
         self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
+        self::FTS_TRANSFERS                => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -868,5 +888,20 @@ class Entity
     public static function isExternalEntity($entity)
     {
         return in_array($entity, self::$externalEntities);
+    }
+
+    /**
+     * @param string $entity
+     *
+     * @return mixed
+     */
+    public static function getEntityCoreClass(string $entity)
+    {
+        $class = self::getEntityNamespace($entity) . '\\' . 'Core';
+
+        if (class_exists($class) === true)
+        {
+            return new $class;
+        }
     }
 }

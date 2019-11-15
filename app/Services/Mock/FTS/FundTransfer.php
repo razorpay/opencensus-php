@@ -15,17 +15,20 @@ class FundTransfer extends BaseFundTransfer
      */
     protected $fta;
 
-    public function requestFundTransfer():array
+    public function requestFundTransfer(): array
     {
         $mockResponse = [
             Constants::STATUS           => Constants::STATUS_CREATED,
             Constants::MESSAGE          => 'fund transfer sent to fts.',
             Constants::FUND_TRANSFER_ID => random_integer(2),
+            Constants::FUND_ACCOUNT_ID  => random_integer(2),
         ];
 
         $this->FTACore = new FundTransferAttempt\Core;
 
         $this->updateFTAMock($mockResponse);
+
+        return $mockResponse;
     }
 
     protected function updateFTAMock(array $responseBody)

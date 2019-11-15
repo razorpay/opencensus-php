@@ -298,6 +298,8 @@ class Service extends Base\Service
 
             $this->cacheResponseData($payment, $response);
 
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
+
             return $response;
         }
         catch (\Throwable $e)
@@ -1752,6 +1754,13 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function validateVpa($input)
     {
         $data = $this->getNewProcessor()->validateVpa($input);

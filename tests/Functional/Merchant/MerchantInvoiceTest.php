@@ -105,7 +105,7 @@ class MerchantInvoiceTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $entities = $this->getEntities('merchant_invoice', ['merchant_id' => '10000000000000'], true);
+        $entities = $this->getEntities('merchant_invoice', [], true);
 
         foreach ($entities['items'] as $entity)
         {
@@ -587,7 +587,7 @@ class MerchantInvoiceTest extends TestCase
         $this->ba->privateAuth();
 
         $this->createValidationWithFundAccountEntity();
-        
+
         // Card payment less than 2k
         $p1  = $this->getDefaultPaymentArray();
 

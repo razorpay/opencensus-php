@@ -29,6 +29,7 @@ class Validator extends Base\Core
         ],
         'rpt'  => ['text/plain'],
         'dat'  => ['text/plain'],
+        '7z'   => ['application/x-7z-compressed'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -156,7 +157,7 @@ class Validator extends Base\Core
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
-    const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
+    const SUPPORTED_ZIP_EXTENSIONS = ['zip', '7z'];
 
     // Max allowed file size - 35M (30*1024*1024).
     const MAX_FILE_SIZE = 36700160;

@@ -11,7 +11,6 @@ use RZP\Models\External\Entity;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\BankingAccountStatement;
 
-
 class CreateExternalTable extends Migration
 {
     /**
@@ -54,6 +53,10 @@ class CreateExternalTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->integer(Entity::DELETED_AT)
+                  ->unsigned()
+                  ->nullable();
+
             // Indexes
 
             $table->index(Entity::BANK_REFERENCE_NUMBER);
@@ -64,6 +67,7 @@ class CreateExternalTable extends Migration
 
             $table->index(Entity::UPDATED_AT);
 
+            $table->index(Entity::DELETED_AT);
             $table->index(Entity::CHANNEL);
 
             $table->index(Entity::TRANSACTION_ID);

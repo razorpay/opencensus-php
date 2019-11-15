@@ -37,7 +37,7 @@ class Core extends Base\Core
         return $entity;
     }
 
-    public function deleteAll()
+    public function deregister()
     {
         $query = $this->repo->newP2pQuery();
 

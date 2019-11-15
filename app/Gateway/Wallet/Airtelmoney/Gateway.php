@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -19,7 +18,11 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Models\Payment\Gateway as PaymentGateway;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Gateway extends Base\Gateway
@@ -92,6 +95,26 @@ class Gateway extends Base\Gateway
         ]);
 
         $this->processRefundResponse($response, $input);
+
+        return [
+            PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($response->body),
+            PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->jsonToArray($response->body)),
+        ];
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false) {
+            return [
+                RefundFields::MERCHANT_ID  => $refundFields[RefundFields::MERCHANT_ID] ?? null,
+                RefundFields::STATUS       => $refundFields[RefundFields::STATUS] ?? null,
+                RefundFields::ERROR_CODE   => $refundFields[RefundFields::ERROR_CODE] ?? null,
+                RefundFields::MESSAGE_TEXT => $refundFields[RefundFields::MESSAGE_TEXT] ?? null,
+                RefundFields::CODE         => $refundFields[RefundFields::CODE] ?? null,
+            ];
+        }
+
+        return [];
     }
 
     public function verify(array $input)
@@ -246,7 +269,15 @@ class Gateway extends Base\Gateway
         $errorCode = ErrorCodes::getErrorCodeMap($content[$statusField]);
 
         // Payment fails, throw exceptions(
-        throw new Exception\GatewayErrorException($errorCode, $content[$statusField], $errorDescription);
+        throw new Exception\GatewayErrorException(
+            $errorCode,
+            $content[$statusField],
+            $errorDescription,
+            [
+                PaymentGateway::GATEWAY_RESPONSE => json_encode($content),
+                PaymentGateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+            ]
+        );
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -443,23 +474,26 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
 
-        $processedRefunds = $this->getProcessedRefunds();
-
-        if (in_array($input[Entity::REFUND][Refund\Entity::ID], $processedRefunds, true) === true)
+        if ($this->isUnprocessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
-        if (in_array($input[Entity::REFUND][Refund\Entity::ID], $unprocessedRefunds, true) === true)
+        if ($this->isProcessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        throw new Exception\LogicException(
-            'Airtelmoney verify refund not implemented.');
-    }
+
+        return $scroogeResponse->setSuccess(false)
+                                ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                                ->toArray();
+}
 
     public function getMerchantId2()
     {

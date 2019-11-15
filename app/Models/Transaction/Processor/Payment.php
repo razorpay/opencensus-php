@@ -153,7 +153,7 @@ class Payment extends Base
         }
         else if ($this->source->isLateBalanceUpdate() === true)
         {
-            // in late balance update we do it on the fly and setting it to true for backward compatiablility
+            // in late balance update we do it on the fly and setting it to true for backward compatibility
             $this->txn->setBalanceUpdated(true);
 
             return false;
@@ -182,13 +182,6 @@ class Payment extends Base
 
         return [$this->txn, new BaseCollection\PublicCollection];
 
-    }
-
-    public function fillDetails()
-    {
-        parent::fillDetails();
-
-        $this->txn->setFeeBearer($this->source->getFeeBearer());
     }
 
     public function calculateFees()

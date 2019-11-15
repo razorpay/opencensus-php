@@ -25,7 +25,7 @@ class FundAccountValidation extends BaseProcessor
                 'fund_account_id' => $this->source->getId()
             ]);
 
-        $this->txn->setSettled(true);
+        $this->txn->setSettled(false);
 
         $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
