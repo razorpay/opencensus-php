@@ -12,6 +12,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Detail\Metric;
+use RZP\Models\Merchant\Detail\Constants;
 
 abstract class AbstractVerifier
 {
@@ -144,7 +146,11 @@ abstract class AbstractVerifier
 
             $this->traceResponse($response);
 
+            $dimensions = $this->getMetricDimensions();
+
             $this->validateResponse($response);
+
+            $this->trace->count(Metric::EXTERNAL_VERIFIER_API_CALL_SUCCESS_TOTAL, $dimensions);
 
             return $response;
 
@@ -156,6 +162,10 @@ abstract class AbstractVerifier
                 Trace::ERROR,
                 TraceCode::CAPITAL_INTEGRATION_ERROR,
                 $this->getTraceableRequest($request));
+
+            $dimensions = $this->getMetricDimensions();
+
+            $this->trace->count(Metric::EXTERNAL_VERIFIER_API_CALL_FAILED_TOTAL, $dimensions);
 
             throw new Exception\IntegrationException('
                 Could not receive proper response from capital service');
@@ -192,12 +202,20 @@ abstract class AbstractVerifier
      */
     protected function getResponse(array $request)
     {
+        $startAt = millitime();
+
         $response = Requests::request(
             $request['url'],
             $request['headers'],
             $request['content'],
             $request['method'],
             $request['options']);
+
+        $timeDuration = millitime() - $startAt;
+
+        $dimensions = $this->getMetricDimensions();
+
+        $this->trace->histogram(Metric::EXTERNAL_VERIFIER_API_CALL_DURATION_MS, $timeDuration, $dimensions);
 
         return $response;
     }
@@ -209,4 +227,12 @@ abstract class AbstractVerifier
 
     abstract public function verifyDetails();
 
+    public function getMetricDimensions(): array
+    {
+        $dimensions = [
+            Constants::EXTERNAL_VERIFIER => get_class($this)
+        ];
+
+        return $dimensions;
+    }
 }

@@ -28,6 +28,10 @@ class Validator extends Base\Validator
         ScheduleTask::TYPE => 'required|string|max:20|custom',
     ];
 
+    protected static $fetchRules = [
+        ScheduleTask::TYPE => 'required|string|max:20|custom',
+    ];
+
     protected function validateMethod($attribute, $method)
     {
         if (Method::isValid($method) === false)

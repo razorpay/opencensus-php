@@ -13,6 +13,7 @@ use RZP\Base\Database\MySqlConnection;
 
 /**
  * @property Models\Plan\Subscription\Repository           $subscription
+ * @property Models\SubscriptionRegistration\Repository    $subscription_registration
  * @property Models\Terminal\Repository                    $terminal
  * @property Models\Invoice\Repository                     $invoice
  * @property Models\Tax\Repository                         $tax
@@ -54,6 +55,9 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Merchant\Document\Repository           $merchant_document
  * @property Models\Card\Repository                        $card
  * @property Models\Settlement\bucket\Repository           $settlement_bucket
+ * @property Models\D2cBureauDetail\Repository             $d2c_bureau_detail
+ * @property Models\D2cBureauReport\Repository             $d2c_bureau_report
+ * @property Models\Merchant\MerchantUser\Repository       $merchant_user
  * @property Models\Merchant\Invoice\Repository            $merchant_invoice
  * @property Models\Address\Repository                     $address
  */

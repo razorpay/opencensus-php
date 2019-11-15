@@ -57,17 +57,17 @@ class Reminders
         $this->secret = $this->config['reminder_secret'];
     }
 
-    public function createReminder(array $input): array
+    public function createReminder(array $input, string $merchantId = null): array
     {
-        $response = $this->sendRequest(self::REMINDERS_URL['create_reminder'], 'POST', $input);
+        $response = $this->sendRequest(self::REMINDERS_URL['create_reminder'], 'POST', $input, $merchantId);
 
         return $response;
     }
 
-    public function updateReminder(array $input, $id): array
+    public function updateReminder(array $input, string $id, string $merchantId = null): array
     {
         $url = self::REMINDERS_URL['update_reminder'] . '/' . $id;
-        $response = $this->sendRequest($url, 'PUT', $input);
+        $response = $this->sendRequest($url, 'PUT', $input, $merchantId);
         return $response;
     }
 
@@ -92,7 +92,7 @@ class Reminders
         return $response;
     }
 
-    public function sendRequest($url, $method, $data = null)
+    public function sendRequest($url, $method, $data = null, $merchantId = null)
     {
         $url = $this->baseUrl . $url;
 
@@ -103,7 +103,7 @@ class Reminders
 
         $headers['Content-Type'] = 'application/json';
 
-        $merchantId = $this->auth->getMerchantId();
+        $merchantId = $merchantId ?: $this->auth->getMerchantId();
 
         if(empty($merchantId) === false)
         {

@@ -81,7 +81,7 @@ class MerchantDetail extends Base
             "business_operation_state"      => "PUNJAB",
             "business_operation_city"       => "city",
             "business_operation_pin"        => "123455",
-            "promoter_pan"                  => "test133",
+            "promoter_pan"                  => "ABCDE1234F",
             "promoter_pan_name"             => "testhello",
             "business_doe"                  => "2016-01-01",
             "company_cin"                   => "qwer1234",

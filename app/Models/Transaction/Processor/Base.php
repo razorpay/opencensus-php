@@ -198,14 +198,14 @@ abstract class Base extends BaseCore
         $txn->generateId();
 
         //
-        // Ideally we should have used build() here but not doing to avoiding unexpected & silent
-        // bugs/issues because we are in hurry to release x.
+        // Ideally we should have used build() here but not doing to avoid
+        // unexpected & silent bugs/issues because we are in hurry to release x.
         //
         // Call to build() will set defaults in the entity object and hence are accessible in
-        // toArrayPublic() like methods.  Also, mostly defaults of code are same as of database.
+        // toArrayPublic() like methods. Also, mostly defaults of code are same as of database.
         //
         // Needed the following attribute to exist in entity object during creation because immediately
-        // after creatiof of payout's txn we serialize payout with transaction relation. And without this
+        // after creation of payout's txn we serialize payout with transaction relation. And without this
         // line former will fail at setPublicSettlementIdAttribute().
         //
         $txn->setSettled(false);

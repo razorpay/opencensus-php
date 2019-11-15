@@ -23,7 +23,7 @@ class Base extends BaseCore
 
     public function processTransaction(Entity $payout)
     {
-        $this->createTransaction($payout);
+        return $this->createTransaction($payout);
     }
 
     protected function createTransaction(Entity $payout)

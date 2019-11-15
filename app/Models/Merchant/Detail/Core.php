@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
@@ -85,7 +86,7 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
-        
+
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
         // If a merchant does not have website or app, we would need to activate them
@@ -97,6 +98,11 @@ class Core extends Base\Core
         $this->markSubmittedAndLock($merchantDetails);
 
         $this->updateActivationSource($merchant, $originProduct);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
@@ -188,9 +194,17 @@ class Core extends Base\Core
             return;
         }
 
+        // no poa verification for linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $documents = $merchant->merchantDocuments;
 
         $isOcrVerified = false;
+
+        $documentType = '';
 
         //
         // Update PoaVerificationStatus to Verified if any document uploaded has OCR Verified.
@@ -206,6 +220,8 @@ class Core extends Base\Core
                         'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
+                $documentType =  $document[Document\Entity::DOCUMENT_TYPE];
+
                 $isOcrVerified = true;
 
                 break;
@@ -213,6 +229,12 @@ class Core extends Base\Core
         }
 
         $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+
+        $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
+                            [
+                                Detail\Constants::POA_STATUS    => $poaVerificationStatus,
+                                Detail\Constants::DOCUMENT_TYPE => $documentType
+                            ]);
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);
 
@@ -226,48 +248,103 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Entity          $merchantDetails
-     *
      * @param Merchant\Entity $merchant
      *
-     * @throws \RZP\Exception\BadRequestException
+     * @param Merchant\Entity $partner
+     *
      */
-    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant, $partner = null)
     {
+        $this->repo->assertTransactionActive();
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
         if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
         {
             $merchantDetails->setActivationFlow();
             $merchantDetails->setInternationalActivationFlow();
+
             return;
         }
 
-        $subcategory = $merchantDetails->getBusinessSubcategory();
-        $category    = $merchantDetails->getBusinessCategory();
+        $this->autoUpdateActivationFlow($merchant, $partner);
 
-        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
-
-        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
-
-        $activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getActivationFlow());
-
-        $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
-
-        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
+        $this->autoUpdateInternationalActivationFlow($merchant, $partner);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
-        if ($autoEnableInternational === true)
+        $internationalActivationFlow = $merchantDetails->getInternationalActivationFlow();
+
+        if (empty($internationalActivationFlow) === false)
         {
-            $merchantDetails->setInternationalActivationFlow($subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
-
             $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
-
-            $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getInternationalActivationFlow());
-
-            $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
         }
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
+    }
+
+    protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null)
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        //
+        // if request comes via on-boarding api, it will always be grey-list as on-boarding api
+        // does not support instant activation flow
+        //
+        if (empty($partner) === false)
+        {
+            $activationFlow = ActivationFlow::GREYLIST;
+        }
+        else
+        {
+            $subcategory = $merchantDetails->getBusinessSubcategory();
+            $category    = $merchantDetails->getBusinessCategory();
+
+            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+            $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+        }
+
+        $merchantDetails->setActivationFlow($activationFlow);
+
+        $activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+
+        $this->trace->count(Metric::MERCHANT_ACTIVATION, $activation_metric_dimensions);
+    }
+
+    protected function autoUpdateInternationalActivationFlow(Merchant\Entity $merchant, $partner = null)
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($merchant, $merchantDetails);
+
+        if ($autoEnableInternational === false)
+        {
+            return;
+        }
+
+        // if submerchant asked for international and partner wants to force international to greylist
+        if ((empty($partner) === false) and
+            ($merchantDetails->getBusinessInternational() === true) and
+            ($partner->forceGreyListInternational() === true))
+        {
+            $activationFlow = ActivationFlow::GREYLIST;
+        }
+        else
+        {
+            $subcategory = $merchantDetails->getBusinessSubcategory();
+            $category    = $merchantDetails->getBusinessCategory();
+
+            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION];
+        }
+
+        $merchantDetails->setInternationalActivationFlow($activationFlow);
+
+        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+
+        $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
     }
 
     /**
@@ -349,7 +426,7 @@ class Core extends Base\Core
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFlow($merchantDetails, $merchant);
+            $this->autoUpdateMerchantActivationFlows($merchant);
 
             $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
 
@@ -434,7 +511,6 @@ class Core extends Base\Core
             $response->setPanOwnerName($merchantDetails->getPromoterPanName());
 
             $merchantDetails->setPoiVerificationStatus($response->getStatus());
-
         }
         catch (\Throwable $e)
         {
@@ -444,6 +520,10 @@ class Core extends Base\Core
 
             $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
+
+        $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::POI_VERIFICATION_STATUS_TOTAL, $dimension);
 
         return $response;
     }
@@ -460,7 +540,7 @@ class Core extends Base\Core
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
-        $eventAttributes['poi_status'] = $merchantDetail->getPoiVerificationStatus();
+        $eventAttributes[Detail\Constants::POI_STATUS] = $merchantDetail->getPoiVerificationStatus();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
@@ -1361,6 +1441,13 @@ class Core extends Base\Core
         return $response;
     }
 
+    protected function fetchPoiMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::POI_STATUS => $merchantDetail->getPoiVerificationStatus()
+        ];
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *
@@ -1418,6 +1505,49 @@ class Core extends Base\Core
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
     }
 
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \Throwable
+     */
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if ((new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        {
+            return;
+        }
+
+        // adding this check for qa automation
+        if ($this->env === 'func' and $merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        // no penny testing for linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        // if bank detail is already verified then skip penny testing
+        if ($merchantDetails->isBankDetailStatusVerified() === true)
+        {
+            return;
+        }
+
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                            ]);
+
+        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+    }
+
     public function isAdditionalFieldRequired($field)
     {
         $merchantDetail = $this->getMerchantDetails($this->merchant);
@@ -1447,7 +1577,7 @@ class Core extends Base\Core
      *
      * @return string
      */
-    private function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and

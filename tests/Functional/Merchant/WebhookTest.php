@@ -847,54 +847,6 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
-    public function testWebhookDeactivationEmail()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook',
-            $webhook['id'],
-            [
-                'last_successful_at' => (time() - (25 * 3600)),
-                'active' => 1
-            ]);
-
-        $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(true);
-
-        $inferno->shouldReceive('sendEmail')
-            ->with(Mockery::type('object'), 'deactivate')
-            ->once();
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookDeactivationEmailWithDisableFalse()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook',
-            $webhook['id'],
-            [
-                'last_successful_at' => (time() - (25 * 3600)),
-                'active' => 1,
-                'disable_on_failure' => 0,
-            ]);
-
-        $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(true);
-
-        $inferno->shouldNotHaveReceived('sendEmail');
-
-        $this->doAuthPayment();
-    }
-
-
     public function testExceptionOnWebhookFire()
     {
         $webhook = $this->createWebhook(['secret' => 'test_secret']);
@@ -917,25 +869,6 @@ class WebhookTest extends TestCase
                 ->andReturn(false);
 
         $this->doAuthPayment();
-    }
-
-    public function testWebhookDeactivation()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook', $webhook['id'], ['last_successful_at' => (time() - (25 * 3600)), 'active' => 1]);
-
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(true);
-
-        $this->doAuthPayment();
-
-        $webhook = $this->getLastEntity('webhook', true);
-
-        $this->assertEquals($webhook['active'], false);
     }
 
     public function testWebhookHittingTheDefinedRoute()

@@ -224,9 +224,18 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
+        $invoiceData = [];
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $invoiceData = [
+                Entity::REMINDER_ENABLE => $input[Entity::REMINDER_ENABLE]
+            ];
+        }
+
         if ($invoice->isIssued() === true)
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $invoiceData);
         }
 
         return $invoice;
@@ -583,6 +592,9 @@ class Core extends Base\Core
 
         $validator->validateOperation(__FUNCTION__);
 
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
         $this->repo->transaction(
             function () use ($invoice)
             {
@@ -593,7 +605,7 @@ class Core extends Base\Core
                 $invoice->setStatus(Status::EXPIRED);
 
                 $this->repo->saveOrFail($invoice);
-            });
+            }, $maxAttempts);
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 

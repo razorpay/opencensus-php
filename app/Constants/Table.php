@@ -82,6 +82,7 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
@@ -112,6 +113,8 @@ class Table
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
+    const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
+    const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

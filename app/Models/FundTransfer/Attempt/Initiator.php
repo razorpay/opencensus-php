@@ -250,6 +250,8 @@ class Initiator extends Base\Core
 
     protected function raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium)
     {
+        $startTime = microtime(true);
+
         $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
 
         $batchFTaId = null;
@@ -281,12 +283,28 @@ class Initiator extends Base\Core
             'transaction_count'                     => $transactionCount,
         ];
 
-        $this->raiseSettlementEvent(
-            EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
-            null,
-            null,
-            $customProperties
-        );
+        $attemptedFTAs->each(function ($attemptedFTA) use ($customProperties)
+        {
+            $ftaId = $attemptedFTA->getId();
+
+            $customProperties['fund_transfer_attempt_id'] = $ftaId;
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+                null,
+                null,
+                $customProperties
+            );
+
+            return true;
+        });
+
+        $this->trace->info(TraceCode::FTA_BATCH_SUCCESS_EVENT_TIME_TAKEN,
+            [
+                'batch_fund_transfer_id'        => $batchFTaId,
+                'fund_transfer_attempt_count'   => $ftaCountInBatch,
+                'time_taken'                    => get_diff_in_millisecond($startTime),
+            ]);
     }
 
     protected function dispatchFtaForStatusCheckProcess(Entity $attempt)

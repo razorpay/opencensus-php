@@ -72,6 +72,7 @@ class Gateway
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_YESB        = 'netbanking_yesb';
+    const NETBANKING_KVB         = 'netbanking_kvb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -249,6 +250,7 @@ class Gateway
     const MCC_FILTER_GATEWAYS = [
         self::HDFC,
         self::HITACHI,
+        self::CARD_FSS,
     ];
 
     /**
@@ -625,6 +627,9 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_AIRTELMONEY,
+        Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $channels = [
@@ -724,6 +729,7 @@ class Gateway
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
             self::NETBANKING_YESB,
+            self::NETBANKING_KVB,
         ],
 
         //
@@ -1112,7 +1118,6 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::CARDLESS_EMI,
@@ -1450,6 +1455,7 @@ class Gateway
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
         IFSC::SBIN         => Gateway::NETBANKING_SBI,
+        IFSC::KVBL         => Gateway::NETBANKING_KVB,
     ];
 
     /**
@@ -2201,6 +2207,7 @@ class Gateway
     {
         $gateways = [
             self::MPGS,
+            self::CYBERSOURCE,
         ];
 
         return (in_array($gateway, $gateways, true));

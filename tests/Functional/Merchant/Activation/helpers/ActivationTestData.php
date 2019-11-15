@@ -1124,6 +1124,44 @@ return [
         ]
     ],
 
+    'testPostInstantActivationForUnregisteredRazorxOff' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+        ]
+    ],
+
     'testPostInstantActivation' => [
         'request'     => [
             'method'  => 'POST',
@@ -2455,6 +2493,27 @@ return [
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'    => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit'   => true,
+                'locked'       => true,
+            ],
+        ],
     ],
 
     'testNeedsClarificationResponseForAdminAuth' => [

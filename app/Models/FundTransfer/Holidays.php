@@ -3,7 +3,6 @@
 
 namespace RZP\Models\FundTransfer;
 
-
 use Carbon\Carbon;
 
 class Holidays
@@ -53,6 +52,43 @@ class Holidays
         ],
     ];
 
+    /**
+     * getNextWorkingDay, getNthWorkingDayFrom
+     * Given a Carbon Date get the next/Nth working date from a given date
+     *
+     * This includes checks for bank holidays, non working saturday, sundays
+     *
+     * @param Carbon $date input date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return Carbon $date Next working date
+     */
+    public static function getNextWorkingDay($date, $ignoreBankHolidays = false): Carbon
+    {
+        $countDays = 1;
+
+        return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
+    }
+
+    public static function getNthWorkingDayFrom(
+        $date,
+        $countDays,
+        $ignoreBankHolidays = false): Carbon
+    {
+        $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
+
+        while ($countDays > 0)
+        {
+            $workingDay->addDay();
+
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays) === true)
+            {
+                $countDays--;
+            }
+        }
+
+        return $workingDay;
+    }
 
     /**
      * Check if the given date is a working day or not

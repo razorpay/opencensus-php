@@ -381,6 +381,13 @@ class Context extends ArrayObject
      */
     public function getRequestId(): string
     {
+        $requestId = $this->getOptions()->get(self::REQUEST_ID);
+
+        if (empty($requestId) === true)
+        {
+            $this->options->put(self::REQUEST_ID, UniqueIdEntity::generateUniqueId());
+        }
+
         return $this->getOptions()->get(self::REQUEST_ID);
     }
 
@@ -405,13 +412,6 @@ class Context extends ArrayObject
     {
         // Morphing must only be handled within P2P requests
         MorphMap::boot();
-
-        // If request doesn't have id specified, we can set
-        $requestId = $this->getOptions()->get(self::REQUEST_ID);
-        if (empty($requestId) === true)
-        {
-            $this->options->put(self::REQUEST_ID, UniqueIdEntity::generateUniqueId());
-        }
 
         // We only want to register the P2P Trace Processor within P2P requests
         app('trace')->pushProcessor(new P2pTraceProcessor($this));

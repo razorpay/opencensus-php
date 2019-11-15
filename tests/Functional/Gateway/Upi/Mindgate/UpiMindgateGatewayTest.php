@@ -1472,4 +1472,30 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
     }
+
+    public function testLateAuthorization()
+    {
+        $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNull($upi->getNpciReferenceId());
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
+
+        $upi->reload();
+        $this->assertEquals($upi->getPaymentId(), $payment['id']);
+        $this->assertSame('vishnu@icici', $upi->getVpa());
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('ICIC', $upi->bank);
+    }
 }

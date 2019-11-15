@@ -350,6 +350,10 @@ return [
         'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),
     ],
+    'fa_vpa_validation' => [
+        'test'       => env('AWS_FA_VPA_VALIDATION_TEST_QUEUE'),
+        'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

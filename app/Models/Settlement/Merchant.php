@@ -242,6 +242,7 @@ class Merchant
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
                 case Transaction\Type::DISPUTE:
+                case Transaction\Type::FUND_ACCOUNT_VALIDATION:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 

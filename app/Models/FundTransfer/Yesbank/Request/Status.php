@@ -332,7 +332,7 @@ class Status extends Base
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateFailedResponse(): string
+    protected function mockGenerateFailedResponse(string $failure = ''): string
     {
         if (($this->entity->source instanceof Entity) and
             ($this->entity->source->getReceipt() === 'failed_response_insufficient_funds'))
@@ -344,6 +344,11 @@ class Status extends Base
             ($this->entity->source->getReceipt() === 'failed_response_beneficiary_not_accepted'))
         {
             return $this->generateSyncMockFailureResponseForBeneficiaryNotAccepted();
+        }
+
+        if ($failure === 'merchant_error')
+        {
+            return $this->generateMerchantFailureResponse();
         }
 
         return json_encode([
@@ -402,6 +407,30 @@ class Status extends Base
                 Constants::TRANSACTION_STATUS     => [
                     Constants::STATUS_CODE              => ValidStatus::FAILED,
                     Constants::SUB_STATUS_CODE          => 'npci:E307',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
+                ],
+            ],
+        ]);
+    }
+
+    protected function generateMerchantFailureResponse(): string
+    {
+        $source = $this->entity->source;
+
+        $amount = ($source->getAmount() / 100);
+
+        return json_encode([
+            $this->responseIdentifier => [
+                Constants::VERSION                => '2.0',
+                Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
+                Constants::TRANSFER_AMOUNT        => $amount,
+                Constants::TRANSFER_CURRENCY_CODE => Constants::DEFAULT_CURRENCY,
+                Constants::TRANSACTION_STATUS     => [
+                    Constants::STATUS_CODE              => ValidStatus::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'npci:E449',
                     Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
                     Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
                 ],

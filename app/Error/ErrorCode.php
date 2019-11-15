@@ -827,6 +827,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                     = 'BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                               = 'BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                    = 'BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED';
+    const BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED                                    = 'BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                                 = 'BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY';
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                                = 'BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                          = 'BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION';
@@ -870,6 +871,7 @@ class ErrorCode
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
 
+    const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
     const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
@@ -886,6 +888,8 @@ class ErrorCode
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
+    const SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED                        = 'SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED';
+    const SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN                          = 'SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_MISSING_HANDLER                                              = 'SERVER_ERROR_MISSING_HANDLER';
@@ -939,7 +943,7 @@ class ErrorCode
     const SERVER_ERROR_DUPLICATE_SESSION_ID                                         = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
-    const SERVER_ERROR_PDF_GENERATION_FAILED                                        = 'SERVER_ERROR_PDF_GENERATION_FAILED';
+    const SERVER_ERROR_INVOICE_PDF_GENERATION_FAILED                                = 'SERVER_ERROR_INVOICE_PDF_GENERATION_FAILED';
 
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
     // Requests from api service to stork failed unexpectedly.
@@ -1260,6 +1264,7 @@ class ErrorCode
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
+    const GATEWAY_VERIFY_REFUND_IN_PROCESSING                                       = 'GATEWAY_VERIFY_REFUND_IN_PROCESSING';
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                     = 'REFUND_MANUALLY_CONFIRMED_UNPROCESSED';
     const REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED';
@@ -1306,6 +1311,8 @@ class ErrorCode
     const SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR                                   = 'SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR';
 
     const SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED                                 = 'SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED';
+    const SERVER_ERROR_TRANSACTION_WRONG_SOURCE                                     = 'SERVER_ERROR_TRANSACTION_WRONG_SOURCE';
+    const SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE                                   = 'SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE';
 
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
@@ -1386,6 +1393,15 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_PAYMENT_CARD_SAVE_FAILED                                      = 'BAD_REQUEST_PAYMENT_CARD_SAVE_FAILED';
     const SERVER_ERROR_REQUESTED_MPANS_NOT_AVAILABLE                                = 'SERVER_ERROR_REQUESTED_MPANS_NOT_AVAILABLE';
+
+    //Paper NACH Error codes
+    const BAD_REQUEST_UNABLE_TO_READ_NACH_FORM                                      = 'BAD_REQUEST_UNABLE_TO_READ_NACH_FORM';
+    const SERVER_ERROR_NACH_EXTRACTION_FAILED                                       = 'SERVER_ERROR_NACH_EXTRACTION_FAILED';
+
     const BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORIZED               = 'BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORIZED';
     const BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED                 = 'BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED';
+
+    const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND';
 }

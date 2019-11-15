@@ -75,6 +75,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByMerchantAndInternational(Merchant\Entity $merchant, $type, $international)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(Entity::INTERNATIONAL, '=', $international)
+                    ->with('schedule')
+                    ->get();
+    }
+
     public function fetchScheduleUsageCountById(string $scheduleId)
     {
         return $this->newQuery()

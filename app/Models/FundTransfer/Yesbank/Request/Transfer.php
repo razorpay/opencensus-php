@@ -709,7 +709,7 @@ class Transfer extends Base
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateFailedResponse(): string
+    protected function mockGenerateFailedResponse(string $failure = ''): string
     {
         if ($this->requestType === Attempt\Type::SYNC)
         {

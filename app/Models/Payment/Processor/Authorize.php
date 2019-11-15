@@ -1965,10 +1965,13 @@ trait Authorize
         }
     }
 
-    /*
-     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+    /**
+     * Function gets called processAndReturnTerminal and processAndReturnFees, in this flow
      * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
      * to avoid this we run the flow in beginTransactionAndRollback
+     *
+     * @param $payment
+     * @param $input
      */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
