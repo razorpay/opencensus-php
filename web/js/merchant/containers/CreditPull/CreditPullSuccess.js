@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import ModalHeader from 'common/ui/ModalHeader';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { Bar } from 'react-chartjs-2';
 import AsyncButton from 'react-async-button';
-import Amount from 'ui/Amount';
+import Amount from 'common/ui/Amount';
 import CreditPullAdditionalReport from './CreditPullAdditionalReport';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import CloseReasons from '../../components/CloseReasons';
 import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
 import ajax from 'merchant/utils/ajax';

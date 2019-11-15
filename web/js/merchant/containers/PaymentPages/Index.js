@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
@@ -47,12 +47,14 @@ export default class PaymentPagesContainer extends React.Component {
         <header id="link-header">
           <NavLink exact to="/paymentpages">
             Payment Pages
-            <span
-              class="badge bg-success hidden-xs"
-              style={{ marginLeft: '5px' }}
-            >
-              new
-            </span>
+            {this.props.user.isPPMLIEnabled && (
+              <span
+                class="badge bg-success hidden-xs"
+                style={{ marginLeft: '5px' }}
+              >
+                v2.0
+              </span>
+            )}
           </NavLink>
         </header>
 

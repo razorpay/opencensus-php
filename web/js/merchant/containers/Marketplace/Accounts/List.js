@@ -1,16 +1,16 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { luminateRow } from 'merchant/modules/app';
-import * as AccountActions from 'merchant/modules/marketplace/accounts';
+import { luminateRow } from 'merchant/reducers/app';
+import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';

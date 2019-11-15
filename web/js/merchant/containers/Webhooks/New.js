@@ -2,21 +2,21 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { required, lenientUrl } from 'rzp/utils/validators';
-import { saveWebhook } from 'merchant/modules/webhooks';
+import InputField from 'common/ui/Forms/InputField';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import { required, lenientUrl } from 'common/utils/validators';
+import { saveWebhook } from 'merchant/reducers/webhooks';
 import { merchantFetch } from 'merchant/utils/ajax';
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 import {
   createAppWebhook,
   editAppWebhook,
-} from 'merchant/modules/applications';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+} from 'merchant/reducers/applications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
 const WebhookEventCheckbox = ({ eventName }) => {
   return (

@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
@@ -17,9 +17,9 @@ import BankAccountDetails from 'merchant/components/Subscriptions/MandateBankAcc
 import ShowWhen from 'merchant/components/ShowWhen';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
-import { fetchToken, deleteToken } from 'merchant/modules/token';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { fetchToken, deleteToken } from 'merchant/reducers/token';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './ChargeToken';

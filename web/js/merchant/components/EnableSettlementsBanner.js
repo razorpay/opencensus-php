@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 import RTracking from 'react-tracking';
 
 const EnableSettlementsBanner = props => (

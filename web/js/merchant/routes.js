@@ -73,12 +73,13 @@ const entityDetailsMap = {
   '/paymentlinks/batchuploads/:id(batch_.+)': {
     component: PaymentLinkBatchDetails,
     additionalCondition: user =>
-      user.isAllowedView('payment_links_batch_uploads'),
+      user.isAllowedView('payment_links_batch_uploads') &&
+      (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
   '/paymentpages/:id(pl_.+)': {
     component: PaymentPagesDetails,
     additionalCondition: user =>
-      user.isAllowedView('payment_pages') && !user.isPPV3Enabled,
+      user.isAllowedView('payment_pages') && !user.isPPMLIEnabled,
   },
   '/invoices/:id/details': {
     component: PaymentLinkEntity,

@@ -2,11 +2,11 @@ import {
   titleCase,
   paiseToRupees,
   arrayToCsvDataUrl,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+} from 'common/utils/numerals';
 
 import { getPaymentMethodColor } from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
@@ -95,7 +95,7 @@ function main(
   initialize(root);
   accumulate(root);
 
-  /* 
+  /*
    * Populating chart colors based on the values
    * Bigger the values get first colors in the
    * color palette

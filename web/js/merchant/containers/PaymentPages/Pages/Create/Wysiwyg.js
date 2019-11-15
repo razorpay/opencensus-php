@@ -4,8 +4,8 @@ import { render } from 'react-dom';
 
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import Button, { AsyncBtn } from 'component/Button';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Svelte from './Svelte';
 import DetailsView from './Details';
 import FormView from './Form';
@@ -15,7 +15,7 @@ import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPage,
@@ -23,15 +23,15 @@ import {
   markDataSaved,
   updateTemplateType,
   isFormItemOfTypeAmount,
-} from 'merchant/modules/wysiwyg';
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+} from 'merchant/reducers/wysiwyg';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
 import { validateUISchema as validateUISchemaV3 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V3';
 
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   trackWYSIWYGCloseIntent,
   trackConfirmWYSIWYGCloseIntent,
@@ -291,7 +291,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = () => {
     const isEditExistingId = !!this.props.id;
-    const isPPV3Enabled = this.props.user.isPPV3Enabled;
+    const isPPMLIEnabled = this.props.user.isPPMLIEnabled;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
 
@@ -318,7 +318,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     FORM_ITEMS.forEach((fi, ix) => {
       fi.settings = fi.settings || {};
-      fi.settings.position = isPPV3Enabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
+      fi.settings.position = isPPMLIEnabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
 
       if (isFormItemOfTypeAmount(fi)) {
         // Prepare payload for amount field (as extra fields aren't required to be sent)
@@ -373,7 +373,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     });
 
-    if (isPPV3Enabled) {
+    if (isPPMLIEnabled) {
       if (!paymentPageItems.length) {
         this.props.showNotification({
           type: 'error',
@@ -384,7 +384,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
-    const isValidSchema = isPPV3Enabled
+    const isValidSchema = isPPMLIEnabled
       ? validateUISchemaV3(udf_schema)
       : validateUISchemaV2(udf_schema);
 
@@ -418,14 +418,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       reqPayload.template_type = template_type;
     }
 
-    if (isPPV3Enabled) {
+    if (isPPMLIEnabled) {
       reqPayload.settings.checkout_options = {
         ...settings.checkout_options,
       };
 
       reqPayload.settings.payment_button_label = settings.payment_button_label;
 
-      // Should exist only when props.user.isPPV3Enabled = true
+      // Should exist only when props.user.isPPMLIEnabled = true
       if (paymentPageItems.length) {
         reqPayload.payment_page_items = paymentPageItems;
       }
@@ -569,7 +569,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isAllowedToSubmit = paymentPageEntity && paymentPageEntity.title;
 
       // For PPV3, notification error will be thrown.
-      if (!user.isPPV3Enabled) {
+      if (!user.isPPMLIEnabled) {
         isAllowedToSubmit =
           isAllowedToSubmit && paymentPageEntity.hasOwnProperty('amount');
       }

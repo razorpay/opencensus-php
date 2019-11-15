@@ -1,4 +1,4 @@
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const StatusLabel = statusMap => ({ status }) => (
   <span class={`status-label label ${statusMap[status]}`}>

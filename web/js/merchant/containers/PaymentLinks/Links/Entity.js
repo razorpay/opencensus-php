@@ -1,23 +1,29 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as InvoiceActions from 'merchant/modules/invoices/details';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as InvoiceActions from 'merchant/reducers/invoices/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
-import { updatePLInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
+import { keysToSentence } from 'common/utils/rzp-utils';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 
-@connect(state => ({ ...state.invoice, ...state.session }), {
-  ...InvoiceActions,
-  ...ModalActions,
-  ...NotificationsActions,
-  updatePLInReduxList,
-})
+@connect(
+  state => ({
+    ...state.invoice,
+    ...state.session,
+  }),
+  {
+    ...InvoiceActions,
+    ...ModalActions,
+    ...NotificationsActions,
+    updatePLInReduxList,
+  }
+)
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -27,6 +33,8 @@ export default class InvoiceDetailContainer extends Component {
     super(...arguments);
     this.state = {
       statusMsg: {},
+      isAutoRemindersUpdating: true,
+      nextReminders: [],
     };
 
     // recording new payments links creation UI form in hotjar
@@ -38,6 +46,7 @@ export default class InvoiceDetailContainer extends Component {
 
   componentWillMount() {
     this.props.fetchInvoice(this.props.id);
+    this.fetchInvoiceRemindersList();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -45,6 +54,29 @@ export default class InvoiceDetailContainer extends Component {
       this.props.fetchInvoice(nextProps.id);
     }
   }
+
+  fetchInvoiceRemindersList = () => {
+    InvoiceActions.fetchInvoiceRemindersList(this.props.id).then(resp => {
+      this.setState({
+        nextReminders: resp.data.next_run_at || [],
+        isAutoRemindersUpdating: false,
+      });
+    });
+  };
+
+  onChangeSendAutoReminder = event => {
+    this.setState({
+      isAutoRemindersUpdating: true,
+    });
+
+    this.editPaymentLink({
+      reminder_enable: event.target.value === '1',
+    }).then(resp => {
+      this.fetchInvoiceRemindersList();
+
+      return resp;
+    });
+  };
 
   issueInvoice = (props, notifyProps) => {
     let promises = [];
@@ -201,10 +233,19 @@ export default class InvoiceDetailContainer extends Component {
             delete d.first_payment_min_amount;
           }
 
-          this.props.showNotification({
-            type: 'success',
-            message: `${keysToSentence(d)} updated successfully`,
-          });
+          if (d.hasOwnProperty('reminder_enable')) {
+            this.props.showNotification({
+              type: 'success',
+              message: `Auto reminders has been ${
+                d.reminder_enable ? 'enabled' : 'disabled'
+              } successfully`,
+            });
+          } else {
+            this.props.showNotification({
+              type: 'success',
+              message: `${keysToSentence(d)} updated successfully`,
+            });
+          }
 
           return resp;
         } else {
@@ -248,10 +289,13 @@ export default class InvoiceDetailContainer extends Component {
         invoice={invoice}
         isLoading={loading}
         statusMsg={statusMsg}
+        nextReminders={this.state.nextReminders}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
         isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
+        onChangeSendAutoReminder={this.onChangeSendAutoReminder}
+        isAutoRemindersUpdating={this.state.isAutoRemindersUpdating}
         isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
       />
     );

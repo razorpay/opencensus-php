@@ -5,12 +5,12 @@ import RTracking from 'react-tracking';
 
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
-import { toggleMobileMenu } from 'merchant/modules/app';
-import { areReportsStillDownloading } from 'merchant/modules/reports';
+import { toggleMobileMenu } from 'merchant/reducers/app';
+import { areReportsStillDownloading } from 'merchant/reducers/reports';
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
@@ -187,9 +187,12 @@ export default class Sidebar extends Component {
                 />
 
                 {user.isPartner() ? (
-                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
+                  <PartnerSidebar
+                    merchantNavLinkProps={merchantNavLinkProps}
+                    user={user}
+                  />
                 ) : (
-                  <MerchantNavLinks {...merchantNavLinkProps} />
+                  <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
               </div>
             )}
@@ -282,7 +285,7 @@ class PartnerSidebar extends Component {
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >
-          <MerchantNavLinks {...props.merchantNavLinkProps} />
+          <MerchantNavLinks {...props.merchantNavLinkProps} user={props.user} />
         </MainNavLinkGroup>
       </>
     );

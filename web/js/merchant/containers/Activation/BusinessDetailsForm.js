@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import moment from 'moment';
 import { Field, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import CheckboxField from 'rzp/ui/Forms/CheckboxField';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
+import InputField from 'common/ui/Forms/InputField';
+import CheckboxField from 'common/ui/Forms/CheckboxField';
+import Fieldset from 'common/ui/Forms/Fieldset';
 import {
   required,
   validatePincodeLength,
@@ -14,10 +14,10 @@ import {
   validateCIN,
   lenientUrl,
   validateGSTIN,
-} from 'rzp/utils/validators';
-import { states } from 'rzp/utils/constants';
+} from 'common/utils/validators';
+import { states } from 'merchant/helpers/data';
 
-import { getPincodeDetails } from 'merchant/modules/activation';
+import { getPincodeDetails } from 'merchant/reducers/activation';
 
 const selector = formValueSelector('activationBusinessDetails');
 

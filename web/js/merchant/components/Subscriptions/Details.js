@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import Definition from 'rzp/ui/Definition';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import Definition from 'common/ui/Definition';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -18,7 +18,7 @@ import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
-import Tooltip from 'rzp/ui/Tooltip';
+import Tooltip from 'common/ui/Tooltip';
 
 import { trackClickDuplicateSubscription } from 'merchant/containers/Subscriptions/ga';
 

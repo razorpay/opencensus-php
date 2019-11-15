@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 import WebhookCreation from 'merchant/containers/Webhooks/New';
 
 export default class AppWebhook extends Component {

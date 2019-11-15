@@ -1,10 +1,10 @@
 import React from 'react';
-import Tp from 'rzp/ui/Tooltip';
+import Tp from 'common/ui/Tooltip';
 import {
   getFormattedAmountNew,
   getFormattedNumber,
   paiseToRupees,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 const Tooltip = ({ value, align, isCurrency = false, currency = 'INR' }) => {
   if (value < 1000 || (isCurrency && paiseToRupees(value) < 1000)) {

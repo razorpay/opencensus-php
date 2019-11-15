@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import RTracking from 'react-tracking';
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 

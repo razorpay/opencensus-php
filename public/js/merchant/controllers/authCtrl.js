@@ -65,6 +65,7 @@ app
       $scope.alerts = alertsFactory.getHandler();
       $scope.rightLayout = false; // login layout ? right is true : right is false
       $scope.lockme = false; // only turns true for lockme route
+      $scope.eventsMode = 'live';
 
       /*
         $scope.login = {
@@ -189,7 +190,6 @@ app
         // disable signup submission before captcha in prod
         submissionDisabled: $location.host() === 'dashboard.razorpay.com',
       };
-
       // wait for recaptcha response
       $scope.$watch('signup.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
@@ -338,6 +338,8 @@ app
 
         payload.data.business_name = payload.data.business_name || '';
 
+        payload.data.partner_intent = $scope.signup.settings.partner_intent;
+
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {
           delete payload.data.business_name;
@@ -388,7 +390,9 @@ app
                   window.rzpQ
                     .now()
                     .onbr()
-                    .success('signup.display_signup_page')
+                    .success('signup.display_signup_page', {
+                      mode: $scope.eventsMode,
+                    })
                 );
                 $state.transitionTo(
                   'access.pre_signup',
@@ -418,7 +422,7 @@ app
                 window.rzpQ
                   .now()
                   .onbr()
-                  .failed('signup.submit_email')
+                  .failed('signup.submit_email', { mode: $scope.eventsMode })
               );
             }
 
@@ -759,6 +763,7 @@ app
             .onbr()
             .initiated('signup.click_other_links', {
               source: 'privacy',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -769,6 +774,7 @@ app
             .onbr()
             .initiated('signup.click_other_links', {
               source: 'terms',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -779,6 +785,7 @@ app
             .onbr()
             .initiated('signup.select_option', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -789,6 +796,7 @@ app
             .onbr()
             .initiated('signup.fill_pre_signup_form', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -799,6 +807,7 @@ app
             .onbr()
             .initiated('signup.finish_signup', {
               source: type,
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -808,7 +817,7 @@ app
           window.rzpQ
             .now()
             .onbr()
-            .initiated('signup.create_account')
+            .initiated('signup.create_account', { mode: $scope.eventsMode })
         );
       };
       $scope.goToSigninLayout = function() {
@@ -824,6 +833,7 @@ app
             .onbr()
             .success('signup.click_other_links', {
               source: 'sign_in',
+              mode: $scope.eventsMode,
             })
         );
         $state.transitionTo(
@@ -889,6 +899,8 @@ app
             user.identity().then(function(userDetails) {
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.settings.partner_intent =
+                userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
                 if (userDetails) {
                   Object.assign(
@@ -929,11 +941,14 @@ app
               // if pre sign up pending
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.settings.partner_intent =
+                userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
                 Object.assign(
                   $scope.signup.merchantData,
                   userDetails.pre_signup
                 );
+
                 $scope.login.currentStep = 2;
                 goToRelevantQuestion();
               } else if (!user.isVerified()) {
@@ -983,7 +998,7 @@ app
       $scope.canSkipIntermediateScreens = function() {
         return (
           $scope.signup.settings.partner_intent ||
-          $scope.signup.merchantData.business_type == 110
+          $scope.signup.merchantData.business_type == 11
         );
       };
       $scope.goToForgotPwd = function() {
@@ -1064,6 +1079,8 @@ app
                   hideSpinner();
                   if (userDetails) {
                     $scope.login.data.email = userDetails.email;
+                    $scope.signup.settings.partner_intent =
+                      userDetails.partner_intent;
                     Object.assign(
                       $scope.signup.merchantData,
                       userDetails.pre_signup
@@ -1073,6 +1090,9 @@ app
                     $scope.email_not_verified = false;
                     goToRelevantQuestion();
                     $scope.login.currentStep = 2;
+                    $scope.signup.settings.partner_intent =
+                      userDetails.partner_intent;
+
                     $state.transitionTo(
                       'access.pre_signup',
                       {},
@@ -1122,6 +1142,7 @@ app
             .onbr()
             .success('signup.email_verification', {
               source: 'sign_in',
+              mode: $scope.eventsMode,
             })
         );
 
@@ -1235,6 +1256,7 @@ app
             .onbr()
             .success('signup.click_other_links', {
               source: 'contact_us',
+              mode: $scope.eventsMode,
             })
         );
       };
@@ -1281,6 +1303,7 @@ app
             .onbr()
             .success('signup.back_action', {
               source: toStepName,
+              mode: $scope.eventsMode,
             })
         );
       };

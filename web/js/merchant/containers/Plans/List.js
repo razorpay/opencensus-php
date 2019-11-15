@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import {
   planId,
@@ -10,13 +10,13 @@ import {
   planAmount,
   planBillingCycle,
   createdAt,
-} from 'rzp/ui/item/pair';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import DataTable from 'rzp/ui/Table/DataTable';
+} from 'common/ui/item/pair';
+import HeaderAction from 'common/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
-import { fetchPlans as fetchAll } from 'merchant/modules/plans';
-import * as ModalActions from 'rzp/modules/modals';
+import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
+import { fetchPlans as fetchAll } from 'merchant/reducers/plans';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';

@@ -6,15 +6,16 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
-import { prefixEntityValue } from 'common/data';
-import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import AccountsList from 'rzp/ui/AccountsList/index.js';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import debounce from 'rzp/utils/debounce';
+import { titleCase } from 'common/utils/rzp-utils';
+import scrollTo from 'common/utils/scrollTo';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
+import ReduxDatetime from 'common/ui/ReduxDatetime';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import AccountsList from 'common/ui/AccountsList/index.js';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import debounce from 'common/utils/debounce';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
@@ -40,7 +41,7 @@ const requestFailedFunc = () => {
   },
   downloadStartedMessage = {
     type: 'success',
-    message: 'Your report will download shortly',
+    message: 'Your report generation request is being placed',
   };
 
 export default function Reports(store, opts) {
@@ -55,7 +56,6 @@ export default function Reports(store, opts) {
     addReportToList,
     updateReportInList,
     removeReportFromList,
-    areReportsStillDownloading,
     addPollInstance,
   } = modelActions;
 
@@ -185,6 +185,7 @@ export default function Reports(store, opts) {
           .startOf('month'),
         currentReportList,
         pollInstances,
+        disableDownloadButton: false,
       };
 
       this.onConfigChange = ::this.onConfigChange;
@@ -207,10 +208,12 @@ export default function Reports(store, opts) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
       this.setFileFormat(option);
+      this.enableDownloadButton();
     }
 
     onAccountChange(account) {
       this.setState({ selectedAccount: account });
+      this.enableDownloadButton();
     }
 
     setFileFormat = config => {
@@ -340,11 +343,36 @@ export default function Reports(store, opts) {
       }
     };
 
-    saveLongPollInstances = (reportId, pollInstance) => {
+    onPollStart = (reportId, pollInstance) => {
       this.props.addPollInstance(reportId, pollInstance);
+      const reportProgressElement = document.querySelector(
+        '#report-progress-' + reportId
+      );
+
+      if (reportProgressElement) {
+        scrollTo({
+          endPos: reportProgressElement.getBoundingClientRect().top,
+          animation: 'ease-in-out',
+        });
+      }
+    };
+
+    disableDownloadButton = () => {
+      this.setState({
+        disableDownloadButton: true,
+      });
+    };
+
+    enableDownloadButton = () => {
+      if (this.state.disableDownloadButton) {
+        this.setState({
+          disableDownloadButton: false,
+        });
+      }
     };
 
     generateReport() {
+      this.disableDownloadButton();
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'download_report');
         window.hj('tagRecording', ['download_report']);
@@ -361,7 +389,6 @@ export default function Reports(store, opts) {
 
       //tracking vars for reports v2
       let reportActionTypeForTracking = 'Download Report';
-      let downloadTimeLapse = new Date().getTime();
 
       if (selectedConfig.value === 'monthlyInvoice') {
         const month = invoiceDate.month() + 1,
@@ -443,7 +470,7 @@ export default function Reports(store, opts) {
             reqData,
             isMerchantAccount,
             this.updateStore,
-            this.saveLongPollInstances,
+            this.onPollStart,
             isPartnerReport
           ).then(data => {
             if (data.error) {
@@ -549,7 +576,7 @@ export default function Reports(store, opts) {
       }
 
       const { user, type, date, ga, dateRangeData } = this.props;
-      const { accounts, selectedAccount, selectedConfig } = this.state;
+      const { selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
       let emailsMap = {};
@@ -596,7 +623,6 @@ export default function Reports(store, opts) {
     // 1. merchant custom report configs
     // 2. rzp owned report configs
     sortConfigs = configs => {
-      const rzpId = '100000Razorpay';
       const merchantId = this.props.user.user.id;
       let merchantConfigs = [],
         rzpConfigs = [];
@@ -674,20 +700,19 @@ export default function Reports(store, opts) {
     render() {
       const {
         isLoading,
-        hasConfigs,
         configs,
         accounts,
         selectedConfig,
         selectedAccount,
         currentReportList,
+        disableDownloadButton,
       } = this.state;
 
-      const { type, dateRangeData, user } = this.props;
+      const { type, dateRangeData } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
       let content = null;
-
       let isCurrentConfigSelected = false;
 
       Object.keys(currentReportList).forEach(reportId => {
@@ -800,6 +825,7 @@ export default function Reports(store, opts) {
                               name="type"
                               class="fix-select"
                               component="select"
+                              onChange={this.enableDownloadButton}
                             >
                               <option value="daily">Daily</option>
                               {!(
@@ -817,6 +843,7 @@ export default function Reports(store, opts) {
                                   id="with-time"
                                   component="input"
                                   type="checkbox"
+                                  onChange={this.enableDownloadButton}
                                 />
                                 <label for="with-time" class="icon i-check">
                                   Specify time
@@ -846,6 +873,7 @@ export default function Reports(store, opts) {
                               }
                               placeholder="Select Year-Month"
                               timeFormat={false}
+                              onChange={this.enableDownloadButton}
                             />
                           </div>
                         </div>
@@ -863,6 +891,7 @@ export default function Reports(store, opts) {
                                 placeholder="Select Date-Month-Year"
                                 isValidDate={validYear}
                                 timeFormat={false}
+                                onChange={this.enableDownloadButton}
                               />
                             </div>
                           </div>
@@ -881,6 +910,7 @@ export default function Reports(store, opts) {
                                   timeFormat={false}
                                   isValidDate={validYear}
                                   closeOnSelect
+                                  onChange={this.enableDownloadButton}
                                 />
                                 {dateRangeData.withTime && (
                                   <Field
@@ -890,6 +920,7 @@ export default function Reports(store, opts) {
                                     closeOnSelect
                                     dateFormat={false}
                                     class="m-t"
+                                    onChange={this.enableDownloadButton}
                                   />
                                 )}
                               </div>
@@ -909,6 +940,7 @@ export default function Reports(store, opts) {
                                     dateRangeData.startAt
                                   )}
                                   closeOnSelect
+                                  onChange={this.enableDownloadButton}
                                 />
                                 {dateRangeData.withTime && (
                                   <Field
@@ -917,6 +949,7 @@ export default function Reports(store, opts) {
                                     closeOnSelect
                                     dateFormat={false}
                                     class="m-t"
+                                    onChange={this.enableDownloadButton}
                                   />
                                 )}
                               </div>
@@ -944,6 +977,7 @@ export default function Reports(store, opts) {
                             name="reportType"
                             class="fix-select"
                             component="select"
+                            onChange={this.enableDownloadButton}
                           >
                             {/* Add option on the fly for txt, tsv or other formats */}
                             {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
@@ -965,7 +999,10 @@ export default function Reports(store, opts) {
                     <button
                       class="btn btn-primary"
                       onClick={this.generateReport}
-                      disabled={type === 'dateRange' && !!dateRangeError}
+                      disabled={
+                        disableDownloadButton ||
+                        (type === 'dateRange' && !!dateRangeError)
+                      }
                     >
                       Download Report
                     </button>

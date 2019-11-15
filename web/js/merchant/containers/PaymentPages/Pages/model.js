@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { generateReportV2 } from 'merchant/modules/reports';
+import { generateReportV2 } from 'merchant/reducers/reports';
 
 function pruneReqPayload(reqPayload) {
   if (reqPayload.amount) {
@@ -141,14 +141,12 @@ export function exportReportCSV(
 
   const entityCreatedAt = paymentPageEntity.created_at;
   const nowDate = new Date();
-  let startTime = nowDate.setDate(nowDate.getDate() - 30); // Should be max 30 days in past from current time
-  startTime = startTime < entityCreatedAt ? entityCreatedAt : startTime;
 
   const reqPayload = {
     config_id: configId,
     generated_by: user.current,
-    start_time: Math.floor(startTime / 1000),
-    end_time: Math.floor(new Date().getTime() / 1000), // Current time
+    start_time: entityCreatedAt - 1, // Duration here doesn't make sense (as per API). So, start and end time is ~same as entity created_at
+    end_time: entityCreatedAt + 1,
     template_overrides: _prepareTemplate(paymentPageEntity),
   };
 

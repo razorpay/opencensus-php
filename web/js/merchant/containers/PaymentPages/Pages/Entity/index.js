@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { updatePPInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
+import { keysToSentence } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPageEntity,
@@ -13,15 +13,15 @@ import {
   deactivatePaymentPage,
 } from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Spinner from 'rzp/ui/Spinner';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { updateItem } from 'rzp/utils/immutable';
+import Spinner from 'common/ui/Spinner';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { updateItem } from 'common/utils/immutable';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import NoEntityResultsFound from 'common/NoEntityResultsFound';
+import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 
 import PaymentPagesV2Entity from './V2';
 import PaymentPagesV3Entity from './V3';
@@ -420,7 +420,7 @@ export default class extends React.Component {
       );
     }
 
-    return this.props.user.isPPV3Enabled ? (
+    return this.props.user.isPPMLIEnabled ? (
       <PaymentPagesV3Entity
         {...this.props}
         {...this.state}
@@ -439,7 +439,6 @@ export default class extends React.Component {
         editPaymentPage={this.editPaymentPage}
         toggleManualActivation={this.toggleManualActivation}
         reActivateLink={this.reActivateLink}
-        isPPV3ReportsEnabled={this.props.user.isPPV3ReportsEnabled}
       />
     );
   }

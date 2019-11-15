@@ -1,40 +1,48 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Alert from 'component/Alert';
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
+import Alert from 'common/new-ui/Alert';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import { Modal, ModalContent } from 'component/Modal';
-import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinkFormFields from './Fields';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import PaymentLinkFormFields, { getCustomNotesOptions } from './Fields';
 
 import moment from 'moment';
 import { createPaymentLink } from '../model';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
 
-import { onChangeNotes } from 'component/Input/PairList';
+import { onChangeNotes } from 'common/new-ui/Input/PairList';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { updatePLInReduxList } from 'merchant/modules/invoices/list';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
-import { luminateRow } from 'merchant/modules/app';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
+import { fetchInvoice } from 'merchant/reducers/invoices/details';
+import {
+  fetchReminders,
+  fetchRemindersMerchantConfigs,
+} from 'merchant/reducers/reminders';
+import { luminateRow } from 'merchant/reducers/app';
 
-import { getURLQueryParams, paiseToRupees } from 'rzp/utils/rzp-utils';
+import {
+  getURLQueryParams,
+  paiseToRupees,
+  findBy,
+} from 'common/utils/rzp-utils';
 import {
   trackOpenCreateForm,
   closePaymentLinkForm,
   trackSaveDuplicatePaymentLink,
 } from '../ga';
 
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 
 const FORM_FIELDS = {
   title: 'Payment Link',
@@ -145,14 +153,49 @@ function WizardFields(field) {
 }
 
 @withRouter
-@connect(state => state.session, {
-  updatePLInReduxList,
-  fetchInvoice,
-  showNotification,
-  openModal,
-  closeModal,
-  luminateRow,
-})
+@connect(
+  state => {
+    const paymentLinksRemindersSettings =
+      findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
+      {};
+
+    let withExpireRemindersCount = 0,
+      withOutExpireRemindersCount = 0;
+
+    state.reminders.merchant_config.items.forEach(ele => {
+      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
+        withExpireRemindersCount += 1;
+
+        return;
+      }
+
+      withOutExpireRemindersCount += 1;
+    });
+
+    return {
+      ...state.session,
+      paymentLinksRemindersSettings: {
+        isEnabled: paymentLinksRemindersSettings.active,
+        count: {
+          withExpireRemindersCount,
+          withOutExpireRemindersCount,
+        },
+      },
+      reminders: state.reminders,
+    };
+  },
+  {
+    updatePLInReduxList,
+    showNotification,
+    fetchReminders,
+    fetchRemindersMerchantConfigs,
+    updatePLInReduxList,
+    fetchInvoice,
+    openModal,
+    closeModal,
+    luminateRow,
+  }
+)
 @RTracking(() => window.rzpQ.component('CreateNewContainer'))
 export default class CreateNewContainer extends React.Component {
   static contextTypes = {
@@ -217,6 +260,8 @@ export default class CreateNewContainer extends React.Component {
             contact: data.customer_details.contact,
             expire_by,
             notes: defaultValueNotes,
+            reminder_enable:
+              data.reminder_status && !(data.reminder_status === 'disabled'),
           },
           _name: {
             hasNoExpiry: expire_by ? '0' : '1',
@@ -242,6 +287,14 @@ export default class CreateNewContainer extends React.Component {
     }
 
     this.toggleDisableState();
+
+    if (!this.props.reminders.reminders.items.length) {
+      this.props.fetchReminders();
+    }
+
+    if (!this.props.reminders.merchant_config.items.length) {
+      this.props.fetchRemindersMerchantConfigs();
+    }
   }
 
   componentDidUpdate() {
@@ -355,6 +408,12 @@ export default class CreateNewContainer extends React.Component {
 
   /* Handle change of notes */
   onChangeNotes = pairs => {
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      this.onChange(pairs);
+
+      return;
+    }
+
     const notes = onChangeNotes(pairs);
 
     this.setState({
@@ -406,6 +465,20 @@ export default class CreateNewContainer extends React.Component {
 
     if (!this.state.dirty.receipt) {
       delete reqPayload.receipt;
+    }
+
+    if (reqPayload.reminder_enable === '1') {
+      reqPayload.reminder_enable = true;
+    } else {
+      delete reqPayload.reminder_enable;
+    }
+
+    if (this.props.user.isCustomNotesDropdownEnabled) {
+      const { type } = getCustomNotesOptions();
+
+      reqPayload.notes = {
+        [type]: reqPayload.notes,
+      };
     }
 
     return FORM_FIELDS.onCreate(reqPayload)
@@ -520,6 +593,16 @@ export default class CreateNewContainer extends React.Component {
             </div>
           </Input.Group>
         );
+      }
+
+      let options = f.options;
+      if (typeof options === 'function') {
+        f.options = options(this);
+      }
+
+      let label = f.label;
+      if (typeof label === 'function') {
+        f.label = f.label(this);
       }
 
       return WizardFields.call(this, f);

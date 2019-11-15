@@ -1,7 +1,10 @@
 import { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import { stringifyQueryParams, getURLQueryParams } from 'rzp/utils/rzp-utils';
+import {
+  stringifyQueryParams,
+  getURLQueryParams,
+} from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 
 @reduxForm({})

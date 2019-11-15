@@ -1,5 +1,5 @@
-import Amount from 'rzp/ui/Amount';
-import TableBody from 'rzp/ui/TableBody';
+import Amount from 'common/ui/Amount';
+import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ItemsListItem = ({ item, onEdit, onDelete }) => {

@@ -1,5 +1,5 @@
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 import StatusLabel from 'merchant/components/StatusLabel';
 
 export const getAmount = (key = 'amount') => item => {

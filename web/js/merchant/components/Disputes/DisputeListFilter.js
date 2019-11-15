@@ -1,7 +1,7 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
-import { snakeToTitleCase as titleCase } from 'common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const phases = [
   'retrieval',

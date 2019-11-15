@@ -1,6 +1,6 @@
 import InfoCard from './InfoCard';
-import Amount from 'rzp/ui/Amount';
-import { formatFromNow } from 'rzp/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import { formatFromNow } from 'common/utils/rzp-utils';
 
 export default props => {
   let {

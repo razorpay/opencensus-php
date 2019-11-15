@@ -1,11 +1,11 @@
 import moment from 'moment';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
-import Input from 'component/Input';
-import Time from 'rzp/ui/Time';
-import Button, { AsyncBtn } from 'component/Button';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
+import Input from 'common/new-ui/Input';
+import Time from 'common/ui/Time';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class EditExpiry extends React.Component {
   state = this.resetState();
@@ -62,11 +62,12 @@ export default class EditExpiry extends React.Component {
     if (this.state.isEditableMode) {
       content = (
         <React.Fragment>
-          <DateField
-            updateDate={this.updateDate}
-            expire_by={this.state.expire_by}
+          <Input.DateTime
+            checkboxFieldLabel="No Expiry"
+            value={this.state.expire_by}
             defaultValue={this.state.expire_by}
-            isExpireByRequired={isExpireByRequired}
+            required={isExpireByRequired}
+            onChange={this.updateDate}
           />
 
           <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
@@ -109,116 +110,5 @@ export default class EditExpiry extends React.Component {
     }
 
     return content;
-  }
-}
-
-export class DateField extends React.Component {
-  state = {
-    expire_by: this.props.defaultValue,
-    hasNoExpiry: this.props.isExpireByRequired
-      ? false
-      : !this.props.defaultValue,
-  };
-
-  onDateChange = date => {
-    const curExpiryByTime = this.state.expire_by;
-
-    dateCalculator(date, curExpiryByTime, this.updateDate);
-  };
-
-  onTimeChange = date => {
-    const curDate = this.state.expire_by;
-
-    timeCalculator(date, curDate, this.updateDate);
-  };
-
-  updateDate = ts => {
-    const newDate = moment(ts);
-
-    this.setState({
-      expire_by: newDate,
-    });
-
-    this.props.updateDate && this.props.updateDate(newDate);
-  };
-
-  render() {
-    const { expire_by, hasNoExpiry } = this.state;
-    const {
-      isInline,
-      label,
-      className,
-      isExpireByRequired = false,
-    } = this.props;
-
-    return (
-      <React.Fragment>
-        {!isExpireByRequired && (
-          <Input.Check
-            label={label}
-            className={className}
-            fieldLabel="No Expiry"
-            defaultValue={this.props.defaultValue ? '0' : '1'}
-            value={hasNoExpiry}
-            onChange={e => {
-              if (!e.target.checked) {
-                setTimeout(() => {
-                  document
-                    .querySelector('[data-name="expire_by_date"]')
-                    .focus();
-                  document
-                    .querySelector('[data-name="expire_by_date"]')
-                    .click();
-                }, 10);
-              } else {
-                this.props.updateDate && this.props.updateDate(null);
-              }
-
-              this.setState({
-                hasNoExpiry: e.target.checked,
-              });
-            }}
-          />
-        )}
-        <Input.Group
-          class={classList(
-            !isExpireByRequired && 'InputGroup--near',
-            isInline ? 'InputGroup--inline' : 'Input--half_big'
-          )}
-        >
-          <div
-            class="Input-content"
-            style={{ marginTop: isExpireByRequired ? -8 : 0 }}
-          >
-            <Input.ToCalendar
-              data-name="expire_by_date"
-              placeholder="15-04-2018"
-              defaultValue={moment(expire_by)}
-              disabled={hasNoExpiry}
-              readOnly={true}
-              onChange={this.onDateChange}
-              size={isInline ? 'half_small' : 'half'}
-              addonAfter={<i class="i i-date-range" />}
-              placement="topLeft"
-              allowToday={true}
-              disablePastDates={true}
-              required={isExpireByRequired}
-            />
-            {!!expire_by && (
-              <Input.TimePicker
-                placeholder="11:59PM"
-                defaultValue={moment(expire_by)}
-                disabled={hasNoExpiry}
-                readOnly={true}
-                onChange={this.onTimeChange}
-                size={isInline ? 'half_small' : 'half'}
-                addonAfter={<i class="i i-time" />}
-                required={isExpireByRequired}
-              />
-            )}
-          </div>
-        </Input.Group>
-      </React.Fragment>
-    );
   }
 }

@@ -1,9 +1,4 @@
 <div class="auth-container height-100" id="auth-container" ng-controller="AuthCtrl">
-  <div class="topbar-container" ng-if="!rightLayout || isLoggedIn">
-        <span>Signup &amp; Get Free Credits worth ₹20,000 Today! Use Coupon Code &nbsp;
-          <b>FESTIVEJOY</b>
-        </span>
-  </div>
   <div ng-if="lockme" class="auth-background-img" style="background-image: url('img/dashboard-image.png');"></div>
   <div class="auth-inner">
     <div class="auth-header">
@@ -12,9 +7,9 @@
         <div class="pull-right" ng-if="isOrgRZP">
           <span ng-if="!rightLayout || isLoggedIn" class="auth-header-text">Already a user?</span>
           <span ng-if="rightLayout && !isLoggedIn && !lockme" class="auth-header-text">New to Razorpay?</span>
-          <button ng-if="!rightLayout && !isLoggedIn" class="btn btn-layout-change" ng-click="goToSigninLayout()">Login</button>
-          <button ng-if="isLoggedIn" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Login</button>
-          <button ng-if="lockme" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Logout</button>
+          <button ng-if="!rightLayout && !isLoggedIn" class="btn btn-layout-change" ng-click="goToSigninLayout()">Log in</button>
+          <button ng-if="isLoggedIn" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Log in</button>
+          <button ng-if="lockme" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Log out</button>
           <button ng-if="rightLayout && !isLoggedIn && !lockme" class="btn btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
         </div>
       </div>

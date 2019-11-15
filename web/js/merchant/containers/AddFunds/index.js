@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
-import Alert from 'rzp/ui/Forms/Alert';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required } from 'rzp/utils/validators';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import Alert from 'common/ui/Forms/Alert';
+import InputField from 'common/ui/Forms/InputField';
+import { required } from 'common/utils/validators';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
-import addFunds from 'merchant/utils/addfunds';
+import addFunds from './model';
 
 @connect(state => state.session, {
   ...NotificationsActions,

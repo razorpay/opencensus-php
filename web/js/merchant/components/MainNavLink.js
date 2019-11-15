@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { setActivePageName, toggleMobileMenu } from 'merchant/modules/app';
+import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
 
 @connect(
   state => {
@@ -74,6 +74,7 @@ export default class MainNavLink extends Component {
       icon,
       label,
       isNew,
+      customBadge,
       isBeta = false,
       isPending,
       baseLocation,
@@ -94,6 +95,10 @@ export default class MainNavLink extends Component {
       );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+    } else if (customBadge) {
+      tag = (
+        <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>
+      );
     } else if (isSettlementEnabled) {
       tag = (
         <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
