@@ -1768,9 +1768,7 @@ class Service extends Base\Service
         /**
          * - Doing this for calls from FAVpaValidation Worker since merchant is not set in async processing
          * - Tried with basicauth but has related issues of repo null
-         *
          */
-
         if ($merchant === null and isset($input['merchant_id']))
         {
             $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
