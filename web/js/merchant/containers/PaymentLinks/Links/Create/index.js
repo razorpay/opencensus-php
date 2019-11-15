@@ -210,12 +210,18 @@ export default class CreateNewContainer extends React.Component {
     defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
-      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      dirty: {
+        reminder_enable:
+          props.user.isRemindersEnabled &&
+          props.paymentLinksRemindersSettings.isEnabled
+            ? '1'
+            : '0', // 1 => selected
+      }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
         hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
-      isLoading: false,
+      isLoading: true,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -283,6 +289,14 @@ export default class CreateNewContainer extends React.Component {
       .then(() => {
         this.setState({
           isLoading: false,
+          dirty: {
+            ...this.state.dirty,
+            reminder_enable:
+              this.props.user.isRemindersEnabled &&
+              this.props.paymentLinksRemindersSettings.isEnabled
+                ? '1'
+                : '0', // 1 => selected
+          },
         });
       })
       .catch(() => {
@@ -686,7 +700,7 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
-        fetchingInvoice={this.state.isLoading}
+        isLoading={this.state.isLoading}
       />
     );
 

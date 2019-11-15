@@ -393,7 +393,6 @@ export default class User {
   }
 
   get isRemindersEnabled() {
-    return true;
     return this.getExpStatus('reminders');
   }
 
