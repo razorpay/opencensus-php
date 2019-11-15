@@ -59,5 +59,24 @@ class ViewDataSerializer extends Base\Core
 
     }
 
+    public function serializeForApiInternal()
+    {
+        $invoiceData = $this->serializeForApi();
 
+        $order = $this->invoice->order;
+
+        if ($order->getMethod() === Method::NACH)
+        {
+            $subscriptionRegistration = $this->invoice->entity;
+
+            if ($subscriptionRegistration !== null)
+            {
+                $paperMandate = $subscriptionRegistration->paperMandate;
+
+                $invoiceData['is_nach_form_uploaded'] = empty($paperMandate->getUploadedFormUrl()) === false;
+            }
+        }
+
+        return $invoiceData;
+    }
 }

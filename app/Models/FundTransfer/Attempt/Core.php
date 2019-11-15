@@ -783,7 +783,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_INIT, ['key' => $key]);
 
         $rampOnFts  = $this->app->razorx->getTreatment(
-            $source->getId(),
+            $source->getMerchantId(),
             $key,
             $this->mode
         );

@@ -5,7 +5,7 @@ namespace RZP\Models\D2cBureauReport;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
-use RZP\Constants\Environment;
+use RZP\Trace\TraceCode;
 use RZP\Models\D2cBureauDetail;
 
 class Service extends Base\Service
@@ -20,5 +20,22 @@ class Service extends Base\Service
         }
 
         return $this->core()->saveAndReturnReport($bureauDetail, $merchant, $user);
+    }
+
+    public function update($id, array $input): array
+    {
+        $this->trace->info(TraceCode::D2C_BUREAU_REPORT_UPDATE, [
+            'id'    => $id,
+            'input' => $input,
+        ]);
+
+        /** @var Entity $bureauReport */
+        $bureauReport = $this->repo->d2c_bureau_report->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $bureauReport->edit($input);
+
+        $this->repo->saveOrFail($bureauReport);
+
+        return $bureauReport->toArrayForDashboard();
     }
 }

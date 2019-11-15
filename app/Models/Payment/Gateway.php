@@ -250,6 +250,7 @@ class Gateway
     const MCC_FILTER_GATEWAYS = [
         self::HDFC,
         self::HITACHI,
+        self::CARD_FSS,
     ];
 
     /**
@@ -626,7 +627,9 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $channels = [
