@@ -2058,6 +2058,7 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'offer_validate',
     ];
 
     //

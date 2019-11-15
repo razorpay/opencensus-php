@@ -144,13 +144,11 @@ class Service extends Base\Service
     {
         $payment = new Entity();
 
-        $payment->build($input);
+        $payment->generate($input);
 
         $verbose = true;
 
         $offer = $this->repo->offer->findByPublicIdAndMerchant($input[Entity::OFFER_ID], $this->merchant);
-
-        $payment->associateOffer($offer);
 
         $checker = new Checker($offer, $verbose);
 
