@@ -17,6 +17,7 @@ class Method
     const EMANDATE      = 'emandate';
     const CARDLESS_EMI  = 'cardless_emi';
     const PAYLATER      = 'paylater';
+    const NACH          = 'nach';
 
     protected static $methods = [
         self::CARD          => 'Card',

@@ -19,6 +19,7 @@ class Entity extends Base\Entity
     const STATUS           = 'status';
 
     /***************** Input Keys ****************/
+    const DEVICE_TOKEN     = 'device_token';
     const EXPIRE_AT        = 'expire_at';
 
     /************** Entity Properties ************/
@@ -142,8 +143,9 @@ class Entity extends Base\Entity
         $expireAt = $this->getExpireAt();
         $currentTime = $this->freshTimestamp();
 
-        // We are giving one minute window
-        return (($expireAt - $currentTime) < 60);
+        // We are giving one minute window, means even if token is about
+        // to expire in next 1 one minute we will refresh it anyways
+        return (($expireAt - ($currentTime + 60)) < 0);
     }
 
     /***************** SCOPES *****************/
