@@ -1395,12 +1395,13 @@ class ActivationTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   ['business_type'           => 2,
                                                    'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'pankaj k',
                                                    'poa_verification_status' => 'verified',
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
         $attribute = [
-            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
+            ValidationEntity::REGISTERED_NAME => "p kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
@@ -1451,6 +1452,27 @@ class ActivationTest extends TestCase
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    public function testFailureBankDetailsVerificationForBankNameMismatchCase()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'puneet jain',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],

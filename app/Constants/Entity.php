@@ -81,6 +81,7 @@ class Entity
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
+    const PAPER_MANDATE             = 'paper_mandate';
 
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
@@ -293,6 +294,11 @@ class Entity
     // Service: Stork
     const STORK_WEBHOOK = 'stork.webhook';
 
+    const FTS_TRANSFERS                  = 'fts.transfers';
+    const FTS_ATTEMPTS                   = 'fts.attempts';
+    const FTS_FUND_ACCOUNT               = 'fts.fund_accounts';
+    const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
+
     const COMMISSION = 'commission';
 
     /**
@@ -439,6 +445,7 @@ class Entity
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
+        self::PAPER_MANDATE             => \RZP\Models\PaperMandate::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
@@ -655,6 +662,10 @@ class Entity
         self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
         self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
         self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
+        self::FTS_TRANSFERS                => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

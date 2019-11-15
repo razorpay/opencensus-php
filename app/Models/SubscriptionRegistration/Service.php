@@ -66,6 +66,22 @@ class Service extends Base\Service
         return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 
+    public function fetchAuthLinkInternal(string $id, array $input): array
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            null,
+            null,
+            $input,
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
+
+        $data = (new ViewDataSerializer($invoice))->serializeForApiInternal();
+
+        return $data;
+    }
+
     public function fetchToken(String $id, array $input): array
     {
         $token = $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant, $input);
@@ -178,6 +194,126 @@ class Service extends Base\Service
             'failed'    => $failed,
             'succeeded' => $subscriptionRegistrations,
         ];
+    }
+
+    public function paperMandateAuthenticate(array $input): array
+    {
+        $validator = new Validator;
+
+        $validator->validatePaperMandateAuthenticateInput($input);
+
+        $subscriptionRegistration = null;
+
+        if (empty($input[Entity::ORDER_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($input[Entity::ORDER_ID]);
+        }
+        else if (empty($input[Entity::AUTH_LINK_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForInvoice($input[Entity::AUTH_LINK_ID]);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'should not have reached here'
+            );
+        }
+
+        $validator->validateSubscriptionRegistrationForAuthentication($subscriptionRegistration);
+
+        return $this->core->paperMandateAuthenticate($subscriptionRegistration, $input);
+    }
+
+    public function paperMandateValidate(array $input): array
+    {
+        $validator = new Validator;
+
+        $validator->validatePaperMandateAuthenticateInput($input);
+
+        $subscriptionRegistration = null;
+
+        if (empty($input[Entity::ORDER_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($input[Entity::ORDER_ID]);
+        }
+        else if (empty($input[Entity::AUTH_LINK_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForInvoice($input[Entity::AUTH_LINK_ID]);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'should not have reached here'
+            );
+        }
+
+        $validator->validateSubscriptionRegistrationForAuthentication($subscriptionRegistration);
+
+        return $this->core->paperMandateValidate($subscriptionRegistration, $input);
+    }
+
+    public function getUploadedPaperMandateForm(array $input)
+    {
+        (new Validator)->validateGetUploadedPaperMandateForm($input);
+
+        if (empty($input[Entity::ORDER_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($input[Entity::ORDER_ID]);
+        }
+        else if (empty($input[Entity::AUTH_LINK_ID]) === false)
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForInvoice($input[Entity::AUTH_LINK_ID]);
+        }
+        else
+        {
+            $subscriptionRegistration = $this->getSubscriptionRegistrationForToken($input[Entity::TOKEN_ID]);
+        }
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        return [
+            'url' => $paperMandate->getUploadedFormUrl()
+        ];
+    }
+
+    protected function getSubscriptionRegistrationForToken(string $tokenId)
+    {
+        $tokenId = Token\Entity::stripDefaultSign($tokenId);
+
+        $subscriptionRegistration = $this->repo
+                                         ->subscription_registration
+                                         ->findByTokenIdAndMerchant($tokenId, $this->merchant->getId());
+
+        if ($subscriptionRegistration === null)
+        {
+            throw new Exception\BadRequestValidationFailureException("The id provided does not exist");
+        }
+
+        return $subscriptionRegistration;
+    }
+
+    protected function getSubscriptionRegistrationForOrder(string $orderId)
+    {
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        (new Validator)->validateOrderCreatedForTokenRegistration($order);
+
+        $invoice = $order->invoice;
+
+        return $this->getSubscriptionRegistrationForInvoice($invoice->getPublicId());
+    }
+
+    protected function getSubscriptionRegistrationForInvoice(string $invoiceId)
+    {
+        $invoice = $this->repo
+                        ->invoice
+                        ->findByPublicIdAndMerchant($invoiceId, $this->merchant);
+
+        (new Validator)->validateInvoiceCreatedForTokenRegistration($invoice);
+
+        $subscriptionRegistration = $invoice->tokenRegistration;
+
+        return $subscriptionRegistration;
     }
 
     protected function authenticateToken(string $id)

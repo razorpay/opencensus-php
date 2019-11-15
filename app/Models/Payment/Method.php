@@ -17,6 +17,7 @@ class Method
     const EMANDATE      = 'emandate';
     const CARDLESS_EMI  = 'cardless_emi';
     const PAYLATER      = 'paylater';
+    const NACH          = 'nach';
 
     protected static $methods = [
         self::CARD          => 'Card',
@@ -32,11 +33,9 @@ class Method
         self::PAYLATER      => 'Pay Later',
     ];
 
-    protected static $esAutomaticMethods = [
-        self::CARD          => 'Card',
-        self::NETBANKING    => 'Net Banking',
-        self::UPI           => 'UPI',
-        self::EMI           => 'EMI',
+    protected static $nonEsAutomaticMethods = [
+        self::EMANDATE      => 'E-Mandate',
+        self::BANK_TRANSFER => 'Bank Transfer',
     ];
 
     public static $bankMethods = [
@@ -75,9 +74,9 @@ class Method
         return array_keys(self::$methods);
     }
 
-    public static function getEsPaymentMethods()
+    public static function getNonEsPaymentMethods()
     {
-        return array_keys(self::$esAutomaticMethods);
+        return array_keys(self::$nonEsAutomaticMethods);
     }
 
     public static function isValid($method)
@@ -87,7 +86,8 @@ class Method
 
     public static function isValidEsMethod($method)
     {
-        return in_array($method, self::getEsPaymentMethods(), true);
+        return ((in_array($method, self::getNonEsPaymentMethods(), true) === false) and
+                (in_array($method, self::getAllPaymentMethods(), true) === true));
     }
 
     public static function validateMethod($method)

@@ -50,7 +50,7 @@ class Processor extends Base\Core
 
     const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
-    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 900;
 
     public function __construct()
     {
@@ -878,6 +878,16 @@ class Processor extends Base\Core
         // which will add the merchant to bucket for settlement hence the process continues
         //
         (new Bucket\Core)->markMerchantSettlementAsComplete($merchant, $balanceType);
+
+        //
+        // update the count for channel here
+        // this would help to maintain the exact settlement create count
+        //
+        $redis = app('redis')->connection();
+
+        $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($key, $channel, 1);
 
         $this->trace->count(
             Metric::SETTLEMENT_CREATED_COUNT,

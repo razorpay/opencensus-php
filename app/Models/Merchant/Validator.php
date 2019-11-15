@@ -739,8 +739,7 @@ class Validator extends Base\Validator
             }
             // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
             else if (($input['es_enabled'] === false) and
-                     (($feature === Feature\Constants::ES_AUTOMATIC) or
-                     ($feature === Feature\Constants::ES_ON_DEMAND)))
+                    ($feature === Feature\Constants::ES_AUTOMATIC))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,

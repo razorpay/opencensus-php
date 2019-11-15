@@ -788,11 +788,12 @@ class PaysecureGatewayTest extends TestCase
     // the hitachi entity would not exist.
     public function testLateAuthorizedViaPurchaseTerminal()
     {
+        // making it direct terminal so that another hitachi terminal doesn't get created with default mode
         $this->fixtures->terminal->edit(
             \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
             [
                 'mode' => 2,
-
+                'merchant_id' => '10000000000000'
             ]
         );
 

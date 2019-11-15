@@ -129,6 +129,15 @@ class Core extends Base\Core
 
             $basEntity = (new Entity)->build($bankTransaction);
 
+            //
+            // This should be done after build since `setUtr` fetches things from the entity.
+            // Can be refactored if required, as long as properly tested.
+            //
+            if (empty($basEntity->getUtr()) === true)
+            {
+                $basEntity->setUtr();
+            }
+
             $basEntity->merchant()->associate($merchant);
 
             $sourceEntity = $this->processSourceEntity($basEntity);
@@ -168,6 +177,11 @@ class Core extends Base\Core
             $sourceEntity = $this->processPayout($basEntity);
         }
 
+        if ($sourceEntity === null)
+        {
+            $sourceEntity = $this->processExternal($basEntity);
+        }
+
         $this->validateBalance($basEntity, $sourceEntity);
 
         return $sourceEntity;
@@ -179,7 +193,7 @@ class Core extends Base\Core
 
         if ($reversal === null)
         {
-            return $this->processExternal($basEntity);
+            return null;
         }
 
         //
@@ -205,14 +219,30 @@ class Core extends Base\Core
     {
         $payout = $this->fetchExistingPayoutIfPresent($basEntity);
 
-        if (($payout === null) or
-            ($payout->isStatusFailed() === true))
+        if ($payout === null)
         {
-            return $this->processExternal($basEntity);
+            return null;
         }
 
-        // TODO: Add a test case for this.
+        // We are checking for $payout->isStatusFailed(), because its possible that due to a code-miss,
+        // a 'reversed' payout is marked as a 'failed' payout, in which case we will get a 'failed' payout
+        // matching a BAS, which should be impossible ideally, because a Failed payout, means no debit
+        // ever happened. So to ensure that error case is handled we are checking for 'failed' payouts too
+        if ($payout->isStatusFailed() === true)
+        {
+            $this->trace->error(
+                TraceCode::BAS_ENTRY_FOR_A_FAILED_PAYOUT,
+                 [
+                     'bas_id'    => $basEntity->getId(),
+                     'payout_id' => $payout->getId()
+                 ]);
+
+            return null;
+        }
+
         (new DownstreamProcessor('fund_account_payout', $payout))->processTransaction();
+
+        $this->repo->saveOrFail($payout);
 
         return $payout;
     }
@@ -226,12 +256,19 @@ class Core extends Base\Core
 
     protected function fetchExistingReversalIfPresent(Entity $basEntity)
     {
-        $utr = $basEntity->getUtrFromDescription();
+        $utr = $basEntity->getUtr();
+
+        if (empty($utr) === true)
+        {
+            return null;
+        }
 
         $balance = $this->getBalance($basEntity);
 
-        // TODO: Start storing UTR in reversals
-        $reversal = $this->repo->reversal->fetchFromUtr($utr, $balance->getId())->first();
+        $reversal = $this->repo
+                         ->reversal
+                         ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId())
+                         ->first();
 
         return $reversal;
     }
@@ -251,7 +288,7 @@ class Core extends Base\Core
 
         $balance = $this->getBalance($basEntity);
 
-        $utr = $basEntity->getUtrFromDescription();
+        $utr = $basEntity->getUtr();
 
         //
         // We first try to retrieve the payout from UTR, present in the description.
@@ -265,7 +302,7 @@ class Core extends Base\Core
         //
         if (empty($utr) === false)
         {
-            $payouts = $this->repo->payout->fetchFromUtr($utr, $balance->getId());
+            $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
         }
 
         //
@@ -276,7 +313,9 @@ class Core extends Base\Core
         {
             $bankTxnId = $basEntity->getBankTransactionId();
 
-            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId, $balance->getId());
+            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId,
+                                                                  $basEntity->getAmount(),
+                                                                  $balance->getId());
         }
 
         //

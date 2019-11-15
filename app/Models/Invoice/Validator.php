@@ -311,7 +311,8 @@ class Validator extends Base\Validator
         }
 
         if (($invoice->isTypeOfSubscriptionRegistration() === true)
-            and ($invoice->entity->getMethod() == SubscriptionRegistration\Method::EMANDATE))
+            and (($invoice->entity->getMethod() == SubscriptionRegistration\Method::EMANDATE) or
+                ($invoice->entity->getMethod() == SubscriptionRegistration\Method::NACH)))
         {
             $amount = (int) $input[Entity::AMOUNT];
 

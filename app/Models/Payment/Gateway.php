@@ -250,6 +250,7 @@ class Gateway
     const MCC_FILTER_GATEWAYS = [
         self::HDFC,
         self::HITACHI,
+        self::CARD_FSS,
     ];
 
     /**
@@ -626,6 +627,9 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_AIRTELMONEY,
+        Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $channels = [
@@ -1114,7 +1118,6 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::CARDLESS_EMI,
@@ -2204,6 +2207,7 @@ class Gateway
     {
         $gateways = [
             self::MPGS,
+            self::CYBERSOURCE,
         ];
 
         return (in_array($gateway, $gateways, true));

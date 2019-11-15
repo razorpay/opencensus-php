@@ -30,6 +30,7 @@ class Converter extends Base\Core
         RequestProcessor\Base::OLAMONEY,
         RequestProcessor\Base::AMAZONPAY,
         RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::UPI_AXIS,
         RequestProcessor\Base::CARD_FSS_BOB,
         RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::NETBANKING_IDFC,

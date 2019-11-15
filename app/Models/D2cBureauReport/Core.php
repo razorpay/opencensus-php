@@ -80,6 +80,8 @@ class Core extends Base\Core
         {
             case Provider::EXPERIAN:
 
+                $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS] = preg_replace('/[^a-zA-Z0-9 ]+/', '', $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS]);
+
                 $bureauDetailArray['buildingName'] = substr($bureauDetailArray[D2cBureauDetail\Entity::ADDRESS], 40, 40) ?: '';
 
                 $bureauDetailArray['roadName'] = substr($bureauDetailArray[D2cBureauDetail\Entity::ADDRESS], 80, 40) ?: '';

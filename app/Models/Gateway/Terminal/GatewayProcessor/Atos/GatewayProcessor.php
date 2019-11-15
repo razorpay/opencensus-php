@@ -81,11 +81,16 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $terminal;
     }
 
-    public function validateGatewayInput($gatewayInput, $merchant)
+    public function validateGatewayInput($gatewayInput, $merchantDetail)
     {
         $gatewayProcessorValidator = new Validator();
 
         $gatewayProcessorValidator->validateInput(self::GATEWAY_INPUT, $gatewayInput);
+    }
+
+    public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail)
+    {
+
     }
 
     public function checkDbConstraints($input, $merchant)

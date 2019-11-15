@@ -871,6 +871,7 @@ class ErrorCode
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
 
+    const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
     const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
@@ -887,6 +888,8 @@ class ErrorCode
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
+    const SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED                        = 'SERVER_ERROR_PAYOUT_INCORRECTLY_MARKED_AS_REVERSED';
+    const SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN                          = 'SERVER_ERROR_PAYOUT_TXN_MISSING_FOR_REVERSAL_TXN';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_MISSING_HANDLER                                              = 'SERVER_ERROR_MISSING_HANDLER';
@@ -1261,6 +1264,7 @@ class ErrorCode
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
+    const GATEWAY_VERIFY_REFUND_IN_PROCESSING                                       = 'GATEWAY_VERIFY_REFUND_IN_PROCESSING';
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                     = 'REFUND_MANUALLY_CONFIRMED_UNPROCESSED';
     const REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED';
@@ -1307,6 +1311,8 @@ class ErrorCode
     const SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR                                   = 'SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR';
 
     const SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED                                 = 'SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED';
+    const SERVER_ERROR_TRANSACTION_WRONG_SOURCE                                     = 'SERVER_ERROR_TRANSACTION_WRONG_SOURCE';
+    const SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE                                   = 'SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE';
 
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
@@ -1387,6 +1393,11 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_PAYMENT_CARD_SAVE_FAILED                                      = 'BAD_REQUEST_PAYMENT_CARD_SAVE_FAILED';
     const SERVER_ERROR_REQUESTED_MPANS_NOT_AVAILABLE                                = 'SERVER_ERROR_REQUESTED_MPANS_NOT_AVAILABLE';
+
+    //Paper NACH Error codes
+    const BAD_REQUEST_UNABLE_TO_READ_NACH_FORM                                      = 'BAD_REQUEST_UNABLE_TO_READ_NACH_FORM';
+    const SERVER_ERROR_NACH_EXTRACTION_FAILED                                       = 'SERVER_ERROR_NACH_EXTRACTION_FAILED';
+
     const BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORIZED               = 'BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_AUTHORIZED';
     const BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED                 = 'BAD_REQUEST_MERCHANT_EMAIL_TRIGGER_EVENT_ALREADY_CAPTURED';
 

@@ -296,7 +296,7 @@ class Gateway extends BaseProcessor
     {
         $amount = $transaction[Fields::TRANSACTION_SUMMARY][Fields::TRANSACTION_AMOUNT][Fields::AMOUNT_VALUE];
 
-        $amount = (int) ($amount * 100);
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }
@@ -365,7 +365,9 @@ class Gateway extends BaseProcessor
 
     protected function getBalanceFromResponse(array $transaction): int
     {
-        $amount = (int) ($transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE] * 100);
+        $amount = $transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE];
+
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }

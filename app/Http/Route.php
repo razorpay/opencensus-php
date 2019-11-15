@@ -234,6 +234,7 @@ final class Route
         'merchant_update_key_access'               => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
+        'merchant_fetch_schedule_tasks'            => ['get',      'schedule_tasks/{type}',                          'ScheduleController@getScheduleTasks',                              ],
         'merchant_user_reset_password'             => ['put',      'users/{id}/password',                            'UserController@resetUserPassword',                                 ],
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'                => ['post',     'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiary'                         ],
@@ -311,6 +312,9 @@ final class Route
         'fund_transfer_attempt_process'            => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',             ],
         'fund_transfer_attempts_process_fts'       => ['post',     'fund_transfer_attempts/fts/process/{channel}',   'FundTransferAttemptController@processFundTransfersUsingFts'        ],
+        'fts_dashboard_fund_transfer_update'       => ['patch',    'fts/dashboard/fund_transfer_update',             'FTSController@updateBulkFtsAttempts'                               ],
+        'fts_dashboard_fund_transfer_status_bulk'  => ['post',     'fts/dashboard/fund_transfer_status/bulk',        'FTSController@getBulkTransferStatus'                               ],
+        'fts_dashboard_fund_transfer_check_status' => ['post',     'fts/dashboard/fund_transfer_status/check',       'FTSController@checkTransferStatus'                                ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -510,6 +514,7 @@ final class Route
         'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'get_scheduled_es_pricing_merchant'        => ['get',      'es/scheduled_pricing',                           'MerchantController@getScheduledEarlySettlementPricingForMerchant'  ],
+        'enable_es_scheduled'                      => ['post',     'es/scheduled',                                   'MerchantController@enableScheduledEs'                              ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
@@ -1145,12 +1150,18 @@ final class Route
         'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'     => ['get',      'subscription_registration/auth_links/{id}',      'SubscriptionRegistrationController@fetchAuthLink'                  ],
         'subscription_registration_resend_link'    => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',      'SubscriptionRegistrationController@sendNotification'    ],
+        'subscription_registration_fetch_link_internal' => ['get', 'subscription_registration/auth_links/{id}/internal', 'SubscriptionRegistrationController@fetchAuthLinkInternal'      ],
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
         'subscription_registration_auto_charge'    => ['post',     'subscription_registration/auto_charge',          'SubscriptionRegistrationController@postProcessAutoCharges'         ],
         'token_registration_token_associate'       => ['post',     'token.registration/{id}/token_associate',        'SubscriptionRegistrationController@associateToken'                 ],
         'token_registration_tokens_authenticate'   => ['post',     'token.registration/tokens_authenticate',         'SubscriptionRegistrationController@authenticateTokens'             ],
+        'auth_link_paper_mandate_authenticate'     => ['post',     'token.registration/paper_mandate/authenticate',  'SubscriptionRegistrationController@paperMandateAuthenticate'       ],
+        'auth_link_paper_mandate_authenticate_proxy' => ['post',   'token.registration/paper_mandate/authenticate/proxy', 'SubscriptionRegistrationController@paperMandateAuthenticate'  ],
+        'auth_link_paper_mandate_validate'         => ['post',     'token.registration/paper_mandate/validate',      'SubscriptionRegistrationController@paperMandateValidate'           ],
+        'auth_link_paper_mandate_validate_proxy'   => ['post',     'token.registration/paper_mandate/validate/proxy','SubscriptionRegistrationController@paperMandateValidate'           ],
+        'get_paper_mandate_uploaded_url'           => ['get',      'token.registration/paper_mandate/uploaded_form', 'SubscriptionRegistrationController@getUploadedPaperMandateForm'    ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
@@ -1265,7 +1276,7 @@ final class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
-        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
+        'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1303,6 +1314,7 @@ final class Route
         'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
+        'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
 
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
@@ -1384,6 +1396,8 @@ final class Route
         'payment_validate_account',
         'fund_account_create_public',
         'contact_get_public',
+        'auth_link_paper_mandate_authenticate',
+        'auth_link_paper_mandate_validate',
     ];
 
     public static $device = [
@@ -1606,6 +1620,7 @@ final class Route
 
         'merchant_activation_update_partner',
         'merchant_activation_status_partner',
+        'merchant_fetch_schedule_tasks',
     ];
 
     // Only routes defined in internalApps go here
@@ -1753,7 +1768,7 @@ final class Route
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
-        'banking_account_statement_process',
+        'banking_account_statement_process_cron',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
         'fund_transfer_attempts_process_fts',
@@ -1814,6 +1829,7 @@ final class Route
         'account_action',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
+
         // Temp fix to allow partners creating their own QR codes for
         // submerchants to use only one set of credentials everywhere
         'mpans_issue',
@@ -1828,6 +1844,7 @@ final class Route
         'merchant_document_fetch',
         'merchant_document_upload',
         'merchant_document_delete',
+        'enable_es_scheduled',
         'get_es_pricing_merchant',
         'get_scheduled_es_pricing_merchant',
         'merchant_edit_config_la',
@@ -2003,6 +2020,10 @@ final class Route
         'subscription_registration_fetch_token',
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
+        'auth_link_paper_mandate_authenticate_proxy',
+        'auth_link_paper_mandate_validate_proxy',
+        'subscription_registration_fetch_link_internal',
+        'get_paper_mandate_uploaded_url',
         'merchant_submit_support_call_request',
         'token_fetch_card',
         'user_edit_self',
@@ -2037,6 +2058,7 @@ final class Route
         'd2c_bureau_details_fetch',
         'd2c_bureau_details_patch',
         'd2c_bureau_details_otp_submit',
+        'd2c_bureau_reports_patch',
         'update_partner_type',
     ];
 
@@ -2505,6 +2527,11 @@ final class Route
         'token_registration_tokens_authenticate',
 
         'gateway_downtime_detection_get_stats',
+
+        //FTS Dashboard routes
+        'fts_dashboard_fund_transfer_update',
+        'fts_dashboard_fund_transfer_status_bulk',
+        'fts_dashboard_fund_transfer_check_status',
     ];
 
     public static $routePermission = [
@@ -2893,7 +2920,7 @@ final class Route
         'invoice_notify_by_batch'                  => '*',
         'invoice_cancel_by_batch'                  => Permission::CANCEL_BATCH,
         'token_registration_token_associate'       => '*',
-        'token_registration_tokens_authenticate'    => '*',
+        'token_registration_tokens_authenticate'   => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
@@ -3014,6 +3041,9 @@ final class Route
         'recon_fetch_files_count'                   => '*',
         'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
+        'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_fund_transfer_status_bulk'   => '*',
+        'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'reports_monthly_banking_invoice'           => '*',
     ];
 
@@ -3272,6 +3302,7 @@ final class Route
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
             'transfer_process',
+            'banking_account_statement_process_cron',
         ],
 
         'subscriptions' => [
@@ -3487,6 +3518,7 @@ final class Route
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
+        'payment_create_subscriptions'         => [Feature::SUBSCRIPTIONS],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
@@ -3518,6 +3550,7 @@ final class Route
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
+        'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
     ];
 
     /*
@@ -3999,11 +4032,11 @@ final class Route
     public function defineRootApiRoute()
     {
         $this->router
-            ->get('/',
-                  [
-                      'as'   => 'api_root',
-                      'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                  ]);
+             ->get('/',
+                 [
+                     'as'   => 'api_root',
+                     'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                 ]);
     }
 
     public function defineStatusApiRoute()

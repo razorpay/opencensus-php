@@ -723,6 +723,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function enableScheduledEs()
+    {
+        $data = $this->service()->enableScheduledEs();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)

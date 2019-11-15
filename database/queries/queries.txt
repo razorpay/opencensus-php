@@ -168,6 +168,9 @@ ALTER TABLE netbanking
     ADD COLUMN date VARCHAR(255) AFTER reference1,
     ADD COLUMN refund_id CHAR(14) AFTER date;
 
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_refund_id_index` (`refund_id`);
+
 ALTER TABLE billdesk
     ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
 
@@ -5497,3 +5500,19 @@ ALTER TABLE fund_account_validations
 
 ALTER TABLE fund_account_validations
     CHANGE COLUMN amount amount bigint NULL;
+
+ALTER TABLE `mozart`
+    ADD INDEX `mozart_payment_id_index` (`payment_id`),
+    ADD INDEX `mozart_refund_id_index` (`refund_id`),
+    ADD INDEX `mozart_created_at_index` (`created_at`);
+
+ALTER TABLE `terminals`
+    ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE banking_account_statement
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX banking_account_statement_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL AFTER updated_at,
+    ADD INDEX external_deleted_at_index (deleted_at);
