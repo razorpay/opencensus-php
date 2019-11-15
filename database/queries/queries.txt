@@ -5417,6 +5417,8 @@ ALTER TABLE settlement_bucket
 ALTER TABLE offers
     ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
     ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN default_offer bool DEFAULT 0;
+    ADD COLUMN max_order_amount int(11) DEFAULT NULL;
 
 ALTER TABLE merchant_invoice
     MODIFY COLUMN invoice_number varchar(255) NOT NULL,
