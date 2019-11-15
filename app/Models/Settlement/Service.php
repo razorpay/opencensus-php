@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -421,5 +422,21 @@ class Service extends Base\Service
         $redis->del($channelWiseCountKey);
 
         return $this->getProcessDetails();
+    }
+
+    public function getHolidayListForYear(array $input)
+    {
+        (new Validator)->validateInput('settlement_holiday', $input);
+
+        $year = Carbon::now(Timezone::IST)->year;
+
+        if (isset($input['year']) === true)
+        {
+            $year = (int) $input['year'];
+        }
+
+        $data = Holidays::getHolidayListForYear($year);
+
+        return $data;
     }
 }
