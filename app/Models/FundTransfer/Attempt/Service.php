@@ -140,6 +140,12 @@ class Service extends Base\Service
 
             $this->repo->saveOrFail($fundTransferAttempt);
 
+            if ((isset($params[Entity::STATUS]) === true) and
+                ($fundTransferAttempt->isRefund() === true))
+            {
+                $this->core()->updateSourceEntity($fundTransferAttempt);
+            }
+
             if ($fundTransferAttempt->isBatchSameAsSource() === true)
             {
                 $sourceId = $this->updateSource($fundTransferAttempt->source, $params);

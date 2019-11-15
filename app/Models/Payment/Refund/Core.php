@@ -97,7 +97,9 @@ class Core extends Base\Core
                     $refund->setRemarks(null);
                     $this->repo->saveOrFail($refund);
 
-                    (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
+                    $event = ($refund->isProcessed() === true)? 'processed_to_file_init_event' : 'file_init_event';
+
+                    (new Service)->makeScroogeEditRefundRequest($refund, $data, $event);
                 }
                 else
                 {
