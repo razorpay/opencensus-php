@@ -3872,7 +3872,12 @@ trait Authorize
 
         $this->offer = $payment->getOffer();
 
-        if ($order->isDiscountApplicable() === false && $this->offer->getOfferType() !== $this->offer::INSTANT)
+        if ($order->isDiscountApplicable() === false)
+        {
+            return;
+        }
+
+        if($payment->getOffer()->getOfferType() !== 'instant')
         {
             return;
         }

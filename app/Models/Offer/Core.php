@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Models\Order\Entity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -214,7 +213,7 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function validateDefaultOfferForOrder(Entity $order, offer\Entity $offer)
+    public function validateDefaultOfferForOrder(Order\Entity $order, Entity $offer)
     {
         $verbose = true;
 
