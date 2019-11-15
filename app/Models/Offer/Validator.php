@@ -413,7 +413,13 @@ class Validator extends Base\Validator
 
     protected function validateMerchantCategory(array $input)
     {
+        $isInsuranceCategory = $this->entity->merchant->isInsuranceCategory($this->entity->merchant->getCategory());
 
+        if($isInsuranceCategory)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for this category Merchant ');
+        }
     }
 
     protected function validateOfferFeatureBlock(array $input)

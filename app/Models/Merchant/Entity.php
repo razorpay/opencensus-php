@@ -688,6 +688,20 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
+    public function isInsuranceCategory()
+    {
+        $insuranceCategories = array(
+            '8211',
+            '8220',
+            '8241',
+            '8244',
+            '8249',
+            '8299');
+
+        return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
+    }
+
+
     public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
