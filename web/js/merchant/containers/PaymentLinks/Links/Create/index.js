@@ -224,6 +224,17 @@ export default class CreateNewContainer extends React.Component {
     }
 
     trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
+
+    const isRazorXDefaultExpiryByEnabled = props.user.isPaymentLinkExpiredByRazorX(
+      72
+    );
+    if (isRazorXDefaultExpiryByEnabled) {
+      const nextDate = moment(new Date()).add(72, 'hours');
+
+      this.state.dirty.expire_by = nextDate;
+      this.state._name.expire_by_date = nextDate;
+      this.state._name.hasNoExpiry = '0';
+    }
   }
 
   fetchIfIntentDuplicate(invoiceId) {
