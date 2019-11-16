@@ -459,7 +459,6 @@ export default class User {
 
   // pl-expiry-72 => Default expiry for Payment Link is 72 hours
   isPaymentLinkExpiredByRazorX(hours) {
-    return true;
     return this.getExpStatus(`pl-expiry-${hours}`);
   }
 
