@@ -1199,6 +1199,7 @@ final class Route
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
+        'create_fts_nodal_beneficiary'             => ['post',     'create_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createFtsNodalBeneficiary'              ],
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
@@ -1756,6 +1757,7 @@ final class Route
         'cps_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
+        'create_fts_nodal_beneficiary',
         'payouts_process_queued',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
@@ -3301,6 +3303,7 @@ final class Route
             'terminal_onboarding_verification',
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
+            'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
         ],

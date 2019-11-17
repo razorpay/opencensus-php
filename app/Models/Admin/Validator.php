@@ -84,6 +84,7 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
+        ConfigKey::FTS_BENEFICIARY                  => 'filled|array',
     ];
 
     protected static $setGatewayDowntimeRedisKeysRules = [

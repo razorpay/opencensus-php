@@ -24,4 +24,13 @@ class NodalBeneficiaryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createFtsNodalBeneficiary()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createFtsNodalBeneficiary($input);
+
+        return ApiResponse::json($response);
+    }
 }

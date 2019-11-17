@@ -57,6 +57,7 @@ class ConfigKey
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
+    const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';
 
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
 
