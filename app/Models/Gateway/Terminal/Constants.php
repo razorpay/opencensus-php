@@ -3,9 +3,15 @@ namespace RZP\Models\Gateway\Terminal;
 
 class Constants
 {
-    const RAZORPAY                          =   "Razorpay";
-    const ATOS_ACTIVATION_RETRY_LIMIT       =   10;
-    const ATOS_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+    const DEFAULT_CONTACT_NAME                   =   "Razorpay";
+    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   10;
+    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+
+    // Actions
+    const MERCHANT_ONBOARD = 'merchantOnboard';
+    const CREATE_TERMINAL = 'create_terminal';
+    const VERIFY_TERMINAL = 'verify_terminal';
+
 
     // Request
     const MPAN       = 'mpan';

@@ -61,6 +61,7 @@ class Validator extends Base\Core
                                                             . "(0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}/"
                                                          ],
         RequestProcessor\Base::NETBANKING_SIB     => ["/^Daily Transaction Details/"],
+        RequestProcessor\Base::NETBANKING_SCB     => ["/^Scb Reconciliation File/"],
         RequestProcessor\Base::AXIS               => [
                                                         "/^Axis Estatement [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
@@ -152,6 +153,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::PAYZAPP                  => 1,
         RequestProcessor\Base::AIRTEL                   => 1,
         RequestProcessor\Base::NETBANKING_SIB           => 1,
+        RequestProcessor\Base::NETBANKING_SCB           => 1,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY   => 2,
         RequestProcessor\Base::PHONEPE                  => 1,
     ];
@@ -309,6 +311,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::NETBANKING_SIB);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingScbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+        RequestProcessor\Base::NETBANKING_SCB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_SCB);
+
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validatePhonepeEmail(array $emailDetails)

@@ -23,7 +23,6 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
-    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -214,7 +213,7 @@ class Gateway
     ];
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
-        self::ATOS,
+        self::WORLDLINE,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -236,7 +235,7 @@ class Gateway
         self::UPI_ICICI         => self::ICICI,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
-        self::ATOS              => self::ATOS,
+        self::WORLDLINE         => self::WORLDLINE,
     ];
 
     /**
@@ -1118,7 +1117,6 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::CARDLESS_EMI,

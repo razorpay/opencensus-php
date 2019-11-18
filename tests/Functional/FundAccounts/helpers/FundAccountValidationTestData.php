@@ -528,7 +528,7 @@ return [
                     'account_type' => 'vpa',
                     'active'       => true,
                     'details'      => [
-                        'address' => "jayesh@upi"
+                        'address' => "withname@razorpay"
                     ],
                 ],
                 'amount'       => null,

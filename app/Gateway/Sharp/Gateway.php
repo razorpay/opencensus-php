@@ -372,6 +372,11 @@ class Gateway extends Base\Gateway
     {
         $vpa = $input['vpa'];
 
+        if ($vpa === 'withname@razorpay')
+        {
+            return "Razorpay Customer";
+        }
+
         if ($vpa === 'invalidvpa@razorpay')
         {
             throw new Exception\GatewayErrorException(

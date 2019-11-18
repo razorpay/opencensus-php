@@ -31,6 +31,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Http\Client\Common\Exception\ClientErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 
@@ -1396,7 +1397,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingVerificationWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_verification.case', "1");
+        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "1");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1445,7 +1446,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'pending'
             ]);
 
@@ -1479,7 +1480,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingCreationFailedWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_creation.case', "5");
+        $this->app['config']->set('worldline_terminal_onboarding_creation.case', "5");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1506,7 +1507,13 @@ class WebhookTest extends TestCase
                 'submitted'   => true,
                 'locked'      => true
             ]);
-
+        
+        (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
 
         $this->fixtures->merchant->addFeatures(
             [Feature\Constants::TERMINAL_ONBOARDING],
@@ -1528,7 +1535,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'created'
             ]);
 
@@ -1559,7 +1566,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingActivationFailedWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_verification.case', "2");
+        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1608,7 +1615,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'pending'
             ]);
 
