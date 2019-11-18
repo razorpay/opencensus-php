@@ -84,8 +84,26 @@ class SortableFormItemsList extends React.Component {
 export default class View extends React.PureComponent {
   state = {
     isListSorting: false,
-    hasAmountItem: null,
+    totalAmountItems: null,
   };
+
+  componentDidUpdate(prevProps) {
+    const { paymentPageEntity: prevPaymentPageEntity } = prevProps;
+    const { paymentPageEntity: curPaymentPageEntity } = this.props;
+
+    if (
+      (!prevPaymentPageEntity ||
+        !curPaymentPageEntity ||
+        prevPaymentPageEntity.id !== curPaymentPageEntity.id ||
+        (prevPaymentPageEntity.id === curPaymentPageEntity.id &&
+          !prevPaymentPageEntity.payment_page_items)) &&
+      curPaymentPageEntity.payment_page_items
+    ) {
+      this.setState({
+        totalAmountItems: curPaymentPageEntity.payment_page_items.length,
+      });
+    }
+  }
 
   onSubmitAmountField = (formData, indexInFormItems) => {
     const amountItem = constructAmountField(formData);
@@ -96,7 +114,7 @@ export default class View extends React.PureComponent {
     });
 
     this.setState({
-      hasAmountItem: this.state.hasAmountItem + 1,
+      totalAmountItems: this.state.totalAmountItems + 1,
     });
   };
 
@@ -104,7 +122,7 @@ export default class View extends React.PureComponent {
     this.props.deleteInFormItems(indexInFormItems);
 
     this.setState({
-      hasAmountItem: this.state.hasAmountItem - 1,
+      totalAmountItems: this.state.totalAmountItems - 1,
     });
   };
 
@@ -197,16 +215,10 @@ export default class View extends React.PureComponent {
 
     const isPaymentPageEditMode = !!paymentPageEntity.id; // If it has reached uptil here, and id exist, then it's edit mode of existing payment page.
 
-    const hasAmountItem =
-      this.state.hasAmountItem !== null
-        ? this.state.hasAmountItem
-        : paymentPageEntity.payment_page_items &&
-          paymentPageEntity.payment_page_items.length;
-
     return (
       <React.Fragment>
         <div class="UI-form">
-          {!hasAmountItem && (
+          {!this.state.totalAmountItems && (
             <div class="Field Field-dummyAmount">
               <div class="Field-label" style={{ opacity: 0.6 }}>
                 Amount
