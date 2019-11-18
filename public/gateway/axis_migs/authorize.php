@@ -24,7 +24,7 @@ session_start();
 $_SESSION['secret'] = $SECURE_SECRET;
 
 // add the start of the vpcURL querystring parameters
-$vpcURL = 'https://migs.mastercard.com.au/vpcpay';
+$vpcURL = 'https://migs.mastercard.co.in/vpcpay';
 
 $protocol = 'http';
 
