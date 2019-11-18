@@ -1629,6 +1629,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';
 
+    const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
+
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
     const AUTH_SERVICE_DATA_ERROR                               = 'AUTH_SERVICE_DATA_ERROR';
