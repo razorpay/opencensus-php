@@ -278,7 +278,7 @@ export default class extends React.PureComponent {
 
             <div class="Share-section">
               <span class="label--faded">
-                <i class="i i-share" /> Share{' '}
+                <i class="i i-share-circle" /> Share{' '}
               </span>
               {this.state.description && (
                 <div class="social-media" style={{ display: 'inline-block' }}>
