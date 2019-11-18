@@ -418,7 +418,7 @@ const getRemindersStepperData = (
     .map(reminder => {
       const currDate = moment(undefined),
         reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.diff(currDate, 'days');
+        isPendingState = reminderDate.isAfter(currDate);
 
       if (isPaymentLinkClosed && isPendingState) {
         return null;
