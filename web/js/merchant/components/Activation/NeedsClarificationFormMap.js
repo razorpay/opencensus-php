@@ -1,4 +1,6 @@
 import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
+import Input from 'common/new-ui/Input';
+
 export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
   const allFieldsHash = {};
   const kycFieldsMap = {};
@@ -22,10 +24,8 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       }
     }
   };
-  scanFields(allFieldsMap);
-  scanFields(ndcFields);
 
-  for (let field in needsKyc.clarification_reasons) {
+  const prepareField = field => {
     let reasons = [];
     if (allFieldsHash[field]) {
       for (let r of needsKyc.clarification_reasons[field]) {
@@ -54,7 +54,29 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       }
       addToKYCTab(field);
     }
+  };
+
+  const generateNewField = (key, fieldObj) => {
+    const newField = {};
+    const fieldTypes = {
+      document: Input.File,
+    };
+
+    return newField;
+  };
+  scanFields(allFieldsMap);
+  scanFields(ndcFields);
+
+  for (let field in needsKyc.clarification_reasons) {
+    prepareField(field);
   }
+
+  for (let field in needsKyc.additional_details) {
+    const generatedField = generateNewField(needsKyc.additional_details[field]);
+    allFieldsHash[field] = generatedField;
+    prepareField(field);
+  }
+
   return kycTabContent;
 };
 
