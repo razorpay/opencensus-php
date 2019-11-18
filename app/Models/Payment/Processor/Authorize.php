@@ -4456,6 +4456,8 @@ trait Authorize
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
 
+        $this->incrementOfferUsageCount($payment);
+
         return $returnData;
     }
 
