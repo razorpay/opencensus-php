@@ -16,4 +16,10 @@ class Service extends Base\Service
 
         return $amountRules->toArrayPublic();
     }
+
+    public function createWorkflowPayoutAmountRules($input): array
+    {
+        $result = $this->core()->createWorkflowPayoutAmountRules($input);
+        return $result;
+    }
 }
