@@ -1745,6 +1745,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
