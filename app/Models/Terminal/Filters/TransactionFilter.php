@@ -608,6 +608,8 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    // filter rejects all shared terminal if there is a atleast one direct terminal present on same gateway
+    // filter selects all shared terminal if there is no direct terminal on same gateway
     public function sharedTerminalFilter(Terminal\Entity $currentTerminal, array $applicableTerminals)
     {
         $payment  = $this->input['payment'];
