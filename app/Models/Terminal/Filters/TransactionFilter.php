@@ -635,7 +635,7 @@ class TransactionFilter extends Terminal\Filter
         if (($directTerminalsOnSameGateway === true) and
              ($currentTerminal->isShared() === true))
         {
-            return false ;
+            return false;
         }
 
         return true;

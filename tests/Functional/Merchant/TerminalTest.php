@@ -462,6 +462,10 @@ class TerminalTest extends TestCase
 
     public function testDeleteTerminalWithSubMerchantAssigned()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding terminal so that payment flow can be tested
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
         $terminal = $this->fixtures->create(
             'terminal:shared_hdfc_terminal', ['gateway_recon_password' => 'boo']);
 
@@ -471,7 +475,7 @@ class TerminalTest extends TestCase
 
         $payment = $this->defaultAuthPayment();
 
-        $t = $this->deleteTerminal2('1000HdfcShared');
+        $t = $this->deleteTerminal2('1000SharpTrmnl');
         $this->assertNotNull($t['deleted_at']);
 
         $tId = $t['id'];

@@ -1912,7 +1912,9 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence making hitachi shared terminal as direct so that it does not gets filtered out and payment flow can be tested
+        $hitachiTerminal = $this->fixtures->create('terminal:direct_hitachi_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
