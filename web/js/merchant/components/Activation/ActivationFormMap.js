@@ -712,7 +712,7 @@ export const ndcFields = [
     _when: activation => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },
-    isDeletable: true,
+    isDeletable: false,
   },
 ];
 // Tabs name

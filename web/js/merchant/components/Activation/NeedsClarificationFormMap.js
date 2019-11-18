@@ -1,5 +1,4 @@
 import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
-import Input from 'common/new-ui/Input';
 
 export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
   const allFieldsHash = {};
@@ -25,13 +24,16 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     }
   };
 
-  const prepareField = field => {
+  const prepareField = (field, clarificationDetails, origKey) => {
     let reasons = [];
     if (allFieldsHash[field]) {
-      for (let r of needsKyc.clarification_reasons[field]) {
+      if (typeof origKey === 'undefined') {
+        origKey = field;
+      }
+      for (let r of clarificationDetails[origKey]) {
         if (r.reason_type === 'predefined') {
           reasons.push(
-            predefinedReasons[field].reasons[r.reason_code].description
+            predefinedReasons[origKey].reasons[r.reason_code].description
           );
         }
       }
@@ -57,27 +59,38 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
   };
 
   const generateNewField = (key, fieldObj) => {
-    const newField = {};
-    const fieldTypes = {
-      document: Input.File,
+    //	const newField = {};
+    //There are two ways to generate a new field
+    //1. The field already is a part fo all fields in the form
+    //2. Field is altogether a new attribute, then it should be generated dynamically
+    const mappedFields = {
+      address_proof_url: 'cancelled_cheque',
     };
-
-    return newField;
+    if (Boolean(mappedFields[key]) && allFieldsHash[mappedFields[key]]) {
+      return mappedFields[key];
+    }
+    //Implement functionality for custom fields here
+    //Push the field to allFieldsHash & return the name of field
   };
-  scanFields(allFieldsMap);
-  scanFields(ndcFields);
+  try {
+    scanFields(allFieldsMap);
+    scanFields(ndcFields);
 
-  for (let field in needsKyc.clarification_reasons) {
-    prepareField(field);
+    for (let field in needsKyc.clarification_reasons) {
+      prepareField(field, needsKyc.clarification_reasons);
+    }
+    for (let field in needsKyc.additional_details) {
+      const newFieldName = generateNewField(
+        field,
+        needsKyc.additional_details[field]
+      );
+      prepareField(newFieldName, needsKyc.additional_details, field);
+    }
+
+    return kycTabContent;
+  } catch (error) {
+    console.log(error);
   }
-
-  for (let field in needsKyc.additional_details) {
-    const generatedField = generateNewField(needsKyc.additional_details[field]);
-    allFieldsHash[field] = generatedField;
-    prepareField(field);
-  }
-
-  return kycTabContent;
 };
 
 const predefinedReasons = {
