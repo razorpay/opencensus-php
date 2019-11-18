@@ -2066,6 +2066,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     const NETBANKING_TERMINAL_NOT_FOUND                         = 'NETBANKING_TERMINAL_NOT_FOUND';
 
+    const DICL_TERMINAL_NOT_FOUND                               = 'DICL_TERMINAL_NOT_FOUND';
+
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';
     const P2P_RESPONSE                                          = 'P2P_RESPONSE';
