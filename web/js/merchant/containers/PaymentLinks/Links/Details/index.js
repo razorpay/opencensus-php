@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
+import InvoiceDetail from './InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence } from 'common/utils/rzp-utils';
 
-import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
+import { MIN_AMOUNT_TEXT } from '../../Edit/EditMinimumAmount';
 
 @connect(
   state => ({

@@ -11,7 +11,6 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import Stepper from 'common/new-ui/Stepper';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -19,6 +18,10 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+
+import CustomerDetails from './CustomerDetails';
+import ReminderStepsDetails from './ReminderStepsDetails';
+import PaymentDetails from './PaymentDetails';
 
 import {
   EditExpiry,
@@ -38,78 +41,6 @@ const notificationClassMap = {
   sent: 'text-success',
   pending: 'text-warning',
 };
-
-const getCustomerDetail = invoice => (
-  <Definition placeholder="--">
-    {invoice.customer_details.customer_name}
-    {invoice.customer_details.customer_email && (
-      <span>
-        {invoice.customer_details.customer_email}
-        {invoice.email_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.email_status]}`}
-          >
-            ({invoice.email_status} mail)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_details.customer_contact && (
-      <span>
-        {invoice.customer_details.customer_contact}
-        {invoice.sms_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.sms_status]}`}
-          >
-            ({invoice.sms_status} sms)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_id && <code>{invoice.customer_id}</code>}
-  </Definition>
-);
-
-const getPaymentDetail = invoice => (
-  <Definition placeholder="--">
-    <Amount value={invoice.amount_paid} currency={invoice.currency} />
-    {invoice.partial_payment &&
-    invoice.payments &&
-    invoice.payments.items.length ? (
-      <ContentToggler>
-        <span>View Payment Details</span>
-        <div
-          className="full-width-item sub-entity-list"
-          style={{ fontSize: 14 }}
-        >
-          <DataTable
-            title="Payments"
-            progressLoader={true}
-            columns={[paymentId, paidOn, amount]}
-            items={invoice.payments.items}
-            noStripe={true}
-          />
-        </div>
-      </ContentToggler>
-    ) : (
-      <React.Fragment>
-        {invoice.payment_id && (
-          <Link to={`/payments/${invoice.payment_id}`}>
-            <code>{invoice.payment_id}</code>
-          </Link>
-        )}
-        {invoice.paid_at && (
-          <div>
-            Paid on{' '}
-            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
-          </div>
-        )}
-      </React.Fragment>
-    )}
-  </Definition>
-);
 
 export default props => {
   let {
@@ -272,7 +203,7 @@ export default props => {
                   )}
                 />
                 <EntityDetailRow label="Amount Paid">
-                  {getPaymentDetail(invoice)}
+                  <PaymentDetails invoice={invoice} />
                 </EntityDetailRow>
 
                 <EntityDetailRow
@@ -293,7 +224,7 @@ export default props => {
                   )}
                 />
                 <EntityDetailRow label="Customer Details">
-                  {getCustomerDetail(invoice)}
+                  <CustomerDetails invoice={invoice} />
                 </EntityDetailRow>
 
                 {user.isRemindersEnabled && (
@@ -307,13 +238,11 @@ export default props => {
                       autoRender
                     />
 
-                    <Stepper
-                      list={getRemindersStepperData(
-                        isRemindersEnabled,
-                        nextReminders,
-                        isAutoRemindersUpdating,
-                        isPaymentLinkClosed
-                      )}
+                    <ReminderStepsDetails
+                      isRemindersEnabled={isRemindersEnabled}
+                      nextReminders={nextReminders}
+                      isAutoRemindersUpdating={isAutoRemindersUpdating}
+                      isPaymentLinkClosed={isPaymentLinkClosed}
                     />
                   </EntityDetailRow>
                 )}
@@ -406,46 +335,4 @@ export default props => {
       )}
     </div>
   );
-};
-
-const getRemindersStepperData = (
-  isRemindersEnabled,
-  reminders,
-  isAutoRemindersUpdating,
-  isPaymentLinkClosed
-) => {
-  return reminders
-    .map(reminder => {
-      const currDate = moment(undefined),
-        reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.diff(currDate, 'days');
-
-      if (isPaymentLinkClosed && isPendingState) {
-        return null;
-      }
-
-      const newReminder = {
-        status: !isRemindersEnabled
-          ? 'disabled'
-          : isPendingState > 0 ? 'pending' : 'completed',
-        time_to_sent: reminder,
-      };
-
-      return {
-        status: newReminder.status,
-        type: (
-          <i
-            class={`i i-${
-              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
-            }`}
-          />
-        ),
-        label: isAutoRemindersUpdating ? (
-          <PlaceholderLoader />
-        ) : (
-          moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
-        ),
-      };
-    })
-    .filter(ele => ele !== null);
 };

@@ -6,8 +6,8 @@ import {
 } from '../merchant_common/routes';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
-import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Links/Details';
+import PaymentPageDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
@@ -67,7 +67,7 @@ const entityDetailsMap = {
     additionalCondition: user => user.isAllowedView('settlements'),
   },
   '/paymentlinks/:id(inv_.+)': {
-    component: PaymentLinkEntity,
+    component: PaymentLinkDetails,
     additionalCondition: user => user.isAllowedView('payment_links'),
   },
   '/paymentlinks/batchuploads/:id(batch_.+)': {
@@ -77,12 +77,12 @@ const entityDetailsMap = {
       (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
   '/paymentpages/:id(pl_.+)': {
-    component: PaymentPagesDetails,
+    component: PaymentPageDetails,
     additionalCondition: user =>
       user.isAllowedView('payment_pages') && !user.isPPMLIEnabled,
   },
   '/invoices/:id/details': {
-    component: PaymentLinkEntity,
+    component: PaymentLinkDetails,
     additionalCondition: user => user.isAllowedView('invoices'),
   },
 
