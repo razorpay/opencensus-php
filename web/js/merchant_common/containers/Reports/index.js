@@ -621,6 +621,9 @@ export default function Reports(store, opts) {
             selectedDate={date}
             dateRangeData={dateRangeData}
             getFullUnixTimeStamps={getFullUnixTimeStamps}
+            getUnixTimeStampsForYesterday={getUnixTimeStampsForYesterday}
+            getUnixTimeStampsForLastDays={getUnixTimeStampsForLastDays}
+            getUnixTimeStampsForLastMonth={getUnixTimeStampsForLastMonth}
             reportId={reportId}
             emailsMap={emailsMap}
             onSend={this.generateReport}
