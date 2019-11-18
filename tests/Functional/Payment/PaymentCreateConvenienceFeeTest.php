@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -21,6 +22,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -102,9 +105,27 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $response->assertViewHas(['data', 'input', 'url']);
     }
 
+    public function testPaymentCreateRouteOnDynamicFeeBearer()
+    {
+        $this->fixtures->merchant->enableDynamicFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayFeesForm');
+        $response->assertViewHas(['data', 'input', 'url']);
+    }
+
     public function testPaymentCreateRouteOnPlatformFeeBearer()
     {
         $this->fixtures->merchant->disableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::PLATFORM]);
 
         $payment = $this->getDefaultPaymentArray();
 

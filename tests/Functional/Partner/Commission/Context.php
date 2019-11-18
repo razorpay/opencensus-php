@@ -803,10 +803,12 @@ return [
                 [
                     'plan_id'      => '200MerchantPln',
                     'percent_rate' => '200',
+                    'fee_bearer'   => 'customer',
                 ],
                 [
                     'plan_id'      => '180PartnerPlan',
                     'percent_rate' => '180',
+                    'fee_bearer'   => 'customer',
                 ],
             ],
             'attach_submerchant' => [
@@ -949,6 +951,14 @@ return [
                 'id'   => 'BptVjGnFv6ITBm',
                 'type' => 'fully_managed',
             ],
+            'edit_plans' => [
+                Pricing::DEFAULT_PRICING_PLAN_ID => [
+                    'fee_bearer' => 'customer',
+                ],
+                Pricing::DEFAULT_COMMISSION_PLAN_ID => [
+                    'fee_bearer' => 'customer',
+                ],
+            ],
             'attach_submerchant' => [
                 'partner_id'      => 'BptVjGnFv6ITBm',
                 'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -976,10 +986,17 @@ return [
                 [
                     'plan_id'      => '200MerchantPln',
                     'percent_rate' => '200',
+                    'fee_bearer'   => 'customer',
                 ],
                 [
                     'plan_id'      => '180PartnerPlan',
                     'percent_rate' => '180',
+                    'fee_bearer'   => 'customer',
+                ],
+            ],
+            'edit_plans' => [
+                Pricing::DEFAULT_COMMISSION_PLAN_ID => [
+                    'fee_bearer' => 'customer',
                 ],
             ],
             'attach_submerchant' => [
@@ -1012,18 +1029,21 @@ return [
                     'percent_rate' => 0,
                     'fixed_rate'   => '50000',
                     'type'         => 'pricing',
+                    'fee_bearer'   => 'customer',
                 ],
                 [
                     'plan_id'      => 'FixedCommPlanA',
                     'percent_rate' => 0,
                     'fixed_rate'   => '30000',
                     'type'         => 'commission',
+                    'fee_bearer'   => 'customer',
                 ],
                 [
                     'plan_id'      => 'FixedCommPlanB',
                     'percent_rate' => 0,
                     'fixed_rate'   => '500000',
                     'type'         => 'commission',
+                    'fee_bearer'   => 'customer',
                 ],
             ],
             'attach_submerchant' => [
@@ -1049,6 +1069,14 @@ return [
             'create_partner'     => [
                 'id'   => 'BptVjGnFv6ITBm',
                 'type' => 'fully_managed',
+            ],
+            'edit_plans' => [
+                Pricing::DEFAULT_COMMISSION_PLAN_ID => [
+                    'fee_bearer' => 'customer',
+                ],
+                Pricing::DEFAULT_PRICING_PLAN_ID => [
+                    'fee_bearer' => 'customer',
+                ],
             ],
             'attach_submerchant' => [
                 'partner_id'      => 'BptVjGnFv6ITBm',
