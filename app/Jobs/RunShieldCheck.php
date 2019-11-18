@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Services\ShieldClient;
 use RZP\Exception\LogicException;
+use Illuminate\Contracts\Database\ModelIdentifier;
 
 /**
  * Represents asynchronous job to send PAYMENT_CREATED event to Shield
@@ -34,6 +35,13 @@ class RunShieldCheck extends Job
     public function handle()
     {
         parent::handle();
+
+        if ($this->payment === null)
+        {
+            $this->trace->info(TraceCode::SHIELD_JOB_ERROR, ['payment_id' => null]);
+
+            return;
+        }
 
         $riskCore = new Risk\Core();
 
@@ -96,5 +104,23 @@ class RunShieldCheck extends Job
                     'payment_id' => $this->payment->getId()
                 ]);
         }
+    }
+
+    protected function getRestoredPropertyValue($value)
+    {
+        if (! $value instanceof ModelIdentifier)
+        {
+            return $value;
+        }
+
+        if ($value->id === 'Dhm9QoKQmc497z')
+        {
+            return;
+        }
+
+        return is_array($value->id)
+                ? $this->restoreCollection($value)
+                : $this->getQueryForModelRestoration((new $value->class)->setConnection($value->connection), $value->id)
+                        ->useWritePdo()->firstOrFail();
     }
 }

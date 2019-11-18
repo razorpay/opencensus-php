@@ -1554,7 +1554,7 @@ class PaymentCreateTest extends TestCase
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
         $this->markTestSkipped();
-        
+
         $this->changeEnvToNonTest();
 
         $this->ba->publicLiveAuth();
