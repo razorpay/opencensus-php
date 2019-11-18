@@ -65,11 +65,11 @@ class Refund extends Base
         $payment = $this->source->payment;
         $refund  = $this->source;
 
+        $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
         if ($payment->hasBeenCaptured())
         {
             $paymentTxn = $payment->transaction;
-
-            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
             return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
