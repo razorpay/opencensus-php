@@ -63,7 +63,8 @@ class ConfigKey
 
     const CITI_CHANNEL_PAYOUT_MIDS              = self::PREFIX . 'citi_channel_payout_mids';
     const ICICI_CHANNEL_PAYOUT_MIDS             = self::PREFIX . 'icici_channel_payout_mids';
-    const ATOS_TID_RANGE_LIST                   = self::PREFIX . 'atos_tid_range_list';
+    // Atos and Worldline are same, key on redis is atos
+    const WORLDLINE_TID_RANGE_LIST              = self::PREFIX . 'atos_tid_range_list';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
@@ -101,7 +102,7 @@ class ConfigKey
         self::PAYSECURE_BLACKLISTED_MCCS,
         self::DOWNTIME_THROTTLE,
         self::RX_SLA_FOR_IMPS_PAYOUT,
-        self::ATOS_TID_RANGE_LIST,
+        self::WORLDLINE_TID_RANGE_LIST,
         self::FTS_PAYOUT_VPA,
         self::FTS_PAYOUT_CARD,
         self::FTS_PAYOUT_BANK_ACCOUNT,

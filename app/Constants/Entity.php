@@ -160,7 +160,6 @@ class Entity
     const EBS                    = 'ebs';
     const UPI                    = 'upi';
     const AEPS                   = 'aeps';
-    const ATOS                   = 'atos';
     const AMEX                   = 'amex';
     const MPI                    = 'mpi';
     const MPI_BLADE              = 'mpi_blade';
@@ -538,7 +537,6 @@ class Entity
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
-        self::ATOS                   => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,

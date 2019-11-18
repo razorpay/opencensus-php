@@ -70,8 +70,8 @@ class Validator extends Base\Validator
         ConfigKey::FTS_PAYOUT_BANK_ACCOUNT            => 'filled|string',
 
 
-        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
-        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
+        ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
+        ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
         ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
         ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
 

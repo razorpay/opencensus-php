@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
-class FreechargeAtosOnboardingDetails
+class FreechargeWorldlineOnboardingDetails
 {
     // pricing 
     const MCC_CODE                      = 'mcc_code';
@@ -85,19 +85,19 @@ class FreechargeAtosOnboardingDetails
 
     // These hardcoded values for freecharge are provided to us by axis bank
     const OTHER_DETAILS = [
-        self::BUSINESSTYPE  => '0',
+        self::BUSINESSTYPE  => 'O',
         self::DIPCODE       => '2132323',
         self::TELVERICODE   => '2132323',
         self::SGCODE        => '654123',
         self::SECODE        => '2132323', 
         self::PRICECATE     => 'Other',
         self::MONTHRENTFEE  => '0',
-        self::YEARRENTFEE   => '250', 
+        self::YEARRENTFEE   => '250.00', 
         self::SETUPFEE      => '0',
-        self::OTHERFEE      => '250',
+        self::OTHERFEE      => '250.00',
         self::PAYBY         => 'NEFT',
         self::PAYSOLID      => '',
-        self::ACCLABEL      => 'other',
+        self::ACCLABEL      => '',
     ];
 
     /**

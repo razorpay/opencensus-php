@@ -11,5 +11,5 @@ final class Metric
      */
     const TERMINAL_ONBOARDING_CREATE_FAILED       = 'terminal_onboarding_create_failed';
     const TERMINAL_ONBOARDING_INTERNAL_ERROR      = 'terminal_onboarding_internal_error';
-    const TERMINAL_ONBOARDING_PSP_GATEWAY_ERROR   = 'terminal_onboarding_psp_gateway_error'; // error from atos
+    const TERMINAL_ONBOARDING_PSP_GATEWAY_ERROR   = 'terminal_onboarding_psp_gateway_error'; // error from gateway
 }
