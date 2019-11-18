@@ -1,4 +1,4 @@
-import LoaderDots from 'rzp/ui/LoaderDots';
+import LoaderDots from 'common/ui/LoaderDots';
 
 export default ({ className, content, title, loading, error }) => {
   return (

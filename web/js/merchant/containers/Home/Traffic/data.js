@@ -4,13 +4,13 @@ import {
   titleCase,
   arrayToCsvDataUrl,
   paiseToRupees,
-} from 'rzp/utils/rzp-utils';
-import colors from 'rzp/utils/chart/colors.js';
+} from 'common/utils/rzp-utils';
+import colors from 'common/utils/chart/colors.js';
 import {
   globalGroupTitleMap,
   groupByPlatform,
   getDefaultPaymentFilter,
-} from 'rzp/utils/pokedex.js';
+} from 'common/utils/pokedex.js';
 
 const dateFormat = 'Do MMM YYYY';
 

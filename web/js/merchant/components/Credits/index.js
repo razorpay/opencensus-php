@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
-import Spinner from 'rzp/ui/Spinner';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import Spinner from 'common/ui/Spinner';
+import HeaderAction from 'common/ui/HeaderAction';
 
-import { groupBy } from 'rzp/utils/rzp-utils';
+import { groupBy } from 'common/utils/rzp-utils';
 import CreditDetails from './CreditDetails';
 import CreditDetailsNew from './CreditDetailsNew';
 import DocsLink from 'merchant/components/DocsLink';
@@ -27,7 +27,7 @@ export default props => {
       {showDocumentation && (
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#credits"/>
+            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#credits" />
           </div>
         </HeaderAction>
       )}

@@ -1,10 +1,38 @@
-import Button from 'component/Button';
+import RTracking from 'react-tracking';
+
+import Button from 'common/new-ui/Button';
 
 import DataList from 'merchant/components/DataList';
 
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_landing_page`)
+)
 export default class OnBoardingLanding extends React.PureComponent {
+  componentDidMount() {
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .productOnboarding()
+        .success(`${this.props.feature}.onboarding.start`)
+    );
+  }
+
+  handleNexButton = () => {
+    return this.props.next(() => {
+      this.props.tracking.trackEvent(
+        window.rzpQ
+          .productOnboarding()
+          .success(`${this.props.feature}.onboarding.introduction_next`)
+      );
+
+      window.rzpAnalytics({
+        eventCategory: `Onboarding Card (${this.props.feature})`,
+        eventAction: `Page ${this.props.active} - Next CTA`,
+      });
+    });
+  };
+
   render() {
-    const { title, desc, pros, next, imageUrl, feature, active } = this.props;
+    const { title, desc, pros, imageUrl } = this.props;
 
     return (
       <div
@@ -30,14 +58,7 @@ export default class OnBoardingLanding extends React.PureComponent {
             <Button
               class="Forward-Button"
               iconAfter="arrow-forward"
-              onClick={(...args) => {
-                window.rzpAnalytics({
-                  eventCategory: `Onboarding Card (${feature})`,
-                  eventAction: `Page ${active} - Next CTA`,
-                });
-
-                next(args);
-              }}
+              onClick={this.handleNexButton}
             >
               Next
             </Button>

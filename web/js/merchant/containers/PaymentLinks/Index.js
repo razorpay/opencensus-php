@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -14,7 +14,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import OnBoarding, {
   getIsPaymentLinksEnabled,

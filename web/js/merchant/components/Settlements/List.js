@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from 'rzp/ui/TableBody';
+import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {

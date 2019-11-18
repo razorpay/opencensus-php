@@ -1,14 +1,14 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { required, email } from 'rzp/utils/validators';
-import { closeModal } from 'rzp/modules/modals';
-import { fetchUser } from 'merchant/modules/session';
-import { luminateRow } from 'merchant/modules/app';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import { required, email } from 'common/utils/validators';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { fetchUser } from 'merchant/reducers/session';
+import { luminateRow } from 'merchant/reducers/app';
 
 @connect(
   state => {

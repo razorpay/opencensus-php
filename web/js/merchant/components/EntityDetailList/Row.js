@@ -1,7 +1,7 @@
 import AsyncButton from 'react-async-button';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)

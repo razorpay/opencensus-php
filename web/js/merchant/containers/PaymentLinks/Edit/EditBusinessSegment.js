@@ -1,12 +1,12 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { getOptions } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
+import { getCustomNotesOptions } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
 
 export default class EditBusinessSegment extends React.Component {
   constructor(props) {
     super(props);
 
-    let { type, options } = getOptions(this.props.merchantId);
+    let { type, options } = getCustomNotesOptions();
     this.TYPE = type;
     this.OPTIONS = options;
 

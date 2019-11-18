@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import ModalHeader from 'common/ui/ModalHeader';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import AsyncButton from 'react-async-button';
 import CreditPullModal from './CreditPullModal';
 

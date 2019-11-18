@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { updateData } from 'merchant/modules/wysiwyg';
+import { updateData } from 'merchant/reducers/wysiwyg';
 import Title from './Title';
 import Description from './Description';
 import Share from './Share';
@@ -8,6 +8,7 @@ import Terms from './Terms';
 
 @connect(
   state => ({
+    user: state.session.user,
     paymentPageEntity: state.wysiwyg.paymentPageEntity,
     isPageDirty: state.wysiwyg.isPageDirty,
   }),
@@ -39,7 +40,7 @@ export default class View extends React.PureComponent {
   updateData = this.updateData.bind(this);
 
   render() {
-    const { paymentPageEntity, isPageDirty } = this.props;
+    const { paymentPageEntity, isPageDirty, user } = this.props;
     const self = this;
 
     if (!paymentPageEntity) {
@@ -90,6 +91,7 @@ export default class View extends React.PureComponent {
           support_contact={paymentPageEntity.support_contact}
           support_email={paymentPageEntity.support_email}
           updateData={this.updateData}
+          user={user}
         />
 
         <Terms terms={paymentPageEntity.terms} updateData={this.updateData} />

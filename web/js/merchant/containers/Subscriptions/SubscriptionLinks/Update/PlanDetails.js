@@ -1,6 +1,6 @@
 import React from 'react';
 import PlanDetails from '../common/PlanDetails';
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
   render() {

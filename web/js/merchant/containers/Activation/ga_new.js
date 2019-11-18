@@ -1,5 +1,5 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
-import { mainFormTabs } from 'component/merchant/Activation/ActivationFormMap';
+import { setTrackData } from 'common/utils/googleAnalytics';
+import { mainFormTabs } from 'merchant/components/Activation/ActivationFormMap';
 
 const eventCategory = 'Dashboard - Activation Form v2';
 

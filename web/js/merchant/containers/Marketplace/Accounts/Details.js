@@ -1,5 +1,5 @@
 import ActivationForm from 'merchant/containers/Activation';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
 export default function({ accountId, onSubmitSuccessCB, onClose }) {
   return (

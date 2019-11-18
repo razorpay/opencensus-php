@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Time from 'rzp/ui/Time';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import Time from 'common/ui/Time';
+import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 const businessTypeMap = {
   1: 'Proprietorship',
@@ -18,67 +18,72 @@ const businessTypeMap = {
   10: 'Society',
 };
 
-export default connect(
-  null,
-  { openModal, closeModal }
-)(({ user, openModal, closeModal, changeDisplayName }) => {
-  return (
-    <div class="list-group details-row-container">
-      <DetailRow label="Contact Name" value={titleCase(user.name)} />
+export default connect(null, { openModal, closeModal })(
+  ({ user, openModal, closeModal, changeDisplayName }) => {
+    return (
+      <div class="list-group details-row-container">
+        <DetailRow label="Contact Name" value={titleCase(user.name)} />
 
-      {changeDisplayName && (
+        {changeDisplayName && (
+          <DetailRow
+            label={() => (
+              <div>
+                <span>Display Name</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        This is the display name that you and your team will see
+                        on the Razorpay dashboard.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
+            value={() => (
+              <span>
+                {user.display_name}
+                <a
+                  class="p-l"
+                  title="Edit Display Name"
+                  onClick={changeDisplayName}
+                >
+                  <i class="i i-edit" />
+                </a>
+              </span>
+            )}
+          />
+        )}
+
         <DetailRow
-          label={() => (
-            <div>
-              <span>Display Name</span>
-              <small class="help-content">
-                <i class="i i-info-outline" />
-                <Popover align="top" theme="dark">
-                  <PopoverBody>
-                    <div>
-                      This is the display name that you and your team will see
-                      on the Razorpay dashboard.
-                    </div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </div>
-          )}
+          label="Contact Email"
+          value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
+        />
+
+        <DetailRow
+          label="Business Name"
+          value={titleCase(user.business_name)}
+        />
+
+        <DetailRow
+          label="Business Type"
+          value={titleCase(businessTypeMap[user.business_type])}
+        />
+
+        <DetailRow
+          label="Registration Date"
           value={() => (
-            <span>
-              {user.display_name}
-              <a
-                class="p-l"
-                title="Edit Display Name"
-                onClick={changeDisplayName}
-              >
-                <i class="i i-edit" />
-              </a>
-            </span>
+            <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
           )}
         />
-      )}
 
-      <DetailRow
-        label="Contact Email"
-        value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
-      />
-
-      <DetailRow label="Business Name" value={titleCase(user.business_name)} />
-
-      <DetailRow
-        label="Business Type"
-        value={titleCase(businessTypeMap[user.business_type])}
-      />
-
-      <DetailRow
-        label="Registration Date"
-        value={() => (
-          <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
-        )}
-      />
-
-      <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
-    </div>
-  );
-});
+        <DetailRow
+          label="Registered By"
+          value={user.marketplace_merchant_name}
+        />
+      </div>
+    );
+  }
+);

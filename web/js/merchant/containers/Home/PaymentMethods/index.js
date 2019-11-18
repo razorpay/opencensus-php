@@ -3,14 +3,14 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import Breadcrumb, { BreadcrumbItem } from 'common/ui/Breadcrumb';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { fetch } from 'merchant/modules/pokedex';
+import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,

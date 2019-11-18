@@ -7,7 +7,7 @@ import State from 'merchant/models/State';
 import {
   getCountryPINcodeType,
   isValidZipcodeCountryWise,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 /**
  * Finds a state from the states-list by it's name.

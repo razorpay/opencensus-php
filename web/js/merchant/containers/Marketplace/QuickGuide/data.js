@@ -1,5 +1,4 @@
-import { PossibleStatuses } from 'rzp/utils/constants';
-
+import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 import ShowTransferPreviewModal from '../Transfers/ShowTransferPreviewModal';
 
 const { done } = PossibleStatuses;

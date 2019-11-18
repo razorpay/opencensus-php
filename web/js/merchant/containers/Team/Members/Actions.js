@@ -4,13 +4,13 @@ import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import { removeMember, updateMember } from 'merchant/modules/team';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { pickProps } from 'rzp/utils/rzp-utils';
+import { removeMember, updateMember } from 'merchant/reducers/team';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { pickProps } from 'common/utils/rzp-utils';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-
+import ModalHeader from 'common/ui/ModalHeader';
 import NewInvitation from '../NewInvitation';
 
 @connect(null, {
@@ -125,7 +125,7 @@ export default class MembersActions extends Component {
 }
 
 function isOwner(member) {
-  return member.role === 'owner';
+  return member.role === rolesList.OWNER;
 }
 
 function getToBePickedUpFields(visibleFields, alwaysPickedUpFields) {

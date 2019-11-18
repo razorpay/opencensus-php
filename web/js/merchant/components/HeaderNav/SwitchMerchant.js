@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;

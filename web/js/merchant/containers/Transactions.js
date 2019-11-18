@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import PaymentsList from 'merchant/containers/Payments/List';

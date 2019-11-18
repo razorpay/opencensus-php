@@ -1,4 +1,4 @@
-import LocalStorageService from 'rzp/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 
 import { getUser, getMode } from 'merchant/store';
 

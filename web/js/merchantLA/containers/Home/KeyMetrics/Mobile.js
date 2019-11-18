@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Change from 'rzp/ui/Change';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Change from 'common/ui/Change';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import {
   isDefined,
   getFormattedNumber,
@@ -11,11 +11,11 @@ import {
   getPercentage,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+} from 'common/utils/numerals';
 
 import Tooltip from 'merchantLA/components/Home/Tooltip';
 

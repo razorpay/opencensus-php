@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchReversal } from 'merchant/modules/marketplace/reversal';
-import { fetchTransfer } from 'merchant/modules/marketplace/transfer';
+import { fetchReversal } from 'merchant/reducers/marketplace/reversal';
+import { fetchTransfer } from 'merchant/reducers/marketplace/transfer';
 
 import ReversalDetails from 'merchant/components/Marketplace/Reversals/Details';
 

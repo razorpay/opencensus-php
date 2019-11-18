@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { generateReportV2 } from 'merchant/modules/reports';
+import { generateReportV2 } from 'merchant/reducers/reports';
 
 function pruneReqPayload(reqPayload) {
   if (reqPayload.amount) {

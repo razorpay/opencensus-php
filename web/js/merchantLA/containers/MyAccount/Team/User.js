@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { removeUser, fetchTeamDetails } from 'merchantLA/modules/team';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { removeUser, fetchTeamDetails } from 'merchantLA/reducers/team';
 
 @connect(
   state => {

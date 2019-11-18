@@ -1,7 +1,7 @@
-import Alert from 'rzp/ui/Forms/Alert';
+import Alert from 'common/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*

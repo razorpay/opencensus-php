@@ -1,7 +1,7 @@
 import React from 'react';
 
-import Amount from 'rzp/ui/Amount';
-import Blockquote from 'rzp/ui/Blockquote';
+import Amount from 'common/ui/Amount';
+import Blockquote from 'common/ui/Blockquote';
 
 /*
  * Design

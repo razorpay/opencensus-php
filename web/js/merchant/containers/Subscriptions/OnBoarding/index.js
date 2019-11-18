@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import Slider, { SliderDots } from 'component/Slider';
+import Slider, { SliderDots } from 'common/new-ui/Slider';
 
-import { getCurrentProductOnBoardingDetails } from 'merchant/modules/onboarding';
+import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';

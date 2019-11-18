@@ -1,5 +1,5 @@
-import Definition from 'rzp/ui/Definition';
-import { capitalize } from 'rzp/utils/rzp-utils';
+import Definition from 'common/ui/Definition';
+import { capitalize } from 'common/utils/rzp-utils';
 
 export default function MandateBankAccountDetails({ bankDetails = {}, bank }) {
   return (

@@ -2,13 +2,13 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
-import { amount } from 'rzp/utils/validators';
-import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
-import { createTestPayment } from 'merchant/modules/virtualaccounts';
-import { fetchItem, fetchVAPayments } from 'merchant/modules/virtualaccounts';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
+import { amount } from 'common/utils/validators';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { createTestPayment } from 'merchant/reducers/virtualaccounts';
+import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
 
 @connect(
   state => {

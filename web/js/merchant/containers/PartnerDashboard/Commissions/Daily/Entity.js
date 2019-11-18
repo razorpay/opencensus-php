@@ -1,14 +1,14 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import FeeBreakup from 'rzp/ui/FeeBreakup';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import FeeBreakup from 'common/ui/FeeBreakup';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { isPresent } from 'rzp/utils/rzp-utils';
-import { fetchSingleDayAggregate } from 'merchant/modules/commission';
+import { isPresent } from 'common/utils/rzp-utils';
+import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {

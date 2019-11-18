@@ -1,17 +1,17 @@
 import { connect } from 'react-redux';
 
-import { findBy, filterBy } from 'rzp/utils/rzp-utils';
-import * as NotificationActions from 'rzp/modules/notifications';
+import { findBy, filterBy } from 'common/utils/rzp-utils';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 
 import {
   fetchReminders,
   editRemindersMerchantConfigs,
   disableEnableReminders,
   createReminders,
-} from 'merchant/modules/reminders';
+} from 'merchant/reducers/reminders';
 
-import { fetchInvoiceCount } from 'merchant/modules/invoices/details';
-import Setting from 'merchant/components/Reminders/Settings';
+import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
+import ReminderSettings from 'merchant/components/Reminders/Settings';
 
 @connect(
   state => {
@@ -152,11 +152,12 @@ export default class PaymentLinksSettings extends React.Component {
         class="RemindersSettings--PaymentLinks"
         key="RemindersSettings--PaymentLinks"
       >
-        <Setting
+        <ReminderSettings
           type="Payment Links"
           isEnabled={this.props.paymentLinkReminder.active}
           channels={this.props.channels}
           onSaveClick={this.saveSettings}
+          maxReminderCount={this.props.paymentLinkReminder.max_reminder_count}
           disableEnableReminders={this.disableEnableReminders}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
           withExpiry={this.props.withExpireByMerchantConfigs}

@@ -1,20 +1,20 @@
 import ajax from 'merchant/utils/ajax';
-import { filterBy } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { filterBy } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import { fetchFeaturesAjax } from 'merchant/modules/config';
-import LocalStorageService from 'rzp/utils/localStorage';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
+import LocalStorageService from 'common/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
-import { getExperiment } from 'common/util';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   roleEditPermissions,
   roleViewPermissions,
   antiOrgsModules,
   antiOrgsFeatures,
-} from '../resources/permissions';
+} from 'merchant/helpers/permissions';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -433,7 +433,7 @@ export default class User {
   }
 
   get isCustomNotesDropdownEnabled() {
-    return this.getExpStatus('custom_notes');
+    return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
@@ -442,7 +442,19 @@ export default class User {
 
   get isSellerAppRole() {
     const userRole = this.userRole;
-    return ['sellerapp', 'sellerapp_plus'].indexOf(userRole) > -1;
+    return (
+      [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1
+    );
+  }
+
+  get isSupportCallEnabled() {
+    return this.getExpStatus('support_call');
+  }
+
+  get isUnregisteredBusiness() {
+    const userBusinessType = Number(this.business_type);
+    const UNREGISTERED_BUSINESS_TYPES = [2, 11];
+    return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted
