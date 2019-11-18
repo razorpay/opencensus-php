@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
@@ -83,5 +84,19 @@ class Service extends Base\Service
             $response);
 
         return $response;
+    }
+
+    public function fixSettled(array $input): array
+    {
+        $count = $input['count'] ?? 200;
+
+        $txnIds =  $this->repo->transaction->fetchSettledAt($count);
+
+        $this->repo->transaction->updateSettledAtToFalse($txnIds);
+
+        return [
+            'count'             => $count,
+            'txns_processed'    => $txnIds,
+        ];
     }
 }

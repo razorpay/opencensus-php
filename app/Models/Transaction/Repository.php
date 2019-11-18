@@ -546,6 +546,36 @@ class Repository extends Base\Repository
         return $count;
     }
 
+    public function fetchSettledAt($count)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->where(Transaction\Entity::TYPE, Transaction\Type::FUND_ACCOUNT_VALIDATION)
+            ->where(Transaction\Entity::SETTLED, 1)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->take($count)
+            ->get()->pluck('id')->all();
+    }
+
+    public function updateSettledAtToFalse($txnIds)
+    {
+        if (count($txnIds) === 0)
+        {
+            return;
+        }
+
+        $values = [Transaction\Entity::SETTLED  => false];
+
+        $count = $this->newQuery()
+            ->whereIn(Transaction\Entity::ID, $txnIds)
+            ->where(Transaction\Entity::TYPE, Transaction\Type::FUND_ACCOUNT_VALIDATION)
+            ->where(Transaction\Entity::SETTLED, true)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->update($values);
+
+        return $count;
+    }
+
     /**
      * Update channel for unsettled transactions
      *

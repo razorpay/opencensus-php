@@ -34,4 +34,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fixSettled()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fixSettled($input);
+
+        return ApiResponse::json($response);
+    }
 }

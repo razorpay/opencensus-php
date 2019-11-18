@@ -542,4 +542,14 @@ return [
             ],
         ],
     ],
+    'testFixTransactionSettledAt' => [
+        'request' => [
+            'url'     => '/transactions/settled/fix',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
