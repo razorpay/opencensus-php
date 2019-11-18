@@ -46,11 +46,11 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { PowerSelect } from 'react-power-select';
 import { SingleDatePicker } from 'react-dates';
-import AddressSelectionModal from 'merchant/containers/Invoices/AddressSelectionModal/index';
-import EditInvoiceLabelModal from 'merchant/containers/Invoices/Modals/Merchant/EditInvoiceLabel';
+import AddressSelectionModal from 'merchant/views/Invoices/AddressSelectionModal/index';
+import EditInvoiceLabelModal from 'merchant/views/Invoices/Modals/Merchant/EditInvoiceLabel';
 import AddressDisplay from 'merchant/components/AddressDisplay';
 import { states } from 'merchant/helpers/data';
-import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
+import InvoicesOnboarding from 'merchant/views/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/reducers/app';
 import {
   track,

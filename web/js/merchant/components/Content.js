@@ -13,8 +13,8 @@ import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import PaymentPages from 'merchant/containers/PaymentPages/Index';
 import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
-import InvoicingContainer from 'merchant/containers/Invoicing';
-import InvoicesNew from 'merchant/containers/Invoices/New';
+import InvoicesContainer from 'merchant/views/Invoices';
+import InvoicesNew from 'merchant/views/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/containers/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
@@ -172,7 +172,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/invoices"
             exact
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
           <ShowWhenRoute
@@ -187,7 +187,7 @@ export default class Content extends Component {
           />
           <ShowWhenRoute
             path="/items"
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
 
