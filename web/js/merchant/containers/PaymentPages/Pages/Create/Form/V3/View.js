@@ -147,10 +147,12 @@ export default class View extends React.PureComponent {
 
   validateSameTitleExists = (title, fieldSelfIndex) => {
     const allFieldsTitles = this.props.FORM_ITEMS.map(f => {
-      return isFormItemOfTypeAmount(f) ? f.item.name : f.title;
+      return isFormItemOfTypeAmount(f)
+        ? f.item.name.toLowerCase()
+        : f.title.toLowerCase();
     });
 
-    const sameTitleIndex = allFieldsTitles.indexOf(title);
+    const sameTitleIndex = allFieldsTitles.indexOf(title.toLowerCase());
 
     if (sameTitleIndex > -1 && sameTitleIndex !== fieldSelfIndex) {
       return true;
