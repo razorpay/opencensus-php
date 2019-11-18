@@ -5495,6 +5495,16 @@ ALTER TABLE `p2p_concerns`
 
 -- P2P - Adding Indices
 
+---Virtual VPA----
+
+ALTER TABLE `terminals`
+  ADD COLUMN `virtual_upi_root` VARCHAR(20) NULL DEFAULT NULL after `ifsc_code`,
+  ADD COLUMN `virtual_upi_merchant_prefix` VARCHAR(20) NULL DEFAULT NULL  after `virtual_upi_root`,
+  ADD COLUMN `virtual_upi_handle` VARCHAR(20) NULL DEFAULT NULL after `virtual_upi_merchant_prefix`;
+
+ALTER TABLE `virtual_accounts`
+  CHANGE COLUMN`vpa` `vpa_id` VARCHAR(14) NULL DEFAULT NULL;
+
 ALTER TABLE fund_account_validations
     CHANGE COLUMN currency currency CHAR(3) NULL;
 
