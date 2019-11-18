@@ -249,12 +249,21 @@ class Core extends Base\Core
     {
         $channel = $bankingAccount->getChannel();
 
+        $traceRequest = $input;
+
+        // details array may contain sensitive information
+        // like merchant password and other gateway specific
+        // fields. These will be handled by the gateway module
+        // hence redacting from here.
+        unset($traceRequest[Entity::DETAILS]);
+        unset($traceRequest[Entity::PASSWORD]);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
                 'id'      => $bankingAccount->getId(),
                 'channel' => $channel,
-                'input'   => $input,
+                'input'   => $traceRequest,
             ]);
 
         $processor = $this->getProcessor($channel);
@@ -270,9 +279,12 @@ class Core extends Base\Core
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
-        }
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+            if ($input[Entity::STATUS] === Status::ACTIVATED)
+            {
+                $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
+            }
+        }
 
         $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
         {
@@ -372,7 +384,7 @@ class Core extends Base\Core
 
     public function activate(Entity $bankingAccount, array $input)
     {
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
 
         //
         // This is in a transaction because, BankingAccount entity update
@@ -516,34 +528,21 @@ class Core extends Base\Core
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount)
     {
-        $this->redactSecrets($input);
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
-            [
-                'id'      => $bankingAccount->getId(),
-                'channel' => $bankingAccount->getChannel(),
-                'input'   => $input,
-            ]);
-
         $merchant = $bankingAccount->merchant;
 
-        if ((isset($input[Entity::STATUS]) === true) and
-            ($input[Entity::STATUS] === Status::ACTIVATED))
-        {
-            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
 
-            if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED,
-                    Entity::STATUS,
-                    [
-                        'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
-                        'banking_account'            => $bankingAccount->getId(),
-                    ]);
-            }
+        if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED,
+                Entity::STATUS,
+                [
+                    'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
+                    'banking_account'            => $bankingAccount->getId(),
+                ]);
         }
     }
 
@@ -609,10 +608,5 @@ class Core extends Base\Core
         ];
 
         return $attributes;
-    }
-
-    protected function redactSecrets(array $input)
-    {
-        unset($input[Entity::PASSWORD]);
     }
 }
