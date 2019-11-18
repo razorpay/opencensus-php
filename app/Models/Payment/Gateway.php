@@ -1397,6 +1397,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::KVBL,
     ];
 
     /**

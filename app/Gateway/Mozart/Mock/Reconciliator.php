@@ -11,6 +11,7 @@ use RZP\Gateway\Mozart\NetbankingScb;
 use RZP\Gateway\Mozart\NetbankingSib;
 use RZP\Gateway\Mozart\NetbankingCbi;
 use RZP\Gateway\Mozart\NetbankingYesb;
+use RZP\Gateway\Mozart\NetbankingKvb;
 use RZP\Gateway\Mozart\NetbankingIbk;
 use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Models\Payment\Gateway as PaymentGateway;
@@ -74,6 +75,52 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         return $data;
+    }
+
+    protected function netbanking_kvb($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
+
+        for ($i = 0; $i < 2; $i++)
+        {
+            $data[] = [];
+        }
+
+        $data[] = NetbankingKvb\ReconFields::RECON_FIELDS;
+
+        $count = 1;
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-M-Y');
+
+            $date = strtoupper($date);
+
+            $col = [
+                NetbankingKvb\ReconFields::SR_NO                 => $count++,
+                NetbankingKvb\ReconFields::MERCHANT_CODE         => 'RAZORPAY',
+                NetbankingKvb\ReconFields::TRANSACTION_DATE      => $date,
+                NetbankingKvb\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingKvb\ReconFields::ACCOUNT_NUMBER        => '12345',
+                NetbankingKvb\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
+                NetbankingKvb\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchFieldFromJsonData(
+                    $row['mozart']['raw'],
+                    'bank_payment_id'),
+            ];
+
+            $this->content($col, 'col_payment_kvb_nb_recon');
+
+            $data[] = $col;
+        }
+
+        $formattedData = $this->generateText($data, '|');
+
+        return $formattedData;
     }
 
     protected function netbanking_ibk($input)
