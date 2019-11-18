@@ -40,6 +40,17 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             Send Email
           </label>
         </div>
+        <div class="checkbox rzpCheckbox next m-r">
+          <Field
+            name="config.reminder_enable"
+            id="reminder_enable"
+            component={CheckBoxField}
+            onChange={handleChange('reminder_enable')}
+          />
+          <label for="reminder_enable" class="icon i-check">
+            Reminders
+          </label>
+        </div>
       </div>
       <p>
         <i class="i i-info-circle m-r" />
