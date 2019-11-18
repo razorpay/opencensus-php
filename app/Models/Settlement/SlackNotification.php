@@ -34,6 +34,7 @@ class SlackNotification extends Base\Core
         'setl_verify'             => 'Settlement verification complete',
         'low_balance_alert'       => 'Account balance is below threshold',
         'setl_balance_alert'      => 'Settlement Amount',
+        'merchant_invoice_alert'  => 'Merchant invoice creation skipped'
     ];
 
     /**
