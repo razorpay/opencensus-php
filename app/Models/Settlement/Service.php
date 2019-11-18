@@ -485,4 +485,20 @@ class Service extends Base\Service
 
         return $this->getProcessDetails();
     }
+
+    public function getHolidayListForYear(array $input)
+    {
+        (new Validator)->validateInput('settlement_holiday', $input);
+
+        $year = Carbon::now(Timezone::IST)->year;
+
+        if (isset($input['year']) === true)
+        {
+            $year = (int) $input['year'];
+        }
+
+        $data = Holidays::getHolidayListForYear($year);
+
+        return $data;
+    }
 }

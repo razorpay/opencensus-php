@@ -231,6 +231,13 @@ trait PartnerTrait
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 
+        $merchantDetailAttribute = [
+            "merchant_id"       => $subMerchantId,
+            "business_type"     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
         // Assign submerchant to partner
         $accessMapData = [
             'entity_type'     => 'application',

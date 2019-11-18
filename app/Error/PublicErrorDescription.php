@@ -331,6 +331,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
 
+    const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
+
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
@@ -570,6 +572,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
     const BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE                       = 'You cannot enable/disable features in live mode';
     const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The given feature is already assigned to the merchant';
+    const BAD_REQUEST_MERCHANT_NOT_EXIST                                        = 'The given merchant ID is not present';
     const BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST                                = 'The given feature do not exist for above merchants. Rest are processed';
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID                = 'The product onboarding status provided is invalid';
     const BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED        = 'The product activation form is already submitted.';
@@ -639,6 +642,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
+    const BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED                                = 'We are not supporting (unregistered businesses) at the moment. We shall inform you when we start supporting';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                             = 'We don\'t support this business category';
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                 = 'Invalid File format. Only pdf, png and jpg is allowed.';
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                 = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required';
@@ -896,7 +900,12 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH       = 'Access forbidden for requested resource';
 
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
+
+    const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'Looks like your phone number could not be found in our existing database. Please check your phone number';
 }

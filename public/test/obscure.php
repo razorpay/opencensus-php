@@ -128,6 +128,7 @@ function disableEmptyInputs(form) {
                 <option value="IBKL">Industrial Development Bank of India</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="SIBL">South Indian Bank</option>
+                <option value="KVBL">Karur Vysya Bank</option>
             </select>
         </td>
     </tr>
@@ -159,6 +160,7 @@ function disableEmptyInputs(form) {
                 <option value="earlysalary">Earlysalary</option>
                 <option value="flexmoney">Flexmoney</option>
                 <option value="epaylater">EPayLater</option>
+                <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>
     </tr>
@@ -245,13 +247,12 @@ function disableEmptyInputs(form) {
         <td colspan='40'>VPA:</td>
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile" autocomplete="vpa"></td>
     </tr>
-<!--    <tr>-->
-<!--        <td colspan='40'>Account Number:</td>-->
-<!--        <td><input type="text" name="bank_account[account_number]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[ifsc]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[name]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[account_type]" size="25" value="current"></td>-->
-<!--    </tr>-->
+    <tr>
+        <td colspan='40'>Bank Account:</td>
+        <td><input type="text" name="bank_account[account_number]" size="25" value="" placeholder="Account Number"></td>
+        <td><input type="text" name="bank_account[ifsc]" size="25" value="" placeholder="IFSC"></td>
+        <td><input type="text" name="bank_account[name]" size="25" value="" placeholder="Name"></td>
+    </tr>
 <!--    <tr>-->
 <!--        <td colspan='40'>Token recurring:</td>-->
 <!--        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>-->
@@ -265,7 +266,7 @@ function disableEmptyInputs(form) {
                 <option value="pin">Card - PIN</option>
                 <option value="skip">Card - SKIP</option>
                 <option value="otp">Card - OTP</option>
-                <option value="aadhaar">eMandate - Aadhaar</option>
+                <option value="debitcard">eMandate - Debit Card</option>
                 <option value="netbanking">eMandate - Netbanking</option>
             </select>
         </td>

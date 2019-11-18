@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use Carbon\Carbon;
+use App;
 
 use RZP\Base;
 use RZP\Exception;
@@ -14,6 +14,17 @@ use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
+    protected $env;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->env = $app['env'];
+    }
+
     const INVALID_REVIEWER                              = 'Invalid reviewer';
     const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
@@ -51,12 +62,12 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
         Entity::P_GSTIN                         => 'filled|string|size:15',
@@ -124,14 +135,14 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
@@ -229,6 +240,12 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $pennyTestingEventPayloadRules = [
+        Constants::MERCHANT_ID     => 'required|string|max:14',
+        Constants::ACCOUNT_STATUS  => 'required|string',
+        Constants::REGISTERED_NAME => 'sometimes|string',
+    ];
+
     protected static $instantActivationRules = [
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
@@ -242,11 +259,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
     ];
 
     protected static $instantActivationValidators = [
@@ -262,7 +279,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
         Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN           => 'filled|max:15',
+        Entity::BUSINESS_OPERATION_PIN           => 'filled|size:6',
         Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
         Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
@@ -273,6 +290,12 @@ class Validator extends Base\Validator
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(
@@ -285,6 +308,12 @@ class Validator extends Base\Validator
 
     public function validatePOAVerificationStatus($attribute, $value)
     {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
         $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
 
         $this->isAllowedStatusChange(
@@ -354,7 +383,7 @@ class Validator extends Base\Validator
 
         if ($enabled === false)
         {
-            return;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED);
         }
 
         $this->validateForBlackListedCategories($input);

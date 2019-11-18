@@ -43,6 +43,9 @@ class CreateBankingAccountStatementTable extends Migration
 
             $table->string(Entity::TYPE, 255);
 
+            $table->string(Entity::UTR, 255)
+                  ->nullable();
+
             $table->bigInteger(Entity::AMOUNT)
                   ->unsigned();
 
@@ -103,6 +106,8 @@ class CreateBankingAccountStatementTable extends Migration
             $table->index(Entity::TRANSACTION_ID);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
+
+            $table->index(Entity::UTR, Entity::CHANNEL);
 
             // Foreign keys
 

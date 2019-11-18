@@ -6,6 +6,7 @@ use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Job as BaseJob;
+use RZP\Models\Invoice\Entity;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -49,14 +50,17 @@ class Job extends BaseJob
     protected $invoice;
     protected $core;
 
+    protected $invoiceData;
+
     public $timeout = 3600;
 
-    public function __construct(string $mode, string $event, string $id)
+    public function __construct(string $mode, string $event, string $id, array $invoiceData = [])
     {
         parent::__construct($mode);
 
         $this->event = $event;
         $this->id    = $id;
+        $this->invoiceData = $invoiceData;
     }
 
     public function getEvent(): string
@@ -141,16 +145,31 @@ class Job extends BaseJob
     {
         $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))
-                    ->notifyInvoiceIssuedToCustomer();
+        $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
+
+        $customerNotified = true;
+
+        if(isset($this->invoiceData[Entity::REMINDER_ENABLE]) === false)
+        {
+            $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
+        }
+
+        $reminderCreated = $notifier->createOrUpdateReminder();
+
+        return ($customerNotified and $reminderCreated);
     }
 
     protected function handleIssued()
     {
         $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))
-                    ->notifyInvoiceIssuedToCustomer();
+        $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
+
+        $customerNotified = $notifier->notifyInvoiceIssuedToCustomer();
+
+        $reminderCreated = $notifier->createOrUpdateReminder();
+
+        return ($customerNotified and $reminderCreated);
     }
 
     protected function handleExpired()

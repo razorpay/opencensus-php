@@ -102,6 +102,10 @@ class Validator extends Base\Validator
         'initiated_at'        => 'required_with:settled_at,created_at|epoch',
     ];
 
+    protected static $settlementHolidayRules = [
+        'year'  =>  'sometimes|digits:4',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);

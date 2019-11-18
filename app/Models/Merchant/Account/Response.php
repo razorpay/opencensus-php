@@ -50,6 +50,12 @@ class Response extends Core
             $data[Constants::SETTLEMENT] = $settlementData;
         }
 
+        $data[Constants::SETTINGS] = [
+            Constants::PAYMENT => [
+                Constants::INTERNATIONAL => $accountDetails->getBusinessInternational(),
+            ],
+        ];
+
         $customFields = $accountDetails->getCustomFields();
 
         if (isset($customFields[Constants::TNC]) === true)
@@ -302,6 +308,7 @@ class Response extends Core
         if (empty($bankAccount) === false)
         {
             $bankAccountArray = [
+                Constants::ID             => $bankAccount->getPublicId(),
                 Constants::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
                 Constants::IFSC           => $bankAccount->getIfscCode(),
                 Constants::NAME           => $bankAccount->getBeneficiaryName(),

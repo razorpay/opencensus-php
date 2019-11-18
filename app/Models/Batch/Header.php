@@ -679,6 +679,16 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Pricing Rules Addition Headers
+    const PRICING_RULE_MERCHANT_ID         = 'merchant_id';
+    const PRICING_RULE_PRODUCT             = 'product';
+    const PRICING_RULE_FEATURE             = 'feature';
+    const PRICING_RULE_PAYMENT_METHOD      = 'payment_method';
+    const PRICING_RULE_PAYMENT_METHOD_TYPE = 'payment_method_type';
+    const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
+    const PRICING_RULE_INTERNATIONAL       = 'international';
+    const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
 
@@ -2146,6 +2156,29 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::PRICING_RULE => [
+            self::INPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
+            ],
+            self::OUTPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
             ]
         ]
     ];

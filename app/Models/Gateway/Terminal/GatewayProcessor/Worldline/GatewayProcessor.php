@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
+namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 
 use App;
 use Carbon\Carbon;
@@ -8,23 +8,22 @@ use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal\Core;
 use RZP\Models\Payment\Gateway;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\TerminalOnboardingDetail;
-use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
 
 
 class GatewayProcessor extends BaseGatewayProcessor
 {
-    const GATEWAY_INPUT          = 'gateway_input';
+    const GATEWAY_INPUT                               = 'gateway_input';
 
-    // MID
-    const ATOS_MID_INDEX_KEY     = 'atos_gateway_terminal_creation_mid_index';
-    const ATOS_MID_OFFSET        = 999000000000000;
-
+    // Atos and Worldline refers to same gateway, key on redis is atos
+    const WORLDLINE_MID_INDEX_KEY                     = 'atos_gateway_terminal_creation_mid_index';
+    const WORLDLINE_MID_OFFSET                        = 999000000000000;
     const TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK = 'TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK';
 
     protected $tidGenerator;
@@ -43,7 +42,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $this->tidGenerator = new TidGenerator();
 
-        $this->redisMidKey = $this->mode . '_' . self::ATOS_MID_INDEX_KEY;
+        $this->redisMidKey = $this->mode . '_' . self::WORLDLINE_MID_INDEX_KEY;
     }
 
     // GetInput Value (params) for terminal creation
@@ -58,9 +57,13 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::TYPE                => $this->getTerminalType(),
             Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
             Terminal\Entity::IFSC_CODE           => $ifscCode,
-            Terminal\Entity::GATEWAY             => Gateway::ATOS,
+            Terminal\Entity::GATEWAY             => Gateway::WORLDLINE,
             Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid($subMerchant),
             Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
+            Terminal\Entity::TYPE                => [
+                                                        Terminal\Type::NON_RECURRING => '1',
+                                                        Terminal\Type::BHARAT_QR     => '1',
+                                                    ],            
         ];
 
         $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
@@ -81,11 +84,16 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $terminal;
     }
 
-    public function validateGatewayInput($gatewayInput, $merchant)
+    public function validateGatewayInput($gatewayInput, $merchantDetail)
     {
         $gatewayProcessorValidator = new Validator();
 
         $gatewayProcessorValidator->validateInput(self::GATEWAY_INPUT, $gatewayInput);
+    }
+
+    public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail)
+    {
+
     }
 
     public function checkDbConstraints($input, $merchant)
@@ -94,17 +102,21 @@ class GatewayProcessor extends BaseGatewayProcessor
             function() use ($input, $merchant)
             {
                 $terminalData = [
-                    'gateway'             => 'atos',
-                    'gateway_merchant_id' => '999999999999',
-                    'gateway_terminal_id' => '12345678',
-                    'mc_mpan'             => $input[Constants::MPAN][Constants::MASTERCARD],
-                    'visa_mpan'           => $input[Constants::MPAN][Constants::VISA],
-                    'rupay_mpan'          => $input[Constants::MPAN][Constants::RUPAY],
-
+                    'gateway'                   => Gateway::WORLDLINE,
+                    'gateway_merchant_id'       => '999999999999',
+                    'gateway_terminal_id'       => '12345678',
+                    'type'                      => [
+                                                        Terminal\Type::NON_RECURRING => '1',
+                                                        Terminal\Type::BHARAT_QR     => '1',
+                                                    ],
+                    'mc_mpan'                   => $input[Constants::MPAN][Constants::MASTERCARD],
+                    'visa_mpan'                 => $input[Constants::MPAN][Constants::VISA],
+                    'rupay_mpan'                => $input[Constants::MPAN][Constants::RUPAY],
                 ];
 
                 (new Core)->create($terminalData, $merchant);
-            });
+            }
+        );
     }
 
     public function getLockResource($terminal, $gateway, $gatewayInput)
@@ -121,23 +133,8 @@ class GatewayProcessor extends BaseGatewayProcessor
         $merchantDetail = $subMerchant->merchantDetail;
 
         $partnerMerchantDetail = $partnerMerchant->merchantDetail;
-        
-        /*
-        There is a validation in Mozart that merchant contact_name be present, as its required in ATOS onboarding
-        If submerchant's contact_name is empty, we are sending partner's contact_name,
-        if that is empty too, we are sending it as Razorpay.
-        */
-        if (empty($merchantDetail->getContactName()))
-        {
-            $contactName = is_null($partnerMerchantDetail) === false ? $partnerMerchantDetail->getContactName() : Constants::RAZORPAY;
 
-            if (empty($contactName) === true)
-            {
-                $contactName = Constants::RAZORPAY;
-            }
-
-            $merchantDetail->setContactName($contactName);
-        }
+        $this->formatDetailsForGatewayRequestArray($partnerMerchant, $partnerMerchantDetail, $merchantDetail);
 
         $gatewayRequestArray = [
             'method'                    => "POST",
@@ -155,6 +152,43 @@ class GatewayProcessor extends BaseGatewayProcessor
         ];
         
         return $gatewayRequestArray;
+    }
+
+    /**
+     * There are some validations on Worldline, to avoid them, we need to format the request
+     * 1. Partner Merchant name should be upper case without space
+     * 2. State name should be full name of the state
+     * 3. contact name should be present, we are sending default contact_name as Razorpay, if its not present
+     * Note: Objects are by default pass by reference in php, in most programming languages for that matter
+     */
+    protected function formatDetailsForGatewayRequestArray($partnerMerchant, $partnerMerchantDetail, $merchantDetail)
+    {
+        $partnerMerchant[Merchant\Entity::NAME] = strtoupper(str_replace(' ', '', $partnerMerchant[Merchant\Entity::NAME]));
+
+        $merchantDetail[Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE] =
+            $merchantDetail->getBusinessRegisteredStateName();
+       
+        $merchantDetail[Merchant\Detail\Entity::BUSINESS_OPERATION_STATE] =
+            $merchantDetail->getBusinessRegisteredStateName();
+       
+        $partnerMerchantDetail[Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE] =
+            $partnerMerchantDetail->getBusinessRegisteredStateName();
+       
+        $partnerMerchantDetail[Merchant\Detail\Entity::BUSINESS_OPERATION_STATE] =
+            $partnerMerchantDetail->getBusinessRegisteredStateName();
+        
+        if (empty($merchantDetail->getContactName()) === true)
+        {
+            $contactName = (is_null($partnerMerchantDetail) === false) ?
+                $partnerMerchantDetail->getContactName() : Constants::DEFAULT_CONTACT_NAME;
+
+            if (empty($contactName) === true)
+            {
+                $contactName = Constants::DEFAULT_CONTACT_NAME;
+            }
+
+            $merchantDetail->setContactName($contactName);
+        }
     }
 
     public function getGatewayRequestArrayForVerification($terminal)
@@ -242,11 +276,11 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     protected function updateTerminalDetailsOnVerifyCallbackFailure($terminal, $terminalOnboardingDetail)
     {
-        $timeStamp = (Carbon::now()->addMinutes(Constants::ATOS_ACTIVATION_NEXT_RETRY_MINS))->getTimestamp();
+        $timeStamp = (Carbon::now()->addMinutes(Constants::WORLDLINE_ACTIVATION_NEXT_RETRY_MINS))->getTimestamp();
 
         $terminalOnboardingDetail->setVerifyAt($timeStamp);
 
-        if($terminalOnboardingDetail->getVerifyBucket() >= Constants::ATOS_ACTIVATION_RETRY_LIMIT)
+        if ($terminalOnboardingDetail->getVerifyBucket() >= Constants::WORLDLINE_ACTIVATION_RETRY_LIMIT)
         {
             $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATION_FAILED);
 
@@ -282,7 +316,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         $mcc = (int) $merchant->getCategory();
 
-        $details = MerchantDetail\MccTccMapping::getTccFromMcc($mcc);
+        $details = Merchant\Detail\MccTccMapping::getTccFromMcc($mcc);
 
         $details['mcc'] = $mcc;
 
@@ -295,7 +329,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $mcc = (int) $merchant->getCategory();
 
-        return MerchantDetail\FreechargeAtosOnboardingDetails::getMccPricing($mcc);
+        return Merchant\Detail\FreechargeWorldlineOnboardingDetails::getMccPricing($mcc);
     }
 
     // TODO: This should be in partner processor, not gateway processor
@@ -314,7 +348,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     protected function generateMid($subMerchant)
     {
         $params = [ Terminal\Entity::MERCHANT_ID => $subMerchant->getId(), 
-                    Terminal\Entity::GATEWAY     =>  Gateway::ATOS ];
+                    Terminal\Entity::GATEWAY     =>  Gateway::WORLDLINE ];
 
         // Existing terminals of this submerchant of this gateway
         $existingTerminals = $this->repo->terminal->getByParams($params);
@@ -324,16 +358,16 @@ class GatewayProcessor extends BaseGatewayProcessor
             return $existingTerminals->first()->getGatewayMerchantId();
         }
 
-        $newMid = self::ATOS_MID_OFFSET + $this->redis->incr($this->redisMidKey);
+        $newMid = self::WORLDLINE_MID_OFFSET + $this->redis->incr($this->redisMidKey);
 
-        return $newMid;
+        return strval($newMid);
     }
 
     protected function getPartnerOtherDetails()
     {
         // TODO: Currently other details are hardcoded for freecharge, 
         // need to make this generic
-        return MerchantDetail\FreechargeAtosOnboardingDetails::OTHER_DETAILS;
+        return Merchant\Detail\FreechargeWorldlineOnboardingDetails::OTHER_DETAILS;
     }
 
 }

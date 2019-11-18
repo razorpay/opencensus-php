@@ -1014,6 +1014,14 @@ trait Capture
 
     protected function processTransferIfApplicable(Payment\Entity $payment)
     {
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_INITIATED,
+            [
+                'order_id'   => $payment->getApiOrderId(),
+                'payment_id' => $payment->getId(),
+            ]
+        );
+
         try
         {
             if ($this->shouldProcessOrderTransfer($payment) === false)
@@ -1279,16 +1287,26 @@ trait Capture
         if ($payment->isCaptured() !== true or
             $payment->hasOrder() !== true)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED,
+                               [
+                                   'payment_id' => $payment->getId()
+                               ]);
             return false;
         }
 
         $order = $payment->order;
 
-        if ($order->getStatus() !== Order\Status::PAID)
+        if ($order->getStatus() !== Order\Status::PAID or
+            $order->isPartialPaymentAllowed() === true)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID,
+                               [
+                                   'payment_id' => $payment->getId(),
+                                   'order_id'   => $order->getId()
+                               ]);
             return false;
         }
 
-        return $this->isPaymentAndOrderAmountSame($order, $payment);
+        return true;
     }
 }

@@ -1965,10 +1965,13 @@ trait Authorize
         }
     }
 
-    /*
-     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+    /**
+     * Function gets called processAndReturnTerminal and processAndReturnFees, in this flow
      * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
      * to avoid this we run the flow in beginTransactionAndRollback
+     *
+     * @param $payment
+     * @param $input
      */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
@@ -2485,7 +2488,7 @@ trait Authorize
 
             $emiDuration = $input['emi_duration'];
 
-            $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
         if ($payment->isCardlessEmi() === true)
@@ -3349,6 +3352,8 @@ trait Authorize
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
         $payment->emiPlan()->associate($emiPlan);
+
+        return $emiPlan->toArray();
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
@@ -6177,6 +6182,7 @@ trait Authorize
 
             unset($billingAddressFromInput['postal_code']);
         }
+
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }

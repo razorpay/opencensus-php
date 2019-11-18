@@ -14,7 +14,6 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -92,7 +91,12 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         // assert legal entity data
-        $legalEntity = $this->getDbLastEntity('legal_entity');
+        $legalEntity    = $this->getDbLastEntity('legal_entity');
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        // asserting that penny testing should not happen for linked account
+        $this->assertNull($merchantDetail->getPoaVerificationStatus());
+        $this->assertNull($merchantDetail->getBankDetailsVerificationStatus());
 
         $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
         $this->assertEquals($legalEntity->getMcc(), 8931);
@@ -381,7 +385,11 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchValidStatusChange()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $attributes = [
+            'submitted' => true,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
@@ -395,8 +403,9 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchInvalidStatusChange()
     {
-        $attributes     = [
+        $attributes = [
             'bank_details_verification_status' => 'verified',
+            'submitted'                        => true,
         ];
         $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;

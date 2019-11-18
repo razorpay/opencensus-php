@@ -2,21 +2,20 @@
 
 namespace RZP\Tests\Unit\P2p\Upi\Axis;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Gateway\P2p\Base;
-use RZP\Models\P2p\Device;
-use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Models\P2p\Device\RegisterToken;
-use RZP\Models\P2p\Base\Libraries\Context;
+use RZP\Models\P2p\Status;
+use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Service;
-use RZP\Tests\Functional\Partner\Commission\Action;
+use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
-use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
-use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class TransactionTest extends TestCase
 {
+    use TransactionTrait;
     /**
      * @var Context
      */
@@ -43,6 +42,12 @@ class TransactionTest extends TestCase
 
     public function testAmountValidator()
     {
+        $this->now($this->now()->subDays(2));
+
+        $this->createCompletedPayTransaction();
+
+        $this->now($this->testCurrentTime);
+
         $service = $this->getService();
 
         $response = $service->initiatePay([
@@ -57,6 +62,201 @@ class TransactionTest extends TestCase
         ]);
 
         $this->assertSame('100000.00', $response['request']['content']['amount']);
+    }
+
+    public function testFirstTransactionAboveLimit()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('First transaction can not be more than 5000 rupees.');
+
+        $this->getService()->initiatePay([
+            'amount'    => 10000000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+            ]
+        ]);
+    }
+
+    public function testCoolDownPeriodSuccess()
+    {
+        $this->now($this->now()->subHour(2));
+
+        $this->createCompletedPayTransaction([
+            Entity::AMOUNT => 400000
+        ]);
+
+        $this->now($this->testCurrentTime);
+
+        $response = $this->getService()->initiatePay([
+            'amount'    => 100000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+            ]
+        ]);
+
+       $this->assertSame('1000.00', $response['request']['content']['amount']);
+
+    }
+
+    public function testCoolDownPeriodFailure()
+    {
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Allowed limit of 5000 exceeded in cooldown of 24 hours.');
+
+        $this->now($this->now()->subHour(2));
+
+        $this->createCompletedPayTransaction([
+            Entity::AMOUNT => 450000
+        ]);
+
+        $this->now($this->testCurrentTime);
+
+        $this->getService()->initiatePay([
+            'amount'    => 100000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+            ]
+        ]);
+
+    }
+
+    public function testFirstDayTransaction()
+    {
+        $this->now($this->now()->subHour(2));
+
+        $this->createCompletedPayTransaction([ Entity::AMOUNT => 100000 ]);
+
+        $this->createCollectPendingTransaction([ Entity::AMOUNT => 100000 ]);
+
+        $this->createCompletedPayTransaction([ Entity::AMOUNT => 100000 ]);
+
+        $this->createCompletedPayTransaction([ Entity::AMOUNT => 100000 ]);
+
+        $this->now($this->testCurrentTime);
+
+        $response = $this->getService()->initiatePay([
+            'amount'    => 100000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+            ]
+        ]);
+
+        $this->assertSame('1000.00', $response['request']['content']['amount']);
+
+    }
+
+    public function testCreditDebitTransactions()
+    {
+        $this->now($this->now()->subHour(2));
+
+        $this->createCompletedPayTransaction([ Entity::AMOUNT => 100000 ]);
+
+        $this->createPayIncomingTransaction([
+            Entity::AMOUNT => 400000
+        ]);
+
+        $this->now($this->testCurrentTime);
+
+        $response = $this->getService()->initiatePay([
+            'amount'    => 100000,
+            'currency'  => 'INR',
+            'payer'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+            ],
+            'payee'     => [
+                'id'    => $this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+            ]
+        ]);
+
+        $this->assertSame('1000.00', $response['request']['content']['amount']);
+    }
+
+    // TODO: Add test case for collect and authorize flow
+    public function testCollectFlow()
+    {
+        $transaction = $this->createCollectIncomingTransaction([
+            Entity::AMOUNT => 100000
+        ]);
+
+        $response = $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+
+        $this->assertSame('1000.00', $response['request']['content']['amount']);
+    }
+
+    public function testCollectFailFlow()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('First transaction can not be more than 5000 rupees.');
+
+        $transaction = $this->createCollectIncomingTransaction([
+            Entity::AMOUNT => 600000
+        ]);
+
+        $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+    }
+
+    public function testCollectExceeds()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Allowed limit of 5000 exceeded in cooldown of 24 hours.');
+
+        $this->createCompletedPayTransaction([
+            Entity::AMOUNT => 450000
+        ]);
+
+        $transaction = $this->createCollectIncomingTransaction([
+            Entity::AMOUNT => 100000
+        ]);
+
+        $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+    }
+
+    public function testCollectPassAfterCooldown()
+    {
+        $this->now($this->now()->subDays(2));
+
+        $this->createCompletedPayTransaction([
+            Entity::AMOUNT => 450000
+        ]);
+
+        $this->now($this->testCurrentTime);
+
+        $transaction = $this->createCollectIncomingTransaction([
+            Entity::AMOUNT => 100000
+        ]);
+
+        $response = $this->getService()->initiateAuthorize([
+            Entity::ID => $transaction->getPublicId()
+        ]);
+
+        $this->assertSame('1000.00', $response['request']['content']['amount']);
     }
 
     protected function getService()

@@ -212,6 +212,8 @@ class Gateway
 
     protected $wasGatewayHit = false;
 
+    protected $shouldMapLateAuthorized = false;
+
     /**
      * @var $downtimeMetric DowntimeMetric Singleton for storing count of gateway
      * requests data with success-failure count and error codes (if any)

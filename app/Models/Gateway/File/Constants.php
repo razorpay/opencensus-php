@@ -211,4 +211,8 @@ class Constants
             self::FIRST_DATA    => [''],
         ],
     ];
+
+    const ASYNC_GATEWAYS = [
+        self::SBIN
+    ];
 }

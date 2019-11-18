@@ -48,6 +48,25 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Merchant\Entity $merchant
+     * @param array           $data
+     *
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function deleteExistingEntities(Merchant\Entity $merchant, array $data)
+    {
+        $emailType = $data['type'];
+
+        $emails = $this->repo->merchant_email->getEmailByType($emailType, $merchant->getId());
+
+        if (empty($emails) === false)
+        {
+            $this->deleteEmails($merchant, $emailType);
+        }
+    }
+
+    /**
      * Fetch a merchant's particular type of emails
      *
      * @param Merchant\Entity $merchant

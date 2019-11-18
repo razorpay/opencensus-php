@@ -311,7 +311,6 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-
             // Service: Stork
             Entity::STORK_WEBHOOK => [
                 'owner_id' => [
@@ -319,6 +318,50 @@ class AdminFetch
                     Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_TRANSFERS => [
+                'source_type'         => [
+                    Fetch::LABEL    => 'Source Type',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'source_id'         => [
+                    Fetch::LABEL        => 'Source id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getFtsSupportedChannels(),
+                ],
+                'bank_status_code' => [
+                    Fetch::LABEL    => 'Bank Status Code',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'Merchant Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_ATTEMPTS     => [
+                'transfer_id'       => [
+                    Fetch::LABEL        => 'Transfer Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_FUND_ACCOUNT => [],
+            Entity::FTS_BENEFICIARY_STATUS => [
+                'fund_account_id' => [
+                    Fetch::LABEL    => 'Fund Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'source_account_id'       => [
+                    Fetch::LABEL        => 'Source Account Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ]
+            ]
         ];
     }
 
@@ -1272,6 +1315,10 @@ class AdminFetch
             ],
 
             Entity::KEY => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
+            Entity::MERCHANT_DOCUMENT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 

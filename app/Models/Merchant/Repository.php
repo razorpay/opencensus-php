@@ -177,6 +177,20 @@ class Repository extends Base\Repository
                     })->get();
     }
 
+    public function fetchMerchantsWithPricingPlan($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->get();
+    }
+
+    public function fetchMerchantsCountWithPricingPlanId($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->count();
+    }
+
     public function isMerchantIdRequiredForFetch()
     {
         return false;
@@ -714,6 +728,25 @@ class Repository extends Base\Repository
         }
 
         return $activatedMerchants;
+    }
+
+    /**
+     * This will give the query object for fetching active merchants
+     *
+     * @return mixed
+     */
+    public function getQueryForActiveMerchants()
+    {
+        $merchantId    = $this->dbColumn(Entity::ID);
+        $activated     = $this->dbColumn(Entity::ACTIVATED);
+        $activatedAt   = $this->dbColumn(Entity::ACTIVATED_AT);
+
+        $activeMerchants = $this->newQuery()
+                                ->select($merchantId)
+                                ->whereNotNull($activatedAt)
+                                ->where($activated, 1);
+
+        return $activeMerchants;
     }
 
     public function getPartnerMerchantFromSubMerchantId(string $subMerchantId)

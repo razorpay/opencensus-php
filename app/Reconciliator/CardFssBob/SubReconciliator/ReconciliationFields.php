@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\CardFssBob\SubReconciliator;
 
 class ReconciliationFields
 {
-    const TRANSACTION_DATE           = 'transaction_date';
+    const TRANSACTION_DATE           = ['transaction_date', 'transactiondate'];
 
     const TRANSACTION_TIME           = 'transaction_time';
 
@@ -32,9 +32,9 @@ class ReconciliationFields
 
     const DELIVERY_CHANNEL           = 'delivery_channel';
 
-    const PAYMENT_METHOD             = 'payment_method';
+    const PAYMENT_METHOD             = ['payment_method', 'paymentmethod'];
 
-    const ONUS_INDICATOR             = 'onus_indicator';
+    const ONUS_INDICATOR             = ['onus_indicator', 'onusindicator'];
 
     const INTERCHANGE                = 'Interchange';
 
@@ -56,21 +56,21 @@ class ReconciliationFields
 
     const TRANSACTION_CATEGORY       = 'transaction_category';
 
-    const TRANSACTION_TYPE           = 'transaction_type';
+    const TRANSACTION_TYPE           = ['transaction_type', 'transactiontype'];
 
-    const TRANSACTION_CURRENCY_CODE  = 'transaction_currency_code';
+    const TRANSACTION_CURRENCY_CODE  = ['transaction_currency_code', 'transactioncurrencycode'];
 
-    const TRANSACTION_AMOUNT         = 'transaction_amount';
+    const TRANSACTION_AMOUNT         = ['transaction_amount', 'transactionamount'];
 
     const ADDITIONAL_AMOUNT          = 'additional_amount';
 
     const SETTLEMENT_AMOUNT          = 'settlement_currency';
 
-    const LATE_SETTLEMENT_FEE_AMOUNT = 'late_settlement_fee_amount';
+    const LATE_SETTLEMENT_FEE_AMOUNT = ['late_settlement_fee_amount', 'latesettlementfeeamount'];
 
-    const RRF_AMOUNT                 = 'rrf_amount';
+    const RRF_AMOUNT                 = ['rrf_amount', 'rrfamount'];
 
-    const MSF_AMOUNT                 = 'msf_amount';
+    const MSF_AMOUNT                 = ['msf_amount', 'msfamount'];
 
     const GST                        = 'gst';
 
@@ -88,23 +88,23 @@ class ReconciliationFields
 
     const INVOICE_NUMBER             = 'invoice_number';
 
-    const AUTH_CODE                  = 'authapproval_code';
+    const AUTH_CODE                  = ['authapproval_code', 'authapprovalcode'];
 
-    const RRN                        = 'retrieval_reference_number';
+    const RRN                        = ['retrieval_reference_number', 'retrievalreferencenumber'];
 
     const TRACE_NO                   = 'trace_no';
 
     const PG_PAYMENT_TRANSACTION_ID  = 'pg_payment_transaction_id';
 
-    const PG_TRANSACTION_ID          = 'pg_transaction_id';
+    const PG_TRANSACTION_ID          = ['pg_transaction_id', 'paymentgatewaytranid'];
 
-    const MERCHANT_TRACK_ID          = 'merchant_track_id';
+    const MERCHANT_TRACK_ID          = ['merchant_track_id', 'merchanttrackid'];
 
     const HOST_TRANSACTION_ID        = 'host_transaction_id';
 
 
     // The date actually on which payment got settled
-    const PAYMENT_DATE               = 'payment_date';
+    const GATEWAY_SETTLED_DATE       = ['payment_date', 'merchantsettlementdate'];
 
     const TRANSACTION_STATUS         = 'transaction_status';
 }

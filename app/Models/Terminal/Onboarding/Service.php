@@ -54,7 +54,7 @@ class Service extends Base\Service
 
         $this->verifyPartnerTerminalOnboardingAccess();
 
-        $onboardInput['gateway'] = Gateway::ATOS;
+        $onboardInput['gateway'] = Gateway::WORLDLINE;
 
         $onboardInput['gateway_input'] = $input;
 

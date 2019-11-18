@@ -1030,6 +1030,12 @@ final class FactoryData
             'customer_id' => '100000customer',
         ]);
 
+        $factory(\RZP\Models\PaperMandate\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
+        ]);
+
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
             'active'       => true,
@@ -1128,7 +1134,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\BankingAccount\Entity::class, [
-            'id'                => $faker->uniqueid,
+            'id'                => '01234567890123',
             'merchant_id'       => '10000000000000',
             'account_number'    => '409000768239',
             'channel'           => 'rbl',
@@ -1136,8 +1142,23 @@ final class FactoryData
             'updated_at'        => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\BankingAccount\Detail\Entity::class, [
+            'id'                 => 1,
+            'banking_account_id' => '01234567890123',
+            'merchant_id'        => '10000000000000',
+            'gateway_key'        => 'client_id',
+            'gateway_value'      => '123',
+            'updated_at'         => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Mpan\Entity::class, [
 
+        ]);
+
+        $factory(\RZP\Models\D2cBureauDetail\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
+            'user_id'                   => 'factory:RZP\Models\User\Entity',
         ]);
 
         $factory(\RZP\Models\Workflow\PayoutAmountRules\Entity::class,[
@@ -1149,6 +1170,5 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
-
     }
 }

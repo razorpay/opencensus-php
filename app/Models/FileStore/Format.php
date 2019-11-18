@@ -6,25 +6,26 @@ use RZP\Exception;
 
 class Format
 {
-    const CSV   = 'csv';
-    const ENC   = 'enc';
-    const JPG   = 'jpg';
-    const JPEG  = 'jpeg';
-    const PDF   = 'pdf';
-    const PNG   = 'png';
-    const TXT   = 'txt';
-    const XLS   = 'xls';
-    const XLSB  = 'xlsb';
-    const XLSX  = 'xlsx';
-    const ZIP   = 'zip';
-    const DOC   = 'doc';
-    const DOCX  = 'docx';
-    const RPT   = 'rpt';
-    const DAT   = 'dat';
-    const XML   = 'xml';
-    const CLT   = 'clt';
-    const IN    = 'in';
-    const NONE  = null;
+    const CSV       = 'csv';
+    const ENC       = 'enc';
+    const JPG       = 'jpg';
+    const JPEG      = 'jpeg';
+    const PDF       = 'pdf';
+    const PNG       = 'png';
+    const TXT       = 'txt';
+    const XLS       = 'xls';
+    const XLSB      = 'xlsb';
+    const XLSX      = 'xlsx';
+    const ZIP       = 'zip';
+    const DOC       = 'doc';
+    const DOCX      = 'docx';
+    const RPT       = 'rpt';
+    const DAT       = 'dat';
+    const XML       = 'xml';
+    const CLT       = 'clt';
+    const IN        = 'in';
+    const NONE      = null;
+    const SEVEN_Z   = '7z';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -46,39 +47,41 @@ class Format
         self::DAT,
         self::XML,
         self::IN,
+        self::SEVEN_Z,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
-        self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
+        self::CSV     => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
                         'text/plain', 'inode/x-empty', 'application/octet-stream', 'application/pgp',
                         'text/x-Algol68'],
-        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib', 'application/x-object'],
-        self::JPG   => ['image/jpeg', 'application/pgp'],
-        self::JPEG  => ['image/jpeg', 'application/pgp'],
-        self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
-        self::PNG   => ['image/png', 'application/pgp'],
-        self::TXT   => ['text/plain', 'application/pgp', 'application/octet-stream', 'audio/x-unknown'],
-        self::IN    => ['text/plain', 'application/pgp'],
+        self::ENC     => ['application/octet-stream', 'application/pgp', 'application/zlib', 'application/x-object'],
+        self::JPG     => ['image/jpeg', 'application/pgp'],
+        self::JPEG    => ['image/jpeg', 'application/pgp'],
+        self::PDF     => ['application/pdf', 'application/x-pdf', 'application/pgp'],
+        self::PNG     => ['image/png', 'application/pgp'],
+        self::TXT     => ['text/plain', 'application/pgp', 'application/octet-stream', 'audio/x-unknown'],
+        self::IN      => ['text/plain', 'application/pgp'],
         // Adding all possible type of mime type as current library we are using to create xlsx file will not take
         // care of mime
-        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
+        self::XLSX    => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
                         'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap',],
         // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
         // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
-        self::XLS   => ['application/excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        self::XLS     => ['application/excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
                         'application/cdfv2-unknown'],
-        self::XLSB  => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
+        self::XLSB    => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         'application/zip', 'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet'],
-        self::ZIP   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
-        self::DOC   => ['application/msword'],
-        self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        self::XML   => ['application/xml'],
-        self::RPT   => ['text/plain'],
-        self::DAT   => ['text/plain', 'application/octet-stream'],
-        self::NONE  => ['text/plain'],
+        self::ZIP     => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+        self::DOC     => ['application/msword'],
+        self::DOCX    => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        self::XML     => ['application/xml'],
+        self::RPT     => ['text/plain'],
+        self::DAT     => ['text/plain', 'application/octet-stream'],
+        self::NONE    => ['text/plain'],
+        self::SEVEN_Z => ['application/x-7z-compressed'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

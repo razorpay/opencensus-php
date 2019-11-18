@@ -62,6 +62,7 @@ class Constants
     const EMI                = 'emi';
     const INTERNATIONAL      = 'international';
     const SETTLEMENT         = 'settlement';
+    const SETTINGS           = 'settings';
     const BALANCE_RESERVED   = 'balance_reserved';
     const FUND_ACCOUNT_ID    = 'fund_account_id';
     const SCHEDULES          = 'schedules';

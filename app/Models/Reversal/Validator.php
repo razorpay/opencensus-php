@@ -20,7 +20,8 @@ class Validator extends Base\Validator
         Entity::CURRENCY             => 'required|string|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
-        ENTITY::REFUND_TO_CUSTOMER   => 'sometimes|boolean',
+        Entity::REFUND_TO_CUSTOMER   => 'sometimes|boolean',
+        Entity::UTR                  => 'sometimes|nullable|string',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

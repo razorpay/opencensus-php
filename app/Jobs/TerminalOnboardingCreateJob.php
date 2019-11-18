@@ -80,24 +80,37 @@ class TerminalOnboardingCreateJob extends Job
 
     protected function handleJobRelease(array $exceptionData)
     {
-        // TODO: do not fail terminals if we get retriable error
-        $this->terminal->setStatus(Terminal\Status::FAILED);
-        
-        $this->terminal->save();
+        // Using try catch, because code in 'finally' should always execute, 
+        // otherwise in case of exception, terminals may remain suspended in queued state
+        try
+        {
+            $app = App::getFacadeRoot();
 
-        $terminalOnboardingDetail = $this->terminal->terminalOnboardingDetail;
+            $terminalOnboardingDetail = $this->terminal->terminalOnboardingDetail;
 
-        $terminalOnboardingDetail->incrementAttempts();
+            $terminalOnboardingDetail->incrementAttempts();
 
-        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::FAILED);
+            $this->updateTerminalOnboardingDetailsErrors($exceptionData, $terminalOnboardingDetail);
 
-        $this->updateTerminalOnboardingDetailsErrors($exceptionData, $terminalOnboardingDetail);
+            // TODO: do not fail terminals if we get retriable error
+            $this->terminal->setStatus(Terminal\Status::FAILED);
 
-        $terminalOnboardingDetail->save();
+            $this->terminal->save();
 
-        $app = App::getFacadeRoot();
+            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::FAILED);
 
-        $app['events']->fire('api.terminal.failed', ['main' => $this->terminal]);
+            $terminalOnboardingDetail->save();
+
+            $app['events']->fire('api.terminal.failed', ['main' => $this->terminal]);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::TERMINAL_ONBOARDING_CREATE_JOB_RELEASE_FAILURE_EXCEPTION
+            );
+        }
     }
 
     protected function updateTerminalOnboardingDetailsErrors(array $exceptionData, $terminalOnboardingDetail)

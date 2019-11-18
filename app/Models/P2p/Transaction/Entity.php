@@ -7,6 +7,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\BankAccount;
 
 /**
  * @property Vpa\Entity $payer
@@ -712,6 +713,11 @@ class Entity extends Base\Entity
         return $this->morphTo(self::PAYEE)->withTrashed();
     }
 
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount\Entity::class)->withTrashed();
+    }
+
     public function upi()
     {
         return $this->hasOne(UpiTransaction\Entity::class, UpiTransaction\Entity::TRANSACTION_ID);
@@ -787,5 +793,17 @@ class Entity extends Base\Entity
         $array[self::BANK_ACCOUNT]  = $this->bankAccount->toArrayPublic();
 
         return $array;
+    }
+
+    public function toArrayTrace(): array
+    {
+        return array_only($this->toArray(), [
+            self::ID,
+            self::DEVICE_ID,
+            self::HANDLE,
+            self::AMOUNT,
+            self::TYPE,
+            self::FLOW,
+        ]);
     }
 }

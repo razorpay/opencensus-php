@@ -66,6 +66,7 @@ class Base extends Core
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_SIB         = 'NetbankingSib';
+    const NETBANKING_SCB         = 'NetbankingScb';
     const NETBANKING_CBI         = 'NetbankingCbi';
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
@@ -127,6 +128,7 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_SIB         => ['epayments@sib.co.in'],
+        self::NETBANKING_SCB         => ['no-reply@northakross.com'],
         self::NETBANKING_CBI         => ['smcbipso@centralbankofindia.org.in'],
         self::NETBANKING_YESB        => [''],
         self::NETBANKING_CUB         => [''],
@@ -197,6 +199,7 @@ class Base extends Core
         Gateway::NETBANKING_IDFC        => self::NETBANKING_IDFC,
         Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
         Gateway::NETBANKING_SIB         => self::NETBANKING_SIB,
+        Gateway::NETBANKING_SCB         => self::NETBANKING_SCB,
         Gateway::NETBANKING_CBI         => self::NETBANKING_CBI,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,

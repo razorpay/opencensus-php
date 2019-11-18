@@ -410,6 +410,19 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalWithWrongGatewayCase()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('upi_airtel', $terminal['gateway']);
+    }
+
     public function testCreateMpgsTerminal()
     {
         $url = '/merchants/10000000000000/terminals';

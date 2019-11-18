@@ -30,6 +30,7 @@ class FileProcessor
     const SHEET_COUNT             = 'sheet_count';
 
     const ZIP_EXTENSION           = 'zip';
+    const SEVEN_Z                 = '7z';
 
     /**
      * This is used when trying to get the file details of files
@@ -204,7 +205,7 @@ class FileProcessor
         // Currently supporting only zip files
         // When other types of zip needs to be supported,
         // handle for each type separately using the conditional statements.
-        if ($extension !== self::ZIP_EXTENSION)
+        if (($extension !== self::ZIP_EXTENSION) and ($extension !== self::SEVEN_Z))
         {
             throw new Exception\ReconciliationException(
                 'Unsupported zip type. Currently supporting only zip files.', ['file_details' => $fileDetails]

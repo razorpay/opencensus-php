@@ -103,8 +103,7 @@ class UfhService
      *
      * @throws Exception\ServerErrorException
      */
-    public function uploadFileAndGetUrl(
-                                        UploadedFile $file,
+    public function uploadFileAndGetUrl(UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
                                         Entity $entity,

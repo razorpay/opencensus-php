@@ -47,4 +47,57 @@ return [
         ],
     ],
 
+
+    'testUpdateMerchantEmailsBulk' => [
+        'request'  => [
+            'content' => [
+                'type' => 'merchant_email',
+                'data' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'dispute'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'dispute'
+                    ]]
+            ],
+            'url'     => '/admin/bulkcreate',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success_count'=> 2,
+            ],
+        ],
+    ],
+
+    'testUpdateFailureMerchantEmailsBulk' => [
+        'request'  => [
+            'content' => [
+                'type' => 'merchant_email',
+                'data' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'dispute'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000dsadas',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'dispute'
+                    ]]
+            ],
+            'url'     => '/admin/bulkcreate',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failed_count'  => 1,
+            ],
+        ],
+    ],
 ];

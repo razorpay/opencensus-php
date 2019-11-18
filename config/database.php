@@ -236,6 +236,16 @@ return array(
             ]
         ],
 
+        'default_with_high_timeout' => [
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 10,
+            'read_write_timeout' => 10,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
+        ],
+
         'secure' => [
             'host'     => env('SECURE_REDIS_HOST'),
             'port'     => env('SECURE_REDIS_PORT'),

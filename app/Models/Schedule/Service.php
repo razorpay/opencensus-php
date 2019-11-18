@@ -137,4 +137,32 @@ class Service extends Base\Service
             return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
         }
     }
+
+    public function getScheduleTasks($type)
+    {
+        (new ScheduleTask\Validator)->validateInput('fetch', ['type' => $type]);
+
+        $scheduleTasks = $this->repo->schedule_task->fetchByMerchant($this->merchant, $type);
+
+        $scheduleDetails = [];
+
+        $scheduleTasks->each(function ($scheduleTask) use (& $scheduleDetails)
+        {
+             array_push($scheduleDetails, [
+                ScheduleTask\Entity::METHOD         => $scheduleTask->getAttribute(ScheduleTask\Entity::METHOD),
+                ScheduleTask\Entity::TYPE           => $scheduleTask->getAttribute(ScheduleTask\Entity::TYPE),
+                Schedule\Entity::NAME               => $scheduleTask->schedule->getAttribute(Schedule\Entity::NAME),
+                Schedule\Entity::PERIOD             => $scheduleTask->schedule->getAttribute(Schedule\Entity::PERIOD),
+                Schedule\Entity::INTERVAL           => $scheduleTask->schedule->getAttribute(Schedule\Entity::INTERVAL),
+                Schedule\Entity::ANCHOR             => $scheduleTask->schedule->getAttribute(Schedule\Entity::ANCHOR),
+                Schedule\Entity::HOUR               => $scheduleTask->schedule->getAttribute(Schedule\Entity::HOUR),
+                Schedule\Entity::DELAY              => $scheduleTask->schedule->getAttribute(Schedule\Entity::DELAY),
+                ScheduleTask\Entity::INTERNATIONAL  => $scheduleTask->getAttribute(ScheduleTask\Entity::INTERNATIONAL)
+            ]);
+
+             return true;
+        });
+
+        return $scheduleDetails;
+    }
 }

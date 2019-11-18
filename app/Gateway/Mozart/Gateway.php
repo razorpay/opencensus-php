@@ -270,10 +270,15 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true)
+        {
+            return true;
+        }
+
         return false;
     }
 
-    public function preProcessServerCallback($input, $gateway = null): array
+    public function preProcessServerCallback($input, $gateway = null, $mode = null): array
     {
         $this->validateClientOnServerCallback($gateway);
 
@@ -287,6 +292,8 @@ class Gateway extends Base\Gateway
                 return $this->preProcessServerCallbackForYesb($input);
             case Payment\Gateway::WALLET_PHONEPE:
                 return json_decode(base64_decode($input['response'], true), true);
+            case Payment\Gateway::NETBANKING_KVB:
+                return $this->preProcessServerCallbackForKvb($input, $mode);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -305,6 +312,8 @@ class Gateway extends Base\Gateway
                 return $response['data']['paymentId'];
             case Payment\Gateway::WALLET_PHONEPE:
                 return $response['data']['transactionId'];
+            case Payment\Gateway::NETBANKING_KVB:
+                return $response['data']['paymentId'];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -697,6 +706,11 @@ class Gateway extends Base\Gateway
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
             ],
+            Payment\Gateway::NETBANKING_KVB =>  [
+                Action::PAY_INIT    =>  null,
+                Action::PAY_VERIFY  =>  null,
+                Action::VERIFY      =>  Action::PAY_VERIFY,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -796,6 +810,12 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => Action::AUTHORIZE,
                 Action::REFUND          => Action::AUTHORIZE,
                 Action::VERIFY_REFUND   => Action::REFUND,
+            ],
+
+            Payment\Gateway::NETBANKING_KVB =>  [
+                Action::PAY_INIT    =>  null,
+                Action::PAY_VERIFY  =>  null,
+                Action::VERIFY      =>  Action::AUTHORIZE,
             ],
         ];
 
@@ -981,6 +1001,30 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function preProcessServerCallbackForKvb($input, $mode): array
+    {
+        $this->action = Action::PAY_VERIFY;
+
+        $content['gateway']['redirect'] = $input;
+
+        $content['payment']['gateway'] = Payment\Gateway::NETBANKING_KVB;
+
+        $content['terminal']['gateway_secure_secret'] = "";
+
+        $request = $this->getMozartRequestArray($content, $mode);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        // Till here response was fully encrypted and we did not know the payment id
+        $paymentDetails['payment']['id'] = $response['data']['paymentId'];
+
+        $this->traceGatewayPaymentResponse($traceRes, $paymentDetails, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
+        return $response;
+    }
+
     protected function runCallbackValidationsIfApplicable($input, $response)
     {
         if ($this->shouldRunCallbackValidations($input['payment']['gateway']) === true)
@@ -1036,6 +1080,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
+            Payment\Gateway::NETBANKING_KVB,
         ];
 
         return in_array($gateway, $validationGateways, true);
@@ -1044,7 +1089,8 @@ class Gateway extends Base\Gateway
     protected function fullyEncryptedFlow($gateway)
     {
         $fullyEncryptedInputGateways = [
-          Payment\Gateway::NETBANKING_YESB
+          Payment\Gateway::NETBANKING_YESB,
+          Payment\Gateway::NETBANKING_KVB,
         ];
 
         return in_array($gateway, $fullyEncryptedInputGateways, true);
@@ -1061,6 +1107,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::NETBANKING_KVB,
         ];
 
         return in_array($gateway, $formattedAmountGateways, true);

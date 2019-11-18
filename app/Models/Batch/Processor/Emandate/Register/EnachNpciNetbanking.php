@@ -4,12 +4,15 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Gateway\Enach\Npci\Netbanking;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class EnachNpciNetbanking extends Base
 {
@@ -115,10 +118,25 @@ class EnachNpciNetbanking extends Base
 
     protected function fetchPaymentEntity($data): Payment\Entity
     {
-        $enach = $this->repo->enach->findByGatewayReferenceIdAndStatus(
-                                               $data[self::NPCI_REF_ID],
-                                               Netbanking\RegistrationStatus::SUCCESS
-                                        );
+        try
+        {
+            $enach = $this->repo->enach->findByGatewayReferenceIdAndStatus(
+                $data[self::NPCI_REF_ID],
+                Netbanking\RegistrationStatus::SUCCESS
+            );
+        }
+        catch (DBQueryException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
+                null,
+                null,
+                [
+                    'npci_reference_number' => $data[self::NPCI_REF_ID],
+                ]);
+        }
 
         return $enach['payment'];
     }
