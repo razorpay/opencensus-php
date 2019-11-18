@@ -633,11 +633,6 @@ export default class CreateNewContainer extends React.Component {
         f.label = f.label(this);
       }
 
-      let defaultChecked = f.defaultChecked;
-      if (typeof defaultChecked === 'function') {
-        f.defaultChecked = defaultChecked(this);
-      }
-
       return WizardFields.call(this, f);
     });
   }
