@@ -28,6 +28,7 @@ import {
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
 import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
+import KYCStatusModal from 'merchant/components/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
@@ -112,10 +113,10 @@ const keymetricsSectionTitle = 'Transactions Overview',
       current_balance: state.home.current_balance,
       showInstantActivationSuccess:
         state.home.instantActivations.showInstantActivationSuccess,
-      showKYCActivationSuccess:
-        state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
       showPANStatus: state.home.instantActivations.showPANStatus,
+      showKYCStatus: state.home.instantActivations.showKYCStatus,
+      kycStatusModalType: state.home.kycStatusModalType,
     };
   },
   {
@@ -641,11 +642,12 @@ export default class HomeContainer extends Component {
       analyticsFetch,
       onFilterChange,
       showInstantActivationSuccess,
-      showKYCActivationSuccess,
       showKYCDetails,
       hideKYCDetailsModal,
       tracking,
       showPANStatus,
+      showKYCStatus,
+      kycStatusModalType,
     } = this.props;
 
     const { activation_flow } = user;
@@ -827,11 +829,11 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
-        {showKYCActivationSuccess && (
-          <KycFormSuccess
+        {showKYCStatus && (
+          <KYCStatusModal
             onClose={() => {
               iaActivations.trackClose(activation_flow);
-              this.props.hideKYCActivationSuccessModal();
+              this.props.hideKYCStatusModal();
             }}
             onGoToDashboard={() => {
               iaActivations.trackClose(activation_flow);
@@ -839,6 +841,7 @@ export default class HomeContainer extends Component {
             }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
             user={user}
+            modalType={kycStatusModalType}
           />
         )}
         {showPANStatus && (
