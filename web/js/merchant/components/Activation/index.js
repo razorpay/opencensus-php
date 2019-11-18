@@ -742,8 +742,8 @@ export default class ActivationWizard extends React.Component {
       const currentDirty = this.state.dirty; // currently filled data will be in this.state.dirty
       const currentFilledFieldNames = currentDirty && Object.keys(currentDirty);
 
-      const hasFilledEverything = needsClarificationFieldNames.every(field =>
-        currentFilledFieldNames.includes(field)
+      const hasFilledEverything = needsClarificationFieldNames.every(
+        field => currentFilledFieldNames.includes(field) && currentDirty[field]
       );
       return hasFilledEverything ? false : true;
     }
@@ -1045,7 +1045,7 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
-  submitClarifications = () => {
+  submitClarifications = async () => {
     const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
     const hasFilledDetails =
       this.state.dirty && Object.keys(this.state.dirty).length > 0;
@@ -1060,17 +1060,27 @@ export default class ActivationWizard extends React.Component {
         }
       });
     }
-    this.props
-      .save(reqData)
-      .then(response => {
-        if (response.success) {
-          this.props.showKYCStatusModal({
-            modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
-          });
-          this.props.history.replace(`/`);
-        }
-      })
-      .catch(err => {});
+    try {
+      this.setState({ callingL1Api: true });
+      const response = await this.props.save(reqData);
+      if (response.success) {
+        this.props.showKYCStatusModal({
+          modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+        });
+        this.props.history.replace(`/`);
+      }
+      return response;
+    } catch (err) {
+      if (err.errors && err.errors.length && err.errors[0]) {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      }
+      return err;
+    } finally {
+      this.setState({ callingL1Api: false });
+    }
   };
 
   /*
@@ -1622,10 +1632,12 @@ export default class ActivationWizard extends React.Component {
         {this.state.activeTab === NEEDS_CLARIFICATION_STEP && (
           <footer>
             <AsyncBtn.Primary
-              disabled={this.hasFilledClarificationDetails}
+              disabled={
+                this.hasFilledClarificationDetails || this.state.callingL1Api
+              }
               onClick={this.submitClarifications}
-              pendingState={'Verifying'}
-              name={'Save Clarifications'}
+              pendingState={'Submitting...'}
+              name={'Submit Clarifications'}
             >
               Submit Clarifications
             </AsyncBtn.Primary>
@@ -1811,7 +1823,7 @@ function ActivationField(field) {
             {rest.reasons.map((r, i) => (
               <div key={i}>
                 <i class="i i-info-circle" />
-                {r}
+                <div>{r}</div>
               </div>
             ))}
           </div>
