@@ -89,11 +89,13 @@ export function validatePincodeLength(value) {
 
 // TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
-export function validatePANCard(value) {
+export function validatePANCard(value, panType = '') {
   if (value) {
     if (value.length !== 10) {
       return 'PAN card must be 10 characters';
     } else if (!/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value)) {
+      return 'Invalid PAN card';
+    } else if (panType && value[3] !== panType) {
       return 'Invalid PAN card';
     }
   }
