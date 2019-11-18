@@ -88,15 +88,20 @@ class Service extends Base\Service
 
     public function fixSettled(array $input): array
     {
-        $count = $input['count'] ?? 200;
+        return $this->app['api.mutex']->acquireAndRelease(
+            'fix_settled_column_for_fav',
+            function () use ($input)
+            {
+                $count = $input['count'] ?? 200;
 
-        $txnIds =  $this->repo->transaction->fetchSettledAt($count);
+                $txnIds =  $this->repo->transaction->fetchSettledAt($count);
 
-        $this->repo->transaction->updateSettledAtToFalse($txnIds);
+                $this->repo->transaction->updateSettledAtToFalse($txnIds);
 
-        return [
-            'count'             => $count,
-            'txns_processed'    => $txnIds,
-        ];
+                return [
+                    'count'             => $count,
+                    'txns_processed'    => $txnIds,
+                ];
+            });
     }
 }
