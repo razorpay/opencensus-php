@@ -27,15 +27,18 @@ final class ResponseFields
     const ORDER_REFERENCE_STATUS                = 'OrderReferenceStatus';
     const AMAZON_REFERENCE_ID                   = 'AmazonOrderReferenceId';
     const UC_REASON_CODE                        = 'ReasonCode';
+    const SOFT_DESCRIPTOR                       = 'SoftDescriptor';
     const REASON_DESCRIPTION                    = 'ReasonDescription';
     const RESPONSE_METADATA                     = 'ResponseMetadata';
     const REQUEST_ID                            = 'RequestId';
     const REQUEST_UC_ID                         = 'RequestID';
+    const REFUND_TYPE                           = 'RefundType';
     const ERROR                                 = 'Error';
     const SELLER_ORDER_ATTRS                    = 'SellerOrderAttributes';//nsdkf kdf;
     const UC_SELLER_ORDER_ID                    = 'SellerOrderId';
     const ORDER_TOTAL                           = 'OrderTotal';
     const ORDER_AMOUNT                          = 'Amount';
+    const CREATION_TIMESTAMP                    = 'CreationTimestamp';
     const LAST_UPDATE_TIMESTAMP                 = 'LastUpdateTimestamp';
 
     /**

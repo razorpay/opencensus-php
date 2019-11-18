@@ -138,6 +138,15 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithoutFundAccountId()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
     {
         $this->ba->privateAuth();
@@ -756,8 +765,6 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutToCardFundAccountUsingUpi()
     {
-        $this->markTestSkipped('Disabling Test since UPI is disabled temperorily in FTA');
-
         $this->fixtures->create(
             'fund_account',
             [

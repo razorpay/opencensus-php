@@ -1391,6 +1391,15 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testSendOtpWithContact()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testSendOtpViaMail()
     {
         $this->createContact();

@@ -46,27 +46,21 @@ class BharatQrWorldlineGatewayTest extends TestCase
         return $bankAccount;
     }
 
-    public function testGatewayNotAvailable()
+    public function testWorldlinePaymentFail()
     {
         //
-        // Worldline gateway has been marked as not available, there are certain issues with the APIs of the gateway,
-        // these need to be sorted out before enabling the gateway
-        //
+        // There are certain issues with the APIs of the worldline gateway, till then we are throwing not supported
+        // action exception for payments
 
         $request = $this->testData['testQrPaymentProcess'];
 
-        $qrCode = $this->createVirtualAccount();
-
         $this->ba->directAuth();
-
-        $this->getMockServer('worldline')->fillBharatQrCallback($request['content'], $qrCode['reference']);
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($request)
-        {
-            $this->makeRequestAndGetContent($request);
-        });
+        $testData['request'] = $request;
+
+        $this->startTest($testData);
     }
 
     public function testQrPaymentProcess()

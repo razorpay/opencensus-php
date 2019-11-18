@@ -157,6 +157,7 @@ class Name
     const DELETE_PERMISSION                   = 'delete_permission';
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
+    const REMINDER_OPERATION                  = 'reminder_operation';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
@@ -247,6 +248,7 @@ class Name
     const MERCHANT_RESTRICT                   = 'merchant_restrict';
     const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
     const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
+    const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';

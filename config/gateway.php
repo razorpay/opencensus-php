@@ -12,7 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
-        'atos',
+        'mozart',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -60,6 +60,7 @@ return [
         'netbanking_ibk',
         'netbanking_idbi',
         'netbanking_yesb',
+        'netbanking_kvb',
         'paytm',
         'sharp',
         'upi_airtel',
@@ -93,6 +94,7 @@ return [
         'paysecure',
         'paylater',
         'google_pay',
+        'worldline',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -139,6 +141,7 @@ return [
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
+    'mock_netbanking_kvb'         => env('NETBANKING_KVB_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -173,7 +176,7 @@ return [
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
-    'mock_atos'                   => env('ATOS_MOCK'),
+    'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -794,10 +797,6 @@ return [
         'razorpayx' => [
             'direct' => [
                 'rbl' => [
-                    'auth_username' => env('BANKING_ACCOUNT_RBL_USERNAME'),
-                    'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
-                    'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
-                    'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
                     'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
@@ -900,6 +899,4 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
-
-    'razorpay_proxy_address' => env('RAZORPAY_PROXY_ADDRESS'),
 ];

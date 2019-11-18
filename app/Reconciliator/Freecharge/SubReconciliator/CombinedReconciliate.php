@@ -51,10 +51,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                    'message' => $message,
-                    'row_details' => $row,
-                    'gateway' => $this->gateway
+                    'trace_code'        => TraceCode::RECON_PARSE_ERROR,
+                    'message'           => $message,
+                    'transaction_type'  => $transactionType,
+                    'gateway'           => $this->gateway
                 ]);
         }
 

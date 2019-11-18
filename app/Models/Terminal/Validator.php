@@ -592,6 +592,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
+    protected static $netbankingKvbTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_kvb',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1',
+    ];
+
     protected static $netbankingCubEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
@@ -1040,12 +1047,16 @@ class Validator extends Base\Validator
         Entity::MC_MPAN                    => 'required|string|max:255',
         Entity::VISA_MPAN                  => 'required|string',
         Entity::RUPAY_MPAN                 => 'required|string',
-        Entity::VPA                        => 'required|string',
+        Entity::VPA                        => 'sometimes|string',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'required|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes',
+        Entity::ENABLED                    => 'sometimes',
+        Entity::ACCOUNT_NUMBER             => 'sometimes',
+        Entity::IFSC_CODE                  => 'sometimes',
     ];
 
     protected static $worldlineEditTerminalRules = [

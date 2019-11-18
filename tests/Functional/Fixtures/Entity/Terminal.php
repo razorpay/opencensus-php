@@ -100,6 +100,8 @@ class Terminal extends Base
         $this->createSharedFssTerminal();
         $this->createSharedEmandateAxisTerminal();
         $this->createSharedCardlessEmiTerminal();
+        $this->createSharedNetbankingKvbTerminal();
+        $this->createSharedNetbankingKvbTpvTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -3257,4 +3259,38 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedNetbankingKvbTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_KVB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_KVB,
+            'gateway_merchant_id'   => 'netbanking_kvb_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingKvbTpvTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_KVB_TPV_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_KVB,
+            'gateway_merchant_id'   => 'netbanking_kvb_merchant_id',
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
 }

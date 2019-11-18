@@ -31,12 +31,19 @@ class CreateAccount extends Job
      */
     protected $product;
 
+    protected $status;
+
     /**
      * @var string
      */
     protected $queueConfigKey = 'fts_create_account';
 
-    public function __construct(string $mode, string $id, string $type, string $product)
+    public function __construct(
+        string $mode,
+        string $id,
+        string $type,
+        string $product,
+        string $status=null)
     {
         parent::__construct($mode);
 
@@ -45,6 +52,8 @@ class CreateAccount extends Job
         $this->type = $type;
 
         $this->product = $product;
+
+        $this->status = $status;
     }
 
     /**
@@ -63,10 +72,25 @@ class CreateAccount extends Job
                     'product' => $this->product,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_create_account']->createFundAccount(
-                $this->id,
-                $this->type,
-                $this->product);
+            $accountService = App::getFacadeRoot()['fts_create_account'];
+
+            $accountService->initialize($this->id, $this->type, $this->product, $this->status);
+
+            $createFundAccount = $accountService->isAccountCreatedInFts();
+
+            if ($createFundAccount === false)
+            {
+                $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_DUPLICATE,
+                    [
+                        'id'      => $this->id,
+                        'type'    => $this->type,
+                        'product' => $this->product,
+                    ]);
+
+                $this->delete();
+            }
+
+            $ftsResponse = $accountService->createFundAccount();
 
             $this->trace->info(
                 TraceCode::FTS_CREATE_ACCOUNT_COMPLETE,

@@ -31,7 +31,8 @@ trait HasBank
 
     public function setPublicBankAttribute(array & $array)
     {
-        if (empty($this->bank) === true)
+        if (empty($this->getAttribute(self::BANK_ID)) or
+           (empty($this->bank) === true))
         {
             return;
         }

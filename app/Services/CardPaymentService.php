@@ -3,7 +3,6 @@
 namespace RZP\Services;
 
 use App;
-
 use RZP\Exception;
 use Requests_Session;
 use RZP\Error\ErrorCode;
@@ -301,7 +300,7 @@ class CardPaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if (($code === 200) && (empty($responseBody[self::ERROR]) === true))
+        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
         {
             return true;
         }
@@ -315,6 +314,14 @@ class CardPaymentService
     {
         $verify = $this->verifyPayment($response);
 
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -325,14 +332,6 @@ class CardPaymentService
                     'gateway'    => $this->gateway
                 ]
             );
-        }
-
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
         }
 
         return $verify->getDataToTrace();
@@ -350,14 +349,20 @@ class CardPaymentService
 
         $this->checkApiSuccess($verify);
 
-        $this->checkAmountMismatch($verify);
-
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        if (($verify->match === true) and
+            ($verify->apiSuccess === false))
+        {
+            return $verify;
+        }
+
+        $this->checkAmountMismatch($verify);
 
         return $verify;
     }

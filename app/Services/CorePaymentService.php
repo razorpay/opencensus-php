@@ -325,6 +325,16 @@ class CorePaymentService
                 ]
             );
         }
+        else if ($errorCode !== null)
+        {
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $responseBody[self::ERROR]['gateway_error_code'] ?? '0',
+                $responseBody[self::ERROR]['gateway_error_description'] ?? 'Verify - Payment failed',
+                [],
+                null,
+                $this->action);
+        }
 
         return $responseBody[self::DATA];
     }

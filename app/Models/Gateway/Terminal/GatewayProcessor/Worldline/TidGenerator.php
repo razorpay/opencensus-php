@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
+namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 
 use App;
 use Cache;
@@ -18,8 +18,8 @@ class TidGenerator extends core
     // TID
     const RANGE_START_INDEX                    = 0;
     const RANGE_END_INDEX                      = 1;
-    const ATOS_TID_RANGE_LIST                  = 'atos_tid_range_list';
-    const ATOS_TID_EXHAUSTION_ALERT_THRESHOLD  = 20000;
+    const WORLDLINE_TID_RANGE_LIST             = 'atos_tid_range_list';
+    const WORLDLINE_TID_EXHAUSTION_ALERT_THRESHOLD  = 20000;
 
     public function __construct()
     {
@@ -27,14 +27,14 @@ class TidGenerator extends core
     
         $this->redis = Redis::Connection();
 
-        $this->redisTidKey = $this->mode . '_' . self::ATOS_TID_RANGE_LIST;
+        $this->redisTidKey = $this->mode . '_' . self::WORLDLINE_TID_RANGE_LIST;
     }
 
     protected function insertTidRangesIntoRedisIfEmpty()
     {   
         if (empty($this->app->redis->lrange($this->redisTidKey, 0, -1)))
         {
-            $staticTidRanges = Cache::get(ConfigKey::ATOS_TID_RANGE_LIST, false);
+            $staticTidRanges = Cache::get(ConfigKey::WORLDLINE_TID_RANGE_LIST, false);
 
             foreach ($staticTidRanges as $tidRange)
             {
@@ -48,7 +48,7 @@ class TidGenerator extends core
      * throws exception if run out of TID
      * @throws \Exception
      */
-    public function generateTid(): int
+    public function generateTid(): string
     {
         $mutex = App::getFacadeRoot()['api.mutex'];
 
@@ -65,7 +65,7 @@ class TidGenerator extends core
 
             $tidAvailableCount = $this->getTidAvailableCount($tidRangeList);
 
-            if ($tidAvailableCount < self::ATOS_TID_EXHAUSTION_ALERT_THRESHOLD)
+            if ($tidAvailableCount < self::WORLDLINE_TID_EXHAUSTION_ALERT_THRESHOLD)
             {
                 $this->sendApproachingTidExhaustionAlert($tidAvailableCount, $tidRangeList);
             }
@@ -81,7 +81,7 @@ class TidGenerator extends core
         ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
         20);
 
-        return $tid;
+        return strval($tid);
     }
 
     protected function leftPopFromTidRangeList() : array

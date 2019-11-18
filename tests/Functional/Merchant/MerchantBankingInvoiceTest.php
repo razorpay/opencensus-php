@@ -914,4 +914,245 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    protected function createDataForFetchingBankingInvoices()
+    {
+        list(
+            $bankingBalance1,
+            $bankingBalance2,
+            $primaryBalance
+            ) = $this->createDataForFetchingMultipleBankingInvoicesGivenNoInputsAndNoBankingInvoiceGeneratedYet();
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $bankingBalance1['id'],
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $bankingBalance2['id'],
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 100000,
+                'balance_id' => $primaryBalance['id'],
+            ]);
+    }
+
+    public function testFetchMultipleBankingInvoices()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingBankingInvoices();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testFetchMultipleBankingInvoicesGivenAccountNumber()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingBankingInvoices();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testFetchMultipleBankingInvoicesGivenNoInputs()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingBankingInvoices();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month + 1, 'year' => $oldDateTime->year],
+        ];
+
+       $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    protected function createDataForFetchingMultipleBankingInvoicesGivenNoInputsAndNoBankingInvoiceGeneratedYet()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+            'business_banking' => 1,
+        ]);
+
+        $bankingBalance1 = $this->fixtures->create('balance',
+                                                   [
+                                                       'merchant_id'    => '10000000000000',
+                                                       'type'           => 'banking',
+                                                       'balance'        => 1000000,
+                                                       'account_number' => '12345',
+                                                   ]);
+
+        $bankingBalance2 = $this->fixtures->create('balance',
+                                                   [
+                                                       'merchant_id'    => '10000000000000',
+                                                       'type'           => 'banking',
+                                                       'balance'        => 10000000,
+                                                       'account_number' => '1234567',
+                                                   ]);
+
+        $primaryBalance = $this->fixtures->create('balance',
+                                                  [
+                                                      'merchant_id' => '10000000000000',
+                                                      'type'        => 'primary',
+                                                      'balance'     => 10000000,
+                                                  ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin'       => '29kjsngjk213922',
+            ]);
+
+        return [$bankingBalance1, $bankingBalance2, $primaryBalance];
+    }
+
+    public function testFetchMultipleBankingInvoicesGivenNoInputsAndNoBankingInvoiceGeneratedYet()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingMultipleBankingInvoicesGivenNoInputsAndNoBankingInvoiceGeneratedYet();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testFetchMultipleBankingInvoicesWithBusinessBankingNotEnabled()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingBankingInvoices();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => 0]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+     }
+
+    public function testInvoiceNumberFormat()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year,'merchant_ids' => ['10000000000000']],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $entities = $entities['items'];
+
+        foreach ($entities as $e)
+        {
+            if ($e[Invoice\Entity::TYPE] === 'rx_transactions')
+            {
+                $invoiceEntity = $e;
+                break;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        $this->assertEquals('10000000000-' . '07' . substr($oldDateTime->year,2,2),
+                            $invoiceEntity['invoice_number']);
+
+        Carbon::setTestNow();
+    }
 }

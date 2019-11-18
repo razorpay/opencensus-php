@@ -92,8 +92,9 @@ trait AuthorizeFailed
 
             if ($gatewayPayment !== null)
             {
-                $gatewayPayment->fill($verify->verifyResponseContent);
-                $gatewayPayment->saveOrFail();
+                $content = $verify->verifyResponseContent;
+
+                $this->updateGatewayEntityLateAuthorized($gatewayPayment, $content);
             }
 
             return $this->extractPaymentsProperties($gatewayPayment);
@@ -143,5 +144,17 @@ trait AuthorizeFailed
         }
 
         return $response;
+    }
+
+    protected function updateGatewayEntityLateAuthorized($gatewayPayment, $content)
+    {
+        if ($this->shouldMapLateAuthorized === true)
+        {
+            $content = $this->getMappedAttributes($content);
+        }
+
+        $gatewayPayment->fill($content);
+
+        $gatewayPayment->saveOrFail();
     }
 }

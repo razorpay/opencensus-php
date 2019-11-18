@@ -1190,6 +1190,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
+    public function getCpsRoute()
+    {
+        return $this->getAttribute(self::CPS_ROUTE);
+    }
+
     public function setMetadata($input)
     {
         $this->metadata = $input['_'] ?? null;

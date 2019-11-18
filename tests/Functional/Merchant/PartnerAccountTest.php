@@ -285,6 +285,7 @@ class PartnerAccountTest extends TestCase
         $subMerchant = $this->getDbLastEntity('merchant');
 
         $this->assertEquals('greylist', $subMerchant->merchantDetail->getActivationFlow());
+        $this->assertEquals('greylist', $subMerchant->merchantDetail->getInternationalActivationFlow());
     }
 
     public function testCreateAccountForThinRequestWithKycNotHandled()
@@ -362,6 +363,11 @@ class PartnerAccountTest extends TestCase
         $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId();
 
         $this->runRequestResponseFlow($testData);
+
+        $subMerchant = $this->getDbLastEntity('merchant');
+
+        // check that international is enabled
+        $this->assertTrue($subMerchant->isInternational());
     }
 
     // Partner should be able to create account using partner Auth as well, if it does not send X-Razorpay-Account
@@ -466,6 +472,7 @@ class PartnerAccountTest extends TestCase
         $features = [
             FName::NO_COMM_WITH_SUBMERCHANTS,
             FName::SUBMERCHANT_ONBOARDING,
+            FName::FORCE_GREYLIST_INTERNAT,
         ];
 
         $this->fixtures->merchant->addFeatures($features);

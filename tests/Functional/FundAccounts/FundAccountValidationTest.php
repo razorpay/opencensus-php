@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use Queue;
 use \RZP\Constants;
-use RZP\Tests\Functional\Fixtures\Entity\Feature;
+use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -77,7 +78,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -214,7 +215,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -336,7 +337,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -483,5 +484,54 @@ class FundAccountValidationTest extends TestCase
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
+    }
+
+    public function testFundAccValidationWithAccountNumberAndVpa()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        // get database entities
+        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no transaction should be created for 0 fee
+        $this->assertNotEquals($fav['id'], $txn['entity_id']);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
     }
 }

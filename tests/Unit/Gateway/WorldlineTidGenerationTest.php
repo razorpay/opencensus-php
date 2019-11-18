@@ -6,10 +6,10 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
 use RZP\Exception\ServerErrorException;
 use RZP\Tests\Unit\Gateway\BaseGatewayTest;
-use RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
+use RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 
 
-class AtosTidGenerationTest extends TestCase
+class WorldlineTidGenerationTest extends TestCase
 {
     protected $generator;
 
@@ -19,7 +19,7 @@ class AtosTidGenerationTest extends TestCase
     {
         parent::setUp();
 
-        $this->generator = new Atos\TidGenerator();
+        $this->generator = new Worldline\TidGenerator();
 
         $this->redis = Redis::connection()->client();
 

@@ -51,6 +51,10 @@ class SubReconciliate extends Base\Core
      */
     const SHOULD_ADD_ENTITY_ID_COLUMN = false;
 
+    const THRESHOLD = [
+        InfoCode::AMOUNT_MISMATCH   =>  10,
+    ];
+
     /**
      * The list of payments/refunds attempted to reconcile.
      *

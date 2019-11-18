@@ -706,6 +706,13 @@ class Service extends Base\Service
         return $this->core()->sendOtp($input, $this->merchant, $this->user);
     }
 
+    public function sendOtpWithContact(array $input)
+    {
+        $this->user->getValidator()->validateInput('sendOtpWithContact', $input);
+
+        return $this->core()->sendOtpWithContact($input, $this->merchant, $this->user);
+    }
+
     public function verifyContactWithOtp(array $input): array
     {
         $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
