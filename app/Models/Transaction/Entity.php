@@ -950,4 +950,16 @@ class Entity extends Base\PublicEntity
 
         return $statement;
     }
+
+    /**
+     * Gives the cache tag which in join of all the variable passed and prefixed with entity name
+     * adding it here because queryCaching doesnt support `joinSub`.
+     * todo: move this to cachable trait once `joinSub` support is added
+     *
+     * @return string
+     */
+    public static function getCacheTag(): string
+    {
+        return implode('_', func_get_args());
+    }
 }

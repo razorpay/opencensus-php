@@ -30,8 +30,9 @@ class Service extends Base\Service
         $balance = $this->merchant->getBalanceByType($balanceType);
 
         $response = [
-            'balance'           => $balance->getBalance(),
-            'settlement_amount' => 0,
+            'balance'              => $balance->getBalance(),
+            'settlement_amount'    => 0,
+            'next_settlement_time' => null,
         ];
 
         //
