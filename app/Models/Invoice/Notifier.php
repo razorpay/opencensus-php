@@ -725,6 +725,14 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_BAGIC:
+                $template = 'sms.custom_invoice.bagic_pl';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -789,6 +797,16 @@ class Notifier extends Base\Core
                     'invoice_link'     => $invoiceLink,
                     'rejection_reason' => $notes['rejection_reason'] ?? '',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_BAGIC:
+
+                $template = 'sms.custom_invoice.bagic_sub';
+
+                $params = [
+                    'invoice_link'    => $invoiceLink
                 ];
 
                 break;

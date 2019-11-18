@@ -3018,18 +3018,18 @@ class Processor
             $this->repo->saveOrFail($terminal);
 
             $this->app['slack']->queue(
-                TraceCode::TERMINAL_EDIT,
+                'terminal capability auto changed to ALL',
                 [
                     'merchant_id'           => $terminal->getMerchantId(),
                     'merchant_name'         => $terminal->merchant->getName(),
                     'terminal_id'           => $terminal->getId(),
                     'payment_id'            => $this->payment->getId(),
+                ],
+                [
                     'channel'               => Config::get('slack.channels.tech_alerts'),
                     'username'              => 'alerts',
                     'icon'                  => ':x:',
-                    'message'               => 'terminal capability auto changed to ALL',
-                ]
-            );
+                ]);
 
             $this->trace->error(
                 TraceCode::TERMINAL_EDIT,
@@ -3037,8 +3037,7 @@ class Processor
                     'merchant_id'           => $terminal->getMerchantId(),
                     'terminal_id'           => $terminal->getId(),
                     'message'               => 'terminal capability auto changed to ALL'
-                ]
-            );
+                ]);
         }
     }
 

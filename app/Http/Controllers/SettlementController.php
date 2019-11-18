@@ -299,4 +299,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getHolidayListForYear()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getHolidayListForYear($input);
+
+        return ApiResponse::json($data);
+    }
 }
