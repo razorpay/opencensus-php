@@ -610,7 +610,7 @@ class TransactionFilter extends Terminal\Filter
 
     // filter rejects all shared terminal if there is a atleast one direct terminal present on same gateway
     // filter selects all shared terminal if there is no direct terminal on same gateway
-    public function sharedTerminalFilter(Terminal\Entity $currentTerminal, array $applicableTerminals)
+    public function sharedTerminalFilter(Terminal\Entity $terminal, array $applicableTerminals)
     {
         $payment  = $this->input['payment'];
 
@@ -619,14 +619,14 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $currentGateway = $currentTerminal->getGateway();
+        $currentGateway = $terminal->getGateway();
 
         $directTerminalsOnSameGateway = false;
 
-        foreach ($applicableTerminals as $terminal)
+        foreach ($applicableTerminals as $applicableTerminal)
         {
-            if (($terminal->isDirectForMerchant() === true) and
-                ($terminal->getGateway() === $currentGateway))
+            if (($applicableTerminal->isDirectForMerchant() === true) and
+                ($applicableTerminal->getGateway() === $currentGateway))
             {
                 // breaking once we get direct terminal on the same gateway as of current terminal
                 $directTerminalsOnSameGateway = true;
@@ -635,7 +635,7 @@ class TransactionFilter extends Terminal\Filter
         }
 
         if (($directTerminalsOnSameGateway === true) and
-             ($currentTerminal->isDirectForMerchant() === false))
+             ($terminal->isDirectForMerchant() === false))
         {
             return false;
         }
