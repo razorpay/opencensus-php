@@ -457,9 +457,9 @@ export default class User {
     return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
   }
 
-  // pl-expiry-72 => Default expiry for Payment Link is 72 hours
+  // pl-expiry-in-hrs-72 => Default expiry for Payment Link is 72 hours
   isPaymentLinkExpiredByRazorX(hours) {
-    return this.getExpStatus(`pl-expiry-${hours}`);
+    return this.getExpStatus(`pl-expiry-in-hrs-${hours}`);
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted
