@@ -830,11 +830,11 @@ export default function Reports(store, opts) {
     renderPredefinedDurations = () => {
       const DISPLAY_FORMAT = 'll';
       const { type } = this.props;
-      let forDate, fromDate, toDate;
+      let fromDate, toDate;
       const today = moment();
       switch (type) {
         case 'yesterday':
-          forDate = today
+          fromDate = today
             .clone()
             .subtract(1, 'day')
             .format(DISPLAY_FORMAT);
@@ -864,7 +864,7 @@ export default function Reports(store, opts) {
       return (
         <div class="col-sm-12 col-xs-12">
           <small class="text-warning">
-            {getPredefinedDisplayText({ forDate, fromDate, toDate })}
+            {fromDate} {toDate && ` to ${toDate}`}
           </small>
         </div>
       );
@@ -1177,13 +1177,4 @@ function getDateUnix(dateMoment) {
 
 function getTimeUnix(timeMoment) {
   return timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds');
-}
-
-function getPredefinedDisplayText({ fromDate, toDate, forDate }) {
-  if (forDate) {
-    return `Report will be generated for ${forDate}`;
-  } else if (fromDate && toDate) {
-    return `Report will be generate for data from ${fromDate} to ${toDate}`;
-  }
-  return null;
 }
