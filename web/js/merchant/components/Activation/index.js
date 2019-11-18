@@ -112,11 +112,11 @@ function defaultFieldProps(f) {
   }
 }
 
+let NEEDS_CLARIFICATION_STEP; // To handle specific case for needs clarification screen
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 const BUSINESS_DETAILS_STEP = 2;
-const NEEDS_CLARIFICATION_STEP = 5;
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
@@ -225,6 +225,7 @@ export default class ActivationWizard extends React.Component {
         );
         FORM_TABS_CONTENT.push(ndcFields);
         FORM_TABS_NAMES.push(Object.keys(ndcFields));
+        NEEDS_CLARIFICATION_STEP = 5;
       }
       if (!isL1Completed(this)) {
         //Code needs some refactoring
@@ -752,7 +753,8 @@ export default class ActivationWizard extends React.Component {
       const hasFilledEverything = needsClarificationFieldNames.every(
         field => currentFilledFieldNames.includes(field) && currentDirty[field]
       );
-      return hasFilledEverything ? false : true;
+
+      return hasFilledEverything;
     }
   }
 
@@ -1054,11 +1056,12 @@ export default class ActivationWizard extends React.Component {
 
   submitClarifications = async () => {
     const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
-    const hasFilledDetails =
-      this.state.dirty && Object.keys(this.state.dirty).length > 0;
+
+    const hasFilledDetails = this.hasFilledClarificationDetails;
     const reqData = {
       submit: '1',
     };
+
     if (hasFilledDetails) {
       const fieldNames = needsClarificationFields.map(field => field.name);
       fieldNames.forEach(fieldName => {
@@ -1067,6 +1070,15 @@ export default class ActivationWizard extends React.Component {
         }
       });
     }
+
+    // State will contain file fields which have already been uploaded
+    // Delete file field from request data
+    Object.keys(reqData).forEach(key => {
+      if (reqData[key] === 'fakepath') {
+        delete reqData[key];
+      }
+    });
+
     try {
       this.setState({ callingL1Api: true });
       const response = await this.props.save(reqData);
@@ -1637,7 +1649,7 @@ export default class ActivationWizard extends React.Component {
           <footer>
             <AsyncBtn.Primary
               disabled={
-                this.hasFilledClarificationDetails || this.state.callingL1Api
+                !this.hasFilledClarificationDetails || this.state.callingL1Api
               }
               onClick={this.submitClarifications}
               pendingState={'Submitting...'}
