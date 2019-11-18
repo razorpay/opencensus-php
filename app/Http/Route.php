@@ -804,6 +804,7 @@ final class Route
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                   ],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -2224,6 +2225,7 @@ final class Route
         'banking_accounts_list',
         'reports_monthly_banking_invoice',
         'workflow_payout_amount_rules',
+        'workflow_payout_amount_rules_create',
         'merchant_2fa_change_setting',
         'user_update_contact',
         'user_update_contact_merchant',

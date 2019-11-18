@@ -56,4 +56,11 @@ class Core extends Base\Core
 
         return $evaluatedRule;
     }
+
+    public function createWorkflowPayoutAmountRules($input): array
+    {
+        $payoutAmountRules = new Entity();
+        $payoutAmountRules->create($input);
+        return $input;
+    }
 }

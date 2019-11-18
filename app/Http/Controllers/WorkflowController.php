@@ -132,4 +132,13 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postWorkflowPayoutAmountRules()
+    {
+        $input = Request::all();
+
+        $result = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->createWorkflowPayoutAmountRules($input);
+
+        return ApiResponse::json($result);
+    }
 }
