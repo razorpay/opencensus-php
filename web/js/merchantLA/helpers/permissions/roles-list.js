@@ -6,6 +6,6 @@ const RolesList = {
   SELLERAPP: 'sellerapp',
 };
 
-Object.freezes(RolesList);
+Object.freeze(RolesList);
 
 export default RolesList;
