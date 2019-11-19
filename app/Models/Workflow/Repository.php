@@ -69,4 +69,12 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::DELETED_AT)
                     ->pluck(Entity::ID);
     }
+
+    public function fetchMerchantIdsFromWorkflow(string $workflowId)
+    {
+        $query = $this->newQuery()
+                    ->where('id','=',$workflowId)
+                    ->pluck('merchant_id');
+        return $query;
+    }
 }
