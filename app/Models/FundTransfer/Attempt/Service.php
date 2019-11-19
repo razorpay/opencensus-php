@@ -136,29 +136,34 @@ class Service extends Base\Service
                 continue;
             }
 
+            // Temporarily disabling status updates on processed instant refunds
+            // Waiting for product call on retries in these cases
+            if ((isset($params[Entity::STATUS]) === true) and
+                ($fundTransferAttempt->isRefund() === true) and
+                ($fundTransferAttempt->source->getSpeedProcessed() === Refund\Speed::INSTANT))
+            {
+                $this->trace->error(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                    [
+                        'fta_id' => $fundTransferAttempt->getId(),
+                        'reason' => 'Status update for processed refunds is temporarily disabled for Instant Refunds',
+                    ]);
+
+                $notUpdatedIds[] = $id;
+
+                continue;
+            }
+
             $fundTransferAttempt->fill($params);
 
             $this->repo->saveOrFail($fundTransferAttempt);
 
-            if ((isset($params[Entity::STATUS]) === true) and
-                ($fundTransferAttempt->isRefund() === true))
+            if ($fundTransferAttempt->isBatchSameAsSource() === true)
             {
                 $this->core()->updateSourceEntity($fundTransferAttempt);
             }
 
-            if ($fundTransferAttempt->isBatchSameAsSource() === true)
-            {
-                $sourceId = $this->updateSource($fundTransferAttempt->source, $params);
-            }
-
-            if ($sourceId !== null)
-            {
-                $updatedIds[] = $id;
-            }
-            else
-            {
-                $notUpdatedIds[] = $id;
-            }
+            $updatedIds[] = $id;
         }
 
         $response = [

@@ -88,16 +88,24 @@ class Core extends Base\Core
                         Entity::REFERENCE2  => $refund->getReference2(),
                     ];
 
+                    $event = 'file_init_event';
+
                     //
                     // If fta gets failed, resetting fta related data here. This can be processed by payment gateway
                     // later.
                     //
+
+                    if ($refund->isProcessed() === true)
+                    {
+                        $event = 'processed_to_file_init_event';
+
+                        $refund->setStatus(Status::CREATED);
+                    }
+
                     $refund->setBatchFundTransferId(null);
                     $refund->setUtr(null);
                     $refund->setRemarks(null);
                     $this->repo->saveOrFail($refund);
-
-                    $event = ($refund->isProcessed() === true)? 'processed_to_file_init_event' : 'file_init_event';
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data, $event);
                 }
