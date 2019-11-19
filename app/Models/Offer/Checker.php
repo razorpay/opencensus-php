@@ -389,21 +389,21 @@ class Checker extends Base\Core
 
             $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
 
-            $redis->watch($key);
+            $currentOfferUsage = $redis->incr($key);
 
-            $value = $redis->get($key);
+//            $value = $redis->get($key);
+//
+//            $value = $value + 1;
+//
+//            $redis->multi();
+//
+//            $redis->set($key, $value);
+//
+//            $redis->get($key);
+//
+//            $currentOfferUsage =  $redis->exec();
 
-            $value = $value + 1;
-
-            $redis->multi();
-
-            $redis->set($key, $value);
-
-            $redis->get($key);
-
-            $currentOfferUsage =  $redis->exec();
-
-                $result = $currentOfferUsage[1] <= $this->offer->getMaxOfferUsage();
+                $result = $currentOfferUsage <= $this->offer->getMaxOfferUsage();
 
                 $this->traceCheckResult(
                     TraceCode::OFFER_USAGE_CHECK,
