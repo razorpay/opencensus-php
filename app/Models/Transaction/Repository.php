@@ -546,18 +546,18 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function fetchSettledAt($count)
+    public function fetchSettledTransactionsWithoutSettlementId($type, $count)
     {
         return $this->newQuery()
             ->select(Entity::ID)
-            ->where(Transaction\Entity::TYPE, Transaction\Type::FUND_ACCOUNT_VALIDATION)
+            ->where(Transaction\Entity::TYPE, $type)
             ->where(Transaction\Entity::SETTLED, 1)
             ->whereNull(Transaction\Entity::SETTLEMENT_ID)
             ->take($count)
             ->get()->pluck('id')->all();
     }
 
-    public function updateSettledAtToFalse($txnIds)
+    public function updateSettledToFalse($txnIds)
     {
         if (count($txnIds) === 0)
         {

@@ -544,8 +544,8 @@ return [
     ],
     'testFixTransactionSettledAt' => [
         'request' => [
-            'url'     => '/transactions/settled/fix',
-            'method'  => 'get',
+            'url'     => '/transactions/fund_account_validation/settled/fix',
+            'method'  => 'post',
         ],
         'response' => [
             'content' => [

@@ -1199,7 +1199,7 @@ final class Route
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
-        'transaction_settled_data_fix'             => ['get',     'transactions/settled/fix',                           'TransactionController@fixSettled'                                  ],
+        'transaction_settled_data_fix'             => ['post',     'transactions/{entity}/settled/fix',              'TransactionController@fixSettled'                                  ],
 
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],

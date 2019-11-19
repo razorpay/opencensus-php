@@ -86,17 +86,21 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fixSettled(array $input): array
+    public function fixSettled(string $entity, array $input): array
     {
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX,
+            $input);
+
         return $this->app['api.mutex']->acquireAndRelease(
             'fix_settled_column_for_fav',
-            function () use ($input)
+            function () use ($entity, $input)
             {
                 $count = $input['count'] ?? 200;
 
-                $txnIds =  $this->repo->transaction->fetchSettledAt($count);
+                $txnIds =  $this->repo->transaction->fetchSettledTransactionsWithoutSettlementId($entity, $count);
 
-                $this->repo->transaction->updateSettledAtToFalse($txnIds);
+                $this->repo->transaction->updateSettledToFalse($txnIds);
 
                 return [
                     'count'             => $count,
