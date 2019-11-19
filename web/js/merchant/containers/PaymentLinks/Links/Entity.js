@@ -53,8 +53,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchInvoice(this.props.id);
-    this.fetchInvoiceRemindersList();
+    this.fetchDataForInvoice();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -62,6 +61,11 @@ export default class InvoiceDetailContainer extends Component {
       this.props.fetchInvoice(nextProps.id);
     }
   }
+
+  fetchDataForInvoice = () => {
+    this.props.fetchInvoice(this.props.id);
+    this.fetchInvoiceRemindersList();
+  };
 
   fetchInvoiceRemindersList = () => {
     const promiseList = [];
@@ -267,12 +271,16 @@ export default class InvoiceDetailContainer extends Component {
               } successfully`,
             });
 
-            return this.props.fetchInvoice(this.props.id);
+            this.props.fetchInvoice(this.props.id);
           } else {
             this.props.showNotification({
               type: 'success',
               message: `${keysToSentence(d)} updated successfully`,
             });
+          }
+
+          if (d.hasOwnProperty('expire_by')) {
+            this.fetchDataForInvoice();
           }
 
           return resp;
