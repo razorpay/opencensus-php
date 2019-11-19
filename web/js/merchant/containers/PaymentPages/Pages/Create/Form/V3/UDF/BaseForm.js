@@ -245,7 +245,7 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          {!!selfIndex &&
+          {typeof selfIndex !== 'undefined' &&
             onDeleteField && (
               <OptionsItem>
                 <div

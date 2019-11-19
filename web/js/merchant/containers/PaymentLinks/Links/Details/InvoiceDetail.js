@@ -54,6 +54,7 @@ export default props => {
     isAutoRemindersUpdating,
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -227,25 +228,42 @@ export default props => {
                   <CustomerDetails invoice={invoice} />
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled && (
-                  <EntityDetailRow label="Reminders">
-                    <Input.Check
-                      name="auto_reminders"
-                      fieldLabel="Send auto reminders"
-                      checked={isRemindersEnabled}
-                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
-                      onChange={onChangeSendAutoReminder}
-                      autoRender
-                    />
+                {user.isRemindersEnabled &&
+                  isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <Input.Check
+                        name="auto_reminders"
+                        fieldLabel="Send auto reminders"
+                        checked={isRemindersEnabled}
+                        disabled={
+                          isPaymentLinkClosed || isAutoRemindersUpdating
+                        }
+                        onChange={onChangeSendAutoReminder}
+                        autoRender
+                      />
 
-                    <ReminderStepsDetails
-                      isRemindersEnabled={isRemindersEnabled}
-                      nextReminders={nextReminders}
-                      isAutoRemindersUpdating={isAutoRemindersUpdating}
-                      isPaymentLinkClosed={isPaymentLinkClosed}
-                    />
-                  </EntityDetailRow>
-                )}
+                      <ReminderStepsDetails
+                        isRemindersEnabled={isRemindersEnabled}
+                        nextReminders={nextReminders}
+                        isAutoRemindersUpdating={isAutoRemindersUpdating}
+                        isPaymentLinkClosed={isPaymentLinkClosed}
+                      />
+                    </EntityDetailRow>
+                  )}
+
+                {user.isRemindersEnabled &&
+                  !isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <div class="Input-content">
+                        Reminders are not set for payment links.
+                        <br />
+                        Set it up{' '}
+                        <Link target="_blank" to="/reminders">
+                          here
+                        </Link>
+                      </div>
+                    </EntityDetailRow>
+                  )}
 
                 <EntityDetailRow
                   label="Receipt No."
