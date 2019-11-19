@@ -44,6 +44,7 @@ import {
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { validatePANCardUnregBiz } from 'common/utils/validators';
 
 import {
   L1FormSuccess,
@@ -707,7 +708,9 @@ export default class ActivationWizard extends React.Component {
       this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
     return (
       !hasSelectedBlacklistedCategory(this) &&
-      (this.isUnregBiz ? promoterPan && promoterPan[3] === 'P' : true)
+      (this.isUnregBiz
+        ? promoterPan && !validatePANCardUnregBiz(promoterPan)
+        : true)
     );
   }
 

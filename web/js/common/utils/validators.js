@@ -102,7 +102,7 @@ export function validatePANCard(value) {
 export function validatePANCardUnregBiz(value) {
   if (validatePANCard(value)) {
     return validatePANCard(value);
-  } else if (value && value[3] !== 'P') {
+  } else if (value && (value[3] !== 'P' && value[3] !== 'p')) {
     return "The PAN entered is a business PAN. If you are a registered business, please change your business type in the 'Business Overview' tab.";
   }
 }
