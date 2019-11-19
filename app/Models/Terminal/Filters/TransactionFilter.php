@@ -39,15 +39,15 @@ class TransactionFilter extends Terminal\Filter
         'upi',
         'pharma',
         'corporate',
-        'mcc',
-        'shared_terminal',
         'auth_type',
         'bharat_qr',
+        'bank_account_type',
+        'capability',
+        'blacklistedMccFilter',
         'direct_settlement',
         'fee_bearer',
-        'bank_account_type',
-        'hitachi_shared_terminal',
-        'capability',
+        'shared_terminal',
+        'mcc',
     ];
 
     public function methodFilter($terminal)
@@ -549,17 +549,17 @@ class TransactionFilter extends Terminal\Filter
     }
 
     /**
-     * For card / emi payments, selects terminals with null mcc or with mcc
-     * matching that of the merchant
+     * For card / emi payments, selects terminal with gateway not hitachi
+     * and merchant mcc not in blacklist mcc array
      *
      * @param  Terminal\Entity $terminal
-     * @param array            $applicableTerminals
      *
      * @return bool
      */
-    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    public function blacklistedMccFilter(Terminal\Entity $terminal)
     {
         $merchant = $this->input['merchant'];
+
         $merchantMcc = $merchant->getCategory();
 
         // These MCCs are blacklisted by RBL and Hitachi. Hence, should not go via hitachi.
@@ -571,6 +571,24 @@ class TransactionFilter extends Terminal\Filter
         {
             return false;
         }
+
+        return true;
+    }
+
+    /**
+     * For card / emi payments, selects terminals with null mcc or with mcc
+     * matching that of the merchant
+     *
+     * @param  Terminal\Entity $terminal
+     * @param array            $applicableTerminals
+     *
+     * @return bool
+     */
+    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $merchant = $this->input['merchant'];
+
+        $merchantMcc = $merchant->getCategory();
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
             (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))
@@ -619,6 +637,14 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
+        //
+        // If terminal is direct for the merchant, we always select it.
+        //
+        if ($terminal->isDirectForMerchant() === true)
+        {
+            return true;
+        }
+
         $currentGateway = $terminal->getGateway();
 
         $directTerminalsOnSameGateway = false;
@@ -634,8 +660,7 @@ class TransactionFilter extends Terminal\Filter
             }
         }
 
-        if (($directTerminalsOnSameGateway === true) and
-             ($terminal->isDirectForMerchant() === false))
+        if ($directTerminalsOnSameGateway === true)
         {
             return false;
         }
