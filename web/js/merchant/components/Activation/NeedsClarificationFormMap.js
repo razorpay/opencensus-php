@@ -26,10 +26,14 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
 
   const prepareField = (field, clarificationDetails, origKey) => {
     let reasons = [];
+    if (typeof origKey === 'undefined') {
+      origKey = field;
+    }
+
+    if (!Boolean(allFieldsHash[field])) {
+      field = generateNewField(field, clarificationDetails[origKey]);
+    }
     if (allFieldsHash[field]) {
-      if (typeof origKey === 'undefined') {
-        origKey = field;
-      }
       for (let r of clarificationDetails[origKey]) {
         if (r.reason_type === 'predefined') {
           reasons.push(
@@ -65,6 +69,14 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     //2. Field is altogether a new attribute, then it should be generated dynamically
     const mappedFields = {
       address_proof_url: 'cancelled_cheque',
+      aadhar_front: 'address_proof_front',
+      aadhar_back: 'address_proof_back',
+      passport_front: 'address_proof_front',
+      passport_back: 'address_proof_back',
+      voter_id_front: 'address_proof_front',
+      voter_id_back: 'address_proof_back',
+      driver_license_front: 'address_proof_front',
+      driver_license_back: 'address_proof_back',
     };
     if (Boolean(mappedFields[key]) && allFieldsHash[mappedFields[key]]) {
       return mappedFields[key];
@@ -80,11 +92,8 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       prepareField(field, needsKyc.clarification_reasons);
     }
     for (let field in needsKyc.additional_details) {
-      const newFieldName = generateNewField(
-        field,
-        needsKyc.additional_details[field]
-      );
-      prepareField(newFieldName, needsKyc.additional_details, field);
+      // const newFieldName = generateNewField(field, needsKyc.additional_details[field]);
+      prepareField(field, needsKyc.additional_details);
     }
 
     return kycTabContent;
@@ -111,9 +120,7 @@ const predefinedReasons = {
   },
   business_type: {
     reasons: {
-      is_company_reg: {
-        description: 'Is your company a registered entity?',
-      },
+      is_company_reg: { description: 'Is your company a registered entity?' },
     },
   },
   business_category: {
@@ -247,6 +254,78 @@ const predefinedReasons = {
       address_proof_outdated: {
         description:
           'The validity of the address proof attached has elapsed. Please submit the updated document',
+      },
+    },
+  },
+  aadhar_back: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  aadhar_front: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  voter_id_front: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  voter_id_back: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  driver_license_front: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  driver_license_back: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  passport_front: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  passport_back: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
+      },
+    },
+  },
+  cancelled_check: {
+    reasons: {
+      illegible_doc: {
+        description:
+          'The document attached is not legible. Please resubmit a clearer copy',
       },
     },
   },

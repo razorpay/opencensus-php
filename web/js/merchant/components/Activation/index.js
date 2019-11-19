@@ -1810,13 +1810,15 @@ function ActivationField(field) {
     rest.placeholder = rest.getPlaceholder(this);
   }
 
-  if (rest._type == 'address_proof_upload_doc') {
+  if (!this.isOnKYCTab() && rest._type == 'address_proof_upload_doc') {
     const { documents } = this.props.data;
     defaultValue =
       (documents &&
         documents[`${rest.name}`] &&
         documents[`${rest.name}`][0]['id']) ||
       null;
+  } else if (rest._type == 'address_proof_upload_doc') {
+    defaultValue = this.state.dirty[rest.name] || null;
   }
 
   if (rest.isDeletable) {
