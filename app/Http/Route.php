@@ -1817,6 +1817,7 @@ final class Route
         'invoice_remove_line_item',
         'invoice_send_notification_private',
         'invoice_cancel',
+        'subscription_registration_cancel_link',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -2016,7 +2017,6 @@ final class Route
         'subscription_registration_list_links',
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
-        'subscription_registration_cancel_link',
         'subscription_registration_fetch_token',
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
