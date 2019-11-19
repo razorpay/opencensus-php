@@ -2537,6 +2537,7 @@ final class Route
         // AuthLink
         'token_registration_token_associate',
         'token_registration_tokens_authenticate',
+        'subscription_registration_cancel_links',
 
         'gateway_downtime_detection_get_stats',
 
@@ -3060,6 +3061,7 @@ final class Route
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
+        'subscription_registration_cancel_links'    => Permission::CANCEL_BATCH,
     ];
 
     public static $direct = [
