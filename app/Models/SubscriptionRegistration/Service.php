@@ -7,7 +7,6 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Jobs\Job;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
