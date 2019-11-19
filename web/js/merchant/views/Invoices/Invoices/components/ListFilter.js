@@ -1,7 +1,6 @@
 import React from 'react';
-import ListFilter from '../ListFilter';
+import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({
   type,

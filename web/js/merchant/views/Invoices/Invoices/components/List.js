@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'common/utils/rzp-utils';

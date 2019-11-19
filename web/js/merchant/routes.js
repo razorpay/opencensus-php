@@ -38,7 +38,6 @@ import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
 import UpdateSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/components/Credits/CreditSubDetails';
-import CreditNoteDetails from 'merchant/views/Invoices/CreditNote/Details';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets

@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Route, NavLink, withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -11,9 +10,7 @@ import {
 import { fetchItems } from 'merchant/reducers/items';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-
-import Invoices from 'merchant/views/Invoices/List';
-import Customers from 'merchant/containers/Customers/List';
+import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/containers/Items/List';
 
 import OnBoarding, {
@@ -112,7 +109,6 @@ export default class InvoicesContainer extends Component {
         <content>
           <Route path="/invoices" component={Invoices} />
           <Route path="/items" render={ItemsComponent} />
-          <Route path="/customers" component={Customers} />
         </content>
       </tabbed-container>
     );

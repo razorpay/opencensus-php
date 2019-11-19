@@ -14,7 +14,7 @@ import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import PaymentPages from 'merchant/containers/PaymentPages/Index';
 import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import InvoicesContainer from 'merchant/views/Invoices';
-import InvoicesNew from 'merchant/views/Invoices/New';
+import InvoicesNew from 'merchant/views/Invoices/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/containers/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';

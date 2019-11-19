@@ -7,7 +7,7 @@ import List from './Screens/List';
 import New from './Screens/New';
 
 import { capitalize } from 'common/utils/rzp-utils';
-import { track } from '../ga';
+import { track } from '../../../ga';
 
 @connect(null, {
   ...ModalActions,

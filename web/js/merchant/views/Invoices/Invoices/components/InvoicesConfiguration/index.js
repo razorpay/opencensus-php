@@ -3,8 +3,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
 import PropTypes from 'prop-types';
 
-import InvoiceLabelStep from './OnboardingSteps/InvoiceLabelStep';
-import GSTStep from './OnboardingSteps/GSTStep';
+import { GSTStep, InvoiceLabelStep } from './ConfigurationSteps';
 
 export default class InvoicesOnboarding extends Component {
   static propTypes = {

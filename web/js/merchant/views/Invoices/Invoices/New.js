@@ -25,14 +25,14 @@ import {
 } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import LineItemTable from './LineItemTable';
+import LineItemsList from '../LineItems/List';
 import CustomerCreation from 'merchant/containers/Customers/New';
-import IssueConfirmModal from './IssueConfirmModal';
-import AddInternalNoteModal from './AddInternalNoteModal';
-import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
-import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
-import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
-import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
+import IssueConfirmModal from './components/IssueConfirmModal';
+import AddInternalNoteModal from './components/AddInternalNoteModal';
+import InvoiceBreadcrumbNav from 'merchant/views/Invoices/Invoices/components/InvoiceBreadcrumbNav';
+import InvoiceInfo from 'merchant/views/Invoices/Invoices/components//InvoiceInfo';
+import InvoiceNotes from 'merchant/views/Invoices/Invoices/components/InvoiceNotes';
+import InvoiceLogo from 'merchant/views/Invoices/Invoices/components/InvoiceLogo';
 import {
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
@@ -46,11 +46,11 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { PowerSelect } from 'react-power-select';
 import { SingleDatePicker } from 'react-dates';
-import AddressSelectionModal from 'merchant/views/Invoices/AddressSelectionModal/index';
-import EditInvoiceLabelModal from 'merchant/views/Invoices/Modals/Merchant/EditInvoiceLabel';
+import AddressSelectionModal from './components/AddressSelectionModal/index';
+import EditInvoiceLabelModal from './components/EditInvoiceLabel';
 import AddressDisplay from 'merchant/components/AddressDisplay';
 import { states } from 'merchant/helpers/data';
-import InvoicesOnboarding from 'merchant/views/Invoices/Modals/Onboarding';
+import InvoicesConfiguration from 'merchant/views/Invoices/Invoices/components/InvoicesConfiguration';
 import { luminateRow } from 'merchant/reducers/app';
 import {
   track,
@@ -60,9 +60,9 @@ import {
   trackChangeCurrencySettings,
   trackSelectBillingAddress,
   trackSelectShippingAddress,
-} from './ga';
+} from '../ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
-import PickCurrency from 'merchant/components/Invoices/PickCurrency';
+import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import { classList } from 'common/utils/rzp-utils';
 
 function validate(values) {
@@ -727,7 +727,7 @@ export default class InvoicesNewContainer extends Component {
   /**
    * Shows the onboarding modal.
    */
-  showOnboardingModal = () => {
+  showInvoicesConfigurationModal = () => {
     const onStart = () => {
       track({
         eventAction: 'Click - Start Creating Invoices',
@@ -747,7 +747,7 @@ export default class InvoicesNewContainer extends Component {
     this.props.openModal({
       size: 'regular',
       component: (
-        <InvoicesOnboarding
+        <InvoicesConfiguration
           merchant={this.props.session.user}
           invoiceLabelField={this.props.config.invoice_label_field}
           onStart={onStart}
@@ -1382,12 +1382,12 @@ export default class InvoicesNewContainer extends Component {
     });
 
     /**
-     * Show onboarding modal if invoice_label_field is null or GSTIN is empty.
+     * Show configuration modal if invoice_label_field is null or GSTIN is empty.
      */
     const { invoice_label_field } = this.props.config;
 
     if (invoice_label_field === null) {
-      this.showOnboardingModal();
+      this.showInvoicesConfigurationModal();
     }
   }
 
@@ -2112,7 +2112,7 @@ export default class InvoicesNewContainer extends Component {
                       </div>
                       <FieldArray
                         name="line_items"
-                        component={LineItemTable}
+                        component={LineItemsList}
                         items={this.props.items}
                         disabled={isDisabled}
                         invoice={invoice}
@@ -2343,7 +2343,7 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </div>
                           </label>
-                          {showEditInvoiceLabelOption && (
+                          {true && (
                             <button
                               class="btn btn-default btn-block btn-lg"
                               onClick={this.showEditInvoiceLabelModal}

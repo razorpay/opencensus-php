@@ -12,7 +12,7 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Button from 'common/new-ui/Button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';

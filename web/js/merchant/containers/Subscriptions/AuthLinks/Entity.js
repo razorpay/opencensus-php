@@ -15,7 +15,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 import { fetchAuthLink } from 'merchant/reducers/auth_link';
 
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 
 @withRouter
 @connect(

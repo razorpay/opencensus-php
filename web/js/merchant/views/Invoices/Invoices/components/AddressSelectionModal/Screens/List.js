@@ -4,7 +4,7 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import Address from '../Address';
+import Address from 'merchant/views/Invoices/Invoices/components/Address';
 import PropTypes from 'prop-types';
 import { reduxForm, formValueSelector } from 'redux-form';
 
