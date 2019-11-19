@@ -464,6 +464,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
+    public function getBankForNachMethod()
+    {
+        $this->validator->validateOrderForNachMethod();
+
+        $tokenRegistration = $this->getTokenRegistration();
+
+        if (($tokenRegistration === null) or
+            ($tokenRegistration->paperMandate === null) or
+            ($tokenRegistration->paperMandate->bankAccount === null))
+        {
+            return null;
+        }
+
+        $bank = $tokenRegistration->paperMandate->bankAccount->getBankCode();
+
+        return $bank;
+    }
+
     public function getTokenRegistration()
     {
         $invoice = $this->invoice;

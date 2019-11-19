@@ -116,6 +116,13 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function paperMandateAuthenticateProxy()
+    {
+        $data = $this->service()->paperMandateAuthenticateProxy($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function paperMandateValidate()
     {
         $data = $this->service()->paperMandateValidate($this->input);
@@ -133,6 +140,13 @@ class SubscriptionRegistrationController extends Controller
     public function fetchAuthLinkInternal(string $id)
     {
         $data = $this->service()->fetchAuthLinkInternal($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function retryPaperMandateToken(string $tokenId)
+    {
+        $data = $this->service()->retryPaperMandateToken($tokenId);
 
         return ApiResponse::json($data);
     }

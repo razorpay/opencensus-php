@@ -87,6 +87,7 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
+    const NACH_CITI              = 'nach_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -1172,6 +1173,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NACH_CITI,
     ];
 
     public static $recurringCardNetworks = [

@@ -1735,6 +1735,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
     }
 
+    public function isNach()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::NACH);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
@@ -3293,7 +3298,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::UPI:
                 $paymentArray[self::VPA] = self::DUMMY_VPA;
+                break;
 
+            case Method::NACH:
+                $paymentArray[self::RECURRING] = true;
+                break;
         }
 
         if (is_null($orderEntity) === false)
