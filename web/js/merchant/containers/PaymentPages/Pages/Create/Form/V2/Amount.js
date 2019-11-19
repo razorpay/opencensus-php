@@ -38,9 +38,8 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
                   <div className="Field-el">
                     <label>
-                      <b>{amountDisplay.split('.')[0]}</b>.{
-                        amountDisplay.split('.')[1]
-                      }
+                      <b>{amountDisplay.split('.')[0]}</b>.
+                      {amountDisplay.split('.')[1]}
                     </label>
                   </div>
 
@@ -168,7 +167,6 @@ export class AmountCreator extends React.PureComponent {
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_amount')[0];
       const amount = document.getElementsByName('amount')[0].value;
-
       const disableSubmit =
         form.querySelectorAll('.is-invalid').length ||
         (!amount && !this.state.hasDynamicAmount);

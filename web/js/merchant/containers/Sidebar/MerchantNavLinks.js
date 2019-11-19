@@ -80,6 +80,13 @@ export default function MerchantNavLinks(props) {
         additionalCondition={user => user.isAllowedView('customers')}
       />
 
+      <MainNavLink
+        label="Offers"
+        icon="i i-done-all text-success"
+        to="/offers"
+        additionalCondition={user => user.isAllowedView('settlements')}
+      />
+
       <div class="divider" />
 
       <MainNavLink

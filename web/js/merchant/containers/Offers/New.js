@@ -1,0 +1,505 @@
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import { classList, deepClone } from 'common/utils/rzp-utils';
+
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { luminateRow } from 'merchant/reducers/app';
+import Alert from 'common/ui/Forms/Alert';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Offer from 'merchant/models/Offer';
+import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
+
+const SUCCESS_NOTIFICATION = 'New offer created';
+
+class NewOfferForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      errors: null,
+      disableSubmit: true,
+    };
+    this.IS_MODAL_VIEW = (this.props.onClose && true) || false;
+  }
+
+  //util method
+  stringToInt(subject) {
+    if (subject === null) {
+      return null;
+    }
+    return subject.toLowerCase() === 'true' ? 1 : 0;
+  }
+
+  toggleDisableState() {
+    const invalidFields = document.querySelectorAll(
+      '.PaymentLinks--Create .Input.is-invalid'
+    );
+    if (invalidFields.length < 1) {
+      this.setState({ disableSubmit: false });
+    }
+  }
+
+  tranformFormFields(form) {
+    const transformed = deepClone(form);
+    const amountFields = ['max_cashback', 'flat_cashback', 'min_amount'];
+    const fieldsTobeDeleted = [
+      'discount_type',
+      'errors',
+      'parentFormLock',
+      'disableSubmit',
+    ];
+
+    //Convert rupees to paisa
+    amountFields.forEach(field => {
+      transformed[field] *= 100;
+    });
+    // get additional fields to be deleted based on the discount_type
+    if (transformed.discount_type === 'flat') {
+      fieldsTobeDeleted.push('max_cashback');
+      fieldsTobeDeleted.push('percent_rate');
+    } else {
+      fieldsTobeDeleted.push('flat_cashback');
+    }
+    if (!this.isSelectedPaymentMethod('card', 'emi')) {
+      fieldsTobeDeleted.push('max_payment_count');
+    }
+    //fields to be deleted
+    fieldsTobeDeleted.forEach(field => {
+      if (field in transformed) {
+        delete transformed[field];
+      }
+    });
+    transformed.block = this.stringToInt(transformed.block);
+    return transformed;
+  }
+
+  getFormOnChangeHandler(type, ...options) {
+    const makeState = (name, value) => {
+      let state = {};
+      state[name] = value;
+      return state;
+    };
+    const handlers = {
+      default: syntheticEvent => {
+        this.setState(
+          makeState(syntheticEvent.target.name, syntheticEvent.target.value),
+          this.toggleDisableState
+        );
+      },
+      datetime: momentObj =>
+        this.setState(
+          makeState(options[0], momentObj.unix()),
+          this.toggleDisableState
+        ),
+      iins: syntheticEvent => {
+        let iins = syntheticEvent.target.value
+          .split(',')
+          .map(iin => iin.trim())
+          .filter(iin => iin.length > 5 && iin.length < 7);
+        this.setState({ iins }, this.toggleDisableState);
+      },
+    };
+
+    return handlers[type] || handlers.default;
+  }
+
+  isSelectedPaymentMethod = (...methods) => {
+    return (
+      this.state.payment_method &&
+      methods.indexOf(this.state.payment_method) > -1
+    );
+  };
+
+  renderPaymentMethods() {
+    let paymentMethods = [
+      { label: 'Select Payment method', name: '' },
+      { label: 'Card', name: 'card' },
+      { label: 'Net Banking', name: 'netbanking' },
+      { label: 'Wallet', name: 'wallet' },
+      { label: 'UPI', name: 'upi' },
+      { label: 'EMI', name: 'emi' },
+      { label: 'Cardless EMI', name: 'cardless_emi' },
+      { label: 'Pay Later', name: 'paylater' },
+    ];
+    let paymentIssuers = [
+      { label: 'Select Issuers', name: '' },
+      { label: 'HDFC Bank', name: 'HDFC' },
+      { label: 'HSBC Bank', name: 'HSBC' },
+      { label: 'ICICI Bank', name: 'ICIC' },
+      { label: 'INDUSIND Bank', name: 'INDB' },
+      { label: 'Kotak Mahindra Bank', name: 'KKBK' },
+      { label: 'Ratnakar Bank Bank', name: 'RATN' },
+      { label: 'Standard Chartered Bank', name: 'SCBL' },
+      { label: 'Axis Bank', name: 'UTIB' },
+      { label: 'Yes Bank', name: 'YESB' },
+      { label: 'Citi Bank', name: 'CITI' },
+      { label: 'State Bank of India', name: 'SBIN' },
+      { label: 'Bank of Baroda Bank', name: 'BARB' },
+    ];
+
+    let paymentNetworks = [
+      { label: 'Select Network', name: '' },
+      { label: 'Visa', name: 'VISA' },
+      { label: 'RuPay', name: 'RUPAY' },
+      { label: 'MasterCard', name: 'MC' },
+      { label: 'Diners Club', name: 'DICL' },
+      { label: 'Maestro', name: 'MAES' },
+      { label: 'American Express', name: 'AMEX' },
+    ];
+
+    return (
+      <React.Fragment>
+        <Input.Select
+          label="Payment Method"
+          name="payment_method"
+          options={paymentMethods}
+          placeholder="Payment Method"
+        />
+
+        {(this.isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
+          <Input.Select
+            label="Issuer"
+            name="issuer"
+            placeholder="Payment Instrument Issuer/Bank Name"
+            options={paymentIssuers}
+          />
+        )) ||
+          null}
+
+        {(this.isSelectedPaymentMethod('card', 'emi') && (
+          <React.Fragment>
+            <Input
+              label="Maximum Usage Per Card"
+              name="max_payment_count"
+              type="number"
+              placeholder="Maximum usage of a card to avail this offer"
+            />
+            <Input.Select
+              label="Payment Method Type"
+              name="payment_method_type"
+              description="Payment Method Type"
+              onChange={this.getFormOnChangeHandler()}
+              options={[
+                { label: 'Credit Card', name: 'credit' },
+                { label: 'Debit Card', name: 'debit' },
+              ]}
+            />
+            <Input.Select
+              label="Payment Method Network"
+              name="payment_network"
+              placeholder="Payment Method Type"
+              options={paymentNetworks}
+            />
+            <Input
+              label="IINs"
+              onChange={this.getFormOnChangeHandler('iins')}
+              placeholder="6 digit IINs for cards. Separated by comma if more than one"
+            />
+          </React.Fragment>
+        )) ||
+          null}
+      </React.Fragment>
+    );
+  }
+
+  onCreate = () => {
+    let form = this.tranformFormFields(this.state);
+    let offer = new Offer(form);
+    return offer
+      .save(form)
+      .then(savedOffer => {
+        this.setState({
+          parentFormLock: false,
+        });
+
+        if (savedOffer && savedOffer.id) {
+          this.props.showNotification({
+            type: 'success',
+            message: SUCCESS_NOTIFICATION,
+          });
+
+          //@todo analytics event tracking
+          // tracking.trackEvent(
+          //   window.rzpQ.onbr().success('dash.pl_action', {
+          //     action: 'PL_Creation_Successful',
+          //   })
+          // );
+
+          const entityId = savedOffer.id;
+
+          if (this.IS_MODAL_VIEW) {
+            this.props.appendOfferInReduxList(savedOffer);
+            this.props.luminateRow(entityId); // Make it promise based
+            setTimeout(this.props.onClose, 50);
+          } else {
+            const redirectUrl = '/offers/' + entityId;
+
+            this.props.history.push(redirectUrl);
+          }
+        } else {
+          //@todo track when offer creation fails
+          // tracking.trackEvent(
+          //   window.rzpQ.onbr().success('dash.pl_action', {
+          //     action: 'PL_Creation_Failed',
+          //   })
+          // );
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some network error has occured`;
+        }
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  };
+
+  renderDiscountDetailsSection() {
+    let type = this.state.discount_type;
+    if (type && type === 'flat') {
+      return (
+        <Input.CurrencyInput
+          label="Discount Worth"
+          name="flat_cashback"
+          class="Input--half"
+          placeholder="Discount worth in cash"
+        />
+      );
+    }
+    if (type && type === 'percent') {
+      return (
+        <React.Fragment>
+          <Input
+            label="Discount Worth"
+            name="percent_rate"
+            class="Input--half"
+            placeholder="Discount worth in Percent"
+            addonBefore={<span>%</span>}
+            validator={val => {
+              if (val > 100 || val < 0) {
+                return 'Percentage should be between 0 and 100';
+              }
+            }}
+          />
+          <Input.CurrencyInput
+            label="Maximum Cashback"
+            name="max_cashback"
+            class="Input--half"
+            onChange={this.getFormOnChangeHandler()}
+            placeholder="Maximum cashback for this offer"
+          />
+        </React.Fragment>
+      );
+    }
+  }
+
+  render() {
+    return (
+      <div className="modal-body OfferCreationModal">
+        <div class="PaymentLinks--Create Wizard">
+          <main class="form-container">
+            <main-title class="main-title">Create New Offer</main-title>
+            <Form
+              autoComplete="off"
+              layout="tabular"
+              onChange={this.getFormOnChangeHandler()}
+            >
+              {/* ALERTS */}
+              {this.props.mode === 'test' && (
+                <Alert type="warning">
+                  You are creating the offer in <b>Test Mode</b>. So, only test
+                  payments can be made for it.
+                </Alert>
+              )}
+              <Alert type="error" message={this.state.errors} />
+              <h4>Basic Details</h4>
+              <Input
+                label="Offer Name"
+                name="name"
+                placeholder="Offer Short name"
+                autoFocus={true}
+                required
+                validator={val => {
+                  if (!val || val.length < 4) {
+                    return 'Short name should be at least of 4 characters';
+                  }
+                  if (val.length > 50) {
+                    return 'Short name should not exceed 50 characters';
+                  }
+                }}
+              />
+              <Input
+                label="Display Text"
+                name="display_text"
+                placeholder="Display text for offer"
+                required
+                validator={val => {
+                  if (!val || val.length < 4) {
+                    return 'Short name should be at least of 4 characters';
+                  }
+                  if (val.length > 250) {
+                    return 'Short name should not exceed 250 characters';
+                  }
+                }}
+              />
+              <Input
+                label="Terms"
+                name="terms"
+                placeholder="Terms and conditions for offer"
+              />
+              <hr />
+              <h4>Discount</h4>
+              <Input.Select
+                name="discount_type"
+                label="Discount Type"
+                placeholder="Discount Type"
+                onChange={this.getFormOnChangeHandler()}
+                required
+                options={[
+                  { label: 'Select Type', name: '' },
+                  { label: 'Percentage', name: 'percent' },
+                  {
+                    label: 'Flat',
+                    name: 'flat',
+                  },
+                ]}
+                validator={val => {
+                  console.log('....val....', val);
+
+                  if (!val || val == '') {
+                    return 'Please select a field type';
+                  }
+                }}
+              />
+              {this.renderDiscountDetailsSection()}
+              <hr />
+              <h4>Checks</h4>
+              <Input.CurrencyInput
+                label="Minimum Payment"
+                name="min_amount"
+                class="Input--half"
+                onChange={this.getFormOnChangeHandler()}
+                placeholder="Minimum bill amount on for this offer"
+                required
+              />
+              <Input.Select
+                label="Block Payment"
+                name="block"
+                description="Block payment of failure of offer validation"
+                required
+                options={[
+                  { label: 'Select Type', name: null },
+                  { label: 'Block', name: true },
+                  {
+                    label: 'Allow',
+                    name: false,
+                  },
+                ]}
+              />
+              <Input
+                type="Number"
+                label="Maximum Usage"
+                name="max_offer_usage"
+                placeholder="Maximum usage for this offer"
+                required
+              />
+
+              <hr />
+              <h4>Payment Method</h4>
+              {this.renderPaymentMethods()}
+              <hr />
+              <h4>Duration</h4>
+              <Input.DateTime
+                label="Starting On"
+                name="starts_at"
+                description="Start date for offer"
+                onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
+                isInline
+                required
+                validator={val => {
+                  if (moment() > val) {
+                    return 'Start date cannot be in past.';
+                  }
+                }}
+              />
+              <Input.DateTime
+                label="Expires On"
+                name="ends_at"
+                onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
+                description="Expiry date for offer"
+                isInline
+                required
+                validator={val => {
+                  if (this.state.starts_at > val.unix()) {
+                    return 'End date cannot be less that start date.';
+                  }
+                }}
+              />
+              <hr />
+            </Form>
+          </main>
+          <footer>
+            {/* Action Button 1 */}
+            {this.props.onClose && (
+              <Button onClick={e => this.props.onClose()}>Cancel</Button>
+            )}
+            {/* Action Button 2 */}
+            <AsyncBtn.Primary
+              onClick={this.onCreate}
+              pendingState={'Creating...'}
+              disabled={this.state.disableSubmit}
+            >
+              Create Offer
+            </AsyncBtn.Primary>
+          </footer>
+        </div>
+      </div>
+    );
+  }
+}
+
+@withRouter
+@connect(state => state.session, {
+  showNotification,
+  openModal,
+  closeModal,
+  luminateRow,
+  appendOfferInReduxList,
+})
+export default class New extends React.Component {
+  render() {
+    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
+    const IS_MODAL_VIEW = (this.props.onClose && true) || false;
+    const content = <NewOfferForm {...this.props} />;
+    return IS_MODAL_VIEW ? (
+      <Modal
+        class={classList('PaymentLinks', content && 'animate-down')}
+        onClose={this.props.onClose}
+      >
+        <ModalContent>{content}</ModalContent>
+      </Modal>
+    ) : (
+      <div class="StandAloneContainer">{content}</div>
+    );
+  }
+}

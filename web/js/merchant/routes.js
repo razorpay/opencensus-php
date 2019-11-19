@@ -6,9 +6,11 @@ import {
 } from '../merchant_common/routes';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
+import Entity from 'merchant/containers/Offers/Entity';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
 import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
+import OffersNew from 'merchant/containers/Offers/New';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
@@ -57,6 +59,10 @@ const entityDetailsMap = {
   '/refunds/:id(rfnd_.+)': {
     component: RefundDetails,
     additionalCondition: user => user.isAllowedView('refunds'),
+  },
+  '/offers/:id(offer_.+)': {
+    component: Entity,
+    additionalCondition: user => user.isAllowedView('offers'),
   },
   '/orders/:id': {
     component: OrderDetails,
@@ -157,6 +163,10 @@ const entityModalsMap = {
   '/activation': {
     component: ActivationContainer,
     additionalCondition: user => user.isAllowedEdit('activation'),
+  },
+  '/offers/new': {
+    component: OffersNew,
+    additionalCondition: user => user.isAllowedEdit('offers'),
   },
   '/paymentlinks/new': {
     component: PaymentLinksCreate,
