@@ -4,7 +4,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
 import Fieldset from 'common/ui/Forms/Fieldset';
 import { required, validatePincodeLength } from 'common/utils/validators';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import { isWebkit } from 'common/utils/rzp-utils';
 
 function verifyAccountNumber(value, allValues, props) {

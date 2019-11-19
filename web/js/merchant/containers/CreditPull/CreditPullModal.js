@@ -15,7 +15,7 @@ import {
   name,
 } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import bMerchantReducer from 'merchant/reducers/b-merchants';
@@ -191,10 +191,15 @@ export default class CreditPullModal extends Component {
               mobile,
               tokenStuff,
               merchantId
-            ).then(([{ report, score, max_loan_amount }, userResponse]) => {
-              this.props.updateSession({ user: userResponse.data });
-              this.openReportScreen(report, score, max_loan_amount);
-            });
+            ).then(
+              ([
+                { report, score, max_loan_amount, id: reportId },
+                userResponse,
+              ]) => {
+                this.props.updateSession({ user: userResponse.data });
+                this.openReportScreen(report, score, max_loan_amount, reportId);
+              }
+            );
           }}
           onResend={() => {
             return this.sendReqForOtp(mobile, tokenStuff).then(() => {
@@ -223,13 +228,14 @@ export default class CreditPullModal extends Component {
     });
   };
 
-  openReportScreen = (report, score, maxLoan) => {
+  openReportScreen = (report, score, maxLoan, reportId) => {
     this.props.openModal({
       component: (
         <CreditPullSuccess
           score={score}
           report={JSON.parse(report)}
           maxLoan={maxLoan}
+          reportId={reportId}
         />
       ),
       size: 'large',

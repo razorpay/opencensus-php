@@ -3,8 +3,7 @@ import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import AddOnCreation from 'merchant/containers/AddOns/New';
-
+import AddOnsModal from 'merchant/components/Subscriptions/AddOnsModal';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
 import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
@@ -12,12 +11,11 @@ import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
 import Plan from 'merchant/models/Plan';
 
 import { fetchPlan } from 'merchant/reducers/plans';
-import { deleteAddOn } from 'merchant/reducers/addons';
+import { deleteAddOn, fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
-import { fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import {
   fetchInvoice,
   fetchCreditNote,
@@ -632,7 +630,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <AddOnCreation
+        <AddOnsModal
           addon={addon}
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}

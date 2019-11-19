@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { checkChildrenType } from 'common/utils/rzp-react-utils';
+import { checkChildrenType } from 'common/utils/react-utils';
 
 class BreadcrumbItem extends Component {
   constructor(props) {

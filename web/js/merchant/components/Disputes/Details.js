@@ -8,7 +8,7 @@ import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase } from 'common/utils/rzp-utils';
-import { daysLeftInExpiry } from 'merchant/utils/disputes';
+import { daysFromToday } from 'common/utils/rzp-utils';
 
 export default props => {
   const { dispute, isLoading, error } = props;
@@ -130,4 +130,15 @@ export default props => {
       )}
     </div>
   );
+};
+
+export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
+  const daysLeft = daysFromToday(expiresOn);
+  if (daysLeft < 0) {
+    return <span class="text-muted">Passed</span>;
+  } else if (daysLeft === 0) {
+    return <strong class="text-danger">Today</strong>;
+  } else {
+    return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+  }
 };

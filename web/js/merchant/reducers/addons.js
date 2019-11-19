@@ -1,22 +1,12 @@
 import ajax from 'merchant/utils/ajax';
-import AddOns from 'merchant/models/AddOns';
-import {
-  makeActionCollectionReducer,
-  fetchAll,
-} from 'merchant/reducers/collection';
-import {
-  makeEntityReducer,
-  updateEntity,
-} from 'merchant_common/reducers/entity';
-import { set } from 'common/utils/immutable';
-import { formatFields } from 'merchant/resources/addons';
+import { formatFields } from 'merchant/models/AddOns';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { makeActionCollectionReducer } from 'merchant/reducers/collection';
 
 export const ADDONS_CREATE = 'ADDONS_CREATE';
-export const ADDONS_EDIT = 'ADDONS_EDIT';
 
-// Fn. to create / edit add ons
-export const saveAddOn = (params, isNew = true) => {
+// Fn. to create addons
+export const saveAddOn = params => {
   const item = formatFields(['name', 'description', 'amount'], params.item);
   const quantity = formatFields('quantity', params.quantity);
 
@@ -27,7 +17,7 @@ export const saveAddOn = (params, isNew = true) => {
   };
 
   return {
-    type: isNew ? ADDONS_CREATE : ADDONS_EDIT,
+    type: ADDONS_CREATE,
     payload: merchantFetch({
       method: 'post',
       url: `subscriptions/${params.subscription_id}/addons`,

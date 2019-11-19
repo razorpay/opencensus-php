@@ -18,6 +18,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import {
   EditExpiry,
@@ -122,6 +123,7 @@ export default props => {
     isAutoRemindersUpdating,
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -160,7 +162,7 @@ export default props => {
                 <i class="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
-              {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
+              {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button class="btn Button--primary" onClick={props.onIssue}>
@@ -295,27 +297,44 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled && (
-                  <EntityDetailRow label="Reminders">
-                    <Input.Check
-                      name="auto_reminders"
-                      fieldLabel="Send auto reminders"
-                      checked={isRemindersEnabled}
-                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
-                      onChange={onChangeSendAutoReminder}
-                      autoRender
-                    />
+                {user.isRemindersEnabled &&
+                  isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <Input.Check
+                        name="auto_reminders"
+                        fieldLabel="Send auto reminders"
+                        checked={isRemindersEnabled}
+                        disabled={
+                          isPaymentLinkClosed || isAutoRemindersUpdating
+                        }
+                        onChange={onChangeSendAutoReminder}
+                        autoRender
+                      />
 
-                    <Stepper
-                      list={getRemindersStepperData(
-                        isRemindersEnabled,
-                        nextReminders,
-                        isAutoRemindersUpdating,
-                        isPaymentLinkClosed
-                      )}
-                    />
-                  </EntityDetailRow>
-                )}
+                      <Stepper
+                        list={getRemindersStepperData(
+                          isRemindersEnabled,
+                          nextReminders,
+                          isAutoRemindersUpdating,
+                          isPaymentLinkClosed
+                        )}
+                      />
+                    </EntityDetailRow>
+                  )}
+
+                {user.isRemindersEnabled &&
+                  !isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <div class="Input-content">
+                        Reminders are not set for payment links.
+                        <br />
+                        Set it up{' '}
+                        <Link target="_blank" to="/reminders">
+                          here
+                        </Link>
+                      </div>
+                    </EntityDetailRow>
+                  )}
 
                 <EntityDetailRow
                   label="Receipt No."
@@ -417,7 +436,7 @@ const getRemindersStepperData = (
     .map(reminder => {
       const currDate = moment(undefined),
         reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.diff(currDate, 'days');
+        isPendingState = reminderDate.isAfter(currDate);
 
       if (isPaymentLinkClosed && isPendingState) {
         return null;

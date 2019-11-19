@@ -14,6 +14,8 @@ import MembersList from './Members/List';
 import Toggle2FA from './Toggle2FA';
 import NewInvitation from './NewInvitation';
 
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
 @connect(
   state => ({
     user: state.session.user.user,
@@ -33,7 +35,7 @@ export default class ManageTeamContainer extends React.Component {
 
     const defaults = {
       sender_name: this.props.user.name,
-      role: 'manager',
+      role: rolesList.MANAGER,
     };
 
     this.props.openModal({

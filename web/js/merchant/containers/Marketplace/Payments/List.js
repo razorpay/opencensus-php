@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import { fetchMarketplacePayments as fetchAll } from 'merchant/reducers/collection';
 

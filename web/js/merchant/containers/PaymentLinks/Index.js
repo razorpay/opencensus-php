@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 

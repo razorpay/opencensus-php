@@ -29,7 +29,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     render() {
       const {
         field,
-        index,
+        indexInRenderOrder,
         validateSameTitleExists,
         onDeleteFormItem,
         onSubmitUDFField,
@@ -61,7 +61,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
           />
           {this.state.isBaseFormOpened && (
             <BaseFormModal
-              index={index}
+              indexInRenderOrder={indexInRenderOrder}
               field={field || this.state.fieldSchema}
               validateSameTitleExists={validateSameTitleExists}
               onSubmitUDFField={onSubmitUDFField}
@@ -84,21 +84,21 @@ class BaseFormModal extends React.PureComponent {
   onSaveForm = formData => {
     this.props.onSubmitUDFField(
       formData,
-      this.props.index,
+      this.props.indexInRenderOrder,
       this.props.isCheckoutOption
     );
     this.props.closeFormModal();
   };
 
   onDeleteFormItem = () => {
-    this.props.onDeleteFormItem(this.props.index);
+    this.props.onDeleteFormItem(this.props.indexInRenderOrder);
     this.props.closeFormModal();
   };
 
   render() {
     const {
       field,
-      index,
+      indexInRenderOrder,
       validateSameTitleExists,
       closeFormModal,
       isFieldDeletable,
@@ -109,7 +109,7 @@ class BaseFormModal extends React.PureComponent {
       <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
         <BaseForm
           field={field}
-          selfIndex={index}
+          selfIndex={indexInRenderOrder}
           validateSameTitleExists={validateSameTitleExists}
           onCloseForm={closeFormModal}
           onSaveForm={this.onSaveForm}

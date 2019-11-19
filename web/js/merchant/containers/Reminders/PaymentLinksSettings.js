@@ -11,7 +11,7 @@ import {
 } from 'merchant/reducers/reminders';
 
 import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
-import Setting from 'merchant/components/Reminders/Settings';
+import ReminderSettings from 'merchant/components/Reminders/Settings';
 
 @connect(
   state => {
@@ -152,11 +152,12 @@ export default class PaymentLinksSettings extends React.Component {
         class="RemindersSettings--PaymentLinks"
         key="RemindersSettings--PaymentLinks"
       >
-        <Setting
+        <ReminderSettings
           type="Payment Links"
           isEnabled={this.props.paymentLinkReminder.active}
           channels={this.props.channels}
           onSaveClick={this.saveSettings}
+          maxReminderCount={this.props.paymentLinkReminder.max_reminder_count}
           disableEnableReminders={this.disableEnableReminders}
           totalUnpaidLinks={this.state.totalUnpaidLinks}
           withExpiry={this.props.withExpireByMerchantConfigs}

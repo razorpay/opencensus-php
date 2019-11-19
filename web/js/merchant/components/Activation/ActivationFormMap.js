@@ -1,5 +1,5 @@
 import Input from 'common/new-ui/Input';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
 import { isValidGSTIN, getDetailsForIFSC } from 'common/utils/rzp-utils';

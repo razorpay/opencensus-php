@@ -4,7 +4,7 @@ import RTracking from 'react-tracking';
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe, findBy } from 'common/utils/rzp-utils';
 
 import * as InvoiceActions from 'merchant/reducers/invoices/list';

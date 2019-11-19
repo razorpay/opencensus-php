@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';

@@ -4,7 +4,7 @@ import LegendLabel from './LegendLabel';
 import LegendTitle from './LegendTitle';
 import LegendContent from './LegendContent';
 
-import { checkChildrenType } from 'common/utils/rzp-react-utils';
+import { checkChildrenType } from 'common/utils/react-utils';
 
 class LegendItemInner extends Component {
   render() {

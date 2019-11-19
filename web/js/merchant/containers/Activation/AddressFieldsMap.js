@@ -1,5 +1,5 @@
 import Input from 'common/new-ui/Input';
-import { states } from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
 
 var stateOptions = ['--Select--'].concat(

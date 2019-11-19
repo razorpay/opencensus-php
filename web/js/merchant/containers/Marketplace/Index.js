@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';

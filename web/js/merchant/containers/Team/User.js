@@ -3,13 +3,14 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { roles, agentRole, RBLRoles } from 'common/utils/constants';
+import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 import { without } from 'common/utils/rzp-utils';
 import {
   updateUser,
   removeUser,
   fetchTeamDetails,
 } from 'merchant/reducers/team';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 @connect(
   state => {
@@ -85,18 +86,21 @@ export default class EditUser extends Component {
     } else if (session.user.isRBLRoleEnabled) {
       allRoles = { ...allRoles, ...RBLRoles };
 
-      if (session.user.role === 'rbl_supervisor') {
+      if (session.user.role === rolesList.RBL_SUPERVISOR) {
         isAllowedUpdate = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
         isAllowedRemove = false;
 
-        if (user.role === 'rbl_agent') {
+        if (user.role === rolesList.RBL_AGENT) {
           allRoles = { agent: RBLRoles.rbl_agent };
           isAllowedRemove = true;
         }
       }
     }
 
-    let ROLES = user.role === 'owner' ? allRoles : without(allRoles, 'owner');
+    let ROLES =
+      user.role === rolesList.OWNER
+        ? allRoles
+        : without(allRoles, rolesList.OWNER);
     return (
       <tr>
         <td>{user.email}</td>

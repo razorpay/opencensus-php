@@ -1,10 +1,7 @@
 import { Component } from 'react';
 
 import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
-import {
-  isChildSameType,
-  checkChildrenType,
-} from 'common/utils/rzp-react-utils';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
 export class TourStepTitle extends Component {
   render() {

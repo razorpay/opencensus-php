@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
-import { RZPFeatures } from 'common/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import {
   planId,

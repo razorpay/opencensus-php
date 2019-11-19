@@ -49,7 +49,7 @@ import { SingleDatePicker } from 'react-dates';
 import AddressSelectionModal from 'merchant/containers/Invoices/AddressSelectionModal/index';
 import EditInvoiceLabelModal from 'merchant/containers/Invoices/Modals/Merchant/EditInvoiceLabel';
 import AddressDisplay from 'merchant/components/AddressDisplay';
-import * as constants from 'common/utils/constants';
+import { states } from 'merchant/helpers/data';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/reducers/app';
 import {
@@ -1512,8 +1512,7 @@ export default class InvoicesNewContainer extends Component {
     const merchantAddress = {
       line1: this.props.session.user.business_registered_address,
       city: this.props.session.user.business_registered_city,
-      state:
-        constants.states[this.props.session.user.business_registered_state],
+      state: states[this.props.session.user.business_registered_state],
       country: 'India',
       zipcode: this.props.session.user.business_registered_pin,
     };

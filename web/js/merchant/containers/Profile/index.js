@@ -22,6 +22,7 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
 
 import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 @connect(
   state => {
@@ -78,7 +79,9 @@ export default class Profile extends Component {
   }
 
   isAdminOrOwner() {
-    return ['admin', 'owner'].indexOf(this.props.user.role) > -1;
+    return (
+      [rolesList.ADMIN, rolesList.OWNER].indexOf(this.props.user.role) > -1
+    );
   }
 
   componentWillReceiveProps(nextProps) {

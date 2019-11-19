@@ -13,6 +13,7 @@ import {
 } from 'common/utils/pokedex';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
+import rolesList from 'merchantLA/helpers/permissions/roles-list';
 
 import * as HomeActions from 'merchantLA/reducers/home';
 import { fetch } from 'merchantLA/reducers/pokedex';
@@ -119,7 +120,9 @@ export default class HomeContainer extends Component {
     }
 
     const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
+        user.role
+      ) >= 0);
 
     const showOnboardingBanner =
         hasAccessToOnboardingBanner &&

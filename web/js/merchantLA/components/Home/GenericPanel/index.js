@@ -7,10 +7,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-  isChildSameType,
-  checkChildrenType,
-} from 'common/utils/rzp-react-utils';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 import Overlay from 'common/ui/Overlay';
 import Spinner from 'common/ui/Spinner';
 

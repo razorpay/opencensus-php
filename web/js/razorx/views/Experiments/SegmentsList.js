@@ -73,7 +73,7 @@ export default class extends React.Component {
   }
 }
 
-const TYPES = ['ramp', 'whitelist', 'blacklist', 'context-ramp'];
+const TYPES = ['ramp', 'whitelist', 'blacklist', 'contextramp'];
 
 class Segment extends React.Component {
   state = { segment: this.props.value || {} };
@@ -161,12 +161,12 @@ class Segment extends React.Component {
 
   get hasWeight() {
     const type = this.state.segment.type;
-    return ['ramp', 'context-ramp'].indexOf(type) > -1;
+    return ['ramp', 'contextramp'].indexOf(type) > -1;
   }
 
   get hasIds() {
     const type = this.state.segment.type;
-    return ['whitelist', 'blacklist', 'context-ramp'].indexOf(type) > -1;
+    return ['whitelist', 'blacklist', 'contextramp'].indexOf(type) > -1;
   }
 
   updateSegment() {
