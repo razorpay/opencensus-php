@@ -23,6 +23,7 @@ import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
+import OffersHome from '../containers/Offers/Home';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
@@ -330,7 +331,11 @@ export default class Content extends Component {
             component={Settings}
             additionalCondition={user => user.isAllowedView('applications')}
           />
-
+          <ShowWhenRoute
+            path="/offers"
+            component={OffersHome}
+            additionalCondition={user => user.isAllowedView('offers')}
+          />
           <Redirect to="/dashboard" />
         </Switch>
       </ErrorBoundary>

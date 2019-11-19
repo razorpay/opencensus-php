@@ -13,6 +13,7 @@ import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwy
 import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
+import OffersNew from 'merchant/containers/Offers/New';
 import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
@@ -57,6 +58,10 @@ const entityDetailsMap = {
   '/refunds/:id(rfnd_.+)': {
     component: RefundDetails,
     additionalCondition: user => user.isAllowedView('refunds'),
+  },
+  '/offers/:id(offer_.+)': {
+    component: Entity,
+    additionalCondition: user => user.isAllowedView('offers'),
   },
   '/orders/:id': {
     component: OrderDetails,
@@ -157,6 +162,10 @@ const entityModalsMap = {
   '/activation': {
     component: ActivationContainer,
     additionalCondition: user => user.isAllowedEdit('activation'),
+  },
+  '/offers/new': {
+    component: OffersNew,
+    additionalCondition: user => user.isAllowedEdit('offers'),
   },
   '/paymentlinks/new': {
     component: PaymentLinksCreate,

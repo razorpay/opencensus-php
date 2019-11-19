@@ -1,5 +1,5 @@
 import moment from 'moment';
-import Input, { Description } from 'common/new-ui/Input';
+import Input, { Description, Error, inputClass } from 'common/new-ui/Input';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
 import { classList } from 'common/utils/rzp-utils';
@@ -8,6 +8,7 @@ export default class DateTime extends React.Component {
   state = {
     value: this.props.defaultValue,
     hasNoDate: this.props.required ? false : !this.props.defaultValue,
+    mature: this.props.mature || false,
   };
 
   onDateChange = date => {
@@ -24,12 +25,17 @@ export default class DateTime extends React.Component {
 
   updateDate = ts => {
     const newDate = moment(ts);
-
     this.setState({
       value: newDate,
     });
-
     this.props.onChange && this.props.onChange(newDate);
+    if (
+      this.props.validator &&
+      this.props.validator(newDate) &&
+      this.props.validator(newDate).length > 0
+    ) {
+      this.setState({ error: this.props.validator(newDate), mature: true });
+    }
   };
 
   render() {
@@ -42,7 +48,6 @@ export default class DateTime extends React.Component {
       isInline,
       description,
     } = this.props;
-
     return (
       <React.Fragment>
         {!required && (
@@ -69,10 +74,15 @@ export default class DateTime extends React.Component {
           />
         )}
         <Input.Group
-          class={classList(
-            !required && 'InputGroup--near',
-            isInline ? 'InputGroup--inline' : 'Input--half_big'
-          )}
+          label={(required && label) || null}
+          class={
+            inputClass(this) +
+            ' ' +
+            classList(
+              !required && 'InputGroup--near',
+              isInline ? 'InputGroup--inline' : 'Input--half_big'
+            )
+          }
         >
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
@@ -102,6 +112,7 @@ export default class DateTime extends React.Component {
               />
             )}
             {description && <Description text={description} />}
+            <Error text={this.state.error} />
           </div>
         </Input.Group>
       </React.Fragment>
