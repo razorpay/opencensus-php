@@ -14,7 +14,7 @@ import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
 import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
 import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 
 export default props => {
