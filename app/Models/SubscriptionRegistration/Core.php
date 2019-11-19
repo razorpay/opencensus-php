@@ -598,30 +598,4 @@ class Core extends Base\Core
             $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $customer->getContact();
         }
     }
-
-    public function sendNotification(Invoice\Entity $invoice, string $medium): array
-    {
-        $this->trace->info(
-            TraceCode::AUTH_LINK_RESEND,
-            [
-                'invoice_id'        => $invoice->getId(),
-                'invoice_status'    => $invoice->getStatus(),
-                'medium'            => $medium,
-            ]
-        );
-
-        $invoice->getValidator()->validateSendNotificationRequest($medium);
-
-        $order = $invoice->order;
-
-        $order->getValidator()->validateOrderNotPaid();
-
-        $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
-
-        $response = (new Invoice\Notifier($invoice))->$func();
-
-        $this->repo->saveOrFail($invoice);
-
-        return ['success' => $response];
-    }
 }

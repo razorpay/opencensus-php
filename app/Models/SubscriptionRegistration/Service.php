@@ -342,7 +342,11 @@ class Service extends Base\Service
 
         $invoice->setRelation('entity', $invoice->entity);
 
-        $data = $this->core->sendNotification($invoice, $medium);
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $data = (new Invoice\Core())->sendNotification($invoice, $medium);
 
         return $data;
     }

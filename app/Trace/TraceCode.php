@@ -1881,7 +1881,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE     = 'SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN                = 'SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN';
     const AUTH_LINK_BATCH_INPUT                                 = 'AUTH_LINK_BATCH_INPUT';
-    const AUTH_LINK_RESEND                                      = 'AUTH_LINK_RESEND';
 
     const PAPER_MANDATE_FORM_GENERATED                          = 'PAPER_MANDATE_FORM_GENERATED';
     const PAPER_MANDATE_FORM_ENHANCED                           = 'PAPER_MANDATE_FORM_ENHANCED';
