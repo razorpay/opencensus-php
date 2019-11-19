@@ -484,6 +484,10 @@ class ViewDataSerializer extends Base\Core
 
             $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
 
+            $serialized
+            [E::SUBSCRIPTION_REGISTRATION]
+            [E::PAYMENT] = $this->getNonFailurePaymentsForOrder($order);
+
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $externalEntity->entity;
@@ -511,6 +515,35 @@ class ViewDataSerializer extends Base\Core
         {
             $serialized[Entity::ENTITY_TYPE] = null;
         }
+    }
 
+    protected function getNonFailurePaymentsForOrder(Order\Entity $order)
+    {
+        $validPayments = [];
+
+        if ($order === null)
+        {
+            return $validPayments;
+        }
+
+        $payments = $order->payments;
+
+        if ($payments === null)
+        {
+            return $validPayments;
+        }
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->getStatus() !== Payment\Status::FAILED)
+            {
+                array_push($validPayments,
+                    [Payment\Entity::ID => $payment->getPublicId(),
+                        Payment\Entity::STATUS => $payment->getStatus()]
+                );
+            }
+        }
+
+        return $validPayments;
     }
 }
