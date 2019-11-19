@@ -337,7 +337,9 @@ class Processor
 
             $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
 
-            $conf = $redis->GETSET($key, $redis->GET($key) +  1) ;
+            $redis->multi();
+            $redis->incr($key);
+            $redis->exec();
 
             //$offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
