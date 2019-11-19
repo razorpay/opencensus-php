@@ -277,6 +277,36 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->assertTestResponse($paymentEntity, 'testPaymentErrorPaymentEntity');
     }
 
+    public function testForceAuthorizePayment()
+    {
+        $testData = $this->testData['testAuthFailed'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS] = 'Failed';
+            }
+        });
+
+        $this->runRequestResponseFlow($testData, function ()
+        {
+            $this->doNetbankingSbiAuthAndCapturePayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->forceAuthorizeFailedPayment($payment['id'], ['gateway_payment_id' => 100]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], 100);
+    }
+
     protected function doNetbankingSbiAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);

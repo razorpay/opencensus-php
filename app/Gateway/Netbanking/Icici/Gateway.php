@@ -538,11 +538,6 @@ class Gateway extends Base\Gateway
             RequestFields::SPID             => $this->getSpid(),
         ];
 
-        if ($this->isCorporateBanking() === true)
-        {
-            unset($requestData[RequestFields::SPID]);
-        }
-
         return array_merge($baseRequestData, $requestData);
     }
 
@@ -1066,16 +1061,18 @@ class Gateway extends Base\Gateway
             return $this->config['live_hash_secret'];
         }
 
+        // For all corporate payments, use a single secret
+        if ($this->isCorporateBanking() === true)
+        {
+            return $this->config['live_hash_secret_corp'];
+        }
+
         switch ($this->getLiveMerchantId2())
         {
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
             case $this->config['live_merchant_id2_cred']:
                 return $this->config['live_hash_secret_cred'];
-            case $this->config['live_merchant_id2_corp']:
-            case $this->config['live_merchant_id2_corp_karvy']:
-                return $this->config['live_hash_secret_corp'];
-
             case $this->config['live_merchant_id2']:
             case $this->config['live_merchant_id2_aditiya_birla_direct']:
             default:

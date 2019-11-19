@@ -84,5 +84,4 @@ class Sbin extends Base
             'accountDetails' => $accountDetails
         ];
     }
-
 }

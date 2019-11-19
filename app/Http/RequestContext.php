@@ -448,7 +448,8 @@ final class RequestContext
 
     protected function setAdditionalVarsForPrivateAuth()
     {
-        $isPrivateRoute = in_array($this->route, Route::$private, true);
+        $isPrivateRoute = (in_array($this->route, Route::$private, true) or
+                          (in_array($this->route, P2pRoute::$private, true)));
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
         // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
@@ -541,11 +542,6 @@ final class RequestContext
             if (($config['secret'] ?? '') === $this->secret)
             {
                 $this->internalAppName = $name;
-
-                if ($name === 'dashboard_v2')
-                {
-                    $this->internalAppName = 'dashboard';
-                }
 
                 return;
             }

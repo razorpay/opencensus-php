@@ -358,6 +358,11 @@ class PublicEntity extends UniqueIdEntity
 
     public function relationsToArrayAdmin()
     {
+        //
+        // If you're not getting relations data here,
+        // Add the relation as the visible array in the Entity as camel cased
+        // Eg: bankingAccountDetails in $visible of BankingAccount\Detail\Entity
+        //
         $relations = $this->getArrayableRelations();
 
         // Snake case relation's keys
@@ -474,7 +479,7 @@ class PublicEntity extends UniqueIdEntity
         $entity = $this->entity;
 
         // It's always needed for live mode. Not taking care of test for now.
-        $url = "https://dashboard.razorpay.com/admin#/app/entity/live/$entity/$id";
+        $url = "https://dashboard.razorpay.com/admin#/app/entity/$entity/live/$id";
 
         return $url;
     }

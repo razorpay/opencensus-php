@@ -280,9 +280,7 @@ class SubMerchant extends Base
                     MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED
                 ];
 
-                $subMerchant->load('merchantDetail');
-
-                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant->merchantDetail, $activationStatusData, $subMerchant);
+                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
 
                 if ($response[ME::ACTIVATED] === false)
                 {

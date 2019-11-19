@@ -34,16 +34,11 @@ class SubReconciliate extends Base\Core
     const RECON_STATUS          = 'recon_status';
     const ALREADY_RECONCILED_AT = 'already_reconciled_at';
     const RECON_ERROR_MSG       = 'recon_error_msg';
-    const MERCHANT_ID           = 'merchant_id';
+    const RZP_MERCHANT_ID       = 'rzp_merchant_id';
     const PROCESSED_AT          = 'processed_at';
     const BATCH_ID              = 'batch_id';
     const ATTEMPT_NUMBER        = 'attempt_number';
     const RECON_ENTITY_ID       = 'recon_entity_id';
-
-    /**
-     * The list of columns which shouldn't be exposed to specific data sources like qubole.
-     */
-    const BLACKLISTED_COLUMNS = [];
 
     /**
      * For few gateways, we do not get the RZP  payment/refund ID
@@ -55,6 +50,10 @@ class SubReconciliate extends Base\Core
      * @var bool
      */
     const SHOULD_ADD_ENTITY_ID_COLUMN = false;
+
+    const THRESHOLD = [
+        InfoCode::AMOUNT_MISMATCH   =>  10,
+    ];
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -273,12 +272,14 @@ class SubReconciliate extends Base\Core
      */
     protected function insertRowInOutputFile(array $row = [], string $reconType = 'unknown')
     {
+        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+
         $row[self::RECON_TYPE]              = $reconType;
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
-        $row[self::MERCHANT_ID]             = '';
-        $row[self::PROCESSED_AT]            = '';
+        $row[self::RZP_MERCHANT_ID]         = '';
+        $row[self::PROCESSED_AT]            = $processed_at;
         $row[self::BATCH_ID]                = '';
         $row[self::ATTEMPT_NUMBER]          = '';
         $row[self::RECON_ENTITY_ID]         = '';
@@ -572,13 +573,7 @@ class SubReconciliate extends Base\Core
 
     protected function setMerchantIdInOutput(string $merchantId)
     {
-        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
-    }
-
-    protected function setProcessedAtInOutput()
-    {
-        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
-        static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT] = $processed_at;
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID] = $merchantId;
     }
 
     protected function setBatchIdInOutput($batchId)
@@ -733,12 +728,29 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * Gateway must define const BLACKLISTED_COLUMNS of black listed
+     * columns which should not be included in the output file.
+     *
      * @return array
-     * 1. Gateway should override this function to return list of black listed columns which should not
-     * be included in the output file.
      */
     public function getBlackListedColumnHeadersForOutputFile()
     {
-        return static::BLACKLISTED_COLUMNS;
+        $className = get_class($this);
+
+        // check if constant BLACKLISTED_COLUMNS defined in subreconciliator
+        $defined = defined($className . '::' . 'BLACKLISTED_COLUMNS');
+
+        if ($defined === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code' => InfoCode::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,
+                    'gateway'   => $this->gateway,
+                ]);
+
+            return null;
+        }
+
+        return constant($className . '::' . 'BLACKLISTED_COLUMNS');
     }
 }

@@ -17,6 +17,7 @@ class Type
     const ADJUSTMENT              = 'adjustment';
     const SETTLEMENT              = 'settlement';
     const BANK_TRANSFER           = 'bank_transfer';
+    const COMMISSION              = 'commission';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     //
@@ -34,8 +35,20 @@ class Type
         self::EXTERNAL,
         self::SETTLEMENT,
         self::ADJUSTMENT,
+        self::COMMISSION,
         self::BANK_TRANSFER,
         self::FUND_ACCOUNT_VALIDATION,
+    ];
+
+    const IGNORE_ENTITIES_FROM_MERCHANT_BANKING_INVOICE = [
+        self::PAYMENT,
+        self::REFUND,
+        self::DISPUTE,
+        self::REVERSAL,
+        self::EXTERNAL,
+        self::SETTLEMENT,
+        self::ADJUSTMENT,
+        self::COMMISSION,
     ];
 
     public static function validateType(string $type)

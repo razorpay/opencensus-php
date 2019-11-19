@@ -444,6 +444,17 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        // The below logic to update the mode of FTA is being done specifically
+        // for Yesbank. Going forward all banks will be migrated to FTS and
+        // any such change of mode will happen at FTS layer. Till yesbank
+        // is being migrated this change is required for it. For other
+        // banks already on FTS we don't need to run mode logic to update banks.
+
+        if ($this->getIsFTS() === true)
+        {
+            return;
+        }
+
         // Assumption is that the validation would have happened already before this
         // step and hence we can assume that the bank account exists and is valid.
 
@@ -453,16 +464,18 @@ class Entity extends Base\PublicEntity
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            $this->setMode(Mode::NEFT);
-
-            return;
-        }
-
         if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
         {
-            $this->setMode(Mode::IFT);
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                $this->setMode(Mode::IFT);
+            }
+            else
+            {
+                $this->setMode(Mode::NEFT);
+            }
         }
     }
 

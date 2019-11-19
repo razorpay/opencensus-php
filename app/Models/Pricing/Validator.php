@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|string|custom',
         Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
         Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
     ];
 
     protected static $editPlanRuleRules = [
@@ -57,6 +58,7 @@ class Validator extends Base\Validator
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
     ];
 
     protected static $addPlanRuleValidators = [
@@ -136,6 +138,11 @@ class Validator extends Base\Validator
                 FundAccount\Validation\FundAccountType::validate($method);
 
                 break;
+
+            case Pricing\Feature::ESAUTOMATIC:
+                Payment\Method::validateEsMethod($method);
+
+                break;
         }
     }
 
@@ -203,28 +210,57 @@ class Validator extends Base\Validator
     {
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
         {
-            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            if ($input[Entity::FEATURE] === Feature::REFUND)
             {
-                $cardType = $input[Entity::PAYMENT_METHOD_TYPE];
-
-                $validCardTypes = [
-                    CardType::DEBIT,
-                    CardType::CREDIT,
-                    CardType::PREPAID,
-                ];
-
-                if (in_array($cardType, $validCardTypes, true) === false)
+                if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
                 {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Payment method type for card should be debit / credit / prepaid');
+                    $mode = $input[Entity::PAYMENT_METHOD_TYPE];
+
+                    $validModes = [
+                        FundTransfer\Mode::NEFT,
+                        FundTransfer\Mode::IMPS,
+                        FundTransfer\Mode::RTGS,
+                        FundTransfer\Mode::UPI,
+                        FundTransfer\Mode::IFT,
+                    ];
+
+                    if (in_array($mode, $validModes, true) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Refund mode should be NEFT/IMPS/RTGS/IFT/UPI',
+                            'mode',
+                            [
+                                'mode'  => $mode,
+                                'input' => $input,
+                            ]);
+                    }
                 }
             }
-
-            if (isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true)
+            else
             {
-                $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
+                if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+                {
+                    $cardType = $input[Entity::PAYMENT_METHOD_TYPE];
 
-                SubType::checkSubType($subType);
+                    $validCardTypes = [
+                        CardType::DEBIT,
+                        CardType::CREDIT,
+                        CardType::PREPAID,
+                    ];
+
+                    if (in_array($cardType, $validCardTypes, true) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Payment method type for card should be debit / credit / prepaid');
+                    }
+                }
+
+                if (isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true)
+                {
+                    $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
+
+                    SubType::checkSubType($subType);
+                }
             }
         }
     }

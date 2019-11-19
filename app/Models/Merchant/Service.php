@@ -11,21 +11,26 @@ use Request;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -36,9 +41,11 @@ use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use RZP\Constants\{Mode, Entity as CE};
+use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
@@ -50,6 +57,7 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
+    const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
     /**
      * Creates a merchant and saves in database
@@ -199,6 +207,38 @@ class Service extends Base\Service
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
             $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->assertTransactionActive();
+
+        $partnerUserId = $partner->primaryOwner()->getId();
+
+        if (($partner->isFullyManagedPartner() === true) or
+            ($partner->isAggregatorPartner() === true))
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+
+                $this->core()->detachSubMerchantOwner($partnerUserId, $submerchant);
+
+                if ($submerchant->primaryOwner() === null)
+                {
+                    $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
+                                       [
+                                           'submerchant' => $submerchant,
+                                       ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
+                }
+            });
         }
     }
 
@@ -565,6 +605,8 @@ class Service extends Base\Service
 
         (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
+        $this->validatePricingPlanForFeeBearer($merchant, $plan);
+
         $originalPricingPlan = null;
 
         if (empty($merchant->pricing) === false)
@@ -696,6 +738,122 @@ class Service extends Base\Service
             'total_count'  => count($merchantIds),
             'failed_count' => count($failedIds),
             'failed_ids'   => $failedIds
+        ];
+    }
+
+    public function bulkSubmerchantAssign($input)
+    {
+        $validator = (new Validator);
+
+        $submerchantAssignBatchCollection = new Base\PublicCollection;
+
+        $validator->validateBulkSubmerchantAssignCount($input);
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        $validator->validateBatchId($batchId);
+
+        $idempotencyKey = null;
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST,
+            [
+                'batch_id'  => $batchId,
+                'input'     => $input,
+            ]);
+
+        $terminalService = new Terminal\Service;
+
+        foreach($input as $item)
+        {
+            try
+            {
+                $this->repo->transaction(function() use (& $item,
+                                                         & $submerchantAssignBatchCollection,
+                                                         & $batchId,
+                                                         & $idempotencyKey,
+                                                         $validator,
+                                                         $terminalService)
+                {
+                    $validator->validateInput('bulk_submerchant_assign', $item);
+
+                    $idempotencyKey = $item['idempotency_key'];
+
+                    $data = $this->processEntryForBulkSubmerchantAssign(
+                        $item, $batchId, $idempotencyKey, $terminalService);
+
+                    $submerchantAssignBatchCollection->push($data);
+                });
+
+            }
+            catch(Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::ERROR,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotency_key' => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $submerchantAssignBatchCollection->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotency_key' => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $submerchantAssignBatchCollection->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE,
+            [
+                'batch_id'  => $batchId,
+                'output'    => $submerchantAssignBatchCollection->toArrayWithItems(),
+            ]);
+
+        return $submerchantAssignBatchCollection->toArrayWithItems();
+    }
+
+    protected function processEntryForBulkSubmerchantAssign($item, $batchId, $idempotencyKey, $terminalService)
+    {
+        $terminalId     = $item['terminal_id'];
+        $submerchantId  = $item['submerchant_id'];
+
+        /*
+            Idempotency is checked inside Terminal/Core before assigning a
+            terminal to a merchant to whom that terminal has been already assigned.
+        */
+        $terminalService->addMerchantToTerminal($terminalId, $submerchantId);
+
+        return [
+            'batch_id'        => $batchId,
+            'submerchant_id'  => $submerchantId,
+            'idempotency_key' => $idempotencyKey,
+            'terminal_id'     => $terminalId,
+            'status'          => 'SUCCESS',
+            'failure_reason'  => null,
         ];
     }
 
@@ -909,7 +1067,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function action($id, array $input)
+    public function action($id, array $input, bool $useWorkflows = true)
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT_ACTION,
@@ -920,7 +1078,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant = $this->core()->action($merchant, $input);
+        $merchant = $this->core()->action($merchant, $input, $useWorkflows);
 
         return $merchant->toArrayPublic();
     }
@@ -1233,6 +1391,8 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        (new Validator)->setStrictFalse()->validateInput(Validator::PREFERENCES, $input);
+
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
 
         return $preferences;
@@ -1391,7 +1551,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    $this->action($merchantId, $input);
+                    $this->action($merchantId, $input,false);
                 }
 
                 $successCount++;
@@ -1555,6 +1715,106 @@ class Service extends Base\Service
         ];
     }
 
+    public function getScheduledEarlySettlementPricingForMerchant(): array
+    {
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+
+        if ($scheduledPricing === null)
+        {
+            throw new Exception\LogicException(
+                'ES scheduled Pricing has not been assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
+        }
+
+        return $scheduledPricing->toArrayPublic();
+    }
+
+    public function enableScheduledEs(): array
+    {
+        $this->repo->transactionOnLiveAndTest(function ()
+        {
+            $userRole = $this->repo
+                             ->merchant
+                             ->getMerchantUserMapping(
+                                 $this->merchant->getId(),
+                                 $this->user->getId(),
+                                 null,
+                                 Product::PRIMARY)
+                             ->pivot
+                             ->role;
+
+            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                        'role',
+                                                        $userRole);
+            }
+
+            $this->getScheduledEarlySettlementPricingForMerchant();
+
+            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+
+            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                    Schedule\Period::HOURLY,
+                                                    1,
+                                                    null,
+                                                    0,
+                                                    0,
+                                                    ScheduleTask\Type::SETTLEMENT);
+
+            if ($schedule === null)
+            {
+                throw new Exception\LogicException(
+                    'Schedule for Scheduled Automatic settlement was not found.',
+                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+                );
+            }
+
+            foreach ($scheduledTasks as $scheduledTask)
+            {
+                $input = [
+                    ScheduleTask\Entity::METHOD      => $scheduledTask[ScheduleTask\Entity::METHOD],
+                    ScheduleTask\Entity::TYPE        => $scheduledTask[ScheduleTask\Entity::TYPE],
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+                ];
+
+                $this->app['workflow']->skipWorkflows(function() use ($input)
+                {
+                    (new ScheduleTask\Core)->createOrUpdate($this->merchant, $this->merchant, $input);
+                });
+            }
+
+            $this->deleteTag($this->merchant->getId(), self::ES_ON_DEMAND_ANNOUNCEMENT_TAG);
+
+            $this->addOrRemoveMerchantFeatures([
+                                                    Entity::FEATURES => [
+                                                        Feature\Constants::ES_AUTOMATIC => 1
+                                                    ],
+                                                    Feature\Entity::SHOULD_SYNC => 1]);
+
+            $tags = $this->merchant->tagNames();
+
+            array_walk($tags, function(& $tag)
+            {
+                $tag = substr($tag, 0, 2);
+            });
+
+            if (in_array('KA', $tags) === true)
+            {
+                // for key accounts, send Feature enabled mail to Capital product team
+                $data['merchant'] = $this->merchant->toArrayPublic();
+
+                $esNotifyEmail = new EsEnabledNotify($data);
+
+                Mail::queue($esNotifyEmail);
+            }
+        });
+
+        return ['success' => true];
+    }
+
     public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
@@ -1564,6 +1824,13 @@ class Service extends Base\Service
         $merchant = $this->merchant;
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
+        $EsOnDemandFeature = (new Feature\Repository)->findByEntityTypeEntityIdAndName(
+            $merchant->getEntity(),
+            $merchant->getId(),
+            Feature\Constants::ES_ON_DEMAND);
+
+        $input['es_enabled'] = ($EsOnDemandFeature === null) ? false : true;
 
         $merchant->validateInput('feature', $input);
 
@@ -2408,7 +2675,8 @@ class Service extends Base\Service
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
-        else if ((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false)
+        else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                 ($merchant->canCommunicateWithSubmerchant() === true))
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
@@ -2533,6 +2801,50 @@ class Service extends Base\Service
         return $this->mapSubmerchant($partner, $submerchantId);
     }
 
+    public function fetchPartnerIntent(): array
+    {
+
+        $response = (new Settings\Service)->get(
+            Constants::PARTNER,
+            Constants::PARTNER_INTENT);
+
+        $partnerIntent = $response['settings'];
+
+        if ($partnerIntent instanceof Dictionary)
+        {
+            $partnerIntent = null;
+        }
+        else
+        {
+            $partnerIntent = boolVal($partnerIntent);
+        }
+
+        return [
+            Constants::PARTNER_INTENT       => $partnerIntent,
+        ];
+    }
+
+    /**
+     * Updates partner_intent key in settings table
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updatePartnerIntent(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_intent', $input);
+
+        (new Settings\Service)->upsert(
+            Constants::PARTNER,
+            $input);
+
+        // since Settings/Service->upsert does not return anything hence,
+        // returning whatever was passed in input
+        return [
+            Constants::PARTNER_INTENT   => $input[Constants::PARTNER_INTENT],
+        ];
+    }
+
     /**
      * @param string $merchantId
      *
@@ -2610,6 +2922,15 @@ class Service extends Base\Service
         return $partner;
     }
 
+    public function updatePartnerType(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_type', $input);
+
+        $partnerType = $input[Entity::PARTNER_TYPE];
+
+        return $this->core()->updatePartnerType($this->merchant, $partnerType);
+    }
+
     public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
@@ -2639,6 +2960,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
@@ -2646,7 +2971,12 @@ class Service extends Base\Service
 
         $submerchant = $this->fetchSubmerchant($merchantId);
 
-        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+
+            $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
+        });
     }
 
     /**
@@ -3186,9 +3516,47 @@ class Service extends Base\Service
         $merchants = $this->repo->merchant
                                 ->fetchAllSuspendedMerchants($input);
 
+        $i = 0;
+
         foreach ($merchants as $merchant)
         {
-            $this->core()->removeMerchantEmailToMailingList($merchant);
+            $this->core()->removeMerchantEmailToMailingList($merchant, $i);
+
+            $i++;
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     * @param Plan $plan
+     * @throws Exception\BadRequestValidationFailureException
+     *
+     * Ensures that all pricing rules in plan have the same feeBearer value as the merchant
+     * the plan is being assigned to.
+     *
+     * This is not applicable in case of dynamic fee bearer.
+     */
+    public function validatePricingPlanForFeeBearer(Merchant\Entity $merchant, Plan $plan)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        $merchantFeeBearer = $merchant->getFeeBearer();
+
+        foreach ($plan as $pricing)
+        {
+            $pricingFeeBearer = $pricing->getFeeBearer();
+
+            if ($pricingFeeBearer !== $merchantFeeBearer)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_FEE_BEARER_MISMATCH,
+                    'fee_bearer',
+                    'The merchant is ' . $merchantFeeBearer . ' fee bearer. Cannot assign ' . $pricingFeeBearer . ' fee bearer pricing rule to merchant'
+                );
+            }
         }
     }
 }

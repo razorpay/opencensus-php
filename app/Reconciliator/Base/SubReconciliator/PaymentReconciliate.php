@@ -33,7 +33,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
         RequestProcessor\Base::NETBANKING_CBI,
+        RequestProcessor\Base::NETBANKING_SCB,
         RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_KVB,
         RequestProcessor\Base::NETBANKING_CUB,
         RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
@@ -56,6 +58,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
+        RequestProcessor\Base::NETBANKING_BOB_V2,
+        RequestProcessor\Base::PAYPAL
     ];
 
     /**
@@ -147,8 +151,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
-
-        $this->setProcessedAtInOutput();
 
         try
         {
@@ -649,10 +651,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $paymentService = new Payment\Service;
 
         $paymentId = $this->payment->getPublicId();
+        $amount    = $this->payment->getAmount();
 
-        $this->messenger->raiseReconAlert(
+        Base\Reconciliate::$forceAuthorizedPayments[] = [
+            'id'        => $this->payment->getId(),
+            'amount'    => $amount,
+        ];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'Payment status is failed. Doing force authorize',
                 'payment_id'      => $this->payment->getId(),
                 'amount'          => $this->payment->getAmount(),
@@ -1527,10 +1535,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,
             [
-                'message'         => 'Gateway Captured not set for the payment',
-                'info_code'       => 'GATEWAY_CAPTURED_NOT_SET',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => $this->gateway
+                'message'           => 'Gateway Captured not set for the payment',
+                'info_code'         => Base\InfoCode::GATEWAY_CAPTURED_NOT_SET,
+                'payment_id'        => $this->payment->getId(),
+                'payment_refunded'  => ($this->payment->getRefundStatus() !== null),
+                'gateway'           => $this->gateway
             ]);
 
         $this->payment->setGatewayCaptured(true);

@@ -28,7 +28,7 @@ final class FactoryData
             'international'            => 0,
             'website'                  => $faker->url,
             'billing_label'            => $faker->word,
-            'category'                 => 1100,
+            'category'                 => 5399,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
             'channel'                  => Channel::AXIS,
@@ -78,6 +78,11 @@ final class FactoryData
             'gateway_secure_secret'     => null,
         ]);
 
+        $factory(\RZP\Models\TerminalOnboardingDetail\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'terminal_id'               => 'factory:RZP\Models\Terminal\Entity',
+        ]);
+
         $factory(\RZP\Models\Merchant\Invoice\Entity::class, [
             'id'                => $faker->uniqueid,
             'merchant_id'       => '10000000000000',
@@ -101,6 +106,20 @@ final class FactoryData
             'description' => 'Sample description',
             'notes'       => null,
             'terms'       => null,
+        ]);
+
+        $factory(\RZP\Models\PaymentLink\PaymentPageItem\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'mandatory'         => true,
+            'image_url'         => null,
+            'stock'             => null,
+            'min_purchase'      => null,
+            'max_purchase'      => null,
+            'min_amount'        => null,
+            'max_amount'        => null,
+            'quantity_sold'     => 0,
+            'total_amount_paid' => 0,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
@@ -749,6 +768,7 @@ final class FactoryData
             'amount'             => 100,
             'currency'           => 'INR',
             'merchant_id'        => '10000000000000',
+            'balance_id'         => '10000000000000',
             'status'             => 'created',
             'channel'            => Channel::AXIS,
             'created_at'         => $faker->timestamp,
@@ -896,9 +916,10 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Workflow\Entity::class, [
-            'id'        => $faker->uniqueid,
-            'org_id'    => '100000razorpay',
-            'name'      => $faker->name,
+            'id'            => $faker->uniqueid,
+            'merchant_id'   => '10000000000000',
+            'org_id'        => '100000razorpay',
+            'name'          => $faker->name,
         ]);
 
         $factory(\RZP\Models\Workflow\Step\Entity::class,[
@@ -1009,6 +1030,12 @@ final class FactoryData
             'customer_id' => '100000customer',
         ]);
 
+        $factory(\RZP\Models\PaperMandate\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
+        ]);
+
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
             'active'       => true,
@@ -1107,7 +1134,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\BankingAccount\Entity::class, [
-            'id'                => $faker->uniqueid,
+            'id'                => '01234567890123',
             'merchant_id'       => '10000000000000',
             'account_number'    => '409000768239',
             'channel'           => 'rbl',
@@ -1115,7 +1142,36 @@ final class FactoryData
             'updated_at'        => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\BankingAccount\Detail\Entity::class, [
+            'id'                 => 1,
+            'banking_account_id' => '01234567890123',
+            'merchant_id'        => '10000000000000',
+            'gateway_key'        => 'client_id',
+            'gateway_value'      => '123',
+            'updated_at'         => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Mpan\Entity::class, [
+
+        ]);
+
+        $factory(\RZP\Models\D2cBureauDetail\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
+            'user_id'                   => 'factory:RZP\Models\User\Entity',
+        ]);
+
+        $factory(\RZP\Models\Workflow\PayoutAmountRules\Entity::class,[
+            'id'                => 12345,
+            'merchant_id'       => '10000000000000',
+            'condition'         => null,
+            'min_amount'        => 250,
+            'max_amount'        => 1000000,
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
 
         ]);
     }

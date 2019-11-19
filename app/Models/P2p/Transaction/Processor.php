@@ -53,6 +53,8 @@ class Processor extends Base\Processor
 
         $transaction = $this->core->fetch($this->input->get(Entity::ID));
 
+        (new Rules($transaction))->validate();
+
         $this->initiateCallGateway($transaction);
 
         return $this->callGateway();
@@ -396,6 +398,8 @@ class Processor extends Base\Processor
         $transaction = $this->core->build($transactionInput->toArray());
 
         $properties->attachToTransaction($transaction);
+
+        (new Rules($transaction))->validate();
 
         if ($transaction->payer->getDeviceId() === $transaction->payee->getDeviceId())
         {

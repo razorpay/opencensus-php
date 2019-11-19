@@ -4,6 +4,7 @@ FROM razorpay/onggi:php-7.2-apache
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
+ARG GIT_USERNAME
 
 WORKDIR /app
 
@@ -13,7 +14,7 @@ RUN set -eux && \
     apk add --allow-untrusted --no-cache \
     # gnu-libiconv is the only loaded from /edge/community. Was earlier /edge/testing
     # Version has not been bumped in repo move.
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv && \
+    --repository http://dl-4.alpinelinux.org/alpine/latest-stable/community/ gnu-libiconv && \
     apk add --allow-untrusted --no-cache libxrender libx11-dev fontconfig zlib-dev \
     ca-certificates glib ttf-freefont dbus p7zip php7-sockets php7-mysqlnd wkhtmltopdf
 
@@ -26,6 +27,7 @@ COPY composer.json composer.lock /app/
 # A single character change in this command will trigger a new
 # composer install
 RUN set -eux && \
+    git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer global require hirak/prestissimo && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \

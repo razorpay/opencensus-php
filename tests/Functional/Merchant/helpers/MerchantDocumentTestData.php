@@ -125,6 +125,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testFileUploadDocumentTypeInvalid' => [
+        'request'   => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'abc'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invalid document type:abc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testFileUpload' => [
         'request'  => [
@@ -136,9 +158,79 @@ return [
         ],
         'response' => [
             'content' => [
-                "merchant_id"   => "10000000000000",
-                "document_type" => "promoter_address_url"
+                'documents' => [
+                    'promoter_address_url' => [
+
+                    ]
+                ],
             ]
         ]
-    ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
+    'testDocumentUploadAndCheckOcrVerificationStatusFailed' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'aadhar_front'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                    "aadhar_front" => [
+
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testFetchMerchantDocuments' => [
+        'request'  => [
+            'url'    => '/merchant/documents',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'Address_proof_url' => [
+                    [
+                        'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDocumentsByAdmin' => [
+        'request'  => [
+            'url'    => '/merchant/documents/1cXSLlUU8V9sXl',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'Address_proof_url' => [
+                    [
+                        'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

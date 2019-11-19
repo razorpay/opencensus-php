@@ -7,6 +7,24 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+@if (isset($data['production']) and $data['production'] === true)
+<script>
+  var events = {
+    page: 'gateway_otp_postform',
+    props: {
+    @if (isset($data['data']['payment_id']))
+      payment_id: '{{$data['data']['payment_id']}}',
+    @endif
+    @if (isset($data['data']['merchant_id']))
+      merchant_id: '{{$data['data']['merchant_id']}}',
+    @endif
+    },
+    load: true,
+    unload: true
+  }
+</script>
+@include('partials.track')
+@endif
 <body>
     <div id="preloading">
         <style>

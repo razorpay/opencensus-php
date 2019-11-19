@@ -60,6 +60,18 @@ class Repository extends Base\Repository
                               });
     }
 
+    public function getSucceedingPayments(Entity $paymentLink)
+    {
+        return $paymentLink->payments()
+                           ->whereIn(
+                               Payment\Entity::STATUS,
+                               [
+                                   Payment\Status::CREATED,
+                                   Payment\Status::AUTHORIZED,
+                                   ])
+                           ->get();
+    }
+
     /**
      * Finds payment link entity by public id constrained to not being marked
      * inactive with reason deactivated(manually).
@@ -92,6 +104,15 @@ class Repository extends Base\Repository
                     ->select($attributes)
                     ->leftJoin(Table::PAYMENT_PAGE_ITEM, $paymentPageId, '=', $id)
                     ->whereNull($paymentPageId)
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function getAllPaymentPagesForMigrationOfMinPurchase(int $timestamp, $limit = 1000)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->orderBy(Entity::CREATED_AT)
                     ->limit($limit)
                     ->get();
     }

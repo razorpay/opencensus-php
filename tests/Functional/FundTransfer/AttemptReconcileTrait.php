@@ -45,12 +45,12 @@ trait AttemptReconcileTrait
         return $content['setlReconciliationFile'];
     }
 
-    protected function reconcileOnlineSettlements(string $channel, bool $failureTest)
+    protected function reconcileOnlineSettlements(string $channel, string $failureTest = '')
     {
         $request = [
             'url'       => '/settlements/reconcile/api/' . $channel,
             'content'   => [
-                'failed_response' => (int) $failureTest
+                'failed_response' => $failureTest
             ]
         ];
 

@@ -54,6 +54,8 @@ class Mozart
         $this->trace = $app['trace'];
 
         $this->config = $app['config'];
+
+        $this->mode = $app['rzp.mode'];
     }
 
     public function sendMozartRequest(
@@ -61,7 +63,8 @@ class Mozart
         string $gateway,
         string $action,
         array $input,
-        $version = self::DEFAULT_MOZART_VERSION)
+        string $version = self::DEFAULT_MOZART_VERSION,
+        bool $useMozartMappedInternalErrorCode = false)
     {
         $this->namespace = $namespace;
         $this->gateway   = $gateway;
@@ -87,7 +90,7 @@ class Mozart
         // to use it
         unset($responseArray['data']['_raw']);
 
-        $this->checkGatewayErrorsAndThrowException($responseArray);
+        $this->checkGatewayErrorsAndThrowException($responseArray, $useMozartMappedInternalErrorCode);
 
         return $responseArray;
     }
@@ -103,9 +106,11 @@ class Mozart
 
     protected function getAuthenticationDetails(): array
     {
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->config->get('applications.mozart.password')
+            $this->config->get($passwordConfig)
         ];
 
         return $authentication;
@@ -251,14 +256,22 @@ class Mozart
      * Check for gateway errors
      *
      * @param array $response
+     * @param bool $useMozartErrorCode whether to use internal error codes mapped by mozart.
      * @throws Exception\GatewayErrorException
      */
-    protected function checkGatewayErrorsAndThrowException(array $response)
+    protected function checkGatewayErrorsAndThrowException(array $response, bool $useMozartMappedInternalErrorCode)
     {
         if ($response['success'] !== true)
         {
+            $errorCode = ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR;
+
+            if ($useMozartMappedInternalErrorCode === true)
+            {
+                $errorCode = $response['error']['internal_error_code'];
+            }
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                $errorCode,
                 $response['error']['gateway_error_code'] ?? 'gateway_error_code',
                 $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
                 [

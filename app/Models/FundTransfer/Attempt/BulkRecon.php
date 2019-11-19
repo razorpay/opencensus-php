@@ -7,12 +7,12 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
@@ -141,17 +141,32 @@ class BulkRecon extends Base\Core
 
                     foreach ($ftas as $fta)
                     {
-                        $reconDetails = (new $entityProcessor($fta))->process();
+                        try
+                        {
+                            $reconDetails = (new $entityProcessor($fta))->process();
 
-                        $this->allReconciledRows[] = $reconDetails;
+                            $this->allReconciledRows[] = $reconDetails;
 
-                        $entity = $reconDetails['entity'];
+                            $entity = $reconDetails['entity'];
 
-                        $this->updateBatchFundTransferStats($entity);
+                            $this->updateBatchFundTransferStats($entity);
 
-                        $this->updateCriticalErrorsSummary($fta);
+                            $this->updateCriticalErrorsSummary($fta);
 
-                        $this->dispatchForStatusCheck($fta);
+                            $this->dispatchForStatusCheck($fta);
+                        }
+                        catch (\Throwable $e)
+                        {
+                            $this->trace->traceException(
+                                $e,
+                                Logger::ERROR,
+                                TraceCode::FTA_RECON_FAILED,
+                                [
+                                    'fta_id' => $fta->getId(),
+                                ]);
+
+                            (new SlackNotification)->send('setl_reconciliation', [], $e);
+                        }
                     }
                 }
 

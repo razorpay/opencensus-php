@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Jobs\CardVaultMigrationJob;
 use RZP\Mail\Payment\CardSaved as CardSavedMail;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -1207,6 +1208,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))

@@ -114,6 +114,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::EMANDATE)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::NACH)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
@@ -177,9 +180,18 @@ class CreateTerminals extends Migration
             $table->string(Terminal::IFSC_CODE, 11)
                   ->nullable();
 
+            $table->string(Terminal::VIRTUAL_UPI_ROOT, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_MERCHANT_PREFIX, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_HANDLE, 10)
+                  ->nullable();
+
             $table->text(Terminal::NOTES)
                   ->nullable();    
-                    
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
@@ -214,6 +226,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CARDLESS_EMI);
             $table->index(Terminal::STATUS);
             $table->index(Terminal::ORG_ID);
+            $table->index(Terminal::BANK_TRANSFER);
         });
     }
 

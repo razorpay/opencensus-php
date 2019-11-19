@@ -26,9 +26,10 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 
 /**
- * @property Subscription\Entity $subscription
- * @property Order\Entity        $order
- * @property Merchant\Entity     $merchant
+ * @property Subscription\Entity             $subscription
+ * @property Order\Entity                    $order
+ * @property Merchant\Entity                 $merchant
+ * @property SubscriptionRegistration\Entity $tokenRegistration
  */
 class Entity extends Base\PublicEntity
 {
@@ -76,6 +77,7 @@ class Entity extends Base\PublicEntity
     const STATUSES                  = 'statuses';
     const INTERNATIONAL             = 'international';
     const SUBSCRIPTIONS             = 'subscriptions';
+    const REMINDER_STATUS           = 'reminder_status';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -152,6 +154,7 @@ class Entity extends Base\PublicEntity
     const DRAFT                    = 'draft';
     const BATCH_IDS                = 'batch_ids';
     const TYPES                    = 'types';
+    const REMINDER_ENABLE          = 'reminder_enable';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -327,6 +330,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::SUBSCRIPTION_ID,
         self::ORDER_ID,
+        self::ORDER,
         self::PAYMENT_ID,
         self::DUE_BY,
         self::EXPIRED_AT,
@@ -423,6 +427,7 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::CREATED_AT,
         self::IDEMPOTENCY_KEY,
+        self::REMINDER_STATUS,
     ];
 
     /**
@@ -489,6 +494,7 @@ class Entity extends Base\PublicEntity
         self::SUPPLY_STATE_CODE,
         self::USER_ID,
         self::FIRST_PAYMENT_MIN_AMOUNT,
+        self::REMINDER_STATUS,
     ];
 
     protected $casts = [
@@ -586,9 +592,27 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SMS_STATUS);
     }
 
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function toArrayPublic()
+    {
+        $publicArray = parent::toArrayPublic();
+
+        $order = $this->order;
+
+        if (($order !== null) and
+            ($order->getMethod() === Payment\Method::NACH))
+        {
+            $nachFormUrl = $order->toArrayPublic()[Order\Entity::TOKEN][SubscriptionRegistration\Entity::NACH_FORM_URL] ?? null;
+
+            $publicArray[SubscriptionRegistration\Entity::NACH_FORM_URL] = $nachFormUrl;
+        }
+
+        return $publicArray;
     }
 
     public function getPublicCustomerId()
@@ -1286,7 +1310,7 @@ class Entity extends Base\PublicEntity
      */
     public function getAmountPaidAttribute()
     {
-        if ($this->getOrderId() === null)
+        if (empty($this->order) === true)
         {
             return null;
         }
@@ -1302,7 +1326,7 @@ class Entity extends Base\PublicEntity
      */
     public function getAmountDueAttribute()
     {
-        if ($this->getOrderId() === null)
+        if (empty($this->order) === true)
         {
             return null;
         }
@@ -1344,6 +1368,23 @@ class Entity extends Base\PublicEntity
 
         $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
     }
+
+    protected function setPublicReminderStatusAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isProxyOrPrivilegeAuth() === true)
+        {
+            $array[self::REMINDER_STATUS] = (empty($array[self::REMINDER_STATUS]) === false) ?
+                                            $array[self::REMINDER_STATUS][self::REMINDER_STATUS] : null;
+        }
+        else
+        {
+            unset($array[self::REMINDER_STATUS]);
+        }
+    }
+
 
     protected function setPublicSubscriptionIdAttribute(array & $array)
     {
@@ -1577,10 +1618,21 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(User\Entity::class);
     }
 
+    public function reminderStatus()
+    {
+        return $this->belongsTo(Reminder\Entity::class, 'id', 'invoice_id');
+    }
+
     public function entity()
     {
         return $this->morphTo();
     }
+
+    public function tokenRegistration()
+    {
+        return $this->morphTo('entity');
+    }
+
     /**
      * Gets the most recent invoice pdf file, or null
      *

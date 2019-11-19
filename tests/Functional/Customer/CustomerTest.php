@@ -597,6 +597,8 @@ class CustomerTest extends TestCase
     {
         $payout = $this->testCustomerWalletPayout();
 
+        $payout->setStatus(Payout\Status::INITIATED);
+
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'     => 'failed',
             'failure_reason' => '',

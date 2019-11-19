@@ -19,12 +19,14 @@ use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
 {
     const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
+    const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
 
     protected $entity = 'payout';
 
@@ -48,15 +50,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchFromUtr($utr, $balanceId)
+    public function fetchFromUtr($utr, $amount, $balanceId)
     {
         return $this->newQuery()
                     ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::AMOUNT, $amount)
                     ->where(Entity::UTR, $utr)
                     ->get();
     }
 
-    public function fetchFromCmsRefNumber($cmsRefNumber, $balanceId)
+    public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable = $this->repo->fund_transfer_attempt->getTableName();
 
@@ -68,6 +71,8 @@ class Repository extends Base\Repository
 
         $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
 
+        $payoutsAmountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
+
         $payoutAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
@@ -75,6 +80,7 @@ class Repository extends Base\Repository
                     ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
                     ->get();
     }
 
@@ -124,9 +130,9 @@ class Repository extends Base\Repository
      * @param User\Entity     $user
      * @param Merchant\Entity $merchant
      *
-     * @return array
+     * @return Base\Collection
      */
-    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): array
+    public function fetchPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): Base\Collection
     {
         /** @var BuilderEx $query */
         $query = $this->newQuery();
@@ -137,10 +143,13 @@ class Repository extends Base\Repository
 
         $query->merchantId($merchant->getId());
 
-        return [
-            'count'        => $query->count(),
-            'total_amount' => (int) $query->sum(Entity::AMOUNT),
-        ];
+        // TODO: Update this to handle scale
+        // JIRA: https://razorpay.atlassian.net/browse/RX-420
+        $query->limit(self::PENDING_PAYOUTS_FETCH_LIMIT);
+
+        $query->with(['balance']);
+
+        return $query->get();
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)
@@ -291,6 +300,18 @@ class Repository extends Base\Repository
         $this->joinQueryContact($query);
 
         $query->where($contactPhoneColumn, $contactPhone);
+    }
+
+    protected function addQueryParamProduct(BuilderEx $query, array $params)
+    {
+        $product = $params[Merchant\Entity::PRODUCT];
+
+        $productColumn = $this->repo->balance->dbColumn(Payout\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryBalance($query);
+
+        $query->where($productColumn, $product);
     }
 
     /**
@@ -467,6 +488,26 @@ class Repository extends Base\Repository
         $this->repo->workflow_action->joinQueryWorkflowStep($query);
     }
 
+    protected function joinQueryBalance(BuilderEx $query)
+    {
+        $balanceTable = $this->repo->balance->getTableName();
+
+        if ($query->hasJoin($balanceTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $balanceTable,
+            function(JoinClause $join)
+            {
+                $balanceIdColumn       = $this->repo->balance->dbColumn(Balance\Entity::ID);
+                $payoutBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+                $join->on($balanceIdColumn, $payoutBalanceIdColumn);
+            });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -491,10 +532,14 @@ class Repository extends Base\Repository
             return [];
         }
 
+        /** @var $contact Contact\Entity */
         $contact = $fa->source;
+        $balance = $entity->balance;
 
+        $serialized[Entity::PRODUCT]       = $balance->getType();
         $serialized[Entity::CONTACT_NAME]  = $contact->getName();
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+        $serialized[Entity::CONTACT_TYPE]  = $contact->getType();
 
         return $serialized;
     }
@@ -522,5 +567,21 @@ class Repository extends Base\Repository
                     ->where(Entity::BATCH_ID, $batchId)
                     ->merchantId($merchantId)
                     ->first();
+    }
+
+    protected function addQueryParamReversedFrom($query, $params)
+    {
+        $reversedFrom  = $params[Entity::REVERSED_FROM];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '>=', $reversedFrom);
+    }
+
+    protected function addQueryParamReversedTo($query, $params)
+    {
+        $reversedTo    = $params[Entity::REVERSED_TO];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '<=', $reversedTo);
     }
 }

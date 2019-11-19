@@ -23,6 +23,8 @@ class Action
     const VERIFY_REFUND   = 'verify_refund';
     const OMNI_PAY        = 'omni_pay';
     const CREATE_TERMINAL = 'create_terminal';
+    const VERIFY_TERMINAL = 'verify_terminal';
+    const DEBIT           = 'debit';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE
@@ -33,5 +35,13 @@ class Action
         self::CALLBACK,
         self::CAPTURE,
         self::VERIFY,
+    ];
+
+    public static $cardPaymentsSupportedActions = [
+        self::AUTHORIZE,
+        self::CALLBACK,
+        self::CAPTURE,
+        self::VERIFY,
+        self::DEBIT,
     ];
 }

@@ -187,6 +187,9 @@ class Generator extends Base\Core
             return $this->invoice;
         }
 
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
         $this->repo->transaction(
             function() use ($input)
             {
@@ -200,7 +203,10 @@ class Generator extends Base\Core
                 }
 
                 $this->repo->saveOrFail($this->invoice);
-            });
+
+                $this->setReminderForInvoice($input, $this->invoice);
+
+            }, $maxAttempts);
 
         return $this->invoice;
     }
@@ -280,7 +286,7 @@ class Generator extends Base\Core
      *
      * @throws LogicException
      */
-    protected function getInvoiceLink(): string
+    public function getInvoiceLink(): string
     {
         $invoiceId = $this->invoice->getId();
 
@@ -430,6 +436,22 @@ class Generator extends Base\Core
         $this->setShortUrl();
     }
 
+    private function setReminderForInvoice(array $input, Entity $invoice)
+    {
+        $reminderCore = new Reminder\Core();
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $reminderEnable = boolval($input[Entity::REMINDER_ENABLE]);
+
+            $reminderStatus = ($reminderEnable === true) ? Reminder\Status::PENDING : Reminder\Status::DISABLED;
+
+            $reminderInput[Reminder\Entity::REMINDER_STATUS] = $reminderStatus;
+
+            $reminderCore->create($reminderInput, $invoice);
+        }
+    }
+
     /**
      * @return void
      */
@@ -437,7 +459,7 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        if ($order === null)
+        if (empty($order) === true)
         {
             $orderAmount    = $this->invoice->getAmount();
             $orderCurrency  = $this->invoice->getCurrency();
@@ -455,7 +477,8 @@ class Generator extends Base\Core
             if (($this->externalEntity !== null) and
                 ($this->invoice->isTypeOfSubscriptionRegistration() === true))
             {
-                if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+                if (($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE) or
+                    ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::NACH))
                 {
                     $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
                 }
@@ -470,7 +493,7 @@ class Generator extends Base\Core
 
             $order = (new Order\Core)->create($orderInput, $this->merchant, $partialPayment);
 
-            $this->setOrder($order);
+            $this->invoice->order()->associate($order);
         }
 
         return;
@@ -480,9 +503,12 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        $this->invoice->order()->associate($order);
+        if (empty($order) === false)
+        {
+            $this->invoice->order()->associate($order);
 
-        assertTrue($this->invoice->getAmount() === $order->getAmount());
+            assertTrue($this->invoice->getAmount() === $order->getAmount());
+        }
     }
 
     protected function setInvoiceCreator(Entity $invoice)

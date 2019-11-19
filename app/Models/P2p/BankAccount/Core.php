@@ -123,6 +123,11 @@ class Core extends Base\Core
         return $this->repo->newP2pQuery()->delete();
     }
 
+    public function deregister()
+    {
+        // As of now, we do not have to do anything with bank account on deregister
+    }
+
     /**
      * @param array $bankAccount
      * @param PublicCollection $existing

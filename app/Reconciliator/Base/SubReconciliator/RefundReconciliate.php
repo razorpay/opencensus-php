@@ -88,8 +88,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->refund->getMerchantId());
 
-        $this->setProcessedAtInOutput();
-
         try
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);

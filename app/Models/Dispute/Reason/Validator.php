@@ -24,4 +24,22 @@ class Validator extends Base\Validator
                 'Network is invalid: ' . $value);
         }
     }
+
+    /**
+     * Validates if given network value is defined without case sensitivity and returns network DB format
+     *
+     * @param string $value
+     * @return string
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateAndFetchFormattedNetwork(string $value) : string
+    {
+        if (Network::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Network is invalid: ' . $value);
+        }
+
+        return Network::getNetwork($value);
+    }
 }

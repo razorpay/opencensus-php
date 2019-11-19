@@ -2,15 +2,20 @@
 
 namespace RZP\Models\FundAccount;
 
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Services\FTS\CreateAccount;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Core
@@ -90,6 +95,26 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($fundAccount);
             });
+
+        try
+        {
+            if ($source !== null)
+            {
+                $account = $fundAccount->account;
+
+                (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_CREATE_ACCOUNT_FAILED,
+                [
+                    'data' => $input,
+                ]);
+        }
 
         return $fundAccount;
     }

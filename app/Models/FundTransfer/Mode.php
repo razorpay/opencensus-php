@@ -93,7 +93,6 @@ class Mode
             //Adding Networkcode as a key since Amex card network uses SCBL issuer internally
             //and It can have other issuers as well. Also by this we distinguish with other cards issued by SCBL
             Network::AMEX                      => [
-                self::UPI,
                 self::IMPS,
                 self::NEFT
             ],
@@ -186,6 +185,11 @@ class Mode
     public static function getSupportedIssuers()
     {
         return array_keys(self::$issuerModeMap);
+    }
+
+    public static function getSupportedModesMap(): array
+    {
+        return self::$issuerModeMap;
     }
 
     /**
@@ -285,6 +289,14 @@ class Mode
             self::NEFT,
             self::IFT,
             self::UPI,
+        ];
+    }
+
+    public static function get24x7FtsTransferModes(): array
+    {
+        return [
+            self::IMPS,
+            self::IFT,
         ];
     }
 }

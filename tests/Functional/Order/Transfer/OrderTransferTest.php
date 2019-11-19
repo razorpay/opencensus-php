@@ -1,0 +1,190 @@
+<?php
+
+namespace RZP\Tests\Functional\Order\Transfers;
+
+use Mockery;
+use Closure;
+
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Webhook;
+use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class OrderTransferTest extends TestCase
+{
+    use MocksDnsTrait;
+    use PaymentTrait;
+    use DbEntityFetchTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/OrderTransferTestData.php';
+
+        parent::setUp();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->linkedAccountId = $account['id'];
+    }
+
+    public function testCreateOrderTransfers()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderTransfersInsufficientBalance()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals(PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE, $transfer['message']);
+    }
+
+    public function testProcessOrderTransfers()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->capturePaymentProcessOrderTransfers($order); // Order transfers are automatically processed post payment capture
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals($order['id'], $transfer['source']);
+
+        $this->assertEquals('processed', $transfer['status']);
+    }
+
+    public function testProcessOrderTransfersPartialPayment()
+    {
+        $this->startTest();
+    }
+
+    public function testGetOrderTransfers()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/orders/' . $order['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testReverseOrderTransfer()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/transfers/' . $transfer['id'] . '/reversals';
+
+        $this->ba->privateAuth();
+
+        $reversal = $this->runRequestResponseFlow($data);
+
+        $this->assertEquals($transfer['id'], $reversal['transfer_id']);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('reversed', $transfer['status']);
+    }
+
+    public function testWebhookOrderTransferProcessed()
+    {
+        $this->createWebhook(
+            [
+                'events' => [
+                    'transfer.processed' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('transfer.processed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->testProcessOrderTransfers();
+    }
+
+    protected function capturePaymentProcessOrderTransfers($order, $paymentAmount = null)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+
+        if ($paymentAmount !== null)
+        {
+            $payment['amount'] = $paymentAmount;
+        }
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        return $payment;
+    }
+
+    protected function mockInfernoFire(Closure $closure, $times = 1)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) {
+                                  if ($feature === 'transfers_via_order')
+                                  {
+                                      return 'on';
+                                  }
+                                  return 'off';
+                              }));
+    }
+}

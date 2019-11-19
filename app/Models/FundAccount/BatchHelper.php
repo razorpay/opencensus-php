@@ -22,6 +22,21 @@ class BatchHelper
     {
         $fundAccountType = $entry[self::FUND_ACCOUNT][self::TYPE];
 
+        // TODO: This is a temporary fix for prod issue
+        if (($fundAccountType === Entity::VPA) and
+            (empty($entry[self::FUND_ACCOUNT][self::VPA]) === false))
+        {
+            $vpaParts = explode('@', $entry[self::FUND_ACCOUNT][self::VPA]);
+
+            if (count($vpaParts) !== 2)
+            {
+                throw new BadRequestValidationFailureException(
+                    "Invalid value for fund account type - $fundAccountType",
+                    null,
+                    $entry);
+            }
+        }
+
         $input = [
             Entity::ACCOUNT_TYPE => $fundAccountType,
         ];

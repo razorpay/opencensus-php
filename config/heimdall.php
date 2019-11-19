@@ -87,6 +87,14 @@ return [
                 'description' => 'Edit partner details',
                 'assignable'  => true,
             ],
+            Permission::COMMISSION_CAPTURE => [
+                'description' => 'Capture commission',
+                'assignable'  => true,
+            ],
+            Permission::COMMISSION_PAYOUT => [
+                'description' => 'Clear on hold flag of partner commission transactions which triggers settlement',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -632,6 +640,9 @@ return [
             Permission::EDIT_PERMISSION     => [
                 'description' => 'edit_permission',
                 'workflow'    => true
+            ],
+            Permission::REMINDER_OPERATION  => [
+                'description' => 'reminder_operation',
             ],
         ],
 

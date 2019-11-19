@@ -164,6 +164,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getFirstPricingPlanByIdAndFeatureWithoutOrgId($id, $feature)
+    {
+        return $this->newQuery()
+                    ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->first();
+    }
+
     public function getMerchantPricingPlan($merchant)
     {
         $pricingPlanId = $merchant->getPricingPlanId();
@@ -337,5 +346,27 @@ class Repository extends Base\Repository
         {
             $query->withTrashed();
         }
+    }
+
+    public function getPricingRuleByMultipleParams(
+        $planId,
+        $product,
+        $feature,
+        $method,
+        $methodType,
+        $network,
+        $international)
+    {
+        $rule = $this->newQueryWithOrgIdParam()
+                     ->where(Entity::PLAN_ID, '=',$planId)
+                     ->where(Entity::PRODUCT, '=', $product)
+                     ->where(Entity::FEATURE, '=', $feature)
+                     ->where(Entity::PAYMENT_METHOD, '=', $method)
+                     ->where(Entity::PAYMENT_METHOD_TYPE, '=', $methodType)
+                     ->where(Entity::PAYMENT_NETWORK, '=', $network)
+                     ->where(Entity::INTERNATIONAL, '=', $international)
+                     ->first();
+
+        return $rule;
     }
 }

@@ -6,13 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 /**
@@ -42,6 +42,11 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
     const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
     const LINKED_ACCOUNT_NOTES      = 'linked_account_notes';
+    const STATUS                    = 'status';
+    const MESSAGE                   = 'message';
+    const ORIGIN                    = 'origin';
+    const PROCESSED_AT              = 'processed_at';
+    const ATTEMPTS                  = 'attempts';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
@@ -71,6 +76,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::LINKED_ACCOUNT_NOTES,
+        self::STATUS,
+        self::ORIGIN,
     ];
 
     protected $visible = [
@@ -96,6 +103,9 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LINKED_ACCOUNT_NOTES,
+        self::STATUS,
+        self::PROCESSED_AT,
+        self::MESSAGE,
     ];
 
     protected $public = [
@@ -116,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
         self::LINKED_ACCOUNT_NOTES,
+        self::PROCESSED_AT,
     ];
 
     protected $publicSetters = [
@@ -140,6 +151,8 @@ class Entity extends Base\PublicEntity
         self::TAX                    => 'int',
         self::ON_HOLD                => 'bool',
         self::ON_HOLD_UNTIL          => 'int',
+        self::PROCESSED_AT           => 'int',
+        self::ATTEMPTS               => 'int',
     ];
 
     protected $amounts = [
@@ -154,13 +167,18 @@ class Entity extends Base\PublicEntity
         self::NOTES                   => [],
         self::ON_HOLD                 => 0,
         self::ON_HOLD_UNTIL           => null,
-        self::RECIPIENT_SETTLEMENT_ID => null
+        self::RECIPIENT_SETTLEMENT_ID => null,
+        self::MESSAGE                 => null,
+        self::ORIGIN                  => Origin::API,
+        self::PROCESSED_AT            => null,
+        self::ATTEMPTS                => 0,
     ];
 
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ON_HOLD_UNTIL,
+        self::PROCESSED_AT,
     ];
 
     protected $ignoreRelations = [
@@ -317,6 +335,16 @@ class Entity extends Base\PublicEntity
         return [];
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------
@@ -351,6 +379,38 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId);
     }
 
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setProcessed()
+    {
+        $this->setStatus(Status::PROCESSED);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::PROCESSED_AT, $currentTime);
+    }
+
+    public function setFailed()
+    {
+        $this->setStatus(Status::FAILED);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::PROCESSED_AT, $currentTime);
+    }
+
+    public function setMessage(string $message)
+    {
+        $this->setAttribute(self::MESSAGE, $message);
+    }
+
+    public function incrementAttempts()
+    {
+        $this->increment(self::ATTEMPTS);
+    }
     // -------------------- End Setters ---------------------------
 
     /**
@@ -366,6 +426,26 @@ class Entity extends Base\PublicEntity
     public function isPaymentTransfer(): bool
     {
         return ($this->getSourceType() === E::PAYMENT);
+    }
+
+    public function isOrderTransfer(): bool
+    {
+        return ($this->getSourceType() === E::ORDER);
+    }
+
+    public function isCreated(): bool
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isProcessed(): bool
+    {
+        return ($this->getStatus() === Status::PROCESSED);
+    }
+
+    public function isFailed(): bool
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function reverseAmount(int $amount)
@@ -386,6 +466,15 @@ class Entity extends Base\PublicEntity
         $amountReversed = $this->getAmountReversed() + $amount;
 
         $this->setAttribute(self::AMOUNT_REVERSED, $amountReversed);
+
+        if ($amount < $amountUnreversed)
+        {
+            $this->setStatus(Status::PARTIALLY_REVERSED);
+        }
+        else
+        {
+            $this->setStatus(Status::REVERSED);
+        }
     }
 
     /**
@@ -403,8 +492,8 @@ class Entity extends Base\PublicEntity
         $account = $this->to;
 
         $accountAttributes = [
-            Merchant::NAME,
-            Merchant::EMAIL,
+            Merchant\Entity::NAME,
+            Merchant\Entity::EMAIL,
         ];
 
         $details = $account->setVisible($accountAttributes)->toArray();
@@ -511,5 +600,30 @@ class Entity extends Base\PublicEntity
         $data[self::TAX]                     = $tax;
 
         return $data;
+    }
+
+    public function toArrayPublic()
+    {
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment($this->merchant->getId(),
+                                                Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
+                                                $app['basicauth']->getMode()
+        );
+
+        if (strtolower($variant) === 'on' and $this->isCreated())
+        {
+            $this->public = [
+                self::RECIPIENT,
+                self::AMOUNT,
+                self::CURRENCY,
+                self::NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+                self::ON_HOLD,
+                self::ON_HOLD_UNTIL,
+            ];
+        }
+
+        return parent::toArrayPublic();
     }
 }

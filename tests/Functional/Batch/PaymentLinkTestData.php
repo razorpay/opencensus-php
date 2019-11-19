@@ -1,17 +1,13 @@
 <?php
 
-use Carbon\Carbon;
-
 use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-
     'testCreateBatchOfPaymentLinkType1' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -35,7 +31,7 @@ return [
     ],
 
     'testCreateBatchOfPaymentLinkType2' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -48,7 +44,7 @@ return [
     ],
 
     'testCreateBatchOfPaymentLinkWithKubernetes' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -72,7 +68,7 @@ return [
     ],
 
     'testCreateBatchOfPaymentLinkTypeWithNewHeaderValues' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -98,7 +94,7 @@ return [
     ],
 
     'testCreateBatchOfPaymentLinkTypeWithNotes' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -126,61 +122,61 @@ return [
     ],
 
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile1' => [
-        'request' => [
+        'request'   => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'payment_link',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The uploaded file has invalid headers',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
         ],
     ],
 
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile2' => [
-        'request' => [
+        'request'   => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'payment_link',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The uploaded file does not have any entries',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY,
         ],
     ],
 
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile3' => [
-        'request' => [
+        'request'   => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'payment_link',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'There are validation errors in 1 row of the file',
@@ -195,7 +191,7 @@ return [
     ],
 
     'testProcessPaymentLinkBatchById' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches/batch_00000000000001/process',
             'method'  => 'post',
             'content' => [
@@ -205,7 +201,7 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'id'     => 'batch_00000000000001',
                 'entity' => 'batch',
                 'type'   => 'payment_link',
@@ -216,19 +212,19 @@ return [
     ],
 
     'testBatchFileValidation' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches/validate',
             'method'  => 'post',
             'content' => [
-                'type' => 'payment_link',
-                'draft'=> 0,
+                'type'  => 'payment_link',
+                'draft' => 0,
             ],
         ],
         'response' => [
             'content' => [
-                'processable_count'         => 5,
-                'error_count'               => 0,
-                'parsed_entries'            => [
+                'processable_count' => 5,
+                'error_count'       => 0,
+                'parsed_entries'    => [
                     [
                         Header::INVOICE_NUMBER   => '#1',
                         Header::CUSTOMER_NAME    => 'test',
@@ -271,14 +267,14 @@ return [
         ],
     ],
 
-    'testBatchCreateForUploadedFile'    => [
-        'request' => [
+    'testBatchCreateForUploadedFile' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
-                'type' => 'payment_link',
-                'name' => 'My batch entity',
-                'draft'=> 0,
+                'type'  => 'payment_link',
+                'name'  => 'My batch entity',
+                'draft' => 0,
             ],
         ],
         'response' => [
@@ -298,14 +294,14 @@ return [
         ],
     ],
 
-    'testBatchCreateForwardingToNewBatchService'    => [
-        'request' => [
+    'testBatchCreateForwardingToNewBatchService' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
-                'type' => 'payment_link',
-                'name' => 'My batch entity',
-                'draft'=> 0,
+                'type'  => 'payment_link',
+                'name'  => 'My batch entity',
+                'draft' => 0,
             ],
         ],
         'response' => [
@@ -314,7 +310,7 @@ return [
     ],
 
     'testCreateBatchWithHumanReadableExpireBy' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
@@ -376,74 +372,74 @@ return [
         ],
     ],
 
-    'testPaymentLinkStatsOfBatchInputData'  => [
+    'testPaymentLinkStatsOfBatchInputData' => [
         'attributes' => [
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000001invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000001order',
-                    'status'                => 'issued',
+                    'id'       => '1000001invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000001order',
+                    'status'   => 'issued',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000001order'
+                    'id' => '100000001order',
                 ],
             ],
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000002invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000002order',
-                    'status'                => 'paid',
+                    'id'       => '1000002invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000002order',
+                    'status'   => 'paid',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000002order'
+                    'id' => '100000002order',
                 ],
             ],
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000003invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000003order',
-                    'status'                => 'paid',
+                    'id'       => '1000003invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000003order',
+                    'status'   => 'paid',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000003order'
+                    'id' => '100000003order',
                 ],
             ],
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000004invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000004order',
-                    'status'                => 'expired',
+                    'id'       => '1000004invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000004order',
+                    'status'   => 'expired',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000004order'
+                    'id' => '100000004order',
                 ],
             ],
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000005invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000005order',
-                    'status'                => 'partially_paid',
+                    'id'       => '1000005invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000005order',
+                    'status'   => 'partially_paid',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000005order'
+                    'id' => '100000005order',
                 ],
             ],
             // Payment links created via batch won't be in draft
             // state. This is however, added for test purpose only
             [
                 'invoiceAttributes' => [
-                    'id'                    => '1000006invoice',
-                    'batch_id'              => '00000000000001',
-                    'order_id'              => '100000006order',
-                    'status'                => 'draft',
+                    'id'       => '1000006invoice',
+                    'batch_id' => '00000000000001',
+                    'order_id' => '100000006order',
+                    'status'   => 'draft',
                 ],
                 'orderAttributes'   => [
-                    'id'                    => '100000006order'
+                    'id' => '100000006order',
                 ],
             ],
         ],
@@ -470,35 +466,35 @@ return [
     ],
 
     'testFetchBatchesOfPaymentLinkTypeWithConfig' => [
-        'request'   => [
-            'url'    => '/batches',
-            'method' => 'get',
-            'content'=> [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content' => [
                 'type'        => 'payment_link',
                 'with_config' => '1',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'entity'        => 'collection',
-                'count'         => 2,
-                'items'         => [
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
                     [
-                        'id'        => 'batch_00000000000002',
-                        'type'      => 'payment_link',
-                        'status'    => 'created',
-                        'config'    => [
-                            'sms_notify'    => '0',
-                            'email_notify'  => '0',
+                        'id'     => 'batch_00000000000002',
+                        'type'   => 'payment_link',
+                        'status' => 'created',
+                        'config' => [
+                            'sms_notify'   => '0',
+                            'email_notify' => '0',
                         ],
                     ],
                     [
-                        'id'        => 'batch_00000000000001',
-                        'type'      => 'payment_link',
-                        'status'    => 'created',
-                        'config'    => [
-                            'sms_notify'    => '1',
-                            'email_notify'  => '0',
+                        'id'     => 'batch_00000000000001',
+                        'type'   => 'payment_link',
+                        'status' => 'created',
+                        'config' => [
+                            'sms_notify'   => '1',
+                            'email_notify' => '0',
                         ],
                     ],
                 ],
@@ -507,36 +503,163 @@ return [
     ],
 
     'testFetchBatchOfPaymentLinkTypeIfBatchServiceIsDown' => [
-        'request'   => [
-            'url'    => '/batches/batch_C7e2YqUIpZ2KwZ',
-            'method' => 'get',
-            'content'=> [
-                'type'        => 'payment_link',
+        'request'  => [
+            'url'     => '/batches/batch_C7e2YqUIpZ2KwZ',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'payment_link',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'id'        => 'batch_C7e2YqUIpZ2KwZ',
-                'type'      => 'payment_link',
-                'status'    => 'created',
+        'response' => [
+            'content' => [
+                'id'     => 'batch_C7e2YqUIpZ2KwZ',
+                'type'   => 'payment_link',
+                'status' => 'created',
             ],
         ],
     ],
 
     'testFetchBatchOfTypePaymentLinkFromBatchService' => [
+        'request'  => [
+            'url'     => '/batches/batch_C3fzDCb4hA4F6b',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'batch_C3fzDCb4hA4F6b',
+                'type'   => 'payment_link',
+                'status' => 'processed',
+            ],
+        ],
+    ],
+
+    'testGetBatchByEPosRole' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeByEposRole' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'payment_link',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeByRefund' => [
         'request'   => [
-            'url'    => '/batches/batch_C3fzDCb4hA4F6b',
-            'method' => 'get',
-            'content'=> [
-                'type'        => 'payment_link',
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'refund',
             ],
         ],
         'response'  => [
             'content'     => [
-                        'id'        => 'batch_C3fzDCb4hA4F6b',
-                        'type'      => 'payment_link',
-                        'status'    => 'processed',
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
             ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testGetBatchByEPosRoleExperimentOff' => [
+        'request'   => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testGetBatchByIdByEPosRole' => [
+        'request'  => [
+            'url'     => '/batches/batch_00000000000002',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'batch',
+                'id'          => 'batch_00000000000002',
+                'type'        => 'payment_link',
+                'total_count' => 1,
+            ],
+        ],
+    ],
+
+    'testGetBatchByIdByEPosRoleNonPaymentLinkType' => [
+        'request'   => [
+            'url'     => '/batches/batch_00000000000002',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
 ];

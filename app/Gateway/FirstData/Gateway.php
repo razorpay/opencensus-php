@@ -30,6 +30,8 @@ class Gateway extends Base\Gateway
     use Base\AuthorizeFailed;
     use Base\CardCacheTrait;
 
+    const CACHE_PREFIX = '{first_data}:';
+
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
@@ -45,6 +47,8 @@ class Gateway extends Base\Gateway
 
     const PRE_AUTH_TRANSACTION_TYPE  = 'PREAUTH';
     const SALE_TRANSACTION_TYPE      = 'SALE';
+
+    const PARES_DATA_CACHE_KEY       = self::CACHE_PREFIX . 'pares_';
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -1991,6 +1995,7 @@ class Gateway extends Base\Gateway
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->scrubCardInfo($request['content']['v1:Transaction']['v1:CreditCardData']);
+        $this->scrubCardInfo($request['content']);
 
         parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
@@ -2258,7 +2263,7 @@ class Gateway extends Base\Gateway
 
     protected function authorizeNotEnrolled(array $input, $authorizeRequest)
     {
-        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+        $this->traceGatewayRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 

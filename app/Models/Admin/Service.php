@@ -794,6 +794,13 @@ class Service extends Base\Service
 
                         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+                        $entityCore = (new Entity)->getEntityCoreClass($type);
+
+                        if (method_exists($entityCore, 'deleteExistingEntities'))
+                        {
+                            $entityCore->deleteExistingEntities($merchant, $data);
+                        }
+
                         $newEntity->merchant()->associate($merchant);
 
                         unset($data[$newEntity::MERCHANT_ID]);
@@ -822,6 +829,13 @@ class Service extends Base\Service
             'success_count' => count($processed),
             'failed'        => $failed,
         ];
+
+        $this->trace->info(TraceCode::ENTITY_BULK_ADD_REQUEST,
+                           [
+                               'summary' => $summary,
+                               'processed' => $processed,
+                           ]
+        );
 
         return $summary;
     }

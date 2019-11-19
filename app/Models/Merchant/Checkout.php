@@ -13,6 +13,7 @@ use RZP\Models\Emi;
 use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Order;
+use RZP\Models\Contact;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -94,6 +95,8 @@ class Checkout
         $this->checkAndFillPartnerUrl($merchant, $data);
 
         $this->updateCurrencyMethodsIfApplicable($input, $merchant, $data);
+
+        $this->checkAndFillContactDetails($input, $merchant, $data);
 
         return $data;
     }
@@ -553,7 +556,7 @@ class Checkout
 
         $data['options']['remember_customer'] = $this->shouldEnableCardSaving($merchant, $mode);
 
-        $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
+        $data['fee_bearer'] = $merchant->isFeeBearerCustomerOrDynamic();
 
         $data['version'] = 1;
 
@@ -896,5 +899,17 @@ class Checkout
                 unset($data['methods']['wallet']['paypal']);
             }
         }
+    }
+
+    protected function checkAndFillContactDetails($input, $merchant, array & $data)
+    {
+        if (isset($input['contact_id']) === false)
+        {
+            return;
+        }
+
+        $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant)->toArrayPublic();
+
+        $data['contact'] = $contact;
     }
 }

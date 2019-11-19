@@ -16,6 +16,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'dispute_reason';
 
+    // Bulk Crete Disputes related constants
+    // network-gateway_code  Ex:- Visa-85
+    const NETWORK_CODE = 'network_code';
+    const REASON_CODE  = 'reason_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

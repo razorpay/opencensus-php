@@ -3424,9 +3424,9 @@ class MccTccMapping
      * @return array
      * @throws BadRequestException
      */
-    public static function getTccMapping(int $mccCode): array
+    public static function getTccFromMcc(int $mccCode): array
     {
-        if (self::MCC_TCC_MAPPING[$mccCode])
+        if (isset(self::MCC_TCC_MAPPING[$mccCode]))
         {
             return self::MCC_TCC_MAPPING[$mccCode];
         }

@@ -87,6 +87,16 @@ class Selector extends Base\Core
      * @var array
      */
     protected static $smartRoutingSorters = [
+
+        // Sorting based on merchant category
+        Sorters\MerchantSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
+
+        // Boosts specific auth type terminals over 3ds terminals
+        Sorters\AuthTypeSorter::class,
+
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
 
@@ -176,12 +186,13 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        $shouldHitRoutingServiceFlag = false;
+        $shouldHitRoutingServiceFlag = 0;
+
 
         // checking filtered terminals and razorX experiment for smart routing
         if ((empty($filteredTerminals) === false) && ($this->shouldHitRoutingService($payment->getId()) === true))
         {
-            $shouldHitRoutingServiceFlag = true;
+            $shouldHitRoutingServiceFlag = 1;
         };
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, $shouldHitRoutingServiceFlag);
@@ -198,52 +209,6 @@ class Selector extends Base\Core
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
                 $sortedTerminals = array($terminal);
             }
-            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
-            {
-                //
-                // Rupay transactions for pharma merchants need to be routed through
-                // the aala firstdata terminal. Hence adding this terminal manually,
-                // in case no terminal found error comes.
-                //
-                if ($this->input['merchant']->getCategory2() === Category::PHARMA)
-                {
-                    $terminal = $this->repo->terminal->find('76lEBqibDvhOzY');
-
-                    $sortedTerminals = [$terminal];
-                }
-                else
-                {
-                    //
-                    // Only for Rupay card transactions if no terminal is found, we
-                    // want to distribute payments via the following logic.
-                    //
-
-                    //
-                    // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
-                    // equal 10% load to other FirstData terminals, hence the below
-                    // array structure
-                    // courtesy : Sunny sir _/\_
-                    //
-                    $rupayTerminalSet = [
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '76wS0y0kLvd2Z9',
-                        '81x0D4UfzB1T7V',
-                        '8f65Iykp4YRF31',
-                        '7mugQsqdruXGSd',
-                        '8AcyFtPYDi2rdx',
-                        '76lEBqibDvhOzY',
-                    ];
-
-                    $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
-
-                    $terminal = $this->repo->terminal->find($selectedTerminalId);
-
-                    $sortedTerminals = [$terminal];
-                }
-            }
             else if (($payment->isCard() === true) and
                      ($payment->card->isNetworkUnknown() === true))
             {
@@ -255,10 +220,12 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $merchant->methods->setDinersCard(0);
+//                $merchant->methods->setDinersCard(0);
 
-                $this->repo->saveOrFail($merchant->methods);
+                $this->alertDinersDisabledForMerchant($merchant, $payment);
 
+//                $this->repo->saveOrFail($merchant->methods);
+//
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
@@ -276,11 +243,14 @@ class Selector extends Base\Core
             {
                 throw new Exception\RuntimeException(
                     'No terminal found.',
-                    ['payment' => $this->input['payment']->toArrayAdmin()]);
+                    ['payment' => $this->input['payment']->toArrayAdmin()],
+                    null,
+                    ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND
+               );
             }
         }
 
-        if ($shouldHitRoutingServiceFlag === true)
+        if ($shouldHitRoutingServiceFlag === 1)
         {
             try
             {
@@ -315,17 +285,21 @@ class Selector extends Base\Core
 
                 }
 
-                if (count($sortedTerminals) === count($newSortedTerminals))
+                if (count($newSortedTerminals) > 0)
                 {
                     $sortedTerminals = $newSortedTerminals;
                 }
                 else
                 {
+
+                    $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, 2);
+
                     $this->trace->error(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_MISMATCH_ERROR,
+                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
                             'input_terminals'    => $sortedTerminals,
                             'sorted_terminals_from_smart_routing' => $newSortedTerminals,
+                            'is_error_timeout' => $terminalSetReceivedFromSmartRouting != null ? false : true,
                         ]);
                 }
 
@@ -339,6 +313,8 @@ class Selector extends Base\Core
             }
             catch (\Throwable $e)
             {
+                $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose, 2);
+
                 $this->trace->error(
                     TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
                     [
@@ -429,7 +405,10 @@ class Selector extends Base\Core
         return $filteredTerminals;
     }
 
-    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
+    // $shouldHitRoutingService = 0 i.e Run all sorters
+    // 1 = run the diff
+    // 2 = fallback
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, int $shouldHitRoutingService = 0): array
     {
         //
         // Sorting is done on the final list of filtered terminals.
@@ -441,9 +420,13 @@ class Selector extends Base\Core
         $sorters = self::$sorters;
 
         // removing smart routing sorters from the list of api sorters
-        if ($shouldHitRoutingService === true)
+        if ($shouldHitRoutingService === 1)
         {
             $sorters = array_diff(self::$sorters, self::$smartRoutingSorters);
+        }
+        else if ($shouldHitRoutingService === 2)
+        {
+            $sorters = self::$smartRoutingSorters;
         }
 
         foreach ($sorters as $sorter)
@@ -581,7 +564,7 @@ class Selector extends Base\Core
 
             if ($payment->getEmiPlanId() !== null)
             {
-                $paymentData['emi'] = $payment->emiPlan();
+                $paymentData['emi'] = $this->getPaymentEmiArray($payment);
             }
 
             if (isset($paymentData['vpa']) === true)
@@ -712,6 +695,19 @@ class Selector extends Base\Core
         return $metadata;
     }
 
+    protected function getPaymentEmiArray(Entity $payment): array
+    {
+        $emiPlanArray = [];
+        $emiPlan = $payment->emiPlan;
+
+        $emiPlanArray['issuer_name']         = $emiPlan->getIssuerName();
+        $emiPlanArray['rate']                = $emiPlan->getRate();
+        $emiPlanArray['duration']            = $emiPlan->getDuration();
+        $emiPlanArray['emi_subvention']      = $emiPlan->getSubvention();
+
+        return $emiPlanArray;
+    }
+
     protected function getMerchantData($merchant)
     {
         $merchantData = [];
@@ -832,5 +828,31 @@ class Selector extends Base\Core
         }
 
         return $terminalIds;
+    }
+
+    protected function alertDinersDisabledForMerchant(Merchant\Entity $merchant, $payment)
+    {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'payment_id'            => $payment[Entity::ID],
+            'payment_international' => $payment[Entity::INTERNATIONAL],
+            'network'               => 'DICL',
+            'reason'                => 'no terminal found',
+        ];
+
+        $this->trace->critical(TraceCode::DICL_TERMINAL_NOT_FOUND, $alertArray);
+
+        $message = 'Diners Club payment failed with no terminal found';
+
+        $this->app['slack']->queue(
+            $message,
+            $alertArray,
+            [
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
     }
 }

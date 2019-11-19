@@ -317,7 +317,27 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        return Carbon::createFromFormat('d-M-Y  H:i:s', $settledAt, Timezone::IST)->timestamp;
+        $gatewaySettledAtTimestamp = null;
+
+        try
+        {
+            $gatewaySettledAtTimestamp = Carbon::parse($settledAt)->setTimezone(Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'date'      => $settledAt,
+                    'gateway'   => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAtTimestamp;
     }
 
     public function getGatewayPayment($paymentId)

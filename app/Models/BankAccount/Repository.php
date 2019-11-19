@@ -32,6 +32,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getBankAccountOnConnection($merchant, string $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->first();
+    }
+
     public function getBankAccountsForMerchants(array $mids, $columns = ['*'])
     {
         return $this->newQuery()
@@ -171,11 +179,21 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
+    public function getBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
+                    ->with(['source'])
+                    ->oldest()
+                    ->get();
+    }
+
+    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->with(['source'])
                     ->oldest()
                     ->get();

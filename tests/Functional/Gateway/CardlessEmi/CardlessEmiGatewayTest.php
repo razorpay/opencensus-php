@@ -319,7 +319,7 @@ class CardlessEmiGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $this->assertEquals('REFUND_FAILED', $gatewayRefund['error_code']);
         $this->assertEquals('Refund failed', $gatewayRefund['error_description']);

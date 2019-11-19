@@ -114,4 +114,11 @@ class Core extends Base\Core
 
         return $contact;
     }
+
+    public function fetch($id, $merchant, $input = [])
+    {
+        $contact =  $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
+
+        return $contact;
+    }
 }

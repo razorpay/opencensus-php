@@ -75,8 +75,14 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH             = 40;
     const ACCOUNT_IFSC_LENGTH               = 11;
 
+    // TODO: move username, password, reference1 to banking_account_details
+    // JIRA ticket: https://razorpay.atlassian.net/browse/RX-608
+
+    // for rbl this is ldap id
     const USERNAME                          = 'username';
+    // for rbl this is ldap password
     const PASSWORD                          = 'password';
+    // For rbl this is the corp_id
     const REFERENCE1                        = 'reference1';
 
     const ACCOUNT_TYPE                      = 'account_type';
@@ -87,6 +93,11 @@ class Entity extends Base\PublicEntity
 
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
+
+    const DETAILS       = 'details';
+
+    // Relation Constants
+    const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
 
     protected $entity = 'banking_account';
 
@@ -159,6 +170,16 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
+        self::BANKING_ACCOUNT_DETAILS,
+        //
+        // This has been added so that banking_account_details
+        // relations can be fetched on admin auth.
+        // For some reason admin auth expects the relations to be
+        // present in visible array as camel cased.
+        // For proxy auth this is not required, having snake cased
+        // 'banking_account_details' works fine
+        //
+        'bankingAccountDetails',
     ];
 
     protected $public = [
@@ -177,8 +198,17 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
-        self::USERNAME,
         self::PINCODE,
+        self::BANKING_ACCOUNT_DETAILS,
+    ];
+
+    protected $relations = [
+        self::BANKING_ACCOUNT_DETAILS,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::BANKING_ACCOUNT_DETAILS
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -340,14 +370,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
+    public function isAlreadyActivated()
+    {
+        return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
+    }
+
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
     }
 
-    public function isAlreadyActivated()
+    public function getDetailsDataUsingKey($key)
     {
-        return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
+        return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
+                                             ->value(Detail\Entity::GATEWAY_VALUE);
     }
 
     // --------------------------- Relations ---------------------------------- //
@@ -360,6 +396,21 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    public function bankingAccountDetails()
+    {
+        return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);
+    }
+
+    // ----------------------- Public setters ---------------------------------
+
+    public function setPublicBankingAccountDetailsAttribute(array & $array)
+    {
+        if (app('basicauth')->isAdminAuth() === false)
+        {
+            unset($array[self::BANKING_ACCOUNT_DETAILS]);
+        }
     }
 
     protected function isChannelYesbank()

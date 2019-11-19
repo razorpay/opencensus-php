@@ -62,6 +62,7 @@ class Merchant extends Base
                                     'email'         => 'test@razorpay.com',
                                     'billing_label' => 'Test Merchant',
                                     'activated_at'  => time(),
+                                    'category'      => '5399'
                                 ]);
 
         // Merchant on whom all shared terminals are created
@@ -592,6 +593,16 @@ class Merchant extends Base
     }
 
     public function disableConvenienceFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => 'platform']);
+    }
+
+    public function enableDynamicFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => 'dynamic']);
+    }
+
+    public function disableDynamicFeeModel($id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => 'platform']);
     }

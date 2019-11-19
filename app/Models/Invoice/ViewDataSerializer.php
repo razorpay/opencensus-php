@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 
@@ -198,8 +199,9 @@ class ViewDataSerializer extends Base\Core
 
             case Preferences::MID_BOB:
                 $customLabels = [
-                    'amount'     => 'TOTAL AMOUNT DUE',
-                    'expire_by'  => 'PAYMENT LINK EXPIRES ON'
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'expire_by'      => 'PAYMENT LINK EXPIRES ON',
+                    'receipt_number' => 'CREDIT CARD NUMBER',
                 ];
                 break;
 
@@ -434,7 +436,16 @@ class ViewDataSerializer extends Base\Core
     {
         if ($this->invoice->isOfSubscription() === true)
         {
-            $serialized[E::SUBSCRIPTION] = $this->invoice->subscription->toArrayHosted();
+            $subscriptionId = $this->invoice->getSubscriptionId();
+
+            $subscription = $this->app['module']
+                                 ->subscription
+                                 ->fetchSubscriptionForInvoice(
+                                     Subscription\Entity::getSignedId($subscriptionId),
+                                     $this->merchant
+                                 );
+
+            $serialized[E::SUBSCRIPTION] = $subscription;
         }
     }
 
@@ -473,6 +484,10 @@ class ViewDataSerializer extends Base\Core
 
             $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
 
+            $serialized
+            [E::SUBSCRIPTION_REGISTRATION]
+            [E::PAYMENT] = $this->getNonFailurePaymentsForOrder($order);
+
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $externalEntity->entity;
@@ -500,6 +515,35 @@ class ViewDataSerializer extends Base\Core
         {
             $serialized[Entity::ENTITY_TYPE] = null;
         }
+    }
 
+    protected function getNonFailurePaymentsForOrder(Order\Entity $order)
+    {
+        $validPayments = [];
+
+        if ($order === null)
+        {
+            return $validPayments;
+        }
+
+        $payments = $order->payments;
+
+        if ($payments === null)
+        {
+            return $validPayments;
+        }
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->getStatus() !== Payment\Status::FAILED)
+            {
+                array_push($validPayments,
+                    [Payment\Entity::ID => $payment->getPublicId(),
+                        Payment\Entity::STATUS => $payment->getStatus()]
+                );
+            }
+        }
+
+        return $validPayments;
     }
 }

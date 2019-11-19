@@ -9,17 +9,25 @@ use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 return [
 
     'testGetMerchantDetails' => [
-        'request' => [
-            'url' => '/merchant/activation',
+        'request'  => [
+            'url'    => '/merchant/activation',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
                 'verification' => [
-                    'status' => 'disabled',
+                    'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
                 ],
-                'can_submit' => false,
+                "documents"    => [
+                    'Address_proof_url' => [
+                        [
+                            "id"            => "DM6dWd1tzUfbnM",
+                            "file_store_id" => "DM6dXJfU4WzeAF",
+                        ],
+                    ],
+                ],
+                'can_submit'   => false,
             ],
         ],
     ],
@@ -424,6 +432,47 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatchValidStatusChange' => [
+        'request'  => [
+            'content' => [
+                'bank_details_verification_status' => 'verified',
+                'poa_verification_status'          => 'verified'
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content'     => [
+                'bank_details_verification_status' => 'verified',
+                'poa_verification_status'          => 'verified'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantDetailsPatchInvalidStatusChange' => [
+        'request'   => [
+            'content' => [
+                'bank_details_verification_status' => 'failed',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testMerchantDetailsPatchNoBusinessCategorySubcategory' => [
         'request'  => [
             'content' => [
@@ -787,6 +836,75 @@ return [
         ],
     ],
 
+    'testMerchantsMtuUpdateSuccess' => [
+        'request' => [
+            'content' => [
+                'merchants'   => [
+                    '10000000000000'
+                ],
+                'live_transaction_done' => '1',
+            ],
+            'url'       => '/merchant_mtu_update',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 1,
+                'failed'        => 0,
+                'failedItems'   => [],
+            ],
+        ],
+    ],
+
+    'testMerchantsMtuUpdateIdFailure' => [
+        'request' => [
+            'content' => [
+                'merchants'   => [
+                    ''
+                ],
+                'live_transaction_done' => '1',
+            ],
+            'url'       => '/merchant_mtu_update',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'       => 0,
+                'failed'        => 1,
+                'failedItems'   => [
+                    [
+                        'merchant_id' => '',
+                        'error' => 'The id provided does not exist'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantsMtuUpdateLiveTransactionFailure' => [
+        'request' => [
+            'content' => [
+                'merchants' => ["10000000000000"],
+                'live_transaction_done' => '3',
+            ],
+            'url' => '/merchant_mtu_update',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected live transaction done is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testBulkEditMerchantAttributes' => [
         'request' => [
             'method' => 'POST',
@@ -906,6 +1024,7 @@ return [
         'request'   => [
             'content' => [
                 'bank_branch_ifsc' => 'ICIC0000002',
+                'submit'           => 1,
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -968,6 +1087,203 @@ return [
             'content' => [
 
             ]
+        ],
+    ],
+
+    'testUpdateKYCClarificationReason' => [
+        'request'  => [
+            'content' => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field1' => [[
+                            'reason_type' => 'custom',
+                            'field_value' => 'adnakdad',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'field3' => [[
+                            'reason_type' => 'predefined',
+                            'field_value' => 'adnakdad',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                    'additional_details'    => [
+                        'field3'               => [[
+                            'reason_type' => 'custom',
+                            'field_type'  => 'document',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'business_description' => [[
+                            'reason_type' => 'predefined',
+                            'field_type'  => 'text',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field1' => [[
+                            'reason_type' => 'custom',
+                            'field_value' => 'adnakdad',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ]],
+                        'field3' => [[
+                            'reason_type' => 'predefined',
+                            'field_value' => 'adnakdad',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                    'additional_details'    => [
+                        'field3'               => [[
+                            'reason_type' => 'custom',
+                            'field_type'  => 'document',
+                            'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                        ],],
+                        'business_description' => [[
+                            'reason_type' => 'predefined',
+                            'field_type'  => 'text',
+                            'reason_code' => 'provide_poc',
+                        ]],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateKYCClarificationReasonWithFailure' => [
+        'request'   => [
+            'content' => [
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'field3' => [[
+                                         'reason_type' => 'alndalnd',
+                                         'field_value' => 'adnakdad',
+                                         'reason_code' => 'provide_poc',
+                                     ]],
+                    ]
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetails' => [
+        'request'  => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'business_description' => [
+                        'field_value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsWithFailure' => [
+        'request'   => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'business_description' => [
+                        'field_value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not required additional field :business_description',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsWithInvalidField' => [
+        'request' => [
+            'content' => [
+                'kyc_additional_details' => [
+                    'text_field_xyz' => [
+                        'value' => 'xyz',
+                    ],
+                ],
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not required additional field :text_field_xyz',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateKycAdditionalDetailsData' => [
+        'kyc_clarification_reasons' => [
+            'clarification_reasons' => [
+                'field1' => [[
+                    'reason_type' => 'custom',
+                    'field_value' => 'adnakdad',
+                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                ]],
+                'field3' => [[
+                    'reason_type' => 'predefined',
+                    'field_value' => 'adnakdad',
+                    'reason_code' => 'provide_poc',
+                ]],
+            ],
+            'additional_details'    => [
+                'field3'               => [[
+                    'reason_type' => 'custom',
+                    'field_type'  => 'document',
+                    'reason'      => 'Lorem ipsum dolor sit amet consectetuer',
+                ]],
+                'business_description' => [[
+                    'reason_type' => 'predefined',
+                    'field_type'  => 'text',
+                    'reason_code' => 'provide_poc',
+                ]],
+            ],
         ],
     ],
 ];

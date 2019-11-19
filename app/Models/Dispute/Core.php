@@ -6,17 +6,21 @@ use DB;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Models\{Base, Payment, Merchant, Adjustment};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
 
 class Core extends Base\Core
 {
@@ -24,6 +28,12 @@ class Core extends Base\Core
 
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
+
+    // Type of emails to be fetched from merchant_emails table
+    const POC_EMAIL_TYPES = [
+        MerchantEmail\Type::DISPUTE,
+        MerchantEmail\Type::CHARGEBACK,
+    ];
 
     /**
      * @var Mutex
@@ -43,7 +53,7 @@ class Core extends Base\Core
      * @param array          $input
      *
      * @return Entity
-     * @throws \RZP\Exception\BadRequestException
+     * @throws Exception\BadRequestException
      */
     public function create(
         Payment\Entity $payment,
@@ -101,7 +111,6 @@ class Core extends Base\Core
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
-
             });
     }
 
@@ -110,7 +119,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
-     * @throws \RZP\Exception\BadRequestException
+     * @throws Exception\BadRequestException
      */
     public function update(Entity $dispute, array $input): Entity
     {
@@ -201,7 +210,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
-     * @throws \RZP\Exception\BadRequestException
+     * @throws Exception\BadRequestException
      */
     public function updateForMerchant(Entity $dispute, array $input): Entity
     {
@@ -506,6 +515,62 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     *  Get all the default mails for disputes. Dispute PoCs and merchant email
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+
+    public function getDefaultEmailsForDispute(Merchant\Entity $merchant) : array
+    {
+        $emails = [];
+
+        $merchantEmailMap = (new MerchantEmail\Service)->fetchEmailByMerchantIdsAndTypes(
+            [$merchant->getId()], self::POC_EMAIL_TYPES
+        );
+
+        if (empty($merchantEmailMap[$merchant->getId()]) === false)
+        {
+            foreach ($merchantEmailMap[$merchant->getId()] as $emailType => $emailArray)
+            {
+                $emails = array_merge($emails, $emailArray);
+            }
+        }
+        else
+        {
+            $emails[] = $merchant->getEmail();
+        }
+
+        $emails = array_unique($emails);
+
+        return $emails;
+    }
+
+    public function getEmailsForCreateNotify(Merchant\Entity $merchant, array $input) : array
+    {
+        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
+        {
+            $emails = $input[Entity::MERCHANT_EMAILS];
+
+            $emails = array_unique($emails);
+        }
+        else
+        {
+            // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
+            // Fetching merchant dispute, chargeback PoC. If not available, fetches merchant registered email
+            $emails = $this->getDefaultEmailsForDispute($merchant);
+        }
+
+        return $emails;
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param MerchantEntity $merchant
+     * @param array $input
+     */
     protected function sendDisputeMailToMerchant(
         Entity $dispute,
         Merchant\Entity $merchant,
@@ -523,23 +588,90 @@ class Core extends Base\Core
             return;
         }
 
-        $email = $merchant->getEmail();
-
-        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
-        {
-            $email = $input[Entity::MERCHANT_EMAILS];
-        }
+        $emails = $this->getEmailsForCreateNotify($merchant, $input);
 
         $data = [
             'merchant'      => [
                 'name'          => $merchant->getName(),
-                'email'         => $email,
+                'email'         => $emails,
             ],
             'dispute'       => $dispute->toArrayPublic(),
             'remainingDays' => $this->getRemainingDays($dispute),
         ];
 
         Mail::queue(new DisputeMailer\Creation($data));
+    }
+
+    /**
+     * @param array $merchantData
+     * @return array
+     */
+    private function getMerchantPocEmails(array $merchantData) : array
+    {
+        $merchantIds = array_keys($merchantData);
+
+        $merchantEmailMap = (new MerchantEmail\Service)->fetchEmailByMerchantIdsAndTypes(
+            $merchantIds, self::POC_EMAIL_TYPES
+        );
+
+        foreach ($merchantEmailMap as $merchantId => $emailMap)
+        {
+            $emails = [];
+
+            foreach ($emailMap as $emailType => $emailArray)
+            {
+                $emails = array_merge($emails, $emailArray);
+            }
+
+            if (empty($emails) === false)
+            {
+                $emails = array_unique($emails);
+
+                $merchantData[$merchantId][MerchantEntity::EMAIL] = $emails;
+            }
+        }
+
+        return $merchantData;
+    }
+
+    /**
+     * @param array $merchantData
+     * @param array $disputeData
+     * @throws Exception\RuntimeException
+     */
+    public function sendAggregatedEmails(array $merchantData, array $disputeData)
+    {
+        try
+        {
+            // Update merchant data with poc emails
+            $merchantData = $this->getMerchantPocEmails($merchantData);
+
+            foreach ($merchantData as $merchantId => $data)
+            {
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
+                $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
+                $bulkMailData[Constants::DISPUTES] = [];
+
+                $totalAmount = 0;
+
+                foreach ($data[Constants::DISPUTES] as $disputeId)
+                {
+                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$disputeId];
+
+                    $totalAmount += $disputeData[$disputeId][Entity::AMOUNT];
+                }
+
+                $bulkMailData['totalAmount'] = $totalAmount;
+
+                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::DISPUTE_BULK_MAIL_TRIGGER_FAILED);
+
+            throw new Exception\RuntimeException('Error sending mails for bulk create disputes', $merchantData);
+        }
     }
 
     private function getRemainingDays(Entity $dispute): int

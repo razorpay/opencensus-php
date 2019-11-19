@@ -9,6 +9,11 @@ namespace RZP\Models\Partner\Commission;
  */
 class Analytics
 {
+    const RESULT                    = 'result';
+    const VALUE                     = 'value';
+    const TOTAL_TAX                 = 'totalTax';
+    const TOTAL_COMMISSION_WITH_TAX = 'totalCommissionWithTax';
+
     public function fetchAnalyticsForAggregateDetailQuery(array $input): array
     {
         return [
@@ -38,8 +43,20 @@ class Analytics
                             'gte' => $input[Constants::FROM],
                             'lte' => $input[Constants::TO],
                         ],
-                        'type' => 'explicit',
-                        'model' => 'commission',
+                        'type'        => 'explicit',
+                        'model'       => 'commission',
+                        'record_only' => 0,
+                    ]
+                ],
+                'explicit_record' => [
+                    [
+                        'created_at' => [
+                            'gte' => $input[Constants::FROM],
+                            'lte' => $input[Constants::TO],
+                        ],
+                        'type'        => 'explicit',
+                        'model'       => 'commission',
+                        'record_only' => 1,
                     ]
                 ],
             ],
@@ -98,6 +115,24 @@ class Analytics
                 'addonTax'          => [
                     'agg_type'   => 'sum',
                     'filter_key' => 'explicit',
+                    'details'    => [
+                        'index'    => 'commissions',
+                        'column'   => 'tax',
+                        'group_by' => ['histogram_daily'],
+                    ],
+                ],
+                'addonEarnings_record' => [
+                    'agg_type'   => 'sum',
+                    'filter_key' => 'explicit_record',
+                    'details'    => [
+                        'index'    => 'commissions',
+                        'column'   => 'commission',
+                        'group_by' => ['histogram_daily'],
+                    ],
+                ],
+                'addonTax_record' => [
+                    'agg_type'   => 'sum',
+                    'filter_key' => 'explicit_record',
                     'details'    => [
                         'index'    => 'commissions',
                         'column'   => 'tax',
@@ -179,24 +214,6 @@ class Analytics
                 'baseTax'           => [
                     'agg_type'   => 'sum',
                     'filter_key' => 'implicit',
-                    'details'    => [
-                        'index'    => 'commissions',
-                        'column'   => 'tax',
-                        'group_by' => ['histogram_daily'],
-                    ],
-                ],
-                'addonEarnings'     => [
-                    'agg_type'   => 'sum',
-                    'filter_key' => 'explicit',
-                    'details'    => [
-                        'index'    => 'commissions',
-                        'column'   => 'commission',
-                        'group_by' => ['histogram_daily'],
-                    ],
-                ],
-                'addonTax'          => [
-                    'agg_type'   => 'sum',
-                    'filter_key' => 'explicit',
                     'details'    => [
                         'index'    => 'commissions',
                         'column'   => 'tax',
@@ -303,6 +320,40 @@ class Analytics
                         'index'    => 'commissions',
                         'column'   => 'commission',
                         'group_by' => ['histogram_daily'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function fetchAggregateCommissionDetailsQuery(array $input)
+    {
+        return [
+            'filters'      => [
+                'default' => [
+                    [
+                        'created_at'  => [
+                            'lte' => $input[Constants::TO],
+                        ],
+                        'model'                => 'commission',
+                        'transactions_settled' => 0,
+                        'record_only'          => 0,
+                    ]
+                ],
+            ],
+            'aggregations' => [
+                self::TOTAL_COMMISSION_WITH_TAX => [
+                    'agg_type' => 'sum',
+                    'details'  => [
+                        'index'    => 'commissions',
+                        'column'   => 'commission',
+                    ],
+                ],
+                self::TOTAL_TAX => [
+                    'agg_type'   => 'sum',
+                    'details'    => [
+                        'index'    => 'commissions',
+                        'column'   => 'tax',
                     ],
                 ],
             ],

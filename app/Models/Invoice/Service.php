@@ -131,7 +131,7 @@ class Service extends Base\Service
         // dashboard given userRole is sellerapp so only invoices created by
         // that user is visible in fetched list.
         if (($this->userId !== null) and
-            ($this->userRole === Role::SELLERAPP))
+            (($this->userRole === Role::SELLERAPP) or ($this->userRole === Role::SELLERAPP_PLUS)))
         {
             $input[Entity::USER_ID] = $this->userId;
         }

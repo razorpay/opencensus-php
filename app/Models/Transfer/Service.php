@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Jobs;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Service extends Base\Service
 {
@@ -27,12 +32,19 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
+        if ($transfer->isCreated() or $transfer->isFailed())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
         return $transfer->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();
+
+        $input[Entity::STATUS] = Constant::FETCH_STATUS;
 
         $transfers = $this->repo->transfer->fetch($input, $merchantId);
 
@@ -212,5 +224,76 @@ class Service extends Base\Service
         $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
 
         return $transferData;
+    }
+
+    public function processOrderTransfers()
+    {
+        $transferOrderIds = [];
+
+        $orderIds = $this->repo->transfer->fetchTransfersToRetry();
+
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_STARTED,
+                           [
+                               'order_ids' => $orderIds
+                           ]);
+
+        foreach ($orderIds as $orderId)
+        {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                               [
+                                   'order_id' => $orderId
+                               ]);
+
+            $order = $this->repo->order->find($orderId);
+
+            if ($order === null)
+            {
+                continue;
+            }
+
+            $payment = $this->repo->payment->getCapturedPaymentForOrder($order->getId());
+
+            if ($payment === null)
+            {
+                continue;
+            }
+
+            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
+            {
+                continue;
+            }
+
+            try
+            {
+                $this->trace->info(
+                    TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                    [
+                        'order_id'   => $payment->getApiOrderId(),
+                        'payment_id' => $payment->getId(),
+                        'mode'       => $this->mode,
+                    ]);
+
+                Jobs\OrderTransferProcess::dispatch($this->mode, $payment);
+
+                array_push($transferOrderIds, $orderId);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->critical(
+                    TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED,
+                    [
+                        'order_id'   => $payment->getApiOrderId(),
+                        'payment_id' => $payment->getId(),
+                        'message'    => $e->getMessage(),
+                    ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
+                           [
+                               'processed_order_ids' => $transferOrderIds
+                           ]);
+
+        return $transferOrderIds;
     }
 }

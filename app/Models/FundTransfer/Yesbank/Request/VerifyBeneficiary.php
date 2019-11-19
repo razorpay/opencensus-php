@@ -125,9 +125,10 @@ class VerifyBeneficiary extends Beneficiary
     /**
      * Generates successful response for given request
      *
+     * @param string $failure
      * @return string
      */
-    protected function mockGenerateFailedResponse(): string
+    protected function mockGenerateFailedResponse(string $failure = ''): string
     {
         $errorData = htmlentities(
             '<Error><Item><ErrorSubCode>101</ErrorSubCode>'

@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -20,6 +21,7 @@ use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -559,6 +561,16 @@ class TransactionFilter extends Terminal\Filter
         $merchant = $this->input['merchant'];
         $merchantMcc = $merchant->getCategory();
 
+        // These MCCs are blacklisted by RBL and Hitachi. Hence, should not go via hitachi.
+        // We already have gateway rules enabled for this, but this is a fallback in case
+        // the gateway rules fails.
+        // Violation of the agreement with Hitachi and RBL, which results in getting fined by the bank.
+        if (($terminal->getGateway() === Gateway::HITACHI) and
+            (in_array($merchantMcc, HitachiGateway::BLACKLISTED_MCC) === true))
+        {
+            return false;
+        }
+
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
             (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))
         {
@@ -777,9 +789,25 @@ class TransactionFilter extends Terminal\Filter
 
     public function feeBearerFilter($terminal, $applicableTerminals)
     {
-        if ($this->input['merchant']->isFeeBearerCustomer() === true)
+        /*
+         * For customer fee bearer payments, we are responsible for adding fees to payment amount and settling only
+         * actual payment amount (not fees) to the merchant. For direct settlements, Razorpay does not have control over
+         * the amount that finally gets settled to merchant by the bank. For this reason, there's a check  that skips
+         * direct settlement terminals for customer fee bearer merchants.
+         *
+         *
+         * Direct settlement terminals are being used by various HDFC VAS merchants, some of whom are on customer
+         * fee bearer. We are explicitly allowing direct settlement terminals for such merchants, otherwise
+         * the payments will fail with "no terminal found"
+         *
+         *
+         */
+        if ($this->input['payment']->isFeeBearerCustomer() === true)
         {
-            return ($terminal->isDirectSettlement() === false);
+            if ($terminal->isDirectSettlement() === true)
+            {
+                return ($this->input['merchant']->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID);
+            }
         }
 
         return true;
