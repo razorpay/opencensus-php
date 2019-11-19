@@ -102,6 +102,13 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function cancelAuthLink(string $id)
+    {
+        $invoice = $this->service()->cancelAuthLink($id);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function paperMandateAuthenticate()
     {
         $data = $this->service()->paperMandateAuthenticate($this->input);
