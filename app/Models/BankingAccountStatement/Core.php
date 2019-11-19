@@ -22,7 +22,7 @@ class Core extends Base\Core
 
     const FILE_ID            = 'file_id';
 
-    const DASHBOARD_FILE_URL = '%s/ufh/file/%s';
+    const DASHBOARD_FILE_URL = '%sufh/file/%s';
 
     /**
      * Temporary hack. Should not set balance at a class level.

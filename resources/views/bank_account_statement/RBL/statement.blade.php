@@ -147,6 +147,8 @@
         font-size: 16px;
         line-height: 20px;
         letter-spacing: 0.5px;
+        width: 100%;
+        overflow: visible;
     }
 
     .account-statement-title
@@ -324,9 +326,9 @@
     </div>
 
     <div class="box">
+
         <div class="box-header transactions-title">
-            TRANSACTIONS LIST - {{ $account_owner_info['account_name'] }} ({{ $account_owner_info['currency'] }})
-            - {{ $account_owner_info['account_number'] }}
+            TRANSACTIONS LIST - {{ $account_owner_info['account_name'] }} ( {{ $account_owner_info['currency'] }} ) - {{ $account_owner_info['account_number'] }}
         </div>
         <table class="w-100 transactions-table">
             <tr class='transactions-table-header'>
