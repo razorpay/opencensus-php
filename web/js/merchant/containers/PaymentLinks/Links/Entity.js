@@ -240,6 +240,8 @@ export default class InvoiceDetailContainer extends Component {
                 d.reminder_enable ? 'enabled' : 'disabled'
               } successfully`,
             });
+
+            return this.props.fetchInvoice(this.props.id);
           } else {
             this.props.showNotification({
               type: 'success',
