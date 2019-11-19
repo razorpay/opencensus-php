@@ -33,6 +33,8 @@ class FundTransfer extends Base
 
     protected $source;
 
+    protected $amount;
+
     protected $accountType;
 
     protected $bankingStartTime;
@@ -455,13 +457,11 @@ class FundTransfer extends Base
 
         $issuer         = $iin->getIssuer();
 
-        $amount         = $this->source->getAmount();
-
         $networkCode    = $iin->getNetworkCode();
 
         $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             $mode =  Mode::IMPS;
         }
@@ -473,7 +473,7 @@ class FundTransfer extends Base
 
             if ((($now >= $this->bankingStartTime) and
                     ($now <= $this->bankingEndTimeRtgs)) and
-                ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+                ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
                 $mode = Mode::RTGS;
             }
@@ -500,8 +500,6 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        $amount  = $this->source->getAmount();
-
         if ($channel === Channel::ICICI)
         {
             return Mode::IMPS;
@@ -520,7 +518,7 @@ class FundTransfer extends Base
             return Mode::IFT;
         }
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             return Mode::IMPS;
         }
@@ -528,7 +526,7 @@ class FundTransfer extends Base
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+            ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
         }
@@ -627,6 +625,10 @@ class FundTransfer extends Base
         $sourceType = $this->fta->getSourceType();
 
         $this->setSourceEntityByType($sourceType);
+
+        $this->amount = $this->source->getAmount()/100;
+
+        $this->amount = round($this->amount, 2);
     }
 
     protected function isNeftRtgsSupportedTimings($mode)
