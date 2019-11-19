@@ -1120,7 +1120,6 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
-        self::CARDLESS_EMI,
     ];
 
     public static $captureVerifyEnabled = [
