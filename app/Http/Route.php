@@ -1153,6 +1153,7 @@ final class Route
         'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'     => ['get',      'subscription_registration/auth_links/{id}',      'SubscriptionRegistrationController@fetchAuthLink'                  ],
         'subscription_registration_resend_link'    => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',     'SubscriptionRegistrationController@sendNotification'       ],
+        'subscription_registration_cancel_link'    => ['post',     'subscription_registration/auth_links/{id}/cancel',              'SubscriptionRegistrationController@cancelAuthLink'         ],
         'subscription_registration_fetch_link_internal' => ['get', 'subscription_registration/auth_links/{id}/internal', 'SubscriptionRegistrationController@fetchAuthLinkInternal'      ],
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
@@ -1602,6 +1603,7 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         'subscription_registration_resend_link',
+        'subscription_registration_cancel_link',
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
@@ -1826,6 +1828,7 @@ final class Route
         'invoice_send_notification_private',
         'invoice_cancel',
         'subscription_registration_resend_link',
+        'subscription_registration_cancel_link',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,

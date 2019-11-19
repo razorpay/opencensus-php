@@ -350,4 +350,24 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function cancelAuthLink(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            null,
+            null,
+            [],
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
+
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $invoice = (new Invoice\Core())->cancelInvoice($invoice);
+
+        return $invoice->toArrayPublic();
+    }
 }
