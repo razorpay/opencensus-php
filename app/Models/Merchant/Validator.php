@@ -306,6 +306,11 @@ class Validator extends Base\Validator
         'contact_id'  => 'filled|public_id',
     ];
 
+    protected static $holidayNotifyRules = [
+        'lists'   => 'required|string',
+        'action'  => 'required|string',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
