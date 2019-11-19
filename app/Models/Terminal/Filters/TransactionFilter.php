@@ -43,7 +43,7 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'bank_account_type',
         'capability',
-        'blacklistedMccFilter',
+        'blacklisted_mcc',
         'direct_settlement',
         'fee_bearer',
         'shared_terminal',
