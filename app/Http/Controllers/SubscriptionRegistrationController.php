@@ -95,6 +95,13 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendNotification(string $id, string $medium)
+    {
+        $data = $this->service()->sendNotification($id, $medium);
+
+        return ApiResponse::json($data);
+    }
+
     public function paperMandateAuthenticate()
     {
         $data = $this->service()->paperMandateAuthenticate($this->input);

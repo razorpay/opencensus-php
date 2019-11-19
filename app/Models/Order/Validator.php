@@ -186,7 +186,7 @@ class Validator extends Base\Validator
     /**
      * Validates that order is not already paid.
      */
-    protected function validateOrderNotPaid()
+    public function validateOrderNotPaid()
     {
         $order = & $this->entity;
 
