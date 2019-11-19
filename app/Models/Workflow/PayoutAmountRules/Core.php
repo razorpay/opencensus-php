@@ -59,8 +59,36 @@ class Core extends Base\Core
 
     public function createWorkflowPayoutAmountRules($input): array
     {
-        $payoutAmountRules = new Entity();
-        $payoutAmountRules->create($input);
-        return $input;
+        $rules = $input['rules'];
+
+        $payoutRules = new Entity();
+
+        $merchantId = $payoutRules->getValidator()->checkIfAllMerchantIdsAreSame($rules);
+
+        $payoutRules->getValidator()->checkIfWorkflowAlreadyCreated($merchantId);
+
+        $payoutRules->getValidator()->checkForValidAmountRanges($rules);
+
+        $this->repo->transaction( function() use ($rules, $merchantId){
+
+
+            foreach($rules as $rule)
+            {
+                $payoutAmountRules = new Entity();
+
+                $rule['merchant_id'] = $merchantId;
+
+                $payoutAmountRules->build($rule);
+
+                $this->repo->saveOrFail($payoutAmountRules);
+            }
+
+        });
+
+        $repo = new Repository();
+
+        $response = $repo->fetchWorkflowRulesForMerchant($merchantId)->toArrayAdmin();
+
+        return $response;
     }
 }
