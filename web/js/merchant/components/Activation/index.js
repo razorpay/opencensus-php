@@ -1766,7 +1766,7 @@ function ActivationField(field) {
     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
     * */
     if (this.isOnKYCTab()) {
-      defaultValue = null;
+      defaultValue = this.state.dirty[key] || null;
     } else {
       defaultValue = this.state.dirty[key] || this.props.data[key];
     }
