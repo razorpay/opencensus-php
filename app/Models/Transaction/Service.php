@@ -100,7 +100,7 @@ class Service extends Base\Service
 
                 $txnIds =  $this->repo->transaction->fetchSettledTransactionsWithoutSettlementId($entity, $count);
 
-                $this->repo->transaction->updateSettledToFalse($txnIds);
+                $this->repo->transaction->updateSettledToFalse($entity, $txnIds);
 
                 return [
                     'count'             => $count,

@@ -557,7 +557,7 @@ class Repository extends Base\Repository
             ->get()->pluck('id')->all();
     }
 
-    public function updateSettledToFalse($txnIds)
+    public function updateSettledToFalse($type, $txnIds)
     {
         if (count($txnIds) === 0)
         {
@@ -568,7 +568,7 @@ class Repository extends Base\Repository
 
         $count = $this->newQuery()
             ->whereIn(Transaction\Entity::ID, $txnIds)
-            ->where(Transaction\Entity::TYPE, Transaction\Type::FUND_ACCOUNT_VALIDATION)
+            ->where(Transaction\Entity::TYPE, $type)
             ->where(Transaction\Entity::SETTLED, true)
             ->whereNull(Transaction\Entity::SETTLEMENT_ID)
             ->update($values);
