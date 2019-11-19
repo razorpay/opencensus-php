@@ -335,7 +335,7 @@ class Processor
         {
             $redis = $this->app['redis']->connection();
 
-            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
+            $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
 
             $conf = $redis->GETSET($key, $redis->GET($key) +  1) ;
 
