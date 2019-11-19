@@ -50,7 +50,7 @@ trait SettlementTrait
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    protected function isMerchantSettlementAllowed(Merchant\Entity $merchant): bool
+    public function isMerchantSettlementAllowed(Merchant\Entity $merchant): array
     {
         // process settlement only for activated merchants
         if ($merchant->isSuspended() === true)
@@ -61,7 +61,13 @@ trait SettlementTrait
                     'reason' => 'merchant is not active',
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlement is not enabled',
+                    'reason'  => 'Only active merchants can get settlements',
+                ]
+            ];
         }
 
         // Do not proceed further if merchant funds are on hold
@@ -73,7 +79,14 @@ trait SettlementTrait
                     'reason' => 'merchant funds are on hold',
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlements are on hold',
+                    'reason'  => 'Merchant funds are on hold with reason \"'
+                        . ($merchant->getHoldFundsReason() ?? 'unknown') . '\"',
+                ]
+            ];
         }
 
         $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
@@ -98,12 +111,24 @@ trait SettlementTrait
                     'reason' => 'merchant doesnt have a active bank account registered',
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Merchant doesnt have a active bank account registered',
+                ]
+            ];
         }
 
         if ($this->skipSpecificMerchants($merchant) === true)
         {
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Settlements skipped based on merchant preference',
+                ]
+            ];
         }
 
         $channel = $merchant->getChannel();
@@ -117,7 +142,7 @@ trait SettlementTrait
         if (($this->env !== Environment::TESTING) and
             (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
         {
-            return true;
+            return [true, []];
         }
 
         $today = Carbon::today(Timezone::IST);
@@ -140,10 +165,19 @@ trait SettlementTrait
                     'bank_account_created' => $createdAt,
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'There won\'t be any settlement',
+                    'reason'  => 'Bank account created yesterday. bank account was created/updated at '
+                        . $createdAt
+                        . '. It would require a day (except bank holidays)'
+                        . ' to register the same with our banking partners'
+                ]
+            ];
         }
 
-        return true;
+        return [true, []];
     }
 
     /**

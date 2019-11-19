@@ -942,7 +942,7 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         // Validate if customer is fee bearer then only move forward
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -970,6 +970,15 @@ class Processor
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+
+        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
+        {
+            $fee = 0;
+
+            $tax = 0;
+        }
+
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -2098,7 +2107,7 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -2284,6 +2293,8 @@ class Processor
                     'calculated_fee'    => $payment->getFee(),
                 ]);
         }
+
+        $payment->setFeeBearer($this->payment->getFeeBearer());
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity

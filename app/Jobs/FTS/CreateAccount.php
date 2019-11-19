@@ -94,7 +94,13 @@ class CreateAccount extends Job
 
             $this->trace->info(
                 TraceCode::FTS_CREATE_ACCOUNT_COMPLETE,
-                $ftsResponse);
+                [
+                    "id"           => $this->id,
+                    "type"         => $this->type,
+                    "product"      => $this->product,
+                    "status"       => $this->status,
+                    "fts_response" => $ftsResponse,
+                ]);
         }
         catch (RecordAlreadyExists $e)
         {

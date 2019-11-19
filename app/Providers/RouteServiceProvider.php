@@ -147,6 +147,7 @@ class RouteServiceProvider extends ServiceProvider
                     'public',
                     'device',
                     'direct',
+                    'private',
                 ]);
             }
         );

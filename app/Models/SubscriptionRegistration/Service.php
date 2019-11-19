@@ -328,4 +328,46 @@ class Service extends Base\Service
 
         return $tokenRegistration->toArrayAdmin();
     }
+
+    public function sendNotification(string $id, string $medium): array
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            null,
+            null,
+            [],
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
+
+        $invoice->setRelation('entity', $invoice->entity);
+
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $data = (new Invoice\Core())->sendNotification($invoice, $medium);
+
+        return $data;
+    }
+
+    public function cancelAuthLink(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+            $id,
+            $this->merchant,
+            null,
+            null,
+            [],
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
+
+        $order = $invoice->order;
+
+        $order->getValidator()->validateOrderNotPaid();
+
+        $invoice = (new Invoice\Core())->cancelInvoice($invoice);
+
+        return $invoice->toArrayPublic();
+    }
 }

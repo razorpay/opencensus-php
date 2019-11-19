@@ -629,6 +629,7 @@ class Gateway
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_AMAZONPAY,
+        Payment\Gateway::WALLET_OPENWALLET,
     ];
 
     public static $channels = [
@@ -1119,7 +1120,6 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
-        self::CARDLESS_EMI,
     ];
 
     public static $captureVerifyEnabled = [

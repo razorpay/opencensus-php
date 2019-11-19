@@ -151,7 +151,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === true)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Order creation failed. Please contact Razorpay for further assistance.');
@@ -186,7 +186,7 @@ class Validator extends Base\Validator
     /**
      * Validates that order is not already paid.
      */
-    protected function validateOrderNotPaid()
+    public function validateOrderNotPaid()
     {
         $order = & $this->entity;
 
