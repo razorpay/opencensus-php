@@ -364,8 +364,8 @@ class Checker extends Base\Core
                     $result = $paymentCount < $maxPaymentCount;
                     if(!$result)
                     {
-                        $this->
-                        offer->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                        $this->offer
+                             ->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
                     }
 
                     return $result;
@@ -397,8 +397,7 @@ class Checker extends Base\Core
 
                 if(!$result)
                 {
-                    $this->
-                    offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+                    $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
                 }
         }
 

@@ -326,6 +326,7 @@ class Processor
         }
     }
 
+    //increment the offer usage count after every successful payment for max offer validation.
     protected function incrementOfferUsageCount($payment)
     {
         $offer = $payment->getOffer();
@@ -1191,6 +1192,8 @@ class Processor
 
             $payment->setAmount($discountedAmount);
 
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
             $input['order_amount'] = $orderAmount;
         }
     }
