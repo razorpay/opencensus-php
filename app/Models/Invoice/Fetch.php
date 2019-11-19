@@ -30,7 +30,7 @@ class Fetch extends BaseFetch
             Entity::STATUSES          => 'sometimes|sequential_array|min:1|max:6|custom',
             Entity::INTERNATIONAL     => 'filled|boolean',
             Entity::SUBSCRIPTIONS     => 'filled|boolean',
-            self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
+            self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user,reminder_status',
         ],
     ];
 

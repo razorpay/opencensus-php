@@ -2,10 +2,9 @@
 
 namespace RZP\Tests\Functional\Reminders;
 
-use RZP\Models\Invoice\ReminderStatus;
-use RZP\Tests\Functional\TestCase;
+use RZP\Models\Invoice\Reminder\Status;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\TestCase;
 
 class ReminderTest extends TestCase
 {
@@ -42,15 +41,19 @@ class ReminderTest extends TestCase
         $this->startTest();
     }
 
-
-
     protected function createPaymentLink()
     {
         $attributes = [
             'order_id'        => $this->fixtures->create('order')->getId(),
             'type'            => 'link',
-            'reminder_status' => ReminderStatus::IN_PROGRESS
         ];
+
+        $invoiceReminder = [
+            'invoice_id'      => '1000000invoice',
+            'reminder_status' => Status::IN_PROGRESS,
+        ];
+
+        $this->fixtures->create('invoice_reminder', $invoiceReminder);
 
         return $this->fixtures->create('invoice', $attributes);
     }

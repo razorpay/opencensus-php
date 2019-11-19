@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Services\Reminders;
 use RZP\Constants\Timezone;
+use RZP\Models\Invoice\Reminder;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\ViewDataSerializer;
@@ -97,24 +98,25 @@ class Notifier extends Base\Core
     {
         $this->invoice->reload();
 
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($this->invoice->getId());
+
         $merchantId = $this->invoice->getMerchantId();
 
-        if(($this->invoice->getReminderStatus() === ReminderStatus::PENDING) and
-            (empty($this->invoice->getReminderId()) === true))
+        if((empty($reminderEntity) === false) and
+            ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+            (empty($reminderEntity->getReminderId()) === true))
         {
             $request = $this->getRemindersCreateReminderInput();
 
             $response = $this->reminders->createReminder($request, $merchantId);
 
-            $this->setReminderResponse($response);
-
-            $this->repo->saveOrFail($this->invoice);
-
+            $this->setReminderResponse($response, $reminderEntity);
         }
-        elseif (($this->invoice->getReminderStatus() === ReminderStatus::PENDING) and
-                (empty($this->invoice->getReminderId()) === false))
+        elseif ((empty($reminderEntity) === false) and
+                ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+                (empty($reminderEntity->getReminderId()) === false))
         {
-            $reminderId = $this->invoice->getReminderId();
+            $reminderId = $reminderEntity->getReminderId();
 
             $request = $this->getRemindersUpdateReminderInput();
 
@@ -125,25 +127,30 @@ class Notifier extends Base\Core
                 return false;
             }
 
-            $this->invoice->setReminderStatus(ReminderStatus::IN_PROGRESS);
+            $reminderEntity->setReminderStatus(Reminder\Status::IN_PROGRESS);
 
-            $this->repo->saveOrFail($this->invoice);
+            $this->repo->saveOrFail($reminderEntity);
         }
+
         return true;
     }
 
-    public function setReminderResponse($response): bool
+    public function setReminderResponse($response, Reminder\Entity $reminder): bool
     {
         if(empty($response['id']) === false)
         {
-            $this->invoice->setReminderStatus(ReminderStatus::IN_PROGRESS);
-            $this->invoice->setReminderId($response['id']);
-            return true;
+            $reminder->setReminderStatus(Reminder\Status::IN_PROGRESS);
+
+            $reminder->setReminderId($response['id']);
+        }
+        else
+        {
+            $reminder->setReminderStatus(Reminder\Status::FAILED);
         }
 
-        $this->invoice->setReminderStatus(ReminderStatus::FAILED);
+        $this->repo->saveOrFail($reminder);
 
-        return false;
+        return true;
     }
 
     //  -------------------------------------------------------------------
@@ -417,7 +424,7 @@ class Notifier extends Base\Core
             'issued_at' => $this->invoice->getIssuedAt(),
         ];
 
-        if( $this->invoice->getExpireBy() !== null)
+        if($this->invoice->getExpireBy() !== null)
         {
             $reminderData['expire_by'] = $this->invoice->getExpireBy();
             unset($reminderData['issued_at']);

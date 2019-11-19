@@ -656,6 +656,37 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAssignPricingPlanFeeBearerMismatch()
+    {
+        /*
+         * default merchant is platform fee bearer
+         * we are creating a plan whose fee_bearer is customer
+         * we are trying to assign above plan to default merchant
+         * this is expected to fail
+         */
+
+        $id = $this->createPricingPlan(['fee_bearer' => 'customer'])['id'];
+
+        $this->setDefaultMerchantMethods();
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+
+        /*
+         * now the other way round
+         */
+        $id = $this->createPricingPlan(['fee_bearer' => 'customer'])['id'];
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->setFeeBearer('platform');
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
     public function testMerchantAssignPricingPlanMerchantDefault()
     {
         // This test case is for handling errors where
@@ -995,16 +1026,6 @@ class PricingTest extends TestCase
         $this->assertNotEmpty($response);
     }
 
-    protected function setDefaultMerchantMethods()
-    {
-        // Disable all methods and only enable card.
-        // The default pricing plan has only card enabled
-
-        $this->fixtures->merchant->disableAllMethods();
-
-        $this->fixtures->merchant->enableCard();
-    }
-
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
@@ -1012,31 +1033,6 @@ class PricingTest extends TestCase
         $this->setDefaultMerchantMethods();
 
         return $this->merchantAssignPricingPlan($id, '10000000000000');
-    }
-
-    protected function createPricingPlan($pricingPlan = [])
-    {
-        $defaultPricingPlan = [
-            'plan_name'           => 'TestPlan1',
-            'payment_method'      => 'card',
-            'payment_method_type' => 'credit',
-            'payment_network'     => 'DICL',
-            'payment_issuer'      => 'HDFC',
-            'percent_rate'        => 1000,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-        ];
-
-        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
-
-        $plan = $this->fixtures->create('pricing', $pricingPlan);
-
-        $plan = $plan->toArray();
-
-        $plan['id'] = $plan['plan_id'];
-
-        return $plan;
     }
 
     protected function createCommissionPlan($pricingPlan = [])

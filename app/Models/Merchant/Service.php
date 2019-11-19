@@ -605,6 +605,8 @@ class Service extends Base\Service
 
         (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
+        $this->validatePricingPlanForFeeBearer($merchant, $plan);
+
         $originalPricingPlan = null;
 
         if (empty($merchant->pricing) === false)
@@ -3521,6 +3523,40 @@ class Service extends Base\Service
             $this->core()->removeMerchantEmailToMailingList($merchant, $i);
 
             $i++;
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     * @param Plan $plan
+     * @throws Exception\BadRequestValidationFailureException
+     *
+     * Ensures that all pricing rules in plan have the same feeBearer value as the merchant
+     * the plan is being assigned to.
+     *
+     * This is not applicable in case of dynamic fee bearer.
+     */
+    public function validatePricingPlanForFeeBearer(Merchant\Entity $merchant, Plan $plan)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        $merchantFeeBearer = $merchant->getFeeBearer();
+
+        foreach ($plan as $pricing)
+        {
+            $pricingFeeBearer = $pricing->getFeeBearer();
+
+            if ($pricingFeeBearer !== $merchantFeeBearer)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_FEE_BEARER_MISMATCH,
+                    'fee_bearer',
+                    'The merchant is ' . $merchantFeeBearer . ' fee bearer. Cannot assign ' . $pricingFeeBearer . ' fee bearer pricing rule to merchant'
+                );
+            }
         }
     }
 }

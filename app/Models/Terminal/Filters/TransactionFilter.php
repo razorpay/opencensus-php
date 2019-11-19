@@ -850,10 +850,8 @@ class TransactionFilter extends Terminal\Filter
 
     public function feeBearerFilter($terminal, $applicableTerminals)
     {
-        $merchant = $this->input['merchant'];
-
         /*
-         * For customer fee bearer merchants, we are responsible for adding fees to payment amount and settling only
+         * For customer fee bearer payments, we are responsible for adding fees to payment amount and settling only
          * actual payment amount (not fees) to the merchant. For direct settlements, Razorpay does not have control over
          * the amount that finally gets settled to merchant by the bank. For this reason, there's a check  that skips
          * direct settlement terminals for customer fee bearer merchants.
@@ -865,11 +863,11 @@ class TransactionFilter extends Terminal\Filter
          *
          *
          */
-        if ($merchant->isFeeBearerCustomer() === true)
+        if ($this->input['payment']->isFeeBearerCustomer() === true)
         {
             if ($terminal->isDirectSettlement() === true)
             {
-                return ($merchant->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID);
+                return ($this->input['merchant']->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID);
             }
         }
 

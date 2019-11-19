@@ -169,6 +169,7 @@ class Base extends Core
         self::ISG                    => [],
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
+        self::PAYPAL                 => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

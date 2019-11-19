@@ -32,4 +32,10 @@ class BulkCreateEntityTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testBulkUpdateTypeCaseMismatch()
+    {
+        $this->startTest();
+    }
+
 }

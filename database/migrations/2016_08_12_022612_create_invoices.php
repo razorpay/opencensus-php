@@ -60,12 +60,6 @@ class CreateInvoices extends Migration
                   ->unique()
                   ->nullable();
 
-            $table->char(Entity::REMINDER_ID, Entity::ID_LENGTH)
-                  ->nullable();
-
-            $table->string(Entity::REMINDER_STATUS, 255)
-                  ->nullable();
-
             $table->integer(Entity::DATE)
                   ->nullable();
 
