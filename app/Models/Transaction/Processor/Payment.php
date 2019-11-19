@@ -184,6 +184,13 @@ class Payment extends Base
 
     }
 
+    public function fillDetails()
+    {
+        parent::fillDetails();
+
+        $this->txn->setFeeBearer($this->source->getFeeBearer());
+    }
+
     public function calculateFees()
     {
         switch (true)

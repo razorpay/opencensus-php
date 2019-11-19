@@ -77,7 +77,6 @@ class Entity extends Base\PublicEntity
     const STATUSES                  = 'statuses';
     const INTERNATIONAL             = 'international';
     const SUBSCRIPTIONS             = 'subscriptions';
-    const REMINDER_ID               = 'reminder_id';
     const REMINDER_STATUS           = 'reminder_status';
 
     /**
@@ -292,7 +291,6 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
-        self::REMINDER_STATUS
     ];
 
     protected $fillable = [
@@ -344,7 +342,6 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
-        self::REMINDER_STATUS,
         self::MERCHANT_ID,
         self::DATE,
         self::MERCHANT_GSTIN,
@@ -403,7 +400,6 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
-        self::REMINDER_STATUS,
         self::DATE,
         self::TERMS,
         self::PARTIAL_PAYMENT,
@@ -431,6 +427,7 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::CREATED_AT,
         self::IDEMPOTENCY_KEY,
+        self::REMINDER_STATUS,
     ];
 
     /**
@@ -496,8 +493,8 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_STATUS,
         self::SUPPLY_STATE_CODE,
         self::USER_ID,
-        self::REMINDER_STATUS,
         self::FIRST_PAYMENT_MIN_AMOUNT,
+        self::REMINDER_STATUS,
     ];
 
     protected $casts = [
@@ -595,15 +592,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SMS_STATUS);
     }
 
-    public function getReminderStatus()
-    {
-        return $this->getAttribute(self::REMINDER_STATUS);
-    }
-
-    public function getReminderId()
-    {
-        return $this->getAttribute(self::REMINDER_ID);
-    }
 
     public function getCustomerId()
     {
@@ -1090,21 +1078,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setReminderId($id)
-    {
-        $this->setAttribute(self::REMINDER_ID, $id);
-    }
-
-    public function setReminderStatus($status)
-    {
-        if ($status !== null)
-        {
-            ReminderStatus::checkStatus($status);
-        }
-
-        $this->setAttribute(self::REMINDER_STATUS, $status);
-    }
-
     public function setSmsStatus($status)
     {
         if ($status !== null)
@@ -1401,11 +1374,17 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        if ($basicAuth->isProxyOrPrivilegeAuth() === true)
+        {
+            $array[self::REMINDER_STATUS] = (empty($array[self::REMINDER_STATUS]) === false) ?
+                                            $array[self::REMINDER_STATUS][self::REMINDER_STATUS] : null;
+        }
+        else
         {
             unset($array[self::REMINDER_STATUS]);
         }
     }
+
 
     protected function setPublicSubscriptionIdAttribute(array & $array)
     {
@@ -1523,20 +1502,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function generateReminderStatus(array $input)
-    {
-        if(isset($input[self::REMINDER_ENABLE]) === true)
-        {
-            $reminderstatus = ReminderStatus::PENDING;
-
-            $reminderEnable = boolval($input[self::REMINDER_ENABLE]);
-
-            $reminderstatus = ($reminderEnable === true) ? ReminderStatus::PENDING : ReminderStatus::DISABLED;
-
-            $this->setAttribute(self::REMINDER_STATUS, $reminderstatus);
-        }
-    }
-
     public function generateDueBy(array $input)
     {
         if (empty($input[self::DUE_BY]) === false)
@@ -1651,6 +1616,11 @@ class Entity extends Base\PublicEntity
     public function user()
     {
         return $this->belongsTo(User\Entity::class);
+    }
+
+    public function reminderStatus()
+    {
+        return $this->belongsTo(Reminder\Entity::class, 'id', 'invoice_id');
     }
 
     public function entity()

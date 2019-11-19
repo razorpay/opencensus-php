@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
@@ -93,7 +94,7 @@ class PennyTesting extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $input) {
 
-            $this->updateBankDetailVerificationStatus($input, $merchantDetails);
+            $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
 
             $this->updateMerchantContext($merchantDetails, $merchant);
 
@@ -104,10 +105,11 @@ class PennyTesting extends Base\Core
     }
 
     /**
-     * @param array $input
-     * @param       $merchantDetails
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
      */
-    protected function updateBankDetailVerificationStatus(array $input, Entity $merchantDetails): void
+    protected function updateBankDetailVerificationStatus(array $input, Merchant\Entity $merchant , Entity $merchantDetails): void
     {
         $ocrMatchPercentWithPan = get_similar_text_percent($merchantDetails->getPromoterPanName(), $input[Constants::REGISTERED_NAME]);
 
@@ -136,6 +138,13 @@ class PennyTesting extends Base\Core
         ]);
 
         $merchantDetails->setBankDetailsVerificationStatus($bankAccountValidationStatus);
+
+        $eventAttributes = [
+            Constants::POA_STATUS                       => $merchantDetails->getPoaVerificationStatus(),
+            Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus(),
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $merchant, null, $eventAttributes);
     }
 
     protected function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)

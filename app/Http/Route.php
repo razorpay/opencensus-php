@@ -244,6 +244,7 @@ final class Route
         'get_merchant_partner_status'              => ['get',      'merchant/partner_status',                        'MerchantController@getMerchantPartnerStatus'                       ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_entities_verify'         => ['get',      'merchants/invoice/verify',                       'MerchantInvoiceController@verify'                                  ],
         'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         // TODO: Should be removed once the correction has run for all the merchant
@@ -403,6 +404,7 @@ final class Route
         'setl_process_data'                        => ['get',      'settlements/process',                            'SettlementController@getSettlementProcess'                         ],
         'setl_process_data_reset'                  => ['delete',   'settlements/process',                            'SettlementController@resetSettlementProcess'                       ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
+        'setl_amount'                              => ['get',      'settlements/amount',                             'SettlementController@getMerchantSettlementAmount'                  ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
         'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
@@ -417,6 +419,7 @@ final class Route
         'setl_combined_report'                     => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'setl_combined_recon'                      => ['get',      'settlements/recon/combined',                     'SettlementController@getSettlementCombinedReconReport'             ],
         'setl_update_channel_bulk'                 => ['put',      'settlements/channel/bulk',                       'SettlementController@updateChannelForMultipleSettlements'          ],
+        'setl_holidays'                            => ['get',      'settlement/holidays',                            'SettlementController@getHolidayListForYear',                       ],
         'nodal_get_account_balance'                => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'nodal_initiate_transfer_admin'            => ['post',     'nodal/transfer/admin',                           'SettlementController@postInitiateTransfer'                         ],
@@ -1149,7 +1152,8 @@ final class Route
         'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],
         'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'     => ['get',      'subscription_registration/auth_links/{id}',      'SubscriptionRegistrationController@fetchAuthLink'                  ],
-        'subscription_registration_cancel_link'    => ['post',     'subscription_registration/auth_links/{id}/cancel',      'SubscriptionRegistrationController@cancelAuthLink'          ],
+        'subscription_registration_resend_link'    => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',     'SubscriptionRegistrationController@sendNotification'       ],
+        'subscription_registration_cancel_link'    => ['post',     'subscription_registration/auth_links/{id}/cancel',              'SubscriptionRegistrationController@cancelAuthLink'         ],
         'subscription_registration_fetch_link_internal' => ['get', 'subscription_registration/auth_links/{id}/internal', 'SubscriptionRegistrationController@fetchAuthLinkInternal'      ],
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
@@ -1199,6 +1203,7 @@ final class Route
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
+        'create_fts_nodal_beneficiary'             => ['post',     'create_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createFtsNodalBeneficiary'              ],
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
@@ -1482,6 +1487,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'oauth_app_webhook_create',
+        'setl_amount',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
@@ -1596,6 +1602,7 @@ final class Route
         'subscription_registration_list_links',
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
+        'subscription_registration_resend_link',
         'subscription_registration_cancel_link',
         //'fund_account_delete',
         'transaction_statement_fetch',
@@ -1621,6 +1628,7 @@ final class Route
         'merchant_activation_update_partner',
         'merchant_activation_status_partner',
         'merchant_fetch_schedule_tasks',
+        'setl_holidays',
     ];
 
     // Only routes defined in internalApps go here
@@ -1660,6 +1668,7 @@ final class Route
         'merchant_get_app_access_mapping',
         'merchant_create_app_access_mapping',
         'merchant_create_invoice_entities',
+        'merchant_invoice_entities_verify',
         'merchant_invoice_correction',
         'merchant_daily_report',
         'merchant_delete_app_access_mapping',
@@ -1756,6 +1765,7 @@ final class Route
         'cps_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
+        'create_fts_nodal_beneficiary',
         'payouts_process_queued',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
@@ -1817,6 +1827,7 @@ final class Route
         'invoice_remove_line_item',
         'invoice_send_notification_private',
         'invoice_cancel',
+        'subscription_registration_resend_link',
         'subscription_registration_cancel_link',
     ];
 
@@ -2673,6 +2684,8 @@ final class Route
         'setl_initiate_action'                     => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data'                        => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data_reset'                  => Permission::SETTLEMENT_BULK_UPDATE,
+        // TODO: get clarity on permissions
+        'setl_amount'                              => '*',
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
@@ -3045,6 +3058,7 @@ final class Route
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'reports_monthly_banking_invoice'           => '*',
+        'setl_holidays'                             => '*',
     ];
 
     public static $direct = [
@@ -3262,6 +3276,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_invoice_entities_verify',
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
@@ -3301,6 +3316,7 @@ final class Route
             'terminal_onboarding_verification',
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
+            'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
         ],

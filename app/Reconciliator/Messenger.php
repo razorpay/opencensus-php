@@ -87,6 +87,14 @@ class Messenger
                             $flag = true;
                         }
                     }
+
+                    // Temporarily disabling slack alert for Olamoney as
+                    // we are getting too many alerts. Will enable once
+                    // the issue is fixed.
+                    if ($data['gateway'] === RequestProcessor\Base::OLAMONEY)
+                    {
+                        $flag = true;
+                    }
             }
         }
 
