@@ -68,6 +68,10 @@ export default class InvoiceDetailContainer extends Component {
   };
 
   fetchInvoiceRemindersList = () => {
+    if (!this.props.user.isRemindersEnabled) {
+      return;
+    }
+
     const promiseList = [];
 
     if (!this.props.reminders.reminders.items.length) {
@@ -279,7 +283,10 @@ export default class InvoiceDetailContainer extends Component {
             });
           }
 
-          if (d.hasOwnProperty('expire_by')) {
+          if (
+            d.hasOwnProperty('expire_by') &&
+            this.props.user.isRemindersEnabled
+          ) {
             this.fetchDataForInvoice();
           }
 

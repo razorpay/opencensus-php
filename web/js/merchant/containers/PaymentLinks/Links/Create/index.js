@@ -318,6 +318,10 @@ export default class CreateNewContainer extends React.Component {
       promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
     }
 
+    if (!this.props.user.isRemindersEnabled) {
+      return Promise.all(promiseList);
+    }
+
     if (!this.props.reminders.reminders.items.length) {
       promiseList.push(this.props.fetchReminders());
     }
