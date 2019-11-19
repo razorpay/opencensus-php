@@ -7,6 +7,7 @@ import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  validatePANCardUnregBiz,
   isUrlLenient,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
@@ -370,7 +371,7 @@ const businessDetails = [
           : 'PAN of one of the directors',
       validator: function(value) {
         return isUnregisteredBusiness(this)
-          ? validatePANCard(value, 'P')
+          ? validatePANCardUnregBiz(value)
           : validatePANCard(value);
       },
       getLabel: activation =>

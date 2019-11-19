@@ -702,6 +702,15 @@ export default class ActivationWizard extends React.Component {
     return businessType == 2 || businessType == 11;
   }
 
+  get canSubmitL1Form() {
+    const promoterPan =
+      this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
+    return (
+      !hasSelectedBlacklistedCategory(this) &&
+      (this.isUnregBiz ? promoterPan && promoterPan[3] === 'P' : true)
+    );
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -1511,8 +1520,7 @@ export default class ActivationWizard extends React.Component {
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
                       disabled={
-                        this.state.callingL1Api ||
-                        hasSelectedBlacklistedCategory(this)
+                        !this.canSubmitL1Form || this.state.callingL1Api
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}
