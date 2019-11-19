@@ -326,8 +326,8 @@ class Processor
         }
     }
 
-    //increment the offer usage count after every successful payment for max offer validation.
-    protected function incrementOfferUsageCount($payment)
+    //decrement the offer usage count after failed payment for max offer validation.
+    protected function decrementOfferUsageCount($payment)
     {
         $offer = $payment->getOffer();
 
@@ -338,12 +338,10 @@ class Processor
             $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
 
             $redis->multi();
-            $redis->incr($key);
+
+            $redis->decr($key);
+
             $redis->exec();
-
-            //$offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
-
-            //$this->repo->offer->saveOrFail($offer);
         }
     }
 
@@ -1748,6 +1746,8 @@ class Processor
 
             $notifier->trigger(Payment\Event::FAILED);
         }
+
+        $this->decrementOfferUsageCount($payment);
 
         //TODO: Remove this later
         try
