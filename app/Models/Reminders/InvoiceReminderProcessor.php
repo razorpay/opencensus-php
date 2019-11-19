@@ -96,6 +96,7 @@ class InvoiceReminderProcessor extends ReminderProcessor
         if(empty($expireBy) === false)
         {
             $input['expire_by'] = $expireBy;
+            unset($input['issued_at']);
         }
 
         $reminderID = $invoice->getReminderId();

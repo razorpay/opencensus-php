@@ -11,26 +11,37 @@ use RZP\Constants\Country;
 use RZP\Models\BankAccount;
 use RZP\Models\BankingAccount;
 use RZP\Constants\IndianStates;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\NodalBeneficiary;
 use RZP\Jobs\FTS\CreateAccount as Account;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt\Type as Product;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class CreateAccount extends Base
 {
+    protected $status;
+
     protected $account;
 
     protected $vpaCore;
 
     protected $product;
 
+    protected $accountId;
+
+    protected $accountType;
+
     protected $cardCore;
 
     protected $bankAccountCore;
 
     protected $bankingAccountCore;
+
+    protected $nodalBeneficiaryCore;
 
     public function __construct($app)
     {
@@ -43,36 +54,59 @@ class CreateAccount extends Base
         $this->bankAccountCore = new BankAccount\Core;
 
         $this->bankingAccountCore = new BankingAccount\Core;
+
+        $this->nodalBeneficiaryCore = new NodalBeneficiary\Core;
+    }
+
+    /**
+     * @param string $id
+     * @param string $type
+     * @param string $product
+     * @param string|null $status
+     * @throws LogicException
+     */
+    public function initialize(string $id, string $type, string $product, string $status=null)
+    {
+        $this->product     = $product;
+
+        $this->accountId   = $id;
+
+        $this->accountType = $type;
+
+        $this->status      = $status;
+
+        if ($status !== null)
+        {
+            $migratedKey = 'migrated_' . $type;
+
+            $this->redis->hincrby(ConfigKey::FTS_BENEFICIARY, $migratedKey, 1);
+        }
+
+        $this->fetchAccountByType();
     }
 
     /**
      * Handler method in service for creation
      * of fund account using FTS
      *
-     * @param string $id
-     * @param string $type
-     * @param string $product
      * @return array
-     * @throws LogicException
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createFundAccount(string $id, string $type, string $product): array
+    public function createFundAccount(): array
     {
-        $this->product = $product;
-
-        $input = $this->makeRequestUsingType($id, $type, $product);
+        $input = $this->prepareRequestUsingType();
 
         $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_CREATE_URI, 'POST', $input);
 
-        if ($type === Constants::BANKING_ACCOUNT)
+        if ($this->accountType === Constants::BANKING_ACCOUNT)
         {
             $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
                 $response['body'][Constants::FUND_ACCOUNT_ID] : null;
 
             if (empty(trim($ftsFundAccountId)) === false)
             {
-                $this->saveFtsAccountId($ftsFundAccountId, $type);
+                $this->saveFtsAccountId($ftsFundAccountId);
             }
         }
 
@@ -244,6 +278,106 @@ class CreateAccount extends Base
         ];
 
         return $request;
+    }
+
+    public function prepareRequestUsingType()
+    {
+        switch ($this->accountType)
+        {
+            case Constants::BANK_ACCOUNT:
+                $request[Constants::BANK_ACCOUNT] = $this->getAccountDetails($this->account);
+
+                if ($this->status === NodalBeneficiary\Status::VERIFIED)
+                {
+                    $request[Constants::BENEFICIARY_STATUS] = $this->getBeneficiaryStatus($this->account);
+                }
+
+                break;
+
+            case Constants::VPA:
+                $request[Constants::VPA] = $this->getVpaDetails($this->account);
+
+                break;
+
+            case Constants::BANKING_ACCOUNT:
+                $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
+
+                // TODO: this should be generic, hardcoding for now
+                $request[Constants::DEFAULT_CHANNEL] = Channel::RBL;
+                break;
+
+            default:
+                throw new LogicException('Account Type is not supported ' . $this->accountType);
+        }
+
+        // ToDo need to confirm this before merging
+        $request[Constants::DEFAULT_CHANNEL] = $this->getDefaultChannelByProductAndAccountType();
+
+        $request[Constants::PRODUCT] = $this->product;
+
+        $request[Constants::MERCHANT_ID] = $this->account->merchant->getId();
+
+        return $request;
+    }
+
+    /**
+     * Fetch Account By Type
+     *
+     * @throws LogicException
+     */
+    public function fetchAccountByType()
+    {
+        switch ($this->accountType)
+        {
+            case Constants::BANK_ACCOUNT:
+                $this->account = $this->bankAccountCore->getBankAccountEntity($this->accountId);
+
+                break;
+
+            case Constants::VPA:
+                $this->account = $this->vpaCore->getVpaEntity($this->accountId);
+
+                break;
+
+            case Constants::BANKING_ACCOUNT:
+                $this->account = $this->bankingAccountCore->getBankingAccountEntity($this->accountId);
+
+                break;
+
+            default:
+                throw new LogicException('Account Type is not supported ' . $this->accountType);
+        }
+    }
+
+    public function isAccountCreatedInFts()
+    {
+        if (empty($this->account->getFtsFundAccountId()) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getDefaultChannelByProductAndAccountType()
+    {
+        if ($this->product === Product::PAYOUT)
+        {
+            if ($this->accountType === Constants::BANKING_ACCOUNT)
+            {
+                return Channel::RBL;
+            }
+        }
+
+        return Channel::YESBANK;
+    }
+
+    protected function getBeneficiaryStatus(BankAccount\Entity $ba):array
+    {
+        return [
+            Constants::STATUS           => Constants::COMPLETED,
+            Constants::BENEFICIARY_CODE => $ba->getId(),
+        ];
     }
 
     public function callFtsCreateAccount(PublicEntity $account, string $product)

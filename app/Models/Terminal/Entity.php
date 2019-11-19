@@ -86,6 +86,11 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER                = 'account_number';
     const IFSC_CODE                     = 'ifsc_code';
 
+    //used for virtual VPA
+    const VIRTUAL_UPI_ROOT               = 'virtual_upi_root';
+    const VIRTUAL_UPI_MERCHANT_PREFIX    = 'virtual_upi_merchant_prefix';
+    const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
+
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
     //
@@ -172,6 +177,9 @@ class Entity extends Base\PublicEntity
         self::IFSC_CODE,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::VIRTUAL_UPI_ROOT,
+        self::VIRTUAL_UPI_MERCHANT_PREFIX,
+        self::VIRTUAL_UPI_HANDLE,
     ];
 
     protected $public = [
@@ -232,6 +240,9 @@ class Entity extends Base\PublicEntity
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
+        self::VIRTUAL_UPI_ROOT,
+        self::VIRTUAL_UPI_MERCHANT_PREFIX,
+        self::VIRTUAL_UPI_HANDLE,
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::MPAN,
@@ -906,6 +917,21 @@ class Entity extends Base\PublicEntity
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
+    }
+
+    public function getVirtualUpiRoot()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_ROOT);
+    }
+
+    public function getVirtualUpiMerchantPrefix()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+    }
+
+    public function getVirtualUpiHandle()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
     }
 
     // returns vpa for terminal by first checking vpa attribute and if not present then returns gatewayMerchantId2 value

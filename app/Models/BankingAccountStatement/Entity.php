@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     const TO_DATE               = 'to_date';
     const TO_EMAIL_LIST         = 'to_emails';
 
+    const UTR                   = 'utr';
+
     // Relation names/attributes
     const SOURCE                = 'source';
 
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE_CURRENCY,
         self::POSTED_DATE,
         self::TRANSACTION_DATE,
+        self::UTR,
     ];
 
     protected $visible = [
@@ -94,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::TRANSACTION_ID,
+        self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -104,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSACTION_ID,
         self::TRANSACTION_ID,
         self::DESCRIPTION,
+        self::UTR,
     ];
 
     protected $casts = [
@@ -222,6 +227,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRANSACTION_DATE, $date);
     }
 
+    public function setUtr($utr = null)
+    {
+        if (empty($utr) === true)
+        {
+            $utr = $this->getUtrFromDescription();
+        }
+
+        $this->setAttribute(self::UTR, $utr);
+    }
+
     // -------------------------- Getters ------------------------------------ //
 
     public function getAmount()
@@ -284,6 +299,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
     public function isTypeCredit()
     {
         return ($this->getType() === Type::CREDIT);
@@ -294,7 +314,7 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DEBIT);
     }
 
-    public function getUtrFromDescription()
+    protected function getUtrFromDescription()
     {
         $description = $this->getDescription();
 

@@ -830,6 +830,13 @@ class Service extends Base\Service
             'failed'        => $failed,
         ];
 
+        $this->trace->info(TraceCode::ENTITY_BULK_ADD_REQUEST,
+                           [
+                               'summary' => $summary,
+                               'processed' => $processed,
+                           ]
+        );
+
         return $summary;
     }
 }

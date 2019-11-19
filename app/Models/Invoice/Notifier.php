@@ -413,20 +413,21 @@ class Notifier extends Base\Core
 
     protected function getRemindersCreateReminderInput(): array
     {
-        $reminder_data = [
+        $reminderData = [
             'issued_at' => $this->invoice->getIssuedAt(),
         ];
 
         if( $this->invoice->getExpireBy() !== null)
         {
-            $reminder_data['expire_by'] = $this->invoice->getExpireBy();
+            $reminderData['expire_by'] = $this->invoice->getExpireBy();
+            unset($reminderData['issued_at']);
         }
 
         $request = [
             'namespace'     => 'payment_link',
             'entity_id'     => $this->invoice->getId(),
             'entity_type'   => $this->invoice->getEntityName(),
-            'reminder_data' => $reminder_data,
+            'reminder_data' => $reminderData,
             'callback_url'  => $this->getCallbackUrlForReminder(),
         ];
 
@@ -445,6 +446,7 @@ class Notifier extends Base\Core
         if(empty($expireBy) === false)
         {
             $reminderData['expire_by'] = $expireBy;
+            unset($reminderData['issued_at']);
         }
 
         $request = [
@@ -725,6 +727,14 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_BAGIC:
+                $template = 'sms.custom_invoice.bagic_pl';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -789,6 +799,16 @@ class Notifier extends Base\Core
                     'invoice_link'     => $invoiceLink,
                     'rejection_reason' => $notes['rejection_reason'] ?? '',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_BAGIC:
+
+                $template = 'sms.custom_invoice.bagic_sub';
+
+                $params = [
+                    'invoice_link'    => $invoiceLink
                 ];
 
                 break;

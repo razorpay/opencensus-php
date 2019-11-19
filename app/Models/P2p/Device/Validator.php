@@ -142,7 +142,7 @@ class Validator extends Base\Validator
     public function makeGetTokenSuccessRules()
     {
         $rules = $this->makeRules([
-            DeviceToken\Entity::GATEWAY_DATA         => 'required',
+            DeviceToken\Entity::DEVICE_TOKEN         => 'required',
         ]);
 
         return $rules;

@@ -59,7 +59,7 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::QR_CODE_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
-            $table->string(VirtualAccount::VPA)
+            $table->string(VirtualAccount::VPA_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
             $table->string(VirtualAccount::CUSTOMER_ID, VirtualAccount::ID_LENGTH)
@@ -107,7 +107,7 @@ class CreateVirtualAccountsTable extends Migration
                   ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
 
-            $table->index(VirtualAccount::VPA);
+            $table->index(VirtualAccount::VPA_ID);
             $table->index(VirtualAccount::DESCRIPTOR);
             $table->index(VirtualAccount::STATUS);
             $table->index(VirtualAccount::QR_CODE_ID);

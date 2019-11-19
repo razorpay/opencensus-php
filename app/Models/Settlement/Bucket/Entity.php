@@ -42,4 +42,9 @@ class Entity extends Base\PublicEntity
         self::COMPLETED    => 0,
         self::BALANCE_TYPE => Balance\Type::PRIMARY,
     ];
+
+    public function getBucketTimestamp(): int
+    {
+        return $this->getAttribute(self::BUCKET_TIMESTAMP);
+    }
 }

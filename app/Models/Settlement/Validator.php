@@ -26,6 +26,10 @@ class Validator extends Base\Validator
         'h2h'                          => 'required|in:0,1',
     ];
 
+    protected static $settlementAmountRules = [
+        'balance_type' => 'sometimes|string|custom',
+    ];
+
     protected static $nodalTransferRules = [
         Entity::GATEWAY     => 'sometimes|filled|string|max:32|custom',
         Entity::AMOUNT      => 'required_without:gateway|integer|min:100|max:100000000000',
@@ -96,6 +100,10 @@ class Validator extends Base\Validator
         'created_at'          => 'sometimes|epoch',
         'settled_at'          => 'sometimes|epoch',
         'initiated_at'        => 'required_with:settled_at,created_at|epoch',
+    ];
+
+    protected static $settlementHolidayRules = [
+        'year'  =>  'sometimes|digits:4',
     ];
 
     protected function validateBalanceType($attribute, $value)

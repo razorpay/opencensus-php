@@ -236,7 +236,6 @@ class Channel
     {
         return [
             self::RBL,
-            self::CITI,
         ];
     }
 

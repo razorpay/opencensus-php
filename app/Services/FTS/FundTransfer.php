@@ -370,6 +370,11 @@ class FundTransfer extends Base
         $sourceCore = new $sourceCoreClass();
 
         $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+
+        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+        {
+            $sourceCore->updateStatusAfterFtaInitiated($this->source, $this->fta);
+        }
     }
 
     /**
@@ -588,6 +593,20 @@ class FundTransfer extends Base
         return $this->isNeftRtgsSupportedTimings($mode);
     }
 
+    public function addInitiateAtIfRequired()
+    {
+        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
+        {
+            $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                      ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function initialize(string $ftaId)
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
@@ -663,6 +682,16 @@ class FundTransfer extends Base
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function checkTransferStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
             Requests::POST,
             $input);
     }

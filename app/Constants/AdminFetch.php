@@ -1318,6 +1318,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::MERCHANT_DOCUMENT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::MERCHANT => [
                 'activated' => [
                     Fetch::LABEL  => 'Activated',

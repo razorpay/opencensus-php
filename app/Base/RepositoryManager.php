@@ -13,6 +13,7 @@ use RZP\Base\Database\MySqlConnection;
 
 /**
  * @property Models\Plan\Subscription\Repository           $subscription
+ * @property Models\SubscriptionRegistration\Repository    $subscription_registration
  * @property Models\Terminal\Repository                    $terminal
  * @property Models\Invoice\Repository                     $invoice
  * @property Models\Tax\Repository                         $tax

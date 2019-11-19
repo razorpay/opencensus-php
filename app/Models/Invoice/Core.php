@@ -233,7 +233,7 @@ class Core extends Base\Core
             ];
         }
 
-        if ($invoice->isIssued() === true)
+        if ($invoice->isIssued() === true or $invoice->isPartiallyPaid() === true)
         {
             InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $invoiceData);
         }

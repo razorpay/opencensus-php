@@ -151,8 +151,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
-        $this->traceGatewayPaymentResponse(
-            $response, $input, TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $response['received'] = '1';
 

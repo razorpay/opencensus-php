@@ -56,6 +56,12 @@ class P2pHelper
     protected $isDeviceInContext;
 
     /**
+     * For all API routes which has merchant key and password, its set to false
+     * @var bool
+     */
+    protected $isMerchantOnAuth;
+
+    /**
      * Set fixtures,
      * Initiate Auth for Device 1
      * Resets response callbacks
@@ -108,6 +114,19 @@ class P2pHelper
     public function setDeviceInContext(bool $context): self
     {
         $this->isDeviceInContext = $context;
+
+        return $this;
+    }
+
+    /**
+     * Enable or disable Merchant auth
+     *
+     * @param bool $auth
+     * @return P2pHelper
+     */
+    public function setMerchantOnAuth(bool $auth): self
+    {
+        $this->isMerchantOnAuth = $auth;
 
         return $this;
     }
@@ -434,7 +453,11 @@ class P2pHelper
 
         $prefix = 'v1/upi/';
 
-        if ($this->isCustomerInContext === true)
+        if ($this->isMerchantOnAuth === true)
+        {
+            $prefix .= 'merchant/';
+        }
+        else if ($this->isCustomerInContext === true)
         {
             $prefix .= 'customer/';
         }
@@ -454,7 +477,11 @@ class P2pHelper
             $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getCode();
         }
 
-        if ($this->isDeviceInContext === true)
+        if ($this->isMerchantOnAuth === true)
+        {
+            $servers['PHP_AUTH_PW'] = 'TheKeySecretForTests';
+        }
+        else if ($this->isDeviceInContext === true)
         {
             $servers['PHP_AUTH_PW'] = $this->fixtures->device->getAuthToken();
         }

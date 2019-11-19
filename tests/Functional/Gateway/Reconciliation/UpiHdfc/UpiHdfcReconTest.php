@@ -28,9 +28,19 @@ class UpiHdfcReconTest extends TestCase
 
         $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+        $upiEntity1 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
 
-        $entries[] = $this->overrideUpiHdfcPayment($upiEntity);
+        $upiEntity2 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $entries[] = $this->overrideUpiHdfcPayment($upiEntity1);
+
+        $row = $this->overrideUpiHdfcPayment($upiEntity2);
+
+        // Change the settlement date format for this row, to test
+        // that this format is being parsed correctly without error.
+        $row['Settlement Date'] = '08/19/2018';
+
+        $entries[] = $row;
 
         $file = $this->writeToExcelFile($entries, 'upiHdfc');
 
@@ -40,15 +50,21 @@ class UpiHdfcReconTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
 
-        $transactionEntity = $this->getDbLastEntity('transaction');
+        $updatedPayment1 = $this->getDbEntityById('payment', $upiEntity1['payment_id']);
+        $updatedPayment2 = $this->getDbEntityById('payment', $upiEntity2['payment_id']);
 
-        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $transactionEntity1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id']);
+        $transactionEntity2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id']);
 
-        $this->assertNotNull($transactionEntity['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity1['reconciled_at']);
+        $this->assertNotNull($transactionEntity2['reconciled_at']);
 
-        $upiEntity = $this->getDbLastEntityToArray('upi');
+        $this->assertNotNull($transactionEntity1['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity2['gateway_settled_at']);
 
-        $this->assertEquals($entries[0]['Txn ref no. (RRN)'], $upiEntity['npci_reference_id']);
+        $upiEntity2 = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
     }
 
     public function testUpiHdfcRefundFile()

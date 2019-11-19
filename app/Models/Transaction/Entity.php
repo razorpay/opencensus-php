@@ -15,6 +15,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Models\BankingAccountStatement;
 
 /**
  * Class Entity
@@ -233,6 +234,11 @@ class Entity extends Base\PublicEntity
     public function commissions()
     {
         return $this->hasMany(Commission\Entity::class, Commission\Entity::TRANSACTION_ID, Entity::ID);
+    }
+
+    public function bankingAccountStatement()
+    {
+        return $this->hasOne(BankingAccountStatement\Entity::class);
     }
 
     public function getCredit()
@@ -916,9 +922,9 @@ class Entity extends Base\PublicEntity
      *
      * Few examples of issues:
      * 1. Having a $transaction object outside this class you cannot access balance relation as normal.
-      *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
+     *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
      *    expressive. I.e. $transaction->getRelation('balance') etcetera.
-      * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
+     * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
      *    it'll always get overridden with balance relation because how the base serialization happens. Again,
      *    workaround for this also exists but not worth repeating.
      *
@@ -959,5 +965,17 @@ class Entity extends Base\PublicEntity
         $statement->original   = $this->original;
 
         return $statement;
+    }
+
+    /**
+     * Gives the cache tag which in join of all the variable passed and prefixed with entity name
+     * adding it here because queryCaching doesnt support `joinSub`.
+     * todo: move this to cachable trait once `joinSub` support is added
+     *
+     * @return string
+     */
+    public static function getCacheTag(): string
+    {
+        return implode('_', func_get_args());
     }
 }

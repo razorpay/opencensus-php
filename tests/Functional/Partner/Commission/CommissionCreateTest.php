@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Partner\Commission;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
@@ -296,6 +297,10 @@ class CommissionCreateTest extends TestCase
                 'fee_bearer' => 'customer',
             ]);
 
+       $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $this->fixtures->pricing->editTwoPercentPricingPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_PLATFORM_APP_ID,
             Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -342,6 +347,8 @@ class CommissionCreateTest extends TestCase
                 'explicit_should_charge' => 1,
             ]);
 
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
         $this->setSubmerchantPublicAuth($subMerchant->getId());
 
         $this->startTest();
@@ -378,6 +385,10 @@ class CommissionCreateTest extends TestCase
                 'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
                 'explicit_should_charge' => 1,
             ]);
+
+        $this->fixtures->pricing->editTwoPercentPricingPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $requestData = $this->testData['testCustomerBearerExplicitBearerAuth'];
 
@@ -425,7 +436,12 @@ class CommissionCreateTest extends TestCase
             'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
             'amount'      => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
             'fee'         => ((4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+            'fee_bearer'  => FeeBearer::CUSTOMER,
         ];
+
+        $this->fixtures->pricing->editTwoPercentPricingPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
 
@@ -471,7 +487,12 @@ class CommissionCreateTest extends TestCase
             'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
             'amount'      => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
             'fee'         => ((4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+            'fee_bearer'  => FeeBearer::CUSTOMER,
         ];
+
+        $this->fixtures->pricing->editTwoPercentPricingPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
 

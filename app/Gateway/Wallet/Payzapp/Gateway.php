@@ -294,7 +294,6 @@ class Gateway extends Base\Gateway
             return;
         }
 
-
         //trace input
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -355,16 +354,11 @@ class Gateway extends Base\Gateway
             'error_message'         => $responseDescription,
         );
 
-        // If the wallet entity does not have an acosa transaction id, fill it.
-        if (empty($payment['gateway_payment_id_2']))
-        {
-            $gateway_payment_id_2 =
-                $verify->verifystatusResults['SALE']['status']['transaction_id'];
+        $gateway_payment_id_2 = $verify->verifystatusResults['SALE']['status']['transaction_id'];
 
-            $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
+        $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
 
-            $payment->saveOrFail();
-        }
+        $payment->saveOrFail();
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -433,7 +427,7 @@ class Gateway extends Base\Gateway
     {
         $txnResultStrings = explode('transaction_id=', $content);
 
-        $originalTxnIdRecord = $txnResultStrings[1];
+        $originalTxnIdRecord = end($txnResultStrings);
 
         $originalTxnIdRecord = 'transaction_id='.$originalTxnIdRecord;
 
