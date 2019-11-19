@@ -845,6 +845,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_INITIATED                                  = 'SETTLEMENT_INITIATED';
     const SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT              = 'SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT';
     const SETTLEMENT_TXN_FETCH_TIME_TAKEN                       = 'SETTLEMENT_TXN_FETCH_TIME_TAKEN';
+    const SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN                    = 'SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN';
     const SETTLEMENT_TXN_UPDATE_TIME_TAKEN                      = 'SETTLEMENT_TXN_UPDATE_TIME_TAKEN';
     const SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN                 = 'SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN';
     const RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN                = 'RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN';
@@ -1629,6 +1630,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_PARAMS                    = 'MERCHANT_INVOICE_CORRECTION_PARAMS';
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';
+
+    const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';

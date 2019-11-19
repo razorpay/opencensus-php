@@ -5375,6 +5375,7 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+
 ALTER TABLE merchant_details
 add column `kyc_clarification_reasons` JSON NULL,
 add column `kyc_additional_details` JSON NULL;
@@ -5413,10 +5414,13 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
-
 ALTER TABLE offers
     ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
     ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
+# adds fee_bearer column for payments (renaming the existing column 'reference12')
+ALTER TABLE payments
+    CHANGE COLUMN reference12 fee_bearer BIGINT;
 
 ALTER TABLE merchant_invoice
     MODIFY COLUMN invoice_number varchar(255) NOT NULL,

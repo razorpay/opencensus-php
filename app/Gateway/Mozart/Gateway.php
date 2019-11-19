@@ -1170,6 +1170,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
+            Payment\Gateway::NETBANKING_KVB,
         ];
 
         return in_array($gateway, $fileBasedGateways, true);

@@ -91,6 +91,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
+        RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -416,6 +417,14 @@ class Validator extends Base\Core
             RequestProcessor\Base::NETBANKING_FEDERAL);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingKvbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_KVB);
+        return ($validSubject);
     }
 
     public function validateVirtualAccKotakEmail(array $emailDetails)

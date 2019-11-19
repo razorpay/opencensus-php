@@ -84,6 +84,7 @@ class Base extends Core
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
     const NETBANKING_SBI         = 'NetbankingSbi';
+    const NETBANKING_KVB         = 'NetbankingKvb';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -148,6 +149,7 @@ class Base extends Core
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
         self::NETBANKING_SBI         => ['fssrecon.inbdau@sbi.co.in'],
+        self::NETBANKING_KVB         => ['atmcashtally@kvbmail.com', 'lakshmim@kvbmail.com'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -167,6 +169,7 @@ class Base extends Core
         self::ISG                    => [],
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
+        self::PAYPAL                 => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -219,6 +222,7 @@ class Base extends Core
         Gateway::NETBANKING_ALLAHABAD   => self::NETBANKING_ALLAHABAD,
         Gateway::NETBANKING_CANARA      => self::NETBANKING_CANARA,
         Gateway::NETBANKING_SBI         => self::NETBANKING_SBI,
+        Gateway::NETBANKING_KVB         => self::NETBANKING_KVB,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,

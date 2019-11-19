@@ -226,8 +226,8 @@ class Selector extends Base\Core
 
 //                $this->repo->saveOrFail($merchant->methods);
 //
-//                throw new Exception\BadRequestException(
-//                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
             else if ($payment[Entity::METHOD] === Method::NETBANKING)
             {

@@ -829,7 +829,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');
