@@ -326,33 +326,6 @@ class Processor
         }
     }
 
-    //decrement the offer usage count after failed payment for max offer validation.
-    protected function decrementOfferUsageCount($payment)
-    {
-        $offer = $payment->getOffer();
-
-        if($offer !== null)
-        {
-            $redis = $this->app['redis']->connection();
-
-            $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
-
-//            $redis->watch($key);
-//
-//            $value = $redis->get($key);
-//
-//            $value = $value - 1;
-//
-//            $redis->multi();
-//
-//            $redis->set($key, $value);
-//
-//            $redis->exec();
-
-              $redis->decr($key);
-        }
-    }
-
     protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
@@ -1755,7 +1728,13 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
-        $this->decrementOfferUsageCount($payment);
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->decrementOfferUsageCount($payment);
+        }
+
 
         //TODO: Remove this later
         try

@@ -15,6 +15,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor;
 
 class Core extends Base\Core
 {
@@ -113,6 +114,8 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
+            $this->decrementOfferUsageCount($payment);
+
             if ($offer->shouldBlockPayment() === true)
             {
                 $errorMessage = $offer->getErrorMessage();
@@ -153,6 +156,21 @@ class Core extends Base\Core
         //As offer is not applicable, dissociating it
         $payment->dissociateOffer($offer);
 
+    }
+
+    //decrement the offer usage count after failed payment for max offer validation.
+    public function decrementOfferUsageCount($payment)
+    {
+        $offer = $payment->getOffer();
+
+        if($offer !== null)
+        {
+            $redis = $this->app['redis']->connection();
+
+            $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
+
+            $redis->decr($key);
+        }
     }
 
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)

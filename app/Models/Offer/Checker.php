@@ -391,32 +391,20 @@ class Checker extends Base\Core
 
             $currentOfferUsage = $redis->incr($key);
 
-//            $value = $redis->get($key);
-//
-//            $value = $value + 1;
-//
-//            $redis->multi();
-//
-//            $redis->set($key, $value);
-//
-//            $redis->get($key);
-//
-//            $currentOfferUsage =  $redis->exec();
+            $result = $currentOfferUsage <= $this->offer->getMaxOfferUsage();
 
-                $result = $currentOfferUsage <= $this->offer->getMaxOfferUsage();
+            $this->traceCheckResult(
+                TraceCode::OFFER_USAGE_CHECK,
+                [
+                    'result' => $result,
+                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                    'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
+                ]);
 
-                $this->traceCheckResult(
-                    TraceCode::OFFER_USAGE_CHECK,
-                    [
-                        'result' => $result,
-                        'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
-                        'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
-                    ]);
-
-                if(!$result)
-                {
-                    $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
-                }
+            if(!$result)
+            {
+                $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            }
         }
 
         return $result;
