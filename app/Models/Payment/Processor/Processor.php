@@ -333,9 +333,15 @@ class Processor
 
         if($offer !== null)
         {
-            $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+            $redis = $this->app['redis']->connection();
 
-            $this->repo->offer->saveOrFail($offer);
+            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
+
+            $conf = $redis->GETSET($key, $redis->GET($key) +  1) ;
+
+            //$offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+            //$this->repo->offer->saveOrFail($offer);
         }
     }
 

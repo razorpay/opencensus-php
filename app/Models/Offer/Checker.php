@@ -385,7 +385,13 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOfferUsage() !== NULL)
         {
-                $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+            $redis = $this->app['redis']->connection();
+
+            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
+
+            $conf = $redis->GET($key);
+
+                $result = $conf < $this->offer->getMaxOfferUsage();
 
                 $this->traceCheckResult(
                     TraceCode::OFFER_USAGE_CHECK,
