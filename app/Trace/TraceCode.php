@@ -1736,6 +1736,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT                 = 'SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT';
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
+    const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
