@@ -1456,8 +1456,14 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
-        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
+        IFSC::SBBJ         => Gateway::NETBANKING_SBI,
+        IFSC::SBHY         => Gateway::NETBANKING_SBI,
+        IFSC::SBNX         => Gateway::NETBANKING_SBI,
+        IFSC::SBMY         => Gateway::NETBANKING_SBI,
+        IFSC::SBPX         => Gateway::NETBANKING_SBI,
+        IFSC::SBSX         => Gateway::NETBANKING_SBI,
+        IFSC::SBTR         => Gateway::NETBANKING_SBI,
     ];
 
     /**
