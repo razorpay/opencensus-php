@@ -2278,6 +2278,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
 
+    const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

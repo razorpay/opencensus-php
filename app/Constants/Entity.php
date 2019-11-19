@@ -106,6 +106,7 @@ class Entity
     const GATEWAY_DOWNTIME           = 'gateway_downtime';
     const MERCHANT_INVOICE           = 'merchant_invoice';
     const CREDITNOTE_INVOICE         = 'creditnote_invoice';
+    const INVOICE_REMINDER           = 'invoice_reminder';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
@@ -448,6 +449,7 @@ class Entity
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
+        self::INVOICE_REMINDER          => \RZP\Models\Invoice\Reminder::class,
         self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
         self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,

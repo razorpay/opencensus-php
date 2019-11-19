@@ -203,6 +203,9 @@ class Generator extends Base\Core
                 }
 
                 $this->repo->saveOrFail($this->invoice);
+
+                $this->setReminderForInvoice($input, $this->invoice);
+
             }, $maxAttempts);
 
         return $this->invoice;
@@ -431,6 +434,22 @@ class Generator extends Base\Core
         $this->associateOrderForInvoice();
 
         $this->setShortUrl();
+    }
+
+    private function setReminderForInvoice(array $input, Entity $invoice)
+    {
+        $reminderCore = new Reminder\Core();
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $reminderEnable = boolval($input[Entity::REMINDER_ENABLE]);
+
+            $reminderStatus = ($reminderEnable === true) ? Reminder\Status::PENDING : Reminder\Status::DISABLED;
+
+            $reminderInput[Reminder\Entity::REMINDER_STATUS] = $reminderStatus;
+
+            $reminderCore->create($reminderInput, $invoice);
+        }
     }
 
     /**
