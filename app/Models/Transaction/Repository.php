@@ -546,6 +546,39 @@ class Repository extends Base\Repository
         return $count;
     }
 
+    public function fetchSettledTransactionsWithoutSettlementId($type, $count)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->where(Transaction\Entity::TYPE, $type)
+            ->where(Transaction\Entity::SETTLED, 1)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->take($count)
+            ->get()->pluck('id')->all();
+    }
+
+    public function updateSettledToFalse($type, $txnIds)
+    {
+        if (count($txnIds) === 0)
+        {
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED);
+
+            return 0;
+        }
+
+        $values = [Transaction\Entity::SETTLED  => false];
+
+        $count = $this->newQuery()
+            ->whereIn(Transaction\Entity::ID, $txnIds)
+            ->where(Transaction\Entity::TYPE, $type)
+            ->where(Transaction\Entity::SETTLED, true)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->update($values);
+
+        return $count;
+    }
+
     /**
      * Update channel for unsettled transactions
      *

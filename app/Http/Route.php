@@ -1201,6 +1201,10 @@ final class Route
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
 
+        // TODO:remove after migration,
+        // Temporary route to fix settled_at in case of fund account validation
+        'transaction_settled_data_fix'             => ['post',     'transactions/{entity}/settled/fix',              'TransactionController@fixSettled'                                  ],
+
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
@@ -1795,6 +1799,7 @@ final class Route
         'mailing_list_remove_suspended_merchant',
         'transfer_process',
         'merchant_mtu_update',
+        'transaction_settled_data_fix',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3321,6 +3326,7 @@ final class Route
             'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
+            'transaction_settled_data_fix',
         ],
 
         'subscriptions' => [
