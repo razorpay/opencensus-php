@@ -1,6 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { openModal, closeModal, notifyError } from 'razorx/components/Modal';
 import ExperimentsModal from './Modal';
 import { SwitchField } from 'razorx/components/ui/Field';

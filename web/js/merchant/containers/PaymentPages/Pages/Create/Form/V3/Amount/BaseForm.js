@@ -1,21 +1,21 @@
 import { connect } from 'react-redux';
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button from 'component/Button';
-import { classList } from 'common/util';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
+import { classList } from 'common/utils/rzp-utils';
 import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
 } from '../../Amount_Fields/V3';
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import { paiseToRupees } from 'rzp/utils/rzp-utils';
-import { getCurrency } from 'rzp/ui/Amount';
+import { paiseToRupees } from 'common/utils/rzp-utils';
+import { getCurrency } from 'common/ui/Amount';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 @connect(null, {
   openModal,

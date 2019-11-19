@@ -1,6 +1,6 @@
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { setTrackData } from 'common/utils/googleAnalytics';
 
 export default pageTitle => {
   const track = setTrackData({ eventCategory: pageTitle });

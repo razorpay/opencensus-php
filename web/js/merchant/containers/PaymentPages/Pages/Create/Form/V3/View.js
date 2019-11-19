@@ -10,7 +10,7 @@ import {
   updateInFormItems,
   isFormItemOfTypeAmount,
   reorderFormItems,
-} from 'merchant/modules/wysiwyg';
+} from 'merchant/reducers/wysiwyg';
 import { constructFieldSchema } from '../UDF_Fields/V3';
 import { constructAmountField } from '../Amount_Fields/V3';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
@@ -43,6 +43,7 @@ class SortableFormItemsList extends React.Component {
               <Sortable_AmountDisplayField
                 key={fi.item.name}
                 index={idx}
+                indexInRenderOrder={idx}
                 field={fi}
                 currency={currency}
                 isListSorting={isListSorting}
@@ -58,6 +59,7 @@ class SortableFormItemsList extends React.Component {
               <Sortable_UDFDisplayField
                 key={fi.name}
                 index={idx}
+                indexInRenderOrder={idx}
                 field={fi}
                 isListSorting={isListSorting}
                 checkoutOptions={checkoutOptions}

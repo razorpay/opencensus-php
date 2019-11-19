@@ -1,5 +1,5 @@
 import React from 'react';
-import Group, { GroupItem } from 'rzp/ui/Group';
+import Group, { GroupItem } from 'common/ui/Group';
 import { PowerSelect } from 'react-power-select';
 
 const GroupingDropdown = ({

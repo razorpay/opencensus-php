@@ -1,4 +1,4 @@
-import ajax from 'rzp/utils/ajax';
+import ajax from 'common/utils/ajax';
 import { getMode } from 'merchantLA/store';
 
 export function merchantFetch(params) {

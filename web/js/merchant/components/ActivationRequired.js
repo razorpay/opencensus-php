@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { activationDuration } from 'merchant_common/helpers/data';
+import { activationDuration } from 'merchant/helpers/data';
 
 export default ({ onCloseClick, user }) => {
   let activationName =

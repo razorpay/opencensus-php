@@ -2,25 +2,25 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
+import InputField from 'common/ui/Forms/InputField';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 import {
   isBlank,
   rupeesToPaise,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   fetchTransfer,
   fetchReversals,
   reverseTransfer,
-} from 'merchant/modules/marketplace/transfer';
+} from 'merchant/reducers/marketplace/transfer';
 
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 // returns value in paise
 const getReversibleAmount = transfer => {

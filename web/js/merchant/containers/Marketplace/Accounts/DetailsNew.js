@@ -1,22 +1,22 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ActivationForm from 'merchant/containers/Activation';
-import { fetchAccountApi } from 'merchant/modules/marketplace/accounts';
-import Spinner from 'rzp/ui/Spinner';
+import { fetchAccountApi } from 'merchant/reducers/marketplace/accounts';
+import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
 import { getUser } from 'merchant/store';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { showNotification } from 'rzp/modules/notifications';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { ToggleField } from 'merchant/components/Marketplace/Accounts/AccountsList';
-import { fetchBalance } from 'merchant/modules/credits';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
-import * as AccountActions from 'merchant/modules/marketplace/accounts';
-import * as ModalActions from 'rzp/modules/modals';
+import { fetchBalance } from 'merchant/reducers/credits';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import * as AccountActions from 'merchant/reducers/marketplace/accounts';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { ModalMask } from 'component/Modal';
-import Button from 'component/Button';
-import Amount from 'rzp/ui/Amount';
+import { ModalMask } from 'common/new-ui/Modal';
+import Button from 'common/new-ui/Button';
+import Amount from 'common/ui/Amount';
 
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 

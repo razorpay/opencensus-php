@@ -2,26 +2,25 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { isEmail, isAmount, isPhone } from 'rzp/utils/validators';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'common/util';
+import { isEmail, isAmount, isPhone } from 'common/utils/validators';
+import { rupeesToPaise, titleCase } from 'common/utils/rzp-utils';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
-import { closeModal } from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   saveInvoice,
   updatePLInReduxList,
-} from 'merchant/modules/invoices/list';
-import { createAuthLink } from 'merchant/modules/auth_link';
+} from 'merchant/reducers/invoices/list';
+import { createAuthLink } from 'merchant/reducers/auth_link';
 
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-import { Modal, ModalContent } from 'component/Modal';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
 
-import { AmountTooltip } from 'rzp/ui/Amount';
+import { AmountTooltip } from 'common/ui/Amount';
 
 const mandatoryFields = [
   'description',
@@ -153,7 +152,6 @@ export default class CreateNewAuthLinkContainer extends Component {
           data.mandateMethod === 'emandate' && !!data.mandateMaxAmount
             ? rupeesToPaise(data.mandateMaxAmount)
             : undefined,
-        auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
           : undefined,

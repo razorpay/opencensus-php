@@ -1,12 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank } from 'rzp/utils/rzp-utils';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { testChargeSubscription } from 'merchant/modules/subscriptions';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import { isBlank } from 'common/utils/rzp-utils';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { testChargeSubscription } from 'merchant/reducers/subscriptions';
 
 @connect(null, {
   closeModal,

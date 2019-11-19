@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { trackFormSubmit } from './ga';
 

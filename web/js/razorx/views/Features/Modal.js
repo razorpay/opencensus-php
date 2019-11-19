@@ -8,9 +8,9 @@ import {
 } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, { TextAreaField } from 'razorx/components/ui/Field';
-import { ModalContent } from 'component/Modal';
+import { ModalContent } from 'common/new-ui/Modal';
 import JSONEdit from 'razorx/components/JSONEdit';
-import EnumList from 'component/Input/EnumList';
+import EnumList from 'common/new-ui/Input/EnumList';
 import { rexPost, rexPut } from 'razorx/helpers/fetch';
 import validatorJSON, { initJSONObj } from './validators';
 

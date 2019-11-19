@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import TransfersPreviewModal from './TransfersPreviewModal';
 

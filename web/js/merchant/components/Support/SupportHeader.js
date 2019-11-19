@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { classList } from 'common/util';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { classList } from 'common/utils/rzp-utils';
 
 @connect(state => {
   return {

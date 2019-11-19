@@ -1,9 +1,9 @@
 require('it-each')();
 const expect = require('chai').expect;
 
-import { stringToObj } from 'rzp/utils/rzp-utils';
+import { stringToObj } from 'common/utils/rzp-utils';
 
-describe('rzp/utils/rzp-utils: doStringToObj', () => {
+describe('common/utils/rzp-utils: doStringToObj', () => {
   describe('dot-notation', () => {
     it('should insert value in passed object with passed path', () => {
       const argumentSet = ['path.to.key', 'value', {}];

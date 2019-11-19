@@ -7,9 +7,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
-import Overlay from 'rzp/ui/Overlay';
-import Spinner from 'rzp/ui/Spinner';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
+import Overlay from 'common/ui/Overlay';
+import Spinner from 'common/ui/Spinner';
 
 export function WarningSvg() {
   return (

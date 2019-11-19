@@ -1,5 +1,5 @@
 import React from 'react';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import SlideContoller from './SlideController';
 
 const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 const OTP_LENGTH = 6;
 const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {

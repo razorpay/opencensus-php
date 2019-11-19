@@ -1,4 +1,4 @@
-import DateRangePicker from 'rzp/ui/DateRangePicker';
+import DateRangePicker from 'common/ui/DateRangePicker';
 
 export default props => {
   const onDatesChange = (from, to) => {

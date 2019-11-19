@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import * as DisputeActions from 'merchant/modules/disputes/details';
+import * as DisputeActions from 'merchant/reducers/disputes/details';
 
 import DisputeDetails from 'merchant/components/Disputes/Details';
 

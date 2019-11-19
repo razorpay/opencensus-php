@@ -3,27 +3,27 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
   isValidZipcodeCountryWise,
   isValidGSTIN,
-} from 'rzp/utils/rzp-utils';
-import { email, phone, validateGSTIN } from 'rzp/utils/validators';
+} from 'common/utils/rzp-utils';
+import { email, phone, validateGSTIN } from 'common/utils/validators';
 
-import * as CustomerActions from 'merchant/modules/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as CustomerActions from 'merchant/reducers/customers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-import { fetchStates } from 'merchant/modules/states';
+import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/components/AddressEntry.js';
 
-import Countries from 'merchant/utils/countries.json';
+import Countries from 'merchant/helpers/countries.json';
 
 @connect(
   state => {
@@ -689,7 +689,7 @@ AddCustomer.defaultProps = {
   showGSTN: true,
 };
 
-const validateZipCode = (country, zipcode) => {
+export const validateZipCode = (country, zipcode) => {
   if (zipcode && country && !isValidZipcodeCountryWise(country, zipcode)) {
     return 'Please enter a valid pin code for the selected country';
   }

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import ProgressBar from 'rzp/ui/ProgressBar';
-import { classList } from 'common/util';
+import ProgressBar from 'common/ui/ProgressBar';
+import { classList } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 
 export default RTracking((state, props, args) => {

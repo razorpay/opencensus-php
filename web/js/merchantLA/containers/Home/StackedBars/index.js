@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { isFunction, getPercentage } from 'rzp/utils/rzp-utils';
-import ProgressBar from 'rzp/ui/ProgressBar';
+import { isFunction, getPercentage } from 'common/utils/rzp-utils';
+import ProgressBar from 'common/ui/ProgressBar';
 
 const StackedBars = ({
   textKey = 'text',

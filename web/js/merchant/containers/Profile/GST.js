@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import { fetchGST } from 'merchant/modules/profile';
-import { openModal } from 'rzp/modules/modals';
+import { fetchGST } from 'merchant/reducers/profile';
+import { openModal } from 'merchant_common/reducers/modals';
 import AddGST from './AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
 

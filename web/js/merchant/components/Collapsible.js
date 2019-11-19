@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class Collapsible extends Component {
   static defaultProps = {

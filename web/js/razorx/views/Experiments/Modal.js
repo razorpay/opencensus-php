@@ -1,6 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
-import debounce from 'rzp/utils/debounce';
+import debounce from 'common/utils/debounce';
 import {
   openModal,
   closeModal,
@@ -14,7 +14,7 @@ import Field, {
   SelectField,
   SearchableSelectField,
 } from 'razorx/components/ui/Field';
-import { ModalContent } from 'component/Modal';
+import { ModalContent } from 'common/new-ui/Modal';
 import JSONEdit from 'razorx/components/JSONEdit';
 
 import { rexFetch, rexPost, rexPut } from 'razorx/helpers/fetch';
@@ -116,7 +116,7 @@ export default class extends React.Component {
       }
 
       if (
-        ['context-ramp', 'whitelist', 'blacklist'].indexOf(segment.type) > -1
+        ['contextramp', 'whitelist', 'blacklist'].indexOf(segment.type) > -1
       ) {
         if (typeof segment.ids === 'undefined' || !segment.ids) {
           msg = 'ids cannot be empty';
@@ -129,7 +129,7 @@ export default class extends React.Component {
           .map(id => id.trim());
       }
 
-      if (['context-ramp', 'ramp'].indexOf(segment.type) > -1) {
+      if (['contextramp', 'ramp'].indexOf(segment.type) > -1) {
         if (typeof segment.weight === 'undefined') {
           msg = 'weight cannot be empty';
           break;

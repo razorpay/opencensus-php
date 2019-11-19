@@ -1,15 +1,15 @@
 import { NavLink } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import DataTable from 'rzp/ui/Table/DataTable';
-import ListToggler from 'rzp/ui/Toggler/ListToggler';
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
-import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
-import Tooltip from 'rzp/ui/Tooltip';
+import DataTable from 'common/ui/Table/DataTable';
+import ListToggler from 'common/ui/Toggler/ListToggler';
+import { getIntervalCycle } from 'common/utils/rzp-utils';
+import { subscriptionId, createdAt, status } from 'common/ui/item/pair';
+import Tooltip from 'common/ui/Tooltip';
 import { trackClickDuplicatePlan } from 'merchant/containers/Plans/ga';
 
 export default ({ plan, isLoading, statusMsg, subscriptions }) => {

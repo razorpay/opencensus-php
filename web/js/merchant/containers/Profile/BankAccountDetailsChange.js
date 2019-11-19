@@ -3,16 +3,16 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
-import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
+import ModalHeader from 'common/ui/ModalHeader';
+import InputField from 'common/ui/Forms/InputField';
+import FileUploadInputButton from 'common/ui/FileUpload/InputButton';
+import Fieldset from 'common/ui/Forms/Fieldset';
 
-import { required } from 'rzp/utils/validators';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import { required } from 'common/utils/validators';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-import { isWebkit } from 'rzp/utils/rzp-utils';
+import { isWebkit } from 'common/utils/rzp-utils';
 
 const verifyAccountNumber = (value, allValues, props) => {
   return value !== allValues.account_number

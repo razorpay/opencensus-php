@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import Header from 'rzp/ui/Header';
-import Amount from 'rzp/ui/Amount';
-import Sticky from 'rzp/ui/Sticky';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import Header from 'common/ui/Header';
+import Amount from 'common/ui/Amount';
+import Sticky from 'common/ui/Sticky';
+import Group, { GroupItem } from 'common/ui/Group';
+import DateRangePicker, { customRangeText } from 'common/ui/DateRangePicker';
+import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'rzp/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -23,9 +23,9 @@ import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 //import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
 import CreditPullAnnouncement from 'merchant/components/Announcements/CreditPull';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 

@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { fetchCreditNote } from 'merchant/modules/invoices/details';
+import { fetchCreditNote } from 'merchant/reducers/invoices/details';
 
 import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
 

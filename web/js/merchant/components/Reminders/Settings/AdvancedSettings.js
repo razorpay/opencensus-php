@@ -1,6 +1,6 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 

@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import TetherComponent from 'react-tether';
 import { Link } from 'react-router-dom';
 
-import LocalStorageService from 'rzp/utils/localStorage';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import ProgressBar from 'rzp/ui/ProgressBar';
+import LocalStorageService from 'common/utils/localStorage';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import ProgressBar from 'common/ui/ProgressBar';
 
-import { activationDuration } from 'merchant_common/helpers/data';
+import { activationDuration } from 'merchant/helpers/data';
 
 import {
   NEEDS_CLARIFICATION,

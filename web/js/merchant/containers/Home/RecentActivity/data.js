@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,

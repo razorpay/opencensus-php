@@ -1,6 +1,6 @@
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import { classList } from 'common/util';
-import debounce from 'rzp/utils/debounce';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { classList } from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
 
 export default class FieldsDropdown extends React.PureComponent {
   state = { selectedLabel: this.props.selectedLabel };

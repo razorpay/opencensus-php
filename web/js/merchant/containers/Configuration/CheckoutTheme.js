@@ -2,9 +2,9 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import FileUploadButton from 'rzp/ui/FileUpload/Button';
-import { uploadLogo } from 'merchant/modules/config';
-import { showNotification } from 'rzp/modules/notifications';
+import FileUploadButton from 'common/ui/FileUpload/Button';
+import { uploadLogo } from 'merchant/reducers/config';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './paymentMethodIcons';
 

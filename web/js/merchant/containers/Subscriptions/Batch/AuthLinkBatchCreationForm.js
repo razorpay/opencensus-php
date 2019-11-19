@@ -1,6 +1,6 @@
 import { Field } from 'redux-form';
 
-import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
+import CheckBoxField from 'common/ui/Forms/CheckboxField';
 
 export default () => (
   <div>

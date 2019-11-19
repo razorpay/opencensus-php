@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
-import Form from 'component/Form';
-import Button from 'component/Button';
-import Input from 'component/Input';
+import Form from 'common/new-ui/Form';
+import Button from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
 
-import { paiseToRupees } from 'rzp/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 
 import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
 
