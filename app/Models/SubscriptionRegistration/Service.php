@@ -353,13 +353,9 @@ class Service extends Base\Service
 
     public function cancelAuthLink(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant(
             $id,
-            $this->merchant,
-            null,
-            null,
-            [],
-            Constants\Entity::SUBSCRIPTION_REGISTRATION
+            $this->merchant
         );
 
         $order = $invoice->order;
