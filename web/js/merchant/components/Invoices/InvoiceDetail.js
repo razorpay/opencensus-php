@@ -123,6 +123,7 @@ export default props => {
     isAutoRemindersUpdating,
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -296,27 +297,44 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled && (
-                  <EntityDetailRow label="Reminders">
-                    <Input.Check
-                      name="auto_reminders"
-                      fieldLabel="Send auto reminders"
-                      checked={isRemindersEnabled}
-                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
-                      onChange={onChangeSendAutoReminder}
-                      autoRender
-                    />
+                {user.isRemindersEnabled &&
+                  isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <Input.Check
+                        name="auto_reminders"
+                        fieldLabel="Send auto reminders"
+                        checked={isRemindersEnabled}
+                        disabled={
+                          isPaymentLinkClosed || isAutoRemindersUpdating
+                        }
+                        onChange={onChangeSendAutoReminder}
+                        autoRender
+                      />
 
-                    <Stepper
-                      list={getRemindersStepperData(
-                        isRemindersEnabled,
-                        nextReminders,
-                        isAutoRemindersUpdating,
-                        isPaymentLinkClosed
-                      )}
-                    />
-                  </EntityDetailRow>
-                )}
+                      <Stepper
+                        list={getRemindersStepperData(
+                          isRemindersEnabled,
+                          nextReminders,
+                          isAutoRemindersUpdating,
+                          isPaymentLinkClosed
+                        )}
+                      />
+                    </EntityDetailRow>
+                  )}
+
+                {user.isRemindersEnabled &&
+                  !isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <div class="Input-content">
+                        Reminders are not set for payment links.
+                        <br />
+                        Set it up{' '}
+                        <Link target="_blank" to="/reminders">
+                          here
+                        </Link>
+                      </div>
+                    </EntityDetailRow>
+                  )}
 
                 <EntityDetailRow
                   label="Receipt No."
@@ -418,7 +436,7 @@ const getRemindersStepperData = (
     .map(reminder => {
       const currDate = moment(undefined),
         reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.diff(currDate, 'days');
+        isPendingState = reminderDate.isAfter(currDate);
 
       if (isPaymentLinkClosed && isPendingState) {
         return null;

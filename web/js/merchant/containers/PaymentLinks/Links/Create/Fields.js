@@ -354,7 +354,7 @@ const ReminderNotEnabled = ({ type = '' }) => (
 const getRemindersOptionDescription = (count, hasNoExpiry) => {
   const totalReminders = hasNoExpiry
     ? count.withOutExpireRemindersCount
-    : count.withOutExpireRemindersCount + count.withExpireRemindersCount;
+    : count.withExpireRemindersCount;
 
   return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
 };
