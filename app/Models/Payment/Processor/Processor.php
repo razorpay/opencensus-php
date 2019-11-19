@@ -337,9 +337,15 @@ class Processor
 
             $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
 
+            $redis->watch($key);
+
+            $value = $redis->get($key);
+
+            $value = $value - 1;
+
             $redis->multi();
 
-            $redis->decr($key);
+            $redis->set($key, $value);
 
             $redis->exec();
         }
