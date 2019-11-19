@@ -150,12 +150,12 @@ class Entity extends Base\PublicEntity
 
     // -------------- Setters --------------
 
-    public function setAmount(int $amount)
+    public function setAmount(int $amount = null)
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setCurrency(string $currency)
+    public function setCurrency(string $currency = null)
     {
         $this->setAttribute(self::CURRENCY, $currency);
     }

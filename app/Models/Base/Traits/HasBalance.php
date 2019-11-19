@@ -41,7 +41,13 @@ trait HasBalance
      */
     public function getBalanceType(): string
     {
+        // TODO: Remove the defaulting since all balance entities have been back-filled already.
         return optional($this->balance)->getType() ?: Balance\Type::PRIMARY;
+    }
+
+    public function getBalanceAccountType(): string
+    {
+        return optional($this->balance)->getAccountType();
     }
 
     public function isBalanceTypePrimary(): bool
@@ -54,9 +60,29 @@ trait HasBalance
         return $this->getBalanceType() === Balance\Type::BANKING;
     }
 
+    public function isBalanceAccountTypeDirect(): bool
+    {
+        if ($this->isBalanceTypeBanking() === false)
+        {
+            return false;
+        }
+
+        return ($this->getBalanceAccountType() === Balance\AccountType::DIRECT);
+    }
+
+    public function isBalanceAccountTypeShared(): bool
+    {
+        if ($this->isBalanceTypeBanking() === false)
+        {
+            return false;
+        }
+
+        return ($this->getBalanceAccountType() === Balance\AccountType::SHARED);
+    }
+
     public function isBalanceTypeCommission(): bool
     {
-        return $this->getBalanceType() === Balance\Type::COMMISSION;
+        return ($this->getBalanceType() === Balance\Type::COMMISSION);
     }
 
     public function setPublicBalanceIdAttribute(array & $attributes)

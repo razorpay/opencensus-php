@@ -64,11 +64,6 @@ class BankAccount extends Base
         }
     }
 
-    public function getAccount(): BankAccountEntity
-    {
-        return $this->account;
-    }
-
     public function preProcessValidation()
     {
         try
@@ -98,20 +93,6 @@ class BankAccount extends Base
                 Constants::slackSettings()
             );
         }
-    }
-
-    /**
-     * Unused right now, everything is async
-     * @return void [type] [description]
-     */
-    public function processValidation()
-    {
-        $this->repo->assertTransactionActive();
-
-        $fundTransferAttempt = $this->createFundTransferAttempt();
-
-        // TODO: Add Trace FTA
-        // TODO: Initiate FTA here.
     }
 
     protected function createFundTransferAttempt(): Attempt\Entity

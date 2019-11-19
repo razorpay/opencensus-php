@@ -138,6 +138,12 @@ class Constants
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
+     * When adding submerchant, whether to set international activation flow to greylist
+     * irrespective of merchant category and subcategory
+     */
+    const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
      * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
      */
     const SHOW_CREDIT_SCORE               = 'show_credit_score';
@@ -434,6 +440,7 @@ class Constants
         self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::TRANSLATE_WEBHOOK               => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::FORCE_GREYLIST_INTERNAT         => true,
         self::SHOW_CREDIT_SCORE               => true,
     ];
 
@@ -585,7 +592,6 @@ class Constants
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
-        self::ES_ON_DEMAND,
         self::SHOW_CREDIT_SCORE,
     ];
 

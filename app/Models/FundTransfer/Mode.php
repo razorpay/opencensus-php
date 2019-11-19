@@ -55,6 +55,7 @@ class Mode
     protected static $issuerModeMap = [
         Issuer::ICIC => [
             Attempt\Constants::DEFAULT_NETWORK => [
+                self::UPI,
                 self::NEFT
             ]
         ],

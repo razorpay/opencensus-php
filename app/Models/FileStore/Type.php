@@ -88,6 +88,10 @@ class Type
 
     const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
 
+    const KVB_NETBANKING_REFUND             = 'kvb_netbanking_refund';
+
+    const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -168,6 +172,7 @@ class Type
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
     const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
     const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
     const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
     const MERCHANT_PASSPORT_BACK                = 'passport_back';
@@ -238,6 +243,8 @@ class Type
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
             self::AXIS_NETBANKING_CLAIMS,
+            self::KVB_NETBANKING_REFUND,
+            self::KVB_NETBANKING_CLAIM,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -299,6 +306,7 @@ class Type
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
             self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_DRIVER_LICENSE_BACK,
             self::MERCHANT_AADHAR_FRONT,
             self::MERCHANT_AADHAR_BACK,
             self::MERCHANT_PASSPORT_FRONT,
@@ -374,6 +382,8 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::SBI_NETBANKING_REFUND,
         self::CBI_NETBANKING_REFUND,
+        self::KVB_NETBANKING_REFUND,
+        self::KVB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,

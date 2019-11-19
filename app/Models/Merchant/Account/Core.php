@@ -230,16 +230,23 @@ class Core extends Merchant\Core
 
         $this->fillBankAccountNotes($subMerchant, $input);
 
-        // update activation flow to grey list by default to bypass the instant activation flow
-        $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
-
-        $subMerchantDetails->setActivationFlow(Detail\ActivationFlow::GREYLIST);
-
-        $this->repo->saveOrFail($subMerchantDetails);
+        $this->updateActivationFlows($partner, $subMerchant);
 
         $this->upsertMerchantEmails($subMerchant, $input);
 
         return $subMerchant;
+    }
+
+    protected function updateActivationFlows(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        $merchantDetailsCore = new Detail\Core;
+
+        $merchantDetailsCore->autoUpdateMerchantActivationFlows($subMerchant, $partner);
+
+        // fetch merchant details and save to db as above method does not save it
+        $subMerchantDetails = $merchantDetailsCore->getMerchantDetails($subMerchant);
+
+        $this->repo->saveOrFail($subMerchantDetails);
     }
 
     /**

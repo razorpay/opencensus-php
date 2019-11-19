@@ -48,6 +48,7 @@ class Gateway extends Base\Gateway
         ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::NPCI_REFERENCE_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
+        Base\Entity::TYPE                      => Base\Entity::TYPE,
     ];
 
     protected $sortRequestContent = false;
@@ -467,13 +468,14 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    private function getGatewayEntityAttributes(array $input): array
+    private function getGatewayEntityAttributes(array $input, string $type = Base\Type::COLLECT): array
     {
         $attributes = [
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
             Base\Entity::EXPIRY_TIME         => $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
+            Base\Entity::TYPE                => $type,
         ];
 
         return $attributes;

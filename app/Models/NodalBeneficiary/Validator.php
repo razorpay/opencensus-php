@@ -25,6 +25,12 @@ class Validator extends Base\Validator
         Entity::CHANNEL           => 'required|string|max:8|custom',
     ];
 
+    protected static $ftsFundAccountCreateRules = [
+        'size'         => 'required|filled|integer',
+        'account_type' => 'required|filled|string|in:bank_account',
+        'product'      => 'required|filled|string|in:payout,settlement',
+    ];
+
     /**
      * @param string $attribute
      * @param string $value

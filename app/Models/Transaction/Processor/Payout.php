@@ -11,8 +11,20 @@ use RZP\Models\Payout as PayoutModel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\ReconciledType;
 
+/**
+ * NOTE: Before making any changes here, check Payout\Core
+ * for handlePayoutProcessed, handlePayoutReversed, etc
+ * We are doing some payout transaction related changes there.
+ *
+ * Class Payout
+ *
+ * @package RZP\Models\Transaction\Processor
+ */
 class Payout extends Base
 {
+    /** @var PayoutModel\Entity */
+    protected $source;
+
     /**
      * We are overriding this because base function was written very badly. (`hasTransaction`)
      */
@@ -102,18 +114,33 @@ class Payout extends Base
 
     public function setMerchantBalanceLockForUpdate()
     {
+        //
         // TODO: Remove the second condition later once we backfill payouts
         // with all existing payouts having primaryBalance filled in.
+        // Already filled on prod-live. Need to backfill on prod-test.
+        //
         $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
 
         $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
 
-    public function updateBalances(bool $updateNodalBalance = true)
+    /**
+     * This happens only when we are creating a dummy transaction to update an existing external type transaction
+     * with the payout's transaction. The balance checks and updates would have been done and deducted already while
+     * creating the external transaction. We don't want to do it here again and fail the dummy transaction creation.
+     *
+     * @return bool
+     */
+    public function shouldUpdateBalance()
+    {
+        return $this->source->shouldValidateAndUpdateBalances();
+    }
+
+    public function updateBalances()
     {
         $this->validateMerchantBalance();
 
-        parent::updateBalances($updateNodalBalance);
+        parent::updateBalances();
     }
 
     protected function validateMerchantBalance()

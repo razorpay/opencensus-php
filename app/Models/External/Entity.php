@@ -6,11 +6,14 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\BankingAccountStatement;
 use RZP\Models\Currency\Currency;
+use RZP\Models\BankingAccountStatement;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const BANK_ACCOUNT_STATEMENT_ID = 'banking_account_statement_id';
     const MERCHANT_ID               = 'merchant_id';
     const TRANSACTION_ID            = 'transaction_id';
@@ -77,6 +80,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
+        // BAS entity is not saved still while external entity is being saved.
+        // This is fine because the BAS entity save and external entity save
+        // happen in a DB transaction. If it was not in a DB transaction,
+        // external entity would have gotten saved with BAS ID and BAS entity
+        // save could have failed, which would result in a bad foreign key in external.
         'bankingAccountStatement',
     ];
 

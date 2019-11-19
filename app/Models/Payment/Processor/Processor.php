@@ -942,7 +942,7 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         // Validate if customer is fee bearer then only move forward
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -970,6 +970,15 @@ class Processor
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+
+        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
+        {
+            $fee = 0;
+
+            $tax = 0;
+        }
+
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -1057,13 +1066,6 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        if (Payment\Gateway::isCardPaymentServiceGateway($payment->getGateway()))
-        {
-            $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
-
-            return;
-        }
-
         // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         // Adding cybersource check until cybersource emi payments are fixed
         if (((empty($gatewayInput['authenticate']['gateway']) === false) and
@@ -1074,6 +1076,16 @@ class Processor
             $payment->disableCpsRoute();
 
             return;
+        }
+
+        if (Payment\Gateway::isCardPaymentServiceGateway($payment->getGateway()))
+        {
+            $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
+
+            if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+            {
+                return;
+            }
         }
 
         $this->trace->info(TraceCode::CPS_ROUTE_CONFIG, [
@@ -1109,17 +1121,17 @@ class Processor
 
             $this->setPaymentService($payment, $variant);
         }
-
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
     {
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
-        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
             'payment_id'     => $payment->getId(),
+            'merchant_id'    => $payment->getMerchantId(),
             'razorx_variant' => $variant,
         ]);
 
@@ -2095,7 +2107,7 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -2281,6 +2293,8 @@ class Processor
                     'calculated_fee'    => $payment->getFee(),
                 ]);
         }
+
+        $payment->setFeeBearer($this->payment->getFeeBearer());
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity
@@ -2997,18 +3011,18 @@ class Processor
             $this->repo->saveOrFail($terminal);
 
             $this->app['slack']->queue(
-                TraceCode::TERMINAL_EDIT,
+                'terminal capability auto changed to ALL',
                 [
                     'merchant_id'           => $terminal->getMerchantId(),
                     'merchant_name'         => $terminal->merchant->getName(),
                     'terminal_id'           => $terminal->getId(),
                     'payment_id'            => $this->payment->getId(),
+                ],
+                [
                     'channel'               => Config::get('slack.channels.tech_alerts'),
                     'username'              => 'alerts',
                     'icon'                  => ':x:',
-                    'message'               => 'terminal capability auto changed to ALL',
-                ]
-            );
+                ]);
 
             $this->trace->error(
                 TraceCode::TERMINAL_EDIT,
@@ -3016,8 +3030,7 @@ class Processor
                     'merchant_id'           => $terminal->getMerchantId(),
                     'terminal_id'           => $terminal->getId(),
                     'message'               => 'terminal capability auto changed to ALL'
-                ]
-            );
+                ]);
         }
     }
 

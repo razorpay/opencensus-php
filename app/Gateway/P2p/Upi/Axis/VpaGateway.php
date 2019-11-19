@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use Carbon\Carbon;
 use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Models\P2p\Vpa\Bank;
 use RZP\Models\P2p\Vpa\Entity;
@@ -10,6 +11,7 @@ use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Models\P2p\Vpa\Credentials;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Gateway\P2p\Upi\Axis\Actions\VpaAction;
 use RZP\Models\P2p\Beneficiary\Entity as Beneficiary;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\VpaTransformer;
@@ -86,6 +88,12 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             ],
             Entity::BANK_ACCOUNT => [
                 Entity::ID  => $bankAccount[Entity::ID],
+            ],
+            DeviceToken\Entity::DEVICE_TOKEN => [
+                Entity::ID                      => $this->getContextDeviceToken()->get(DeviceToken\Entity::ID),
+                Entity::GATEWAY_DATA            => [
+                    DeviceToken\Entity::EXPIRE_AT   => $this->getCurrentTimestamp(),
+                ],
             ],
         ]);
     }

@@ -630,6 +630,23 @@ class Core extends Base\Core
         Entity $feature,
         bool $shouldSync)
     {
+        if ($feature->getName() === Constants::ES_AUTOMATIC)
+        {
+            // Merchant can only have es_automatic or es_on_demand enabled at a time and is able to add es_automatic.
+            // So for Deleting feature es_on_demand if es_automatic is added.
+            $featureOnDemand = $this->repo
+                                    ->feature
+                                    ->findByEntityTypeEntityIdAndName(
+                                        Constants::MERCHANT,
+                                        $feature->getEntityId(),
+                                        Constants::ES_ON_DEMAND);
+
+            if (isset($featureOnDemand) === true)
+            {
+                $this->delete($featureOnDemand, $shouldSync);
+            }
+        }
+
         if ($feature->isMerchantFeature() === false)
         {
             // Return if the feature is not for a merchant

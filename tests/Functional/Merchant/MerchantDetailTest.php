@@ -91,7 +91,12 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         // assert legal entity data
-        $legalEntity = $this->getDbLastEntity('legal_entity');
+        $legalEntity    = $this->getDbLastEntity('legal_entity');
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        // asserting that penny testing should not happen for linked account
+        $this->assertNull($merchantDetail->getPoaVerificationStatus());
+        $this->assertNull($merchantDetail->getBankDetailsVerificationStatus());
 
         $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
         $this->assertEquals($legalEntity->getMcc(), 8931);

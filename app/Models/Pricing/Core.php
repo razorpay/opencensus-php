@@ -4,6 +4,7 @@ namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Action;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -18,6 +19,8 @@ class Core extends Base\Core
      */
     public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null): Entity
     {
+        $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT, $input);
+
         $rule = (new Entity)->addPlanRule($input, $plan);
 
         $rule = $rule->generateId();
@@ -39,6 +42,9 @@ class Core extends Base\Core
             ->handle((new \stdClass), $rule);
 
         $this->repo->saveOrFail($rule);
+
+        $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
+            $rule->toArray());
 
         return $rule;
     }
@@ -129,8 +135,10 @@ class Core extends Base\Core
 
         $validator->validatePlanCountZero($plan);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
+        $plan = $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
         {
+            $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,$inputRules[0]);
+
             $plan = $this->createPlan($planName, $inputRules[0], $ruleOrgId);
 
             array_shift($inputRules);
@@ -142,10 +150,14 @@ class Core extends Base\Core
                 $plan->add($rule);
             }
 
+            return $plan;
+
             // $rules = $plan->all();
 
             // $rules to be injected in workflow here
         });
+
+        return $plan;
     }
 
     protected function createPlanFromRule(Entity $rule): Plan

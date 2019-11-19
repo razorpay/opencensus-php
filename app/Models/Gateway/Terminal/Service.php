@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\TerminalOnboardingDetail;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Service extends Base\Service
@@ -55,9 +56,13 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+        $merchantDetail = $merchant->merchantDetail->toArray();
 
-        return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput);
+        $gatewayProcessor->addDefaultValueToMerchantDetailIfApplicable($merchantDetail);
+
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchantDetail);
+
+        return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail);
     }
 
     public function onboardMerchantAsync(Merchant $merchant, $input)
@@ -70,16 +75,16 @@ class Service extends Base\Service
 
         $gatewayProcessor = GatewayFactory::build($gateway);
 
-        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+        $merchantDetail = $merchant->merchantDetail->toArray();
+
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchantDetail);
 
         return $this->performOnboardingAsync($merchant, $gatewayProcessor, $gatewayInput);
     }
 
-    protected function performOnboarding($merchant, $gatewayProcessor, $gatewayInput)
+    protected function performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail)
     {
         $gateway = $gatewayProcessor->getGatewayName();
-
-        $merchantDetail = $merchant->merchantDetail->toArray();
 
         $lockResource = $gatewayProcessor->getLockResource($merchant, $gateway, $gatewayInput);
 
@@ -100,7 +105,7 @@ class Service extends Base\Service
                 try
                 {
                     $terminalData = $this->app['gateway']->call($gateway,
-                        Terminal::MERCHANT_ONBOARD,
+                        Constants::MERCHANT_ONBOARD,
                         $gatewayData,
                         $this->mode);
 
@@ -234,7 +239,7 @@ class Service extends Base\Service
 
         $request = $gatewayProcessor->getGatewayRequestArrayForCreation($terminal);
 
-        $response = $this->app['gateway']->call($gateway, 'create_terminal', $request, $this->mode, $terminal);
+        $response = $this->app['gateway']->call($gateway, Constants::CREATE_TERMINAL, $request, $this->mode, $terminal);
 
         $gatewayProcessor->updateTerminalDetailsBasedOnCreationResponse($response, $terminal);
     }
@@ -287,7 +292,7 @@ class Service extends Base\Service
 
                 try
                 {
-                    $response = $this->app['gateway']->call($gateway, 'verify_terminal', $request, $this->mode, $terminal);
+                    $response = $this->app['gateway']->call($gateway, Constants::VERIFY_TERMINAL, $request, $this->mode, $terminal);
 
                     $gatewayProcessor->updateTerminalDetailsBasedOnVerifyResponse($response, $terminal);
                 }

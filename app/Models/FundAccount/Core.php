@@ -25,6 +25,7 @@ use RZP\Services\FTS\CreateAccount;
 class Core extends Base\Core
 {
     /**
+     * Here, source is null for entity of type fund account validation
      * @param array                  $input
      * @param Merchant\Entity        $merchant
      * @param Base\PublicEntity|null $source
@@ -76,9 +77,12 @@ class Core extends Base\Core
 
         try
         {
-            $account = $fundAccount->account;
+            if ($source !== null)
+            {
+                $account = $fundAccount->account;
 
-            (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
+                (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
+            }
         }
         catch (\Exception $exception)
         {

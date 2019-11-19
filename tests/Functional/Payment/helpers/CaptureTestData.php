@@ -432,7 +432,34 @@ return [
         ]
     ],
 
-    'testTransactionOnCaptureWithFeeBearerCustomer' => [
+    'testTransactionOnCaptureWithPaymentFeeBearerCustomerMerchantFeeBearerCustomer' => [
+        'response' => [
+            'content' => [
+                'entity'            => 'payment',
+                'amount'            => 1000000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'international'     => false,
+                'method'            => 'card',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => null,
+                'bank'              => null,
+                'wallet'            => null,
+                'vpa'               => null,
+                'notes'             => [],
+                'fee'               => 23000,
+                'error_code'        => null,
+                'error_description' => null,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransactionOnCaptureWithPaymentFeeBearerCustomerMerchantFeeBearerDynamic' => [
         'response' => [
             'content' => [
                 'entity'            => 'payment',

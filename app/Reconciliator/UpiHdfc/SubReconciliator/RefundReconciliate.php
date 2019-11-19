@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -118,7 +119,27 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             return null;
         }
 
-        return Carbon::createFromFormat('d-M-Y H:i:s', $refundSettledAt, Timezone::IST)->getTimestamp();
+        $gatewaySettledAtTimestamp = null;
+
+        try
+        {
+            $gatewaySettledAtTimestamp = Carbon::parse($refundSettledAt)->setTimezone(Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'date'      => $refundSettledAt,
+                    'gateway'   => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAtTimestamp;
     }
 
     protected function getReferenceNumber(array $row)

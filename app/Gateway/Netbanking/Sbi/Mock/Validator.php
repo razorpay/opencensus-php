@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         RequestFields::REDIRECT_URL            => 'required_with:' . RequestFields::REF_NO . '|url',
         RequestFields::CANCEL_URL              => 'required_with:' . RequestFields::REF_NO . '|url',
         RequestFields::CHECKSUM                => 'required_with:' . RequestFields::REF_NO . '|string',
+        RequestFields::ACCOUNT_NUMBER          => 'sometimes|string',
 
         //emandate
         RequestFields::MANDATE_HOLDER_NAME     => 'sometimes|string',
