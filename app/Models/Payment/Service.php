@@ -298,6 +298,8 @@ class Service extends Base\Service
 
             $this->cacheResponseData($payment, $response);
 
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
+
             return $response;
         }
         catch (\Throwable $e)
@@ -1761,7 +1763,19 @@ class Service extends Base\Service
      */
     public function validateVpa($input)
     {
-        $data = $this->getNewProcessor()->validateVpa($input);
+        $merchant = $this->merchant;
+
+        /**
+         * - Doing this for calls from FAVpaValidation Worker since merchant is not set in async processing
+         * - Tried with basicauth but has related issues of repo null
+         */
+        if (($merchant === null) and (empty($input['merchant_id']) === false))
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+            unset($input['merchant_id']);
+        }
+
+        $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
     }

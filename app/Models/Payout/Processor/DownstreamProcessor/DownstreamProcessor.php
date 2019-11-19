@@ -38,7 +38,7 @@ class DownstreamProcessor
     {
         $subProcessor = $this->getSubProcessorClass();
 
-        $subProcessor->processTransaction($this->payout);
+        return $subProcessor->processTransaction($this->payout);
     }
 
     protected function getSubProcessorClass()

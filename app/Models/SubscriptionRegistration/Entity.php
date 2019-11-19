@@ -5,11 +5,14 @@ namespace RZP\Models\SubscriptionRegistration;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
+ * @property PaperMandate\Entity   $paperMandate
  * @property Customer\Token\Entity $token
  */
 class Entity extends Base\PublicEntity
@@ -21,7 +24,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID       = 'customer_id';
 
     //
-    // Method can be of card or emandate
+    // Method can be of card or emandate or nach_mandate
     //
     const METHOD            = 'method';
     const ENTITY_TYPE       = 'entity_type';
@@ -41,6 +44,7 @@ class Entity extends Base\PublicEntity
     const FIRST_PAYMENT_AMOUNT = 'first_payment_amount';
 
     const BANK_ACCOUNT      = 'bank_account';
+    const PAPER_MANDATE     = 'paper_mandate';
     //
     // Auth Type is aadhaar or netbanking
     //
@@ -50,6 +54,15 @@ class Entity extends Base\PublicEntity
 
     const METHOD_TYPE_CARD      = 'card';
     const METHOD_TYPE_EMANDATE  = 'emandate';
+
+    const ORDER_ID     = 'order_id';
+
+    // Internally it is Invoice id
+    const AUTH_LINK_ID = 'auth_link_id';
+
+    const CREATE_FORM     = 'create_form';
+    const NACH_FORM_URL   = 'nach_form_url';
+    const UPLOAD_FORM_URL = 'upload_form_url';
 
     protected static $sign = 'subr';
 
@@ -88,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::EXPIRE_AT,
         self::BANK_ACCOUNT,
+        self::PAPER_MANDATE,
         self::RECURRING_STATUS,
         self::FAILURE_REASON,
         self::MAX_AMOUNT,
@@ -129,7 +143,7 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
     ];
 
-    public function toArrayTokenFields()
+    public function toArrayTokenFields(Invoice\Entity $invoice = null)
     {
         $flippedArrayTokenFields = array_flip($this->tokenFields);
 
@@ -145,6 +159,32 @@ class Entity extends Base\PublicEntity
             unset($publicArrayBankAccount[self::ID]);
 
             unset($publicArrayBankAccount['entity']);
+
+            $tokenArray[self::BANK_ACCOUNT] = $publicArrayBankAccount;
+        }
+        else if ($this->getEntityType() === self::PAPER_MANDATE)
+        {
+            $paperMandate = $this->paperMandate;
+
+            $bankAccount = $paperMandate->bankAccount;
+
+            $publicArrayBankAccount = $bankAccount->toArrayHosted();
+
+            unset($publicArrayBankAccount[self::ID]);
+
+            unset($publicArrayBankAccount['entity']);
+
+            $tokenArray[Entity::CREATE_FORM] = empty($paperMandate->getGeneratedFileID()) === true ? false : true;
+
+            $tokenArray[PaperMandate\Entity::REFERENCE_1] = $paperMandate->getReference1();
+
+            $tokenArray[PaperMandate\Entity::REFERENCE_2] = $paperMandate->getReference2();
+
+            $tokenArray[Entity::NACH_FORM_URL] = $paperMandate->getGeneratedFormUrl();
+
+            $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
+
+            $tokenArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
 
             $tokenArray[self::BANK_ACCOUNT] = $publicArrayBankAccount;
         }
@@ -223,7 +263,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAmount() > 0);
     }
-    
+
 
         /**
      * Gets dimensions for metrics around invoice module
@@ -270,7 +310,7 @@ class Entity extends Base\PublicEntity
     }
 
     //
-    // Entity type currently supports bank_account or card.
+    // Entity type currently supports bank_account or card or paper_mandate.
     //
     public function entity()
     {
@@ -278,6 +318,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function bankAccount()
+    {
+        return $this->morphTo('entity');
+    }
+
+    public function paperMandate()
     {
         return $this->morphTo('entity');
     }

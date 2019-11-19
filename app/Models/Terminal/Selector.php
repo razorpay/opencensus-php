@@ -209,52 +209,6 @@ class Selector extends Base\Core
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
                 $sortedTerminals = array($terminal);
             }
-            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
-            {
-                //
-                // Rupay transactions for pharma merchants need to be routed through
-                // the aala firstdata terminal. Hence adding this terminal manually,
-                // in case no terminal found error comes.
-                //
-                if ($this->input['merchant']->getCategory2() === Category::PHARMA)
-                {
-                    $terminal = $this->repo->terminal->find('76lEBqibDvhOzY');
-
-                    $sortedTerminals = [$terminal];
-                }
-                else
-                {
-                    //
-                    // Only for Rupay card transactions if no terminal is found, we
-                    // want to distribute payments via the following logic.
-                    //
-
-                    //
-                    // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
-                    // equal 10% load to other FirstData terminals, hence the below
-                    // array structure
-                    // courtesy : Sunny sir _/\_
-                    //
-                    $rupayTerminalSet = [
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '94RNvZoogX4kOB',
-                        '76wS0y0kLvd2Z9',
-                        '81x0D4UfzB1T7V',
-                        '8f65Iykp4YRF31',
-                        '7mugQsqdruXGSd',
-                        '8AcyFtPYDi2rdx',
-                        '76lEBqibDvhOzY',
-                    ];
-
-                    $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
-
-                    $terminal = $this->repo->terminal->find($selectedTerminalId);
-
-                    $sortedTerminals = [$terminal];
-                }
-            }
             else if (($payment->isCard() === true) and
                      ($payment->card->isNetworkUnknown() === true))
             {
@@ -266,15 +220,12 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $merchant->methods->setDinersCard(0);
+//                $merchant->methods->setDinersCard(0);
 
-                $this->trace->info(TraceCode::DISABLING_DINERS_FOR_MERCHANT, [
-                    'merchant_id' => $merchant->getId(),
-                    'reason'      => 'No terminal found',
-                ]);
+                $this->alertDinersDisabledForMerchant($merchant, $payment);
 
-                $this->repo->saveOrFail($merchant->methods);
-
+//                $this->repo->saveOrFail($merchant->methods);
+//
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
@@ -877,5 +828,31 @@ class Selector extends Base\Core
         }
 
         return $terminalIds;
+    }
+
+    protected function alertDinersDisabledForMerchant(Merchant\Entity $merchant, $payment)
+    {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'payment_id'            => $payment[Entity::ID],
+            'payment_international' => $payment[Entity::INTERNATIONAL],
+            'network'               => 'DICL',
+            'reason'                => 'no terminal found',
+        ];
+
+        $this->trace->critical(TraceCode::DICL_TERMINAL_NOT_FOUND, $alertArray);
+
+        $message = 'Diners Club payment failed with no terminal found';
+
+        $this->app['slack']->queue(
+            $message,
+            $alertArray,
+            [
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
     }
 }

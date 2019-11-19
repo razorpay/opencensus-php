@@ -2,19 +2,20 @@
 
 namespace RZP\Gateway\Wallet\Payzapp;
 
-use RZP\Constants\Mode;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Trace\TraceCode;
-use Carbon\Carbon;
 use View;
+
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Models\Payment\Gateway as PaymentGateway;
 
 class Gateway extends Base\Gateway
 {
@@ -181,31 +182,27 @@ class Gateway extends Base\Gateway
 
         parse_str($response, $content);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            [$request, $content]);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [$request, $content]);
 
-        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse(
-                                    $input, $content);
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($input, $content);
 
-        $refund = $this->createGatewayRefundEntity($refundAttributes);
+        $this->createGatewayRefundEntity($refundAttributes);
 
-        if ((isset($content['new_merchant_reference_no'])) and
-            ($input['refund']['id'] !== $content['new_merchant_reference_no']))
+        $gatewayDataArray = [
+            PaymentGateway::GATEWAY_RESPONSE => json_encode($response),
+            PaymentGateway::GATEWAY_KEYS     => $this->getGatewayData($content),
+        ];
+
+        if (((isset($content[ResponseFields::MERCHANT_REF_NO])) and
+             ($input['refund']['id'] !== $content[ResponseFields::MERCHANT_REF_NO])) or
+            (ResponseCode::$statusCodes[$content[ResponseFields::STATUS]] !== 'Success'))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+            $this->trace->error(TraceCode::PAYMENT_REFUND_FAILURE, [$request, $content]);
+
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_REFUND_FAILED, $gatewayDataArray);
         }
 
-        if (ResponseCode::$statusCodes[$content['status']] !== 'Success')
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [$request, $content]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
-        }
+        return $gatewayDataArray;
     }
 
     public function verify(array $input)
@@ -297,7 +294,6 @@ class Gateway extends Base\Gateway
             return;
         }
 
-
         //trace input
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -358,16 +354,11 @@ class Gateway extends Base\Gateway
             'error_message'         => $responseDescription,
         );
 
-        // If the wallet entity does not have an acosa transaction id, fill it.
-        if (empty($payment['gateway_payment_id_2']))
-        {
-            $gateway_payment_id_2 =
-                $verify->verifystatusResults['SALE']['status']['transaction_id'];
+        $gateway_payment_id_2 = $verify->verifystatusResults['SALE']['status']['transaction_id'];
 
-            $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
+        $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
 
-            $payment->saveOrFail();
-        }
+        $payment->saveOrFail();
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -380,17 +371,24 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        $scroogeResponse = new ScroogeResponse();
+
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        parent::verifyRefund($input);
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
     }
 
     protected function getRefundEntityAttributesFromRefundResponse($input, $content)
@@ -429,7 +427,7 @@ class Gateway extends Base\Gateway
     {
         $txnResultStrings = explode('transaction_id=', $content);
 
-        $originalTxnIdRecord = $txnResultStrings[1];
+        $originalTxnIdRecord = end($txnResultStrings);
 
         $originalTxnIdRecord = 'transaction_id='.$originalTxnIdRecord;
 
@@ -577,7 +575,7 @@ class Gateway extends Base\Gateway
 
         return [
             'response' => $response,
-            'content'   => $content
+            'content'  => $content
         ];
     }
 
@@ -745,7 +743,6 @@ class Gateway extends Base\Gateway
 
     protected function getHashForVerifyRequest(array $content)
     {
-
         $fieldsInOrder = array(
             'pg_instance_id',
             'merchant_id',
@@ -812,5 +809,22 @@ class Gateway extends Base\Gateway
         }
 
         return $input['terminal']['gateway_access_code'];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                ResponseFields::RRN             => $response[ResponseFields::RRN] ?? null,
+                ResponseFields::STATUS          => $response[ResponseFields::STATUS] ?? null,
+                ResponseFields::ERROR_CODE      => $response[ResponseFields::ERROR_CODE] ?? null,
+                ResponseFields::ERROR_DETAIL    => $response[ResponseFields::ERROR_DETAIL] ?? null,
+                ResponseFields::TRANSACTION_ID  => $response[ResponseFields::TRANSACTION_ID] ?? null,
+                ResponseFields::MERCHANT_REF_NO => $response[ResponseFields::MERCHANT_REF_NO] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

@@ -156,6 +156,7 @@ class PayVerifyData extends Base\Mock\Server
                 'paymentId'         => $entities['payment']['id'],
                 'amount'            => $entities['payment']['amount'],
                 'bank_payment_id'   => '999999',
+                'transaction_id'    => '1234',
                 'payment_status'    => 'Y',
                 'status'            => 'callback_successful',
                 '_raw'              => null

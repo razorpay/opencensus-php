@@ -168,6 +168,9 @@ ALTER TABLE netbanking
     ADD COLUMN date VARCHAR(255) AFTER reference1,
     ADD COLUMN refund_id CHAR(14) AFTER date;
 
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_refund_id_index` (`refund_id`);
+
 ALTER TABLE billdesk
     ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
 
@@ -5372,6 +5375,7 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+
 ALTER TABLE merchant_details
 add column `kyc_clarification_reasons` JSON NULL,
 add column `kyc_additional_details` JSON NULL;
@@ -5409,6 +5413,10 @@ ALTER TABLE settlement_bucket
     ADD COLUMN balance_type char(14) DEFAULT 'primary' AFTER `merchant_id`,
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
+
+# adds fee_bearer column for payments (renaming the existing column 'reference12')
+ALTER TABLE payments
+    CHANGE COLUMN reference12 fee_bearer BIGINT;
 
 ALTER TABLE merchant_invoice
     MODIFY COLUMN invoice_number varchar(255) NOT NULL,
@@ -5492,8 +5500,34 @@ ALTER TABLE `p2p_concerns`
 
 -- P2P - Adding Indices
 
+---Virtual VPA----
+
+ALTER TABLE `terminals`
+  ADD COLUMN `virtual_upi_root` VARCHAR(20) NULL DEFAULT NULL after `ifsc_code`,
+  ADD COLUMN `virtual_upi_merchant_prefix` VARCHAR(20) NULL DEFAULT NULL  after `virtual_upi_root`,
+  ADD COLUMN `virtual_upi_handle` VARCHAR(20) NULL DEFAULT NULL after `virtual_upi_merchant_prefix`;
+
+ALTER TABLE `virtual_accounts`
+  CHANGE COLUMN`vpa` `vpa_id` VARCHAR(14) NULL DEFAULT NULL;
+
 ALTER TABLE fund_account_validations
     CHANGE COLUMN currency currency CHAR(3) NULL;
 
 ALTER TABLE fund_account_validations
     CHANGE COLUMN amount amount bigint NULL;
+
+ALTER TABLE `mozart`
+    ADD INDEX `mozart_payment_id_index` (`payment_id`),
+    ADD INDEX `mozart_refund_id_index` (`refund_id`),
+    ADD INDEX `mozart_created_at_index` (`created_at`);
+
+ALTER TABLE `terminals`
+    ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE banking_account_statement
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX banking_account_statement_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL AFTER updated_at,
+    ADD INDEX external_deleted_at_index (deleted_at);

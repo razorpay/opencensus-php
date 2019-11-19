@@ -1030,6 +1030,12 @@ final class FactoryData
             'customer_id' => '100000customer',
         ]);
 
+        $factory(\RZP\Models\PaperMandate\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
+        ]);
+
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
             'active'       => true,
@@ -1163,6 +1169,10 @@ final class FactoryData
             'max_amount'        => 1000000,
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
+
         ]);
     }
 }

@@ -592,7 +592,6 @@ class Constants
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
-        self::ES_ON_DEMAND,
         self::SHOW_CREDIT_SCORE,
     ];
 

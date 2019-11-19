@@ -82,6 +82,7 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
@@ -229,6 +230,8 @@ class Table
     const CREDITNOTE           = 'creditnote';
 
     const CREDITNOTE_INVOICE   = 'creditnote_invoices';
+
+    const INVOICE_REMINDER   = 'invoice_reminders';
 
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 

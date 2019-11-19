@@ -1047,12 +1047,16 @@ class Validator extends Base\Validator
         Entity::MC_MPAN                    => 'required|string|max:255',
         Entity::VISA_MPAN                  => 'required|string',
         Entity::RUPAY_MPAN                 => 'required|string',
-        Entity::VPA                        => 'required|string',
+        Entity::VPA                        => 'sometimes|string',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'required|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes',
+        Entity::ENABLED                    => 'sometimes',
+        Entity::ACCOUNT_NUMBER             => 'sometimes',
+        Entity::IFSC_CODE                  => 'sometimes',
     ];
 
     protected static $worldlineEditTerminalRules = [

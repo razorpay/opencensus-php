@@ -2,7 +2,6 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
-use Respect\Validation\Rules\In;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -12,10 +11,12 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
-use RZP\Models\Settings;
 use RZP\Models\BankAccount;
+use RZP\Models\PaperMandate;
+use RZP\Services\UfhService;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
-use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Core extends Base\Core
 {
@@ -118,10 +119,20 @@ class Core extends Base\Core
     {
         $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
 
+        $validator = new Validator;
+
+        $validator->validateInput('create_subscription_registration',$subrInput);
+
+        $validator->validateFirstPaymentAmount($subrInput);
+
         if (isset($input[Entity::NOTES]) === true)
         {
             $subrInput[Entity::NOTES] =  $input[Entity::NOTES];
         }
+
+        $paperMandateInput = [];
+
+        $this->getPaperMandateInput($input, $paperMandateInput, $subrInput);
 
         $bankInput = [];
 
@@ -148,19 +159,63 @@ class Core extends Base\Core
             $bankAccount = $bankAccountCore->addOrUpdateBankAccountForCustomer($bankInput, $customer);
 
             $this->setBankAccountEntity($subscriptionRegistration, $bankAccount);
-
         }
+
         if (empty($bankName) === false)
         {
             $subscriptionRegistration->setBank($bankName);
         }
 
+        if (empty($paperMandateInput) === false)
+        {
+            if (empty($subscriptionRegistration->getMaxAmount()) === false)
+            {
+                $paperMandateInput[PaperMandate\Entity::AMOUNT] = $subscriptionRegistration->getMaxAmount();
+            }
+
+            $paperMandate = (new PaperMandate\Core)->create($paperMandateInput, $customer);
+
+            $this->setPaperMandateEntity($subscriptionRegistration, $paperMandate);
+        }
+
         return $subscriptionRegistration;
+    }
+
+    protected function getPaperMandateInput(array & $input, array & $paperMandateInput, array & $subrInput)
+    {
+        $method = $subrInput[Entity::METHOD] ?? null;
+
+        if ($method !== Method::NACH)
+        {
+            return;
+        }
+
+        if (array_key_exists(Entity::CREATE_FORM, $subrInput) === true)
+        {
+            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = array_pull($subrInput, Entity::CREATE_FORM);
+        }
+
+        if (array_key_exists(PaperMandate\Entity::REFERENCE_1, $subrInput) === true)
+        {
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_1] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_1);
+        }
+
+        if (array_key_exists(PaperMandate\Entity::REFERENCE_2, $subrInput) === true)
+        {
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_2] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_2);
+        }
+
+        if (empty($subrInput[Entity::EXPIRE_AT]) === false)
+        {
+            $paperMandateInput[PaperMandate\Entity::END_AT] = $subrInput[Entity::EXPIRE_AT];
+        }
+
+        $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT] = array_pull($subrInput, Entity::BANK_ACCOUNT);
     }
 
     public function createCustomer(array & $input, Merchant\Entity $merchant): Customer\Entity
     {
-        $details = array_pull($input, Constants\Entity::CUSTOMER);
+        $details = array_pull($input, Constants\Entity::CUSTOMER) ?? [];
 
         $customer = (new Customer\Core)->createLocalCustomer($details, $merchant, false);
 
@@ -439,6 +494,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subscriptionRegistration);
     }
 
+    private function setPaperMandateEntity(Entity $subscriptionRegistration, PaperMandate\Entity $paperMandate)
+    {
+        $subscriptionRegistration->entity()->associate($paperMandate);
+
+        $this->repo->saveOrFail($subscriptionRegistration);
+    }
+
     public function deleteToken(string $id, Merchant\Entity $merchant): array
     {
         $this->trace->info(
@@ -470,6 +532,60 @@ class Core extends Base\Core
         $validator->validateInput('create', $input);
     }
 
+    public function paperMandateAuthenticate(Entity $subscriptionRegistration, array $input): array
+    {
+        $result = ['success' => true];
+
+        $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
+
+        $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
+
+        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+
+        $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
+
+        if (empty($validationResult['errors']) === false)
+        {
+            $result = [
+                'success' => false,
+                'errors'  => $validationResult['errors'],
+            ];
+        }
+
+        $result[PaperMandate\Entity::ENHANCED_IMAGE] = $signedUrl;
+
+        $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
+
+        return $result;
+    }
+
+    public function paperMandateValidate(Entity $subscriptionRegistration, array $input): array
+    {
+        $result = ['success' => true];
+
+        $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
+
+        $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
+
+        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+
+        $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
+
+        if (empty($validationResult['errors']) === false)
+        {
+            $result = [
+                'success' => false,
+                'errors'  => $validationResult['errors'],
+            ];
+        }
+
+        $result[PaperMandate\Entity::ENHANCED_IMAGE] = $signedUrl;
+
+        $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
+
+        return $result;
+    }
+
     protected function setDefaultValuesForBank(array & $bankInput, Customer\Entity $customer)
     {
         if (array_key_exists(BankAccount\Entity::BENEFICIARY_EMAIL, $bankInput) == false)
@@ -481,46 +597,5 @@ class Core extends Base\Core
         {
             $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $customer->getContact();
         }
-    }
-
-    public function sendNotification(Invoice\Entity $invoice, string $medium): array
-    {
-        $this->trace->info(
-            TraceCode::AUTH_LINK_RESEND,
-            [
-                'invoice_id'        => $invoice->getId(),
-                'invoice_status'    => $invoice->getStatus(),
-                'medium'            => $medium,
-            ]
-        );
-
-        $invoice->getValidator()->validateSendNotificationRequest($medium);
-
-        $order = $invoice->order;
-
-        $order->getValidator()->validateOrderNotPaid();
-
-        $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
-
-        $response = (new Invoice\Notifier($invoice))->$func();
-
-        $this->repo->saveOrFail($invoice);
-
-        return ['success' => $response];
-    }
-
-    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
-    {
-        //
-        // Settings module captures whether notification for this batch has
-        // been already sent or not.
-        //
-        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
-
-        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
-
-        $settingsAccessor->upsert($input)->save();
-
-        InvoiceBatchNotifyJob::dispatch($this->mode, $batch->getId(), $input);
     }
 }
