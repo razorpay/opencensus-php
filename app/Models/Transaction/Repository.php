@@ -561,7 +561,10 @@ class Repository extends Base\Repository
     {
         if (count($txnIds) === 0)
         {
-            return;
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED);
+
+            return 0;
         }
 
         $values = [Transaction\Entity::SETTLED  => false];
