@@ -498,7 +498,7 @@ class Repository extends Base\Repository
                     ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::CREATED)
                     ->get();
     }
-    
+
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
         $query = $this->newQuery()

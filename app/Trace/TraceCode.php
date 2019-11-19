@@ -845,6 +845,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_INITIATED                                  = 'SETTLEMENT_INITIATED';
     const SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT              = 'SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT';
     const SETTLEMENT_TXN_FETCH_TIME_TAKEN                       = 'SETTLEMENT_TXN_FETCH_TIME_TAKEN';
+    const SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN                    = 'SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN';
     const SETTLEMENT_TXN_UPDATE_TIME_TAKEN                      = 'SETTLEMENT_TXN_UPDATE_TIME_TAKEN';
     const SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN                 = 'SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN';
     const RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN                = 'RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN';
@@ -1615,6 +1616,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BANKING_INVOICE_REPORT_REQUEST               = 'MERCHANT_BANKING_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST              = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
     const MERCHANT_INVOICE_QUERY_TIMEOUT                        = 'MERCHANT_INVOICE_QUERY_TIMEOUT';
+    const MERCHANT_INVOICE_CREATION_SKIPPED                     = 'MERCHANT_INVOICE_CREATION_SKIPPED';
 
     const MERCHANT_INVOICE_CORRECTION_DETAILS                   = 'MERCHANT_INVOICE_CORRECTION_DETAILS';
     const MERCHANT_INVOICE_CORRECTION_FAILED                    = 'MERCHANT_INVOICE_CORRECTION_FAILED';
@@ -1626,6 +1628,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_PARAMS                    = 'MERCHANT_INVOICE_CORRECTION_PARAMS';
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';
+
+    const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
@@ -2067,6 +2071,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     const NETBANKING_TERMINAL_NOT_FOUND                         = 'NETBANKING_TERMINAL_NOT_FOUND';
+
+    const DICL_TERMINAL_NOT_FOUND                               = 'DICL_TERMINAL_NOT_FOUND';
 
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';

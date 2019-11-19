@@ -783,7 +783,12 @@ class Core extends Base\Core
 
         $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null);
+        $eventAttributes = [
+            Detail\Constants::POA_STATUS                       => $merchantDetails->getPoaVerificationStatus(),
+            Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus(),
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null, $eventAttributes);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)

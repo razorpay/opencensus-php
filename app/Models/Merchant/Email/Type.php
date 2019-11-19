@@ -23,6 +23,11 @@ class Type
 
     public static function exists(string $type): bool
     {
-        return defined(get_class() . '::' . strtoupper($type));
+        $class      = new \ReflectionClass(__CLASS__);
+
+        $validTypes = $class->getConstants();
+
+        return in_array($type, $validTypes, true);
+
     }
 }

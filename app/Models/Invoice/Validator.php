@@ -642,11 +642,11 @@ class Validator extends Base\Validator
     protected function validateMerchantIsNotFeeBearer(Merchant\Entity $merchant, Entity $invoice)
     {
         //
-        // If merchant is a customer-fee-bearer client, for now don't allow
+        // If merchant is a customer-fee-bearer or dynamic-fee-bearer client, for now don't allow
         // him to create invoices of type=invoice.
         //
 
-        if (($merchant->isFeeBearerCustomer() === true) and
+        if (($merchant->isFeeBearerCustomerOrDynamic() === true) and
             ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestException(

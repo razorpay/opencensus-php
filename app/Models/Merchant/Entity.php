@@ -512,6 +512,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
     }
 
+    public function isFeeBearerDynamic()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::DYNAMIC;
+    }
+
+    public function isFeeBearerCustomerOrDynamic()
+    {
+        return (($this->isFeeBearerDynamic() === true) or
+                ($this->isFeeBearerCustomer() === true));
+    }
+
     public function isPrepaid()
     {
         return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
@@ -1750,6 +1761,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
@@ -1821,17 +1837,6 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $riskThreshold;
-    }
-
-    public function getSubventionType()
-    {
-        // Move to subvention type if ever.
-        if ($this->isFeeBearerCustomer())
-        {
-            return FeeBearer::CUSTOMER;
-        }
-
-        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
