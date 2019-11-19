@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD                        => 'sometimes|integer|min:0|max:100',
-        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform',
+        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform,dynamic',
         Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',

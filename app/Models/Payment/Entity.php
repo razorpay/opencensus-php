@@ -1551,11 +1551,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getFeeBearer()
     {
-        /*
-        * this is a temporary measure during deployment
-        * read https://razorpay.slack.com/archives/CNV2GTFEG/p1571946884026200
-        */
-        if ($this->merchant !== null)
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
         {
             return $this->merchant->getFeeBearer();
         }
@@ -1852,11 +1849,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isFeeBearerCustomer()
     {
-        /*
-         * this is a temporary measure during deployment
-         * read https://razorpay.slack.com/archives/CNV2GTFEG/p1571946884026200
-         */
-        if ($this->merchant !== null)
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
         {
             return $this->merchant->isFeeBearerCustomer() === true;
         }
@@ -1866,6 +1860,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isFeeBearerPlatform()
     {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->isFeeBearerPlatform() === true;
+        }
+
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
     }
 

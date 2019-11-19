@@ -1003,7 +1003,7 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForOrderPartialPaymentPartialAmount()
     {
-        foreach ([FeeBearer::PLATFORM] as $merchantFeeBearer)
+        foreach ([FeeBearer::PLATFORM, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $this->fixtures->merchant->edit('10000000000000', ['fee_bearer' => $merchantFeeBearer]);
 
@@ -1035,7 +1035,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
 
-        foreach ([FeeBearer::PLATFORM] as $merchantFeeBearer)
+        foreach ([FeeBearer::PLATFORM, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $this->fixtures->merchant->edit('10000000000000', ['fee_bearer' => $merchantFeeBearer]);
 
@@ -1080,7 +1080,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order');
 
@@ -1110,7 +1110,7 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
 
@@ -1143,7 +1143,7 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
 
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
@@ -1173,7 +1173,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
 

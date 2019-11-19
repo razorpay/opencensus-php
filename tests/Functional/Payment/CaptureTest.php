@@ -1104,7 +1104,6 @@ class CaptureTest extends TestCase
     // Merchant fee bearer = dynamic
     public function testTransactionOnCaptureWithPaymentFeeBearerCustomerMerchantFeeBearerDynamic()
     {
-        $this->markTestSkipped('test skipped temporarily to avoid canary-master issue. will be reverted. ref: https://razorpay.slack.com/archives/CNV2GTFEG/p1571946884026200');
         $merchant = $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'dynamic']);
 
         $payment = $this->fixtures->create('payment:authorized', [
