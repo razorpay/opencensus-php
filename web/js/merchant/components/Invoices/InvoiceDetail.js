@@ -27,7 +27,6 @@ import {
   EditReceipt,
   EditBusinessSegment,
 } from 'merchant/containers/PaymentLinks/Edit/index';
-import { ReminderNotEnabled } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
 
 import {
   trackDetailViewEdits,
