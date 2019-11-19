@@ -47,7 +47,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->ba->privateAuth();
 
-
         $this->setUpMerchantForBusinessBanking(
             false,
             10000,
@@ -263,11 +262,11 @@ class RblBankingAccountStatementTest extends TestCase
 
     protected function verifyGeneratedXlsxFile($currentTime)
     {
-        $openingBalanceCell = 'B35';
+        $openingBalanceCell = 'B36';
 
-        $closingBalanceCell = 'B36';
+        $closingBalanceCell = 'B37';
 
-        $effectiveBalanceCell = 'B37';
+        $effectiveBalanceCell = 'B38';
 
         $expectedOpeningBalance = 214.5;
 
