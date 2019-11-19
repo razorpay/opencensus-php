@@ -323,18 +323,19 @@ export default props => {
                     </EntityDetailRow>
                   )}
 
-                {!isPaymentLinksRemindersEnabled && (
-                  <EntityDetailRow label="Reminders">
-                    <div class="Input-content">
-                      Reminders are not set for payment links.
-                      <br />
-                      Set it up{' '}
-                      <Link target="_blank" to="/reminders">
-                        here
-                      </Link>
-                    </div>
-                  </EntityDetailRow>
-                )}
+                {user.isRemindersEnabled &&
+                  !isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <div class="Input-content">
+                        Reminders are not set for payment links.
+                        <br />
+                        Set it up{' '}
+                        <Link target="_blank" to="/reminders">
+                          here
+                        </Link>
+                      </div>
+                    </EntityDetailRow>
+                  )}
 
                 <EntityDetailRow
                   label="Receipt No."
