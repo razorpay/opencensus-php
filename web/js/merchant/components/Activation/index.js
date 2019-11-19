@@ -153,7 +153,7 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
-    callingL1Api: false,
+    callingApi: false,
     address_proof: 'aadhar',
   };
   constructor(props) {
@@ -824,7 +824,7 @@ export default class ActivationWizard extends React.Component {
 
     this.trackSubmitL1(data);
 
-    this.setState({ callingL1Api: true });
+    this.setState({ callingAPI: true });
 
     try {
       let response = await this.props.submitL1Form({
@@ -866,7 +866,7 @@ export default class ActivationWizard extends React.Component {
       L1FormSuccess(props);
       this.saveCurrentTab();
 
-      this.setState({ callingL1Api: false }, () => {
+      this.setState({ callingAPI: false }, () => {
         if (
           poi_verification_status != 'incorrect_details' &&
           poi_verification_status != 'not_matched'
@@ -876,7 +876,7 @@ export default class ActivationWizard extends React.Component {
       });
       return response;
     } catch (err) {
-      this.setState({ callingL1Api: false });
+      this.setState({ callingAPI: false });
       this.saveCurrentTab();
       if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
@@ -1526,7 +1526,7 @@ export default class ActivationWizard extends React.Component {
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
                       disabled={
-                        !this.canSubmitL1Form || this.state.callingL1Api
+                        !this.canSubmitL1Form || this.state.callingAPI
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}
@@ -1665,7 +1665,7 @@ function ActivationField(field) {
     key = _name;
   }
 
-  const isFormLocked = !!this.props.data.locked;
+  const isFormLocked = !!this.props.data.locked || this.state.callingAPI;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;
