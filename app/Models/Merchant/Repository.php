@@ -124,7 +124,6 @@ class Repository extends Base\Repository
                           $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                                 ->orWhereNull(Entity::PARENT_ID);
                       })
-                      ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
                       ->take($limit)
                       ->skip($skip);
 
