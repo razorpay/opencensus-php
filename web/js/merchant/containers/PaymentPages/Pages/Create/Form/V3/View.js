@@ -91,12 +91,16 @@ export default class View extends React.PureComponent {
     const { paymentPageEntity: prevPaymentPageEntity } = prevProps;
     const { paymentPageEntity: curPaymentPageEntity } = this.props;
 
+    const isPageNavigatedToOtherId =
+      !prevPaymentPageEntity ||
+      !curPaymentPageEntity ||
+      prevPaymentPageEntity.id !== curPaymentPageEntity.id;
+    const isSamePageButDataFetchedAfterwards =
+      prevPaymentPageEntity.id === curPaymentPageEntity.id &&
+      !prevPaymentPageEntity.payment_page_items;
+
     if (
-      (!prevPaymentPageEntity ||
-        !curPaymentPageEntity ||
-        prevPaymentPageEntity.id !== curPaymentPageEntity.id ||
-        (prevPaymentPageEntity.id === curPaymentPageEntity.id &&
-          !prevPaymentPageEntity.payment_page_items)) &&
+      (isPageNavigatedToOtherId || isSamePageButDataFetchedAfterwards) &&
       curPaymentPageEntity.payment_page_items
     ) {
       this.setState({
