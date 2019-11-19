@@ -331,13 +331,9 @@ class Service extends Base\Service
 
     public function sendNotification(string $id, string $medium): array
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant(
             $id,
-            $this->merchant,
-            null,
-            null,
-            [],
-            Constants\Entity::SUBSCRIPTION_REGISTRATION
+            $this->merchant
         );
 
         $invoice->setRelation('entity', $invoice->entity);
