@@ -27,6 +27,7 @@ import {
   EditReceipt,
   EditBusinessSegment,
 } from 'merchant/containers/PaymentLinks/Edit/index';
+import { ReminderNotEnabled } from 'merchant/containers/PaymentLinks/Links/Create/Fields';
 
 import {
   trackDetailViewEdits,
@@ -123,6 +124,7 @@ export default props => {
     isAutoRemindersUpdating,
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -296,25 +298,41 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled && (
-                  <EntityDetailRow label="Reminders">
-                    <Input.Check
-                      name="auto_reminders"
-                      fieldLabel="Send auto reminders"
-                      checked={isRemindersEnabled}
-                      disabled={isPaymentLinkClosed || isAutoRemindersUpdating}
-                      onChange={onChangeSendAutoReminder}
-                      autoRender
-                    />
+                {user.isRemindersEnabled &&
+                  isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <Input.Check
+                        name="auto_reminders"
+                        fieldLabel="Send auto reminders"
+                        checked={isRemindersEnabled}
+                        disabled={
+                          isPaymentLinkClosed || isAutoRemindersUpdating
+                        }
+                        onChange={onChangeSendAutoReminder}
+                        autoRender
+                      />
 
-                    <Stepper
-                      list={getRemindersStepperData(
-                        isRemindersEnabled,
-                        nextReminders,
-                        isAutoRemindersUpdating,
-                        isPaymentLinkClosed
-                      )}
-                    />
+                      <Stepper
+                        list={getRemindersStepperData(
+                          isRemindersEnabled,
+                          nextReminders,
+                          isAutoRemindersUpdating,
+                          isPaymentLinkClosed
+                        )}
+                      />
+                    </EntityDetailRow>
+                  )}
+
+                {!isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <div class="Input-content">
+                      Reminders are not set for payment links.
+                      <br />
+                      Set it up{' '}
+                      <Link target="_blank" to="/reminders">
+                        here
+                      </Link>
+                    </div>
                   </EntityDetailRow>
                 )}
 

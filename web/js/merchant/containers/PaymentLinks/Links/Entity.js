@@ -8,7 +8,11 @@ import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
-import { keysToSentence } from 'common/utils/rzp-utils';
+import { keysToSentence, findBy } from 'common/utils/rzp-utils';
+import {
+  fetchReminders,
+  fetchRemindersMerchantConfigs,
+} from 'merchant/reducers/reminders';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 
@@ -16,12 +20,15 @@ import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
   state => ({
     ...state.invoice,
     ...state.session,
+    reminders: state.reminders,
   }),
   {
     ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
     updatePLInReduxList,
+    fetchReminders,
+    fetchRemindersMerchantConfigs,
   }
 )
 export default class InvoiceDetailContainer extends Component {
@@ -34,6 +41,7 @@ export default class InvoiceDetailContainer extends Component {
     this.state = {
       statusMsg: {},
       isAutoRemindersUpdating: true,
+      isPaymentLinksRemindersEnabled: false,
       nextReminders: [],
     };
 
@@ -56,10 +64,28 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   fetchInvoiceRemindersList = () => {
-    InvoiceActions.fetchInvoiceRemindersList(this.props.id).then(resp => {
+    const promiseList = [];
+
+    if (!this.props.reminders.reminders.items.length) {
+      promiseList.push(this.props.fetchReminders());
+    } else {
+      promiseList.push(Promise.resolve());
+    }
+
+    promiseList.push(InvoiceActions.fetchInvoiceRemindersList(this.props.id));
+
+    Promise.all(promiseList).then(respList => {
+      const paymentLinksRemindersSettings =
+        findBy(
+          this.props.reminders.reminders.items,
+          'namespace',
+          'payment_link'
+        ) || {};
+
       this.setState({
-        nextReminders: resp.data.next_run_at || [],
+        isPaymentLinksRemindersEnabled: paymentLinksRemindersSettings.active,
         isAutoRemindersUpdating: false,
+        nextReminders: respList[1].data.next_run_at || [],
       });
     });
   };
@@ -299,6 +325,9 @@ export default class InvoiceDetailContainer extends Component {
         onChangeSendAutoReminder={this.onChangeSendAutoReminder}
         isAutoRemindersUpdating={this.state.isAutoRemindersUpdating}
         isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
+        isPaymentLinksRemindersEnabled={
+          this.state.isPaymentLinksRemindersEnabled
+        }
       />
     );
   }
