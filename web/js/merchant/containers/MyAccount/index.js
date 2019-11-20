@@ -2,7 +2,7 @@ import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Profile from 'merchant/containers/Profile';
-import AddFunds from 'merchant/containers/AddFunds';
+import AddFunds from 'merchant/views/AddFunds';
 import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
