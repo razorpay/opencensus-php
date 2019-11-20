@@ -569,7 +569,7 @@ class Selector extends Base\Core
 
             if (isset($paymentData['vpa']) === true)
             {
-                $paymentData['vpa'] = $payment->getPspFromVpa();
+                $paymentData['vpa'] = $payment->getBankCodeFromVpa();
             }
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
