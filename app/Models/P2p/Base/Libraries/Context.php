@@ -104,7 +104,8 @@ class Context extends ArrayObject
         $basicAuth = app('basicauth');
 
         // Merchant and handle are required over Public and Device Auth
-        if (($basicAuth->getAuthType() === Type::PUBLIC_AUTH) or
+        if (($basicAuth->getAuthType() === Type::PRIVATE_AUTH) or
+            ($basicAuth->getAuthType() === Type::PUBLIC_AUTH) or
             ($basicAuth->getAuthType() === Type::DEVICE_AUTH))
         {
             // Setting the options first as options will be use to resolve the context

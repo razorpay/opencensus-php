@@ -845,6 +845,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_INITIATED                                  = 'SETTLEMENT_INITIATED';
     const SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT              = 'SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT';
     const SETTLEMENT_TXN_FETCH_TIME_TAKEN                       = 'SETTLEMENT_TXN_FETCH_TIME_TAKEN';
+    const SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN                    = 'SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN';
     const SETTLEMENT_TXN_UPDATE_TIME_TAKEN                      = 'SETTLEMENT_TXN_UPDATE_TIME_TAKEN';
     const SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN                 = 'SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN';
     const RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN                = 'RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN';
@@ -1602,6 +1603,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_JOB_DELETE                    = 'FUND_ACCOUNT_VALIDATION_JOB_DELETE';
     const FUND_ACCOUNT_VALIDATION_JOB_REQUEST                   = 'FUND_ACCOUNT_VALIDATION_JOB_REQUEST';
 
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX               = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX';
+
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED     = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED';
+
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
     const UPDATE_STATUS_AFTER_FTA_INITIATED                     = 'UPDATE_STATUS_AFTER_FTA_INITIATED';
@@ -1627,6 +1632,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_PARAMS                    = 'MERCHANT_INVOICE_CORRECTION_PARAMS';
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';
+
+    const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
@@ -1733,6 +1740,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT                 = 'SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT';
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
+    const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -1949,7 +1957,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMMISSION_COMPUTED_ZERO                              = 'COMMISSION_COMPUTED_ZERO';
     const COMMISSION_CREATE_FAILED                              = 'COMMISSION_CREATE_FAILED';
     const COMMISSION_COMPUTED_NEGATIVE                          = 'COMMISSION_COMPUTED_NEGATIVE';
-    const COMMISSION_ZERO_PARTNER_FEES                          = 'COMMISSION_ZERO_PARTNER_FEES';
+    const COMMISSION_IMPLICIT_INVALID                           = 'COMMISSION_IMPLICIT_INVALID';
     const COMMISSION_INVALID_SOURCE_ENTITY                      = 'COMMISSION_INVALID_SOURCE_ENTITY';
     const COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED                = 'COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED';
     const COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET               = 'COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET';
@@ -2066,6 +2074,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     const NETBANKING_TERMINAL_NOT_FOUND                         = 'NETBANKING_TERMINAL_NOT_FOUND';
 
+    const DICL_TERMINAL_NOT_FOUND                               = 'DICL_TERMINAL_NOT_FOUND';
+
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';
     const P2P_RESPONSE                                          = 'P2P_RESPONSE';
@@ -2153,6 +2163,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Banking Account Statement
     const BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE            = 'BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST        = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST';
+    const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE         = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE';
     const BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY               = 'BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY';
     const BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT              = 'BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT';
@@ -2272,6 +2283,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
+
+    const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

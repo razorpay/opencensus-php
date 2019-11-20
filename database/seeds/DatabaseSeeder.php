@@ -571,6 +571,7 @@ class DatabaseSeeder extends Seeder
                     'bank_transfer' => '1',
                     'cardless_emi'  => '1',
                     'paylater'      => '1',
+                    'nach'          => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
@@ -1776,6 +1777,21 @@ class DatabaseSeeder extends Seeder
                     'created_at'                => time(),
                     'updated_at'                => time(),
                     'type'                      => 6,
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NACH_CITI_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NACH_CITI,
+                'nach'                      => '1',
+                'gateway_merchant_id'       => 'NACH00000000010000',
+                'gateway_acquirer'          => 'RATN0TREASU',
+                'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 2,
             ]
         );
     }

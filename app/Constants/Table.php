@@ -231,6 +231,8 @@ class Table
 
     const CREDITNOTE_INVOICE   = 'creditnote_invoices';
 
+    const INVOICE_REMINDER   = 'invoice_reminders';
+
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     protected static $entityToTableMap = [

@@ -51,7 +51,7 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
-        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer,dynamic',
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
@@ -124,7 +124,6 @@ class Repository extends Base\Repository
                           $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                                 ->orWhereNull(Entity::PARENT_ID);
                       })
-                      ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
                       ->take($limit)
                       ->skip($skip);
 

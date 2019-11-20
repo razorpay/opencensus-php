@@ -109,7 +109,7 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
-        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
         {
             $input['view'] = 'html';

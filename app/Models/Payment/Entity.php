@@ -10,6 +10,7 @@ use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\FeeBearer;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Emi;
@@ -120,8 +121,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
-    // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE12           = 'reference12';
+    const FEE_BEARER            = 'fee_bearer';
+    // From 13 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
@@ -250,6 +251,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
+        self::FEE_BEARER,
     ];
 
     protected $visible = [
@@ -335,6 +337,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
+        self::FEE_BEARER,
     ];
 
     protected $public = [
@@ -497,6 +500,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REFUND_AT            => null,
         self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
+        self::FEE_BEARER           => Merchant\FeeBearer::PLATFORM,
     ];
 
     protected $amounts = [
@@ -1280,6 +1284,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+    public function setFeeBearer($feeBearer)
+    {
+        $this->setAttribute(self::FEE_BEARER, $feeBearer);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1353,6 +1362,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $trimmedReference16 = (blank($reference16) === true) ? null : trim($reference16);
 
         $this->attributes[self::REFERENCE16] =  $trimmedReference16;
+    }
+
+    protected function setFeeBearerAttribute($feeBearer)
+    {
+        $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($feeBearer);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1490,6 +1504,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $mdr;
     }
 
+    protected function getFeeBearerAttribute()
+    {
+        if (isset($this->attributes[self::FEE_BEARER]) === false)
+        {
+            $this->attributes[self::FEE_BEARER] = 0; // 0 -> platform fee bearer
+        }
+
+        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
     public function getMetadata($key = null, $default = null)
     {
         if ($key === null)
@@ -1523,6 +1547,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getReceiverType()
     {
         return $this->getAttribute(self::RECEIVER_TYPE);
+    }
+
+    public function getFeeBearer()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->getFeeBearer();
+        }
+
+        return $this->getAttribute(self::FEE_BEARER);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -1697,6 +1732,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
     }
 
+    public function isNach()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::NACH);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
@@ -1806,6 +1846,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                (($this->getAttribute(self::METHOD) === Method::WALLET) and
                    ($this->getWallet() === Wallet::PAYPAL)));
     }
+
+    public function isFeeBearerCustomer()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->isFeeBearerCustomer() === true;
+        }
+
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isFeeBearerPlatform()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->isFeeBearerPlatform() === true;
+        }
+
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
 
     /**
      * Checks if card should be saved depending on if the payment is emi or
@@ -1938,7 +2001,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $amount = $this->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($this->isFeeBearerCustomer() === true)
         {
             $amount -= $this->getFee();
         }
@@ -3235,7 +3298,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::UPI:
                 $paymentArray[self::VPA] = self::DUMMY_VPA;
+                break;
 
+            case Method::NACH:
+                $paymentArray[self::RECURRING] = true;
+                break;
         }
 
         if (is_null($orderEntity) === false)

@@ -161,6 +161,7 @@ class Core extends Base\Core
             Payment\Method::UPI          => false,
             Payment\Method::CARDLESS_EMI => [],
             Payment\Method::PAYLATER     => [],
+            Entity::GOOGLE_PAY_CARDS     => false,
         ];
 
         $methods = $this->getMethods($merchant);
@@ -169,6 +170,7 @@ class Core extends Base\Core
         $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
+        $data[Entity::NACH]          = $methods->isNachEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
         $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
@@ -218,11 +220,18 @@ class Core extends Base\Core
             $this->addRecurringCardsToMethods($merchant, $methods, $data['recurring']);
 
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
+
+            $data['recurring'][Entity::NACH] = $methods->isNachEnabled();
         }
 
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
         {
             $data['upi_intent'] = true;
+        }
+
+        if ($merchant->isFeatureEnabled(Constants::GOOGLE_PAY_CARDS) === true)
+        {
+            $data[Entity::GOOGLE_PAY_CARDS] = true;
         }
 
         return $data;

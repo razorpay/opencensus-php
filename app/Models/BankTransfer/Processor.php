@@ -298,7 +298,7 @@ class Processor extends VirtualAccount\Processor
 
         $merchant = $this->virtualAccount->merchant;
 
-        if ($merchant->isFeeBearerCustomer() === true)
+        if ($merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $merchant);
         }

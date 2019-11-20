@@ -19,14 +19,6 @@ class Express
     const STATUS_CODE       = 'status_code';
     const HEADERS           = 'headers';
 
-    //actions
-    const TRANSLATE_WEBHOOK_FACEBOOK = 'translate_webhook';
-
-
-    const actionToPathMap = [
-        self::TRANSLATE_WEBHOOK_FACEBOOK    => 'facebook/v1/webhook/translate',
-    ];
-
     protected $app;
 
     protected $config;
@@ -146,12 +138,10 @@ class Express
         return $parsedData;
     }
 
-    public function translateWebhook(string  $payload) : array
+    public function translateWebhook(string $translateWebHookUrl, string  $payload) : array
     {
-        $response = $this->sendRequest(self::actionToPathMap[self::TRANSLATE_WEBHOOK_FACEBOOK], $payload);
+        $response = $this->sendRequest($translateWebHookUrl, $payload);
 
-        $parsedResponse = $this->parseTranslateWebhookResponse($response);
-
-        return [$parsedResponse['headers'], $parsedResponse['content']];
+        return $this->parseTranslateWebhookResponse($response);
     }
 }

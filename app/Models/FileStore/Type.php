@@ -88,6 +88,10 @@ class Type
 
     const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
 
+    const KVB_NETBANKING_REFUND             = 'kvb_netbanking_refund';
+
+    const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -171,6 +175,7 @@ class Type
     const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
     const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
     const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_CANCELLED_CHECK              = 'cancelled_check';
     const MERCHANT_PASSPORT_BACK                = 'passport_back';
     const MERCHANT_PASSPORT_FRONT               = 'passport_front';
     const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
@@ -239,6 +244,8 @@ class Type
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
             self::AXIS_NETBANKING_CLAIMS,
+            self::KVB_NETBANKING_REFUND,
+            self::KVB_NETBANKING_CLAIM,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -307,6 +314,7 @@ class Type
             self::MERCHANT_PASSPORT_BACK,
             self::MERCHANT_VOTER_ID_FRONT,
             self::MERCHANT_VOTER_ID_BACK,
+            self::MERCHANT_CANCELLED_CHECK,
         ],
 
         Constants\Entity::INVOICE => [
@@ -376,6 +384,8 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::SBI_NETBANKING_REFUND,
         self::CBI_NETBANKING_REFUND,
+        self::KVB_NETBANKING_REFUND,
+        self::KVB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,

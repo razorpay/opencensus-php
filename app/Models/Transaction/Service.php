@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
@@ -83,5 +84,28 @@ class Service extends Base\Service
             $response);
 
         return $response;
+    }
+
+    public function fixSettled(string $entity, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX,
+            $input);
+
+        return $this->app['api.mutex']->acquireAndRelease(
+            'fix_settled_column_for_fav',
+            function () use ($entity, $input)
+            {
+                $count = $input['count'] ?? 200;
+
+                $txnIds =  $this->repo->transaction->fetchSettledTransactionsWithoutSettlementId($entity, $count);
+
+                $this->repo->transaction->updateSettledToFalse($entity, $txnIds);
+
+                return [
+                    'count'             => $count,
+                    'txns_processed'    => $txnIds,
+                ];
+            });
     }
 }

@@ -444,4 +444,50 @@ class SubscriptionRegistrationTest extends TestCase
 
         return $payment;
     }
+
+    public function testCancelAuthLinkWithCardMandate()
+    {
+        $subrAttributes = ['method' => 'card', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals($subr['method'], 'card');
+    }
+
+    public function testCancelAuthLinkWithBankMandate()
+    {
+        $subrAttributes = ['method' => 'emandate', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals($subr['method'], 'emandate');
+    }
 }
