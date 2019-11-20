@@ -668,6 +668,7 @@ return [
                     'method'                => 'emandate',
                     'expire_at'             => 1880118306,
                     'first_payment_amount'  => 100,
+                    'auth_type'             => 'netbanking',
                     'bank_account' => [
                         'bank_name'          => 'HDFC Bank',
                         'ifsc_code'          => 'HDFC0001233',
@@ -1023,6 +1024,21 @@ return [
                     'netbanking' => [
                         'UTIB' => 'Axis Bank',
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesForOrderWithAuthType' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'auth_type' => 'netbanking',
                 ],
             ],
         ],
