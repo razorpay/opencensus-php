@@ -404,10 +404,10 @@ class Core extends Base\Core
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
                 $offer = $this->repo->saveOrFail($offer);
+
+                return $offer;
             });
         }
-
-        return $offer;
     }
 
     //decrement the offer usage count after failed payment for max offer validation.
