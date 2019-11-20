@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 25;
+    const MAX_TERMINALS_COUNT           = 200;
     const DEFAULT_CURRENCY              = 'INR';
 
     /**
@@ -314,7 +314,7 @@ class Entity extends Base\PublicEntity
         self::VPA                        => null,
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
-        self::RUPAY_MPAN                 => null,        
+        self::RUPAY_MPAN                 => null,
     ];
 
     protected $casts = [
