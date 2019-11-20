@@ -13,7 +13,7 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 
-import PaymentPagesList from './Pages/List';
+import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 @connect(
   state => {

@@ -7,9 +7,9 @@ import {
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Links/Details';
-import PaymentPageDetails from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentPageDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
-import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
+import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';

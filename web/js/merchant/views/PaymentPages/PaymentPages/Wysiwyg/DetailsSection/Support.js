@@ -1,7 +1,7 @@
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Button from 'common/new-ui/Button';
-import RemoveBtn from '../RemoveBtn';
+import RemoveBtn from 'merchant/views/PaymentPages/PaymentPages/components/RemoveBtn';
 import { isEmail } from 'common/utils/validators';
 
 const phoneIcon = (

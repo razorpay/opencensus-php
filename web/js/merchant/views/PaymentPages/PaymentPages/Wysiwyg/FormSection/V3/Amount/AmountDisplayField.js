@@ -2,7 +2,7 @@ import { sortableHandle } from 'react-sortable-hoc';
 import { classList } from 'common/utils/rzp-utils';
 
 import CreatorManager from './CreatorManager';
-import EditLayer from '../../../EditLayer';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 
 import {
   mapFieldToAmountFieldType,

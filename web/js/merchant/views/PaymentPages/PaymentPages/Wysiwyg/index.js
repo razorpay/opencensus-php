@@ -7,12 +7,12 @@ import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Svelte from './Svelte';
-import DetailsView from './Details';
-import FormView from './Form';
+import DetailsSection from './DetailsSection';
+import FormSection from './FormSection';
 
 import TemplatesMask from './Templates';
-import PPSettingsView from '../Modals/Settings';
-import PPShareView from '../Modals/Share';
+import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
+import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
 import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
@@ -29,8 +29,8 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
-import { validateUISchema as validateUISchemaV2 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
-import { validateUISchema as validateUISchemaV3 } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V3';
+import { validateUISchema as validateUISchemaV2 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V2';
+import { validateUISchema as validateUISchemaV3 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V3';
 
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
@@ -241,8 +241,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
-    render(<DetailsView />, document.getElementById('details-section'));
-    render(<FormView />, document.getElementById('form-section'));
+    render(<DetailsSection />, document.getElementById('details-section'));
+    render(<FormSection />, document.getElementById('form-section'));
   };
 
   openPPShareView = (id, shortUrl, title, description, isEditExistingId) => {

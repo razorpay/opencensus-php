@@ -4,10 +4,10 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
-import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
-import { trackPageSettingsData } from '../ga';
+import { DateField } from 'merchant/containers/PaymentLinks/Edit/EditExpiry';
+import { trackPageSettingsData } from '../../ga';
 
-import PPEmbedButtonView from '../Modals/EmbedButton';
+import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/EmbedButton';
 
 export default class extends React.Component {
   state = this.initState();

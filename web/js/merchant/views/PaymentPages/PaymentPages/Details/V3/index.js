@@ -20,18 +20,21 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../../ga';
 import { exportReportCSV } from '../../model';
 
-import EditStock from '../../Edit/EditStock';
+import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
-import { EditExpiry, EditNotes } from '../../../../PaymentLinks/Edit/index';
-import ShareView from '../../Modals/Share';
-import PPEmbedButtonView from '../../Modals/EmbedButton';
+import {
+  EditExpiry,
+  EditNotes,
+} from 'merchant/containers/PaymentLinks/Edit/index';
+import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
+import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/EmbedButton';
 
 import PaymentsList from './PaymentsList';
 
 import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
 
-// import dummyEntityData from '../../Create/dummy_paymentpageentity';
+// import mockPaymentPage from '../../Wysiwyg/data-mock';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
@@ -187,7 +190,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       isMobileResolution,
     } = this.props;
 
-    // paymentPageEntity = dummyEntityData;
+    // paymentPageEntity = mockPaymentPage;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 

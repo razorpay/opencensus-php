@@ -1,5 +1,5 @@
 import CreatorModal from './CreatorModal';
-import EditLayer from '../../EditLayer';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 

@@ -18,11 +18,14 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import EditStock from '../Edit/EditStock';
+import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
-import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
-import ShareView from '../Modals/Share';
-import PPEmbedButtonView from '../Modals/EmbedButton';
+import {
+  EditExpiry,
+  EditNotes,
+} from 'merchant/containers/PaymentLinks/Edit/index';
+import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
+import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/EmbedButton';
 
 import Button from 'common/new-ui/Button';
 

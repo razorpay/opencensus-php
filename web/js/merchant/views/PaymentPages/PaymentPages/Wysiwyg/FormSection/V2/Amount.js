@@ -4,7 +4,7 @@ import Button from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
 import Amount, { AmountTooltip } from 'common/ui/Amount';
-import EditLayer from '../../EditLayer';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 import { getCurrency } from 'common/ui/Amount';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {

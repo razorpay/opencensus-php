@@ -1,6 +1,6 @@
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Button from 'common/new-ui/Button';
-import RemoveBtn from '../RemoveBtn';
+import RemoveBtn from 'merchant/views/PaymentPages/PaymentPages/components/RemoveBtn';
 
 export default class extends React.PureComponent {
   onUpdate = allowSocialShare => {

@@ -1,7 +1,7 @@
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import EditLayer from '../../EditLayer';
+import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 import { classList } from 'common/utils/rzp-utils';
 import {
   getFieldTypes,

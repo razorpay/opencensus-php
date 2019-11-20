@@ -1,4 +1,4 @@
-import dummy_paymentpageentity from './Create/dummy_paymentpageentity';
+import dummy_paymentpageentity from '../Wysiwyg/data-mock/paymentpage';
 
 export default [
   dummy_paymentpageentity,

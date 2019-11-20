@@ -9,10 +9,10 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { trackListActions } from '../ga';
 
-// import dummyPaymentPages from '../dummy_paymentpages';
+// import mockPaymentPagesList from './data-mock';
 
 export default ({ paymentPages, loading }) => {
-  // paymentPages = dummyPaymentPages;
+  // paymentPages = mockPaymentPagesList;
 
   return (
     <div class="table-responsive Table--PaymentpagesV3">

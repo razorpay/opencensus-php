@@ -26,7 +26,7 @@ import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 import PaymentPagesV2Entity from './V2';
 import PaymentPagesV3Entity from './V3';
 
-import ActivateAgain from '../Modals/ActivateAgain';
+import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 @withRouter
 @connect(state => ({ user: state.session.user }), {
