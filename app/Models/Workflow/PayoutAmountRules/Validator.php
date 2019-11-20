@@ -16,53 +16,6 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT      => 'sometimes|integer|nullable',
     ];
 
-    public function checkIfWorkflowAlreadyCreated($merchantId)
-    {
-        $repo = new Repository();
-
-        if(count($repo->fetchWorkflowRulesForMerchant($merchantId)->toArray()) != 0 )
-        {
-            throw new BadRequestValidationFailureException(
-                'Payout amount rules already present'
-            );
-        }
-    }
-
-    public function checkIfAllMerchantIdsAreSame($rules) : string
-    {
-        $repo = new \RZP\Models\Workflow\Repository();
-
-        $identicalId = nullOrEmptyString();
-
-        foreach ($rules as $rule)
-        {
-            $merchantIds = $repo->fetchMerchantIdsFromWorkflow($rule['workflow_id'])->toArray();
-
-            if(count($merchantIds) != 1)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Invalid workflow id'
-                );
-            }
-
-            $merchantId = $merchantIds[0];
-
-            if($identicalId == nullOrEmptyString())
-            {
-                $identicalId = $merchantId;
-            }
-
-            if($identicalId != $merchantId)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Changing workflows of multiple merchants not allowed'
-                );
-            }
-        }
-
-        return $identicalId;
-    }
-
     public function checkForValidAmountRanges($rules)
     {
 
@@ -77,7 +30,7 @@ class Validator extends Base\Validator
             if($rule['min_amount'] != $presentAmount)
             {
                 throw new BadRequestValidationFailureException(
-                    'Ranges specified in workflows are overlapping'
+                    'Ranges specified are overlapping'
                 );
             }
             if($rule['max_amount'] && $rule['max_amount'] != PHP_INT_MAX)
