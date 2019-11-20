@@ -534,4 +534,22 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
     }
+
+    public function testFixTransactionSettledAt()
+    {
+        $this->createValidationWithFundAccountEntity();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(false, $txn['settled']);
+
+        $this->fixtures->merchant->editEntity('transaction', $txn['id'], ['settled' => true]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(false, $txn['settled']);
+    }
+
 }

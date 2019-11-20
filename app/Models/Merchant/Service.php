@@ -1429,7 +1429,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        (new Validator)->validateInput('holiday_notify', $input);
+
         RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);

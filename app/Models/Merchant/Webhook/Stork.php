@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Webhook;
 use Carbon\Carbon;
 
 use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Timezone;
 
@@ -65,6 +66,17 @@ class Stork
     {
         $this->service->init($mode);
 
+        $merchant = $event->merchant;
+
+        $payload = json_encode($event->toArrayPublic());
+
+        if (empty($merchant) === false)
+        {
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload);
+
+            $payload  = $response['content'];
+        }
+
         $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
             [
@@ -74,7 +86,7 @@ class Stork
                     'owner_type' => E::MERCHANT,
                     'context'    => '{}',
                     'name'       => $event->event,
-                    'payload'    => json_encode($event->toArrayPublic()),
+                    'payload'    => $payload,
                 ],
             ]);
     }

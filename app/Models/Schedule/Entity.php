@@ -31,6 +31,8 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT  = 'deleted_at';
 
+    const IS_EARLY_SETTLEMENT_SCHEDULE = 'is_early_settlement_schedule';
+
     protected $fillable = [
         self::NAME,
         self::ORG_ID,
