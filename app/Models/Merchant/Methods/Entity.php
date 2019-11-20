@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -112,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -146,6 +148,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -181,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::UPI            => true,
         self::AEPS           => false,
         self::EMANDATE       => false,
+        self::NACH           => false,
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
@@ -219,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -259,6 +264,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
         self::EMANDATE      => 'bool',
+        self::NACH          => 'bool',
         self::CARDLESS_EMI  => 'bool',
         self::PAYLATER      => 'bool',
         self::PHONEPE       => 'bool',
@@ -440,6 +446,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isNachEnabled()
+    {
+        return $this->getAttribute(self::NACH);
     }
 
     public function isCardlessEmiEnabled()

@@ -94,6 +94,9 @@ class TransactionFilter extends Terminal\Filter
                 return (($terminal->isPayLaterEnabled() === true) and
                         ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
 
+            case Method::NACH:
+                return $terminal->isNachEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
