@@ -19,6 +19,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   EditExpiry,
@@ -414,9 +415,11 @@ export default props => {
                     trackerFn={trackDetailViewEdits}
                   />
                 )}
-                {/*user.isOndemandSettlementEnabled && (
-                  <ScheduledBanner fromWhere="Payment Pages" />
-                )*/}
+                {user.isOndemandSettlementEnabled && (
+                  <ShowWhen myRole="owner admin finance">
+                    <ScheduledBanner fromWhere="Payment Pages" />
+                  </ShowWhen>
+                )}
               </div>
             </div>
           </div>

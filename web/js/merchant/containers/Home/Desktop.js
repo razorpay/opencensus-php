@@ -199,16 +199,18 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
+                    <ShowWhen myRole="owner admin finance">
+                      <Button.Secondary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={
+                          current_balance.loading ||
+                          current_balance.data.balance < 100
+                        }
+                      >
+                        Settle Now
+                      </Button.Secondary>
+                    </ShowWhen>
                   ) : (
                     <Link className="pull-right" to="/settlements">
                       <span
