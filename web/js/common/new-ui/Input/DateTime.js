@@ -24,18 +24,10 @@ export default class DateTime extends React.Component {
   };
 
   updateDate = ts => {
-    const newDate = moment(ts);
-    this.setState({
-      value: newDate,
-    });
-    this.props.onChange && this.props.onChange(newDate);
-    if (
-      this.props.validator &&
-      this.props.validator(newDate) &&
-      this.props.validator(newDate).length > 0
-    ) {
-      this.setState({ error: this.props.validator(newDate), mature: true });
-    }
+    const value = moment(ts);
+    const error = this.props.validator && this.props.validator(value);
+    this.props.onChange && this.props.onChange(value);
+    this.setState({ error, mature: true, value });
   };
 
   render() {

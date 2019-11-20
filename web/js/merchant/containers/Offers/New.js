@@ -34,12 +34,14 @@ class NewOfferForm extends React.Component {
   }
 
   toggleDisableState() {
+    let disableSubmit = true;
     const invalidFields = document.querySelectorAll(
       '.PaymentLinks--Create .Input.is-invalid'
     );
     if (invalidFields.length < 1) {
-      this.setState({ disableSubmit: false });
+      disableSubmit = false;
     }
+    this.setState({ disableSubmit });
   }
 
   tranformFormFields(form) {
