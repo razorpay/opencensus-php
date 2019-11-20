@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::END_AT,
         self::SECONDARY_ACCOUNT_HOLDER,
         self::TERTIARY_ACCOUNT_HOLDER,
+        self::TERMINAL_ID,
     ];
 
     protected $visible = [
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::END_AT,
         self::SECONDARY_ACCOUNT_HOLDER,
         self::TERTIARY_ACCOUNT_HOLDER,
+        self::TERMINAL_ID,
         self::CREATED_AT,
     ];
 
@@ -189,6 +191,11 @@ class Entity extends Base\PublicEntity
         return (new FileUploader)->getSignedUrl($uploadedFileId);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
@@ -207,6 +214,21 @@ class Entity extends Base\PublicEntity
     public function setStartAt(int $timestamp)
     {
         $this->setAttribute(self::START_AT, $timestamp);
+    }
+
+    public function setUtilityCode($utilityCode)
+    {
+        $this->setAttribute(self::UTILITY_CODE, $utilityCode);
+    }
+
+    public function setSponsorBankCode($sponsorBankCode)
+    {
+        $this->setAttribute(self::SPONSOR_BANK_CODE, $sponsorBankCode);
+    }
+
+    public function setTerminalId($terminalId)
+    {
+        $this->setAttribute(self::TERMINAL_ID, $terminalId);
     }
 
     public function merchant()

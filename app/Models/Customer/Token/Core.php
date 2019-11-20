@@ -481,6 +481,11 @@ class Core extends Base\Core
         return null;
     }
 
+    protected function validateExistingTokenNach($existingTokens, $newToken)
+    {
+        return null;
+    }
+
     protected function getCardInputForDirectToken(array & $input)
     {
         $cardInput = array_pull($input, Entity::CARD);

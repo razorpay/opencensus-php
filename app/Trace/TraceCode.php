@@ -1605,6 +1605,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_JOB_DELETE                    = 'FUND_ACCOUNT_VALIDATION_JOB_DELETE';
     const FUND_ACCOUNT_VALIDATION_JOB_REQUEST                   = 'FUND_ACCOUNT_VALIDATION_JOB_REQUEST';
 
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX               = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX';
+
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED     = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED';
+
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
     const UPDATE_STATUS_AFTER_FTA_INITIATED                     = 'UPDATE_STATUS_AFTER_FTA_INITIATED';
@@ -1738,6 +1742,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT                 = 'SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT';
     const PARTNER_BANK_ACCOUNT_MAP                              = 'PARTNER_BANK_ACCOUNT_MAP';
     const SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL               = 'SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL';
+    const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -2279,6 +2284,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
+
+    const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

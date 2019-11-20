@@ -2335,7 +2335,8 @@ class Processor
                             ($this->merchant->isTPVRequired() === true));
 
             if (($tpvRequired === true) or
-                ($payment->isEmandate() === true))
+                ($payment->isEmandate() === true) or
+                ($payment->isNach() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -2366,6 +2367,11 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        if ($payment->isNach() === true)
+        {
+            $payment->setBank($this->order->getBankForNachMethod());
+        }
 
         //
         // FIXME: Hack for reliance AMC, moving order receipt to payment

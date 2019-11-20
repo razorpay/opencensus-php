@@ -245,6 +245,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Terminal\Entity');
     }
 
+    public function payments()
+    {
+        return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
     public function hasCard()
     {
         return $this->isAttributeNotNull(self::CARD_ID);

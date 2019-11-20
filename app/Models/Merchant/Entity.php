@@ -507,6 +507,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;

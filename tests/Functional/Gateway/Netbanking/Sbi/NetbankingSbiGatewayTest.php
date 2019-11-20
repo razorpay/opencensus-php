@@ -34,20 +34,36 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
     }
 
-    public function testPayment()
+    public function makePayment($bank)
     {
-        $this->doNetbankingSbiAuthAndCapturePayment();
+        $this->doNetbankingSbiAuthAndCapturePayment($bank);
 
         $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
-        $this->assertTestResponse($paymentEntity);
+        $this->assertEquals($bank, $paymentEntity['bank']);
 
         $this->assertEquals('IGAAAAGNN6', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
+        $this->assertArraySelectiveEquals($this->testData['testPayment'], $paymentEntity);
+
         $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
+
+        $this->assertEquals($bank, $netbankingEntity['bank']);
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $netbankingEntity);
+    }
+
+    public function testPaymentForSbiAndSubsidiaryBanks()
+    {
+        $this->makePayment("SBIN");
+        $this->makePayment("SBBJ");
+        $this->makePayment("SBHY");
+        $this->makePayment("SBNX");
+        $this->makePayment("SBMY");
+        $this->makePayment("SBPX");
+        $this->makePayment("SBSX");
+        $this->makePayment("SBTR");
     }
 
     public function testTpvPayment()
@@ -214,7 +230,7 @@ class NetbankingSbiGatewayTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $this->testPayment();
+        $this->makePayment($this->bank);
 
         $payment = $this->getLastEntity('payment');
 
@@ -255,7 +271,7 @@ class NetbankingSbiGatewayTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->testPayment();
+        $this->makePayment($this->bank);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -307,9 +323,9 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->assertEquals($gatewayPayment['bank_payment_id'], 100);
     }
 
-    protected function doNetbankingSbiAuthAndCapturePayment()
+    protected function doNetbankingSbiAuthAndCapturePayment($bank = "SBIN")
     {
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
         $payment = $this->doAuthAndCapturePayment($payment);
     }
