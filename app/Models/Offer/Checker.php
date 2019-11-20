@@ -386,12 +386,11 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOfferUsage() !== NULL)
         {
-
             $core = new \RZP\Models\Offer\Core();
 
             $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
-            $result = $updatedOffer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
 
             $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,

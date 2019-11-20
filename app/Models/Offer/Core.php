@@ -397,16 +397,18 @@ class Core extends Base\Core
     {
         if($offer !== null)
         {
-            $this->repo->transaction(function () use($offer)
+            $offer = $this->repo->transaction(function () use($offer)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
-                $offer = $this->repo->saveOrFail($offer);
+                $this->repo->saveOrFail($offer);
 
-                return $offer;
+                return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
             });
+
+            return $offer;
         }
     }
 
@@ -417,16 +419,20 @@ class Core extends Base\Core
 
         if($offer !== null)
         {
-            $this->repo->transaction(function () use($offer)
+            $offer = $this->repo->transaction(function () use($offer)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
                 $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
 
-                $offer = $this->repo->saveOrFail($offer);
+                $this->repo->saveOrFail($offer);
+
+                return $offer;
             });
+
+            return $offer;
         }
 
-        return $offer;
+
     }
 }
