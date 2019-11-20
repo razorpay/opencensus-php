@@ -12,7 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
-        'atos',
+        'mozart',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -94,6 +94,7 @@ return [
         'paysecure',
         'paylater',
         'google_pay',
+        'worldline',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -175,7 +176,7 @@ return [
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
-    'mock_atos'                   => env('ATOS_MOCK'),
+    'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),

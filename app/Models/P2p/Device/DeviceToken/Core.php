@@ -68,4 +68,9 @@ class Core extends Base\Core
     {
         return $this->repo->newP2pQuery()->delete();
     }
+
+    public function deregister()
+    {
+        $this->delete();
+    }
 }

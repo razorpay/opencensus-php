@@ -134,7 +134,6 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
-    const TRANSLATE_WEBHOOK               = 'translate_webhook';
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -438,7 +437,6 @@ class Constants
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
-        self::TRANSLATE_WEBHOOK               => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
         self::SHOW_CREDIT_SCORE               => true,
@@ -592,7 +590,6 @@ class Constants
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
-        self::ES_ON_DEMAND,
         self::SHOW_CREDIT_SCORE,
     ];
 

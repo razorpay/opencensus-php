@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Atos;
+namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 
 use RZP\Base;
 use RZP\Models\Gateway\Terminal\Constants; 

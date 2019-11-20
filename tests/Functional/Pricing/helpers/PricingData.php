@@ -1523,7 +1523,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 23,
+                        'count' => 24,
                         'rules' => [
                             [],
                         ],
@@ -1665,7 +1665,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 23,
+                        'count'  => 24,
                         'rules'  => [
                             [],
                         ],
@@ -1787,7 +1787,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 23,
+                    'rules_count' => 24,
                     'type'        => 'pricing',
                 ],
             ],
@@ -1867,7 +1867,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 23,
+                    'rules_count' => 24,
                     'type'        => 'pricing',
                 ],
             ],
@@ -1914,6 +1914,25 @@ return [
     ],
 
     'testMerchantAssignPricingPlanWithInternational' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testAssignPricingPlanFeeBearerMismatch' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'

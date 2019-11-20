@@ -79,7 +79,7 @@ trait FundAccountTrait
             'account_type' => 'vpa',
             'contact_id'   => 'cont_1000000contact',
             'details'      => [
-                "address" => "jayesh@upi"
+                "address" => "withname@razorpay"
             ],
         ];
     }

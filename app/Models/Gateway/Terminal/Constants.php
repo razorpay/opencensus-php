@@ -3,15 +3,29 @@ namespace RZP\Models\Gateway\Terminal;
 
 class Constants
 {
-    const RAZORPAY                          =   "Razorpay";
-    const ATOS_ACTIVATION_RETRY_LIMIT       =   10;
-    const ATOS_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+    const DEFAULT_CONTACT_NAME                   =   "Razorpay";
+    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   10;
+    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+
+    // Actions
+    const MERCHANT_ONBOARD = 'merchantOnboard';
+    const CREATE_TERMINAL = 'create_terminal';
+    const VERIFY_TERMINAL = 'verify_terminal';
+
 
     // Request
     const MPAN       = 'mpan';
     const VISA       = 'visa';
     const MASTERCARD = 'mastercard';
     const RUPAY      = 'rupay';
+
+    // Default merchant details for merchant onboarding
+    const DEFAULT_BUSINESS_OPERATION_ADDRESS      = 'SJR Cyber Laskar, Hosur Rd, Opp Adugodi Police Station, Bengaluru';
+    const DEFAULT_BUSINESS_OPERATION_STATE        = 'Karnataka';
+    const DEFAULT_BUSINESS_OPERATION_PIN          = '560030';
+    const DEFAULT_BUSINESS_DBA                    = 'Razorpay';
+    const DEFAULT_BUSINESS_NAME                   = 'Razorpay';
+    const DEFAULT_BUSINESS_OPERATION_CITY         = 'Bengaluru';
 
     // Response
     const DATA                          =   'data';

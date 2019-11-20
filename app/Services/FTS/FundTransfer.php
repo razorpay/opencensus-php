@@ -2,6 +2,8 @@
 
 namespace RZP\Services\FTS;
 
+use Requests;
+
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -30,6 +32,8 @@ class FundTransfer extends Base
     protected $fta;
 
     protected $source;
+
+    protected $amount;
 
     protected $accountType;
 
@@ -368,6 +372,11 @@ class FundTransfer extends Base
         $sourceCore = new $sourceCoreClass();
 
         $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+
+        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+        {
+            $sourceCore->updateStatusAfterFtaInitiated($this->source, $this->fta);
+        }
     }
 
     /**
@@ -448,13 +457,11 @@ class FundTransfer extends Base
 
         $issuer         = $iin->getIssuer();
 
-        $amount         = $this->source->getAmount();
-
         $networkCode    = $iin->getNetworkCode();
 
         $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             $mode =  Mode::IMPS;
         }
@@ -466,7 +473,7 @@ class FundTransfer extends Base
 
             if ((($now >= $this->bankingStartTime) and
                     ($now <= $this->bankingEndTimeRtgs)) and
-                ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+                ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
                 $mode = Mode::RTGS;
             }
@@ -493,8 +500,6 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        $amount  = $this->source->getAmount();
-
         if ($channel === Channel::ICICI)
         {
             return Mode::IMPS;
@@ -513,7 +518,7 @@ class FundTransfer extends Base
             return Mode::IFT;
         }
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             return Mode::IMPS;
         }
@@ -521,7 +526,7 @@ class FundTransfer extends Base
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+            ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
         }
@@ -543,6 +548,16 @@ class FundTransfer extends Base
         }
 
         return $sla;
+    }
+
+    public function bulkUpdateFtsAttempts(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
+            Requests::PATCH,
+            $input);
     }
 
     public function shouldAllowTransfersViaFts()
@@ -576,6 +591,20 @@ class FundTransfer extends Base
         return $this->isNeftRtgsSupportedTimings($mode);
     }
 
+    public function addInitiateAtIfRequired()
+    {
+        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
+        {
+            $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                      ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function initialize(string $ftaId)
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
@@ -596,6 +625,10 @@ class FundTransfer extends Base
         $sourceType = $this->fta->getSourceType();
 
         $this->setSourceEntityByType($sourceType);
+
+        $this->amount = $this->source->getAmount()/100;
+
+        $this->amount = round($this->amount, 2);
     }
 
     protected function isNeftRtgsSupportedTimings($mode)
@@ -643,5 +676,25 @@ class FundTransfer extends Base
         }
 
         return $isHoliday;
+    }
+
+    public function getBulkTransferStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function checkTransferStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
+            Requests::POST,
+            $input);
     }
 }

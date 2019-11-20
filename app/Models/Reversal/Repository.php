@@ -99,11 +99,12 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function fetchFromUtr($utr, $balanceId): Base\Collection
+    public function fetchFromUtr($utr, $amount, $balanceId): Base\Collection
     {
         $reversals = $this->newQuery()
                           ->where(Entity::BALANCE_ID, $balanceId)
                           ->where(Entity::UTR, $utr)
+                          ->where(Entity::AMOUNT, $amount)
                           ->get();
 
         if ($reversals->count() > 1)

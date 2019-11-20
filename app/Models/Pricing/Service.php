@@ -92,7 +92,7 @@ class Service extends Base\Service
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL])) === null)
                     {
-                        if (count($this->repo->merchant->fetchMerchantsWithPricingPlan($planId)) !== 1)
+                        if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
                         {
                             $plan = $this->replicatePLan($merchant, $plan);
 

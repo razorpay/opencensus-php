@@ -6,11 +6,12 @@ use App;
 use Mail;
 
 use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
+use RZP\Models\Merchant\Account;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Feature\Constants;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 use Http\Client\Common\PluginClient;
@@ -475,9 +476,18 @@ class Inferno
 
         $headers = [];
 
-        if ($webhook->merchant->isFeatureEnabled(Constants::TRANSLATE_WEBHOOK) === true)
+        $eventArray = json_decode($event, true);
+
+        if (empty($eventArray[Event\Entity::ACCOUNT_ID]) === false)
         {
-            list($headers, $event) = $this->app['express']->translateWebhook($event);
+            $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($eventArray[Event\Entity::ACCOUNT_ID]);
+
+            $merchant = $this->app['repo']->merchant->findOrFailPublic($merchantId);
+
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $event);
+
+            $headers = $response['headers'];
+            $event   = $response['content'];
         }
 
         $hmac = static::generateHMAC($event, $secret);
@@ -545,11 +555,8 @@ class Inferno
     /**
      * If the number of job attempts is greater than the max attempts,
      * we delete the job.
-     * If the last successful webhook hit was more than 24 hours ago,
-     * We deactivate the webhook. We send a deactivation email.
-     * We do not send any failure email in this case.
      *
-     * In every other case, we send a failure email.
+     * we send a failure email.
      *
      * @param Entity $webhook
      */
@@ -561,38 +568,7 @@ class Inferno
         {
             $deleteJobFlag = true;
         }
-
-        $lastSuccessDifference = $webhook->getTimeDifferenceFromLastSuccessInHour();
-
-        $toDisableWebhook =
-            (($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS) and
-             ($webhook->disableOnFailure() === true));
-
-        // If (LSA - current time) > 24hrs, and.
-        // webhook disable_on_failure is set to true
-        // we mark webhook deactivated.
-        if ($toDisableWebhook === true)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_DEACTIVATE,
-                [
-                    'webhook_id'  => $webhook->getId(),
-                    'merchant_id' => $webhook->merchant->getId(),
-                ]
-            );
-
-            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL);
-
-            $this->disableWebhook($webhook);
-
-            $this->sendEmail($webhook, 'deactivate');
-
-            $deleteJobFlag = true;
-        }
-        else
-        {
-            $this->sendEmail($webhook, 'failure');
-        }
+        $this->sendEmail($webhook, 'failure');
 
         $this->updateJob($deleteJobFlag);
     }

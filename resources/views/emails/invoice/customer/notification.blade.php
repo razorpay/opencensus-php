@@ -33,7 +33,7 @@
 
           $headerLabel = 'You have made a payment of ' . $payment['amount'];
       }
-      elseif ($status === 'issued')
+      elseif ($status === 'issued' or $status === 'partially_paid')
       {
           $ctaLabel = 'PROCEED TO PAY';
           $ctaHref = $invoice['short_url'];

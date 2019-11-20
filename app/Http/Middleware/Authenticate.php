@@ -124,6 +124,10 @@ class Authenticate
         {
             $ret = $this->ba->privateAuth();
         }
+        else if (in_array($route, P2pRoute::$private, true) === true)
+        {
+            $ret = $this->ba->privateAuth();
+        }
         else if (in_array($route, Route::$public, true) === true)
         {
             //

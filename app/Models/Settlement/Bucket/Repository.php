@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Settlement\Bucket;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -39,5 +42,18 @@ class Repository extends Base\Repository
                     ->where(Entity::BUCKET_TIMESTAMP, '<=', $timestamp)
                     ->where(Entity::COMPLETED, 1)
                     ->delete();
+    }
+
+    public function getNextSettlementTime(string $merchantId, string $balanceType)
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST);
+
+        return $this->newQuery()
+                    ->where(Entity::BUCKET_TIMESTAMP, '>=', $currentTimestamp->getTimestamp())
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::BALANCE_TYPE, $balanceType)
+                    ->where(Entity::COMPLETED, 0)
+                    ->orderBy(Entity::BUCKET_TIMESTAMP)
+                    ->first();
     }
 }
