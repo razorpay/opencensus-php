@@ -5,49 +5,11 @@ import * as OffersActions from 'merchant/reducers/offers/offerDetails';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
-//-----------
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
 
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning',
-};
-/*Api Response Sample
-
-active: true
-block: true
-checkout_display: false
-created_at: 1571908189
-current_offer_usage: null
-display_text: "test offer flat "
-emi_durations: []
-emi_subvention: null
-ends_at: 1572460200
-entity: "offer"
-error_message: "error flat test"
-flat_cashback: 1000
-id: "offer_DXqwOvQlClzcMK"
-iins: ["411111"]
-international: null
-issuer: null
-linked_offer_ids: null
-max_cashback: null
-max_offer_usage: null
-max_payment_count: null
-min_amount: 10000
-name: "another test offer"
-payment_method: null
-payment_method_type: null
-payment_network: null
-percent_rate: null
-processing_time: null
-starts_at: 1571941800
-terms: "nothing"
-
-* */
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
 
@@ -187,12 +149,6 @@ export default class Entity extends Component {
     this.state = {
       statusMsg: {},
     };
-
-    // recording new payments links creation UI form in hotjar
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'payment_links_v2_details_open');
-      window.hj('tagRecording', ['payment_links_v2_details_open']);
-    }
   }
 
   componentWillMount() {
@@ -208,6 +164,7 @@ export default class Entity extends Component {
   render() {
     let { loading, offer, user } = this.props;
     let statusMsg = this.state.statusMsg;
+
     return (
       <OfferDetails
         user={user}
