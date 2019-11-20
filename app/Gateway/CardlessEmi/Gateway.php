@@ -746,8 +746,11 @@ class Gateway extends Base\Gateway
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
+        if ($verify->gatewaySuccess === true)
+        {
+            $this->verifyAmountMismatch($verify, Constants\Entity::PAYMENT);
 
-        $this->verifyAmountMismatch($verify, Constants\Entity::PAYMENT);
+        }
 
         $verify->status = $status;
 

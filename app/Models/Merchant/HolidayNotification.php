@@ -106,7 +106,7 @@ class HolidayNotification
                 }
                 else
                 {
-                    $msg = $this->sendEmail($mailer, $holidays, $input['lists']);
+                    $msg = $this->sendEmail($mailer, $holidays, $input);
                 }
                 break;
 
@@ -197,14 +197,14 @@ class HolidayNotification
         return [$testHoliday];
     }
 
-    protected function sendEmail($mailer, $holidays, $lists)
+    protected function sendEmail($mailer, $holidays, $input)
     {
         // Send a notification to slack
         $this->notifySettlementsChannel($holidays);
 
         // Set the mailing list name.
-        $mailer->setMailingListName($lists);
+        $mailer->setMailingListName($input['lists']);
 
-        return $mailer->send();
+        return $mailer->send($input['action']);
     }
 }

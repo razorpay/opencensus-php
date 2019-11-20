@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\PaperMandate;
+use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -235,5 +236,29 @@ class Validator extends Base\Validator
             }
         }
 
+    }
+
+    public function validateTokenToRetry(Token\Entity $token)
+    {
+        if ($token->getRecurringStatus() !== Token\RecurringStatus::REJECTED)
+        {
+            throw new BadRequestValidationFailureException(
+                'token can\'t be retried if it is not rejected'
+            );
+        }
+
+        if ($token->getMethod() !== Payment\Method::NACH)
+        {
+            throw new BadRequestValidationFailureException(
+                'only nach method token can be retried'
+            );
+        }
+
+        if (count($token->payments()->get()) !== 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'token can be retried only if exactly one payment created for it'
+            );
+        }
     }
 }

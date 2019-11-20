@@ -7,12 +7,17 @@ use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
 class Core extends Base\Core
 {
@@ -52,6 +57,8 @@ class Core extends Base\Core
 
         $this->setDefaultValuesForPaperMandate($paperMandate);
 
+        $this->setTerminalDataForPaperMandate($paperMandate);
+
         $paperMandate->build($input);
 
         $bankAccount = $this->createBankAccount($input[Entity::BANK_ACCOUNT], $customer);
@@ -87,7 +94,7 @@ class Core extends Base\Core
 
         $validationResult = $data[Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === true)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === true)
         {
             $paperMandate->setUploadedFileId($uploadedFileId);
 
@@ -146,6 +153,36 @@ class Core extends Base\Core
         $paperMandate->setStartAt($startAt->timestamp);
     }
 
+    protected function setTerminalDataForPaperMandate(Entity $paperMandate)
+    {
+        $terminal = $this->getTerminalForNachMethod();
+
+        $paperMandate->setTerminalId($terminal->getId());
+
+        if (($this->mode !== Mode::LIVE) and
+            ($terminal->getId() === Terminal\Shared::SHARP_RAZORPAY_TERMINAL))
+        {
+            $paperMandate->setUtilityCode('NACH00000000010000');
+
+            $paperMandate->setSponsorBankCode('RANDOMBANK');
+        }
+        else
+        {
+            $paperMandate->setUtilityCode($terminal->getGatewayMerchantId());
+
+            $paperMandate->setSponsorBankCode($terminal->getGatewayAcquirer());
+        }
+    }
+
+    protected function getTerminalForNachMethod()
+    {
+        $paymentArray = (new Payment\Entity)->getDummyPaymentArray(Payment\Method::NACH);
+
+        $paymentProcessor = new PaymentProcessor($this->merchant);
+
+        return $paymentProcessor->processAndReturnTerminal($paymentArray);
+    }
+
     protected function validateExtractedData(array & $extractedPaperMandateData, Entity $paperMandate)
     {
         $errors = [];
@@ -167,7 +204,7 @@ class Core extends Base\Core
             $errors[self::NOT_MATCHING] = $notMatching;
         }
 
-        return ['errors' => $errors, Entity::EXTRACTED_DATA => $extractedData];
+        return [SubscriptionRegistrationConstants::ERRORS => $errors, Entity::EXTRACTED_DATA => $extractedData];
     }
 
     protected function validateExtractedPaperMandateData(array $extractedPaperMandateData, Entity $paperMandate, array & $extractedData): array

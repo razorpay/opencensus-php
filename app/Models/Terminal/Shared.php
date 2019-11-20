@@ -64,6 +64,7 @@ class Shared
     const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
+    const NACH_CITI_TERMINAL                 = '100NbcitiTrmnl';
     const NETBANKING_KVB_TERMINAL            = '1000NbKvbTrmnl';
     const NETBANKING_KVB_TPV_TERMINAL        = '1000NbKvbTpvTl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
@@ -177,6 +178,7 @@ class Shared
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
         self::WORLDLINE_TERMINAL,
+        self::NACH_CITI_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -240,6 +242,7 @@ class Shared
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
         self::PAYLATER_EPAYLATER_TERMINAL        => Gateway::PAYLATER,
         self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
+        self::NACH_CITI_TERMINAL                 => Gateway::NACH_CITI,
     ];
 
     public static function getSharedTerminalMapping()

@@ -323,6 +323,8 @@ class ViewDataSerializer extends Base\Core
         //
         $this->repo->loadRelations($this->invoice);
 
+        $this->app['basicauth']->setMerchant($this->invoice->merchant);
+
         $serialized = $this->invoice->toArrayHosted();
 
         $this->addDerivedAttributesForInvoice($serialized);
