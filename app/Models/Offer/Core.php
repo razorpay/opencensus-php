@@ -113,7 +113,7 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
-            $this->lockDecrementCurrentOfferUsage($payment->getOffer());
+            $this->lockDecrementCurrentOfferUsage($payment);
 
             if ($offer->shouldBlockPayment() === true)
             {
@@ -411,8 +411,10 @@ class Core extends Base\Core
     }
 
     //decrement the offer usage count after failed payment for max offer validation.
-    public function lockDecrementCurrentOfferUsage(Entity $offer)
+    public function lockDecrementCurrentOfferUsage(Payment\Entity $payment)
     {
+        $offer = $payment->getOffer();
+
         if($offer !== null)
         {
             $this->repo->transaction(function () use($offer)
