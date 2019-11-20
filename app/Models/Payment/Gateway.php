@@ -629,6 +629,7 @@ class Gateway
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
     ];
