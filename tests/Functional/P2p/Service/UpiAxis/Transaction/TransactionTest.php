@@ -601,6 +601,11 @@ class TransactionTest extends TestCase
             Entity::INTERNAL_STATUS     => Status::PENDING,
         ]);
 
+        $this->createPayTransaction([
+            Entity::STATUS              => Status::CREATED,
+            Entity::INTERNAL_STATUS     => Status::CREATED
+        ]);
+
         $transaction2 = $this->createCollectIncomingTransaction([]);
 
         $helper = $this->getTransactionHelper();
@@ -609,12 +614,37 @@ class TransactionTest extends TestCase
 
         $this->createPayTransaction();
 
+        $this->createPayIncomingTransaction([
+            Entity::STATUS              => Status::FAILED,
+            Entity::INTERNAL_STATUS     => Status::FAILED,
+        ]);
+
+        $this->createPayIncomingTransaction([
+            Entity::STATUS              => Status::FAILED,
+            Entity::INTERNAL_STATUS     => Status::FAILED,
+        ]);
+
+        $transaction3 = $this->createPayTransaction([
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::STATUS              => Status::COMPLETED
+        ]);
+
         $collection = $helper->fetchAll([
             'expand'    => ['payer', 'payee', 'upi', 'concern'],
             'response'  => 'history',
         ]);
 
-        $this->assertCollection($collection, 2, [
+        $this->createCollectTransaction([
+            Entity::FLOW                => Flow::CREDIT,
+            Entity::STATUS              => Status::CREATED
+        ]);
+
+        $this->assertCollection($collection, 3, [
+            [
+                'id'        => $transaction3->getPublicId(),
+                'status'    => 'completed',
+                'type'      => 'pay'
+            ],
             [
                 'id'        => $transaction2->getPublicId(),
                 'status'    => 'requested',
@@ -624,10 +654,10 @@ class TransactionTest extends TestCase
                 'id'        => $transaction1->getPublicId(),
                 'status'    => 'pending',
                 'type'      => 'pay',
-            ],
+            ]
         ]);
 
-        $this->assertNotEmpty($collection['items'][1]['concern']);
+        $this->assertNotEmpty($collection['items'][2]['concern']);
     }
 
     public function testFetchAllPending()

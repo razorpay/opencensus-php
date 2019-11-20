@@ -142,4 +142,25 @@ class D2cBureauDetailsTest extends TestCase
 //                'created_at'        => 1571374473
         ], $d2cBureauReport);
     }
+
+    public function testPatchBureauReport()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $response['id'];
+
+        $this->startTest();
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+            'interested'        => true,
+        ], $d2cBureauReport);
+    }
 }

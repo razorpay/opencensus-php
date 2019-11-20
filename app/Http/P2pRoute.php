@@ -265,6 +265,14 @@ final class P2pRoute
                 'callback/{gateway}',
                 'UpiController@gatewayCallback'
             ],
+
+        /*************** Merchant **************/
+        Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE           =>
+            [
+                'post',
+                'merchant/beneficiaries/validate',
+                'BeneficiaryController@validateBeneficiary'
+            ],
     ];
 
     public static $public = [
@@ -318,6 +326,10 @@ final class P2pRoute
 
     public static $direct = [
         Requests::P2P_GATEWAY_CALLBACK,
+    ];
+
+    public static $private = [
+        Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE,
     ];
 
     public static $routePermission = [];

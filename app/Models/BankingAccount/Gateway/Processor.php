@@ -133,10 +133,11 @@ abstract class Processor extends Base\Core
         {
             try
             {
-                $response = $ftsService->createFundAccount(
-                    $bankingAccount->getId(),
+                $ftsService->initialize($bankingAccount->getId(),
                     Constants\Entity::BANKING_ACCOUNT,
                     Constants\Entity::PAYOUT);
+
+                $response = $ftsService->createFundAccount();
 
                 break;
             }

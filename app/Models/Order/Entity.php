@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
@@ -16,6 +18,7 @@ use RZP\Models\SubscriptionRegistration;
 /**
  * @property Offer\Entity    $offer
  * @property Merchant\Entity $merchant
+ * @property Invoice\Entity  $invoice
  * @property Transfer\Entity $transfer
  */
 class Entity extends Base\PublicEntity
@@ -125,6 +128,8 @@ class Entity extends Base\PublicEntity
     const TRANSFERS         = 'transfers';
 
     const VIRTUAL_ACCOUNT   = 'virtual_account';
+
+    const AUTH_TYPE = 'auth_type';
 
     protected $fillable = [
         self::DISCOUNT,
@@ -300,7 +305,9 @@ class Entity extends Base\PublicEntity
 
         if ($token !== null)
         {
-            $arrayPublic[self::TOKEN] = $token->toArrayTokenFields();
+            $invoice = $this->getMethod() === Payment\Method::NACH ? $this->invoice : null;
+
+            $arrayPublic[self::TOKEN] = $token->toArrayTokenFields($invoice);
         }
 
         return $arrayPublic;
@@ -457,6 +464,24 @@ class Entity extends Base\PublicEntity
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getBankForNachMethod()
+    {
+        $this->validator->validateOrderForNachMethod();
+
+        $tokenRegistration = $this->getTokenRegistration();
+
+        if (($tokenRegistration === null) or
+            ($tokenRegistration->paperMandate === null) or
+            ($tokenRegistration->paperMandate->bankAccount === null))
+        {
+            return null;
+        }
+
+        $bank = $tokenRegistration->paperMandate->bankAccount->getBankCode();
+
+        return $bank;
     }
 
     public function getTokenRegistration()

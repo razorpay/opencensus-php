@@ -14,7 +14,12 @@ class Repository extends Base\Repository
     {
         if ($params[Entity::RESPONSE] === 'history')
         {
-            $query->whereNotIn(Entity::STATUS, [Status::CREATED]);
+            $query->whereNotIn(Entity::STATUS, [Status::CREATED])
+                  ->where(function ($query) {
+                        $query->whereNotIn(Entity::TYPE, [Type::PAY])
+                            ->orWhereNotIn(Entity::FLOW, [Flow::CREDIT])
+                            ->orWhereNotIn(Entity::STATUS, [Status::PENDING, Status::FAILED]);
+                  });
         }
         elseif ($params[Entity::RESPONSE] === 'pending')
         {

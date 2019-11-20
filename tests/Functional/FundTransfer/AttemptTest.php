@@ -584,7 +584,8 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
+        $redisMock = $this->getMockBuilder(Redis::class)
+                          ->setMethods(['hget'])
                           ->getMock();
 
         Redis::shouldReceive('connection')

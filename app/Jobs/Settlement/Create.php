@@ -202,7 +202,9 @@ class Create extends Job
     {
         $redis = app('redis')->connection();
 
-        $count = (int) $redis->hincrby($this->channelWiseCountKey, $channel, 1);
+        $channelCount = $redis->hgetall($this->channelWiseCountKey);
+
+        $count = (int) $channelCount[$channel];
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
@@ -222,8 +224,6 @@ class Create extends Job
         {
             return;
         }
-
-        $channelCount = $redis->hgetall($this->channelWiseCountKey);
 
         // If there any channel with pending settlement initiate then dispatch it for the same
         foreach ($channelCount as $ch => $count)

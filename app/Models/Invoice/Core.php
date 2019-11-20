@@ -17,6 +17,7 @@ use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -201,17 +202,6 @@ class Core extends Base\Core
 
         $updateFunction = 'update' . studly_case($status) . 'Invoice';
 
-        if($this->changeReminderStatus($invoice, $input))
-        {
-            $invoice->setReminderStatus(ReminderStatus::PENDING);
-        }
-
-        if((isset($input['reminder_enable']) === true) and
-            (boolval($input['reminder_enable']) === false))
-        {
-            $this->deleteReminder($invoice);
-        }
-
         // If a custom function exists to handle update for a status, call it. Else, handle save here and proceed
         if (method_exists($this, $updateFunction) === true)
         {
@@ -224,35 +214,34 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
-        $invoiceData = [];
+        $this->handleReminderForInvoice($invoice, $input);
 
-        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        if ($invoice->isIssued() === true or $invoice->isPartiallyPaid() === true)
         {
-            $invoiceData = [
-                Entity::REMINDER_ENABLE => $input[Entity::REMINDER_ENABLE]
-            ];
-        }
-
-        if ($invoice->isIssued() === true)
-        {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $invoiceData);
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $input);
         }
 
         return $invoice;
     }
 
-    protected function changeReminderStatus(Entity $invoice, $input): bool
+    protected function changeReminderStatus(array $input, $reminderEntity): bool
     {
-        $reminderStatus = $invoice->getReminderStatus();
-
-        if((array_key_exists('expire_by', $input) === true) and
-            ($reminderStatus === ReminderStatus::IN_PROGRESS))
+        if ((empty($input[Entity::REMINDER_ENABLE]) === false) and
+            (boolval($input[Entity::REMINDER_ENABLE]) === true))
         {
             return true;
         }
 
-        if((empty($input['reminder_enable']) === false) and
-            (boolval($input['reminder_enable']) === true))
+        if(empty($reminderEntity) === true)
+        {
+            return false;
+        }
+
+        $reminderStatus = $reminderEntity->getReminderStatus();
+
+        if((array_key_exists('expire_by', $input) === true) and
+            ((empty($reminderStatus) === false) and
+             ($reminderStatus === Reminder\Status::IN_PROGRESS)))
         {
             return true;
         }
@@ -260,37 +249,69 @@ class Core extends Base\Core
         return false;
     }
 
-    protected function deleteReminder(Entity $invoice): bool
+    protected function deleteReminder(Entity $invoice, $reminderEntity, Reminder\Core $reminderCore): bool
     {
-        $reminderId = $invoice->getReminderId();
-
-        if(empty($reminderId) === true)
+        if ((empty($reminderEntity) === true) or
+            ($reminderEntity->getReminderId() === null))
         {
             return false;
         }
 
-        try {
-            $response = $this->reminders->deleteReminder($reminderId);
-        }
-        catch (\Exception $ex)
+        if (empty($reminderEntity->getReminderId()) === false)
         {
-            $this->trace->traceException(
-                $ex,
-                null,
-                null,
-                null);
+            try {
+                $response = $this->reminders->deleteReminder($reminderEntity->getReminderId());
 
-            return false;
+                $reminderInput[Reminder\Entity::REMINDER_STATUS] = Reminder\Status::DISABLED;
+
+                $reminderCore->createOrUpdate($reminderInput, $invoice, $reminderEntity);
+
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null);
+
+                return false;
+            }
         }
 
-        if((isset($response['status_code']) === true) and $response['status_code'] === 200)
+        if(((isset($response['status_code']) === true) and ($response['status_code'] === 200)) or
+            (empty($reminderEntity->getReminderId()) === true))
         {
-            $invoice->setReminderStatus(ReminderStatus::DISABLED);
-            $invoice->setReminderId(null);
+            $reminderEntity->setReminderStatus(Reminder\Status::DISABLED);
+
+            $reminderEntity->setReminderId(null);
+
+            $this->repo->saveOrFail($reminderEntity);
+
             return true;
         }
 
         return false;
+    }
+
+    private function handleReminderForInvoice(Entity $invoice, array $input)
+    {
+        $reminderCore = new Reminder\Core();
+
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($invoice->getId());
+
+        if($this->changeReminderStatus($input, $reminderEntity) === true)
+        {
+            $reminderInput[Reminder\Entity::REMINDER_STATUS] = Reminder\Status::PENDING;
+
+            $reminderCore->createOrUpdate($reminderInput, $invoice, $reminderEntity);
+        }
+
+        if((isset($input['reminder_enable']) === true) and
+            (boolval($input['reminder_enable']) === false))
+        {
+            $this->deleteReminder($invoice, $reminderEntity, $reminderCore);
+        }
+
     }
 
     public function updateBillingPeriod(Entity $invoice, array $input): Entity
@@ -494,9 +515,12 @@ class Core extends Base\Core
 
         $pdfPath = null;
 
-        if ($medium === NotifyMedium::EMAIL)
+        if ($invoice->isTypeOfSubscriptionRegistration() === false)
         {
-            $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
+            if ($medium === NotifyMedium::EMAIL)
+            {
+                $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
+            }
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();

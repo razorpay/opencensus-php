@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device\DeviceToken;
 
 class Validator extends Base\Validator
 {
@@ -107,6 +108,13 @@ class Validator extends Base\Validator
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, $this->makeEntityIdRules()->toArray());
 
+        $deviceTokenRules = [
+            DeviceToken\Entity::ID              => 'sometimes|string',
+            DeviceToken\Entity::GATEWAY_DATA    => 'sometimes|array',
+        ];
+
+        $rules->arrayRules(DeviceToken\Entity::DEVICE_TOKEN, $this->makeRules($deviceTokenRules)->toArray());
+
         return $rules;
     }
 
@@ -127,6 +135,13 @@ class Validator extends Base\Validator
 
         $rules->arrayRules(Entity::VPA, $this->makeEntityIdRules()->toArray());
         $rules->arrayRules(Entity::BANK_ACCOUNT, $this->makeEntityIdRules()->toArray());
+
+        $deviceTokenRules = [
+            DeviceToken\Entity::ID              => 'sometimes|string',
+            DeviceToken\Entity::GATEWAY_DATA    => 'sometimes|array',
+        ];
+
+        $rules->arrayRules(DeviceToken\Entity::DEVICE_TOKEN, $this->makeRules($deviceTokenRules)->toArray());
 
         return $rules;
     }

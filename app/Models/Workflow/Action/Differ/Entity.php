@@ -66,6 +66,8 @@ class Entity extends Base\Entity
 
     const FUNCTION_NAME = 'function_name';
     const PERMISSION    = 'permission';
+    const OLD           = 'old';
+    const NEW           = 'new';
 
     protected $entity   = 'action';
 

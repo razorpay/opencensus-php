@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_PAID          = 'amount_paid';
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
-    const VPA                  = 'vpa';
+    const VPA_ID               = 'vpa_id';
     const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
     const ENTITY_ID            = 'entity_id';
@@ -138,6 +138,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\QrCode\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\Vpa\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -204,7 +209,7 @@ class Entity extends Base\PublicEntity
 
     public function hasVpa()
     {
-        return ($this->isAttributeNotNull(self::VPA));
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     // ----------------------- Getters -----------------------------------------

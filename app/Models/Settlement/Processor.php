@@ -847,7 +847,9 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ($this->isMerchantSettlementAllowed($merchant) === false)
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant);
+
+        if ($status === false)
         {
             return [
                 'settlement_count' => 0,
@@ -878,6 +880,16 @@ class Processor extends Base\Core
         // which will add the merchant to bucket for settlement hence the process continues
         //
         (new Bucket\Core)->markMerchantSettlementAsComplete($merchant, $balanceType);
+
+        //
+        // update the count for channel here
+        // this would help to maintain the exact settlement create count
+        //
+        $redis = app('redis')->connection();
+
+        $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($key, $channel, 1);
 
         $this->trace->count(
             Metric::SETTLEMENT_CREATED_COUNT,

@@ -57,6 +57,8 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/admin/transfers/status';
 
+    const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';

@@ -590,7 +590,8 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if ($method !== Payment\Method::EMANDATE)
+        if (($method !== Payment\Method::EMANDATE) and
+            ($method !== Payment\Method::NACH))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -829,7 +830,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');

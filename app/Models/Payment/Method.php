@@ -17,6 +17,7 @@ class Method
     const EMANDATE      = 'emandate';
     const CARDLESS_EMI  = 'cardless_emi';
     const PAYLATER      = 'paylater';
+    const NACH          = 'nach';
 
     protected static $methods = [
         self::CARD          => 'Card',
@@ -30,6 +31,7 @@ class Method
         self::EMANDATE      => 'E-Mandate',
         self::CARDLESS_EMI  => 'Cardless EMI',
         self::PAYLATER      => 'Pay Later',
+        self::NACH          => 'nach',
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -57,6 +59,7 @@ class Method
     public static $recurringMethods = [
         self::CARD,
         self::EMANDATE,
+        self::NACH,
     ];
 
     protected static $asynchronous = [
