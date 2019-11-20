@@ -58,7 +58,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
-              details. <span class="big-dot-separator" />{' '}
+              details. Please try again in a couple of minutes.{' '}
+              <span class="big-dot-separator" />{' '}
               <Link
                 to="/activation?auto-submit=l1-form"
                 onClick={() => {
