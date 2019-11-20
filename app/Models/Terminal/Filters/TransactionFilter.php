@@ -40,7 +40,6 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
-        'shared_terminal',
         'auth_type',
         'bharat_qr',
         'direct_settlement',
@@ -48,6 +47,7 @@ class TransactionFilter extends Terminal\Filter
         'bank_account_type',
         'hitachi_shared_terminal',
         'capability',
+        'shared_terminal',
     ];
 
     public function methodFilter($terminal)
