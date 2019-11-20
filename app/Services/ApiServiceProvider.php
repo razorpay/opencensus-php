@@ -173,18 +173,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardPaymentService();
         });
 
-        $this->app->singleton('governor', function($app)
-        {
-            $goverorMock = $app['config']->get('applications.governor.mock');
-
-            if ($goverorMock === true)
-            {
-                return new Mock\GovernorService($app);
-            }
-
-            return new GovernorService($app);
-        });
-
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -293,6 +281,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerSmartRouting();
 
+        $this->registerGovernor();
+
         $this->registerDoppler();
 
         $this->registerBatchService();
@@ -381,6 +371,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_fund_transfer',
             'nonBlockingHttp',
             'smartRouting',
+            'governor',
             'doppler',
             'diag',
             'mozart',
@@ -448,6 +439,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new SmartRouting($app);
+        });
+    }
+
+    protected function registerGovernor()
+    {
+        $this->app->singleton('governor', function($app)
+        {
+            $goverorMock = $app['config']->get('applications.governor.mock');
+
+            if ($goverorMock === true)
+            {
+                return new Mock\GovernorService($app);
+            }
+
+            return new GovernorService($app);
         });
     }
 
