@@ -161,10 +161,7 @@ class Job extends BaseJob
 
     protected function handleIssued()
     {
-        if ($this->invoice->isTypeOfSubscriptionRegistration() === false)
-        {
-            $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
-        }
+        $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
         $notifier = new Invoice\Notifier($this->invoice, $pdfPath);
 
