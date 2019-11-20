@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { uniqueArray } from 'common/util';
+import { uniqueArray } from 'common/utils/rzp-utils';
 
 import {
   normalizeBoolean,
@@ -8,7 +8,7 @@ import {
   arrayDiff,
   autoPrefixUrls,
   trim,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {

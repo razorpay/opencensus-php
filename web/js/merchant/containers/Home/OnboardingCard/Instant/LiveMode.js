@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import { LIVE_MODE } from 'merchant/containers/Home/OnboardingCard/data';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 

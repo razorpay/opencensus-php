@@ -1,6 +1,10 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
+import {
+  getFixedINRAmount,
+  isBlank,
+  rupeesToPaise,
+} from 'common/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
 
 const createFields = [

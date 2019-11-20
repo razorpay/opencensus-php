@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
-import Group, { GroupItem } from 'rzp/ui/Group';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import Button from 'component/Button';
+import Group, { GroupItem } from 'common/ui/Group';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 

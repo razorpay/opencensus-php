@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 
-import InputField from 'rzp/ui/Forms/InputField';
+import InputField from 'common/ui/Forms/InputField';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 @connect(null, { closeModal })
 export default class ViewCredentials extends Component {

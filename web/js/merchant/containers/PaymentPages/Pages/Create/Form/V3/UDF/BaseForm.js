@@ -1,7 +1,7 @@
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button from 'component/Button';
-import { classList } from 'common/util';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
+import { classList } from 'common/utils/rzp-utils';
 import { mapFieldToIndex } from '../../UDF_Fields/V3';
 import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
 
@@ -245,7 +245,7 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          {!!selfIndex &&
+          {typeof selfIndex !== 'undefined' &&
             onDeleteField && (
               <OptionsItem>
                 <div

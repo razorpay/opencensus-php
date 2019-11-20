@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { pluralize } from 'rzp/utils/rzp-utils';
+import ModalHeader from 'common/ui/ModalHeader';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { pluralize } from 'common/utils/rzp-utils';
 
 import moment from 'moment';
 
@@ -108,6 +108,9 @@ export default function Reports(opts) {
         defaultAccount,
         dateRangeData,
         getFullUnixTimeStamps,
+        getUnixTimeStampsForYesterday,
+        getUnixTimeStampsForLastDays,
+        getUnixTimeStampsForLastMonth,
       } = this.props;
 
       let reqData = null,
@@ -152,6 +155,22 @@ export default function Reports(opts) {
 
           case 'dateRange': {
             [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
+            break;
+          }
+
+          case 'yesterday': {
+            [startTime, endTime] = getUnixTimeStampsForYesterday();
+            break;
+          }
+
+          case 'last_7_days': {
+            [startTime, endTime] = getUnixTimeStampsForLastDays(7);
+            break;
+          }
+
+          case 'last_month': {
+            // not using getUnixTimeStampsForLastDays since month duration is not fixed
+            [startTime, endTime] = getUnixTimeStampsForLastMonth();
             break;
           }
         }

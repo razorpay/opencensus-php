@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 import { matchDetail, matchModal } from 'merchantLA/routes';
-import Slider from 'rzp/ui/Slider';
-import { ModalMask } from 'component/Modal';
+import Slider from 'common/ui/Slider';
+import { ModalMask } from 'common/new-ui/Modal';
 
 import { showWhenUtil } from 'merchantLA/components/ShowWhen';
 import Home from 'merchantLA/containers/Home/Index';
@@ -15,14 +15,14 @@ import Settlements from 'merchantLA/containers/Settlements/List';
 import Reports from 'merchantLA/containers/Reports';
 import MyAccount from 'merchantLA/containers/MyAccount';
 
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchantLA/modules/app';
-import { openSlider } from 'rzp/modules/slider';
+} from 'merchantLA/reducers/app';
+import { openSlider } from 'merchant_common/reducers/slider';
 
 @withRouter
 @connect(null, {

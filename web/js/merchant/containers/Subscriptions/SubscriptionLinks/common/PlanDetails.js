@@ -1,11 +1,11 @@
 import { TypeAhead } from 'react-power-select';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
-import Amount from 'rzp/ui/Amount';
-import Input, { Label, Description } from 'component/Input';
+import Amount from 'common/ui/Amount';
+import Input, { Label, Description } from 'common/new-ui/Input';
 
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
+import { getIntervalCycle } from 'common/utils/rzp-utils';
 
 import QuantitySelector from '../New/QuantitySelector';
 

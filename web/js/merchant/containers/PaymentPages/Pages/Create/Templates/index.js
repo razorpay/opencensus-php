@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import Button from 'component/Button';
-import { classList } from 'common/util';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import Button from 'common/new-ui/Button';
+import { classList } from 'common/utils/rzp-utils';
 import META from './meta';
 import {
   trackGoBackDashboard,

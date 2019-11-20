@@ -1,5 +1,5 @@
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import { classList } from 'common/util';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class FieldOptionsDropdown extends React.PureComponent {
   render() {

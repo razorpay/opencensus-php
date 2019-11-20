@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
 const loading = 'loading',
   progress = 'progress',

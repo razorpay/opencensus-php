@@ -1,9 +1,9 @@
 import { Component } from 'react';
 
-import Amount from 'rzp/ui/Amount';
-import Table from 'rzp/ui/Table/Index';
+import Amount from 'common/ui/Amount';
+import Table from 'common/ui/Table/Index';
 
-import { createdAt, creditId } from 'rzp/ui/item/pair';
+import { createdAt, creditId } from 'common/ui/item/pair';
 
 export default class CreditDetails extends Component {
   state = {

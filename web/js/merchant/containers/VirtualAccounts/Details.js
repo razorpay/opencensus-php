@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
-import * as VirtualAccountActions from 'merchant/modules/virtualaccounts';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal } from 'rzp/modules/modals';
+import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
 import CreateTestPayment from './CreateTestPayment';
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(

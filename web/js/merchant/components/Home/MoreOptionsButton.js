@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 
 export default ({
   csvData,

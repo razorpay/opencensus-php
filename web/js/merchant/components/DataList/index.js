@@ -1,4 +1,4 @@
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default ({ className, children, horizontalDivider }) => (
   <div

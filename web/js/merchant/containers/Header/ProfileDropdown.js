@@ -3,22 +3,24 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'rzp/utils/localStorage';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import Image from 'rzp/ui/Image';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import debounce from 'rzp/utils/debounce';
-import { updateSession } from 'merchant/modules/session';
+import LocalStorageService from 'common/utils/localStorage';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import Image from 'common/ui/Image';
+import ModalHeader from 'common/ui/ModalHeader';
+import Group, { GroupItem } from 'common/ui/Group';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import debounce from 'common/utils/debounce';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { logout, showOrHideTour } from 'merchant/modules/session';
+import { logout, showOrHideTour } from 'merchant/reducers/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+
 @withRouter
 @connect(
   state => {
@@ -257,7 +259,7 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
-            {user.role === 'owner' &&
+            {user.role === rolesList.OWNER &&
               user.partner_type === null && (
                 <div class="media loggedin-as">
                   <div class="media-body">

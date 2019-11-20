@@ -1,4 +1,4 @@
-import { readableFileSize } from 'rzp/utils/rzp-utils';
+import { readableFileSize } from 'common/utils/rzp-utils';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 

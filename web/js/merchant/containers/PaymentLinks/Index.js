@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -14,7 +14,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import OnBoarding, {
   getIsPaymentLinksEnabled,
@@ -103,8 +103,9 @@ export default class PaymentLinksContainer extends React.Component {
           </NavLink>
           <ShowWhen
             additionalCondition={user =>
-              user.isPaymentLinkBatchEnabledForSellerAppRole ||
-              user.isAllowedView('payment_links_batch_uploads')
+              user.isAllowedView('payment_links_batch_uploads') &&
+              (!user.isSellerAppRole ||
+                user.isPaymentLinkBatchEnabledForSellerAppRole)
             }
           >
             <NavLink exact to="/paymentlinks/batchuploads">
@@ -121,8 +122,9 @@ export default class PaymentLinksContainer extends React.Component {
               path="/paymentlinks/batchuploads"
               component={BatchUploadList}
               additionalCondition={user =>
-                user.isPaymentLinkBatchEnabledForSellerAppRole ||
-                user.isAllowedView('payment_links_batch_uploads')
+                user.isAllowedView('payment_links_batch_uploads') &&
+                (!user.isSellerAppRole ||
+                  user.isPaymentLinkBatchEnabledForSellerAppRole)
               }
             />
             <Route path="/paymentlinks" component={PaymentLinksList} />

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import storage from 'rzp/utils/localStorage';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import storage from 'common/utils/localStorage';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 

@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Spinner from 'rzp/ui/Spinner';
-import * as ConfigActions from 'merchant/modules/config';
-import * as NotificationActions from 'rzp/modules/notifications';
+import Spinner from 'common/ui/Spinner';
+import * as ConfigActions from 'merchant/reducers/config';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FlashCheckout from './FlashCheckout';
 import Internationalization from './Internationalization';
 import CheckoutTheme from './CheckoutTheme';

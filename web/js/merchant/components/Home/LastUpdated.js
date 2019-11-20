@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Time from 'rzp/ui/Time';
+import Time from 'common/ui/Time';
 
 const LastUpdated = ({ at }) =>
   at ? (

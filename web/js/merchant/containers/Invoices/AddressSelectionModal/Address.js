@@ -1,9 +1,9 @@
 import { Component, PropType } from 'react';
-import { stringifyAddress } from 'rzp/utils/rzp-utils';
-import { Check } from 'component/Input';
+import { stringifyAddress } from 'common/utils/rzp-utils';
+import { Check } from 'common/new-ui/Input';
 import PropTypes from 'prop-types';
 import { Field } from 'redux-form';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
+import RadioButton from 'common/ui/Forms/RadioButton';
 
 export default class Address extends Component {
   static propTypes = {
