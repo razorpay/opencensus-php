@@ -2217,6 +2217,7 @@ class Gateway
         $gateways = [
             self::MPGS,
             self::CYBERSOURCE,
+            self::MPI_BLADE,
         ];
 
         return (in_array($gateway, $gateways, true));
