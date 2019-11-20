@@ -3,7 +3,7 @@ import { Field, reduxForm } from 'redux-form';
 import LineItem from './Item';
 import Amount from 'common/ui/Amount';
 import AmountInWords from 'common/ui/AmountInWords';
-import { track } from '../ga';
+import { track } from '../../../ga';
 
 @reduxForm({
   form: 'newInvoice',

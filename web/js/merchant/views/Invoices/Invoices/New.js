@@ -25,7 +25,7 @@ import {
 } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import LineItemsList from '../LineItems/List';
+import LineItemsList from 'merchant/views/Invoices/Invoices/components/LineItems/List';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import IssueConfirmModal from './components/IssueConfirmModal';
 import AddInternalNoteModal from './components/AddInternalNoteModal';

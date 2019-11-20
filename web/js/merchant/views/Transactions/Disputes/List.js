@@ -8,7 +8,7 @@ import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
 import { titleCase } from 'common/utils/rzp-utils';
 import { getTime } from 'common/ui/item';
-import ListContainer from '../ListContainer';
+import ListContainer from 'merchant/containers/ListContainer';
 import ShowWhen from 'merchant/components/ShowWhen';
 import {
   disputeId,

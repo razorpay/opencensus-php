@@ -5,15 +5,16 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import PaymentsList from 'merchant/containers/Payments/List';
-import PaymentsBatchList from 'merchant/containers/Payments/BatchList';
-import RefundsList from 'merchant/containers/Refunds/List';
-import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
-import BatchUploads from 'merchant/containers/Refunds/BatchList';
-import OrdersList from 'merchant/containers/Orders/List';
-import DisputesList from 'merchant/containers/Disputes/List';
+import PaymentsList from 'merchant/views/Transactions/Payments/List';
+import PaymentsBatchList from 'merchant/views/Transactions/Payments/BatchList';
+import RefundsList from 'merchant/views/Transactions/Refunds/List';
+import BatchUpload from 'merchant/views/Transactions/Refunds/BatchUpload';
+import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
+import OrdersList from 'merchant/views/Transactions/Orders/List';
+import DisputesList from 'merchant/views/Transactions/Disputes/List';
+
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import ScheduledBanner from './Settlements/ScheduledBanner';
+import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
 
 @connect(state => state.session)
 export default class TransactionsContainer extends Component {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import OrderDetails from 'merchant/components/Orders/OrderDetails';
+import OrderDetails from 'merchant/views/Transactions/Orders/components/OrderDetails';
 import * as OrderActions from 'merchant/reducers/orders/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
