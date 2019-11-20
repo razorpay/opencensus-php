@@ -175,6 +175,7 @@ class Type
     const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
     const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
     const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_CANCELLED_CHECK              = 'cancelled_check';
     const MERCHANT_PASSPORT_BACK                = 'passport_back';
     const MERCHANT_PASSPORT_FRONT               = 'passport_front';
     const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
@@ -313,6 +314,7 @@ class Type
             self::MERCHANT_PASSPORT_BACK,
             self::MERCHANT_VOTER_ID_FRONT,
             self::MERCHANT_VOTER_ID_BACK,
+            self::MERCHANT_CANCELLED_CHECK,
         ],
 
         Constants\Entity::INVOICE => [

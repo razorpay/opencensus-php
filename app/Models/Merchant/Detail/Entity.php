@@ -718,6 +718,11 @@ class Entity extends Base\PublicEntity
         return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
     }
 
+    public function isPoiVerified() : bool
+    {
+        return ($this->getPoiVerificationStatus() === POIStatus::VERIFIED);
+    }
+
     public function isBankDetailStatusVerified() : bool
     {
         return ($this->getBankDetailsVerificationStatus() === BankDetailsVerificationStatus::VERIFIED);
