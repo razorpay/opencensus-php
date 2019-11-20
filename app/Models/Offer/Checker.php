@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Core;
 
 class Checker extends Base\Core
 {
@@ -385,13 +386,17 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOfferUsage() !== NULL)
         {
-            $redis = $this->app['redis']->connection();
+//            $redis = $this->app['redis']->connection();
+//
+//            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
+//
+//            $currentOfferUsage = $redis->incr($key);
 
-            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
+            $core = new \RZP\Models\Offer\Core();
 
-            $currentOfferUsage = $redis->incr($key);
+            $updatedOffer = $core->lockUpdateAndGetCurrentOfferUsage($this->offer);
 
-            $result = $currentOfferUsage <= $this->offer->getMaxOfferUsage();
+            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
 
             $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,

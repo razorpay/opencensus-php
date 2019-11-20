@@ -407,4 +407,15 @@ class Core extends Base\Core
 
         return $this;
     }
+
+    public function lockUpdateAndGetCurrentOfferUsage(Entity $offer)
+    {
+        $offer = $this->repo->lockForUpdate($offer->getId());
+
+        $offer->setCurrentOfferUsage($offer->getCurretOfferUsage() + 1);
+
+        $this->repo->saveOrFail($offer);
+
+        return $offer;
+    }
 }
