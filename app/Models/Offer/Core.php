@@ -114,7 +114,7 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
-            $this->decrementOfferUsageCount($payment);
+            $this->decrementRedisOfferUsageCount($payment);
 
             if ($offer->shouldBlockPayment() === true)
             {
@@ -159,7 +159,7 @@ class Core extends Base\Core
     }
 
     //decrement the offer usage count after failed payment for max offer validation.
-    public function decrementOfferUsageCount($payment)
+    public function decrementRedisOfferUsageCount($payment)
     {
         $offer = $payment->getOffer();
 
@@ -169,8 +169,29 @@ class Core extends Base\Core
 
             $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
 
-            $redis->decr($key);
+            $currentOfferUsage = $redis->decr($key);
+
+            $this->updateCurrentOfferUsage($offer,$currentOfferUsage);
         }
+    }
+
+    public function updateCurrentOfferUsage(Entity $offer, $currentOfferUsage)
+    {
+        $offer = $this->mutex->acquireAndRelease(
+            "offer_usage_update_".$offer->getPublicId(),
+            function() use($offer, $currentOfferUsage)
+            {
+                $offer->setCurrentUsageCount($currentOfferUsage);
+
+                $this->repo->saveOrFail($offer);
+            },
+            60,
+            "BAD_REQUEST_CURRENT_OFFER_USAGE_UPDATE_IN_PROGRESS");
+
+        s($this->offer->getCurrentOfferUsage());
+
+        return $offer;
+
     }
 
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
