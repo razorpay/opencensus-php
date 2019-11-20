@@ -64,7 +64,13 @@ export default class InvoicesOnBoarding extends React.Component {
 
     return (
       <OnBoardingWrapper class="Invoices">
-        <Slider active={active}>
+        <Slider
+          active={active}
+          afterSlide={getOnBoardingSliderDots({
+            invoicesProductOnBoarding,
+            closeOnboarding: this.closeOnboarding,
+          })}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -85,22 +91,27 @@ export default class InvoicesOnBoarding extends React.Component {
               features={FEATURES_DATA}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton
-                isLocalEnabler
-                isTour={invoicesProductOnBoarding.isTour}
-                feature={RZPFeatures.INVOICE}
-                page={sliderProps.active}
-                onClick={this.closeOnboarding}
-              />
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots({
+  closeOnboarding,
+  invoicesProductOnBoarding,
+}) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>
+      <SkipAndGetStartedButton
+        isLocalEnabler
+        isTour={invoicesProductOnBoarding.isTour}
+        feature={RZPFeatures.INVOICE}
+        page={sliderProps.active}
+        onClick={closeOnboarding}
+      />
+    </SliderDots>
+  );
 }
 
 export function getIsAllowedResetInvoicesOnBoarding({ invoices, items }) {
