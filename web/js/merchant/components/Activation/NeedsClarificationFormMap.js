@@ -24,14 +24,12 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     }
   };
 
-  const prepareField = (field, clarificationDetails, origKey) => {
+  const prepareField = (field, clarificationDetails, forceMap) => {
     let reasons = [];
-    if (typeof origKey === 'undefined') {
-      origKey = field;
-    }
 
-    if (!Boolean(allFieldsHash[field])) {
-      field = generateNewField(field, clarificationDetails[origKey]);
+    const origKey = field;
+    if (!Boolean(allFieldsHash[field]) || Boolean(forceMap)) {
+      field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
     if (allFieldsHash[field]) {
       for (let r of clarificationDetails[origKey]) {
@@ -62,7 +60,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     }
   };
 
-  const generateNewField = (key, fieldObj) => {
+  const generateNewField = (key, fieldObj, forceMap) => {
     //	const newField = {};
     //There are two ways to generate a new field
     //1. The field already is a part fo all fields in the form
@@ -78,7 +76,11 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
       driver_license_front: 'address_proof_front',
       driver_license_back: 'address_proof_back',
     };
-    if (Boolean(mappedFields[key]) && allFieldsHash[mappedFields[key]]) {
+
+    if (
+      Boolean(mappedFields[key]) ||
+      (Boolean(forceMap) && allFieldsHash[mappedFields[key]])
+    ) {
       return mappedFields[key];
     }
     //Implement functionality for custom fields here
@@ -93,7 +95,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     }
     for (let field in needsKyc.additional_details) {
       // const newFieldName = generateNewField(field, needsKyc.additional_details[field]);
-      prepareField(field, needsKyc.additional_details);
+      prepareField(field, needsKyc.additional_details, true);
     }
 
     return kycTabContent;
