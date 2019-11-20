@@ -108,7 +108,7 @@ export default function Reports(store, opts) {
   @reduxForm({
     form: 'generateReports',
     initialValues: {
-      type: 'daily',
+      type: 'yesterday',
       date: moment(),
       startAt: moment().subtract('1', 'days'),
       endAt: moment(),
@@ -440,6 +440,22 @@ export default function Reports(store, opts) {
               [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
               break;
             }
+
+            case 'yesterday': {
+              [startTime, endTime] = getUnixTimeStampsForYesterday();
+              break;
+            }
+
+            case 'last_7_days': {
+              [startTime, endTime] = getUnixTimeStampsForLastDays(7);
+              break;
+            }
+
+            case 'last_month': {
+              // not using getUnixTimeStampsForLastDays since month duration is not fixed
+              [startTime, endTime] = getUnixTimeStampsForLastMonth();
+              break;
+            }
           }
 
           const { user } = this.props,
@@ -605,6 +621,9 @@ export default function Reports(store, opts) {
             selectedDate={date}
             dateRangeData={dateRangeData}
             getFullUnixTimeStamps={getFullUnixTimeStamps}
+            getUnixTimeStampsForYesterday={getUnixTimeStampsForYesterday}
+            getUnixTimeStampsForLastDays={getUnixTimeStampsForLastDays}
+            getUnixTimeStampsForLastMonth={getUnixTimeStampsForLastMonth}
             reportId={reportId}
             emailsMap={emailsMap}
             onSend={this.generateReport}
@@ -695,6 +714,160 @@ export default function Reports(store, opts) {
       if (timeLapse) {
         trackTimeLapse('Click - Download Cancel', timeLapse);
       }
+    };
+
+    renderSelectDay = ({ name, withTime, label }) => {
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div class="form-group">
+            {label && <div class="title">{label}</div>}
+            <Field
+              name={name}
+              dateFormat="DD MMM, YYYY"
+              closeOnSelect={true}
+              component={ReduxDatetime}
+              placeholder="Select Date-Month-Year"
+              isValidDate={validYear}
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+          {withTime && this.renderSelectTime({ name: name + 'Time' })}
+        </div>
+      );
+    };
+
+    renderSelectTime = ({ name }) => (
+      <div className="form-group">
+        <Field
+          name={name}
+          component={ReduxDatetime}
+          closeOnSelect
+          dateFormat={false}
+          class="m-t"
+          onChange={this.enableDownloadButton}
+        />
+      </div>
+    );
+
+    renderSelectDateRange = () => {
+      const { dateRangeData } = this.props;
+      return (
+        <>
+          {this.renderSelectDay({
+            name: 'startAt',
+            withTime: dateRangeData.withTime,
+            label: 'Start at',
+          })}
+
+          {this.renderSelectDay({
+            name: 'endAt',
+            withTime: dateRangeData.withTime,
+            label: 'End at',
+          })}
+
+          <div className="col-sm-3 col-xs-12">
+            <div class="form-group m-t">
+              <div className="title" />
+              <div class="rzpCheckbox m-t">
+                <Field
+                  name="withTime"
+                  id="with-time"
+                  component="input"
+                  type="checkbox"
+                  onChange={this.enableDownloadButton}
+                />
+                <label for="with-time" class="icon i-check">
+                  Specify time
+                </label>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    renderSelectMonth = () => {
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div className="title">Select Month</div>
+          <div class="form-group">
+            <Field
+              name={entity === 'monthlyInvoice' ? 'invoiceDate' : 'date'}
+              component={ReduxDatetime}
+              dateFormat="MMM, YYYY"
+              closeOnSelect={true}
+              isValidDate={
+                entity === 'monthlyInvoice'
+                  ? this.validateInvoiceMonthYear
+                  : validYear
+              }
+              placeholder="Select Year-Month"
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+        </div>
+      );
+    };
+
+    renderSelectInterval = () => {
+      const { type } = this.props;
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+
+      if (type === 'monthly' || entity === 'monthlyInvoice') {
+        return this.renderSelectMonth();
+      } else if (type === 'daily') {
+        return this.renderSelectDay({ name: 'date', label: 'Select Date' });
+      } else if (type === 'dateRange') {
+        return this.renderSelectDateRange();
+      }
+    };
+
+    renderPredefinedDurations = () => {
+      const DISPLAY_FORMAT = 'll';
+      const { type } = this.props;
+      let fromDate, toDate;
+      const today = moment();
+      switch (type) {
+        case 'yesterday':
+          fromDate = today
+            .clone()
+            .subtract(1, 'day')
+            .format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_7_days':
+          const previousDay = today.clone().subtract(1, 'day');
+          toDate = previousDay.format(DISPLAY_FORMAT);
+
+          // calculating last 7th day from today which last 6th day from yesterday
+          fromDate = previousDay.subtract(6, 'day').format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_month':
+          const lastDayOfLastMonth = today
+            .clone()
+            .startOf('month')
+            .subtract(1, 'day');
+          toDate = lastDayOfLastMonth.format(DISPLAY_FORMAT);
+          fromDate = lastDayOfLastMonth.startOf('month').format(DISPLAY_FORMAT);
+          break;
+
+        default:
+          return null;
+      }
+
+      return (
+        <div class="col-sm-12 col-xs-12">
+          <small class="text-warning">
+            {fromDate} {toDate && ` to ${toDate}`}
+          </small>
+        </div>
+      );
     };
 
     render() {
@@ -796,24 +969,9 @@ export default function Reports(store, opts) {
 
                   <div class="form-element">
                     <div class="clearfix">
-                      <div class="col-sm-3">
-                        <div class="title">PERIOD</div>
-                      </div>
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 visible-sm visible-lg">
-                              <div className="title">Start At</div>
-                            </div>
-                            <div class="col-sm- visible-lg visible-sm">
-                              <div className="title">End At</div>
-                            </div>
-                          </>
-                        )}
-                    </div>
-                    <div class="clearfix">
                       {entity === 'monthlyInvoice' || (
-                        <div class="col-sm-3 col-xs-12">
+                        <div class="col-sm-4 col-xs-12">
+                          <div class="title">PERIOD</div>
                           <div
                             class="form-group form-control"
                             disabled={
@@ -827,6 +985,9 @@ export default function Reports(store, opts) {
                               component="select"
                               onChange={this.enableDownloadButton}
                             >
+                              <option value="yesterday">Yesterday</option>
+                              <option value="last_7_days">Last 7 days</option>
+                              <option value="last_month">Last Month</option>
                               <option value="daily">Daily</option>
                               {!(
                                 isPartnerReport &&
@@ -835,128 +996,15 @@ export default function Reports(store, opts) {
                               <option value="dateRange">Custom</option>
                             </Field>
                           </div>
-                          {type === 'dateRange' && (
-                            <div class="form-group">
-                              <div class="rzpCheckbox">
-                                <Field
-                                  name="withTime"
-                                  id="with-time"
-                                  component="input"
-                                  type="checkbox"
-                                  onChange={this.enableDownloadButton}
-                                />
-                                <label for="with-time" class="icon i-check">
-                                  Specify time
-                                </label>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
-
-                      {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                        <div class="col-sm-4 col-xs-12">
-                          <div class="form-group">
-                            <Field
-                              name={
-                                entity === 'monthlyInvoice'
-                                  ? 'invoiceDate'
-                                  : 'date'
-                              }
-                              component={ReduxDatetime}
-                              dateFormat="MMM, YYYY"
-                              closeOnSelect={true}
-                              isValidDate={
-                                entity === 'monthlyInvoice'
-                                  ? this.validateInvoiceMonthYear
-                                  : validYear
-                              }
-                              placeholder="Select Year-Month"
-                              timeFormat={false}
-                              onChange={this.enableDownloadButton}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {type === 'daily' &&
-                        entity !== 'monthlyInvoice' && (
-                          <div class="col-sm-4 col-xs-12">
-                            <div class="form-group">
-                              <Field
-                                name="date"
-                                dateFormat="DD MMM, YYYY"
-                                closeOnSelect={true}
-                                component={ReduxDatetime}
-                                placeholder="Select Date-Month-Year"
-                                isValidDate={validYear}
-                                timeFormat={false}
-                                onChange={this.enableDownloadButton}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 col-xs-12">
-                              <div class="form-group">
-                                <Field
-                                  name="startAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Starts at"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={validYear}
-                                  closeOnSelect
-                                  onChange={this.enableDownloadButton}
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="startAtTime"
-                                    placeholder="Select Time"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                    onChange={this.enableDownloadButton}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              class="col-sm-4 col-xs-12"
-                              style={{ marginRight: '0' }}
-                            >
-                              <div class="form-group">
-                                <Field
-                                  name="endAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Ends At"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={isDateRangeEndAtValid(
-                                    dateRangeData.startAt
-                                  )}
-                                  closeOnSelect
-                                  onChange={this.enableDownloadButton}
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="endAtTime"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                    onChange={this.enableDownloadButton}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
                     </div>
+
+                    <div class="clearfix">
+                      {this.renderPredefinedDurations()}
+                    </div>
+                    <div class="clearfix">{this.renderSelectInterval()}</div>
+
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
                         {type === 'dateRange' &&
@@ -1075,6 +1123,35 @@ function getFullUnixTimeStamps(data) {
     getFullStartTimeStamp(data.startAt, data.withTime && data.startAtTime),
     getFullEndTimeStamp(data.endAt, data.withTime && data.endAtTime),
   ];
+}
+
+function getUnixTimeStampsForYesterday() {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayStartOfDayUnix = yesterday.startOf('day').format('X');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+
+  return [yesterdayStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastDays(numberOfDays) {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+  const last7thStartOfDayUnix = yesterday
+    .subtract(numberOfDays - 1, 'day')
+    .startOf('day')
+    .format('X');
+
+  return [last7thStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastMonth() {
+  const lastMonth = moment().subtract(1, 'month');
+  const lastDayOfLastMonthEndOfDayUnix = lastMonth.endOf('month').format('X');
+  const firstDayOfLastMonthStartOfDayUnix = lastMonth
+    .startOf('month')
+    .format('X');
+
+  return [firstDayOfLastMonthStartOfDayUnix, lastDayOfLastMonthEndOfDayUnix];
 }
 
 function getFullStartTimeStamp(startAtMoment, startAtTimeMoment) {
