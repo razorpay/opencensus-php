@@ -46,10 +46,10 @@ class Doppler
     public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
-//        if ($this->mode === Mode::TEST)
-//        {
-//            return;
-//        }
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
 
         // publishing event to doppler's topic if payment method is card/upi/netbanking
         if (($payment->getMethod() === Method::CARD) or
@@ -135,12 +135,17 @@ class Doppler
 
         if($payment->isUPI() === true)
         {
+            $psp = $payment->getPspFromVpa();
+            if (strlen($psp) == 0)
+            {
+                $psp = null;
+            }
             $card['card_iin'] = null;
             $card['card_network'] = null;
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = $payment->getVpa();
-            $upi['psp'] = $payment->getPspFromVpa();
+            $upi['psp'] = $payment->$psp;
             $upi['bank'] = $payment->getBankName();
             $upi['type'] = $payment->getMetadata('flow');
             $netbanking['bank'] = null;
