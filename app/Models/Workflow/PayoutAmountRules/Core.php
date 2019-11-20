@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -60,34 +61,46 @@ class Core extends Base\Core
     public function createWorkflowPayoutAmountRules($input): array
     {
         $rules = $input['rules'];
+        $merchantId = nullOrEmptyString();
 
-        $payoutRules = new Entity();
+        foreach ($rules as $rule)
+        {
+            $workflow = $this->repo->workflow->findOrFailPublic($rule['workflow_id'])->toArray();
 
-        $merchantId = $payoutRules->getValidator()->checkIfAllMerchantIdsAreSame($rules);
+            if($merchantId == nullOrEmptyString())
+            {
+                $merchantId = $workflow['merchant_id'];
+            }
 
-        $payoutRules->getValidator()->checkIfWorkflowAlreadyCreated($merchantId);
+            if($merchantId != $workflow['merchant_id'])
+            {
+                throw new BadRequestValidationFailureException(
+                    'Changing workflows of multiple merchants not allowed'
+                );
+            }
+        }
 
-        $payoutRules->getValidator()->checkForValidAmountRanges($rules);
+        if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
+        {
+            throw new BadRequestValidationFailureException(
+                'Workflow amount rules already present'
+            );
+        }
+
+        (new Entity())->getValidator()->checkForValidAmountRanges($rules);
 
         $this->repo->transaction( function() use ($rules, $merchantId){
-
-
             foreach($rules as $rule)
             {
-                $payoutAmountRules = new Entity();
-
                 $rule['merchant_id'] = $merchantId;
-
+                $payoutAmountRules = new Entity();
                 $payoutAmountRules->build($rule);
 
                 $this->repo->saveOrFail($payoutAmountRules);
             }
-
         });
 
-        $repo = new Repository();
-
-        $response = $repo->fetchWorkflowRulesForMerchant($merchantId)->toArrayAdmin();
+        $response = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArrayAdmin();
 
         return $response;
     }
