@@ -161,7 +161,6 @@ class Core extends Base\Core
             Payment\Method::UPI          => false,
             Payment\Method::CARDLESS_EMI => [],
             Payment\Method::PAYLATER     => [],
-            Entity::GOOGLE_PAY_CARDS     => false,
         ];
 
         $methods = $this->getMethods($merchant);
@@ -227,11 +226,6 @@ class Core extends Base\Core
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
         {
             $data['upi_intent'] = true;
-        }
-
-        if ($merchant->isFeatureEnabled(Constants::GOOGLE_PAY_CARDS) === true)
-        {
-            $data[Entity::GOOGLE_PAY_CARDS] = true;
         }
 
         return $data;

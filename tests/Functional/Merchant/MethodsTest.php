@@ -313,21 +313,6 @@ class MethodsTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchGooglePayForCardsMethod()
-    {
-        $this->ba->proxyAuth();
-
-        $response = $this->startTest();
-
-        $this->assertFalse($response[Feature\Constants::GOOGLE_PAY_CARDS]);
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
-
-        $response = $this->startTest();
-
-        $this->assertTrue($response[Feature\Constants::GOOGLE_PAY_CARDS]);
-    }
-
     public function testEnableEmi()
     {
         $this->ba->proxyAuth();
