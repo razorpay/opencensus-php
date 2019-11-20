@@ -251,10 +251,12 @@ export default class ScheduledModal extends Component {
                     Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
                     settled
                   </li>
-                  <li>
-                    A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
-                    charged for each settlement
-                  </li>
+                  {!this.state.isLoading && (
+                    <li>
+                      A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
+                      charged for each settlement
+                    </li>
+                  )}
                 </ul>
               </div>
               <div className="schedule-img-container">
