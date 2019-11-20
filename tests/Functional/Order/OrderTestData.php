@@ -50,7 +50,7 @@ return [
     'testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount' => [
         'request'   => [
             'content' => [
-                'amount'   => 1000001,
+                'amount'   => 2500001,
                 'currency' => 'INR',
                 'receipt'  => 'rcptid42',
             ],
