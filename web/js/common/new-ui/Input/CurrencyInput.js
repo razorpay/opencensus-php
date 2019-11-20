@@ -4,7 +4,7 @@ export default function(props) {
   return (
     <Input.Group label={props.label} className="InputGroup--inline">
       <div className="Input-content">
-        <Input.CurrencySelect defaultValue={props.currency || 'INR'} />
+        <Input.CurrencySelect defaultValue={props.currency} />
         <Input
           name={props.name}
           onChange={props.onChange}

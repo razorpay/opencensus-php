@@ -6,7 +6,7 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import List from 'merchant/containers/Offers/List';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-export default class Home extends Component {
+export default class OfferIndex extends Component {
   render() {
     return (
       <tabbed-container>

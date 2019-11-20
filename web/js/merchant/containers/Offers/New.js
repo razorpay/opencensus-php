@@ -284,6 +284,7 @@ class NewOfferForm extends React.Component {
           label="Discount Worth"
           name="flat_cashback"
           class="Input--half"
+          currency="INR"
           placeholder="Discount worth in cash"
         />
       );
