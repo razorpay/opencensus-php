@@ -9,7 +9,6 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Offer\Core;
 
 class Checker extends Base\Core
 {
@@ -48,7 +47,6 @@ class Checker extends Base\Core
         $this->offer = $offer;
 
         $this->verbose = $verbose;
-
     }
 
     public function checkApplicabilityOnOrder(Order\Entity $order): bool
@@ -393,8 +391,6 @@ class Checker extends Base\Core
 
             $currentOfferUsage = $redis->incr($key);
 
-            (new Core())->updateCurrentOfferUsage($this->offer,$currentOfferUsage);
-
             $result = $currentOfferUsage <= $this->offer->getMaxOfferUsage();
 
             $this->traceCheckResult(
@@ -413,6 +409,7 @@ class Checker extends Base\Core
 
         return $result;
     }
+
 
     protected function getCardVaultToken(): string
     {

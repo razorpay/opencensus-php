@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Offer\Core;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
@@ -1733,9 +1732,9 @@ class Processor
         {
             $offer = new Offer\Core();
 
-            $offer->decrementRedisOfferUsageCount($payment);
-
+            $offer->decrementOfferUsageCount($payment);
         }
+
 
         //TODO: Remove this later
         try
