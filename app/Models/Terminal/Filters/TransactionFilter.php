@@ -47,6 +47,7 @@ class TransactionFilter extends Terminal\Filter
         'bank_account_type',
         'hitachi_shared_terminal',
         'capability',
+        'shared_terminal',
     ];
 
     public function methodFilter($terminal)
@@ -605,6 +606,41 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    // filter rejects all shared terminal if there is a atleast one direct terminal present on same gateway
+    // filter selects all shared terminal if there is no direct terminal on same gateway
+    public function sharedTerminalFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        $currentGateway = $terminal->getGateway();
+
+        $directTerminalsOnSameGateway = false;
+
+        foreach ($applicableTerminals as $applicableTerminal)
+        {
+            if (($applicableTerminal->isDirectForMerchant() === true) and
+                ($applicableTerminal->getGateway() === $currentGateway))
+            {
+                // breaking once we get direct terminal on the same gateway as of current terminal
+                $directTerminalsOnSameGateway = true;
+                break;
+            }
+        }
+
+        if (($directTerminalsOnSameGateway === true) and
+             ($terminal->isDirectForMerchant() === false))
+        {
+            return false;
         }
 
         return true;
