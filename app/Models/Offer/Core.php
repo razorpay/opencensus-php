@@ -15,7 +15,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Payment\Processor;
 
 class Core extends Base\Core
 {
@@ -114,7 +113,7 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
-            $this->decrementOfferUsageCount($payment);
+            $this->lockDecrementCurrentOfferUsage($payment->getOffer());
 
             if ($offer->shouldBlockPayment() === true)
             {
@@ -156,21 +155,6 @@ class Core extends Base\Core
         //As offer is not applicable, dissociating it
         $payment->dissociateOffer($offer);
 
-    }
-
-    //decrement the offer usage count after failed payment for max offer validation.
-    public function decrementOfferUsageCount($payment)
-    {
-        $offer = $payment->getOffer();
-
-        if($offer !== null)
-        {
-            $redis = $this->app['redis']->connection();
-
-            $key = $this->merchant->getId()."_".$offer->getPublicId()."_offer_usage";
-
-            $redis->decr($key);
-        }
     }
 
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
@@ -408,13 +392,38 @@ class Core extends Base\Core
         return $this;
     }
 
-    public function lockUpdateAndGetCurrentOfferUsage(Entity $offer)
+    //increment the offer usage count after failed payment for max offer validation.
+    public function lockIncrementCurrentOfferUsage(Entity $offer)
     {
-        $offer = $this->repo->lockForUpdate($offer->getId());
+        if($offer !== null)
+        {
+            $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
-        $offer->setCurrentOfferUsage($offer->getCurretOfferUsage() + 1);
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
-        $this->repo->saveOrFail($offer);
+                $offer = $this->repo->saveOrFail($offer);
+            });
+        }
+
+        return $offer;
+    }
+
+    //decrement the offer usage count after failed payment for max offer validation.
+    public function lockDecrementCurrentOfferUsage(Entity $offer)
+    {
+        if($offer !== null)
+        {
+            $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+
+                $offer = $this->repo->saveOrFail($offer);
+            });
+        }
 
         return $offer;
     }

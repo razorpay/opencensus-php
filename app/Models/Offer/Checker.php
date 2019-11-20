@@ -386,17 +386,12 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOfferUsage() !== NULL)
         {
-//            $redis = $this->app['redis']->connection();
-//
-//            $key = $this->merchant->getId()."_".$this->offer->getPublicId()."_offer_usage";
-//
-//            $currentOfferUsage = $redis->incr($key);
 
             $core = new \RZP\Models\Offer\Core();
 
-            $updatedOffer = $core->lockUpdateAndGetCurrentOfferUsage($this->offer);
+            $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
-            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+            $result = $updatedOffer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
 
             $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,

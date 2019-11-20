@@ -1732,7 +1732,7 @@ class Processor
         {
             $offer = new Offer\Core();
 
-            $offer->decrementOfferUsageCount($payment);
+            $offer->lockDecrementCurrentOfferUsage($payment->getOffer());
         }
 
 
