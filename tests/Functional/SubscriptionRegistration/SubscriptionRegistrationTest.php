@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\SubscriptionRegistration;
 
 use Mail;
+use Mockery;
 use Queue;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Services\BatchMicroService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -503,6 +505,19 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->mockBatchService();
+
         $this->startTest();
+    }
+
+    protected function mockBatchService()
+    {
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+
+        $this->app->instance('batchService', $mock);
+
+        $mock->shouldAllowMockingMethod('getBatchesFromBatchService')
+             ->shouldReceive('getBatchesFromBatchService')
+             ->andReturnNull();
     }
 }
