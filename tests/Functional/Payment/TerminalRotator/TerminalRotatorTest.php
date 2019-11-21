@@ -233,7 +233,7 @@ class TerminalRotatorTest extends TestCase
 
         $payment = $this->getLastPayment(true);
 
-        $this->assertEquals($payment['terminal_id'], '1000HdfcShared');
+        $this->assertEquals($payment['terminal_id'], '1n25f6uN5S1Z5a');
 
         $this->assertEquals($payment['order_id'], $order['id']);
     }

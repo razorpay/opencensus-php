@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\AdminFetch;
+use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\{Base, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
@@ -830,6 +831,59 @@ class Service extends Base\Service
             'failed'        => $failed,
         ];
 
+        $this->trace->info(TraceCode::ENTITY_BULK_ADD_REQUEST,
+                           [
+                               'summary' => $summary,
+                               'processed' => $processed,
+                           ]
+        );
+
         return $summary;
+    }
+
+    public function getPvtResponse($input)
+    {
+        (new Validator)->validateInput('mozart_gateway_pvt', $input);
+
+        $payload = $input['payload']['entities'];
+
+        if (array_key_exists("attempt", $payload) === true && array_key_exists("amount", $payload['attempt']) === true)
+        {
+            $amount = (int)($payload['attempt']['amount']);
+
+            if($amount > 1)
+            {
+                return ["Not authorized for PVT more than amount 1.00"];
+            }
+        }
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::MOZART_ACTION_INIT,
+                [
+                    'namespace' => $input['namespace'],
+                    'gateway'   => $input['gateway'],
+                    'action'    => $input['action']
+                ]);
+
+            $response = (new MozartBase($this->app))->sendMozartRequest($input['namespace'],
+                $input['gateway'],
+                $input['action'],
+                $payload);
+
+            $this->trace->info(TraceCode::MOZART_ACTION_COMPLETED, $response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MOZART_ACTION_FAILED);
+
+            $response = 'Caught Exception: ' . $e->getMessage();
+        }
+
+        return $response;
     }
 }

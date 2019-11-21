@@ -180,9 +180,18 @@ class CreateTerminals extends Migration
             $table->string(Terminal::IFSC_CODE, 11)
                   ->nullable();
 
+            $table->string(Terminal::VIRTUAL_UPI_ROOT, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_MERCHANT_PREFIX, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_HANDLE, 10)
+                  ->nullable();
+
             $table->text(Terminal::NOTES)
                   ->nullable();    
-                    
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);

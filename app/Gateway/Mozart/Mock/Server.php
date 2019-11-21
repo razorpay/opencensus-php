@@ -410,7 +410,7 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
-        $mockCase = $this->app['config']->get('atos_terminal_onboarding_creation.case');
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_creation.case');
 
         switch ($mockCase)
         {
@@ -509,7 +509,7 @@ class Server extends Base\Mock\Server
 
     public function verifyTerminal($body)
     {
-        $mockCase = $this->app['config']->get('atos_terminal_onboarding_verification.case');
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_verification.case');
 
         switch ($mockCase)
         {

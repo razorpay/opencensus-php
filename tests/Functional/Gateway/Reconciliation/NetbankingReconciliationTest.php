@@ -858,6 +858,94 @@ class NetbankingReconciliationTest extends TestCase
         );
     }
 
+    public function testScbSuccessRecon()
+    {
+        $this->gateway = 'netbanking_scb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_scb');
+
+        $fileContents = $this->generateFile('scb', ['gateway' => 'netbanking_scb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingScb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testScbBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_scb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_scb');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                if ($action === 'col_payment_scb_nb_recon')
+                {
+                    $content['amount'] = 100;
+                }
+            });
+
+        $fileContents = $this->generateFile('scb', ['gateway' => 'netbanking_scb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingScb', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testScbReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_scb';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_scb');
+
+        $fileContents = $this->generateFile('sib', ['gateway' => 'netbanking_scb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingScb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testSibSuccessRecon()
     {
         $this->gateway = 'netbanking_sib';
@@ -1064,6 +1152,97 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testKvbSuccessRecon()
+    {
+        $this->gateway = 'netbanking_kvb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_kvb');
+
+        $fileContents = $this->generateFile('kvb', ['gateway' => 'netbanking_kvb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingKvb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $this->assertNotNull($data['account_number']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testKvbBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_kvb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_kvb');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                if ($action === 'col_payment_kvb_nb_recon')
+                {
+                    $content['Transaction Amount'] = 100;
+                }
+            });
+
+        $fileContents = $this->generateFile('kvb', ['gateway' => 'netbanking_kvb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingKvb', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testKvbReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_kvb';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_kvb');
+
+        $fileContents = $this->generateFile('kvb', ['gateway' => 'netbanking_kvb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingKvb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $this->assertNotNull($data['account_number']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
 
     public function testIbkSuccessRecon()
     {

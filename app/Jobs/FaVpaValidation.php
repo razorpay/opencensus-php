@@ -59,9 +59,12 @@ class FaVpaValidation extends Job
                 throw new LogicException("Invalid fund account type");
             }
 
-            $vpa = [ 'vpa' => $fundAccount->account->getAddress() ];
+            $vpaInput = [
+                'vpa'         => $fundAccount->account->getAddress(),
+                'merchant_id' => $fundAccount->getMerchantId(),
+            ];
 
-            $data = $this->getVpaValidateResponse($vpa);
+            $data = $this->getVpaValidateResponse($vpaInput);
 
             $faValidation->setRegisteredName($data['name']);
 
@@ -93,13 +96,13 @@ class FaVpaValidation extends Job
     }
 
     /**
-     * @param array $vpa
+     * @param array $vpaInput
      *
      * @return array
      * @throws LogicException
      * @throws RuntimeException
      */
-    protected function getVpaValidateResponse(array $vpa) : array
+    protected function getVpaValidateResponse(array $vpaInput) : array
     {
         $data = [];
 
@@ -107,7 +110,7 @@ class FaVpaValidation extends Job
         {
             $paymentService = new PaymentService();
 
-            $response = $paymentService->validateVpa($vpa);
+            $response = $paymentService->validateVpa($vpaInput);
 
             if (($response === null) or
                 ($response['customer_name'] === null) or

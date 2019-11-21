@@ -372,5 +372,101 @@ return [
                         'conf' => 100,
                     ),
             ),
-    )
+    ),
+
+    'testCreatePaymentForNach' => [
+        'request' => [
+            'content' => [
+                "amount"      => 0,
+                "currency"    => "INR",
+                "method"      => "nach",
+                "order_id"    => "order_100000000order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/ajax',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreatePaymentForNachFormNotSubmitted' => [
+        'request' => [
+            'content' => [
+                "amount"      => 0,
+                "currency"    => "INR",
+                "method"      => "nach",
+                "order_id"    => "order_100000000order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/ajax',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'payment can\'t be created without nach form submission',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreatePaymentNachForAlreadyActivePaymentForNach' => [
+        'request' => [
+            'content' => [
+                "amount"      => 0,
+                "currency"    => "INR",
+                "method"      => "nach",
+                "order_id"    => "order_100000000order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/ajax',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'payment pay_1000000payment is not failed for the given order which is of method nach, can\'t create one more',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testRetryTokenForNach' => [
+        'request' => [
+            'content' => [
+            ],
+            'method'    => 'POST',
+            'url'       => '/token.registration/paper_mandate/token/token_100000000token/retry',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

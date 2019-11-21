@@ -340,7 +340,9 @@ class InvoiceTest extends TestCase
 
         $invoiceObj = $this->getDbEntityById('invoice', $id);
 
-        $this->assertNotNull($invoiceObj['reminder_id']);
+        $invoiceReminder = $this->getDbEntity("invoice_reminder", ["invoice_id" => $id]);
+
+        $this->assertNotNull($invoiceReminder['reminder_id']);
 
     }
 

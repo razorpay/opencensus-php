@@ -747,7 +747,12 @@ class Core extends Base\Core
 
         $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null);
+        $eventAttributes = [
+            Detail\Constants::POA_STATUS                       => $merchantDetails->getPoaVerificationStatus(),
+            Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus(),
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_FORM_SUBMIT_SUCCESS, $merchant, null, $eventAttributes);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -1568,7 +1573,8 @@ class Core extends Base\Core
      * Set activation status to activated if
      * 1) poaVerificationStatus is Verified and
      * 2) bankDetailsVerificationStatus is Verified and
-     * 3) Unregistered on-boarding is enabled for merchant and
+     * 3) poiVerificationStatus is Verified and
+     * 4) Unregistered on-boarding is enabled for merchant and
      *
      * Else change set activation status to under review
      *
@@ -1581,6 +1587,7 @@ class Core extends Base\Core
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and
+            ($merchantDetails->isPoiVerified() === true) and
             ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
         {
             return Status::ACTIVATED;

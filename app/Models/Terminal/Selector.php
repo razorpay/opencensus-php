@@ -220,12 +220,12 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $merchant->methods->setDinersCard(0);
+//                $merchant->methods->setDinersCard(0);
 
                 $this->alertDinersDisabledForMerchant($merchant, $payment);
 
-                $this->repo->saveOrFail($merchant->methods);
-
+//                $this->repo->saveOrFail($merchant->methods);
+//
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
@@ -569,7 +569,7 @@ class Selector extends Base\Core
 
             if (isset($paymentData['vpa']) === true)
             {
-                $paymentData['vpa'] = $payment->getPspFromVpa();
+                $paymentData['vpa'] = $payment->getBankCodeFromVpa();
             }
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
@@ -839,10 +839,9 @@ class Selector extends Base\Core
             'payment_international' => $payment[Entity::INTERNATIONAL],
             'network'               => 'DICL',
             'reason'                => 'no terminal found',
-            'action_taken'          => 'diners club disabled for merchant'
         ];
 
-        $this->trace->critical(TraceCode::DISABLING_DINERS_FOR_MERCHANT, $alertArray);
+        $this->trace->critical(TraceCode::DICL_TERMINAL_NOT_FOUND, $alertArray);
 
         $message = 'Diners Club payment failed with no terminal found';
 

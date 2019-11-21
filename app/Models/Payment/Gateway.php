@@ -23,7 +23,6 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
-    const ATOS                   = 'atos';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -88,6 +87,7 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
+    const NACH_CITI              = 'nach_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -171,7 +171,7 @@ class Gateway
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER],
-        self::MPGS         => [self::ACQUIRER_HDFC],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
     ];
 
     const POWER_WALLETS = [
@@ -214,7 +214,7 @@ class Gateway
     ];
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
-        self::ATOS,
+        self::WORLDLINE,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -236,7 +236,7 @@ class Gateway
         self::UPI_ICICI         => self::ICICI,
         self::UPI_MINDGATE      => self::HDFC,
         self::WALLET_PAYPAL     => self::WALLET_PAYPAL,
-        self::ATOS              => self::ATOS,
+        self::WORLDLINE         => self::WORLDLINE,
     ];
 
     /**
@@ -629,7 +629,9 @@ class Gateway
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
+        Payment\Gateway::WALLET_OPENWALLET,
     ];
 
     public static $channels = [
@@ -1118,10 +1120,8 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
-        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
-        self::CARDLESS_EMI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1174,6 +1174,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::NACH_CITI,
     ];
 
     public static $recurringCardNetworks = [
@@ -1399,6 +1400,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::KVBL,
     ];
 
     /**
@@ -1455,8 +1457,12 @@ class Gateway
         IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
-        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
+        IFSC::SBBJ         => Gateway::NETBANKING_SBI,
+        IFSC::SBHY         => Gateway::NETBANKING_SBI,
+        IFSC::SBMY         => Gateway::NETBANKING_SBI,
+        IFSC::STBP         => Gateway::NETBANKING_SBI,
+        IFSC::SBTR         => Gateway::NETBANKING_SBI,
     ];
 
     /**
@@ -2209,6 +2215,7 @@ class Gateway
         $gateways = [
             self::MPGS,
             self::CYBERSOURCE,
+            self::MPI_BLADE,
         ];
 
         return (in_array($gateway, $gateways, true));

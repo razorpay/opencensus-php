@@ -11,9 +11,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|max:1000000000|custom',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:1000000000|custom',
         Entity::TYPE                     => 'filled|string|custom',
         Entity::DEBIT_TYPE               => 'filled|string|custom',
+        Entity::TERMINAL_ID              => 'filled|string',
         Entity::BANK_ACCOUNT             => 'required|array',
         Entity::FREQUENCY                => 'filled|string|custom',
         Entity::REFERENCE_1              => 'sometimes|string|max:50',

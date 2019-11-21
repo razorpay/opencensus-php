@@ -52,6 +52,7 @@ class Mailgun extends Base
         self::EMANDATE_AXIS,
         self::NETBANKING_ALLAHABAD,
         self::NETBANKING_SBI,
+        self::NETBANKING_KVB,
     ];
 
     const LINK_BASED_GATEWAYS = [

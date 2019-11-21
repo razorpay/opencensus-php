@@ -106,10 +106,11 @@ class Mozart
 
     protected function getAuthenticationDetails(): array
     {
+        $usernameConfig = 'applications.mozart.' . $this->mode . '.username';
         $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
 
         $authentication = [
-            'api',
+            $this->config->get($usernameConfig),
             $this->config->get($passwordConfig)
         ];
 
