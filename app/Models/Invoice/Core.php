@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
+use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
@@ -1174,6 +1175,17 @@ class Core extends Base\Core
             $input[Entity::RECEIPT] = $input[Entity::INVOICE_NUMBER];
 
             unset($input[Entity::INVOICE_NUMBER]);
+        }
+
+        // Sanitize Customer data before sending it to customer create module.
+        if ((empty($input[Entity::CUSTOMER]) === false) and
+            (array_key_exists(Customer\Entity::EMAIL, $input[Entity::CUSTOMER]) === true) and
+            (array_key_exists(Customer\Entity::CONTACT, $input[Entity::CUSTOMER]) === true) and
+            ($input[Entity::CUSTOMER][Customer\Entity::EMAIL] === '') and
+            ($input[Entity::CUSTOMER][Customer\Entity::CONTACT] === ''))
+        {
+            $input[Entity::CUSTOMER][Customer\Entity::EMAIL] = null;
+            $input[Entity::CUSTOMER][Customer\Entity::CONTACT] = null;
         }
     }
 }

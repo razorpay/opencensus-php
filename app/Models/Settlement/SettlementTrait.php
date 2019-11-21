@@ -713,8 +713,12 @@ trait SettlementTrait
 
         try
         {
-            list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner, $balance, $params);
+            list($setl, $bankTransferAtpt) =
+                $this->repo->transaction(function () use($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee,
+                                                        $tax, $merchantSettleToPartner, $balance, $params){
+                 return $this->settleForMerchant($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax,
+                                                   $merchantSettleToPartner, $balance, $params);
+            });
 
             if(($setl !== null) and ($bankTransferAtpt !== null))
             {
@@ -912,32 +916,34 @@ trait SettlementTrait
                  $merchantSettleToPartner, $balance, $params) {
                 try
                 {
-                    // create settlement and attempt
-                    $merchantSettler = new SetlMerchant(
-                        $merchant,
-                        $channel,
-                        $this->repo,
-                        $this->isDebugEnabled(),
-                        $merchantSettleToPartner);
+                        // create settlement and attempt
+                        $merchantSettler = new SetlMerchant(
+                            $merchant,
+                            $channel,
+                            $this->repo,
+                            $this->isDebugEnabled(),
+                            $merchantSettleToPartner);
 
-                    $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+                        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-                    $this->traceSettlementDelayOfTransactions($setlTxns);
+                        $this->traceSettlementDelayOfTransactions($setlTxns);
 
-                    $settlement = $merchantSettler->settle(
-                        $setlTxns,
-                        $setlAmount,
-                        $setlFee,
-                        $setlApiFee,
-                        $tax,
-                        $this->setlTime,
-                        $setlDetailAmounts,
-                        $merchantSettleToPartner,
-                        $balance);
+                        $settlement = $merchantSettler->settle(
+                            $setlTxns,
+                            $setlAmount,
+                            $setlFee,
+                            $setlApiFee,
+                            $tax,
+                            $this->setlTime,
+                            $setlDetailAmounts,
+                            $merchantSettleToPartner,
+                            $balance);
 
-                    $merchantSettler->createTransaction($settlement);
+                        $merchantSettler->createTransaction($settlement);
 
-                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+                        $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+
+                        return [$settlement, $bankTransferAtpt];
                 }
                 catch (\Exception $ex)
                 {
@@ -950,13 +956,6 @@ trait SettlementTrait
                     if ($settlement !== null)
                     {
                         $traceData['settlement_id'] = $settlement->getId();
-
-                        //
-                        // Mark it failed anyway, so that it can be retried
-                        //
-                        $settlement->setStatus(Status::FAILED);
-
-                        $this->repo->saveOrFail($settlement);
                     }
 
                     $this->trace->traceException(
@@ -966,10 +965,8 @@ trait SettlementTrait
                         $traceData);
 
                     (new SlackNotification)->send('setl_skipped', $traceData, $ex);
-                }
-                finally
-                {
-                    return [$settlement, $bankTransferAtpt];
+
+                    throw $ex;
                 }
             },
             PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,

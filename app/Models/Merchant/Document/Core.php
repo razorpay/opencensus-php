@@ -20,9 +20,13 @@ class Core extends Base\Core
      */
     public function delete(Entity $document)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_DELETE_REQUEST, ['id' => $document->getId()]);
 
-        return $this->repo->deleteOrFail($document);
+        $this->repo->deleteOrFail($document);
+
+        return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
     }
 
     /**

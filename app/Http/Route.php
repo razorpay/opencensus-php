@@ -90,6 +90,7 @@ final class Route
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
         'bulk_submerchant_assign'                  => ['post',     'submerchant/assign/bulk',                        'MerchantController@bulkSubmerchantAssign'                          ],
+        'mozart_gateway_action'                    => ['post',     'mozart/gateway/action',                          'AdminController@getPvtResponse'                                    ],
         'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
@@ -2550,6 +2551,9 @@ final class Route
         'fts_dashboard_fund_transfer_update',
         'fts_dashboard_fund_transfer_status_bulk',
         'fts_dashboard_fund_transfer_check_status',
+
+        //dashboard pvt testing with mozart
+        'mozart_gateway_action',
     ];
 
     public static $routePermission = [
@@ -3064,6 +3068,7 @@ final class Route
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
     ];
