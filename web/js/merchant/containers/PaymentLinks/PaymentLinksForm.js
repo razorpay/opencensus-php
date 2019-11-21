@@ -48,7 +48,7 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             onChange={handleChange('reminder_enable')}
           />
           <label for="reminder_enable" class="icon i-check">
-            Reminders
+            Enable Reminders
           </label>
         </div>
       </div>
