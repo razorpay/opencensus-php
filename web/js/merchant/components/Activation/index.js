@@ -1525,14 +1525,14 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
-                      disabled={
-                        !this.canSubmitL1Form || this.state.callingAPI
-                      }
+                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
                       onClick={this.submitL1}
-                      pendingState={'Verifying'}
+                      pendingState={
+                        this.isUnregBiz ? 'Verifying' : 'Submitting'
+                      }
                       name={'submit-and-verify'}
                     >
-                      Submit and Verify
+                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
                     </AsyncBtn.Primary>
                   )}
 
