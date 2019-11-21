@@ -129,6 +129,8 @@ class Entity extends Base\PublicEntity
 
     const VIRTUAL_ACCOUNT   = 'virtual_account';
 
+    const AUTH_TYPE = 'auth_type';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,

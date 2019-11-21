@@ -545,6 +545,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinAuthPayment()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',
@@ -584,6 +596,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinAuthorizeFailed()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',
@@ -636,6 +660,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinVerifyFailed()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',

@@ -70,17 +70,20 @@ return [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
+        'username'  => env('MOZART_USERNAME'),
 
         'test'  =>  [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
             'password'  => env('MOZART_TEST_PASSWORD'),
+            'username'  => env('MOZART_TEST_USERNAME'),
         ],
 
         'live'  =>  [
             'mock'      => env('MOZART_LIVE_MOCK', false),
             'url'       => env('MOZART_LIVE_URL'),
             'password'  => env('MOZART_LIVE_PASSWORD'),
+            'username'  => env('MOZART_LIVE_USERNAME'),
         ]
     ],
 

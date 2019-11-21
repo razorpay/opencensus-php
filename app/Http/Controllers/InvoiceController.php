@@ -6,8 +6,9 @@ use View;
 use Request;
 use Response;
 use ApiResponse;
-
 use RZP\Constants;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Preferences;
 use Illuminate\Http\Response as ResponseCodes;
@@ -219,6 +220,23 @@ class InvoiceController extends Controller
         if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice')
         {
             $view = 'invoice.payment_link';
+
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            // Gets mode per route and sets application & db mode.
+            $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
+                $mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                $view = 'invoice.payment_link_options';
+            }
         }
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)

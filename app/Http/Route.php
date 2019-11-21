@@ -90,6 +90,7 @@ final class Route
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
         'bulk_submerchant_assign'                  => ['post',     'submerchant/assign/bulk',                        'MerchantController@bulkSubmerchantAssign'                          ],
+        'mozart_gateway_action'                    => ['post',     'mozart/gateway/action',                          'AdminController@getPvtResponse'                                    ],
         'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
@@ -1327,12 +1328,22 @@ final class Route
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
         'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
 
+        // routes for Rendering Preferences / Options service
+        'create_merchant_options'                 => ['post',      'options',                                                   'OptionsController@createOptions'                         ],
+        'read_merchant_options'                   => ['get',       'options/{namespace}/{service}',                             'OptionsController@getOptions'                            ],
+        'read_options_by_id'                      => ['get',       'options/{id}',                                              'OptionsController@getOptionsById'                        ],
+        'read_options_by_ref_id'                  => ['get',       'options/{namespace}/{service}/reference/{id}',              'OptionsController@getOptionsByReferenceId'               ],
+        'update_merchant_options'                 => ['patch',     'options/{id}',                                              'OptionsController@updateOptions'                         ],
+        'delete_merchant_options'                 => ['delete',    'options/{id}',                                              'OptionsController@deleteOption'                          ],
+
+        'create_merchant_options_admin'           => ['post',      'options/{merchantId}',                                      'OptionsController@createOptionsAdmin'                    ],
+
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',       'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
     ];
 
     public static $public = [
@@ -1631,6 +1642,13 @@ final class Route
         'mpans_issue',
         'mpans_fetch',
 
+        'create_merchant_options',
+        'read_merchant_options' ,
+        'read_options_by_id',
+        'read_options_by_ref_id',
+        'update_merchant_options',
+        'delete_merchant_options',
+
         'merchant_activation_update_partner',
         'merchant_activation_status_partner',
         'merchant_fetch_schedule_tasks',
@@ -1834,6 +1852,9 @@ final class Route
         'invoice_remove_line_item',
         'invoice_send_notification_private',
         'invoice_cancel',
+        'update_merchant_options',
+        'delete_merchant_options',
+        'create_merchant_options_admin',
         'subscription_registration_resend_link',
         'subscription_registration_cancel_link',
     ];
@@ -2552,6 +2573,11 @@ final class Route
         'fts_dashboard_fund_transfer_update',
         'fts_dashboard_fund_transfer_status_bulk',
         'fts_dashboard_fund_transfer_check_status',
+
+		'create_merchant_options_admin',
+		
+        //dashboard pvt testing with mozart
+        'mozart_gateway_action',
     ];
 
     public static $routePermission = [
@@ -3066,8 +3092,12 @@ final class Route
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
+
+        'create_merchant_options_admin'             => '*',
+
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
     ];
 
@@ -3329,6 +3359,7 @@ final class Route
             'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
+            'create_merchant_options_admin',
             'transaction_settled_data_fix',
         ],
 

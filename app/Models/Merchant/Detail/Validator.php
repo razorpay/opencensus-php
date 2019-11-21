@@ -386,7 +386,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED);
         }
 
-        $this->validateForBlackListedCategories($input);
+        $this->validateForUnregisteredBlackListedCategories($input);
 
         if (empty($input[Entity::PROMOTER_PAN_NAME]) === true)
         {
@@ -394,7 +394,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateForBlackListedCategories(array $input)
+    protected function validateForUnregisteredBlackListedCategories(array $input)
     {
         $category = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
             $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
@@ -404,7 +404,7 @@ class Validator extends Base\Validator
 
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        if ($subcategoryMetaData[Entity::ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
+        if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
         }

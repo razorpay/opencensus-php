@@ -9,8 +9,8 @@
 # Core App
 #
 
-app/Http/BasicAuth/                                    amit.mahbubani@razorpay.com                             rishabh.pugalia@razorpay.com
-app/Http/Middleware/                                   amit.mahbubani@razorpay.com                             rishabh.pugalia@razorpay.com
+app/Http/BasicAuth/                                    amit.mahbubani@razorpay.com                             malligairajan.g@razorpay.com
+app/Http/Middleware/                                   amit.mahbubani@razorpay.com                             malligairajan.g@razorpay.com
 app/Jobs/                                              jitendra.ojha@razorpay.com
 app/Reconciliator/                                     prashanth.yv@razorpay.com                               kajol.nigam@razorpay.com
 
@@ -26,27 +26,27 @@ app/Gateway/                                           @razorpay/TechPgIntegrati
 
 app/Models/Adjustment/                                 sunny.aggrawal@razorpay.com
 app/Models/Admin/                                      prashanth.yv@razorpay.com                               vivek.kumar@razorpay.com
-app/Models/Admin/Admin                                 rishabh.pugalia@razorpay.com
-app/Models/Admin/AdminLead                             rishabh.pugalia@razorpay.com
-app/Models/Admin/Base                                  rishabh.pugalia@razorpay.com
-app/Models/Admin/Group                                 rishabh.pugalia@razorpay.com
-app/Models/Admin/LoginAttempt                          rishabh.pugalia@razorpay.com
-app/Models/Admin/Org                                   rishabh.pugalia@razorpay.com
-app/Models/Admin/Permission                            rishabh.pugalia@razorpay.com
-app/Models/Admin/Role                                  rishabh.pugalia@razorpay.com
+app/Models/Admin/Admin                                 malligairajan.g@razorpay.com
+app/Models/Admin/AdminLead                             malligairajan.g@razorpay.com
+app/Models/Admin/Base                                  malligairajan.g@razorpay.com
+app/Models/Admin/Group                                 malligairajan.g@razorpay.com
+app/Models/Admin/LoginAttempt                          malligairajan.g@razorpay.com
+app/Models/Admin/Org                                   malligairajan.g@razorpay.com
+app/Models/Admin/Permission                            malligairajan.g@razorpay.com
+app/Models/Admin/Role                                  malligairajan.g@razorpay.com
 app/Models/Bank/                                       nemo@razorpay.com
 app/Models/BankAccount/                                @razorpay/TechVirtualAccounts
 app/Models/BankTransfer/                               @razorpay/TechVirtualAccounts
 app/Models/Base/                                       prashanth.yv@razorpay.com                               vivek.kumar@razorpay.com
-app/Models/Batch/                                      jitendra.ojha@razorpay.com                              prashanth.yv@razorpay.com
+app/Models/Batch/                                      malligairajan.g@razorpay.com                            pankaj.kumar@razorpay.com
 app/Models/BharatQr/                                   @razorpay/TechVirtualAccounts
 app/Models/Card/                                       sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
-app/Models/Comment/                                    sumeeti.lalwani@razorpay.com                            jitendra.ojha@razorpay.com              praveen.patlola@razorpay.com
+app/Models/Comment/                                    pankaj.kumar@razorpay.com                               praveen.patlola@razorpay.com
 app/Models/Contact/                                    prashanth.yv@razorpay.com                               amit.mahbubani@razorpay.com
 app/Models/Currency/                                   sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 app/Models/Customer/                                   sunny.aggrawal@razorpay.com                             prashanth.yv@razorpay.com
 app/Models/Device/                                     nemo@razorpay.com
-app/Models/Dispute/                                    sumeeti.lalwani@razorpay.com                            amit.mahbubani@razorpay.com
+app/Models/Dispute/                                    malligairajan.g@razorpay.com                            amit.mahbubani@razorpay.com
 app/Models/EMandate/                                   vivek.kumar@razorpay.com
 app/Models/Emi/                                        sunny.aggrawal@razorpay.com
 app/Models/FundAccount/                                prashanth.yv@razorpay.com                               amit.mahbubani@razorpay.com
@@ -54,11 +54,11 @@ app/Models/FundTransfer/                               ratan.phayade@razorpay.co
 app/Models/Gateway/Downtime/                           venkat.v@razorpay.com
 app/Models/Gateway/Priority/                           sunny.aggrawal@razorpay.com
 app/Models/GeoIP/                                      junaid.anwer@razorpay.com                               sunny.aggrawal@razorpay.com
-app/Models/Invitation/                                 sumeeti.lalwani@razorpay.com
-app/Models/Invoice/                                    jitendra.ojha@razorpay.com
+app/Models/Invitation/                                 pankaj.kumar@razorpay.com
+app/Models/Invoice/                                    praveen.patlola@razorpay.com
 app/Models/Item/                                       jitendra.ojha@razorpay.com
 app/Models/Key/                                        nemo@razorpay.com
-app/Models/LineItem/                                   jitendra.ojha@razorpay.com
+app/Models/LineItem/                                   praveen.patlola@razorpay.com
 app/Models/Merchant/                                   vivek.kumar@razorpay.com
 app/Models/Merchant/Credits/                           sunny.aggrawal@razorpay.com
 app/Models/Merchant/Invoice/                           sunny.aggrawal@razorpay.com
@@ -74,16 +74,16 @@ app/Models/Risk/                                       sunny.aggrawal@razorpay.c
 app/Models/Schedule/                                   @razorpay/TechSubscriptions                             @razorpay/TechSettlements
 app/Models/Settings/                                   amit.mahbubani@razorpay.com
 app/Models/Settlement/                                 @razorpay/TechSettlements
-app/Models/State/                                      sumeeti.lalwani@razorpay.com                            jitendra.ojha@razorpay.com              praveen.patlola@razorpay.com
-app/Models/Tax/                                        jitendra.ojha@razorpay.com
+app/Models/State/                                      praveen.patlola@razorpay.com
+app/Models/Tax/                                        praveen.patlola@razorpay.com
 app/Models/Terminal/                                   vivek.kumar@razorpay.com
 app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
 app/Models/Transfer/                                   amit.mahbubani@razorpay.com
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Models/User/                                       sumeeti.lalwani@razorpay.com
+app/Models/User/                                       pankaj.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
 app/Models/Vpa/                                        prashanth.yv@razorpay.com
-app/Models/Workflow/                                   rishabh.pugalia@razorpay.com
+app/Models/Workflow/                                   pankaj.kumar@razorpay.com
 
 
 #
@@ -92,17 +92,17 @@ app/Models/Workflow/                                   rishabh.pugalia@razorpay.
 
 tests/                                                 vivek.kumar@razorpay.com
 
-tests/Functional/Admin/                                rishabh.pugalia@razorpay.com
+tests/Functional/Admin/                                malligairajan.g@razorpay.com
 tests/Functional/BankTransfer/                         @razorpay/TechVirtualAccounts
 tests/Functional/BharatQrPayment/                      @razorpay/TechVirtualAccounts
-tests/Functional/Batch/                                jitendra.ojha@razorpay.com
+tests/Functional/Batch/                                malligairajan.g@razorpay.com
 tests/Functional/Card/                                 sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 tests/Functional/Currency/                             sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 tests/Functional/Customer/                             sunny.aggrawal@razorpay.com
 tests/Functional/Device/                               nemo@razorpay.com
-tests/Functional/Dispute/                              sumeeti.lalwani@razorpay.com                            amit.mahbubani@razorpay.com
+tests/Functional/Dispute/                              pankaj.kumar@razorpay.com                            amit.mahbubani@razorpay.com
 tests/Functional/EMI/                                  sunny.aggrawal@razorpay.com
-tests/Functional/Invitation/                           sumeeti.lalwani@razorpay.com
+tests/Functional/Invitation/                           pankaj.kumar@razorpay.com
 tests/Functional/Invoice/                              jitendra.ojha@razorpay.com
 tests/Functional/Item/                                 jitendra.ojha@razorpay.com
 tests/Functional/Key/                                  nemo@razorpay.com
@@ -121,7 +121,7 @@ tests/Functional/Subscription/                         @razorpay/TechSubscriptio
 tests/Functional/Tax/                                  jitendra.ojha@razorpay.com
 tests/Functional/Transaction/                          sunny.aggrawal@razorpay.com
 tests/Functional/Transfer/                             amit.mahbubani@razorpay.com
-tests/Functional/User/                                 sumeeti.lalwani@razorpay.com
+tests/Functional/User/                                 pankaj.kumar@razorpay.com
 tests/Functional/VirtualAccount/                       @razorpay/TechVirtualAccounts
 
 tests/Functional/Gateway/                              @razorpay/TechPgIntegrations

@@ -34,7 +34,9 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
-    const TIMEOUT = 20;
+    const TIMEOUT       = 10;
+
+    const CONNECT_TIMEOUT = 1;
 
     /**
      * This is what shows up as the payee

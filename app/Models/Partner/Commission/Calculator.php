@@ -672,7 +672,11 @@ class Calculator extends Base\Core
      */
     public function getExplicitCommissionFeeSplit()
     {
-        list($commissionFee, $commissionTax, $feeSplit) = $this->calculateFees($this->getExplicitPricingPlan());
+        $feeDetails = $this->calculateFees($this->getExplicitPricingPlan());
+
+        $commissionFee = $feeDetails['total_fee'];
+        $commissionTax = $feeDetails['total_tax'];
+        $feeSplit      = $feeDetails['fee_split'];
 
         if ($commissionTax === 0)
         {
@@ -754,7 +758,10 @@ class Calculator extends Base\Core
             return;
         }
 
-        list($commissionFee, $commissionTax) = $this->calculateFees($this->getImplicitPricingPlan());
+        $feeDetails = $this->calculateFees($this->getImplicitPricingPlan());
+
+        $commissionFee = $feeDetails['total_fee'];
+        $commissionTax = $feeDetails['total_tax'];
 
         $this->addImplicitCommission($commissionFee, $commissionTax);
     }
@@ -777,8 +784,21 @@ class Calculator extends Base\Core
         $merchantFee = $this->getMerchantFee();
         $merchantTax = $this->getMerchantTax();
 
-        list($partnerFee, $partnerTax) = $this->calculateFees($this->getImplicitPricingPlan());
+        $feeDetails = $this->calculateFees($this->getImplicitPricingPlan());
 
+        $partnerFee = $feeDetails['total_fee'];
+        $partnerTax = $feeDetails['total_tax'];
+        $isValid    = $feeDetails['is_valid'];
+
+        // if not valid because of missing pricing rule, don't create commission
+        if ($isValid === false)
+        {
+            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_INVALID);
+
+            return;
+        }
+
+        // when partner pricing is explicitly set to zero, commission will be equal to the merchant fees
         $this->setPartnerFee($partnerFee);
         $this->setPartnerTax($partnerTax);
 
@@ -873,13 +893,6 @@ class Calculator extends Base\Core
             return false;
         }
 
-        if (($this->isImplicitCommissionVariable() === true) and ($this->getPartnerFee() === 0))
-        {
-            $this->traceContext(TraceCode::COMMISSION_ZERO_PARTNER_FEES, $tracePayLoad);
-
-            return false;
-        }
-
         if ($commissionFee > $this->getMerchantFee())
         {
             $this->traceContext(TraceCode::COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE, $tracePayLoad);
@@ -921,12 +934,17 @@ class Calculator extends Base\Core
 
         $pricing = $this->addFallbackRulesForCommissions($pricing);
 
-        // initialize - [total fee, total tax, feeSplit]
-        $feeDetails = [0, 0, new Base\PublicCollection];
+        $feeDetails = [
+            'total_fee' => 0,
+            'total_tax' => 0,
+            'fee_split' => new Base\PublicCollection,
+        ];
 
         try
         {
-            $feeDetails = $calculator->calculate($pricing);
+            list($feeDetails['total_fee'], $feeDetails['total_tax'], $feeDetails['fee_split']) = $calculator->calculate($pricing);
+
+            $feeDetails['is_valid']  = true;
         }
         catch (LogicException $ex)
         {
@@ -935,6 +953,8 @@ class Calculator extends Base\Core
             if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
             {
                 $this->traceContext(TraceCode::COMMISSION_NOT_DEFINED);
+
+                $feeDetails['is_valid']  = false;
 
                 return $feeDetails;
             }
