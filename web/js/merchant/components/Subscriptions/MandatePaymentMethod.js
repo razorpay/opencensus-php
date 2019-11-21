@@ -54,5 +54,5 @@ export default function MandatePaymentMethod({ mandate }) {
     );
   }
 
-  return '--';
+  return titleCase(method);
 }

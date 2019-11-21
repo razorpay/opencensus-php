@@ -152,12 +152,15 @@ export default class SubscriptionsController extends React.Component {
               <NavLink to="/recurring_payments">Payments</NavLink>
               <NavLink to="/tokens">Tokens</NavLink>
               <NavLink to="/registration_links">
-                Registration Links
-                <Popover theme="dark">
-                  <PopoverBody>
-                    Authorization links are now called Registration links
-                  </PopoverBody>
-                </Popover>
+                Registration Links{' '}
+                <span>
+                  <i class="i i-info-circle" />
+                  <Popover theme="dark">
+                    <PopoverBody>
+                      Authorization links are now called Registration links
+                    </PopoverBody>
+                  </Popover>
+                </span>
               </NavLink>
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
