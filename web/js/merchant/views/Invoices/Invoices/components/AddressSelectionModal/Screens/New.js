@@ -16,7 +16,7 @@ import {
   isValidZipcodeCountryWise,
   capitalize,
 } from 'common/utils/rzp-utils';
-import { track } from '../../ga';
+import { track } from '../../../../ga';
 import Countries from 'merchant/helpers/countries.json';
 
 const CountryNames = Object.keys(Countries);

@@ -14,7 +14,7 @@ import {
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
 import { getTime } from 'common/ui/item';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 
 import ListFilter from './ListFilter';
 

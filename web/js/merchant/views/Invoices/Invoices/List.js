@@ -18,15 +18,14 @@ import {
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
-import InvoicesList from 'merchant/components/Invoices/InvoicesList';
+import InvoicesList from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
+import InvoiceListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
+import EmptyList from 'merchant/components/EmptyList';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { track, trackSearchFilterForInternational } from './ga';
-
-import OnboardingInvoices from './OnboardingInvoices';
+import { track, trackSearchFilterForInternational } from '../ga';
 
 @withRouter
 @connect(
@@ -172,7 +171,16 @@ export default class InvoicesListContainer extends ListContainer {
       );
     } else if (!loadingAllList && !totalInvoicesLength && !invoices.length) {
       // !paymentPages check is required so that while creation first time, the list would be updated while totalPaymentPagesLength still = 0
-      content = <OnboardingInvoices />;
+      content = (
+        <EmptyList
+          description={
+            <React.Fragment>
+              <div>There are no invoices yet!!</div>
+              <div>Start creating new invoices now.</div>
+            </React.Fragment>
+          }
+        />
+      );
     } else {
       content = (
         <React.Fragment>

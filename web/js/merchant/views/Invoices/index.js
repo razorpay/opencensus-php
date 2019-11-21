@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Route, NavLink, withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -11,19 +10,15 @@ import {
 import { fetchItems } from 'merchant/reducers/items';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-
-import Invoices from 'merchant/containers/Invoices/List';
-import Customers from 'merchant/containers/Customers/List';
+import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/containers/Items/List';
 
 import OnBoarding, {
   getIsInvoicesEnabled,
   getIsAllowedResetInvoicesOnBoarding,
-} from './Invoices/OnBoarding';
+} from './OnBoarding';
 
-import QuickGuide, {
-  getInvoicesQuickGuideIsClosed,
-} from './Invoices/QuickGuide';
+import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
 
 @withRouter
 @connect(
@@ -41,7 +36,7 @@ import QuickGuide, {
     fetchItems,
   }
 )
-export default class InvoicingContainer extends Component {
+export default class InvoicesContainer extends Component {
   componentDidMount() {
     if (this.props.invoices.invoices.length) return;
 
@@ -114,7 +109,6 @@ export default class InvoicingContainer extends Component {
         <content>
           <Route path="/invoices" component={Invoices} />
           <Route path="/items" render={ItemsComponent} />
-          <Route path="/customers" component={Customers} />
         </content>
       </tabbed-container>
     );

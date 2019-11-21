@@ -11,7 +11,7 @@ import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
