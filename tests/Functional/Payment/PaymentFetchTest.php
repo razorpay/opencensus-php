@@ -201,15 +201,25 @@ class PaymentFetchTest extends TestCase
 
         $response = $this->doAuthAndCapturePayment($paymentArray);
 
-        $refund1 = $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
 
-        $refund2 = $this->refundPayment($response['id'], '20000');
-
-        $fetchPaymentResponse = $this->fetchPayment($response['id'], ['expand' => [
+        $paymentFetchResponse = $this->fetchPayment($response['id'], ['expand' => [
                 'refunds'
             ]]);
 
+        $this->assertEquals('30000', $paymentFetchResponse['amount_refunded']);
 
+        $this->assertArrayHasKey('refunds', $paymentFetchResponse);
+
+        $refundsFromResponse = $paymentFetchResponse['refunds'];
+
+        $this->assertEquals(2, $refundsFromResponse['count']);
+
+        foreach ($refundsFromResponse['items'] as $refund)
+        {
+            $this->assertEquals($response['id'], $refund['payment_id']);
+        }
 
     }
 
