@@ -21,6 +21,7 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  getBusinessTypeOptions,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -222,6 +223,9 @@ export default class ActivationWizard extends React.Component {
           label: props.categories[c].description,
         }))
       );
+
+      // Set Biz type options dynamically based on current activation stage
+      FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
     }
 
     DOCUMENT_UPLOAD_STEP &&
