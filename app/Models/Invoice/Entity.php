@@ -156,6 +156,8 @@ class Entity extends Base\PublicEntity
     const TYPES                    = 'types';
     const REMINDER_ENABLE          = 'reminder_enable';
 
+    const OPTIONS_KEY              = 'options';
+
     // ---------------------- Input Keys End -------------------------
 
     // ------------------------- Output Keys -------------------------

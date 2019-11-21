@@ -712,6 +712,7 @@ class ActivationTest extends TestCase
             'promoter_address_url'             => '124',
             'business_type'                    => 2,
             'poa_verification_status'          => $poaVerificationStatus,
+            'poi_verification_status'          => 'verified',
             'bank_details_verification_status' => $bankDetailsVerificationStatus,
         ];
         $data = array_merge($data, $otherMerchantDetailAttributes);

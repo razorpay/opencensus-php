@@ -1573,7 +1573,8 @@ class Core extends Base\Core
      * Set activation status to activated if
      * 1) poaVerificationStatus is Verified and
      * 2) bankDetailsVerificationStatus is Verified and
-     * 3) Unregistered on-boarding is enabled for merchant and
+     * 3) poiVerificationStatus is Verified and
+     * 4) Unregistered on-boarding is enabled for merchant and
      *
      * Else change set activation status to under review
      *
@@ -1586,6 +1587,7 @@ class Core extends Base\Core
     {
         if (($merchantDetails->isPoaVerified() === true) and
             ($merchantDetails->isBankDetailStatusVerified() === true) and
+            ($merchantDetails->isPoiVerified() === true) and
             ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
         {
             return Status::ACTIVATED;

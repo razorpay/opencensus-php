@@ -171,7 +171,7 @@ class Gateway
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER],
-        self::MPGS         => [self::ACQUIRER_HDFC],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
     ];
 
     const POWER_WALLETS = [
@@ -629,6 +629,7 @@ class Gateway
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
     ];
@@ -1459,10 +1460,8 @@ class Gateway
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
         IFSC::SBBJ         => Gateway::NETBANKING_SBI,
         IFSC::SBHY         => Gateway::NETBANKING_SBI,
-        IFSC::SBNX         => Gateway::NETBANKING_SBI,
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
-        IFSC::SBPX         => Gateway::NETBANKING_SBI,
-        IFSC::SBSX         => Gateway::NETBANKING_SBI,
+        IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
     ];
 
@@ -2216,6 +2215,7 @@ class Gateway
         $gateways = [
             self::MPGS,
             self::CYBERSOURCE,
+            self::MPI_BLADE,
         ];
 
         return (in_array($gateway, $gateways, true));

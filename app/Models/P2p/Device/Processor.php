@@ -19,6 +19,8 @@ use RZP\Models\P2p\Transaction;
  */
 class Processor extends Base\Processor
 {
+    use MerchantTrait;
+
     protected $entity = 'p2p_device';
 
     public function initiateVerification(array $input): array
