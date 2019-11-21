@@ -219,4 +219,9 @@ class BatchMicroService extends BaseBatchMicroService
     {
         return false;
     }
+
+    public function getBatchesFromBatchService(string $batchId = null, Merchant\Entity $merchant = null, array $inputQueryParams = null)
+    {
+        return null;
+    }
 }

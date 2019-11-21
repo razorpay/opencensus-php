@@ -490,4 +490,19 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->assertEquals($subr['method'], 'emandate');
     }
+
+    public function testCancelAuthLinksViaBatch()
+    {
+        $batchAttributes = [
+            'id' => '100000000batch',
+            'type' => 'auth_link',
+            'status' => 'processed',
+        ];
+
+        $batch = $this->fixtures->create('batch', $batchAttributes);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }
