@@ -139,19 +139,4 @@ class Service extends Base\Service
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
-
-    public function validateOffer(array $input)
-    {
-        $payment = new Entity();
-
-        $payment->generate($input);
-
-        $verbose = true;
-
-        $offer = $this->repo->offer->findByPublicIdAndMerchant($input[Entity::OFFER_ID], $this->merchant);
-
-        $checker = new Checker($offer, $verbose);
-
-        return $checker->checkApplicabilityForPayment($payment);
-    }
 }
