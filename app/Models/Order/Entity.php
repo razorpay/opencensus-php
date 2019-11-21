@@ -129,6 +129,8 @@ class Entity extends Base\PublicEntity
 
     const VIRTUAL_ACCOUNT   = 'virtual_account';
 
+    const AUTH_TYPE = 'auth_type';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -467,6 +469,24 @@ class Entity extends Base\PublicEntity
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getBankForNachMethod()
+    {
+        $this->validator->validateOrderForNachMethod();
+
+        $tokenRegistration = $this->getTokenRegistration();
+
+        if (($tokenRegistration === null) or
+            ($tokenRegistration->paperMandate === null) or
+            ($tokenRegistration->paperMandate->bankAccount === null))
+        {
+            return null;
+        }
+
+        $bank = $tokenRegistration->paperMandate->bankAccount->getBankCode();
+
+        return $bank;
     }
 
     public function getTokenRegistration()

@@ -301,8 +301,6 @@ class Processor
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
 
-            $this->incrementOfferUsageCount($payment);
-
             $this->logRequestTime($payment, $startTime);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
@@ -325,18 +323,6 @@ class Processor
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
-        }
-    }
-
-    protected function incrementOfferUsageCount($payment)
-    {
-        $offer = $payment->getOffer();
-
-        if($offer !== null)
-        {
-            $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
-
-            $this->repo->offer->saveOrFail($offer);
         }
     }
 
@@ -956,7 +942,7 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         // Validate if customer is fee bearer then only move forward
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -984,6 +970,15 @@ class Processor
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+
+        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
+        {
+            $fee = 0;
+
+            $tax = 0;
+        }
+
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -1186,6 +1181,8 @@ class Processor
 
             $payment->setAmount($discountedAmount);
 
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
             $input['order_amount'] = $orderAmount;
         }
     }
@@ -1733,6 +1730,14 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->lockDecrementCurrentOfferUsage($payment);
+        }
+
+
         //TODO: Remove this later
         try
         {
@@ -2116,7 +2121,7 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -2302,6 +2307,8 @@ class Processor
                     'calculated_fee'    => $payment->getFee(),
                 ]);
         }
+
+        $payment->setFeeBearer($this->payment->getFeeBearer());
     }
 
     protected function fetchOrderFromInput(array $input): Order\Entity
@@ -2329,7 +2336,8 @@ class Processor
                             ($this->merchant->isTPVRequired() === true));
 
             if (($tpvRequired === true) or
-                ($payment->isEmandate() === true))
+                ($payment->isEmandate() === true) or
+                ($payment->isNach() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -2360,6 +2368,11 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        if ($payment->isNach() === true)
+        {
+            $payment->setBank($this->order->getBankForNachMethod());
+        }
 
         //
         // FIXME: Hack for reliance AMC, moving order receipt to payment

@@ -55,15 +55,20 @@ class FundTransfer extends Job
 
             if ($initiateTransfers === false)
             {
-                $this->trace->info(TraceCode::FTS_FUND_TRANSFER_NOT_ALLOWED,
-                    [
-                        'fta_id' => $this->ftaId,
-                        'reason' => $reason,
-                    ]);
+                $addedInitiateAt = $transferService->addInitiateAtIfRequired();
 
-                $this->delete();
+                if ($addedInitiateAt === false) {
 
-                return;
+                    $this->trace->info(TraceCode::FTS_FUND_TRANSFER_NOT_ALLOWED,
+                        [
+                            'fta_id' => $this->ftaId,
+                            'reason' => $reason,
+                        ]);
+
+                    $this->delete();
+
+                    return;
+                }
             }
 
             $ftsResponse = $transferService->requestFundTransfer();

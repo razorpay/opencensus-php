@@ -329,13 +329,13 @@ class PayoutTest extends TestCase
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'        => 'failed',
-            'failure_reason'    => '',
+            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
             'bank_status_code'  => 'YB_SFMS_E59'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
-        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], '');
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], 'Beneficiary bank\'s systems are down. Please retry after some time.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }

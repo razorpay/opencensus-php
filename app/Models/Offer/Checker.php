@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Core;
 
 class Checker extends Base\Core
 {
@@ -367,8 +368,8 @@ class Checker extends Base\Core
                     $result = $paymentCount < $maxPaymentCount;
                     if(!$result)
                     {
-                        $this->
-                        offer->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                        $this->offer
+                             ->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
                     }
 
                     return $result;
@@ -388,21 +389,24 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOfferUsage() !== NULL)
         {
-                $result = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+            $core = new \RZP\Models\Offer\Core();
 
-                $this->traceCheckResult(
-                    TraceCode::OFFER_USAGE_CHECK,
-                    [
-                        'result' => $result,
-                        'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
-                        'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
-                    ]);
+            $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
-                if(!$result)
-                {
-                    $this->
-                    offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
-                }
+            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+
+            $this->traceCheckResult(
+                TraceCode::OFFER_USAGE_CHECK,
+                [
+                    'result' => $result,
+                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                    'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
+                ]);
+
+            if(!$result)
+            {
+                $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            }
         }
 
         return $result;

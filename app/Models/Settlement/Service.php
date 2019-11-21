@@ -20,6 +20,68 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
+    public function getMerchantSettlementAmount($input)
+    {
+
+        (new Validator)->validateInput('settlement_amount', $input);
+
+        $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
+
+        $balance = $this->merchant->getBalanceByType($balanceType);
+
+        $response = [
+            'balance'              => $balance->getBalance(),
+            'settlement_amount'    => 0,
+            'next_settlement_time' => null,
+        ];
+
+        //
+        // This will give wrong result for wealthy merchant on saturdays
+        //
+        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant);
+
+        if ($status === false)
+        {
+            return $response + [
+                'no_settlement' =>  $data
+            ];
+        }
+
+        $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
+
+        $settlementDetails = (new Core)->getMerchantSettlementAmount(
+            $this->merchant,
+            $balance,
+            $nextSettlementTime);
+
+        $response = array_merge($response, $settlementDetails);
+
+        //
+        // settlement amount should be atleast 1rs
+        // and settlement amount shouldn't be more than the available balance
+        //
+        if ($response['settlement_amount'] < 100)
+        {
+            $response += [
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is less than 1 rupee'
+                ],
+            ];
+        }
+        else if ($response['settlement_amount'] > $balance->getBalance())
+        {
+            $response += [
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is more than the available live balance',
+                ]
+            ];
+        }
+
+        return $response;
+    }
+
     public function initiateSettlements($input, $channel = null)
     {
         (new Validator)->validateInput('settlement_initiate', $input);

@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
-        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
         Entity::BLOCK               => 'required|boolean',
         Entity::ACTIVE              => 'filled|boolean',
         Entity::DEFAULT_OFFER       => 'filled|boolean',

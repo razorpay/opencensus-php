@@ -168,9 +168,11 @@ class Core extends Base\Core
 
         if (empty($paperMandateInput) === false)
         {
-            if (empty($subscriptionRegistration->getMaxAmount()) === false)
+            $maxAmount = $subscriptionRegistration->getMaxAmount();
+
+            if ($maxAmount !== NULL)
             {
-                $paperMandateInput[PaperMandate\Entity::AMOUNT] = $subscriptionRegistration->getMaxAmount();
+                $paperMandateInput[PaperMandate\Entity::AMOUNT] = $maxAmount;
             }
 
             $paperMandate = (new PaperMandate\Core)->create($paperMandateInput, $customer);
@@ -534,7 +536,7 @@ class Core extends Base\Core
 
     public function paperMandateAuthenticate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = ['success' => true];
+        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
         $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
 
@@ -544,11 +546,11 @@ class Core extends Base\Core
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === false)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
         {
             $result = [
-                'success' => false,
-                'errors'  => $validationResult['errors'],
+                SubscriptionRegistrationConstants::SUCCESS => false,
+                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
             ];
         }
 
@@ -561,7 +563,7 @@ class Core extends Base\Core
 
     public function paperMandateValidate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = ['success' => true];
+        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
         $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
 
@@ -571,11 +573,11 @@ class Core extends Base\Core
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === false)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
         {
             $result = [
-                'success' => false,
-                'errors'  => $validationResult['errors'],
+                SubscriptionRegistrationConstants::SUCCESS => false,
+                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
             ];
         }
 

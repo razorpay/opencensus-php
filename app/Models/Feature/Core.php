@@ -638,7 +638,7 @@ class Core extends Base\Core
                                     ->feature
                                     ->findByEntityTypeEntityIdAndName(
                                         Constants::MERCHANT,
-                                        $this->merchant->getId(),
+                                        $feature->getEntityId(),
                                         Constants::ES_ON_DEMAND);
 
             if (isset($featureOnDemand) === true)

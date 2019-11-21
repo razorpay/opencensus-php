@@ -8,6 +8,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     const BANKING_INVOICE_GENERATE = 'banking_invoice_generate';
+    const VERIFY                   = 'verify';
 
     protected static $createRules = [
         Entity::MONTH       => 'required|integer|between:1,12',
@@ -22,6 +23,11 @@ class Validator extends Base\Validator
 
     protected static $editGstinRules = [
         Entity::INVOICE_NUMBER  => 'required|string',
+    ];
+
+    protected static $verifyRules = [
+        Entity::MONTH               => 'sometimes|integer|between:1,12',
+        Entity::YEAR                => 'sometimes|digits:4',
     ];
 
     protected static $createQueueRules = [

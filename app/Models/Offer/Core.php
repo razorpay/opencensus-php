@@ -113,6 +113,8 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
+            $this->lockDecrementCurrentOfferUsage($payment);
+
             if ($offer->shouldBlockPayment() === true)
             {
                 $errorMessage = $offer->getErrorMessage();
@@ -407,5 +409,49 @@ class Core extends Base\Core
         $this->merchant = $merchant;
 
         return $this;
+    }
+
+    //increment the offer usage count after failed payment for max offer validation.
+    public function lockIncrementCurrentOfferUsage(Entity $offer)
+    {
+        if($offer !== null)
+        {
+            $offer = $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+                $this->repo->saveOrFail($offer);
+
+                return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
+            });
+
+            return $offer;
+        }
+    }
+
+    //decrement the offer usage count after failed payment for max offer validation.
+    public function lockDecrementCurrentOfferUsage(Payment\Entity $payment)
+    {
+        $offer = $payment->getOffer();
+
+        if($offer !== null)
+        {
+            $offer = $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+
+                $this->repo->saveOrFail($offer);
+
+                return $offer;
+            });
+
+            return $offer;
+        }
+
+
     }
 }

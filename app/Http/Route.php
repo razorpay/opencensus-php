@@ -244,6 +244,7 @@ final class Route
         'get_merchant_partner_status'              => ['get',      'merchant/partner_status',                        'MerchantController@getMerchantPartnerStatus'                       ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_entities_verify'         => ['get',      'merchants/invoice/verify',                       'MerchantInvoiceController@verify'                                  ],
         'merchant_invoice_fetch_multiple'          => ['get',      'merchants/banking/invoices',                     'MerchantInvoiceController@getBankingInvoices'                      ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         // TODO: Should be removed once the correction has run for all the merchant
@@ -403,6 +404,7 @@ final class Route
         'setl_process_data'                        => ['get',      'settlements/process',                            'SettlementController@getSettlementProcess'                         ],
         'setl_process_data_reset'                  => ['delete',   'settlements/process',                            'SettlementController@resetSettlementProcess'                       ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
+        'setl_amount'                              => ['get',      'settlements/amount',                             'SettlementController@getMerchantSettlementAmount'                  ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
         'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
@@ -1146,22 +1148,25 @@ final class Route
         'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
 
         // subscription registration
-        'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
-        'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],
-        'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLink'                 ],
-        'subscription_registration_fetch_link'     => ['get',      'subscription_registration/auth_links/{id}',      'SubscriptionRegistrationController@fetchAuthLink'                  ],
-        'subscription_registration_fetch_link_internal' => ['get', 'subscription_registration/auth_links/{id}/internal', 'SubscriptionRegistrationController@fetchAuthLinkInternal'      ],
-        'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
-        'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
-        'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
-        'subscription_registration_auto_charge'    => ['post',     'subscription_registration/auto_charge',          'SubscriptionRegistrationController@postProcessAutoCharges'         ],
-        'token_registration_token_associate'       => ['post',     'token.registration/{id}/token_associate',        'SubscriptionRegistrationController@associateToken'                 ],
-        'token_registration_tokens_authenticate'   => ['post',     'token.registration/tokens_authenticate',         'SubscriptionRegistrationController@authenticateTokens'             ],
-        'auth_link_paper_mandate_authenticate'     => ['post',     'token.registration/paper_mandate/authenticate',  'SubscriptionRegistrationController@paperMandateAuthenticate'       ],
-        'auth_link_paper_mandate_authenticate_proxy' => ['post',   'token.registration/paper_mandate/authenticate/proxy', 'SubscriptionRegistrationController@paperMandateAuthenticate'  ],
-        'auth_link_paper_mandate_validate'         => ['post',     'token.registration/paper_mandate/validate',      'SubscriptionRegistrationController@paperMandateValidate'           ],
-        'auth_link_paper_mandate_validate_proxy'   => ['post',     'token.registration/paper_mandate/validate/proxy','SubscriptionRegistrationController@paperMandateValidate'           ],
-        'get_paper_mandate_uploaded_url'           => ['get',      'token.registration/paper_mandate/uploaded_form', 'SubscriptionRegistrationController@getUploadedPaperMandateForm'    ],
+        'subscription_registration_list_tokens'         => ['get',      'subscription_registration/tokens',                    'SubscriptionRegistrationController@listTokens'                     ],
+        'subscription_registration_list_links'          => ['get',      'subscription_registration/auth_links',                'SubscriptionRegistrationController@listAuthLinks'                  ],
+        'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
+        'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
+        'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}','SubscriptionRegistrationController@sendNotification'          ],
+        'subscription_registration_cancel_link'         => ['post',     'subscription_registration/auth_links/{id}/cancel',    'SubscriptionRegistrationController@cancelAuthLink'                 ],
+        'subscription_registration_fetch_link_internal' => ['get',      'subscription_registration/auth_links/{id}/internal',  'SubscriptionRegistrationController@fetchAuthLinkInternal'          ],
+        'subscription_registration_fetch_token'         => ['get',      'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@fetchToken'                     ],
+        'subscription_registration_delete_token'        => ['delete',   'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@deleteToken'                    ],
+        'subscription_registration_charge_token'        => ['post',     'subscription_registration/tokens/{id}/charge',        'SubscriptionRegistrationController@chargeToken'                    ],
+        'subscription_registration_auto_charge'         => ['post',     'subscription_registration/auto_charge',               'SubscriptionRegistrationController@postProcessAutoCharges'         ],
+        'token_registration_token_associate'            => ['post',     'token.registration/{id}/token_associate',             'SubscriptionRegistrationController@associateToken'                 ],
+        'token_registration_tokens_authenticate'        => ['post',     'token.registration/tokens_authenticate',              'SubscriptionRegistrationController@authenticateTokens'             ],
+        'auth_link_paper_mandate_authenticate'          => ['post',     'token.registration/paper_mandate/authenticate',       'SubscriptionRegistrationController@paperMandateAuthenticate'       ],
+        'auth_link_paper_mandate_authenticate_proxy'    => ['post',     'token.registration/paper_mandate/authenticate/proxy', 'SubscriptionRegistrationController@paperMandateAuthenticateProxy'  ],
+        'auth_link_paper_mandate_retry_token'           => ['post',     'token.registration/paper_mandate/token/{id}/retry',    'SubscriptionRegistrationController@retryPaperMandateToken'        ],
+        'auth_link_paper_mandate_validate'              => ['post',     'token.registration/paper_mandate/validate',           'SubscriptionRegistrationController@paperMandateValidate'           ],
+        'auth_link_paper_mandate_validate_proxy'        => ['post',     'token.registration/paper_mandate/validate/proxy',     'SubscriptionRegistrationController@paperMandateValidate'           ],
+        'get_paper_mandate_uploaded_url'                => ['get',      'token.registration/paper_mandate/uploaded_form',      'SubscriptionRegistrationController@getUploadedPaperMandateForm'    ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
@@ -1195,6 +1200,10 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+
+        // TODO:remove after migration,
+        // Temporary route to fix settled_at in case of fund account validation
+        'transaction_settled_data_fix'             => ['post',     'transactions/{entity}/settled/fix',              'TransactionController@fixSettled'                                  ],
 
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
@@ -1483,6 +1492,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'oauth_app_webhook_create',
+        'setl_amount',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
@@ -1593,6 +1603,8 @@ final class Route
         'subscription_registration_list_links',
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
+        'subscription_registration_resend_link',
+        'subscription_registration_cancel_link',
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
@@ -1657,6 +1669,7 @@ final class Route
         'merchant_get_app_access_mapping',
         'merchant_create_app_access_mapping',
         'merchant_create_invoice_entities',
+        'merchant_invoice_entities_verify',
         'merchant_invoice_correction',
         'merchant_daily_report',
         'merchant_delete_app_access_mapping',
@@ -1782,6 +1795,7 @@ final class Route
         'mailing_list_remove_suspended_merchant',
         'transfer_process',
         'merchant_mtu_update',
+        'transaction_settled_data_fix',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1815,6 +1829,8 @@ final class Route
         'invoice_remove_line_item',
         'invoice_send_notification_private',
         'invoice_cancel',
+        'subscription_registration_resend_link',
+        'subscription_registration_cancel_link',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -2021,6 +2037,7 @@ final class Route
         'auth_link_paper_mandate_validate_proxy',
         'subscription_registration_fetch_link_internal',
         'get_paper_mandate_uploaded_url',
+        'auth_link_paper_mandate_retry_token',
         'merchant_submit_support_call_request',
         'token_fetch_card',
         'user_edit_self',
@@ -2674,6 +2691,8 @@ final class Route
         'setl_initiate_action'                     => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data'                        => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data_reset'                  => Permission::SETTLEMENT_BULK_UPDATE,
+        // TODO: get clarity on permissions
+        'setl_amount'                              => '*',
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
@@ -3264,6 +3283,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_invoice_entities_verify',
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
@@ -3306,6 +3326,7 @@ final class Route
             'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
+            'transaction_settled_data_fix',
         ],
 
         'subscriptions' => [
