@@ -156,6 +156,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (entityIdToDuplicate) {
       // TODO: Use for tracking on saving
       this.isIntentDuplicate = true;
+
+      // Don't show templates screen if intent is to duplicate
+      this.setState({
+        isTemplatesViewOpened: false,
+      });
+
       this.fetchEntity(entityIdToDuplicate);
     }
   }
