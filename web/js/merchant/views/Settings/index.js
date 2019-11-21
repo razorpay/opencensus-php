@@ -8,7 +8,7 @@ import ApiKeys from 'merchant/containers/Keys/List';
 import Reminders from 'merchant/containers/Reminders';
 import Webhooks from 'merchant/containers/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
-import Configuration from 'merchant/containers/Configuration';
+import Configuration from 'merchant/views/Settings/Configuration';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApplicationsNew from 'merchant/containers/Applications/new';
 

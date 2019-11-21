@@ -6,7 +6,7 @@ import FileUploadButton from 'common/ui/FileUpload/Button';
 import { uploadLogo } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { getIcon } from './paymentMethodIcons';
+import { getIcon } from './components/paymentMethodIcons';
 
 @connect(state => ({ ...state.config, user: state.session.user }), {
   uploadLogo,

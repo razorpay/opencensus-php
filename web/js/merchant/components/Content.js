@@ -20,7 +20,7 @@ import Customers from 'merchant/containers/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
 import MyAccount from 'merchant/containers/MyAccount';
-import Settings from 'merchant/containers/Settings';
+import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
