@@ -5,6 +5,7 @@ import CheckBoxField from 'common/ui/Forms/CheckboxField';
 /**
  * Batch Payment Links Form
  * - Send Email/Send SMS
+ * - Enable Reminders
  */
 
 export default ({ batchType, sms_notify, email_notify, onChange }) => {
@@ -14,10 +15,8 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
 
   return (
     <div>
-      <h5 class="send-link-head">
-        <strong>SEND PAYMENT LINKS</strong>
-      </h5>
       <div class="form-group send-links-form">
+        <label class="m-r">Notify</label>
         <div class="checkbox rzpCheckbox next m-r">
           <Field
             name="config.sms_notify"
@@ -26,7 +25,7 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             onChange={handleChange('sms_notify')}
           />
           <label for="sms_notify" class="icon i-check">
-            Send SMS
+            via SMS
           </label>
         </div>
         <div class="checkbox rzpCheckbox next m-r">
@@ -37,9 +36,12 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             onChange={handleChange('email_notify')}
           />
           <label for="email_notify" class="icon i-check">
-            Send Email
+            via Email
           </label>
         </div>
+      </div>
+      <div class="form-group send-links-form">
+        <label class="m-r">Reminders</label>
         <div class="checkbox rzpCheckbox next m-r">
           <Field
             name="config.reminder_enable"
@@ -47,9 +49,7 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             component={CheckBoxField}
             onChange={handleChange('reminder_enable')}
           />
-          <label for="reminder_enable" class="icon i-check">
-            Enable Reminders
-          </label>
+          <label for="reminder_enable">Send auto reminders</label>
         </div>
       </div>
       <p>
