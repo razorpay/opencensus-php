@@ -6,7 +6,7 @@ import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
-import Reminders from 'merchant/containers/Reminders';
+import Reminders from 'merchant/views/Settings/Reminders';
 import Webhooks from 'merchant/views/Settings/Webhooks/List';
 import Applications from 'merchant/views/Settings/Applications/';
 import Configuration from 'merchant/views/Settings/Configuration';

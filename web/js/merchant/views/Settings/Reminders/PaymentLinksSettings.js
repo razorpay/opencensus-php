@@ -11,7 +11,7 @@ import {
 } from 'merchant/reducers/reminders';
 
 import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
-import ReminderSettings from 'merchant/components/Reminders/Settings';
+import ReminderSettings from 'merchant/views/Settings/Reminders/components/Settings';
 
 @connect(
   state => {
