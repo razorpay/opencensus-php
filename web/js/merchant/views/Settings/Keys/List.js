@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
 // import Role from 'merchant/components/Role'
-import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as KeyActions from 'merchant/reducers/keys';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import RollKey from './RollKey';
-import NewKey from './NewKey';
+import KeysList from 'merchant/views/Settings/Keys/components/KeysList';
+import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
+import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 
 @connect(
   state => {

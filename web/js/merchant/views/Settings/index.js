@@ -4,9 +4,9 @@ import RTracking from 'react-tracking';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-import ApiKeys from 'merchant/containers/Keys/List';
+import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/containers/Reminders';
-import Webhooks from 'merchant/containers/Webhooks/List';
+import Webhooks from 'merchant/views/Settings/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
 import Configuration from 'merchant/views/Settings/Configuration';
 import TestModeBanner from 'merchant/containers/TestModeBanner';

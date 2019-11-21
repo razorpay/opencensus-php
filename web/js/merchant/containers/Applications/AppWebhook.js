@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Spinner from 'common/ui/Spinner';
-import WebhookCreation from 'merchant/containers/Webhooks/New';
+import WebhookCreation from 'merchant/views/Settings/Webhooks/New';
 
 export default class AppWebhook extends Component {
   render() {
