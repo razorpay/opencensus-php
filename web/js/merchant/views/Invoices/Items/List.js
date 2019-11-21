@@ -6,7 +6,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
-import ItemsList from 'merchant/components/Items/ItemsList';
+import ItemsList from 'merchant/views/Invoices/Items/components/ItemsList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ItemCreation from 'merchant/views/Invoices/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
