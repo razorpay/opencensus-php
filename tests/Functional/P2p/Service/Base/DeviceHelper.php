@@ -101,4 +101,13 @@ class DeviceHelper extends P2pHelper
 
         return $this->delete($request);
     }
+
+    public function updateWithAction(string $id, string $action, array $content)
+    {
+        $request = $this->request('devices/%s/%s', [$id, $action]);
+
+        $this->content($request, [], $content);
+
+        return $this->post($request);
+    }
 }
