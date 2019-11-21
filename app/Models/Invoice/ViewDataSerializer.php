@@ -225,6 +225,14 @@ class ViewDataSerializer extends Base\Core
                 ];
                 break;
 
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $customLabels = [
+                    'amount'                    => 'TOTAL OVERDUE AMOUNT',
+                    'receipt_number'            => 'LOAN ACCOUNT NUMBER',
+                    'first_payment_min_amount'  => 'EMI AMOUNT',
+                ];
+                break;
+
         }
 
         return $customLabels;
