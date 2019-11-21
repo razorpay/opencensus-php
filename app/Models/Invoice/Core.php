@@ -494,12 +494,9 @@ class Core extends Base\Core
 
         $pdfPath = null;
 
-        if ($invoice->isTypeOfSubscriptionRegistration() === false)
+        if ($medium === NotifyMedium::EMAIL)
         {
-            if ($medium === NotifyMedium::EMAIL)
-            {
-                $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
-            }
+            $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
