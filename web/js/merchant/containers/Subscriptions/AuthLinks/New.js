@@ -59,10 +59,12 @@ export default class CreateNewAuthLinkContainer extends Component {
     fetchPaymentMethods().then(methods => {
       if (methods && methods.recurring) {
         let emandateBanks = [];
-        const avlblMethods = Object.keys(methods.recurring).map(method => ({
-          label: titleCase(method),
-          value: method,
-        }));
+        const avlblMethods = Object.keys(methods.recurring)
+          .filter(methodName => methods.recurring[methodName])
+          .map(method => ({
+            label: titleCase(method),
+            value: method,
+          }));
 
         if (methods.recurring.emandate) {
           const emandates = methods.recurring.emandate || {};
