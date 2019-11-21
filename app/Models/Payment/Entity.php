@@ -172,6 +172,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const REFUNDS               = 'refunds';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -350,6 +351,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
+        self::REFUNDS,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
