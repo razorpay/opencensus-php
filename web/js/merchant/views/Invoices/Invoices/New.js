@@ -25,8 +25,8 @@ import {
 } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import LineItemsList from '../LineItems/List';
-import CustomerCreation from 'merchant/containers/Customers/New';
+import LineItemsList from 'merchant/views/Invoices/Invoices/components/LineItems/List';
+import CustomerCreation from 'merchant/views/Customers/New';
 import IssueConfirmModal from './components/IssueConfirmModal';
 import AddInternalNoteModal from './components/AddInternalNoteModal';
 import InvoiceBreadcrumbNav from 'merchant/views/Invoices/Invoices/components/InvoiceBreadcrumbNav';
@@ -61,7 +61,7 @@ import {
   trackSelectBillingAddress,
   trackSelectShippingAddress,
 } from '../ga';
-import AddGST from 'merchant/containers/Profile/AddGST';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import { classList } from 'common/utils/rzp-utils';
 

@@ -16,7 +16,7 @@ import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
-import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import ShowWhen from 'merchant/components/ShowWhen';
 

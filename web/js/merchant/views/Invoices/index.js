@@ -11,7 +11,7 @@ import { fetchItems } from 'merchant/reducers/items';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
-import Items from 'merchant/containers/Items/List';
+import Items from 'merchant/views/Invoices/Items/List';
 
 import OnBoarding, {
   getIsInvoicesEnabled,

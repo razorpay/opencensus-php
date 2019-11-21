@@ -12,7 +12,7 @@ import {
   _isSupportedPattern,
   _isSupportedComponent,
   _areBaseKeysPresent,
-} from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/V2';
+} from 'merchant/containers/PaymentPages/Pages/Create/FormSection/UDF_Fields/V2';
 
 // Ensures pattern is supported and combination with keydown_restrictive does not block user from typing in that field
 function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
