@@ -184,7 +184,7 @@ function getBeneficiaryInfo() {
   const currentBusinessType =
     this.state.dirty.business_type || this.props.data.business_type;
   if (isUnregisteredBusiness(this)) {
-    return 'Please ensure that the spelling is the same as your bank account';
+    return 'Please ensure that the spelling is the same as your bank account.';
   } else {
     let text = 'Company';
 
@@ -192,7 +192,7 @@ function getBeneficiaryInfo() {
       text = 'Individual';
     }
 
-    return `The beneficiary name should be same as ${text} name`;
+    return `The beneficiary name should be same as ${text} name.`;
   }
 }
 

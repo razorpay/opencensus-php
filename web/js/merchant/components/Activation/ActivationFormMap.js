@@ -44,7 +44,7 @@ const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const ADDRESS_PROOF_TYPES = {
   aadhar: {
     value: 'aadhar',
-    label: 'Aadhar',
+    label: 'Aadhaar',
     front: true,
     back: true,
     frontView: 'Front',
