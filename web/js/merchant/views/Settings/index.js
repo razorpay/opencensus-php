@@ -4,13 +4,13 @@ import RTracking from 'react-tracking';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/containers/Reminders';
 import Webhooks from 'merchant/views/Settings/Webhooks/List';
-import Applications from 'merchant/containers/Applications/';
+import Applications from 'merchant/views/Settings/Applications/';
 import Configuration from 'merchant/views/Settings/Configuration';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import ApplicationsNew from 'merchant/containers/Applications/new';
+import ApplicationsNew from 'merchant/views/Settings/Applications/new';
 
 @RTracking(() => window.rzpQ.component('Settings'))
 @withRouter
