@@ -14,7 +14,7 @@ import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
 
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 
 @connect(state => state.session)
 export default class TransactionsContainer extends Component {

@@ -9,7 +9,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
 import Transactions from 'merchant/views/Transactions';
-import Settlements from 'merchant/containers/Settlements/List';
+import Settlements from 'merchant/views/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import PaymentPages from 'merchant/views/PaymentPages';
 import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';

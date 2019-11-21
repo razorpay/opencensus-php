@@ -5,9 +5,9 @@ import { Link, NavLink } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
-import SettlementsList from 'merchant/components/Settlements/List';
-import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
-import SettlementBreakupModal from './BreakupModal';
+import SettlementsList from 'merchant/views/Settlements/components/List';
+import SettlementsListFilter from 'merchant/views/Settlements/components/ListFilter';
+import SettlementBreakupModal from 'merchant/views/Settlements/components/Modals/BreakupModal';
 import HeaderAction from 'common/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -24,12 +24,13 @@ import {
   trackOndemand,
 } from './ga';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
-import OndemandModal from './OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
+
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
-import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
-import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';
+import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
+import { trackInstantSettlementsBanner } from 'merchant/components/Announcements/ga';
 
 @withRouter
 @connect(

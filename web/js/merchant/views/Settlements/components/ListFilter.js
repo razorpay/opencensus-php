@@ -1,5 +1,5 @@
 import { Field } from 'redux-form';
-import ListFilter from '../ListFilter';
+import ListFilter from 'merchant/components/ListFilter';
 
 export default props => {
   return (

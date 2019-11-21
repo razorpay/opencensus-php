@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
-import { CLOSEOPTIONS } from './CloseReasons';
+import { CLOSE_OPTIONS } from 'merchant/views/Settlements/data';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -44,7 +44,7 @@ export default class ModalCloseReasons extends Component {
           }}
         />
         <div className="modal-body">
-          {CLOSEOPTIONS.map(choice => {
+          {CLOSE_OPTIONS.map(choice => {
             return (
               <div
                 key={'parent-choice-' + choice.value}

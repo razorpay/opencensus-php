@@ -5,7 +5,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
-import { trackOndemand } from './ga';
+import { trackOndemand } from '../../ga';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
 import Alert from 'common/ui/Forms/Alert';
@@ -14,8 +14,8 @@ import Amount from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { CLOSEOPTIONS } from './CloseReasons';
-import ModalCloseReasons from './ModalCloseReasons';
+import { CLOSE_OPTIONS } from 'merchant/views/Settlements/data';
+import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/ModalCloseReasons';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,

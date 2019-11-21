@@ -8,7 +8,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import User, { setFeatures } from 'merchant/models/User';
 import * as SessionActions from 'merchant/reducers/session';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import ModalCloseReasons from './ModalCloseReasons';
+import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/ModalCloseReasons';
 
 @connect(
   state => ({

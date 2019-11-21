@@ -1,4 +1,4 @@
-export const CLOSEOPTIONS = [
+export const CLOSE_OPTIONS = [
   {
     label: 'Need more guidance with feature',
     value: 'more-guidance',

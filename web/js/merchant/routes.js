@@ -5,7 +5,7 @@ import {
   matchFullPageView as matchFullPageViewx,
 } from '../merchant_common/routes';
 
-import SettlementDetails from 'merchant/containers/Settlements/Details';
+import SettlementDetails from 'merchant/views/Settlements/Details';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Links/Details';
 import PaymentPageDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';

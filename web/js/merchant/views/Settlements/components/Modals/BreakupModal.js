@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
-import SettlementBreakupTable from 'merchant/components/Settlements/BreakupTable';
+import SettlementBreakupTable from 'merchant/views/Settlements/components/BreakupTable';
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
