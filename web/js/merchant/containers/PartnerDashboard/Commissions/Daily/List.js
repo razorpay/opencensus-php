@@ -2,13 +2,13 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchAggregate } from 'merchant/modules/commission';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { fetchAggregate } from 'merchant/reducers/commission';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import Amount from 'rzp/ui/Amount';
-import DataTable from 'rzp/ui/Table/DataTable';
+import Amount from 'common/ui/Amount';
+import DataTable from 'common/ui/Table/DataTable';
 
-import { without } from 'rzp/utils/rzp-utils';
+import { without } from 'common/utils/rzp-utils';
 
 import AddMerchant from '../../SubMerchant/AddMerchant';
 import ListFilter from './ListFilter';

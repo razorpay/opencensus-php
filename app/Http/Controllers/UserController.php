@@ -65,6 +65,9 @@ class UserController extends Controller
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
+        $data['cdnBaseUrl'] = \Config::get('app.cdn_base_url');
+        $data['ljKey'] = \Config::get('app.lj_key');
+        $data['env'] = \Config::get('app.env');
 
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
@@ -76,6 +79,16 @@ class UserController extends Controller
             if (empty($details) === false)
             {
                 $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
+            }
+
+            $currentMerchantId = $details['current'];
+
+            if(is_null($currentMerchantId) === false)
+            {
+                $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
+            }
+            else {
+                $data['custom_notes'] = null;
             }
 
             return view('merchant.index', $data);

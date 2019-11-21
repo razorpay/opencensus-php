@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
+import FileUploadInputButton from 'common/ui/FileUpload/InputButton';
+import Fieldset from 'common/ui/Forms/Fieldset';
 
 export default class DocumentsUploadForm extends Component {
   render() {

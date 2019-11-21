@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import defaultTrack, { setTrackData } from 'common/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Plans';
 
@@ -21,5 +21,16 @@ export function trackClickDuplicatePlan() {
 export function trackSaveDuplicatePlan() {
   track({
     eventAction: 'Save - Duplicate Plan',
+  });
+}
+
+/*
+* Track currency selection in create new plan
+* */
+export function trackSelectCurrency(currency) {
+  defaultTrack({
+    eventCategory: 'Dashboard - International - Plan',
+    eventAction: 'Select Currency',
+    label: currency,
   });
 }

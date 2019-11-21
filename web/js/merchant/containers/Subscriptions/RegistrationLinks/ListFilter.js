@@ -1,7 +1,7 @@
 import { Field } from 'redux-form';
 
 import ListFilter from 'merchant/components/ListFilter';
-import { snakeToTitleCase as titleCase } from 'common/util';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const statuses = ['issued', 'paid', 'expired'];
 

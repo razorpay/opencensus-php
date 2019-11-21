@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, rupeesToPaise } from 'common/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
   resourceFields = [
@@ -45,4 +45,8 @@ export default class Item extends GenericEntity {
     }
     return super.deserializeProperty(prop, value);
   }
+}
+
+export class SubscriptionItem extends Item {
+  resourceUrl = 'subscriptions/items';
 }

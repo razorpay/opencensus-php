@@ -1,5 +1,5 @@
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import Input from 'component/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Input from 'common/new-ui/Input';
 
 import { BankDetails, AccountDetails } from './commonFields';
 

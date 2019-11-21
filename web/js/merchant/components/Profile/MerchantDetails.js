@@ -1,26 +1,47 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Time from 'rzp/ui/Time';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import RTracking from 'react-tracking';
+import Time from 'common/ui/Time';
+import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
-import ProgressBar from 'rzp/ui/ProgressBar';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import ProgressBar from 'common/ui/ProgressBar';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
-export default connect(
-  null,
-  { openModal, closeModal }
-)(({ user, openModal, closeModal, changeDisplayName }) => {
+const MerchantDetails = ({
+  user,
+  openModal,
+  closeModal,
+  changeDisplayName,
+  tracking,
+}) => {
   const activationName =
     !user.showInstantActivation || !user.instantActivation.isL1Submitted
       ? 'Activation'
       : 'KYC';
+
+  const handleEditWebsite = () => {
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dash.my_account_actions', {
+        action: 'Add_Website_Initiated',
+      })
+    );
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dash.add_website', {
+        clickSource: 'My_Account',
+      })
+    );
+    openModal({
+      size: 'small',
+      component: <EditWebsiteDetails onClose={closeModal} />,
+    });
+  };
 
   return (
     <div class="list-group details-row-container">
@@ -73,7 +94,16 @@ export default connect(
           label={() => <b>Account Activation</b>}
           value={() => (
             <span>
-              <Link to={'/activation'}>
+              <Link
+                to={'/activation'}
+                onClick={() => {
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('kyc.form_fill', {
+                      clickSource: 'My_Account',
+                    })
+                  );
+                }}
+              >
                 {do {
                   if (user.activated || user.locked || user.submitted) {
                     ('View');
@@ -155,16 +185,7 @@ export default connect(
               !user.has_key_access ? (
                 !user.business_website ? (
                   <span>
-                    <a
-                      onClick={() =>
-                        openModal({
-                          size: 'small',
-                          component: (
-                            <EditWebsiteDetails onClose={closeModal} />
-                          ),
-                        })
-                      }
-                    >
+                    <a onClick={handleEditWebsite}>
                       Add Website/App URL for Full Access
                     </a>
                   </span>
@@ -184,4 +205,8 @@ export default connect(
       )}
     </div>
   );
-});
+};
+
+export default connect(null, { openModal, closeModal })(
+  RTracking()(MerchantDetails)
+);

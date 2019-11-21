@@ -9,7 +9,7 @@ import {
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 /*
   DATA_POINTS: contains keys to get data from redux store
@@ -17,7 +17,11 @@ import {
 */
 
 export default params => {
-  const { feature: FEATURE, data_points: DATA_POINTS } = params;
+  const {
+    feature: FEATURE,
+    data_points: DATA_POINTS,
+    dataTransformer = _dataTransformer,
+  } = params;
 
   let _WrappedComponent;
 
@@ -26,7 +30,7 @@ export default params => {
       let newState = {};
 
       DATA_POINTS.forEach(key => {
-        newState[key] = state[key];
+        newState[key] = dataTransformer(key, state);
       });
 
       return {
@@ -56,10 +60,13 @@ export default params => {
     generateDataPointFromProps = type => {
       const latestEle = this.props[type].items[0] || {};
 
+      const lastItemId =
+        this.props.currentOnboarding.lastElementId || latestEle.id;
+
       return {
         [type]: {
           type: type,
-          lastItemId: latestEle.id,
+          lastItemId,
           items: [],
           loading: false,
         },
@@ -77,7 +84,24 @@ export default params => {
       }, {});
     };
 
+    componentWillUnMount() {
+      if (this.props.currentOnboarding.isTour) {
+        const newState = this.getInitState();
+
+        this.setState({
+          ...newState,
+        });
+      }
+    }
+
     componentWillReceiveProps(nextProps) {
+      const data = nextProps[DATA_POINTS[DATA_POINTS.length - 1]];
+      if (data && data.items.length) {
+        if (typeof window.hj === 'function') {
+          window.hj('tagRecording', [`${FEATURE}_onboarding_completed`]);
+        }
+      }
+
       if (!this.props.currentOnboarding.isTour) return;
 
       let isLoading = false;
@@ -157,3 +181,5 @@ export {
   getQuickGuideLocalStorageKey,
   setQuickGuideIsClosedInLocalStorage,
 };
+
+const _dataTransformer = (key, state) => state[key];

@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Alert from 'rzp/ui/Forms/Alert';
+import RTracking from 'react-tracking';
+import HeaderAction from 'common/ui/HeaderAction';
+import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/components/Webhooks/List';
 import WebhookCreation from 'merchant/containers/Webhooks/New';
-import * as WebhookActions from 'merchant/modules/webhooks';
-import * as ModalActions from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
+import * as WebhookActions from 'merchant/reducers/webhooks';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
 import DocsLink from 'merchant/components/DocsLink';
 
 @connect(
@@ -19,11 +20,17 @@ import DocsLink from 'merchant/components/DocsLink';
   },
   { ...WebhookActions, ...ModalActions, luminateRow }
 )
+@RTracking(() => window.rzpQ.component('WebhooksContainer'))
 export default class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchWebhooks(params);
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Initiate_Webhook_Setup',
+    })
+  )
   showWebhookModal = (webhook = null) => {
     this.props.openModal({
       component: (
@@ -32,6 +39,11 @@ export default class WebhooksContainer extends ListContainer {
     });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.settings_action', {
+      action: 'Submit_Webhook_Details',
+    })
+  )
   highlightRowAndClose = webhook => {
     this.props.luminateRow(webhook.id);
     this.props.closeModal();
@@ -46,7 +58,7 @@ export default class WebhooksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/webhooks/"/>
+            <DocsLink url="https://razorpay.com/docs/webhooks/" />
           </div>
         </HeaderAction>
 

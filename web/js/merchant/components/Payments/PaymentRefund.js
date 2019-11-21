@@ -1,18 +1,18 @@
 import React from 'react';
 
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import DataTable from 'rzp/ui/Table/DataTable';
-import LoaderDots from 'rzp/ui/LoaderDots';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import DataTable from 'common/ui/Table/DataTable';
+import LoaderDots from 'common/ui/LoaderDots';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import {
   refundId,
   amount,
   createdAt,
   refundMode,
   refundStatus,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import ShowWhen from 'merchant/components/ShowWhen';
 

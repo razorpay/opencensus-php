@@ -7,9 +7,9 @@ import {
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
-import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
+import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
-import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/V2/Wysiwyg';
+import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
@@ -73,11 +73,13 @@ const entityDetailsMap = {
   '/paymentlinks/batchuploads/:id(batch_.+)': {
     component: PaymentLinkBatchDetails,
     additionalCondition: user =>
-      user.isAllowedView('payment_links_batch_uploads'),
+      user.isAllowedView('payment_links_batch_uploads') &&
+      (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
   '/paymentpages/:id(pl_.+)': {
-    component: PaymentPages,
-    additionalCondition: user => user.isAllowedView('payment_pages'),
+    component: PaymentPagesDetails,
+    additionalCondition: user =>
+      user.isAllowedView('payment_pages') && !user.isPPMLIEnabled,
   },
   '/invoices/:id/details': {
     component: PaymentLinkEntity,

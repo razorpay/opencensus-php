@@ -6,7 +6,7 @@ import BatchList from 'merchant/containers/BatchNew/List';
 import BatchUpload from './BatchUpload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchPaymentBatches as fetchAll } from 'merchant/modules/batches';
+import { fetchPaymentBatches as fetchAll } from 'merchant/reducers/batches';
 
 const gaEvents = setGaTrack('Dashboard - Payments - BU');
 

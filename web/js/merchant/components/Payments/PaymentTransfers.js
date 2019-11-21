@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import DataTable from 'rzp/ui/Table/DataTable';
-import LoaderDots from 'rzp/ui/LoaderDots';
-import { transferId, amount, createdAt } from 'rzp/ui/item/pair';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import DataTable from 'common/ui/Table/DataTable';
+import LoaderDots from 'common/ui/LoaderDots';
+import { transferId, amount, createdAt } from 'common/ui/item/pair';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 /*

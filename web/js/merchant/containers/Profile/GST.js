@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchGST } from 'merchant/modules/profile';
-import { openModal } from 'rzp/modules/modals';
+import RTracking from 'react-tracking';
+import { fetchGST } from 'merchant/reducers/profile';
+import { openModal } from 'merchant_common/reducers/modals';
 import AddGST from './AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -9,11 +10,17 @@ import ShowWhen from 'merchant/components/ShowWhen';
   fetchGST,
   openModal,
 })
+@RTracking(() => window.rzpQ.component('GSTDetails'))
 export default class GSTDetails extends Component {
   componentWillMount() {
     this.props.fetchGST();
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.my_account_actions', {
+      action: 'Add_GSTIN_Initiated',
+    })
+  )
   openAddGSTModal = () => {
     this.props.openModal({
       size: 'small',

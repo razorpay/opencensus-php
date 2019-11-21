@@ -1,7 +1,11 @@
 import { connect } from 'react-redux';
+
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import { fetchMarketplacePayments as fetchAll } from 'merchant/reducers/collection';
+
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
-import { fetchMarketplacePayments as fetchAll } from 'merchant/modules/collection';
 
 export default connect(state => state.mpPayments, { fetchAll })(props => (
-  <PaymentsList {...props} isRoute />
+  <PaymentsList {...props} quickTourFeature={RZPFeatures.ROUTE} isRoute />
 ));

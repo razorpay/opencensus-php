@@ -1,12 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import List from './Screens/List';
 import New from './Screens/New';
 
-import { capitalize } from 'rzp/utils/rzp-utils';
+import { capitalize } from 'common/utils/rzp-utils';
 import { track } from '../ga';
 
 @connect(null, {
@@ -141,6 +141,7 @@ export default class AddressSelectionModal extends Component {
       backLabel,
       addressType,
       isInttCurrenciesEnabled,
+      trackSelectCountry,
     } = this.props;
 
     const { customer, selected, showAddAddress, addresses } = this.state;
@@ -174,6 +175,7 @@ export default class AddressSelectionModal extends Component {
         hideBack={addresses && addresses.length === 0}
         addressType={addressType}
         isInttCurrenciesEnabled={isInttCurrenciesEnabled}
+        trackSelectCountry={trackSelectCountry}
       />
     );
 

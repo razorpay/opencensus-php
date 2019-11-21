@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
-
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -14,6 +13,7 @@ import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
 import DisputesList from 'merchant/containers/Disputes/List';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
+import ScheduledBanner from './Settlements/ScheduledBanner';
 
 @connect(state => state.session)
 export default class TransactionsContainer extends Component {
@@ -63,8 +63,12 @@ export default class TransactionsContainer extends Component {
           <ShowWhen additionalCondition={user => user.isAllowedView('orders')}>
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
-
           <NavLink to="/disputes">Disputes</NavLink>
+          {this.props.user.isOndemandSettlementEnabled && (
+            <ShowWhen myRole="owner admin finance">
+              <ScheduledBanner fromWhere="Transactions" />
+            </ShowWhen>
+          )}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
           <EnableSettlementsBanner />

@@ -1,6 +1,6 @@
-import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { readableFileSize } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import { isBlank } from 'common/utils/rzp-utils';
 
 import Staged from './Staged';
 
@@ -65,9 +65,14 @@ export default class FileUpload extends React.Component {
   onFileChange(file) {
     this.setState({ stagedFileStatus: 'process' });
 
-    this.props.onFileChange
-      .call(this, file, this.progressTracker)
-      .then(data => {
+    const promise = this.props.onFileChange.call(
+      this,
+      file,
+      this.progressTracker
+    );
+
+    if (promise && promise.then) {
+      promise.then(data => {
         if (data && data.errors) {
           // In some cases data was undefined while it was success. Mostly for slow connection.
           this.setState({ stagedFileStatus: 'error' });
@@ -75,6 +80,7 @@ export default class FileUpload extends React.Component {
           this.setState({ stagedFileStatus: 'success' });
         }
       });
+    }
   }
 
   getFiles = () => {
@@ -167,7 +173,10 @@ export default class FileUpload extends React.Component {
     }
 
     if (this.state.isDocPreUploaded) {
-      this.setState({ isDocPreUploaded: false });
+      this.setState(
+        { isDocPreUploaded: false },
+        () => this.props.onCloseClick && this.props.onCloseClick()
+      );
 
       return;
     }
@@ -175,7 +184,7 @@ export default class FileUpload extends React.Component {
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
       },
-      _ => this.props.onCloseClick && this.props.onCloseClick()
+      () => this.props.onCloseClick && this.props.onCloseClick()
     );
   };
 

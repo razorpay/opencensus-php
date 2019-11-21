@@ -1,23 +1,37 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, NavLink } from 'react-router-dom';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+import { withRouter, NavLink, Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { getKeysSeparatedByPipe, findBy } from 'common/utils/rzp-utils';
+
+import * as InvoiceActions from 'merchant/reducers/invoices/list';
+import { fetchReminders } from 'merchant/reducers/reminders';
+
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
-import ListContainer from 'merchant/containers/ListContainer';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
+import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
+
+import { trackSearchFilterForInternational } from './ga';
+
 @withRouter
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
+  fetchReminders,
 })
+@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
 export default class PaymentLinksContainer extends ListContainer {
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
+
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
     return this.props.fetchInvoices(params);
@@ -41,6 +55,7 @@ export default class PaymentLinksContainer extends ListContainer {
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
+
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Payment Links',
@@ -70,14 +85,25 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user, mode } = this.props;
+    let { loading, invoices, user, mode, tracking } = this.props;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            {user.isRemindersEnabled && (
+              <span class="btn btn-link">
+                <span class="badge bg-success m-r">new</span>
+
+                <Link to="/reminders">Reminder Settings</Link>
+              </span>
+            )}
+
+            <TakeATourButton feature={RZPFeatures.PL} />
+
             <DocsLink url="https://razorpay.com/docs/payment-links/" />
+
             <ShowWhen
               additionalCondition={user =>
                 (mode !== 'live' || !user.isRejected) &&
@@ -86,7 +112,17 @@ export default class PaymentLinksContainer extends ListContainer {
             >
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
-                <span>Create Payment Link</span>
+                <span
+                  onClick={() =>
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().success('dash.pl_action', {
+                        action: 'Initiate_PL_Creation',
+                      })
+                    )
+                  }
+                >
+                  Create Payment Link
+                </span>
               </NavLink>
             </ShowWhen>
           </div>
@@ -100,6 +136,7 @@ export default class PaymentLinksContainer extends ListContainer {
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
+          trackSearchFilterForInternational={trackSearchFilterForInternational}
         />
 
         <Alert type={status.type} message={status.message} />

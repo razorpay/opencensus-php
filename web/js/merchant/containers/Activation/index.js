@@ -1,15 +1,22 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+import QueryString from 'query-string';
+import { withRouter } from 'react-router-dom';
 
-import { Modal, ModalContent } from 'component/Modal';
-import { classList } from 'common/util';
-import Spinner from 'rzp/ui/Spinner';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { classList } from 'common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import KycForm from './new';
 import InstantActivation from './Instant';
 import { setInstantActivationsTracking } from './ga_new';
 
+const SOURCE_RAZORPAY_X = 'x';
+
+@withRouter
+@RTracking(() => window.rzpQ.component('ActivationContainer'))
 @connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
   constructor(props) {
@@ -84,6 +91,12 @@ export default class ActivationContainer extends Component {
         'activation'
       );
     }
+
+    const query = QueryString.parse(props.location.search);
+    this.isSourceRX =
+      query && query.merchant && query.merchant === SOURCE_RAZORPAY_X
+        ? true
+        : false;
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -121,6 +134,10 @@ export default class ActivationContainer extends Component {
     this.setState({ data });
   }
 
+  handleCloseActivationForm = e => {
+    this.props.tracking.trackEvent(window.rzpQ.onbr().dropped('act.form_fill'));
+  };
+
   componentWillMount() {
     this.fetchActivationDetails(this.props.accountId);
   }
@@ -131,6 +148,37 @@ export default class ActivationContainer extends Component {
 
   componentWillUnmount() {
     this.handleUnmount && this.handleUnmount();
+  }
+
+  get shouldShowL1Modal() {
+    const { user, accountId } = this.props;
+    const {
+      instantActivation,
+      showInstantActivation,
+      isUnregBizFlowEnabled,
+    } = user;
+    const {
+      isL1Submitted,
+      isWhitelistFlow,
+      isBlacklistFlow,
+      isGraylistFlow,
+    } = instantActivation;
+
+    const showL1Modal =
+      !accountId &&
+      showInstantActivation &&
+      (!isL1Submitted || isBlacklistFlow);
+
+    if (this.isSourceRX) {
+      // if Source RX return whatever is computed value of showL1Modal - Since Unreg is not supported there
+      return showL1Modal;
+    }
+
+    if (isUnregBizFlowEnabled) {
+      return false; // never show L1 Modal if unreg biz flow is enabled
+    }
+
+    return showL1Modal;
   }
 
   render() {
@@ -147,14 +195,11 @@ export default class ActivationContainer extends Component {
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
       isModal = !!this.props.onClose,
-      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
-      showL1Modal =
-        !this.props.accountId &&
-        user.showInstantActivation &&
-        (!isL1Submitted || isBlacklistFlow);
+      showL1Modal = this.shouldShowL1Modal;
 
     let content = null,
-      modalClasses = ['animate-down'];
+      modalClasses = ['animate-down'],
+      trackerIntent = null;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
@@ -181,6 +226,7 @@ export default class ActivationContainer extends Component {
             onFormValidityChange={this.handleIAFormValidityChange}
           />
         );
+        trackerIntent = 'act.form_fill';
       } else {
         content = (
           <KycForm
@@ -189,6 +235,7 @@ export default class ActivationContainer extends Component {
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );
+        trackerIntent = 'kyc.form_fill';
       }
     }
 
@@ -201,7 +248,7 @@ export default class ActivationContainer extends Component {
         <Modal
           class={classList(...modalClasses)}
           onClose={this.props.onClose}
-          onCloseCB={this.saveDirtyState}
+          onCloseCB={this.handleCloseActivationForm}
         >
           <ModalContent>{content || spinner}</ModalContent>
         </Modal>

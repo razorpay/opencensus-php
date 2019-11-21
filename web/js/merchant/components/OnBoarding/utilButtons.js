@@ -1,4 +1,5 @@
-import Button from 'component/Button';
+import RTracking from 'react-tracking';
+import Button from 'common/new-ui/Button';
 
 import FeatureEnableButton from './FeatureEnableButton';
 
@@ -66,6 +67,9 @@ class NextButton extends React.PureComponent {
   }
 }
 
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_skip_and_get_started_btn`)
+)
 class SkipAndGetStartedButton extends React.PureComponent {
   onClickFeatureEnableButton = (...args) => {
     const { props } = this;
@@ -75,6 +79,16 @@ class SkipAndGetStartedButton extends React.PureComponent {
       eventAction: `Page ${props.page} - Skip and Get Started`,
     });
 
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .productOnboarding()
+        .initiated(`${props.feature}.onboarding.get_started`, {
+          clickSource: `Screen_${
+            props.active === 0 ? 1 : 2
+          }_SkipAndGetStarted_CTA`,
+        })
+    );
+
     props.onClick && props.onClick(args);
   };
 
@@ -83,6 +97,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
 
     return (
       <FeatureEnableButton.Transparent
+        {...props}
         feature={props.feature}
         onClick={this.onClickFeatureEnableButton}
         isLocalEnabler={props.isLocalEnabler}

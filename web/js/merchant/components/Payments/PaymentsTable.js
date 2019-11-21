@@ -9,7 +9,7 @@ import {
   contact,
   createdAt,
   status,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
 
@@ -65,12 +65,12 @@ export default props => {
   let orders = mapOrders(props.items);
   let rzpOrders = mapRzpOrders(props.items);
 
-  // if there is atleast one visible "order-id"
+  // if there is at least one visible "order-id"
   if (Object.keys(orders).length) {
     paymentColumns.splice(1, 0, paymentOrder(orders));
   }
 
-  // if there is atleast one visible Razorpay's "order_id"
+  // if there is at least one visible Razorpay's "order_id"
   if (Object.keys(rzpOrders).length) {
     paymentColumns.splice(1, 0, rzpPaymentOrder(rzpOrders));
   }

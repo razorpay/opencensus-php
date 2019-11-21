@@ -6,8 +6,8 @@ import {
   fetchTransfers,
   fetchReversals,
   fetchSettlements,
-} from 'merchantLA/modules/collection';
-import { titleCase } from 'rzp/utils/rzp-utils';
+} from 'merchantLA/reducers/collection';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import GenericPanel, {
   PanelBody,

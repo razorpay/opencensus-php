@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required, email, phone } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import Fieldset from 'common/ui/Forms/Fieldset';
+import { required, email, phone } from 'common/utils/validators';
 
 export default class ContactDetailsForm extends Component {
   render() {

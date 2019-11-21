@@ -1,11 +1,10 @@
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import Form from 'component/Form';
-import Button, { AsyncBtn } from 'component/Button';
-import Input from 'component/Input';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { lenientUrl } from 'rzp/utils/validators';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import Form from 'common/new-ui/Form';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
-import { validateSlug } from 'rzp/utils/validators';
 import { trackPageSettingsData } from '../ga';
 
 import PPEmbedButtonView from '../Modals/EmbedButton';
@@ -97,14 +96,11 @@ export default class extends React.Component {
       trackData.push('payment_success_redirect_url');
     }
 
-    trackPageSettingsData(
-      this.props.isNew ? 'Save and Publish' : 'Save',
-      trackData
-    );
+    trackPageSettingsData(this.props.isNew ? 'Update' : 'Save', trackData);
   };
 
   render() {
-    const { isNew, handleClose, isTestMode, paymentPageEntity } = this.props;
+    const { handleClose, isTestMode, paymentPageEntity } = this.props;
 
     const {
       slug,
@@ -152,13 +148,16 @@ export default class extends React.Component {
                   addonValueBefore="https://pages.razorpay.com/"
                   disabled={isTestMode}
                   validator={val => {
-                    if (val) {
-                      if (!validateSlug(val.trim())) {
+                    const isEditMode = !!this.props.paymentPageEntity.id;
+                    const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
+
+                    if (toValidate) {
+                      if (val && !validateSlug(val.trim())) {
                         return 'Please enter valid Url';
                       }
 
                       if (val.length < 4) {
-                        return 'Url must be atleast 4 characters long';
+                        return 'Url must be at least 4 characters long';
                       } else if (val.length > 30) {
                         return 'Url must be maximum 30 characters long';
                       }
@@ -187,12 +186,13 @@ export default class extends React.Component {
                   readOnly
                   hidden
                 />
-                <DateField
+                <Input.DateTime
                   label="Page Expiry Date"
+                  checkboxFieldLabel="No Expiry"
                   className="Input--vTop Input--expiryby"
-                  updateDate={this.updateDate}
-                  expire_by={expire_by}
+                  value={expire_by}
                   defaultValue={expire_by}
+                  onChange={this.updateDate}
                   isInline
                 />
               </div>
@@ -308,7 +308,7 @@ export default class extends React.Component {
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit" disabled={disableSubmit}>
-                  {isNew ? 'Save and Publish' : 'Save'}
+                  Save
                 </Button.Primary>
               </footer>
             </Form>

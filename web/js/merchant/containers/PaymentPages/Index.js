@@ -1,33 +1,60 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
-import PaymentPagesList from './Pages/List';
+
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import Button from 'component/Button';
 
-import { classList } from 'common/util';
+import OnBoarding from './OnBoarding';
+import QuickGuide from './QuickGuide';
 
-@connect(state => {
-  return {
-    user: state.session.user,
-  };
-})
-export default class PaymentPagesContainer extends Component {
+import PaymentPagesList from './Pages/List';
+
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.PP
+      ),
+    };
+  },
+  {
+    handleProductQuickGuide,
+  }
+)
+export default class PaymentPagesContainer extends React.Component {
   render() {
-    const { user } = this.props;
+    const {
+      isQuickGuideOpen,
+      showOnboarding,
+    } = this.props.paymentPageProductOnBoarding;
+
+    if (showOnboarding) {
+      return <OnBoarding />;
+    }
 
     return (
       <tabbed-container>
+        {isQuickGuideOpen && <QuickGuide />}
+
         <header id="link-header">
           <NavLink exact to="/paymentpages">
             Payment Pages
-            <span
-              class="badge bg-success hidden-xs"
-              style={{ marginLeft: '5px' }}
-            >
-              new
-            </span>
+            {this.props.user.isPPMLIEnabled && (
+              <span
+                class="badge bg-success hidden-xs"
+                style={{ marginLeft: '5px' }}
+              >
+                v2.0
+              </span>
+            )}
           </NavLink>
         </header>
 

@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { uniqueArray } from 'common/util';
+import { uniqueArray } from 'common/utils/rzp-utils';
 
 import {
   normalizeBoolean,
@@ -8,7 +8,7 @@ import {
   arrayDiff,
   autoPrefixUrls,
   trim,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -175,6 +175,16 @@ export default class Activation extends Entity {
 
     return merchantFetch({
       url: 'merchant/activation',
+      mode: 'live',
+      method: 'post',
+      data,
+      accountId: this.accountId,
+    });
+  }
+
+  submitL1Form(data) {
+    return merchantFetch({
+      url: 'merchant/instant_activation',
       mode: 'live',
       method: 'post',
       data,

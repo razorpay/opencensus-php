@@ -1,4 +1,4 @@
-import { isAmount } from 'rzp/utils/validators';
+import { isAmount } from 'common/utils/validators';
 
 export function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';

@@ -1,19 +1,26 @@
 import { connect } from 'react-redux';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
+
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import HeaderAction from 'common/ui/HeaderAction';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
+
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { luminateRow } from 'merchant/reducers/app';
+import * as AccountActions from 'merchant/reducers/marketplace/accounts';
+
+import DocsLink from 'merchant/components/DocsLink';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import AccountsList from 'merchant/components/Marketplace/Accounts/AccountsList';
+import AccountsListFilter from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/containers/Marketplace/Accounts/Details';
-import AccountsListFilter from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
-import ListContainer from 'merchant/containers/ListContainer';
-import * as AccountActions from 'merchant/modules/marketplace/accounts';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { luminateRow } from 'merchant/modules/app';
-
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import DocsLink from 'merchant/components/DocsLink';
 
 @connect(
   state => {
@@ -236,6 +243,8 @@ export default class AccountsListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <TakeATourButton feature={RZPFeatures.ROUTE} />
+
             <DocsLink
               title="Documentation"
               url="https://razorpay.com/docs/route/"

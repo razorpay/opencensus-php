@@ -1,7 +1,7 @@
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
+import { getIntervalCycle } from 'common/utils/rzp-utils';
 
 export default function NewSubscriptionLinkReview({
   fields,
@@ -14,7 +14,7 @@ export default function NewSubscriptionLinkReview({
   const planQuantity = fields.quantity;
 
   const addOnAmount = fields.addons
-    .filter(addon => !!addon.amount) // Filter out empty addon
+    .filter(addon => addon.item && !!addon.item.amount) // Filter out empty addon
     .reduce(
       (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
       0

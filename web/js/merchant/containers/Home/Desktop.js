@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import Header from 'rzp/ui/Header';
-import Amount from 'rzp/ui/Amount';
-import Sticky from 'rzp/ui/Sticky';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
-import LocalStorageService from 'rzp/utils/localStorage';
+import Header from 'common/ui/Header';
+import Amount from 'common/ui/Amount';
+import Sticky from 'common/ui/Sticky';
+import Group, { GroupItem } from 'common/ui/Group';
+import DateRangePicker, { customRangeText } from 'common/ui/DateRangePicker';
+import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
+import LocalStorageService from 'common/utils/localStorage';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
@@ -19,10 +21,11 @@ import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 
 import {
   trackPresetChange,
@@ -32,6 +35,7 @@ import {
   trackSettleNow,
 } from './ga';
 
+@withRouter
 @connect(state => ({ user: state.session.user, config: state.config }), {
   openModal,
 })
@@ -46,12 +50,34 @@ class AnalyticsDesktop extends Component {
     );
   }
 
+  popupCredit = () => {
+    if (this.props.location.hash === '#creditscore') {
+      this.resetHash();
+      this.props.openModal({
+        component: <CreditPullModal fromWhere="Announcements" />,
+        size: 'regular',
+      });
+    }
+  };
+
+  componentDidUpdate() {
+    this.popupCredit();
+  }
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
+  };
+
   showOndemandSettlementForm() {
     trackSettleNow();
     let balance = this.props.current_balance.data.balance;
     this.props.openModal({
       component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
       size: 'small',
+      disableClose: true,
     });
   }
 
@@ -92,7 +118,6 @@ class AnalyticsDesktop extends Component {
 
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
-
     return (
       <div className="home-analytics-desktop">
         <div
@@ -174,16 +199,18 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
+                    <ShowWhen myRole="owner admin finance">
+                      <Button.Secondary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={
+                          current_balance.loading ||
+                          current_balance.data.balance < 100
+                        }
+                      >
+                        Settle Now
+                      </Button.Secondary>
+                    </ShowWhen>
                   ) : (
                     <Link className="pull-right" to="/settlements">
                       <span
@@ -286,6 +313,9 @@ class AnalyticsDesktop extends Component {
                     <RecentActivity
                       sectionTitle={recentActivityTitle}
                       onFetchPayments={onFetchPayments}
+                      user={this.props.user}
+                      currentBalance={current_balance}
+                      onSelect={this.showOndemandSettlementForm}
                     />
                   </div>
                 </div>

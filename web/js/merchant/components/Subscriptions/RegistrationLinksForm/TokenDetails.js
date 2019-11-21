@@ -1,6 +1,6 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import { AmountTooltip } from 'rzp/ui/Amount';
+import { AmountTooltip } from 'common/ui/Amount';
 
 import {
   checkIfAmount,

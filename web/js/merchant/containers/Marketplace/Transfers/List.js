@@ -1,18 +1,24 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
-import TransfersListFilter from 'merchant/components/Marketplace/TransfersListFilter';
-import DataTable from 'rzp/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'merchant/modules/collection';
+
 import {
   transferId,
   source,
   recipient,
   amount,
   createdAt,
-} from 'rzp/ui/item/pair';
-import HeaderAction from 'rzp/ui/HeaderAction';
+} from 'common/ui/item/pair';
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
+
+import { fetchTransfers as fetchAll } from 'merchant/reducers/collection';
+
 import DocsLink from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
+import TransfersListFilter from 'merchant/components/Marketplace/TransfersListFilter';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
@@ -21,7 +27,9 @@ export default class TransfersListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/route/"/>
+            <TakeATourButton feature={RZPFeatures.ROUTE} />
+
+            <DocsLink url="https://razorpay.com/docs/route/" />
           </div>
         </HeaderAction>
         <TransfersListFilter

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import Alert from 'rzp/ui/Forms/Alert';
+import Alert from 'common/ui/Forms/Alert';
 import AsyncButton from 'react-async-button';
 
 export default ({

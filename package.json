@@ -4,10 +4,13 @@
   "private": true,
   "dependencies": {
     "aws-sdk": "2.181.0",
-    "ecstatic": "^3.1.1",
+    "croppie": "^2.6.4",
+    "ecstatic": "^3.3.2",
     "glob": "^7.1.2",
-    "multi-glob": "^1.0.1",
-    "puppeteer": "^1.0.0"
+    "jshint": "^2.10.2",
+    "multi-glob": "^1.0.2",
+    "puppeteer": "^1.20.0",
+    "query-string": "^6.8.3"
   },
   "scripts": {
     "precommit": "lint-staged",

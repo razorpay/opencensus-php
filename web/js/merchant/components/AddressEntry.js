@@ -7,7 +7,7 @@ import State from 'merchant/models/State';
 import {
   getCountryPINcodeType,
   isValidZipcodeCountryWise,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 /**
  * Finds a state from the states-list by it's name.
@@ -86,6 +86,8 @@ export default class AddressEntry extends React.Component {
    * Updates the country in PowerSelect.
    */
   updateCountry = ({ option }) => {
+    this.props.trackSelectCountry && this.props.trackSelectCountry(option); // format: name of country
+
     // Set state and invoke onChange.
     this.setState(
       {

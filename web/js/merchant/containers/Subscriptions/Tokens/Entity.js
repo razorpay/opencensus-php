@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
-import { AsyncBtn } from 'component/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
@@ -23,10 +23,10 @@ import {
   fetchToken,
   deleteToken,
   resubmitNACHFile,
-} from 'merchant/modules/token';
-import { downloadSignedNACHFile } from 'merchant/modules/registration_link';
-import { showNotification } from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+} from 'merchant/reducers/token';
+import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './ChargeToken';

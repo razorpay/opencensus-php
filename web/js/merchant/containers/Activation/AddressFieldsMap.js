@@ -1,5 +1,6 @@
-import Input from 'component/Input';
-import { states } from 'rzp/utils/constants';
+import Input from 'common/new-ui/Input';
+import { states } from 'merchant/helpers/data';
+import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
 
 var stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -14,8 +15,8 @@ export default [
   [
     {
       name: 'business_registered_address',
-      // placeholder: 'Enter Street Address',
-      label: 'Registered Address',
+      label: 'Address',
+      placeholder: 'Enter Street Address',
       _cmp: Input.Textarea,
     },
     {
@@ -40,14 +41,15 @@ export default [
   ],
   {
     _name: 'same_address',
-    fieldLabel: 'Operational Address same as Registered Address',
+    fieldLabel: 'Operational Address same as above',
     description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
+    _when: excludeFor_Indiv,
   },
   [
     {
       name: 'business_operation_address',
-      // placeholder: 'Enter Street Address',
+      placeholder: 'Enter Street Address',
       label: 'Operational Address',
       _cmp: Input.Textarea,
       _when: differentAddress,

@@ -1,33 +1,46 @@
-import GenericEntity from './GenericEntity';
-import Subscription from './Subscription';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
-export default class AddOns extends GenericEntity {
-  listRouteName = 'addons_fetch_multiple';
-  deleteRouteName = 'addon_delete';
+/*
+* This is not model exactly, however, this is the best place to put this utils as of now, since it's similar to model's serializer
+*
+* */
 
-  resourceFields = ['name', 'description', 'amount', 'units'];
-
-  getRouteName() {
-    return this.isNew ? 'addon_create' : 'addon_update';
+/*
+  Description: Filter out extra values on basis of `resourceFields`
+  Input:
+    1) fields = string / array
+    2) data = value / object
+*/
+export function formatFields(fields, data) {
+  if (!Array.isArray(fields)) {
+    return _serializeProperty(fields, data);
   }
 
-  serializeProperty(prop) {
-    if (prop === 'notes') {
-      let notes = this.notes || [];
-      return notes.reduce((prev, curr) => {
-        prev[curr.key] = curr.value || '';
-        return prev;
-      }, {});
-    }
+  const formattedData = {};
 
-    if (prop === 'item') {
-      let item = this.item;
-      return {
-        ...item,
-        amount: rupeesToPaise(item.amount),
-      };
+  // Parsing over fields(array) is better than parsing over data(object)
+  // Parsing over data(object) will lead to iterating over not to be formatted keys
+  fields.forEach(key => {
+    let value = data[key];
+    if (value) {
+      formattedData[key] = _serializeProperty(key, value);
     }
-    return super.serializeProperty(prop);
+  });
+
+  return { ...data, ...formattedData }; // This will send formatted data back along with other values in data which are not to be processed
+}
+
+/* ================= Util functions ===================== */
+
+// Process any data before sending in this fn.
+function _serializeProperty(key, value) {
+  switch (key) {
+    case 'description':
+    case 'name':
+      return value && value.trim();
+    case 'amount':
+      return rupeesToPaise(value); // Ideally should be multiplied by unit price. Currently assuming INR
+    case 'quantity':
+      return Number(value);
   }
 }

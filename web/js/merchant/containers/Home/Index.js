@@ -2,24 +2,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
-import { showNotification } from 'rzp/modules/notifications';
-import { customRangeText } from 'rzp/ui/DateRangePicker';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { customRangeText } from 'common/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
   platformGroupingVals,
   groupByPlatform,
   OTHERS,
-} from 'rzp/utils/pokedex';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
-import * as ModalActions from 'rzp/modules/modals';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { activationDuration } from 'common/data';
+} from 'common/utils/pokedex';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { activationDuration } from 'merchant/helpers/data';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import * as HomeActions from 'merchant/modules/home';
-import { fetch } from 'merchant/modules/pokedex';
-import { fetchPayments } from 'merchant/modules/collection';
+import * as HomeActions from 'merchant/reducers/home';
+import { fetch } from 'merchant/reducers/pokedex';
+import { fetchPayments } from 'merchant/reducers/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -27,8 +28,11 @@ import {
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   trackError,
@@ -40,10 +44,11 @@ import {
   iaActivations,
 } from './ga';
 
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -111,6 +116,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCActivationSuccess:
         state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
+      showPANStatus: state.home.instantActivations.showPANStatus,
     };
   },
   {
@@ -120,6 +126,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchPayments,
   }
 )
+@RTracking(() => window.rzpQ.component('HomeContainer'))
 export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
@@ -139,11 +146,14 @@ export default class HomeContainer extends Component {
       // onboarding card is shown if this is present in localstorage
       onboardingCardToken = 'show_onboarding_card',
       // onboarding card first step is shown if this is present in localstorage
-      firstStepToken = 'onboarding_first_step';
+      firstStepToken = 'onboarding_first_step',
+      // partner onboarding is shown if user logs in for 1st time
+      partnerOnBoarding = 'partner_on_boarding_shown';
 
     // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
     this.firstStepToken = `${firstStepToken}--${user.current}`;
+    this.partnerOnBoardingToken = `${partnerOnBoarding}--${user.current}`;
 
     /*
      * Earlier , the tokens apply at browser level, if old tokens are present
@@ -166,7 +176,9 @@ export default class HomeContainer extends Component {
     }
 
     const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
+        user.role
+      ) >= 0);
 
     const showOnboardingBanner =
         hasAccessToOnboardingBanner &&
@@ -496,6 +508,16 @@ export default class HomeContainer extends Component {
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
+
+    const shouldShowMobileHotjarSurvey = showWhenUtil({
+      additionalCondition: user => user.isMobileHotjarSurveyEnabled,
+    });
+
+    if (shouldShowMobileHotjarSurvey) {
+      setTimeout(() => {
+        window.hj && window.hj('trigger', 'MOBILE_SURVEY');
+      }, 0);
+    }
   }
 
   closeOnboardingStep() {
@@ -616,7 +638,6 @@ export default class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       user,
-
       // following three props will be sent by admin analytics
       // - web/pokedex.js
       isAdmin,
@@ -626,6 +647,8 @@ export default class HomeContainer extends Component {
       showKYCActivationSuccess,
       showKYCDetails,
       hideKYCDetailsModal,
+      tracking,
+      showPANStatus,
     } = this.props;
 
     const { activation_flow } = user;
@@ -692,6 +715,19 @@ export default class HomeContainer extends Component {
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
+    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(
+      this.partnerOnBoardingToken
+    );
+
+    if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
+      LocalStorageService.setItem(this.partnerOnBoardingToken, true);
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: <PartnerOnbr disableClose={true} />,
+      });
+    }
+
     return (
       <div class="react-root dashboard-home">
         {/* Show Diwali Promotional Banner */}
@@ -736,7 +772,8 @@ export default class HomeContainer extends Component {
 
         {user.showInstantActivation &&
           !user.instantActivation.isL1Submitted &&
-          showOnboardingBannerFirstStep && (
+          showOnboardingBannerFirstStep &&
+          !user.isPartnerIntent() && (
             <ModalMask>
               <Modal
                 className="welcome-modal"
@@ -744,6 +781,11 @@ export default class HomeContainer extends Component {
                   trackIAClose();
                   this.closeOnboardingStep();
                   onFirstStepClose();
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().success('login.first_login_modal', {
+                      action: 'Close_Popup',
+                    })
+                  );
                 }}
               >
                 <ModalContent>
@@ -756,6 +798,11 @@ export default class HomeContainer extends Component {
                     onActivate={() => {
                       trackActivateAccount();
                       onFirstStepClose();
+                      tracking.trackEvent(
+                        window.rzpQ.onbr().initiated('act.form_fill', {
+                          clickSource: 'First_Login_Popup',
+                        })
+                      );
                     }}
                   />
                 </ModalContent>
@@ -766,10 +813,16 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
+              tracking.trackEvent(
+                window.rzpQ.onbr().dropped('act.whitelist_popup_action')
+              );
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             onGoToDashboard={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.whitelist_popup_action')
+              );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
@@ -791,14 +844,34 @@ export default class HomeContainer extends Component {
             user={user}
           />
         )}
+        {showPANStatus && (
+          <PANVerficationStatusModal
+            onClose={() => {
+              this.props.hidePANStatusModal();
+            }}
+            onGoToDashboard={this.onInstantActivationSuccess}
+            user={user}
+          />
+        )}
         {showKYCDetails && (
           <KycDetailsModal
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.dropped('act.greylist_popup_action')
+              );
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('act.greylist_popup_action')
+              );
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  clickSource: 'Greylist_Popup',
+                })
+              );
               hideKYCDetailsModal();
             }}
           />

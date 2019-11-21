@@ -1,6 +1,6 @@
-import { isEmail, isPhone } from 'rzp/utils/validators';
+import { isEmail, isPhone } from 'common/utils/validators';
 
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 export default props => {
   const {

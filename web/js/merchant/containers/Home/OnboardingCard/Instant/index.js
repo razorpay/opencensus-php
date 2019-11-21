@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
+import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
 
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+import RTracking from 'react-tracking';
 
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import {
   trackTestModeCard,
@@ -31,6 +32,9 @@ import {
     hideAcceptPaymentsModal,
   }
 )
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('OnboardingCardInstant');
+})
 export default class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);
@@ -98,6 +102,9 @@ export default class OnboardingCardInstant extends Component {
         isAccepted,
         needsClarification,
         international,
+        activated,
+        business_type,
+        poi_verification_status,
       } = user,
       { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -117,6 +124,9 @@ export default class OnboardingCardInstant extends Component {
         isRejected,
         setActiveStep: this.setActiveStep,
         international,
+        activated,
+        business_type,
+        poi_verification_status,
       };
 
     return (

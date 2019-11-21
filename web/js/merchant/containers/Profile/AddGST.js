@@ -1,18 +1,19 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import Banner from 'rzp/ui/Banner';
-import InputField from 'rzp/ui/Forms/InputField';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { saveGST } from 'merchant/modules/profile';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { required, validateGSTIN } from 'rzp/utils/validators';
-import { updateSession } from 'merchant/modules/session';
+import Banner from 'common/ui/Banner';
+import InputField from 'common/ui/Forms/InputField';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { saveGST } from 'merchant/reducers/profile';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { required, validateGSTIN } from 'common/utils/validators';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -32,6 +33,7 @@ const selector = formValueSelector('newGST');
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('AddGST'))
 @reduxForm({
   form: 'newGST',
 })
@@ -64,11 +66,19 @@ export default class AddGST extends Component {
     return this.props
       .saveGST(fieldProps)
       .then(item => {
+        const {
+          updateSession,
+          tracking,
+          showNotification,
+          closeModal,
+        } = this.props;
+
         let user = new User({
           ...this.props.session.user,
           ...item.data,
         });
-        this.props.updateSession({
+
+        updateSession({
           user,
         });
 
@@ -76,15 +86,22 @@ export default class AddGST extends Component {
           saved: true,
         });
 
-        this.props.showNotification({
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated('dash.my_account_actions', {
+            action: 'Add_GSTIN_Successful',
+          })
+        );
+
+        showNotification({
           type: 'success',
           message: `Your GST details are added. ${this.gst_success_msg}`,
           closeTimeout: 7000,
         });
+
         if (this.props.reloadAfterSave) {
           setTimeout(window.location.reload, 2500);
         } else {
-          this.props.closeModal();
+          closeModal();
         }
       })
       .catch(err => {

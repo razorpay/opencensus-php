@@ -1,4 +1,4 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 export const BankDetails = ({
   hideBankName,

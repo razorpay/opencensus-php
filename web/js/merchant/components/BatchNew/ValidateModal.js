@@ -2,7 +2,7 @@ import { Component } from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
 import FileUpload from 'merchant/components/File/Upload';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 

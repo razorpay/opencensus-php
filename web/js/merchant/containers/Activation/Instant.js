@@ -2,32 +2,38 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-import { ModalAsideNav } from 'component/Wizard';
-import { prevent } from 'common/util';
-import { showNotification } from 'rzp/modules/notifications';
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-import { classList, addPrefixToObjectKeys } from 'common/util';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import {
+  autoPrefixUrls,
+  addPrefixToObjectKeys,
+  prevent,
+} from 'common/utils/rzp-utils';
+import { trackDiffInFormFields } from 'merchant/utils/track-utils';
+import { classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
-} from 'rzp/utils/googleAnalytics';
+  trackTaboola,
+} from 'common/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
-import BingDataObj from 'rzp/utils/bingDataObj';
+import BingDataObj from 'common/utils/bingDataObj';
 
 function defaultFieldProps(f) {
   const self = this;
@@ -66,6 +72,7 @@ function defaultFieldProps(f) {
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 1;
 
+@RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
 @connect(
   state => ({
@@ -187,6 +194,8 @@ export default class ActivationWizard extends React.Component {
       activation_flow,
       submitted,
       international,
+      promoter_pan,
+      business_type,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -197,6 +206,8 @@ export default class ActivationWizard extends React.Component {
       activation_status,
       activation_flow,
       international,
+      promoter_pan,
+      business_type,
       submitted: +submitted,
     }));
 
@@ -206,9 +217,20 @@ export default class ActivationWizard extends React.Component {
     });
   }
 
+  @RTracking((props, state) => {
+    const { tracking } = props;
+    const fields = trackDiffInFormFields(props.data, state.dirty);
+    return fields.forEach(field =>
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('act.provide_act_details', {
+          ...field,
+        })
+      )
+    );
+  })
   submitForm = () => {
     const data = this.formData;
-
+    const { tracking } = this.props;
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
@@ -224,6 +246,7 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);
+        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
         // updating contact propteries of hubspot contact
         updateHubSpotContactsProperties({
@@ -231,6 +254,8 @@ export default class ActivationWizard extends React.Component {
           activation_flow: this.user.activation_flow,
           completed: true,
         });
+
+        trackTaboola('l1_activation');
 
         const {
           isWhitelistFlow,
@@ -384,6 +409,7 @@ export default class ActivationWizard extends React.Component {
 
   render() {
     const isFormLocked = !!this.props.data.locked;
+    const { tracking } = this.props;
 
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
@@ -391,7 +417,14 @@ export default class ActivationWizard extends React.Component {
           return (
             <Collapsible
               title={collapsibleOpen => (
-                <span class="text-primary">
+                <span
+                  class="text-primary"
+                  onClick={() => {
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('act.view_signup_fields')
+                    );
+                  }}
+                >
                   {collapsibleOpen ? 'Hide' : 'Show'} previously filled details
                 </span>
               )}

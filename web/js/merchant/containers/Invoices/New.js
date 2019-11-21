@@ -5,13 +5,13 @@ import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import Amount from 'rzp/ui/Amount';
-import Alert from 'rzp/ui/Forms/Alert';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
-import Spinner from 'rzp/ui/Spinner';
-import InlineField from 'rzp/ui/Forms/InlineField';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Amount from 'common/ui/Amount';
+import Alert from 'common/ui/Forms/Alert';
+import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
+import TypeAhead from 'common/ui/Select/TypeAhead';
+import Spinner from 'common/ui/Spinner';
+import InlineField from 'common/ui/Forms/InlineField';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   findBy,
   getKeysSeparatedByPipe,
@@ -22,7 +22,7 @@ import {
   calculateTax,
   isBlank,
   getURLQueryParams,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemTable from './LineItemTable';
@@ -36,31 +36,34 @@ import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import {
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
-} from 'merchant/modules/customers';
-import { fetchItemsForAutocomplete } from 'merchant/modules/items';
-import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
-import { fetchStates } from 'merchant/modules/states';
-import { fetchGSTTaxes } from 'merchant/modules/taxes';
-import * as InvoiceActions from 'merchant/modules/invoices/details';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+} from 'merchant/reducers/customers';
+import { fetchItemsForAutocomplete } from 'merchant/reducers/items';
+import { saveInvoice, deleteInvoice } from 'merchant/reducers/invoices/list';
+import { fetchStates } from 'merchant/reducers/states';
+import { fetchGSTTaxes } from 'merchant/reducers/taxes';
+import * as InvoiceActions from 'merchant/reducers/invoices/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { PowerSelect } from 'react-power-select';
 import { SingleDatePicker } from 'react-dates';
 import AddressSelectionModal from 'merchant/containers/Invoices/AddressSelectionModal/index';
 import EditInvoiceLabelModal from 'merchant/containers/Invoices/Modals/Merchant/EditInvoiceLabel';
 import AddressDisplay from 'merchant/components/AddressDisplay';
-import * as constants from 'rzp/utils/constants';
+import { states } from 'merchant/helpers/data';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
-import { luminateRow } from 'merchant/modules/app';
+import { luminateRow } from 'merchant/reducers/app';
 import {
   track,
   trackLinkClick,
   trackClickDuplicateInvoice,
   trackSaveDuplicateInvoice,
+  trackChangeCurrencySettings,
+  trackSelectBillingAddress,
+  trackSelectShippingAddress,
 } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 function validate(values) {
   let errors = {
@@ -670,6 +673,8 @@ export default class InvoicesNewContainer extends Component {
   openInvoiceCurrencyChangeModal = ({ showCross = true, currency }) => {
     const invoiceCurrency = currency || this.state.invoiceCurrency;
 
+    trackChangeCurrencySettings();
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -903,6 +908,11 @@ export default class InvoicesNewContainer extends Component {
           }
           onSave={onSave}
           addressType={type}
+          trackSelectCountry={
+            type === 'billing'
+              ? trackSelectBillingAddress
+              : trackSelectShippingAddress
+          }
         />
       ),
     });
@@ -1502,8 +1512,7 @@ export default class InvoicesNewContainer extends Component {
     const merchantAddress = {
       line1: this.props.session.user.business_registered_address,
       city: this.props.session.user.business_registered_city,
-      state:
-        constants.states[this.props.session.user.business_registered_state],
+      state: states[this.props.session.user.business_registered_state],
       country: 'India',
       zipcode: this.props.session.user.business_registered_pin,
     };
@@ -2172,10 +2181,7 @@ export default class InvoicesNewContainer extends Component {
                 <ShowWhen
                   additionalCondition={user => user.isAllowedEdit('invoices')}
                 >
-                  <div
-                    class="col-md-4 col-sm-4 invoices--side"
-                    style={{ marginTop: '48px' }}
-                  >
+                  <div class="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">

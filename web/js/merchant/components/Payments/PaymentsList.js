@@ -1,10 +1,11 @@
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
 import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -52,17 +53,18 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const { docUrl, isRoute } = this.props;
+    const { docUrl, quickTourFeature, isRoute } = this.props;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          {docUrl && (
-            <div class="btn-toolbar pull-right">
-              <DocsLink url={docUrl} />
-            </div>
-          )}
+          <div class="btn-toolbar pull-right">
+            {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+
+            {docUrl && <DocsLink url={docUrl} />}
+          </div>
         </HeaderAction>
+
         <PaymentsListFilter
           form="paymentListFilter"
           count={this.state.count}

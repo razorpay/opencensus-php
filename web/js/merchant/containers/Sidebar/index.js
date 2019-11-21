@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
-import { toggleMobileMenu } from 'merchant/modules/app';
-import { areReportsStillDownloading } from 'merchant/modules/reports';
+import { toggleMobileMenu } from 'merchant/reducers/app';
+import { areReportsStillDownloading } from 'merchant/reducers/reports';
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
-} from 'merchant/modules/home';
+} from 'merchant/reducers/home';
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
@@ -51,6 +52,7 @@ const BASE_ROUTES = {
   }),
   { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal }
 )
+@RTracking(() => window.rzpQ.component('Sidebar'))
 export default class Sidebar extends Component {
   constructor(props) {
     super(props);
@@ -164,6 +166,8 @@ export default class Sidebar extends Component {
       routes,
       isReportsPending,
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
+      isSettlementEnabled:
+        user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
     return (
       <>
@@ -183,9 +187,12 @@ export default class Sidebar extends Component {
                 />
 
                 {user.isPartner() ? (
-                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
+                  <PartnerSidebar
+                    merchantNavLinkProps={merchantNavLinkProps}
+                    user={user}
+                  />
                 ) : (
-                  <MerchantNavLinks {...merchantNavLinkProps} />
+                  <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
               </div>
             )}
@@ -278,7 +285,7 @@ class PartnerSidebar extends Component {
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >
-          <MerchantNavLinks {...props.merchantNavLinkProps} />
+          <MerchantNavLinks {...props.merchantNavLinkProps} user={props.user} />
         </MainNavLinkGroup>
       </>
     );

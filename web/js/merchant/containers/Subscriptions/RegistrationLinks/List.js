@@ -1,18 +1,18 @@
 import { connect } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
 import {
   amount,
   receipt,
   status,
   createdAt as createdAtProperty,
-} from 'rzp/ui/item/pair';
-import { getTime } from 'rzp/ui/item';
+} from 'common/ui/item/pair';
 
-import { fetchRegistrationLinks as fetchAll } from 'merchant/modules/collection';
+import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
 
+import { getTime } from 'common/ui/item';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
 import ListContainer from 'merchant/containers/ListContainer';

@@ -1,21 +1,18 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import RTracking from 'react-tracking';
 
-import Configuration from 'merchant/containers/Configuration';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+
 import ApiKeys from 'merchant/containers/Keys/List';
+import Reminders from 'merchant/containers/Reminders';
 import Webhooks from 'merchant/containers/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
+import Configuration from 'merchant/containers/Configuration';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApplicationsNew from 'merchant/containers/Applications/new';
 
-const analyticsGoTo = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Settings',
-    eventAction: `Go To - ${name}`,
-  });
-};
-
+@RTracking(() => window.rzpQ.component('Settings'))
 @withRouter
 export default class Settings extends Component {
   componentDidMount() {
@@ -23,6 +20,7 @@ export default class Settings extends Component {
   }
 
   render() {
+    const { tracking } = this.props;
     return (
       <tabbed-container>
         <header id="settings-header">
@@ -31,7 +29,14 @@ export default class Settings extends Component {
           >
             <NavLink
               to="/config"
-              onClick={() => analyticsGoTo('Configuration')}
+              onClick={() => {
+                analyticsGoTo('Configuration');
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('dash.settings_action', {
+                    action: 'View_Configurations',
+                  })
+                );
+              }}
             >
               Configuration
             </NavLink>
@@ -40,7 +45,17 @@ export default class Settings extends Component {
           <ShowWhen
             additionalCondition={user => user.isAllowedView('webhooks')}
           >
-            <NavLink to="/webhooks" onClick={() => analyticsGoTo('Webhooks')}>
+            <NavLink
+              to="/webhooks"
+              onClick={() => {
+                analyticsGoTo('Webhooks');
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('dash.settings_action', {
+                    action: 'View_Webhook_Tab',
+                  })
+                );
+              }}
+            >
               Webhooks
             </NavLink>
           </ShowWhen>
@@ -48,8 +63,24 @@ export default class Settings extends Component {
           <ShowWhen
             additionalCondition={user => user.isAllowedView('api_keys')}
           >
-            <NavLink to="/keys" onClick={() => analyticsGoTo('API Keys')}>
+            <NavLink
+              to="/keys"
+              onClick={() => {
+                analyticsGoTo('API Keys');
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('dash.settings_action', {
+                    action: 'View_API_Key_Tab',
+                  })
+                );
+              }}
+            >
               API Keys
+            </NavLink>
+          </ShowWhen>
+
+          <ShowWhen additionalCondition={user => user.isRemindersEnabled}>
+            <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+              Reminders
             </NavLink>
           </ShowWhen>
 
@@ -65,6 +96,11 @@ export default class Settings extends Component {
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />
           <Route path="/keys" component={ApiKeys} />
+          <ShowWhenRoute
+            path="/reminders"
+            component={Reminders}
+            additionalCondition={user => user.isRemindersEnabled}
+          />
           <Switch>
             <Route exact path="/applications" component={Applications} />
             <Route exact path="/applications/new" component={ApplicationsNew} />
@@ -75,3 +111,10 @@ export default class Settings extends Component {
     );
   }
 }
+
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Settings',
+    eventAction: `Go To - ${name}`,
+  });
+};

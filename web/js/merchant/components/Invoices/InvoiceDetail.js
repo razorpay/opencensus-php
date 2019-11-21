@@ -1,24 +1,32 @@
-import { NavLink } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
-import Spinner from 'rzp/ui/Spinner';
-import Banner from 'rzp/ui/Banner';
+import { NavLink, Link } from 'react-router-dom';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Banner from 'common/ui/Banner';
+import DataTable from 'common/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'common/ui/item/pair';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import Stepper from 'common/new-ui/Stepper';
+
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { Link } from 'react-router-dom';
-import DataTable from 'rzp/ui/Table/DataTable';
-import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Button, { AsyncBtn } from 'component/Button';
-import Tooltip from 'rzp/ui/Tooltip';
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import Tooltip from 'common/ui/Tooltip';
+import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   EditExpiry,
   EditMinimumAmount,
   EditNotes,
   EditReceipt,
+  EditBusinessSegment,
 } from 'merchant/containers/PaymentLinks/Edit/index';
 
 import {
@@ -110,9 +118,13 @@ export default props => {
     invoice,
     isLoading,
     statusMsg,
+    nextReminders,
     editPaymentLink,
     isRoleAllowedEdit,
+    isAutoRemindersUpdating,
+    onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -125,6 +137,11 @@ export default props => {
 
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
+
+  const isRemindersEnabled =
+    invoice.reminder_status && !(invoice.reminder_status === 'disabled');
+
+  const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -146,7 +163,7 @@ export default props => {
                 <i class="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
-              {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
+              {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button class="btn Button--primary" onClick={props.onIssue}>
@@ -281,6 +298,45 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
+                {user.isRemindersEnabled &&
+                  isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <Input.Check
+                        name="auto_reminders"
+                        fieldLabel="Send auto reminders"
+                        checked={isRemindersEnabled}
+                        disabled={
+                          isPaymentLinkClosed || isAutoRemindersUpdating
+                        }
+                        onChange={onChangeSendAutoReminder}
+                        autoRender
+                      />
+
+                      <Stepper
+                        list={getRemindersStepperData(
+                          isRemindersEnabled,
+                          nextReminders,
+                          isAutoRemindersUpdating,
+                          isPaymentLinkClosed
+                        )}
+                      />
+                    </EntityDetailRow>
+                  )}
+
+                {user.isRemindersEnabled &&
+                  !isPaymentLinksRemindersEnabled && (
+                    <EntityDetailRow label="Reminders">
+                      <div class="Input-content">
+                        Reminders are not set for payment links.
+                        <br />
+                        Set it up{' '}
+                        <Link target="_blank" to="/reminders">
+                          here
+                        </Link>
+                      </div>
+                    </EntityDetailRow>
+                  )}
+
                 <EntityDetailRow
                   label="Receipt No."
                   value={
@@ -340,9 +396,8 @@ export default props => {
                   }
                 />
 
-                <EntityDetailRow
-                  label="Notes"
-                  value={() => (
+                {!user.isCustomNotesDropdownEnabled ? (
+                  <EntityDetailRow label="Notes">
                     <EditNotes
                       value={invoice.notes}
                       editFn={editPaymentLink}
@@ -350,8 +405,21 @@ export default props => {
                       entityId={invoice.id}
                       trackerFn={trackDetailViewEdits}
                     />
-                  )}
-                />
+                  </EntityDetailRow>
+                ) : (
+                  <EditBusinessSegment
+                    isRoleAllowedEdit={isRoleAllowedEdit}
+                    value={invoice.notes}
+                    editFn={editPaymentLink}
+                    entityId={invoice.id}
+                    trackerFn={trackDetailViewEdits}
+                  />
+                )}
+                {user.isOndemandSettlementEnabled && (
+                  <ShowWhen myRole="owner admin finance">
+                    <ScheduledBanner fromWhere="Payment Pages" />
+                  </ShowWhen>
+                )}
               </div>
             </div>
           </div>
@@ -359,4 +427,46 @@ export default props => {
       )}
     </div>
   );
+};
+
+const getRemindersStepperData = (
+  isRemindersEnabled,
+  reminders,
+  isAutoRemindersUpdating,
+  isPaymentLinkClosed
+) => {
+  return reminders
+    .map(reminder => {
+      const currDate = moment(undefined),
+        reminderDate = moment(reminder * 1000),
+        isPendingState = reminderDate.isAfter(currDate);
+
+      if (isPaymentLinkClosed && isPendingState) {
+        return null;
+      }
+
+      const newReminder = {
+        status: !isRemindersEnabled
+          ? 'disabled'
+          : isPendingState > 0 ? 'pending' : 'completed',
+        time_to_sent: reminder,
+      };
+
+      return {
+        status: newReminder.status,
+        type: (
+          <i
+            class={`i i-${
+              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
+            }`}
+          />
+        ),
+        label: isAutoRemindersUpdating ? (
+          <PlaceholderLoader />
+        ) : (
+          moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
+        ),
+      };
+    })
+    .filter(ele => ele !== null);
 };

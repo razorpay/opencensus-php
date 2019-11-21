@@ -23,7 +23,7 @@
     margin 20px auto 0
 
 
-.Onboarding--PaymentPages, .Onboarding--Invoices
+.Onboarding--Invoices
   margin: 20px 0 80px
   color: #58666E
 
@@ -33,7 +33,7 @@
 
     span
       font-weight: 600
-  
+
   .Onboarding--content
     margin-top: 56px
 
@@ -79,15 +79,6 @@
       .i
         display: none
 
-.Onboarding--PaymentPages
-  .Onboarding--content
-    margin-top: 76px
-
-  .img
-    height: 140px
-  img
-    height: 100%
-
 .Onboarding--Invoices
   .img
     height: 160px
@@ -110,8 +101,8 @@
 
   .SliderDots
     position: absolute
-    bottom: -80px
     left: 50%
+    margin-top: 20px
     transform: translate(-50%, 0)
 
     @media(max-width: 1024px)
@@ -190,9 +181,11 @@
     padding: 0 64px
     margin-top: 120px
     align-self: flex-start
+    width: 50%
 
     @media(max-width: 1024px)
       padding: 0 24px
+      width: auto
 
     .Details-heading
       font-weight: bold
@@ -340,24 +333,13 @@
     position: relative
     z-index: 3
 
-.OnBoarding--FeatureRequest
-  .FeatureRequest
-    padding: 0 64px 64px 64px
-    width: 40%
-
-    .desc
-      color: #8B9498
-      font-size: 14px
-      line-height: 20px
-      margin-bottom: 12px
-
-    .FeatureRequest--Form
-      .form-body
-        .Input:first-child
-          margin-top: 0
-
-.OnBoarding--Subscription
-  .OnBoarding--ImageSlide .Landing--Image
+.OnBoarding--Subscription,
+.OnBoarding--Route,
+.OnBoarding--PaymentPages,
+.OnBoarding--PaymentLinks,
+.OnBoarding--Invoices,
+.OnBoarding--SmartCollect
+  .Landing--Image
     overflow: hidden
     z-index: 2
     position: relative
@@ -379,8 +361,8 @@
       top: -132px
       border-radius: 1px
       z-index: -1
-      height: 640px
       width: 180%
+      height: 816px
       min-width: 400px
       max-width: 490px
       color: #40c1bb
@@ -388,3 +370,57 @@
       box-shadow: 1px 1px 0 #009688, 2px 2px 0 #009688, 3px 3px 0 #009688, 4px 4px 0 #009688
       transform-origin: 0 0
       transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
+
+.OnBoarding--Route
+  .Landing--Image
+    &:before
+      color: #50a8ed
+      box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
+      background: linear-gradient(0deg, #0f6eed 0%, #00d4ff 100%)
+
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--PaymentPages
+  .Landing--Image
+    &:before
+      color: #7a47c2;
+      background: linear-gradient(0deg, #7a47c2 0%,#9d91d2 100%);
+      box-shadow: 1px 1px 0 #9d91d2, 2px 2px 0 #9d91d2, 3px 3px 0 #9d91d2, 4px 4px 0 #9d91d2;
+
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--PaymentLinks
+  .Landing--Image
+    &:before
+      background: #8845fe;
+      color: #8845fe;
+      background: linear-gradient(to bottom, rgba(2,0,36,1) 0%, rgba(186,109,237,1) 0%, rgba(127,96,235,1) 39%)
+      box-shadow: 1px 1px 0 #ba6ded, 2px 2px 0 #ba6ded, 3px 3px 0 #ba6ded, 4px 4px 0 #ba6ded;
+
+    img
+      max-width: 600px
+      left: 0
+
+.OnBoarding--Invoices
+  .Landing--Image
+    &:before
+      background: #0aca9b
+      color: #0aca9b
+      background: linear-gradient(45deg,#0aca9b, #01bd97 50%)
+      box-shadow: 1px 1px 0 #0aca9b, 2px 2px 0 #0aca9b, 3px 3px 0 #0aca9b, 4px 4px 0 #0aca9b
+
+    img
+      transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--SmartCollect
+  .Landing--Image
+    &:before
+      color: #50a8ed
+      box-shadow: 1px 1px 0 #11c0fa, 2px 2px 0 #11c0fa, 3px 3px 0 #11c0fa, 4px 4px 0 #11c0fa
+      background: linear-gradient(to bottom, rgba(2,0,36,1) 0%, #00d4ff 0%, #1083f0 39%)
+
+    img
+      max-width: 600px
+      left: 0

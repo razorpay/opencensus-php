@@ -1,23 +1,36 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as InvoiceActions from 'merchant/modules/invoices/details';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as InvoiceActions from 'merchant/reducers/invoices/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
-import { updatePLInReduxList } from 'merchant/modules/invoices/list';
-import { keysToSentence } from 'common/util';
+import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
+import { keysToSentence, findBy } from 'common/utils/rzp-utils';
+import {
+  fetchReminders,
+  fetchRemindersMerchantConfigs,
+} from 'merchant/reducers/reminders';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 
-@connect(state => ({ ...state.invoice, ...state.session }), {
-  ...InvoiceActions,
-  ...ModalActions,
-  ...NotificationsActions,
-  updatePLInReduxList,
-})
+@connect(
+  state => ({
+    ...state.invoice,
+    ...state.session,
+    reminders: state.reminders,
+  }),
+  {
+    ...InvoiceActions,
+    ...ModalActions,
+    ...NotificationsActions,
+    updatePLInReduxList,
+    fetchReminders,
+    fetchRemindersMerchantConfigs,
+  }
+)
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -27,6 +40,9 @@ export default class InvoiceDetailContainer extends Component {
     super(...arguments);
     this.state = {
       statusMsg: {},
+      isAutoRemindersUpdating: true,
+      isPaymentLinksRemindersEnabled: false,
+      nextReminders: [],
     };
 
     // recording new payments links creation UI form in hotjar
@@ -37,7 +53,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchInvoice(this.props.id);
+    this.fetchDataForInvoice();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -45,6 +61,56 @@ export default class InvoiceDetailContainer extends Component {
       this.props.fetchInvoice(nextProps.id);
     }
   }
+
+  fetchDataForInvoice = () => {
+    this.props.fetchInvoice(this.props.id);
+    this.fetchInvoiceRemindersList();
+  };
+
+  fetchInvoiceRemindersList = () => {
+    if (!this.props.user.isRemindersEnabled) {
+      return;
+    }
+
+    const promiseList = [];
+
+    if (!this.props.reminders.reminders.items.length) {
+      promiseList.push(this.props.fetchReminders());
+    } else {
+      promiseList.push(Promise.resolve());
+    }
+
+    promiseList.push(InvoiceActions.fetchInvoiceRemindersList(this.props.id));
+
+    Promise.all(promiseList).then(respList => {
+      const paymentLinksRemindersSettings =
+        findBy(
+          this.props.reminders.reminders.items,
+          'namespace',
+          'payment_link'
+        ) || {};
+
+      this.setState({
+        isPaymentLinksRemindersEnabled: paymentLinksRemindersSettings.active,
+        isAutoRemindersUpdating: false,
+        nextReminders: respList[1].data.next_run_at || [],
+      });
+    });
+  };
+
+  onChangeSendAutoReminder = event => {
+    this.setState({
+      isAutoRemindersUpdating: true,
+    });
+
+    this.editPaymentLink({
+      reminder_enable: event.target.value === '1',
+    }).then(resp => {
+      this.fetchInvoiceRemindersList();
+
+      return resp;
+    });
+  };
 
   issueInvoice = (props, notifyProps) => {
     let promises = [];
@@ -201,10 +267,28 @@ export default class InvoiceDetailContainer extends Component {
             delete d.first_payment_min_amount;
           }
 
-          this.props.showNotification({
-            type: 'success',
-            message: `${keysToSentence(d)} updated successfully`,
-          });
+          if (d.hasOwnProperty('reminder_enable')) {
+            this.props.showNotification({
+              type: 'success',
+              message: `Auto reminders has been ${
+                d.reminder_enable ? 'enabled' : 'disabled'
+              } successfully`,
+            });
+
+            this.props.fetchInvoice(this.props.id);
+          } else {
+            this.props.showNotification({
+              type: 'success',
+              message: `${keysToSentence(d)} updated successfully`,
+            });
+          }
+
+          if (
+            d.hasOwnProperty('expire_by') &&
+            this.props.user.isRemindersEnabled
+          ) {
+            this.fetchDataForInvoice();
+          }
 
           return resp;
         } else {
@@ -248,11 +332,17 @@ export default class InvoiceDetailContainer extends Component {
         invoice={invoice}
         isLoading={loading}
         statusMsg={statusMsg}
+        nextReminders={this.state.nextReminders}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
         isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
+        onChangeSendAutoReminder={this.onChangeSendAutoReminder}
+        isAutoRemindersUpdating={this.state.isAutoRemindersUpdating}
         isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
+        isPaymentLinksRemindersEnabled={
+          this.state.isPaymentLinksRemindersEnabled
+        }
       />
     );
   }

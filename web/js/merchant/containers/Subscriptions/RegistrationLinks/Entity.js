@@ -1,10 +1,10 @@
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
@@ -16,7 +16,7 @@ import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Detail
 import {
   fetchRegistrationLink,
   downloadSignedNACHFile,
-} from 'merchant/modules/registration_link';
+} from 'merchant/reducers/registration_link';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 

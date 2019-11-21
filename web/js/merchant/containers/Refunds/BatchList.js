@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from 'merchant/containers/Batch/List';
 
-import { fetchRefundBatches as fetchAll } from 'merchant/modules/batches';
+import { fetchRefundBatches as fetchAll } from 'merchant/reducers/batches';
 
 @connect(
   state => {

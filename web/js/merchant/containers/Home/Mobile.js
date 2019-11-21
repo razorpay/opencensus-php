@@ -2,24 +2,25 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Header from 'rzp/ui/Header';
-import Amount from 'rzp/ui/Amount';
-import Sticky from 'rzp/ui/Sticky';
-import DateRangePicker from 'rzp/ui/DateRangePicker';
+import Header from 'common/ui/Header';
+import Amount from 'common/ui/Amount';
+import Sticky from 'common/ui/Sticky';
+import DateRangePicker from 'common/ui/DateRangePicker';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
-import { openModal } from 'rzp/modules/modals';
+import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => ({
@@ -43,6 +44,7 @@ class AnalyticsMobile extends Component {
     this.props.openModal({
       component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
       size: 'small',
+      disableClose: true,
     });
   }
 
@@ -98,7 +100,6 @@ class AnalyticsMobile extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
-
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -114,13 +115,11 @@ class AnalyticsMobile extends Component {
               />
             )}
           </div>
-
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
-
           <Header className="clearfix" title="" showMode={false}>
             <div
               className={`pull-left ${this.props.user
@@ -139,16 +138,18 @@ class AnalyticsMobile extends Component {
             </div>
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled ? (
-                <Button.Secondary
-                  class="settle-btn"
-                  onClick={this.showOndemandSettlementForm}
-                  disabled={
-                    current_balance.loading ||
-                    current_balance.data.balance < 100
-                  }
-                >
-                  Settle Now
-                </Button.Secondary>
+                <ShowWhen myRole="owner admin finance">
+                  <Button.Secondary
+                    class="settle-btn"
+                    onClick={this.showOndemandSettlementForm}
+                    disabled={
+                      current_balance.loading ||
+                      current_balance.data.balance < 100
+                    }
+                  >
+                    Settle Now
+                  </Button.Secondary>
+                </ShowWhen>
               ) : (
                 <Link className="pull-right" to="/settlements">
                   <span
@@ -168,6 +169,9 @@ class AnalyticsMobile extends Component {
                 sectionTitle={recentActivityTitle}
                 onFetchPayments={onFetchPayments}
                 isTabletResolution={true}
+                user={this.props.user}
+                currentBalance={current_balance}
+                onSelect={this.showOndemandSettlementForm}
               />
             </div>
           )}

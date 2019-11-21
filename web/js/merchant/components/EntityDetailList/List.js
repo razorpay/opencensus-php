@@ -1,8 +1,7 @@
-import { Component } from 'react';
-import Alert from 'rzp/ui/Forms/Alert';
+import Alert from 'common/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
+import Time from 'common/ui/Time';
+import Amount from 'common/ui/Amount';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*
@@ -11,7 +10,7 @@ import Amount from 'rzp/ui/Amount';
  2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
  */
 
-export default class EntityDetailList extends Component {
+export default class EntityDetailList extends React.Component {
   constructor(props) {
     super();
 
@@ -42,6 +41,11 @@ export default class EntityDetailList extends Component {
       mode,
       subscriptionId,
     } = this.props;
+
+    if (loading) {
+      return [<EntityRow item={{}} loading={loading} />];
+    }
+
     let list = [];
 
     let limit = this.state.curLimit; // Show curLimit number of loaders. Also, default curLimit rows unless items.length is lesser
@@ -173,28 +177,45 @@ export default class EntityDetailList extends Component {
   };
 
   mergeCreditNotesRows = () => {
-    const { items, creditNotes } = this.props;
-
-    const rowList = this.getRowList(),
+    const { items, creditNotes, loading } = this.props,
+      rowList = this.getRowList(),
       creditNoteList = this.getCreditNotesRow();
+
+    if (loading) {
+      return rowList;
+    }
 
     const createdAtList = [...creditNotes, ...items]
       .map(note => note.created_at)
       .sort()
       .reverse();
 
-    const components = createdAtList.map(id => {
+    const components = [];
+    if (this.INVOICE_MAP['upcoming'] >= 0) {
+      const upcomingInvoice = rowList[this.INVOICE_MAP['upcoming']];
+
+      components.push(upcomingInvoice);
+
+      delete this.INVOICE_MAP['upcoming'];
+    }
+
+    createdAtList.forEach(id => {
       const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
         invoiceLoc = this.INVOICE_MAP[id];
 
-      if (creditNoteLoc !== void 0) {
-        return creditNoteList[creditNoteLoc];
+      if (creditNoteLoc >= 0) {
+        components.push(creditNoteList[creditNoteLoc]);
+
+        delete this.CREDIT_NOTE_MAP[id];
       }
 
-      return rowList[invoiceLoc];
+      if (invoiceLoc >= 0) {
+        components.push(rowList[invoiceLoc]);
+
+        delete this.INVOICE_MAP[id];
+      }
     });
 
-    components.unshift(rowList[this.INVOICE_MAP['upcoming']]);
     return components;
   };
 

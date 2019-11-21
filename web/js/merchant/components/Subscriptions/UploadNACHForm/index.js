@@ -1,23 +1,22 @@
 import { connect } from 'react-redux';
-import { classList } from 'common/util';
-import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
+import { findBy, normalizeDate, classList } from 'common/utils/rzp-utils';
 
-import { showNotification } from 'rzp/modules/notifications';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   validateNachFile,
   authenticateNACHFile,
-} from 'merchant/modules/registration_link';
+} from 'merchant/reducers/registration_link';
 
 import Accordion, {
   AccordionItem,
   AccordionItemTitle,
   AccordionItemContent,
-} from 'rzp/ui/Accordion';
+} from 'common/ui/Accordion';
 
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
-import { Modal, ModalContent } from 'component/Modal';
-import Button, { AsyncBtn } from 'component/Button';
+import Alert from 'common/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import DocsLink from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';

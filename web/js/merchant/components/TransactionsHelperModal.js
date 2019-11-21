@@ -1,11 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
-import Group, { GroupItem } from 'rzp/ui/Group';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import Button from 'component/Button';
+import Group, { GroupItem } from 'common/ui/Group';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
+@RTracking((state, props, args) => {
+  return window.rzpQ.component('InstantActivationSuccess');
+})
 export default class InstantActivationSuccess extends Component {
   constructor(props) {
     super(props);
@@ -13,9 +17,13 @@ export default class InstantActivationSuccess extends Component {
     this.handleProductsView = this.handleProductsView.bind(this);
   }
 
+  @RTracking(() =>
+    window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
+      action: 'View_Products',
+    })
+  )
   handleProductsView() {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
-
     this.props.track.trackViewProducts();
     onClose();
     showProductsModal(() => showTransactionsModal());

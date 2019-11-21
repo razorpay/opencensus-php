@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { handleProductQuickGuide } from 'merchant/modules/onboarding';
+import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 
 @connect(null, { handleProductQuickGuide })
 export default class TakeATourButton extends React.Component {

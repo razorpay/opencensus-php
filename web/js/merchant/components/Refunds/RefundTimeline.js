@@ -1,4 +1,4 @@
-import Time from 'rzp/ui/Time';
+import Time from 'common/ui/Time';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
 function ShowTime({ time }) {

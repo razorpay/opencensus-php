@@ -1,15 +1,17 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import RTracking from 'react-tracking';
+import ModalHeader from 'common/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
-import { required } from 'rzp/utils/validators';
-import InputField from 'rzp/ui/Forms/InputField';
-import { updatePassword } from 'merchant/modules/profile';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import { required } from 'common/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import { updatePassword } from 'merchant/reducers/profile';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 @connect(null, { updatePassword, closeModal, showNotification })
+@RTracking(() => window.rzpQ.component('PasswordForm'))
 @reduxForm({
   form: 'updatePasswordChangeForm',
 })
@@ -18,11 +20,17 @@ export default class PasswordForm extends PureComponent {
     return this.props
       .updatePassword(props)
       .then(() => {
-        this.props.showNotification({
+        const { showNotification, closeModal, tracking } = this.props;
+        showNotification({
           type: 'success',
           message: 'Password changed successfully.',
         });
-        this.props.closeModal();
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated('dash.my_account_actions', {
+            action: 'Change_Password_Successful',
+          })
+        );
+        closeModal();
       })
       .catch(err => {
         this.props.showNotification({

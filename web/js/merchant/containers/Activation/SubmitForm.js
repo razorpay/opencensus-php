@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required } from 'rzp/utils/validators';
+import Fieldset from 'common/ui/Forms/Fieldset';
+import { required } from 'common/utils/validators';
 import { trackLinkClick } from './ga';
 
 @connect(state => state.session, null)

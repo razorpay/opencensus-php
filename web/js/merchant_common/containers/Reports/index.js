@@ -6,15 +6,16 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
-import { prefixEntityValue } from 'common/data';
-import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import AccountsList from 'rzp/ui/AccountsList/index.js';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import debounce from 'rzp/utils/debounce';
+import { titleCase } from 'common/utils/rzp-utils';
+import scrollTo from 'common/utils/scrollTo';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
+import ReduxDatetime from 'common/ui/ReduxDatetime';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import AccountsList from 'common/ui/AccountsList/index.js';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import debounce from 'common/utils/debounce';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
@@ -40,7 +41,7 @@ const requestFailedFunc = () => {
   },
   downloadStartedMessage = {
     type: 'success',
-    message: 'Your report will download shortly',
+    message: 'Your report generation request is being placed',
   };
 
 export default function Reports(store, opts) {
@@ -55,7 +56,6 @@ export default function Reports(store, opts) {
     addReportToList,
     updateReportInList,
     removeReportFromList,
-    areReportsStillDownloading,
     addPollInstance,
   } = modelActions;
 
@@ -108,7 +108,7 @@ export default function Reports(store, opts) {
   @reduxForm({
     form: 'generateReports',
     initialValues: {
-      type: 'daily',
+      type: 'yesterday',
       date: moment(),
       startAt: moment().subtract('1', 'days'),
       endAt: moment(),
@@ -185,6 +185,7 @@ export default function Reports(store, opts) {
           .startOf('month'),
         currentReportList,
         pollInstances,
+        disableDownloadButton: false,
       };
 
       this.onConfigChange = ::this.onConfigChange;
@@ -207,10 +208,12 @@ export default function Reports(store, opts) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
       this.setFileFormat(option);
+      this.enableDownloadButton();
     }
 
     onAccountChange(account) {
       this.setState({ selectedAccount: account });
+      this.enableDownloadButton();
     }
 
     setFileFormat = config => {
@@ -340,11 +343,41 @@ export default function Reports(store, opts) {
       }
     };
 
-    saveLongPollInstances = (reportId, pollInstance) => {
+    onPollStart = (reportId, pollInstance) => {
       this.props.addPollInstance(reportId, pollInstance);
+      const reportProgressElement = document.querySelector(
+        '#report-progress-' + reportId
+      );
+
+      if (reportProgressElement) {
+        scrollTo({
+          endPos: reportProgressElement.getBoundingClientRect().top,
+          animation: 'ease-in-out',
+        });
+      }
+    };
+
+    disableDownloadButton = () => {
+      this.setState({
+        disableDownloadButton: true,
+      });
+    };
+
+    enableDownloadButton = () => {
+      if (this.state.disableDownloadButton) {
+        this.setState({
+          disableDownloadButton: false,
+        });
+      }
     };
 
     generateReport() {
+      this.disableDownloadButton();
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'download_report');
+        window.hj('tagRecording', ['download_report']);
+      }
+
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
         { date, type, invoiceDate, reportType, dateRangeData } = this.props,
@@ -356,7 +389,6 @@ export default function Reports(store, opts) {
 
       //tracking vars for reports v2
       let reportActionTypeForTracking = 'Download Report';
-      let downloadTimeLapse = new Date().getTime();
 
       if (selectedConfig.value === 'monthlyInvoice') {
         const month = invoiceDate.month() + 1,
@@ -408,6 +440,22 @@ export default function Reports(store, opts) {
               [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
               break;
             }
+
+            case 'yesterday': {
+              [startTime, endTime] = getUnixTimeStampsForYesterday();
+              break;
+            }
+
+            case 'last_7_days': {
+              [startTime, endTime] = getUnixTimeStampsForLastDays(7);
+              break;
+            }
+
+            case 'last_month': {
+              // not using getUnixTimeStampsForLastDays since month duration is not fixed
+              [startTime, endTime] = getUnixTimeStampsForLastMonth();
+              break;
+            }
           }
 
           const { user } = this.props,
@@ -438,14 +486,27 @@ export default function Reports(store, opts) {
             reqData,
             isMerchantAccount,
             this.updateStore,
-            this.saveLongPollInstances,
+            this.onPollStart,
             isPartnerReport
           ).then(data => {
             if (data.error) {
+              if (typeof window.hj === 'function') {
+                window.hj('tagRecording', [
+                  'download_report_failed',
+                  this.props.user.current,
+                ]);
+              }
               return this.props.showNotification({
                 type: 'error',
                 message: data.error,
               });
+            }
+
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', [
+                'download_report_success',
+                this.props.user.current,
+              ]);
             }
             window.location = data.url;
           });
@@ -498,9 +559,23 @@ export default function Reports(store, opts) {
               return saveAs(blob, 'broking_report.xlsx');
             }
 
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', [
+                'download_report_success',
+                this.props.user.current,
+              ]);
+            }
+
             location.href = data.data.url;
           })
           .catch(e => {
+            if (typeof window.hj === 'function') {
+              window.hj('tagRecording', [
+                'download_report_failed',
+                this.props.user.current,
+              ]);
+            }
+
             this.props.showNotification({
               type: 'error',
               message: 'No data found for given time range',
@@ -517,7 +592,7 @@ export default function Reports(store, opts) {
       }
 
       const { user, type, date, ga, dateRangeData } = this.props;
-      const { accounts, selectedAccount, selectedConfig } = this.state;
+      const { selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
       let emailsMap = {};
@@ -546,6 +621,9 @@ export default function Reports(store, opts) {
             selectedDate={date}
             dateRangeData={dateRangeData}
             getFullUnixTimeStamps={getFullUnixTimeStamps}
+            getUnixTimeStampsForYesterday={getUnixTimeStampsForYesterday}
+            getUnixTimeStampsForLastDays={getUnixTimeStampsForLastDays}
+            getUnixTimeStampsForLastMonth={getUnixTimeStampsForLastMonth}
             reportId={reportId}
             emailsMap={emailsMap}
             onSend={this.generateReport}
@@ -564,7 +642,6 @@ export default function Reports(store, opts) {
     // 1. merchant custom report configs
     // 2. rzp owned report configs
     sortConfigs = configs => {
-      const rzpId = '100000Razorpay';
       const merchantId = this.props.user.user.id;
       let merchantConfigs = [],
         rzpConfigs = [];
@@ -639,23 +716,176 @@ export default function Reports(store, opts) {
       }
     };
 
+    renderSelectDay = ({ name, withTime, label }) => {
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div class="form-group">
+            {label && <div class="title">{label}</div>}
+            <Field
+              name={name}
+              dateFormat="DD MMM, YYYY"
+              closeOnSelect={true}
+              component={ReduxDatetime}
+              placeholder="Select Date-Month-Year"
+              isValidDate={validYear}
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+          {withTime && this.renderSelectTime({ name: name + 'Time' })}
+        </div>
+      );
+    };
+
+    renderSelectTime = ({ name }) => (
+      <div className="form-group">
+        <Field
+          name={name}
+          component={ReduxDatetime}
+          closeOnSelect
+          dateFormat={false}
+          class="m-t"
+          onChange={this.enableDownloadButton}
+        />
+      </div>
+    );
+
+    renderSelectDateRange = () => {
+      const { dateRangeData } = this.props;
+      return (
+        <>
+          {this.renderSelectDay({
+            name: 'startAt',
+            withTime: dateRangeData.withTime,
+            label: 'Start at',
+          })}
+
+          {this.renderSelectDay({
+            name: 'endAt',
+            withTime: dateRangeData.withTime,
+            label: 'End at',
+          })}
+
+          <div className="col-sm-3 col-xs-12">
+            <div class="form-group m-t">
+              <div className="title" />
+              <div class="rzpCheckbox m-t">
+                <Field
+                  name="withTime"
+                  id="with-time"
+                  component="input"
+                  type="checkbox"
+                  onChange={this.enableDownloadButton}
+                />
+                <label for="with-time" class="icon i-check">
+                  Specify time
+                </label>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    renderSelectMonth = () => {
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+      return (
+        <div class="col-sm-4 col-xs-12">
+          <div className="title">Select Month</div>
+          <div class="form-group">
+            <Field
+              name={entity === 'monthlyInvoice' ? 'invoiceDate' : 'date'}
+              component={ReduxDatetime}
+              dateFormat="MMM, YYYY"
+              closeOnSelect={true}
+              isValidDate={
+                entity === 'monthlyInvoice'
+                  ? this.validateInvoiceMonthYear
+                  : validYear
+              }
+              placeholder="Select Year-Month"
+              timeFormat={false}
+              onChange={this.enableDownloadButton}
+            />
+          </div>
+        </div>
+      );
+    };
+
+    renderSelectInterval = () => {
+      const { type } = this.props;
+      const { selectedConfig } = this.props;
+      const entity = selectedConfig && selectedConfig.value;
+
+      if (type === 'monthly' || entity === 'monthlyInvoice') {
+        return this.renderSelectMonth();
+      } else if (type === 'daily') {
+        return this.renderSelectDay({ name: 'date', label: 'Select Date' });
+      } else if (type === 'dateRange') {
+        return this.renderSelectDateRange();
+      }
+    };
+
+    renderPredefinedDurations = () => {
+      const DISPLAY_FORMAT = 'll';
+      const { type } = this.props;
+      let fromDate, toDate;
+      const today = moment();
+      switch (type) {
+        case 'yesterday':
+          fromDate = today
+            .clone()
+            .subtract(1, 'day')
+            .format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_7_days':
+          const previousDay = today.clone().subtract(1, 'day');
+          toDate = previousDay.format(DISPLAY_FORMAT);
+
+          // calculating last 7th day from today which last 6th day from yesterday
+          fromDate = previousDay.subtract(6, 'day').format(DISPLAY_FORMAT);
+          break;
+
+        case 'last_month':
+          const lastDayOfLastMonth = today
+            .clone()
+            .startOf('month')
+            .subtract(1, 'day');
+          toDate = lastDayOfLastMonth.format(DISPLAY_FORMAT);
+          fromDate = lastDayOfLastMonth.startOf('month').format(DISPLAY_FORMAT);
+          break;
+
+        default:
+          return null;
+      }
+
+      return (
+        <div class="col-sm-12 col-xs-12">
+          <small class="text-warning">
+            {fromDate} {toDate && ` to ${toDate}`}
+          </small>
+        </div>
+      );
+    };
+
     render() {
       const {
         isLoading,
-        hasConfigs,
         configs,
         accounts,
         selectedConfig,
         selectedAccount,
         currentReportList,
+        disableDownloadButton,
       } = this.state;
 
-      const { type, dateRangeData, user } = this.props;
+      const { type, dateRangeData } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
       let content = null;
-
       let isCurrentConfigSelected = false;
 
       Object.keys(currentReportList).forEach(reportId => {
@@ -739,24 +969,9 @@ export default function Reports(store, opts) {
 
                   <div class="form-element">
                     <div class="clearfix">
-                      <div class="col-sm-3">
-                        <div class="title">PERIOD</div>
-                      </div>
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 visible-sm visible-lg">
-                              <div className="title">Start At</div>
-                            </div>
-                            <div class="col-sm- visible-lg visible-sm">
-                              <div className="title">End At</div>
-                            </div>
-                          </>
-                        )}
-                    </div>
-                    <div class="clearfix">
                       {entity === 'monthlyInvoice' || (
-                        <div class="col-sm-3 col-xs-12">
+                        <div class="col-sm-4 col-xs-12">
+                          <div class="title">PERIOD</div>
                           <div
                             class="form-group form-control"
                             disabled={
@@ -768,132 +983,28 @@ export default function Reports(store, opts) {
                               name="type"
                               class="fix-select"
                               component="select"
+                              onChange={this.enableDownloadButton}
                             >
+                              <option value="yesterday">Yesterday</option>
+                              <option value="last_7_days">Last 7 days</option>
+                              <option value="last_month">Last Month</option>
                               <option value="daily">Daily</option>
                               {!(
                                 isPartnerReport &&
                                 selectedConfig.referred_accounts === 'all'
                               ) && <option value="monthly">Monthly</option>}
-                              {user.isReportDateRangeEnabled && (
-                                <option value="dateRange">Custom</option>
-                              )}
+                              <option value="dateRange">Custom</option>
                             </Field>
                           </div>
-                          {type === 'dateRange' && (
-                            <div class="form-group">
-                              <div class="rzpCheckbox">
-                                <Field
-                                  name="withTime"
-                                  id="with-time"
-                                  component="input"
-                                  type="checkbox"
-                                />
-                                <label for="with-time" class="icon i-check">
-                                  Specify time
-                                </label>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
-
-                      {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                        <div class="col-sm-4 col-xs-12">
-                          <div class="form-group">
-                            <Field
-                              name={
-                                entity === 'monthlyInvoice'
-                                  ? 'invoiceDate'
-                                  : 'date'
-                              }
-                              component={ReduxDatetime}
-                              dateFormat="MMM, YYYY"
-                              closeOnSelect={true}
-                              isValidDate={
-                                entity === 'monthlyInvoice'
-                                  ? this.validateInvoiceMonthYear
-                                  : validYear
-                              }
-                              placeholder="Select Year-Month"
-                              timeFormat={false}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {type === 'daily' &&
-                        entity !== 'monthlyInvoice' && (
-                          <div class="col-sm-4 col-xs-12">
-                            <div class="form-group">
-                              <Field
-                                name="date"
-                                dateFormat="DD MMM, YYYY"
-                                closeOnSelect={true}
-                                component={ReduxDatetime}
-                                placeholder="Select Date-Month-Year"
-                                isValidDate={validYear}
-                                timeFormat={false}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                      {type === 'dateRange' &&
-                        entity !== 'monthlyInvoice' && (
-                          <>
-                            <div class="col-sm-4 col-xs-12">
-                              <div class="form-group">
-                                <Field
-                                  name="startAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Starts at"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={validYear}
-                                  closeOnSelect
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="startAtTime"
-                                    placeholder="Select Time"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              class="col-sm-4 col-xs-12"
-                              style={{ marginRight: '0' }}
-                            >
-                              <div class="form-group">
-                                <Field
-                                  name="endAt"
-                                  dateFormat="DD MMM, YYYY"
-                                  placeholder="Ends At"
-                                  component={ReduxDatetime}
-                                  timeFormat={false}
-                                  isValidDate={isDateRangeEndAtValid(
-                                    dateRangeData.startAt
-                                  )}
-                                  closeOnSelect
-                                />
-                                {dateRangeData.withTime && (
-                                  <Field
-                                    name="endAtTime"
-                                    component={ReduxDatetime}
-                                    closeOnSelect
-                                    dateFormat={false}
-                                    class="m-t"
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
                     </div>
+
+                    <div class="clearfix">
+                      {this.renderPredefinedDurations()}
+                    </div>
+                    <div class="clearfix">{this.renderSelectInterval()}</div>
+
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
                         {type === 'dateRange' &&
@@ -914,6 +1025,7 @@ export default function Reports(store, opts) {
                             name="reportType"
                             class="fix-select"
                             component="select"
+                            onChange={this.enableDownloadButton}
                           >
                             {/* Add option on the fly for txt, tsv or other formats */}
                             {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
@@ -935,7 +1047,10 @@ export default function Reports(store, opts) {
                     <button
                       class="btn btn-primary"
                       onClick={this.generateReport}
-                      disabled={type === 'dateRange' && !!dateRangeError}
+                      disabled={
+                        disableDownloadButton ||
+                        (type === 'dateRange' && !!dateRangeError)
+                      }
                     >
                       Download Report
                     </button>
@@ -1008,6 +1123,35 @@ function getFullUnixTimeStamps(data) {
     getFullStartTimeStamp(data.startAt, data.withTime && data.startAtTime),
     getFullEndTimeStamp(data.endAt, data.withTime && data.endAtTime),
   ];
+}
+
+function getUnixTimeStampsForYesterday() {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayStartOfDayUnix = yesterday.startOf('day').format('X');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+
+  return [yesterdayStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastDays(numberOfDays) {
+  const yesterday = moment().subtract(1, 'day');
+  const yesterdayEndOfDayUnix = yesterday.endOf('day').format('X');
+  const last7thStartOfDayUnix = yesterday
+    .subtract(numberOfDays - 1, 'day')
+    .startOf('day')
+    .format('X');
+
+  return [last7thStartOfDayUnix, yesterdayEndOfDayUnix];
+}
+
+function getUnixTimeStampsForLastMonth() {
+  const lastMonth = moment().subtract(1, 'month');
+  const lastDayOfLastMonthEndOfDayUnix = lastMonth.endOf('month').format('X');
+  const firstDayOfLastMonthStartOfDayUnix = lastMonth
+    .startOf('month')
+    .format('X');
+
+  return [firstDayOfLastMonthStartOfDayUnix, lastDayOfLastMonthEndOfDayUnix];
 }
 
 function getFullStartTimeStamp(startAtMoment, startAtTimeMoment) {

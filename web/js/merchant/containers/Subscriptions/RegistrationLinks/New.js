@@ -1,24 +1,23 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'common/util';
+import { rupeesToPaise, titleCase } from 'common/utils/rzp-utils';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
-import { showNotification } from 'rzp/modules/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   saveInvoice,
   updatePLInReduxList,
-} from 'merchant/modules/invoices/list';
-import { createRegistrationLink } from 'merchant/modules/registration_link';
+} from 'merchant/reducers/invoices/list';
+import { createRegistrationLink } from 'merchant/reducers/registration_link';
 
-import Form from 'component/Form';
-import Spinner from 'rzp/ui/Spinner';
-import Button, { AsyncBtn } from 'component/Button';
-import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalContent } from 'component/Modal';
+import Form from 'common/new-ui/Form';
+import Spinner from 'common/ui/Spinner';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
 
 import CustomerDetailsForm, {
   validatePhone,

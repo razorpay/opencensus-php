@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import ProgressBar from 'rzp/ui/ProgressBar';
+import ProgressBar from 'common/ui/ProgressBar';
+import { classList } from 'common/utils/rzp-utils';
+import RTracking from 'react-tracking';
 
-import { classList } from 'common/util';
-
-export default function ActivationProgress(props) {
+export default RTracking((state, props, args) => {
+  return window.rzpQ.component('ActivationProgress');
+})(function ActivationProgress(props) {
   const { user, config } = props;
 
   const {
@@ -14,14 +16,21 @@ export default function ActivationProgress(props) {
   } = user;
 
   let actionCopy,
-    actionContent = null;
+    actionContent = null,
+    trackingIntent = null;
 
   if (user.activation_progress < 100) {
     // If user form is still unfilled
     actionCopy = 'Activate your account';
-
+    trackingIntent = 'act.form_fill';
     if (isL1Submitted) {
-      actionCopy = user.isActivated ? 'Accept Payments' : 'Submit KYC';
+      actionCopy = 'Submit KYC';
+      if (user.isActivated) {
+        actionCopy = user.isUnregisteredBusiness
+          ? 'Submit KYC'
+          : 'Accept Payments';
+        trackingIntent = 'dash.accept_payments';
+      }
     }
   } else if (user.isSubmitted) {
     actionCopy = 'Form submitted';
@@ -43,7 +52,15 @@ export default function ActivationProgress(props) {
       <Link
         className="activation-status-link"
         to={!user.isSubmitted ? '/activation' : '/config'}
-        onClick={props.onSidebarBannerClick}
+        onClick={() => {
+          trackingIntent &&
+            props.tracking.trackEvent(
+              window.rzpQ.onbr().initiated(trackingIntent, {
+                clickSource: 'LHS_Nav_Bar',
+              })
+            );
+          props.onSidebarBannerClick();
+        }}
       >
         <div
           className={classList(
@@ -71,7 +88,8 @@ export default function ActivationProgress(props) {
                 <div className="activation-bar-content activation-status-secondary">
                   {user.activation_progress < 100 &&
                   isL1Submitted &&
-                  user.isActivated ? (
+                  user.isActivated &&
+                  !user.isUnregisteredBusiness ? (
                     <div className="activation-bar-text">
                       Click here to know more
                     </div>
@@ -101,4 +119,4 @@ export default function ActivationProgress(props) {
       </Link>
     </ShowWhen>
   ) : null;
-}
+});

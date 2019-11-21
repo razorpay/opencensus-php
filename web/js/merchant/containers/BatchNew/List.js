@@ -1,18 +1,24 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
-import DataTable from 'rzp/ui/Table/DataTable';
+import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
-import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
-import { openModal } from 'rzp/modules/modals';
+import {
+  batchIdLink,
+  totalCount,
+  batchName,
+  status,
+} from 'common/ui/item/pair';
+import { openModal } from 'merchant_common/reducers/modals';
 
-import { luminateRow } from 'merchant/modules/app';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import { luminateRow } from 'merchant/reducers/app';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-import { batchDownload } from 'merchant/modules/batches';
-import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';
+import { batchDownload } from 'merchant/reducers/batches';
+import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 const batchStatus = {
@@ -37,6 +43,7 @@ const batchStatus = {
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('BatchList'))
 export default class BatchList extends ListContainer {
   static defaultProps = {
     extraColumns: [],
@@ -60,8 +67,14 @@ export default class BatchList extends ListContainer {
       });
   };
 
+  @RTracking(() =>
+    window.rzpQ.onbr().success('dash.pl_action', {
+      action: 'Upload_Batch_PL_File',
+    })
+  )
   openUploadModal = renderUploadModal => () => {
-    this.props.openModal({
+    const { openModal } = this.props;
+    openModal({
       size: 'large',
       component: renderUploadModal(),
     });

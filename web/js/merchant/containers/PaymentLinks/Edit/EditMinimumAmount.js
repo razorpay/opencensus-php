@@ -1,10 +1,10 @@
-import Amount from 'rzp/ui/Amount';
-import { isAmount } from 'rzp/utils/validators';
-import Input from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { titleCase } from 'rzp/utils/rzp-utils';
-import { AmountTooltip } from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
+import { isAmount } from 'common/utils/validators';
+import Input from 'common/new-ui/Input';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { titleCase } from 'common/utils/rzp-utils';
+import { AmountTooltip } from 'common/ui/Amount';
 
 export const MIN_AMOUNT_TEXT = 'Minimum due amount';
 
@@ -33,7 +33,7 @@ export function validateMinAmount(val, maxAmount) {
   }
 
   if (Number(val) > 0 && Number(val) < 1) {
-    return `${MIN_AMOUNT_TEXT} must be atleast ₹1`;
+    return `${MIN_AMOUNT_TEXT} must be at least ₹1`;
   }
   if (Number(val) >= maxAmount) {
     return `${MIN_AMOUNT_TEXT} must be less than Amount`;

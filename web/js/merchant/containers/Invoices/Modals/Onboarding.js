@@ -1,6 +1,6 @@
 import { Component } from 'react';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 import PropTypes from 'prop-types';
 
 import InvoiceLabelStep from './OnboardingSteps/InvoiceLabelStep';

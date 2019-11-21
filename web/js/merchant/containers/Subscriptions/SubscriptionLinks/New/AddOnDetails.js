@@ -1,6 +1,6 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 
 import AddOnItem from './AddOnItem';
 

@@ -4,8 +4,8 @@ import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import InputField from 'rzp/ui/Forms/InputField';
-import { required, lenientUrl } from 'rzp/utils/validators';
+import InputField from 'common/ui/Forms/InputField';
+import { required, lenientUrl } from 'common/utils/validators';
 
 export default reduxForm({ form: 'editWebsiteDetails' })(
   ({ onSubmit, onCancel, handleSubmit }) => {

@@ -17,6 +17,7 @@ use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
+use App\Merchant\GenericMerchant;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -46,8 +47,6 @@ class Service extends Base\Service
     // Users who signed up before this date
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
-
-    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
 
     /**
      * @var Application
@@ -197,25 +196,22 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        list($error, $data) = $this->checkAccessOfUserOnMerchant($merchantId);
+        list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
         if (empty($error) === true)
         {
 
-            if ($data['access'] === true)
-            {
-                Session::put('current_merchant_id', $merchantId);
+            Session::put('current_merchant_id', $merchantId);
 
-                $traceData = [
-                    'id'          => $user->id,
-                    'email'       => $user->email,
-                    'merchant_id' => $merchantId,
-                ];
+            $traceData = [
+                'id'          => $user->id,
+                'email'       => $user->email,
+                'merchant_id' => $merchantId,
+            ];
 
-                $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
+            $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
 
-                return [];
-            }
+            return [];
         }
 
         return ["Couldn't find the merchant you are looking for."];
@@ -439,6 +435,8 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
+                    $data = $this->updateExperiments($data);
+
                     $data = $this->updateInstantActivationExperiment($data);
 
                     if (((bool) $merchant['activated']) === true)
@@ -450,22 +448,10 @@ class Service extends Base\Service
                         $data['experiments']['support_call'] = ['result' => 'off'];
                     }
 
-                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
-                    $data['experiments']['coupons'] = $merchantService->getTreatment('coupons');
-                    $data['experiments']['is_announcement'] = $merchantService->getTreatment('is_announcement');
-                    $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
-                    $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
-                    $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
-                    $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
-                    $data['experiments']['report_date_range'] = $merchantService->getTreatment('report_date_range');
-                    $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
-
-                    $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
-                    $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
-                    $data['experiments']['post_activation_hotjar_survey'] = $merchantService->getTreatment('post_activation_hotjar_survey');
-                    $data['experiments']['second_factor_auth'] = $merchantService->getTreatment('second_factor_auth');
-                    $data['experiments']['disable-view-reports'] = $merchantService->getTreatment('disable-view-reports');
+                    if ((new Helper)->isOwner($currentMerchant))
+                    {
+                        $data['partner_intent'] = $merchantService->getPartnerIntent();
+                    }
 
                     $data['current'] = $currentMerchantId;
 
@@ -498,8 +484,6 @@ class Service extends Base\Service
 
                         if (empty($configs) === false)
                         {
-                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
-
                             foreach ($configs as $config)
                             {
                                 if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
@@ -534,6 +518,17 @@ class Service extends Base\Service
             if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
             {
                 $data['pre_signup_complete'] = true;
+            }
+
+            // for non-registered check if pre_signup_complete done or not;
+
+            if ($this->isPartnerIntentTrue($data) or
+                $this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
+            {
+                if ((((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
+                {
+                    $data['pre_signup_complete'] = true;
+                }
             }
 
             // There are approx 3k merchants who have not
@@ -653,6 +648,33 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            $currentMerchantId = Session::get('current_merchant_id');
+
+            if ($currentMerchantId !== null and empty($adminUser) === true)
+            {
+                $currentMerchant = $genericUser
+                    ->merchants
+                    ->where('id', $currentMerchantId)
+                    ->first();
+
+                // if currentMerchant is not in merchants array
+                // then check user's access on it using checkAccessOfUserOnMerchant
+                // if no error push the returned merchant object in merchants array
+                if ($currentMerchant === null)
+                {
+                    list($error, $data) = $this->checkAccessOfUserOnMerchant($currentMerchantId);
+
+                    if (empty($error) === true)
+                    {
+                        $genericUser->merchants->push(new GenericMerchant($data['merchant']));
+                        Auth::login($genericUser, false);
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+            }
+
         }
 
         return [$error, $genericUser];
@@ -691,6 +713,14 @@ class Service extends Base\Service
             and (((bool) $data['submitted']) === true))
         {
             $enableInstantActivations = false;
+        }
+
+        //
+        // For unregistered business activation flow will be null so instant activation should be true for unregistered business
+        //
+        if ($this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
+        {
+            $enableInstantActivations = true;
         }
 
         $data['instant_activations'] = $enableInstantActivations;
@@ -817,5 +847,72 @@ class Service extends Base\Service
                 throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
         }
+    }
+
+    /**
+     * @param $data
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    protected function updateExperiments(array $data): array
+    {
+        $merchantService = new Merchant\Service;
+
+        $features = [
+            'reminders',
+            'coupons',
+            'is_announcement',
+            'is_banner',
+            'capital_announcement',
+            'capital_banner',
+            'non_registered_onboarding',
+            'international_currencies',
+            'announcements_early_settlements_1',
+            'show_extra_fields_in_pp',
+            'checkout_survey',
+            'sellerapp_plus',
+            'second_factor_auth',
+            'disable-view-reports',
+            'mobile_hotjar_survey',
+            'paymentpages_mli',
+            'show_commission_balance',
+            'custom_notes',
+            'sellerapp_PL_batch_upload'
+        ];
+
+        $experimentsResults = $merchantService->getBulkTreatment($features);
+
+        foreach ($experimentsResults as $result => $val)
+        {
+            $data['experiments'][$result] = $val;
+        }
+
+
+        return $data;
+    }
+
+    protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
+    {
+        
+        
+            // check business_type
+
+            $businessType = $data['pre_signup']['business_type'] ?? null;
+
+            if (MerchantDetails\BusinessType::isBusinessTypeForNotRegisteredBusiness($businessType) === true)
+            {
+                return true;
+            }
+            
+        return false;
+    }
+
+    protected function isPartnerIntentTrue(array $data): bool
+    {
+        return (
+            isset($data['partner_intent']) and
+            $data['partner_intent'] === true
+        );
     }
 }

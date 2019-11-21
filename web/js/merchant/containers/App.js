@@ -2,11 +2,11 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ErrorBoundary from 'common/ErrorBoundary';
-import ModalDialog from 'rzp/ui/ModalDialog';
-import Notifications from 'rzp/ui/Notifications';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ModalDialog from 'common/ui/ModalDialog';
+import Notifications from 'common/ui/Notifications';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
 import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
@@ -14,23 +14,28 @@ import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as SessionActions from 'merchant/modules/session';
-import * as ConfigActions from 'merchant/modules/config';
-import { applyTheme } from 'rzp/themes';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import * as SessionActions from 'merchant/reducers/session';
+import * as ConfigActions from 'merchant/reducers/config';
+import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/modules/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
-import { fetchGST } from 'merchant/modules/profile';
-import { fetchConfig } from 'merchant/modules/config';
-import { resizeWindow } from 'merchant/modules/app';
+import { fetchGST } from 'merchant/reducers/profile';
+import { fetchConfig } from 'merchant/reducers/config';
+import {
+  resizeWindow,
+  updateMerchantLiveTransactionFlag,
+} from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
-import { classList } from 'common/util';
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { classList } from 'common/utils/rzp-utils';
+import { setTrackData } from 'common/utils/googleAnalytics';
 import { merchantFetch } from 'merchant/utils/ajax';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import initChat from 'merchant/chat';
+import RTracking from 'react-tracking';
 
 @withRouter
 @connect(
@@ -47,6 +52,35 @@ import initChat from 'merchant/chat';
     ...NotificationActions,
     fetchGST,
     resizeWindow,
+  }
+)
+@RTracking(
+  ({ user, mode }) => {
+    const u = {
+      email: user.user.email,
+      id: user.user.id,
+      mid: user.current,
+      role: user.role,
+      business_type: user.business_type,
+      activated: user.activated,
+    };
+    let utm = null;
+    let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
+    if (typeof window.analytics !== 'undefined') {
+      utm = analytics.utils.getLandingParams();
+      gclid = analytics.utils.getCookie('gclid');
+    }
+    return window.rzpQ.component('Home', {
+      user: u,
+      utm_params: utm,
+      gclid: gclid,
+      mode: mode,
+    });
+  },
+  {
+    dispatch: data => {
+      window.rzpQ.push(data);
+    },
   }
 )
 export default class App extends Component {
@@ -208,11 +242,38 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
 
+  setLiveTransactionDone = ({ live_transaction_done, id }) => {
+    if (live_transaction_done === undefined) return;
+
+    switch (live_transaction_done) {
+      case 1:
+        updateMerchantLiveTransactionFlag(id)
+          .then(resp => {
+            if (resp.success) {
+              setTrackData({
+                eventCategory: 'Dashboard - Instant Activations Live',
+                eventAction: 'Login',
+                eventLabel: 'MTU-Funnel',
+              })();
+            }
+          })
+          .catch(err => {});
+        break;
+      case 2:
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations Live',
+          eventAction: 'Login',
+          eventLabel: 'MTU-Audience',
+        })();
+    }
+  };
+
   fetchUser() {
     let user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
+      this.setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
@@ -280,11 +341,12 @@ export default class App extends Component {
       pathname === '/dashboard_v2'
     ) {
       switch (role) {
-        case 'sellerapp':
-        case 'agent':
+        case [rolesList.SELLERAPP]:
+        case [rolesList.AGENT]:
           let url = '/paymentlinks';
           return this.props.history.replace(url);
-        case 'support':
+
+        case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
 
         case null:

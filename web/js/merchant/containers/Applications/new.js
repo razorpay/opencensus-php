@@ -4,24 +4,27 @@ import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
 
-import { autoPrefixUrls, checkIfHTTPS } from 'rzp/utils/rzp-utils';
-import { titleCase } from 'common/util';
+import {
+  autoPrefixUrls,
+  checkIfHTTPS,
+  titleCase,
+} from 'common/utils/rzp-utils';
 
 import {
   required,
   lenientUrl,
   isUrlLenient,
   flexibleDevUrl,
-} from 'rzp/utils/validators';
+} from 'common/utils/validators';
 
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as ApplicationActions from 'merchant/modules/applications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import * as ApplicationActions from 'merchant/reducers/applications';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import InputField from 'rzp/ui/Forms/InputField';
-import TaggedInput from 'rzp/ui/Forms/TaggedInput';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
-import LoaderDots from 'rzp/ui/LoaderDots';
+import InputField from 'common/ui/Forms/InputField';
+import TaggedInput from 'common/ui/Forms/TaggedInput';
+import Fieldset from 'common/ui/Forms/Fieldset';
+import LoaderDots from 'common/ui/LoaderDots';
 
 import AppWebhook from './AppWebhook';
 

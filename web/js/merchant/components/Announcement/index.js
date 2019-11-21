@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
-import AnnouncementBanner from 'rzp/ui/AnnouncementBanner';
-import LocalStorageService from 'rzp/utils/localStorage';
+import AnnouncementBanner from 'common/ui/AnnouncementBanner';
+import LocalStorageService from 'common/utils/localStorage';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class Announcement extends Component {
   constructor(props) {

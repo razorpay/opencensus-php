@@ -1,4 +1,4 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 import Card from './Card';
 import NACH from './NACH';

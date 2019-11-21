@@ -1,0 +1,53 @@
+/**/
+.Input--enum-list
+  .Input-elWrapper
+    position: relative
+
+  .btn-link
+    margin: 8px 12px
+    font-size: 13px
+
+    i
+      margin-right: 4px
+      display: inline-block
+
+  .Input-enum-option
+    overflow: auto
+
+    &.is-focused
+      z-index: 2
+
+    .Input-el
+      padding-right: 32px
+      border-radius: 0
+      position: relative
+
+    &:not(:nth-of-type(1))
+      margin-top: -1px
+
+    &:nth-of-type(1) .Input-el
+      border-top-left-radius: 2px
+      border-top-right-radius: 2px
+
+    &:last-of-type .Input-el
+      border-bottom-left-radius: 2px
+      border-bottom-right-radius: 2px
+
+    .Input-el-btn
+      position: absolute
+      width: 16px
+      height: 16px
+      right: 12px
+      top: 8px
+      line-height: 16px
+      border-radius: 50%
+      font-size: 14px
+      font-weight: bold
+      text-align: center
+      cursor: pointer
+      background-color: rgba(216, 216, 216, .2)
+      color: currentColor
+
+      &:hover
+        color: #7b8199
+

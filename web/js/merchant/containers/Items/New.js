@@ -2,23 +2,24 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { required } from 'rzp/utils/validators';
-import * as ItemActions from 'merchant/modules/items';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import InputField from 'common/ui/Forms/InputField';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import { required } from 'common/utils/validators';
+import * as ItemActions from 'merchant/reducers/items';
+import { saveSubscriptionItem } from 'merchant/reducers/subscriptions';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { PowerSelect } from 'react-power-select';
 import CheckableItem from 'merchant/components/CheckableItem';
-import { fetchTaxes, saveTax, fetchGSTTaxes } from 'merchant/modules/taxes';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
-import { deepCopy } from 'rzp/utils/immutable';
+import { fetchTaxes, saveTax, fetchGSTTaxes } from 'merchant/reducers/taxes';
+import RadioButton from 'common/ui/Forms/RadioButton';
+import { deepCopy } from 'common/utils/immutable';
 import Item from 'merchant/models/Item';
-import { isTaxOfTypeCess } from 'rzp/utils/rzp-utils';
-import { AmountTooltip } from 'rzp/ui/Amount';
-import Input from 'component/Input';
-import { classList } from 'common/util';
+import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
+import { AmountTooltip } from 'common/ui/Amount';
+import Input from 'common/new-ui/Input';
+import { classList } from 'common/utils/rzp-utils';
 
 const selector = formValueSelector('newItem');
 
@@ -70,6 +71,7 @@ const sacLengthValidator = (sac, all) => {
     fetchTaxes,
     saveTax,
     fetchGSTTaxes,
+    saveSubscriptionItem,
     ...ItemActions,
     ...ModalActions,
     ...NotificationsActions,
@@ -318,8 +320,13 @@ export default class AddItem extends Component {
           props.type = this.props.type;
         }
 
-        return this.props
-          .saveItem(props)
+        let saveItem = this.props.saveItem;
+
+        if (this.props.isSubscriptionItem) {
+          saveItem = this.props.saveSubscriptionItem;
+        }
+
+        return saveItem(props)
           .then(item => {
             this.props.showNotification({
               type: 'success',

@@ -9,8 +9,8 @@ import {
   validateRecurringChargeBatch,
   createRegistrationLinkBatch,
   validateRegistrationLinkBatch,
-} from 'merchant/modules/batches';
-import { closeModal } from 'rzp/modules/modals';
+} from 'merchant/reducers/batches';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 import RegistrationLinksBatchForm from './RegistrationLinkBatchCreationForm';
 

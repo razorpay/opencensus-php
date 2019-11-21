@@ -1,86 +1,63 @@
 import React, { Component } from 'react';
-import Group, { GroupItem } from 'rzp/ui/Group';
+import Group, { GroupItem } from 'common/ui/Group';
 import { PowerSelect } from 'react-power-select';
 
 class FilterDropdown extends Component {
-
-  constructor (props) {
-  
+  constructor(props) {
     super(props);
 
     this.state = {
-      selectedValues: {}
+      selectedValues: {},
     };
 
     this.handleFilterChange = this.handleFilterChange.bind(this);
   }
 
-  populateValues (filters, selectedFilters) {
- 
+  populateValues(filters, selectedFilters) {
     const { selectedValues } = this.state;
 
-    filters.forEach((filter) => {
-
+    filters.forEach(filter => {
       const filterName = filter.name,
-            selectedOption = selectedFilters[filterName];
+        selectedOption = selectedFilters[filterName];
 
-      filter.values.forEach((value) => {
-     
+      filter.values.forEach(value => {
         if (value.options) {
-
           value.options.forEach(value => {
-      
             value.filterName = filterName;
 
             if (selectedOption.value === value.value) {
-            
               selectedValues[filterName] = value;
             }
-          })
+          });
         } else {
-        
           value.filterName = filterName;
 
           if (selectedOption.value === value.value) {
-          
             selectedValues[filterName] = value;
           }
         }
       });
     });
 
-    this.setState({selectedValues});
+    this.setState({ selectedValues });
   }
 
-  handleFilterChange ({option: selectedItem}) {
- 
+  handleFilterChange({ option: selectedItem }) {
     const { onFilterChange } = this.props;
 
-    return onFilterChange &&
-           onFilterChange(selectedItem);
+    return onFilterChange && onFilterChange(selectedItem);
   }
 
-  componentWillMount () {
- 
-    this.populateValues(
-      this.props.filters,
-      this.props.selectedFilters
-    );
+  componentWillMount() {
+    this.populateValues(this.props.filters, this.props.selectedFilters);
   }
 
-  componentWillReceiveProps (nextProps) {
-
-    this.populateValues(
-      nextProps.filters,
-      nextProps.selectedFilters
-    );
+  componentWillReceiveProps(nextProps) {
+    this.populateValues(nextProps.filters, nextProps.selectedFilters);
   }
 
   render() {
-    const {
-      filters,
-      displayTextKey = 'text'
-    } = this.props;
+    const { filters, displayTextKey = 'text' } = this.props;
 
     const { selectedValues } = this.state;
 
@@ -88,35 +65,29 @@ class FilterDropdown extends Component {
       <div className="filtering-dropdown grouping-dropdown">
         <Group>
           <GroupItem>
-            <i className="i i-sort"/>
+            <i className="i i-sort" />
           </GroupItem>
-          {
-            filters.map((item, index) => {
+          {filters.map((item, index) => {
+            const selectedItem = selectedValues[item.name],
+              powerSelectProps = {
+                className: 'react-normal-select',
+                options: item.values,
+                optionLabelPath: displayTextKey,
+                searchEnabled: true,
+                selected: selectedItem,
+                onChange: this.handleFilterChange,
+              };
 
-              const selectedItem = selectedValues[item.name],
-                    powerSelectProps = {
-                      className : "react-normal-select",
-                      options   : item.values,
-                      optionLabelPath : displayTextKey,
-                      searchEnabled   : true,
-                      selected        : selectedItem,
-                      onChange        : this.handleFilterChange
-                    };
+            if (item.disabled) {
+              powerSelectProps.disabled = true;
+            }
 
-              if (item.disabled) {
-              
-                powerSelectProps.disabled = true;
-              }
-
-              return (
-                <GroupItem
-                   className="dropdown-group-item"
-                   key={index}>
-                  <PowerSelect {...powerSelectProps}/>
-                </GroupItem>
-              );
-            })
-          }
+            return (
+              <GroupItem className="dropdown-group-item" key={index}>
+                <PowerSelect {...powerSelectProps} />
+              </GroupItem>
+            );
+          })}
         </Group>
       </div>
     );

@@ -2,32 +2,41 @@ import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchPlans } from 'merchant/modules/plans';
-import { fetchItems } from 'merchant/modules/items';
+import { fetchPlans } from 'merchant/reducers/plans';
 import {
+  fetchSubscriptionItems,
   fetchSubscription,
   saveSubscription,
-} from 'merchant/modules/subscriptions';
-import { fetchAddOns } from 'merchant/modules/addons';
-import { fetchCustomer } from 'merchant/modules/customers';
-import { showNotification } from 'rzp/modules/notifications';
+} from 'merchant/reducers/subscriptions';
+import { fetchAddOns } from 'merchant/reducers/addons';
+import { fetchCustomer } from 'merchant/reducers/customers';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalContent } from 'component/Modal';
-import Form from 'component/Form';
-import Button, { AsyncBtn } from 'component/Button';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Form from 'common/new-ui/Form';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import { stringToObj, deepClone } from 'common/util';
-import { isPresent, findBy, getURLQueryParams } from 'rzp/utils/rzp-utils';
+import {
+  isPresent,
+  findBy,
+  getURLQueryParams,
+  stringToObj,
+  deepClone,
+} from 'common/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
 import PlanDetails from '../common/PlanDetails';
 import Review from './Review';
-import Spinner from 'rzp/ui/Spinner';
+import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
-import { trackSaveDuplicateSubscription } from '../../ga';
+import {
+  trackSaveDuplicateSubscription,
+  trackAddAddon,
+  trackAddPlans,
+} from '../../ga';
 
 @withRouter
 @connect(
@@ -40,7 +49,7 @@ import { trackSaveDuplicateSubscription } from '../../ga';
     fetchSubscription,
     fetchCustomer,
     fetchPlans,
-    fetchItems,
+    fetchSubscriptionItems,
     saveSubscription,
     showNotification,
   }
@@ -59,7 +68,7 @@ export default class NewSubscriptionLink extends Component {
   componentWillMount() {
     this.props.fetchPlans({ count: 100 }).then(_ => this.initializePlan());
 
-    this.props.fetchItems({ count: 100, type: 'addon' });
+    this.props.fetchSubscriptionItems({ count: 100, type: 'addon' });
 
     this.fetchIfIntentDuplicate();
   }
@@ -216,6 +225,8 @@ export default class NewSubscriptionLink extends Component {
   handleChangeInPlan = ({ option }) => {
     const { currencyOfSelectedPlan, fields, internals } = this.state;
 
+    trackAddPlans(option.currency);
+
     const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
 
     if (
@@ -262,7 +273,9 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
-  handleSelectItem = addonIndex => ({ option }) => {
+  handleSelectAddonItem = addonIndex => ({ option }) => {
+    trackAddAddon(option.currency);
+
     const fields = { ...this.state.fields };
     fields.addons[addonIndex] = {
       item: {
@@ -331,6 +344,7 @@ export default class NewSubscriptionLink extends Component {
 
     let { fields: data, internals } = this.state;
     data = deepClone(data);
+    data.source = 'dashboard';
 
     if (internals._startsImmediately) {
       delete data.start_at;
@@ -439,7 +453,7 @@ export default class NewSubscriptionLink extends Component {
         return (
           <AddOnDetails
             items={this.props.items}
-            onSelectItem={this.handleSelectItem}
+            onSelectItem={this.handleSelectAddonItem}
             onAddAddon={this.handleAddaddon}
             fields={this.state.fields}
             internals={this.state.internals}

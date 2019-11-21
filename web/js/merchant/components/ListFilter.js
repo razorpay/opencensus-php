@@ -1,7 +1,10 @@
 import { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import { stringifyQueryParams, getURLQueryParams } from 'rzp/utils/rzp-utils';
+import {
+  stringifyQueryParams,
+  getURLQueryParams,
+} from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 
 @reduxForm({})
@@ -71,12 +74,14 @@ export default class ListFilter extends Component {
       <form
         name={form}
         onSubmit={handleSubmit(this.handleOnSubmit)}
-        class="list-filter-container"
+        class={`list-filter-container ${
+          this.props.additionalClass ? this.props.additionalClass : ''
+        }`}
       >
         {this.props.children}
         <div class="form-group list-filter-item btn-toolbar">
           <AsyncButton
-            class="btn btn-sm btn-default"
+            class="btn-sm btn-default"
             onClick={handleSubmit(this.handleOnSubmit)}
             text="Search"
           />
