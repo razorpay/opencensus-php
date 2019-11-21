@@ -8,6 +8,8 @@ import {
 } from './PaymentDetails/utils';
 
 export default ({
+  defaultMandateMaxAmount,
+  defaultFirstChargeAmount,
   tokenHasNoExpiry,
   handleDateChange,
   mandateMaxAmount,
@@ -24,15 +26,16 @@ export default ({
       />
 
       <Input.ToCalendar
+        disablePastDates
         name="mandateExpireAt"
         placeholder="Expiry (DD-MM-YYYY)"
-        disablePastDates
         placement="topLeft"
         size="half_big"
         addonAfter={<i class="i i-date-range" />}
         description="Expiry of Token"
         onChange={handleDateChange('mandateExpireAt')}
-        value={mandateExpireAt}
+        disabled={!!Number(tokenHasNoExpiry)}
+        defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
         disabled={!!Number(tokenHasNoExpiry)}
       />
     </Input.Group>
@@ -40,18 +43,13 @@ export default ({
     <Input
       name="firstPaymentAmount"
       type="number"
-      placeholder="0"
+      placeholder={defaultFirstChargeAmount}
       size="half_big"
       label="Amount"
       class="Input--Amount"
       description="Amount of First Charge"
       value={firstPaymentAmount}
-      validator={value => {
-        return checkIfAmountForFirstCharge(
-          Number(mandateMaxAmount) || 100000,
-          value
-        );
-      }}
+      validator={firstPaymentAmountValidator(mandateMaxAmount)}
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
       }
@@ -59,7 +57,7 @@ export default ({
 
     <Input
       name="mandateMaxAmount"
-      placeholder="100000"
+      placeholder={defaultMandateMaxAmount}
       label="Token Max Amount"
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
@@ -72,3 +70,8 @@ export default ({
     />
   </React.Fragment>
 );
+
+function firstPaymentAmountValidator(mandateMaxAmount) {
+  return value =>
+    checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);
+}

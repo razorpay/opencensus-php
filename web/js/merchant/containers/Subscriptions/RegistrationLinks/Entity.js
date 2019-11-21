@@ -1,4 +1,3 @@
-import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -12,10 +11,21 @@ import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDe
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
 
-import { fetchRegistrationLink } from 'merchant/modules/registration_link';
+import {
+  fetchRegistrationLink,
+  downloadSignedNACHFile,
+} from 'merchant/modules/registration_link';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
+
+import {
+  trackOpenAuthLink,
+  trackClickUploadNACHForm,
+  trackClickDownloadNACHForm,
+  trackClickViewNACHForm,
+} from './gaAuth';
 
 @withRouter
 @connect(
@@ -24,9 +34,24 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
   }),
   { fetchRegistrationLink }
 )
-export default class RegistrationLinkEntityContainer extends Component {
+export default class RegistrationLinkEntityContainer extends React.Component {
+  get paymentMethod() {
+    return (
+      this.props.entity.subscription_registration &&
+      this.props.entity.subscription_registration.method
+    );
+  }
+
+  get isNACHMethod() {
+    return this.paymentMethod === 'nach';
+  }
+
   componentWillMount() {
     this.props.fetchRegistrationLink(this.props.id);
+  }
+
+  componentDidMount() {
+    trackOpenAuthLink();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -35,8 +60,15 @@ export default class RegistrationLinkEntityContainer extends Component {
     }
   }
 
+  downloadSignedNACHFile = () => {
+    return downloadSignedNACHFile({
+      auth_link_id: this.props.id,
+    });
+  };
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
+
     return (
       <div class="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -44,7 +76,7 @@ export default class RegistrationLinkEntityContainer extends Component {
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
+          <div class="panel panel-default SliderPanel RegistrationLinks--Details">
             <div class="panel-heading">{entity.id}</div>
             <Alert type="error" message={error} />
             {!!Object.keys(entity).length && (
@@ -83,17 +115,33 @@ export default class RegistrationLinkEntityContainer extends Component {
 
                     {/* method */}
                     <EntityDetailRow label="Method">
-                      {entity.subscription_registration.method && (
-                        <PaymentMethod
-                          mandate={entity.subscription_registration}
-                        />
-                      )}
+                      <PaymentMethod
+                        mandate={entity.subscription_registration}
+                      />
                     </EntityDetailRow>
 
                     {/* Customer Details */}
                     <EntityDetailRow label="Customer Details">
                       <CustomerDetails customer={entity.customer_details} />
                     </EntityDetailRow>
+
+                    {this.isNACHMethod && (
+                      <EntityDetailRow label="NACH form">
+                        <NACHDetails
+                          registrationLinkId={entity.id}
+                          downloadSignedNACHFile={
+                            entity.is_nach_form_uploaded &&
+                            this.downloadSignedNACHFile
+                          }
+                          preFilledNachFileURL={entity.nach_form_url}
+                          trackClickUploadNACHForm={trackClickUploadNACHForm}
+                          trackClickDownloadNACHForm={
+                            trackClickDownloadNACHForm
+                          }
+                          trackClickViewNACHForm={trackClickViewNACHForm}
+                        />
+                      </EntityDetailRow>
+                    )}
 
                     {/* created at */}
                     <EntityDetailRow label="Created At">

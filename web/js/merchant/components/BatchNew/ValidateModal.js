@@ -16,6 +16,7 @@ export default class BatchValidateModal extends Component {
       sampleUrl,
       docUrl,
       batchType,
+      batchTypeText = '',
       maxRows,
       onFileChange,
       onBiggerFileSize,
@@ -81,8 +82,9 @@ export default class BatchValidateModal extends Component {
               <li>The amount mentioned should be in paise.</li>
               {batchType && (
                 <li>
-                  The receipt id for all {titleCase(batchType)}s should be
-                  unique.
+                  The receipt id for all{' '}
+                  {batchTypeText ? batchTypeText : titleCase(batchType)}s should
+                  be unique.
                 </li>
               )}
               {maxRows && (

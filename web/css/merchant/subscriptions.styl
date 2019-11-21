@@ -31,7 +31,7 @@
 
 .Wizard
   //subscription links wizard screen
-  &.SubscriptionLinks--new, 
+  &.SubscriptionLinks--new,
   &.SubscriptionLinks--update,
   &.RegistrationLinks--New
     width: 100%
@@ -142,7 +142,7 @@
       .big-dot-separator
         margin-left: 0
       .current-change
-        i 
+        i
           margin: 0 4px
     .summary
       padding: 16px 24px
@@ -151,7 +151,7 @@
       background-color: rgba(216, 216, 216, 0.18)
 
       ul
-        padding-left: 0 
+        padding-left: 0
         line-height: 20px
         margin-top: 12px
         padding-left: 16px
@@ -159,15 +159,15 @@
           margin: 0 10px
 
 .SubscriptionLinks--Details
-  .update-subscription-preview 
+  .update-subscription-preview
     .less-content
       margin-top: 8px
     .more-content
       border-top: 1px solid rgba(151, 151, 151, 0.14)
       font-size: 12px
-      margin-top: 8px 
+      margin-top: 8px
       padding-top: 8px
-      strong 
+      strong
         margin: 0 10px 12px 0
         display: block
       .changed-values
@@ -186,4 +186,38 @@
       .item-right
         float: right
         width: calc(100% - 20px)
-      
+
+.Modal-container--UploadNACHForm
+  width: 90%
+  max-width: 640px
+
+.UploadNACH
+  .file-desc
+    max-width: 80%
+    margin-bottom: 28px
+    .btn-link
+      padding-left: 0
+
+  .Details, .Desc
+    margin: 30px auto 30px auto
+
+  .Details
+    margin-top: 0
+
+    .Accordion__title
+      font-weight: normal
+
+  .Desc
+    margin: 30px auto 0 auto
+    .alert-warning
+      margin-top: 10px
+      max-width: 70% 
+
+.UploadNACH--Form.ModalSingleForm
+  height: 390px
+  min-height: 390px
+
+.RegistrationLinks--Details,
+.Token--Details
+  .nach-download-btn
+    padding: 0px
