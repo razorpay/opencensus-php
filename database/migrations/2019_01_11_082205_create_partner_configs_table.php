@@ -35,6 +35,9 @@ class CreatePartnerConfigsTable extends Migration
             $table->tinyInteger(Entity::COMMISSIONS_ENABLED)
                   ->default(0);
 
+            $table->json(Entity::DEFAULT_PAYMENT_METHODS)
+                  ->nullable();
+
             $table->char(Entity::DEFAULT_PLAN_ID, Entity::ID_LENGTH)
                   ->nullable();
 
