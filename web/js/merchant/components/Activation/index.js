@@ -44,6 +44,7 @@ import {
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { validatePANCardUnregBiz } from 'common/utils/validators';
 
 import {
   L1FormSuccess,
@@ -700,6 +701,17 @@ export default class ActivationWizard extends React.Component {
       this.state.dirty.business_type || this.props.data.business_type;
 
     return businessType == 2 || businessType == 11;
+  }
+
+  get canSubmitL1Form() {
+    const promoterPan =
+      this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
+    return (
+      !hasSelectedBlacklistedCategory(this) &&
+      (this.isUnregBiz
+        ? promoterPan && !validatePANCardUnregBiz(promoterPan)
+        : true)
+    );
   }
 
   /*
@@ -1511,8 +1523,7 @@ export default class ActivationWizard extends React.Component {
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
                       disabled={
-                        this.state.callingL1Api ||
-                        hasSelectedBlacklistedCategory(this)
+                        !this.canSubmitL1Form || this.state.callingL1Api
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}

@@ -7,6 +7,7 @@ import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  validatePANCardUnregBiz,
   isUrlLenient,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
@@ -368,7 +369,11 @@ const businessDetails = [
         isUnregisteredBusiness(activation)
           ? 'Business owner’s PAN'
           : 'PAN of one of the directors',
-      validator: validatePANCard,
+      validator: function(value) {
+        return isUnregisteredBusiness(this)
+          ? validatePANCardUnregBiz(value)
+          : validatePANCard(value);
+      },
       getLabel: activation =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
       className: 'Input--vTop Input--capitalize',

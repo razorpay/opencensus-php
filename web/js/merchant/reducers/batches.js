@@ -237,8 +237,8 @@ export const fetchHostMandateBatches = fetchBatches([
   'recurring_charge',
   'auth_link',
 ]);
-export const createAuthLinkBatch = createBatch('auth_link');
-export const validateAuthLinkBatch = validateBatch('auth_link');
+export const createRegistrationLinkBatch = createBatch('auth_link');
+export const validateRegistrationLinkBatch = validateBatch('auth_link');
 export const createRecurringChargeBatch = createBatch('recurring_charge');
 export const validateRecurringChargeBatch = validateBatch('recurring_charge');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();

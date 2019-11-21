@@ -240,7 +240,7 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
-            path="/authlinks"
+            path="/registration_links"
             component={Subscriptions}
             additionalCondition={user =>
               user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled

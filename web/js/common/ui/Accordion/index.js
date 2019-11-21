@@ -1,4 +1,5 @@
 import { Children, Component, cloneElement } from 'react';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class Accordion extends Component {
   state = {
@@ -64,6 +65,7 @@ export const AccordionItem = ({
   children,
   expanded = false,
   uuid,
+  status,
   cantBeOpened,
   onClick = () => {},
 }) => {
@@ -74,7 +76,7 @@ export const AccordionItem = ({
   }
 
   return (
-    <div class={`Accordion__item ${className}`}>
+    <div class={classList('Accordion__item', className, status)}>
       {cloneElement(title, { onClick, uuid, cantBeOpened })}
       {cloneElement(content, { cantBeOpened })}
     </div>

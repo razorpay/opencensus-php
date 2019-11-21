@@ -108,6 +108,9 @@ export default function Reports(opts) {
         defaultAccount,
         dateRangeData,
         getFullUnixTimeStamps,
+        getUnixTimeStampsForYesterday,
+        getUnixTimeStampsForLastDays,
+        getUnixTimeStampsForLastMonth,
       } = this.props;
 
       let reqData = null,
@@ -152,6 +155,22 @@ export default function Reports(opts) {
 
           case 'dateRange': {
             [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
+            break;
+          }
+
+          case 'yesterday': {
+            [startTime, endTime] = getUnixTimeStampsForYesterday();
+            break;
+          }
+
+          case 'last_7_days': {
+            [startTime, endTime] = getUnixTimeStampsForLastDays(7);
+            break;
+          }
+
+          case 'last_month': {
+            // not using getUnixTimeStampsForLastDays since month duration is not fixed
+            [startTime, endTime] = getUnixTimeStampsForLastMonth();
             break;
           }
         }

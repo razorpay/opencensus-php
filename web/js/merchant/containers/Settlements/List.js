@@ -234,21 +234,23 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                   </ShowWhen>
-                  {/*this.props.user.isOndemandSettlementEnabled && (
-                    <div className="box-left-pad10-inline">
-                      <ScheduledBanner
-                        onExit={() => {
-                          this.setState({ openAutoModal: false });
-                        }}
-                        openAutoModal={this.state.openAutoModal}
-                        fromWhere={
-                          this.state.openAutoModal
-                            ? 'Announcement'
-                            : 'Settlements'
-                        }
-                      />
-                    </div>
-                  )*/}
+                  {this.props.user.isOndemandSettlementEnabled && (
+                    <ShowWhen myRole="owner admin finance">
+                      <div className="box-left-pad10-inline">
+                        <ScheduledBanner
+                          onExit={() => {
+                            this.setState({ openAutoModal: false });
+                          }}
+                          openAutoModal={this.state.openAutoModal}
+                          fromWhere={
+                            this.state.openAutoModal
+                              ? 'Announcement'
+                              : 'Settlements'
+                          }
+                        />
+                      </div>
+                    </ShowWhen>
+                  )}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
@@ -283,16 +285,18 @@ export default class SettlementsListContainer extends ListContainer {
                 )}
 
                 {this.props.user.isOndemandSettlementEnabled && (
-                  <div className="box-left-pad10-inline">
-                    <Button.Primary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={current_balance.loading || balance < 100}
-                    >
-                      <i className="i i-early-settlement settle-now-early" />
-                      Settle Now
-                    </Button.Primary>
-                  </div>
+                  <ShowWhen myRole="owner admin finance">
+                    <div className="box-left-pad10-inline">
+                      <Button.Primary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={current_balance.loading || balance < 100}
+                      >
+                        <i className="i i-early-settlement settle-now-early" />
+                        Settle Now
+                      </Button.Primary>
+                    </div>
+                  </ShowWhen>
                 )}
               </div>
 

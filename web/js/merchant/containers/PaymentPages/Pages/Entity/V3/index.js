@@ -29,6 +29,7 @@ import PPEmbedButtonView from '../../Modals/EmbedButton';
 import PaymentsList from './PaymentsList';
 
 import Button from 'common/new-ui/Button';
+import Tooltip from 'common/ui/Tooltip';
 
 // import dummyEntityData from '../../Create/dummy_paymentpageentity';
 
@@ -44,6 +45,7 @@ const inActiveStatusReasonMap = {
     user: state.session.user,
     mode: state.session.mode,
     reportConfigs: state.reports.reportConfigs,
+    isMobileResolution: state.app.isMobileResolution,
   }),
   {
     showNotification,
@@ -182,6 +184,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       toggleManualActivation,
       reActivateLink,
       reportConfigs,
+      isMobileResolution,
     } = this.props;
 
     // paymentPageEntity = dummyEntityData;
@@ -221,19 +224,44 @@ export default class PaymentPagesV3Entity extends React.Component {
               <div class="btn-toolbar pull-right">
                 {isRoleAllowedEdit && (
                   <Link
-                    class="btn Button--primary--invert btn-sm"
-                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
+                    class={classList(
+                      'btn Button--primary--invert',
+                      isMobileResolution ? 'btn-xs' : 'btn-sm'
+                    )}
+                    to={`/paymentpages/new?duplicate_id=${
+                      paymentPageEntity.id
+                    }`}
                   >
-                    Edit
+                    {isMobileResolution ? (
+                      <i class="i i-copy" />
+                    ) : (
+                      'Duplicate Page'
+                    )}
                   </Link>
                 )}
+
+                {isRoleAllowedEdit && (
+                  <Link
+                    class={classList(
+                      'btn Button--primary--invert',
+                      isMobileResolution ? 'btn-xs' : 'btn-sm'
+                    )}
+                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
+                  >
+                    {isMobileResolution ? <i class="i i-edit" /> : 'Edit'}
+                  </Link>
+                )}
+
                 {isRoleAllowedEdit &&
                   isActive && (
                     <button
-                      class="btn btn-primary btn-sm"
+                      class={classList(
+                        'btn btn-primary',
+                        isMobileResolution ? 'btn-xs' : 'btn-sm'
+                      )}
                       onClick={this.openShareView}
                     >
-                      Share
+                      {isMobileResolution ? <i class="i i-share" /> : 'Share'}
                     </button>
                   )}
               </div>

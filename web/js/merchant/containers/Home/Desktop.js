@@ -20,8 +20,6 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
-//import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
-import CreditPullAnnouncement from 'merchant/components/Announcements/CreditPull';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -136,14 +134,6 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          {/*user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />*/}
-
-          {user.isCreditPullEnabled && (
-            <ShowWhen myRole="owner">
-              <CreditPullAnnouncement />
-            </ShowWhen>
-          )}
-
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (
             <CapitalAnnouncement userId={user.current} />
@@ -209,16 +199,18 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
+                    <ShowWhen myRole="owner admin finance">
+                      <Button.Secondary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={
+                          current_balance.loading ||
+                          current_balance.data.balance < 100
+                        }
+                      >
+                        Settle Now
+                      </Button.Secondary>
+                    </ShowWhen>
                   ) : (
                     <Link className="pull-right" to="/settlements">
                       <span
