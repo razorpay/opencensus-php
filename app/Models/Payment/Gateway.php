@@ -1460,10 +1460,8 @@ class Gateway
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
         IFSC::SBBJ         => Gateway::NETBANKING_SBI,
         IFSC::SBHY         => Gateway::NETBANKING_SBI,
-        IFSC::SBNX         => Gateway::NETBANKING_SBI,
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
-        IFSC::SBPX         => Gateway::NETBANKING_SBI,
-        IFSC::SBSX         => Gateway::NETBANKING_SBI,
+        IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
     ];
 

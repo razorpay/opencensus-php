@@ -59,10 +59,8 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->makePayment("SBIN");
         $this->makePayment("SBBJ");
         $this->makePayment("SBHY");
-        $this->makePayment("SBNX");
         $this->makePayment("SBMY");
-        $this->makePayment("SBPX");
-        $this->makePayment("SBSX");
+        $this->makePayment("STBP");
         $this->makePayment("SBTR");
     }
 
