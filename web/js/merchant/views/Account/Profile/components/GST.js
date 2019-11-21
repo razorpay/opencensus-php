@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { fetchGST } from 'merchant/reducers/profile';
 import { openModal } from 'merchant_common/reducers/modals';
-import AddGST from './AddGST';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => ({ ...state.profile, user: state.session.user }), {

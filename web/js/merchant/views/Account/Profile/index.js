@@ -9,16 +9,16 @@ import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import User from 'merchant/models/User';
-import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
-import GST from 'merchant/containers/Profile/GST';
-import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
-import LoggedInUserDetails from 'merchant/components/Profile/LoggedInUserDetails';
-import Invitations from 'merchant/components/Profile/Invitations';
-import BankAccountDetailsChange from './BankAccountDetailsChange';
+import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
+import GST from 'merchant/views/Account/Profile/components/GST';
+import BankAccountDetails from 'merchant/views/Account/Profile/components/BankAccountDetails';
+import LoggedInUserDetails from 'merchant/views/Account/Profile/components/LoggedInUserDetails';
+import Invitations from 'merchant/views/Account/Profile/components/Invitations';
+import BankAccountDetailsChange from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
 import { fetchUser } from 'merchant/reducers/session';
-import PasswordForm from './PasswordForm';
-import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
-import UpgradeMerchantForm from './UpgradeMerchantForm';
+import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
+import DisplayNameForm from 'merchant/views/Account/Profile/components/DisplayNameForm';
+import UpgradeMerchantForm from 'merchant/views/Account/Profile/components/UpgradeMerchantForm';
 
 import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';

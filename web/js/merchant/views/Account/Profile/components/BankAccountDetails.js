@@ -1,4 +1,4 @@
-import DetailRow from '../DetailRow';
+import DetailRow from 'merchant/components/DetailRow';
 
 export default ({
   bankAccount,

@@ -3,9 +3,8 @@ import { connect } from 'react-redux';
 import { fetchCreditBalance } from 'merchant/reducers/credits';
 import { openModal } from 'merchant_common/reducers/modals';
 import CreditsDetails from 'merchant/views/Account/Credits/components';
+import SetCreditAlert from 'merchant/views/Account/Credits/components/SetCreditAlert';
 import gaTrack from './ga';
-
-import SetCreditAlert from './SetCreditAlert';
 
 const { trackForm, trackToggleHistory } = gaTrack('Dashboard - Credits');
 @connect(

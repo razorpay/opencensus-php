@@ -4,7 +4,6 @@ import React from 'react';
 
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { titleCase, getEMI } from 'common/utils/rzp-utils';
 

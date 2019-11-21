@@ -1,4 +1,4 @@
-import DetailRow from '../DetailRow';
+import DetailRow from 'merchant/components/DetailRow';
 import { titleCase } from 'common/utils/rzp-utils';
 import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 

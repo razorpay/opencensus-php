@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Time from 'common/ui/Time';
 import { titleCase } from 'common/utils/rzp-utils';
-import DetailRow from '../DetailRow';
+import DetailRow from 'merchant/components/DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';

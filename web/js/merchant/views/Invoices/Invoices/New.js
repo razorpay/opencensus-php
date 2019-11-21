@@ -61,7 +61,7 @@ import {
   trackSelectBillingAddress,
   trackSelectShippingAddress,
 } from '../ga';
-import AddGST from 'merchant/containers/Profile/AddGST';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
 import { classList } from 'common/utils/rzp-utils';
 
