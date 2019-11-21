@@ -109,7 +109,7 @@ const predefinedReasons = {
     reasons: {
       provide_poc: {
         description:
-          'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',
+          'Please provide a POC that we can reach out to in case of issues associated with your account.',
       },
     },
   },
