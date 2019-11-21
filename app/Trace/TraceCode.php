@@ -2267,6 +2267,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
+    // Rendering Preferences / Options
+    const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
+    const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';
+
+    const OPTIONS_READ_BY_MERCHANT_NAMESPACE_REQUEST            = 'OPTIONS_READ_BY_MERCHANT_NAMESPACE_REQUEST';
+    const OPTIONS_READ_BY_MERCHANT_SERVICE_REFERENCE_ID_REQUEST = 'OPTIONS_READ_BY_MERCHANT_SERVICE_REFERENCE_ID_REQUEST';
+    const OPTIONS_DETAILED_READ_REQUEST                         = 'OPTIONS_DETAILED_READ_REQUEST';
+    const OPTIONS_READ_BY_ID_REQUEST                            = 'OPTIONS_READ_BY_ID_REQUEST';
+    const OPTIONS_UPDATE_REQUEST                                = 'OPTIONS_UPDATE_REQUEST';
+    const OPTIONS_UPDATED                                       = 'OPTIONS_UPDATED';
+    const OPTIONS_DELETE_BY_ID_REQUEST                          = 'OPTIONS_DELETE_BY_ID_REQUEST';
+
     const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
     const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';

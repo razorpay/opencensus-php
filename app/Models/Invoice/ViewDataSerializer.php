@@ -2,18 +2,20 @@
 
 namespace RZP\Models\Invoice;
 
-use Config;
 use Carbon\Carbon;
+use Config;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Options;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
@@ -60,6 +62,10 @@ class ViewDataSerializer extends Base\Core
      * @var Merchant\Entity
      */
     protected $merchant;
+    /**
+     * @var Options\Entity
+     */
+    protected $options;
 
     public function __construct(Entity $invoice)
     {
@@ -67,6 +73,7 @@ class ViewDataSerializer extends Base\Core
 
         $this->invoice  = $invoice;
         $this->merchant = $invoice->merchant;
+        $this->options  = new Options\Core();
     }
 
     public function serializeForHosted(): array
@@ -81,6 +88,19 @@ class ViewDataSerializer extends Base\Core
             'custom_labels'    => $this->getCustomLabelValues(),
             'checkout_options' => $this->getCheckoutOptions(),
             'view_preferences' => $this->getViewPreferences(),
+        ];
+    }
+
+    public function serializeForHostedV2(): array
+    {
+        return [
+            'environment'      => $this->app->environment(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'invoicejs_url'    => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'           => $this->getMerchantKeyId(),
+            'merchant'         => $this->serializeMerchantForHosted(),
+            'invoice'          => $this->serializeInvoiceForHosted(),
+            'options'          => $this->getOptions()
         ];
     }
 
@@ -547,5 +567,15 @@ class ViewDataSerializer extends Base\Core
         }
 
         return $validPayments;
+    }
+
+    protected function getOptions(): array
+    {
+        $options = $this->options->getMergedOptions(Constants::NAMESPACE_PAYMENT_LINKS,
+                Constants::SERVICE_PAYMENT_LINKS,
+                $this->invoice->getId(),
+                $this->invoice->merchant->getId());
+
+        return $options ?? [];
     }
 }

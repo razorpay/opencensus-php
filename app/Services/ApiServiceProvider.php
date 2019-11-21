@@ -22,6 +22,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
+use RZP\Models\Options;
 use RZP\Models\Payment;
 use RZP\Models\External;
 use RZP\Models\Customer;
@@ -668,6 +669,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'application'               => Application\Entity::class,
 
             'commission'                => Commission\Entity::class,
+
+            'options'                   => Options\Entity::class,
         ]);
     }
 

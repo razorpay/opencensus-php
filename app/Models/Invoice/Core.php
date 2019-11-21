@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
+use RZP\Models\Options;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -45,6 +46,7 @@ class Core extends Base\Core
     protected $slack;
     protected $slackTechLogsChannel;
     protected $eventService;
+    protected $options;
     /**
      * @var Reminders
      */
@@ -59,6 +61,7 @@ class Core extends Base\Core
         $this->slack                = $this->app['slack'];
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
         $this->eventService         = $this->app['events'];
+        $this->options              = new Options\Core();
         $this->reminders            = $this->app['reminders'];
     }
 
@@ -169,6 +172,11 @@ class Core extends Base\Core
             {
                 $pendingDispatch->delay(self::QUEUE_JOB_DELAY);
             }
+        }
+
+        if (isset($input[Options\Entity::OPTIONS]) === true)
+        {
+            $this->options->createOptionForPaymentLink($input, $merchant, $invoice);
         }
 
         return $invoice;
