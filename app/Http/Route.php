@@ -1154,7 +1154,7 @@ final class Route
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
         'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',    'SubscriptionRegistrationController@sendNotification'      ],
         'subscription_registration_cancel_link'         => ['post',     'subscription_registration/auth_links/{id}/cancel',    'SubscriptionRegistrationController@cancelAuthLink'                 ],
-        'subscription_registration_cancel_links'        => ['post',     'subscription_registration/auth_links/batch/{batch_id}/cancel', 'SubscriptionRegistrationController@cancelAuthLinksOfBatch'],
+        'subscription_registration_cancel_links_batch'  => ['post',     'subscription_registration/auth_links/batch/{batch_id}/cancel', 'SubscriptionRegistrationController@cancelAuthLinksOfBatch'],
         'subscription_registration_fetch_link_internal' => ['get',      'subscription_registration/auth_links/{id}/internal',  'SubscriptionRegistrationController@fetchAuthLinkInternal'          ],
         'subscription_registration_fetch_token'         => ['get',      'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'        => ['delete',   'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@deleteToken'                    ],
@@ -2544,7 +2544,7 @@ final class Route
         // AuthLink
         'token_registration_token_associate',
         'token_registration_tokens_authenticate',
-        'subscription_registration_cancel_links',
+        'subscription_registration_cancel_links_batch',
 
         'gateway_downtime_detection_get_stats',
 
@@ -3068,7 +3068,7 @@ final class Route
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
-        'subscription_registration_cancel_links'    => Permission::CANCEL_BATCH,
+        'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
     ];
 
     public static $direct = [
