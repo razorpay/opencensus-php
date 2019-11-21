@@ -26,7 +26,7 @@ import {
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemsList from 'merchant/views/Invoices/Invoices/components/LineItems/List';
-import CustomerCreation from 'merchant/containers/Customers/New';
+import CustomerCreation from 'merchant/views/Customers/New';
 import IssueConfirmModal from './components/IssueConfirmModal';
 import AddInternalNoteModal from './components/AddInternalNoteModal';
 import InvoiceBreadcrumbNav from 'merchant/views/Invoices/Invoices/components/InvoiceBreadcrumbNav';

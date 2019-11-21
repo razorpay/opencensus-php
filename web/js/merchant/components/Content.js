@@ -16,10 +16,10 @@ import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Detail
 import InvoicesContainer from 'merchant/views/Invoices';
 import InvoicesNew from 'merchant/views/Invoices/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
-import Customers from 'merchant/containers/Customers/List';
+import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
-import MyAccount from 'merchant/containers/MyAccount';
+import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';

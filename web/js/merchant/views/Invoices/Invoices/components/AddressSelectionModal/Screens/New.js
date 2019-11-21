@@ -10,7 +10,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
-import { validateZipCode } from 'merchant/containers/Customers/New';
+import { validateZipCode } from 'merchant/views/Customers/New';
 import {
   isAddressValid,
   isValidZipcodeCountryWise,
