@@ -198,7 +198,7 @@ export default function(state = initialState, action) {
         entityData.times_paid = amountItem.quantity_sold;
         entityData.quantity = amountItem.stock;
 
-        // 1-2. If intention while fetching is to duplicate, then remove id for each of payment page item
+        // 1-2. If intention while fetching is not to duplicate, then only set id
         if (!action.isIntentDuplicate) {
           entityData.paymentPageItemId = amountItem.id;
         }
@@ -208,10 +208,14 @@ export default function(state = initialState, action) {
         formItems = udfSchema;
       }
 
-      // 2. If intention while fetching is to duplicate, then delete id
-      if (!action.isIntentDuplicate) {
+      // 2. If intention while fetching is to duplicate, then delete entity id
+      if (action.isIntentDuplicate) {
         delete entityData.id;
-        // Remove payment page id
+      }
+
+      // 3. If intention while fetching is to duplicate, then remove slug as well
+      if (action.isIntentDuplicate) {
+        delete entityData.slug;
       }
 
       const storeState = {
@@ -219,7 +223,7 @@ export default function(state = initialState, action) {
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
 
-      // 3. If intention while fetching is to duplicate, then don't add payment_page_id
+      // 4. If intention while fetching is not to duplicate, then only add payment_page_id
       if (!action.isIntentDuplicate) {
         storeState.payment_page_id = entityData.id;
       }

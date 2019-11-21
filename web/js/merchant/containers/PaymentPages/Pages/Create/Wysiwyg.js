@@ -530,6 +530,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       .then(resp => {
         if (resp.data) {
           this.props.markDataSaved();
+          this.isIntentDuplicate = false;
 
           const entityId = resp.data.id;
 
