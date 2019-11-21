@@ -1,10 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 
-import ListContainer from 'merchant/containers/ListContainer';
-
-import { fetchAuthLinks as fetchAll } from 'merchant/reducers/collection';
-
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
 import {
@@ -13,20 +9,23 @@ import {
   status,
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
+
+import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
+
 import { getTime } from 'common/ui/item';
 import CopyLink from 'merchant/components/CopyLink';
 
-import ListFilter from './ListFilter';
+import ListContainer from 'merchant/containers/ListContainer';
 
-const customerDetail = prop => item => item.customer_details[prop] || '--';
+import ListFilter from './ListFilter';
 
 const id = {
   title: 'Link ID',
-  value: item => <Link to={'/authlinks/' + item.id}>{item.id}</Link>,
+  value: item => <Link to={'/registration_links/' + item.id}>{item.id}</Link>,
 };
 
 const link = {
-  title: 'Authorization Link',
+  title: 'Registration Link',
   value: item => <CopyLink url={item.short_url} />,
 };
 
@@ -43,19 +42,14 @@ const createdAt = {
   value: getTime('created_at', 'll'),
 };
 
-@connect(
-  state => ({
-    ...state.authLinks,
-  }),
-  { fetchAll }
-)
-export default class AuthLinksList extends ListContainer {
+@connect(state => state.registrationLinks, { fetchAll })
+export default class RegistrationLinksList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <NavLink class="btn btn-primary" to="/authlinks/new">
+            <NavLink class="btn btn-primary" to="/registration_links/new">
               <i class="i i-plus" />
               <span>Create New Link</span>
             </NavLink>
@@ -69,7 +63,7 @@ export default class AuthLinksList extends ListContainer {
         />
 
         <DataTable
-          title="Authorization Links"
+          title="Registration Links"
           skip={this.state.skip}
           paginate={this.paginate}
           columns={[id, amount, receipt, link, customer, createdAt, status]}

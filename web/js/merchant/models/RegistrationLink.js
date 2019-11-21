@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
 
-export default class AuthLink extends GenericEntity {
+export default class RegistrationLink extends GenericEntity {
   resourceUrl = 'subscription_registration/auth_links';
 }

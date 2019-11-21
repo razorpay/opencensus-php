@@ -18,9 +18,9 @@ import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import EarlyScheduledAnnouncement from 'merchant/components/Announcements/ScheduledSettlements';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => ({
@@ -100,7 +100,6 @@ class AnalyticsMobile extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
-          /*{user.isOndemandSettlementEnabled && <EarlyScheduledAnnouncement />}*/
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -139,16 +138,18 @@ class AnalyticsMobile extends Component {
             </div>
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled ? (
-                <Button.Secondary
-                  class="settle-btn"
-                  onClick={this.showOndemandSettlementForm}
-                  disabled={
-                    current_balance.loading ||
-                    current_balance.data.balance < 100
-                  }
-                >
-                  Settle Now
-                </Button.Secondary>
+                <ShowWhen myRole="owner admin finance">
+                  <Button.Secondary
+                    class="settle-btn"
+                    onClick={this.showOndemandSettlementForm}
+                    disabled={
+                      current_balance.loading ||
+                      current_balance.data.balance < 100
+                    }
+                  >
+                    Settle Now
+                  </Button.Secondary>
+                </ShowWhen>
               ) : (
                 <Link className="pull-right" to="/settlements">
                   <span

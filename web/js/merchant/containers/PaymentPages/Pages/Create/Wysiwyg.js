@@ -15,11 +15,12 @@ import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPage,
   updateData,
+  refreshPageData,
   markDataSaved,
   updateTemplateType,
   isFormItemOfTypeAmount,
@@ -53,6 +54,7 @@ const ERROR = {
     ...state.wysiwyg,
   }),
   {
+    refreshPageData,
     updateData,
     fetchPaymentPage,
     markDataSaved,
@@ -64,6 +66,8 @@ const ERROR = {
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
+  isIntentDuplicate = false;
+
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -77,6 +81,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const socialMediaIcons = new Image();
     socialMediaIcons.src =
       'https://cdn.razorpay.com/static/assets/social-share/icons.png';
+
+    this.fetchIfIntentDuplicate();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -92,6 +98,24 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       if (!nextProps.id) {
         this.setState({ isTemplatesViewOpened: true });
+      }
+
+      this.fetchIfIntentDuplicate();
+    } else if (!nextProps.id && this.props.id != nextProps.id) {
+      // Handle only when both are not /new
+      const searchQuery = getURLQueryParams(this.props.location.search);
+      const searchQueryNext = getURLQueryParams(nextProps.location.search);
+
+      // Handle moving to '/new'
+      if (!nextProps.id && !searchQueryNext.duplicate_id) {
+        this.props.refreshPageData();
+      } else if (
+        // Handle moving to different '?duplicate_id'
+        !nextProps.id &&
+        searchQueryNext.duplicate_id &&
+        searchQuery.duplicate_id != searchQueryNext.duplicate_id
+      ) {
+        this.fetchIfIntentDuplicate(searchQueryNext.duplicate_id);
       }
     }
   }
@@ -125,8 +149,19 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
   }
 
+  fetchIfIntentDuplicate(entityId) {
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    const entityIdToDuplicate = entityId || searchQuery.duplicate_id;
+
+    if (entityIdToDuplicate) {
+      // TODO: Use for tracking on saving
+      this.isIntentDuplicate = true;
+      this.fetchEntity(entityIdToDuplicate);
+    }
+  }
+
   fetchEntity = id => {
-    const promise = this.props.fetchPaymentPage(id); // Auto reinitialise store if id doesn't exist.
+    const promise = this.props.fetchPaymentPage(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
       promise
