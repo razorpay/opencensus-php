@@ -207,10 +207,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       if (methods && methods.recurring) {
         let emandateBanks = [];
 
-        const avlblMethods = Object.keys(methods.recurring).map(method => ({
-          label: titleCase(method),
-          value: method,
-        }));
+        const avlblMethods = Object.keys(methods.recurring)
+          .filter(methodName => methods.recurring[methodName])
+          .map(method => ({
+            label: titleCase(method),
+            value: method,
+          }));
 
         if (methods.recurring.emandate) {
           const emandates = methods.recurring.emandate || {};
@@ -273,7 +275,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       },
       subscription_registration: {
         method: data.mandateMethod,
-        auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
           : undefined,
