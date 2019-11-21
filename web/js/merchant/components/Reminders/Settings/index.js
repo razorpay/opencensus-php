@@ -43,8 +43,6 @@ export default class ReminderSettings extends React.Component {
   constructor(props) {
     super(props);
 
-    this.currLocation = this.props.location.pathname;
-    this.confirmedNavigation = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
