@@ -344,6 +344,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_HEALTH_CHECK_REQUEST                            = 'NODAL_HEALTH_CHECK_REQUEST';
     const NODAL_HEALTH_CHECK_RESPONSE                           = 'NODAL_HEALTH_CHECK_RESPONSE';
     const NODAL_REQUEST_FAILED                                  = 'NODAL_REQUEST_FAILED';
+    const NODAL_TRANSFER_REQUEST_DUPLICATE                      = 'NODAL_TRANSFER_REQUEST_DUPLICATE';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED                   = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const FTA_SOURCE_PROCESSING_FAILED                          = 'FTA_SOURCE_PROCESSING_FAILED';
     const FTA_SOURCE_PROCESSING_DATA                            = 'FTA_SOURCE_PROCESSING_DATA';
@@ -2083,6 +2084,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_RESPONSE                                          = 'P2P_RESPONSE';
     const P2P_GATEWAY_REQUEST                                   = 'P2P_GATEWAY_REQUEST';
     const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
+    const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
+    const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
@@ -2202,6 +2205,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
     const MOZART_SERVICE_RETRY                                  = 'MOZART_SERVICE_RETRY';
     const MOZART_SERVICE_REQUEST_TIMEOUT                        = 'MOZART_SERVICE_REQUEST_TIMEOUT';
+    const MOZART_ACTION_INIT                                    = 'MOZART_ACTION_INIT';
+    const MOZART_ACTION_COMPLETED                               = 'MOZART_ACTION_COMPLETED';
+    const MOZART_ACTION_FAILED                                  = 'MOZART_ACTION_FAILED';
     const MERCHANT_BALANCE_CREATE_REQUEST                       = 'MERCHANT_BALANCE_CREATE_REQUEST';
     const MERCHANT_BALANCE_UPDATE_INIT                          = 'MERCHANT_BALANCE_UPDATE_INIT';
     const MERCHANT_BALANCE_UPDATE_REQUEST                       = 'MERCHANT_BALANCE_UPDATE_REQUEST';
@@ -2265,6 +2271,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_STATEMENT_INSERT_SKIP                 = 'BANKING_ACCOUNT_STATEMENT_INSERT_SKIP';
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
+
+    // Rendering Preferences / Options
+    const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
+    const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';
+
+    const OPTIONS_READ_BY_MERCHANT_NAMESPACE_REQUEST            = 'OPTIONS_READ_BY_MERCHANT_NAMESPACE_REQUEST';
+    const OPTIONS_READ_BY_MERCHANT_SERVICE_REFERENCE_ID_REQUEST = 'OPTIONS_READ_BY_MERCHANT_SERVICE_REFERENCE_ID_REQUEST';
+    const OPTIONS_DETAILED_READ_REQUEST                         = 'OPTIONS_DETAILED_READ_REQUEST';
+    const OPTIONS_READ_BY_ID_REQUEST                            = 'OPTIONS_READ_BY_ID_REQUEST';
+    const OPTIONS_UPDATE_REQUEST                                = 'OPTIONS_UPDATE_REQUEST';
+    const OPTIONS_UPDATED                                       = 'OPTIONS_UPDATED';
+    const OPTIONS_DELETE_BY_ID_REQUEST                          = 'OPTIONS_DELETE_BY_ID_REQUEST';
 
     const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
     const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';

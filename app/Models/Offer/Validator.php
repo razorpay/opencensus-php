@@ -63,7 +63,7 @@ class Validator extends Base\Validator
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'required|in:emi',
         Entity::ISSUER              => 'required_without:payment_network|filled',
-        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX|filled',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX,BAJAJ|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
         Entity::EMI_DURATIONS       => 'sometimes|array|custom',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',

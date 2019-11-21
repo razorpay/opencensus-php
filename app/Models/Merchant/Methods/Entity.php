@@ -48,7 +48,6 @@ class Entity extends Base\PublicEntity
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
     const PAYPAL            = 'paypal';
-    const GOOGLE_PAY_CARDS  = 'google_pay_cards';
 
     const METHODS           = 'methods';
 

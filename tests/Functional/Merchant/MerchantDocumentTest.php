@@ -27,19 +27,14 @@ class MerchantDocumentTest Extends TestCase
     {
         $merchantDocument = $this->fixtures->create('merchant_document');
 
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];
 
         $request['url'] = sprintf($request['url'], 'doc_' . $merchantDocument['id']);
 
         $this->testData[__FUNCTION__]['request'] = $request;
-
-        //response edited
-        $response = $this->testData[__FUNCTION__]['response'];
-
-        $response['content']['id'] = sprintf($response['content']['id'], 'doc_' . $merchantDocument['id']);
-
-        $this->testData[__FUNCTION__]['response'] = $response;
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDocument['merchant_id']);
 

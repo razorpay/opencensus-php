@@ -246,17 +246,6 @@ return [
         ],
     ],
 
-    'testFetchGooglePayForCardsMethod' => [
-        'request' => [
-            'url' => '/merchant/methods',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
     'testEnableEmi' => [
         'request' => [
             'url' => '/merchant/methods',

@@ -345,4 +345,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getPvtResponse()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getPvtResponse($input);
+
+        return ApiResponse::json($response);
+    }
 }
