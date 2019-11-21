@@ -220,7 +220,22 @@ class PaymentFetchTest extends TestCase
         {
             $this->assertEquals($response['id'], $refund['payment_id']);
         }
+    }
 
+    public function testPaymentFetchWithoutExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id']);
+
+        $this->assertArrayNotHasKey('refunds', $paymentFetchResponse);
     }
 
     public function testFetchWithExpandsTransfer()
