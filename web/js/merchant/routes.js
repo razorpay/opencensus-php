@@ -25,6 +25,7 @@ import EarningDailyDetails from 'merchant/containers/PartnerDashboard/Earnings/D
 import SubventionTransactionalDetails from 'merchant/containers/PartnerDashboard/Subvention/Transactional/Entity';
 import SubventionDailyDetails from 'merchant/containers/PartnerDashboard/Subvention/Daily/Entity';
 import RegistrationLink from 'merchant/containers/Subscriptions/RegistrationLinks/Entity';
+import UploadNACHForm from 'merchant/components/Subscriptions/UploadNACHForm';
 import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
@@ -158,6 +159,10 @@ const entityModalsMap = {
   '/paymentlinks/new': {
     component: PaymentLinksCreate,
     additionalCondition: user => user.isAllowedEdit('payment_links'),
+  },
+  '/registration_links/:id(inv_.+)/upload_nach': {
+    component: UploadNACHForm,
+    additionalCondition: user => user.isChargeAtWillEnabled,
   },
   '/registration_links/new': {
     component: NewRegistrationLink,

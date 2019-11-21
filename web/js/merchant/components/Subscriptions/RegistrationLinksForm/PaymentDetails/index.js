@@ -22,6 +22,9 @@ export default props => {
     bankName,
     beneficiaryName,
     bankAccountNumber,
+    trackClickPaymentMethod,
+    trackReceivedNACHForm,
+    trackNACHToolTipHover,
   } = props;
 
   return (
@@ -29,6 +32,7 @@ export default props => {
       <PaymentMethod
         mandateMethod={mandateMethod}
         avlblMethods={avlblMethods}
+        trackClickPaymentMethod={trackClickPaymentMethod}
       />
 
       {isEmandatePayment && (
@@ -52,6 +56,8 @@ export default props => {
           bankAccountIFSC={bankAccountIFSC}
           beneficiaryName={beneficiaryName}
           bankAccountNumber={bankAccountNumber}
+          trackReceivedNACHForm={trackReceivedNACHForm}
+          trackNACHToolTipHover={trackNACHToolTipHover}
         />
       )}
 
@@ -65,7 +71,11 @@ export default props => {
   );
 };
 
-function PaymentMethod({ avlblMethods, mandateMethod }) {
+function PaymentMethod({
+  avlblMethods,
+  mandateMethod,
+  trackClickPaymentMethod,
+}) {
   if (avlblMethods.length) {
     return (
       <Input.Radio
@@ -74,6 +84,7 @@ function PaymentMethod({ avlblMethods, mandateMethod }) {
         name="mandateMethod"
         options={avlblMethods}
         defaultValue={mandateMethod}
+        onChange={trackClickPaymentMethod}
         class="Input--vTop"
         description="Method to be used for Registration Link"
       />

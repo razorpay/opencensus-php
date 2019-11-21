@@ -2,9 +2,11 @@ import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import { findBy, normalizeDate } from 'rzp/utils/rzp-utils';
 
-import { validateNachFile } from 'merchant/modules/registration_link';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchKeys } from 'merchant/modules/keys';
+import {
+  validateNachFile,
+  authenticateNACHFile,
+} from 'merchant/modules/registration_link';
 
 import Accordion, {
   AccordionItem,
@@ -12,11 +14,21 @@ import Accordion, {
   AccordionItemContent,
 } from 'rzp/ui/Accordion';
 
+import Alert from 'rzp/ui/Forms/Alert';
+import Amount from 'rzp/ui/Amount';
 import { Modal, ModalContent } from 'component/Modal';
 import Button, { AsyncBtn } from 'component/Button';
 import DocsLink from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
+import {
+  trackUploadNachFormStatus,
+  trackReadNachFormStatus,
+  trackClickMandateDetails,
+  trackClickPersonalDetails,
+  trackClickBankDetails,
+} from './ga';
 
 const MandateFields = ['amount', 'frequency', 'debit_type'];
 
@@ -42,11 +54,13 @@ const initState = {
     enhanced_image: null,
   },
   file: null,
-  errors: {},
+  errors: {
+    heading: '',
+    description: '',
+  },
 };
 
-@connect(state => ({ keys: state.keys }), {
-  fetchKeys,
+@connect(null, {
   showNotification,
 })
 export default class UploadNACHForm extends React.Component {
@@ -61,6 +75,10 @@ export default class UploadNACHForm extends React.Component {
   }
 
   get errorsList() {
+    if (!this.state.extractedData.errors) {
+      return [];
+    }
+
     return this.state.extractedData.errors.not_matching;
   }
 
@@ -100,10 +118,6 @@ export default class UploadNACHForm extends React.Component {
     return 'primary';
   }
 
-  componentDidMount() {
-    this.props.fetchKeys();
-  }
-
   getDataFromExtractedData = key => {
     const data = findBy(this.state.extractedData.extracted_data, 'key', key);
 
@@ -117,7 +131,7 @@ export default class UploadNACHForm extends React.Component {
     this.context.confirm({
       header: 'Remove Nach Form',
       message:
-        'The attached NACH form will be discarded and you will need to reupload a new image.',
+        'The attached NACH form will be discarded and you will need to re-upload a new image.',
       affirmativeLabel: 'Yes, Remove',
       abort: () => {},
       action: () => {
@@ -129,18 +143,28 @@ export default class UploadNACHForm extends React.Component {
   handleChange = file => {
     this.setState({
       uploading: true,
+      file,
     });
 
-    const key = this.props.keys.keys[0] || {};
-
-    return validateNachFile(file, this.props.authLinkId, key.id)
+    return validateNachFile(file, this.props.id)
       .then(resp => {
-        this.setState({
-          extractedData: resp.data,
-          uploading: false,
-        });
+        this.setState(
+          {
+            extractedData: resp.data,
+            uploading: false,
+          },
+          () => {
+            trackClickMandateDetails(this.mandateStatus === 'danger');
+            trackClickPersonalDetails(this.personalDetailsStatus === 'danger');
+            trackClickBankDetails(this.bankAccountStatus === 'danger');
+          }
+        );
+
+        trackReadNachFormStatus('success');
       })
       .catch(error => {
+        trackReadNachFormStatus('error', error.errors[0]);
+
         this.setState({
           uploading: false,
           errors: getErrorMessage(error.errors),
@@ -148,7 +172,37 @@ export default class UploadNACHForm extends React.Component {
       });
   };
 
-  handleSubmit = () => {};
+  handleSubmit = () => {
+    return authenticateNACHFile(this.state.file, this.props.id)
+      .then(resp => {
+        this.setState({
+          extractedData: resp.data,
+        });
+
+        trackUploadNachFormStatus('success');
+
+        this.props.showNotification({
+          type: 'success',
+          message: 'NACH form uploaded successfully',
+        });
+
+        if (this.props.onClose) {
+          this.props.onClose();
+        } else {
+          const redirectUrl = '/registration_links/' + this.props.id;
+
+          this.props.history.push(redirectUrl);
+        }
+      })
+      .catch(err => {
+        trackUploadNachFormStatus('error', err.errors[0]);
+
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
 
   renderDesc = () => {
     const { uploading, errors } = this.state;
@@ -180,10 +234,21 @@ export default class UploadNACHForm extends React.Component {
       return (
         <React.Fragment>
           <h5 class={`text-danger`}>
-            <i class="i i-info-circle" />
-            {errors.heading}
+            <i class="i i-info-circle" /> {errors.heading}
           </h5>
-          <p class="description">{errors.description}</p>
+
+          {errors.description && (
+            <p class="description">{errors.description}</p>
+          )}
+
+          {errors.hint && (
+            <Alert
+              class="hint"
+              type="warning"
+              message={errors.hint}
+              showDismiss={false}
+            />
+          )}
         </React.Fragment>
       );
     }
@@ -192,7 +257,9 @@ export default class UploadNACHForm extends React.Component {
   renderNachFieldData = key => {
     const { isError, value } = this.getDataFromExtractedData(key);
 
-    return <div class={classList(isError && 'text-danger')}>{value}</div>;
+    const child = key === 'amount' ? <Amount value={value} /> : value;
+
+    return <div class={classList(isError && 'text-danger')}>{child}</div>;
   };
 
   renderNachDetails = () => {
@@ -261,7 +328,7 @@ export default class UploadNACHForm extends React.Component {
   };
 
   render() {
-    const { uploading, file } = this.state,
+    const { uploading, file, errors } = this.state,
       isDataAval =
         this.state.extractedData.extracted_data.length ||
         this.state.errors.heading,
@@ -270,62 +337,78 @@ export default class UploadNACHForm extends React.Component {
         !!this.errorsList.length ||
         !this.state.extractedData.extracted_data.length;
 
+    const isModalView = this.props.onClose;
+
+    const contentView = (
+      <div
+        class={classList(
+          'ModalSingleForm',
+          'Wizard',
+          'UploadNACH',
+          !isDataAval && 'UploadNACH--Form'
+        )}
+      >
+        <main>
+          <main-title class="main-title">Upload NACH Form</main-title>
+
+          <p class="file-desc">
+            If you received the customer's signed NACH form, you can upload it
+            here, for details steps and help, please read our{' '}
+            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+          </p>
+
+          <FileUpload
+            showCloseBtn
+            showFileSize
+            showStagedFileStatus
+            stagedFileStatus="error"
+            maxSize="5242880"
+            accept={['image/jpeg', 'image/png']}
+            size="large"
+            files={file ? [file] : []}
+            uploadedFileName="Upload File here"
+            onFileChange={this.handleChange}
+            onCloseClick={this.onCloseClick}
+            dropZoneCavityClassName={classList(
+              `Dropzone-cavity--${
+                uploading
+                  ? 'process'
+                  : this.errorsList.length || errors.heading
+                    ? 'error'
+                    : 'success'
+              }`
+            )}
+          />
+
+          <div class="Desc">{this.renderDesc()}</div>
+
+          <div class="Details">{this.renderNachDetails()}</div>
+        </main>
+
+        <footer>
+          {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
+
+          <AsyncBtn.Primary
+            pendingState="Creating..."
+            onClick={this.handleSubmit}
+            disabled={disabled}
+          >
+            Create Registration Link
+          </AsyncBtn.Primary>
+        </footer>
+      </div>
+    );
+
+    if (!isModalView) {
+      return <div class="StandAloneContainer">{contentView}</div>;
+    }
+
     return (
       <Modal
-        class={classList(
-          'ModalForm UploadNACHForm animate-down',
-          isDataAval && 'UploadNACHForm-fulldata'
-        )}
-        onClose={this.props.closeModal}
+        class={classList('UploadNACHForm animate-down')}
+        onClose={this.props.onClose}
       >
-        <ModalContent>
-          <div class="NACH--Upload Wizard">
-            <main>
-              <main-title class="main-title">Upload NACH Form</main-title>
-
-              <p class="desc">
-                If you received the customer's signed NACH form, you can upload
-                it here, for details steps and help, please read our{' '}
-                <DocsLink url="https://razorpay.com/docs/subscriptions/" />
-              </p>
-
-              <FileUpload
-                showCloseBtn
-                showFileSize
-                showStagedFileStatus
-                stagedFileStatus="error"
-                maxSize="8000000"
-                accept={[
-                  'image/jpeg',
-                  'image/png',
-                  'application/pdf',
-                  'application/x-pdf',
-                ]}
-                size="large"
-                files={file}
-                uploadedFileName="Upload File here"
-                onFileChange={this.handleChange}
-                onCloseClick={this.onCloseClick}
-              />
-
-              <div class="Desc">{this.renderDesc()}</div>
-
-              <div class="Details">{this.renderNachDetails()}</div>
-            </main>
-
-            <footer>
-              <Button onClick={this.props.closeModal}>Cancel</Button>
-
-              <AsyncBtn.Primary
-                pendingState="Creating..."
-                onClick={this.handleSubmit}
-                disabled={disabled}
-              >
-                Create Registration Link
-              </AsyncBtn.Primary>
-            </footer>
-          </div>
-        </ModalContent>
+        <ModalContent>{contentView}</ModalContent>
       </Modal>
     );
   }
@@ -345,7 +428,22 @@ const getErrorMessage = ([error, status]) => {
       heading: 'NACH form could not be read',
       description:
         'Kindly re-upload an image with better quality as the uploaded form could not be read successfully.',
+      hint: (
+        <React.Fragment>
+          The uploaded image should be <b>clear</b>. It should not be{' '}
+          <b>cropped</b> and not have any <b>shadows</b>.
+        </React.Fragment>
+      ),
     };
-  } else if (error.includes('')) {
+  } else if (error.includes('signature is not detected in the NACH form')) {
+    return {
+      heading: 'Signature is not visible',
+      description:
+        'Kindly upload an image with better quality and ensure that the form has been signed.',
+    };
   }
+
+  return {
+    heading: error,
+  };
 };

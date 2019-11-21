@@ -235,7 +235,7 @@ export const fetchPaymentBatches = fetchBatches('direct_debit');
 /* batches for emandate */
 export const fetchHostMandateBatches = fetchBatches([
   'recurring_charge',
-  'registration_link',
+  'auth_link',
 ]);
 export const createRegistrationLinkBatch = createBatch('registration_link');
 export const validateRegistrationLinkBatch = validateBatch('registration_link');

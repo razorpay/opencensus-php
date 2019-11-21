@@ -4,6 +4,7 @@ import Input from 'component/Input';
 
 export default props => {
   const {
+    expireAt,
     isCustomerNameRequired,
     hasNoExpiry,
     handleDateChange,
@@ -85,18 +86,18 @@ export default props => {
         <Input.Check
           fieldLabel="No Expiry"
           name="hasNoExpiry"
-          defaultValue="1"
-          value={hasNoExpiry}
+          checked={hasNoExpiry}
         />
 
         <Input.ToCalendar
-          name="expireAt"
-          placeholder="DD-MM-YYYY"
           allowToday
           disablePastDates
+          name="expireAt"
+          placeholder="Expiry (DD-MM-YYYY)"
           placement="topLeft"
           addonAfter={<i class="i i-date-range" />}
-          disabled={!!Number(hasNoExpiry)}
+          disabled={hasNoExpiry}
+          defaultValue={!hasNoExpiry && expireAt ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}
           description="Expiry of Registration Link"
         />

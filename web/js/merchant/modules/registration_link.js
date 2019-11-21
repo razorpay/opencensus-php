@@ -8,7 +8,9 @@ const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
 
 export const fetchRegistrationLink = id => ({
   type: REGISTRATION_LINK_FETCH,
-  payload: new RegistrationLink().fetch(id),
+  payload: merchantFetch(
+    `subscription_registration/auth_links/${id}/internal`
+  ).then(resp => resp.data),
 });
 
 export const createRegistrationLink = params => ({
@@ -16,7 +18,7 @@ export const createRegistrationLink = params => ({
   payload: new RegistrationLink().save(params),
 });
 
-export const validateNachFile = (file, id, keyId) => {
+export const validateNachFile = (file, id) => {
   let formData = new FormData();
   formData.append('form_uploaded', file);
   formData.append('auth_link_id', id);
@@ -24,21 +26,27 @@ export const validateNachFile = (file, id, keyId) => {
   return merchantFetch({
     url: `token.registration/paper_mandate/validate/proxy`,
     method: 'post',
-    mode: 'test',
     data: formData,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-    withCredentials: true,
   });
 };
 
-export const authenticateNACHFile = () => {
+export const authenticateNACHFile = (file, id) => {
+  let formData = new FormData();
+  formData.append('form_uploaded', file);
+  formData.append('auth_link_id', id);
+
   return merchantFetch({
-    url: 'token.registration/paper_mandate/authenticate',
-    method: 'put',
-    data,
+    url: 'token.registration/paper_mandate/authenticate/proxy',
+    method: 'post',
+    data: formData,
   });
+};
+
+export const downloadSignedNACHFile = data => {
+  return merchantFetch({
+    url: `token.registration/paper_mandate/uploaded_form`,
+    data,
+  }).then(resp => axios(resp.data.url));
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);

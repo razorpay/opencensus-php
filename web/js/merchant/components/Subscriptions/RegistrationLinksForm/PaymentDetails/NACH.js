@@ -1,3 +1,4 @@
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Input from 'component/Input';
 
 import { BankDetails, AccountDetails } from './commonFields';
@@ -8,6 +9,8 @@ export default ({
   bankAccountIFSC,
   beneficiaryName,
   bankAccountNumber,
+  trackReceivedNACHForm,
+  trackNACHToolTipHover,
 }) => (
   <React.Fragment>
     <Input.Check
@@ -15,7 +18,27 @@ export default ({
       label="NACH Form"
       class="InputGroup--vTop"
       checked={isNachFormAval}
-      fieldLabel="I have Customer's signed form"
+      onChange={trackReceivedNACHForm}
+      fieldLabel={
+        <React.Fragment>
+          I have Customer's signed Form{' '}
+          <React.Fragment>
+            <i class="i i-info-circle" />
+            <Popover
+              theme="dark"
+              align="bottom"
+              parentQuerySelector=".ModalSingleForm"
+            >
+              <PopoverBody>
+                <div onMouseOver={trackNACHToolTipHover}>
+                  If you’ve already received the customer’s NACH form, you can
+                  upload it after the registration link is created.
+                </div>
+              </PopoverBody>
+            </Popover>
+          </React.Fragment>
+        </React.Fragment>
+      }
     />
 
     <BankDetails required hideBankName bankAccountIFSC={bankAccountIFSC} />
@@ -27,7 +50,7 @@ export default ({
     >
       <Input.Select
         name="accountType"
-        options={['--Select Bank--', ...OPTIONS]}
+        options={['--Select Account Type--', ...OPTIONS]}
         placeholder="Account Type"
         value={accountType}
       />
@@ -37,11 +60,11 @@ export default ({
 
 const OPTIONS = [
   {
-    label: 'Savings Bank',
+    label: 'Savings',
     name: 'savings',
   },
   {
-    label: 'Current Bank',
+    label: 'Current',
     name: 'current',
   },
 ];
