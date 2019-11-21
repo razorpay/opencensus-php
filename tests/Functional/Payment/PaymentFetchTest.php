@@ -193,6 +193,26 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentFetchWithExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $refund1 = $this->refundPayment($response['id'], '10000');
+
+        $refund2 = $this->refundPayment($response['id'], '20000');
+
+        $fetchPaymentResponse = $this->fetchPayment($response['id'], ['expand' => [
+                'refunds'
+            ]]);
+
+
+
+    }
+
     public function testFetchWithExpandsTransfer()
     {
         $this->ba->proxyAuth();
