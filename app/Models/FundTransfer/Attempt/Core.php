@@ -466,14 +466,14 @@ class Core extends Base\Core
         // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
         $source->load(EntityConstant::TRANSACTION);
 
-        $currentTime = Carbon::now(Timezone::IST)->timestamp;
+        $reconciledTime = Carbon::now(Timezone::IST)->timestamp;
 
         if ($reset === true)
         {
-            $currentTime = $reconciledType = null;
+            $reconciledTime = $reconciledType = null;
         }
 
-        $source->transaction->setReconciledAt($currentTime);
+        $source->transaction->setReconciledAt($reconciledTime);
 
         $source->transaction->setReconciledType($reconciledType);
 
