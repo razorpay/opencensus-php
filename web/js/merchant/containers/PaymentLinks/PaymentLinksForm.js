@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom';
 import { findBy } from 'common/utils/rzp-utils';
 
 import CheckBoxField from 'common/ui/Forms/CheckboxField';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+
+import { fetchReminders } from 'merchant/reducers/reminders';
 
 /**
  * Batch Payment Links Form
@@ -13,22 +16,35 @@ import CheckBoxField from 'common/ui/Forms/CheckboxField';
  */
 
 // TODO: Remove `paymentLinksRemindersSettings` setting to global level.
-@connect(state => {
-  const paymentLinksRemindersSettings =
-    findBy(state.reminders.reminders.items, 'namespace', 'payment_link') || {};
-
-  return {
-    isRemindersEnabled: state.session.user.isRemindersEnabled,
-    isPaymentLinkRemindersEnabled: paymentLinksRemindersSettings.active,
-  };
-})
+@connect(
+  state => {
+    return {
+      reminders: state.reminders.reminders,
+      isRemindersEnabled: state.session.user.isRemindersEnabled,
+    };
+  },
+  {
+    fetchReminders,
+  }
+)
 export default class extends React.Component {
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
+
   handleChange = propName => (_, value) => {
     this.props.onChange(propName, value);
   };
 
   renderRemindersFormFields = () => {
-    if (this.props.isPaymentLinkRemindersEnabled) {
+    if (this.props.reminders.loading) {
+      return <PlaceholderLoader />;
+    }
+
+    const paymentLinksRemindersSettings =
+      findBy(this.props.reminders.items, 'namespace', 'payment_link') || {};
+
+    if (paymentLinksRemindersSettings.active) {
       return (
         <div class="checkbox rzpCheckbox next">
           <Field
