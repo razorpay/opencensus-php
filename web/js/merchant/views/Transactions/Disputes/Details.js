@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as DisputeActions from 'merchant/reducers/disputes/details';
 
-import DisputeDetails from 'merchant/components/Disputes/Details';
+import DisputeDetails from 'merchant/views/Transactions/Disputes/components/Details';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;

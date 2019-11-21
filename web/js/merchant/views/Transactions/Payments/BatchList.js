@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import BatchList from 'merchant/containers/BatchNew/List';
-import BatchUpload from './BatchUpload';
+import BatchUpload from 'merchant/views/Transactions/Payments/components/BatchUpload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import { fetchPaymentBatches as fetchAll } from 'merchant/reducers/batches';

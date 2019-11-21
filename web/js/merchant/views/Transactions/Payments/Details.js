@@ -6,12 +6,12 @@ import { findDOMNode } from 'react-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
-import PaymentDetails from 'merchant/components/Payments/PaymentDetails';
+import PaymentDetails from 'merchant/views/Transactions/Payments/components/PaymentDetails';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
-import RefundModal from './RefundModal';
+import RefundModal from 'merchant/views/Transactions/Payments/components/RefundModal';
 
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';

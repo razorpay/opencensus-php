@@ -8,7 +8,7 @@ import Alert from 'common/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ItemsList from 'merchant/components/Items/ItemsList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import ItemCreation from 'merchant/containers/Items/New';
+import ItemCreation from 'merchant/views/Invoices/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ItemActions from 'merchant/reducers/items';

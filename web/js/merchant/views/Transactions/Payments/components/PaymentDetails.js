@@ -10,9 +10,9 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { refundId, amount, createdAt } from 'common/ui/item/pair';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
-import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
-import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
+import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
+import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
+import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
 
 export default props => {

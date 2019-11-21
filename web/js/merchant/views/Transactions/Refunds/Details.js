@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RefundDetails from 'merchant/components/Refunds/RefundDetails';
+import RefundDetails from 'merchant/views/Transactions/Refunds/components/RefundDetails';
 import * as RefundActions from 'merchant/reducers/refunds/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 

@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
+import RefundsListFilter from 'merchant/views/Transactions/Refunds/components/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
 import {
   refundId,

@@ -1,4 +1,4 @@
-import ListFilter from '../ListFilter';
+import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
 import { titleCase } from 'common/utils/rzp-utils';

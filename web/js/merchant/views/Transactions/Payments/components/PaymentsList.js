@@ -4,9 +4,9 @@ import HeaderAction from 'common/ui/HeaderAction';
 
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
-import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
+import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
+import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 

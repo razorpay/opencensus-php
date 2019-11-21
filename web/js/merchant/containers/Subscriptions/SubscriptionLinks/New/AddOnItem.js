@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { TypeAhead } from 'react-power-select';
 import { connect } from 'react-redux';
 
-import NewItem from 'merchant/containers/Items/New';
+import NewItem from 'merchant/views/Invoices/Items/New';
 import Amount from 'common/ui/Amount';
 import QuickAdd from 'common/ui/Select/QuickAdd';
 

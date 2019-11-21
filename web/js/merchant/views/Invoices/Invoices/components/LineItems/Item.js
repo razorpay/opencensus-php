@@ -3,7 +3,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InlineField from 'common/ui/Forms/InlineField';
 import InputField from 'common/ui/Forms/InputField';
 import TypeAhead from 'common/ui/Select/TypeAhead';
-import ItemCreation from 'merchant/containers/Items/New';
+import ItemCreation from 'merchant/views/Invoices/Items/New';
 import Amount from 'common/ui/Amount';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
