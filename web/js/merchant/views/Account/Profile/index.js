@@ -298,7 +298,9 @@ export default class Profile extends Component {
           </div>
 
           <ShowWhen
-            additionalCondition={user => user.isAllowedView('profile_gst')}
+            additionalCondition={user =>
+              user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness
+            }
           >
             <GST />
           </ShowWhen>
