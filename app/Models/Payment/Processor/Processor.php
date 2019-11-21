@@ -1734,7 +1734,7 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
-        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        if($payment->getOffer() !== null && $traceCode !== TraceCode::PAYMENT_TIMED_OUT)
         {
             $offer = new Offer\Core();
 
