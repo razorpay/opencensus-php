@@ -5537,3 +5537,6 @@ ALTER TABLE banking_account_statement
 ALTER TABLE external
     ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL AFTER updated_at,
     ADD INDEX external_deleted_at_index (deleted_at);
+
+ALTER TABLE partner_configs
+    ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;

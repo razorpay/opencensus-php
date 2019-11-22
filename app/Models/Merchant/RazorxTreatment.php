@@ -45,6 +45,8 @@ final class RazorxTreatment
 
     const TRANSFERS_VIA_ORDER = 'transfers_via_order';
 
+    const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
+
     // Decides if Instant Refunds Mode decisioning call should go to scrooge during refund creation flow
     const INSTANT_REFUND_MODES = 'instant_refunds_modes';
 }

@@ -139,14 +139,14 @@ class Core extends Base\Core
         //In case of discounted offer where Rzp modifies the amount, if offer validations fails
         //and merchant does not want to block payment for that offer, setting the original order amount
         //again for payment amount.
+        $order = $payment->order;
+
         if($input['order_amount'] !== null && $offer->getOfferType() === Constants::INSTANT_OFFER)
         {
             $payment->setAmount($input['order_amount']);
 
             $payment->setBaseAmount($input['order_amount']);
         }
-
-        $order = $payment->order;
 
         //Setting discount flag to false to avoid modify amount to discounted amount while capturing the
         // payment.
@@ -436,7 +436,7 @@ class Core extends Base\Core
     {
         $offer = $payment->getOffer();
 
-        if($offer !== null)
+        if($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
             $offer = $this->repo->transaction(function () use($offer)
             {

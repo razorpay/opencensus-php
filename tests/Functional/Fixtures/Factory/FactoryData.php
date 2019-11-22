@@ -1171,8 +1171,18 @@ final class FactoryData
             'updated_at'        => $faker->timestamp,
         ]);
 
-        $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
+        $factory(\RZP\Models\Options\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'namespace'         => \RZP\Models\Options\Constants::NAMESPACE_PAYMENT_LINKS,
+            'service_type'      => \RZP\Models\Options\Constants::SERVICE_PAYMENT_LINKS,
+            'scope'             => \RZP\Models\Options\Constants::SCOPE_GLOBAL,
+            'reference_id'      => null,
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+		]);
 
+        $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
         ]);
     }
 }

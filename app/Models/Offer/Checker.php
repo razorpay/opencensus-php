@@ -37,7 +37,6 @@ class Checker extends Base\Core
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
         Entity::EMI_DURATIONS,
-        Entity::MAX_OFFER_USAGE,
         self::CARD_USAGE,
     ];
 
@@ -78,6 +77,8 @@ class Checker extends Base\Core
     {
         $this->payment = $payment;
 
+        $isMaxOfferUsage = $this->checkMaxOfferUsage();
+
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
@@ -96,7 +97,8 @@ class Checker extends Base\Core
             }
         }
 
-        return (($offerActive === true) and
+        return (($isMaxOfferUsage === true) and
+                ($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
     }
