@@ -70,11 +70,4 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ID);
     }
 
-    public function fetchMerchantIdsFromWorkflow(string $workflowId)
-    {
-        $query = $this->newQuery()
-                    ->where('id','=',$workflowId)
-                    ->pluck('merchant_id');
-        return $query;
-    }
 }

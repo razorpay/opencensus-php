@@ -3,7 +3,7 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -62,32 +62,27 @@ class Core extends Base\Core
     public function createWorkflowPayoutAmountRules($input): array
     {
         $rules = $input['rules'];
-        $merchantId = nullOrEmptyString();
+        $merchantId = $this->merchant->getId();
 
         foreach ($rules as $rule)
         {
             $workflow = $this->repo->workflow->findOrFailPublic($rule['workflow_id'])->toArray();
 
-            if($merchantId == nullOrEmptyString())
-            {
-                $merchantId = $workflow['merchant_id'];
-            }
-
             if($merchantId != $workflow['merchant_id'])
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
+                    ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
                     null,
-                    ['input' => $input, 'id' => $workflow->getId()]);
+                    ['id' => $rule['workflow_id']]);
             }
         }
 
         if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
+                ErrorCode::BAD_REQUEST_WORKFLOW_RULES_UPDATE_OR_DELETE_NOT_ALLOWED,
                 null,
-                ['input' => $input, 'id' => $workflow->getId()]);
+                ['id' => $merchantId]);
         }
 
         (new Entity())->getValidator()->checkForValidAmountRanges($rules);
