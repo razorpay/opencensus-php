@@ -6,15 +6,38 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function getWorkflowRules(): array
+    public function getWorkflowRules($merchantId = null): array
     {
-        $merchantId = $this->merchant->getId();
+        // Assuming admin auth initially
+        $auth = 'admin';
+
+        // If merchant id is passed through headers and not url
+        if($this->merchant)
+        {
+            $merchantId = $this->merchant->getId();
+            $auth = 'proxy';
+        }
 
         $amountRules = $this->repo
-                            ->workflow_payout_amount_rules
-                            ->fetchWorkflowRulesForMerchant($merchantId);
+            ->workflow_payout_amount_rules
+            ->fetchWorkflowRulesForMerchant($merchantId);
 
-        return $amountRules->toArrayPublic();
+        if($auth == 'proxy')
+        {
+            return $amountRules->toArrayPublic();
+        }
+        else
+        {
+            return $amountRules->toArrayAdmin();
+        }
+    }
+
+    public function getAllWorkflowRules($limit, $offset)
+    {
+        return $this->repo
+            ->workflow_payout_amount_rules
+            ->fetchAllWorkflowRules($limit, $offset)
+            ->toArrayPublic();
     }
 
     public function createWorkflowPayoutAmountRules($input): array
