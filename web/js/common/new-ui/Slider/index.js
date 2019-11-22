@@ -59,26 +59,15 @@ export default class Slider extends React.Component {
   };
 
   render() {
-    const SliderDotsIdsList = [],
-      SlideChildrenList = [];
-
-    const children = this.props.children.filter(child => !isNone(child));
-
-    children.forEach(child => {
-      const component = child({});
-      if (
-        component.type.name !== 'SlideController' ||
-        component.type.name === 'SliderDots'
-      ) {
-        SlideChildrenList.push(child);
-      }
-    });
+    const SlideChildrenList = this.props.children.filter(
+      child => !isNone(child)
+    );
 
     this.TOTAL_SLIDES_LENGTH = SlideChildrenList.length;
 
     const data = this.getChildProp(this.TOTAL_SLIDES_LENGTH);
 
-    let isCurrentSlideShown = false;
+    const { beforeSlide, afterSlide } = this.props;
 
     return (
       <div
@@ -87,26 +76,9 @@ export default class Slider extends React.Component {
           this.props.className && `Slider--${this.props.className}`
         )}
       >
-        {children.map(child => {
-          const Component = child(data);
-
-          if (
-            Component.type.name === 'SliderDots' ||
-            Component.type.name === 'SlideController'
-          ) {
-            return Component;
-          }
-
-          const Slide = SlideChildrenList[this.state.active](data);
-
-          if (!isCurrentSlideShown) {
-            isCurrentSlideShown = true;
-
-            return Slide;
-          }
-
-          return null;
-        })}
+        {beforeSlide && beforeSlide(data)}
+        {SlideChildrenList[this.state.active](data)}
+        {afterSlide && afterSlide(data)}
       </div>
     );
   }

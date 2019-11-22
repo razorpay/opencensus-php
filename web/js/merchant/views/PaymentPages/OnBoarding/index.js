@@ -62,11 +62,17 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, onSlideChange, paymentPageProductOnBoarding } = this.props;
+    const { active, paymentPageProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider
+          active={active}
+          afterSlide={getOnBoardingSliderDots({
+            paymentPageProductOnBoarding,
+            closeOnboarding: this.closeOnboarding,
+          })}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -87,22 +93,27 @@ export default class PaymentPagesOnBoarding extends React.Component {
               features={FEATURES_DATA}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton
-                isLocalEnabler
-                feature={RZPFeatures.PP}
-                onClick={this.closeOnboarding}
-                page={sliderProps.active}
-                isTour={paymentPageProductOnBoarding.isTour}
-              />
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots({
+  closeOnboarding,
+  paymentPageProductOnBoarding,
+}) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>
+      <SkipAndGetStartedButton
+        isLocalEnabler
+        feature={RZPFeatures.PP}
+        onClick={closeOnboarding}
+        page={sliderProps.active}
+        isTour={paymentPageProductOnBoarding.isTour}
+      />
+    </SliderDots>
+  );
 }
 
 export function getIsAllowedPaymentPagesResetOnBoarding({
@@ -117,20 +128,25 @@ export function getIsAllowedPaymentPagesResetOnBoarding({
 }
 
 export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
-  if (user.isPaymentPagesEnabled || loading) {
+  if (loading) {
     return true;
   }
 
-  if (paymentPages.length) {
-    setOnBoardingDataInLocalState({
-      feature: RZPFeatures.PP,
-      data: {
-        isEnabled: true,
-      },
-    });
-
-    return true;
+  if (!user.isPaymentPagesEnabled) {
+    setPaymentPageOnboardingData(paymentPages);
   }
 
-  return false;
+  return user.isPaymentLinksEnabled;
+}
+
+function setPaymentPageOnboardingData(paymentPages) {
+  const isEnabled = Boolean(paymentPages.length);
+
+  setOnBoardingDataInLocalState({
+    feature: RZPFeatures.PP,
+    data: {
+      isEnabled,
+      lastVisitedTime: isEnabled && Date.now(),
+    },
+  });
 }

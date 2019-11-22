@@ -43,8 +43,6 @@ export default class ReminderSettings extends React.Component {
   constructor(props) {
     super(props);
 
-    this.currLocation = this.props.location.pathname;
-    this.confirmedNavigation = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
@@ -191,29 +189,25 @@ export default class ReminderSettings extends React.Component {
   };
 
   handleRouteChange = location => {
-    this.context
-      .confirm({
-        header: 'Discard unsaved changes?',
-        message:
-          'You have made changes to the reminder schedule.  All changes will be lost.',
-        affirmativeLabel: 'Discard',
-        abortLabel: 'Cancel',
-        action: () => {
-          this.setState(
-            {
-              settings: {
-                ...this.state.__stashed_settings__,
-              },
+    this.context.confirm({
+      header: 'Discard unsaved changes?',
+      message:
+        'You have made changes to the reminder schedule.  All changes will be lost.',
+      affirmativeLabel: 'Discard',
+      abortLabel: 'Cancel',
+      action: () => {
+        this.setState(
+          {
+            settings: {
+              ...this.state.__stashed_settings__,
             },
-            () => {
-              this.props.history.push(location.pathname);
-            }
-          );
-        },
-      })
-      .catch(() => {
-        this.props.history.push(this.currLocation);
-      });
+          },
+          () => {
+            this.props.history.push(location.pathname);
+          }
+        );
+      },
+    });
 
     return false;
   };

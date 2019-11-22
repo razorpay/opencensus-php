@@ -109,24 +109,33 @@ const contactFields = [
   },
 ];
 
+const RegisteredBusinessTypeOptions = [
+  { label: 'Private Limited', name: PRIVATE },
+  { label: 'Proprietorship', name: PROPRIETORSHIP },
+  { label: 'Partnership', name: PARTNERSHIP },
+  { label: 'Public Limited', name: PUBLIC },
+  { label: 'LLP', name: LLP },
+  { label: 'Trust', name: TRUST },
+  { label: 'Society', name: SOCIETY },
+  { label: 'NGO', name: NGO },
+];
+
+const UnregisteredBusinessTypeOptions = [
+  { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
+];
+
+const DefaultBusinessTypeOptions = [
+  { label: '--Select--', name: '' },
+  ...RegisteredBusinessTypeOptions,
+  ...UnregisteredBusinessTypeOptions,
+];
+
 const businessModel = [
   {
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
-    options: [
-      { label: '--Select--', name: '' },
-      { label: 'Private Limited', name: PRIVATE },
-      { label: 'Proprietorship', name: PROPRIETORSHIP },
-      { label: 'Partnership', name: PARTNERSHIP },
-      { label: 'Public Limited', name: PUBLIC },
-      { label: 'LLP', name: LLP },
-      { label: 'Trust', name: TRUST },
-      { label: 'Society', name: SOCIETY },
-      { label: 'NGO', name: NGO },
-      { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
-    ],
-    _disabledWhen: activation => isL1Completed(activation),
+    options: [], // options will be filled dynamically based on current activation stage
   },
   [
     {
@@ -718,6 +727,15 @@ const tabsData = [
   bankAccountFields,
   uploadFields,
 ];
+
+/* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
+export const getBusinessTypeOptions = activation => {
+  if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
+
+  return isUnregisteredBusiness(activation)
+    ? UnregisteredBusinessTypeOptions
+    : RegisteredBusinessTypeOptions;
+};
 
 /*
 * Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta.

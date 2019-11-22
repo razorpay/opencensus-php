@@ -64,7 +64,13 @@ export default class PaymentPagesOnBoarding extends React.Component {
 
     return (
       <OnBoardingWrapper class="PaymentLinks">
-        <Slider active={active}>
+        <Slider
+          active={active}
+          afterSlide={getOnBoardingSliderDots({
+            paymentLinksProductOnBoarding,
+            closeOnboarding: this.closeOnboarding,
+          })}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -85,22 +91,27 @@ export default class PaymentPagesOnBoarding extends React.Component {
               features={FEATURES_DATA}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton
-                isLocalEnabler
-                isTour={paymentLinksProductOnBoarding.isTour}
-                onClick={this.closeOnboarding}
-                feature={RZPFeatures.PL}
-                page={sliderProps.active}
-              />
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots({
+  closeOnboarding,
+  paymentLinksProductOnBoarding,
+}) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>
+      <SkipAndGetStartedButton
+        isLocalEnabler
+        isTour={paymentLinksProductOnBoarding.isTour}
+        onClick={closeOnboarding}
+        feature={RZPFeatures.PL}
+        page={sliderProps.active}
+      />
+    </SliderDots>
+  );
 }
 
 export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
@@ -112,21 +123,25 @@ export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
 }
 
 export function getIsPaymentLinksEnabled({ user, invoices }) {
-  if (user.isPaymentLinksEnabled || invoices.loading) {
+  if (invoices.loading) {
     return true;
   }
 
-  if (invoices.invoices.length) {
-    setOnBoardingDataInLocalState({
-      feature: RZPFeatures.PL,
-      data: {
-        isEnabled: true,
-        lastVisitedTime: Date.now(),
-      },
-    });
-
-    return true;
+  if (!user.isPaymentLinksEnabled) {
+    setPaymentLinkOnboardingData({ invoices });
   }
 
-  return false;
+  return user.isPaymentLinksEnabled;
+}
+
+function setPaymentLinkOnboardingData({ invoices }) {
+  const isEnabled = Boolean(invoices.invoices.length);
+
+  setOnBoardingDataInLocalState({
+    feature: RZPFeatures.PL,
+    data: {
+      isEnabled,
+      lastVisitedTime: isEnabled && Date.now(),
+    },
+  });
 }
