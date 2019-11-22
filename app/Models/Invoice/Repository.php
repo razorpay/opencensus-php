@@ -424,8 +424,9 @@ class Repository extends Base\Repository
 
     public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
     {
-        $collection = $this->newQuery()
+        $collection = $this->newQueryWithConnection($this->getSlaveConnection())
                            ->selectRaw(Entity::BATCH_ID . ', COUNT(1) as count')
+                           ->where(Entity::MERCHANT_ID, $this->merchant->getId())
                            ->whereIn(Entity::BATCH_ID, $batchIds)
                            ->where(Entity::STATUS, '!=', Status::DRAFT)
                            ->groupBy(Entity::BATCH_ID)
