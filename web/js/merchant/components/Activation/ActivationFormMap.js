@@ -730,13 +730,11 @@ const tabsData = [
 
 /* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
 export const getBusinessTypeOptions = activation => {
-  if (isL1Completed(activation)) {
-    if (isUnregisteredBusiness(activation)) {
-      return UnregisteredBusinessTypeOptions;
-    }
-    return RegisteredBusinessTypeOptions;
-  }
-  return DefaultBusinessTypeOptions;
+  if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
+
+  return isUnregisteredBusiness(activation)
+    ? UnregisteredBusinessTypeOptions
+    : RegisteredBusinessTypeOptions;
 };
 
 /*
