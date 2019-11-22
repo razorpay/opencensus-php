@@ -123,21 +123,25 @@ export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
 }
 
 export function getIsPaymentLinksEnabled({ user, invoices }) {
-  if (user.isPaymentLinksEnabled || invoices.loading) {
+  if (invoices.loading) {
     return true;
   }
 
-  if (invoices.invoices.length) {
-    setOnBoardingDataInLocalState({
-      feature: RZPFeatures.PL,
-      data: {
-        isEnabled: true,
-        lastVisitedTime: Date.now(),
-      },
-    });
-
-    return true;
+  if (!user.isPaymentLinksEnabled) {
+    setPaymentLinkOnboardingData({ invoices });
   }
 
-  return false;
+  return user.isPaymentLinksEnabled;
+}
+
+function setPaymentLinkOnboardingData({ invoices }) {
+  const isEnabled = Boolean(invoices.invoices.length);
+
+  setOnBoardingDataInLocalState({
+    feature: RZPFeatures.PL,
+    data: {
+      isEnabled,
+      lastVisitedTime: isEnabled && Date.now(),
+    },
+  });
 }
