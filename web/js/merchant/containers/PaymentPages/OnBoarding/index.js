@@ -62,11 +62,17 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, onSlideChange, paymentPageProductOnBoarding } = this.props;
+    const { active, paymentPageProductOnBoarding } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
-        <Slider active={active} onSlideChange={onSlideChange}>
+        <Slider
+          active={active}
+          afterSlide={getOnBoardingSliderDots({
+            paymentPageProductOnBoarding,
+            closeOnboarding: this.closeOnboarding,
+          })}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -87,22 +93,27 @@ export default class PaymentPagesOnBoarding extends React.Component {
               features={FEATURES_DATA}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              <SkipAndGetStartedButton
-                isLocalEnabler
-                feature={RZPFeatures.PP}
-                onClick={this.closeOnboarding}
-                page={sliderProps.active}
-                isTour={paymentPageProductOnBoarding.isTour}
-              />
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots({
+  closeOnboarding,
+  paymentPageProductOnBoarding,
+}) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>
+      <SkipAndGetStartedButton
+        isLocalEnabler
+        feature={RZPFeatures.PP}
+        onClick={closeOnboarding}
+        page={sliderProps.active}
+        isTour={paymentPageProductOnBoarding.isTour}
+      />
+    </SliderDots>
+  );
 }
 
 export function getIsAllowedPaymentPagesResetOnBoarding({
