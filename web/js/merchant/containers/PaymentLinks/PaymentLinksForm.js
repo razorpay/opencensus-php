@@ -107,7 +107,7 @@ export default class extends React.Component {
           </div>
         )}
 
-        <p>
+        <p class="m-t">
           <i class="i i-info-circle m-r" />
           Payment Links with SMS and Email will be sent once the batch is
           created.
