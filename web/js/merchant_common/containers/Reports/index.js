@@ -788,7 +788,7 @@ export default function Reports(store, opts) {
     };
 
     renderSelectMonth = () => {
-      const { selectedConfig } = this.props;
+      const { selectedConfig } = this.state;
       const entity = selectedConfig && selectedConfig.value;
       return (
         <div class="col-sm-4 col-xs-12">
@@ -815,7 +815,7 @@ export default function Reports(store, opts) {
 
     renderSelectInterval = () => {
       const { type } = this.props;
-      const { selectedConfig } = this.props;
+      const { selectedConfig } = this.state;
       const entity = selectedConfig && selectedConfig.value;
 
       if (type === 'monthly' || entity === 'monthlyInvoice') {
@@ -1000,9 +1000,11 @@ export default function Reports(store, opts) {
                       )}
                     </div>
 
-                    <div class="clearfix">
-                      {this.renderPredefinedDurations()}
-                    </div>
+                    {entity !== 'monthlyInvoice' && (
+                      <div class="clearfix">
+                        {this.renderPredefinedDurations()}
+                      </div>
+                    )}
                     <div class="clearfix">{this.renderSelectInterval()}</div>
 
                     <div class="clearfix">
