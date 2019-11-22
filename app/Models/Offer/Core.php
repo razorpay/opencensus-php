@@ -417,7 +417,7 @@ class Core extends Base\Core
     {
         $offer = $payment->getOffer();
 
-        if($offer !== null)
+        if($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
             $offer = $this->repo->transaction(function () use($offer)
             {
