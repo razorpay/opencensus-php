@@ -46,10 +46,10 @@ class Doppler
     public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
     {
         // We do not want to publish events in case for test mode payments
-//        if ($this->mode === Mode::TEST)
-//        {
-//            return;
-//        }
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
 
         // publishing event to doppler's topic if payment method is card/upi/netbanking
         if (($payment->getMethod() === Method::CARD) or
