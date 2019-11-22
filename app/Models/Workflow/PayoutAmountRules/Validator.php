@@ -27,10 +27,16 @@ class Validator extends Base\Validator
 
         foreach($rules as $rule)
         {
-            if($rule['min_amount'] != $presentAmount)
+            if($rule['min_amount'] < $presentAmount)
             {
                 throw new BadRequestValidationFailureException(
                     'Ranges specified are overlapping'
+                );
+            }
+            else if($rule['min_amount'] > $presentAmount)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Ranges specified are leaving gaps'
                 );
             }
             if($rule['max_amount'] && $rule['max_amount'] != PHP_INT_MAX)

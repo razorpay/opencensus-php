@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\DB;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
@@ -17,6 +18,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->get();
+    }
+
+    public function fetchAllWorkflowRules($limit, $offset)
+    {
+        return $this->newQuery()
+            ->take($limit)
+            ->skip($offset)
+            ->get()
+            ->groupBy('merchant_id');
     }
 
     public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)

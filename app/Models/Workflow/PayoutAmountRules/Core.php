@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -74,17 +75,19 @@ class Core extends Base\Core
 
             if($merchantId != $workflow['merchant_id'])
             {
-                throw new BadRequestValidationFailureException(
-                    'Changing workflows of multiple merchants not allowed'
-                );
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
+                    null,
+                    ['input' => $input, 'id' => $workflow->getId()]);
             }
         }
 
         if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
         {
-            throw new BadRequestValidationFailureException(
-                'Workflow amount rules already present'
-            );
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
+                null,
+                ['input' => $input, 'id' => $workflow->getId()]);
         }
 
         (new Entity())->getValidator()->checkForValidAmountRanges($rules);
