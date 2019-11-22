@@ -343,7 +343,7 @@ class Service extends Base\Service
 
         $subscriptionRegistration->getValidator()->validateTokenToRetry($token);
 
-        $payments = $token->payments;
+        $payments = $token->nachPayments;
 
         if (count($payments) !== 1)
         {
