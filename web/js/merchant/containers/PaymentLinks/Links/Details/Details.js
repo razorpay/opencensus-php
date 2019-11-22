@@ -38,11 +38,6 @@ import {
   trackClickDuplicatePaymentLink,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning',
-};
-
 export default props => {
   let {
     user,

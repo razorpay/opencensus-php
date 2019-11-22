@@ -1,5 +1,10 @@
 import Definition from 'common/ui/Definition';
 
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning',
+};
+
 const CustomerDetails = ({ invoice }) => (
   <Definition placeholder="--">
     {invoice.customer_details.customer_name}
