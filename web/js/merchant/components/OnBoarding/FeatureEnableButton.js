@@ -46,7 +46,6 @@ export default class FeatureEnableButton extends React.Component {
         feature: this.props.feature,
         data: {
           isEnabled: true,
-          lastVisitedTime: Date.now(),
         },
       });
 
@@ -112,7 +111,7 @@ export default class FeatureEnableButton extends React.Component {
   render() {
     return (
       <AsyncBtn
-        class={this.props.className}
+        {...this.props}
         onClick={this.handleEnableFeature}
         disabled={this.state.isSuccess}
       >
