@@ -627,4 +627,30 @@ class BatchMicroService
 
         return true;
     }
+
+    public function actionInBatchService(string $id, string $action)
+    {
+        $this->trace->info(
+            TraceCode::BATCH_ACTION_BATCH_SERVICE,
+            [
+                'batch_id' => $id,
+                'action' => $action,
+            ]
+        );
+
+        $relativeUrl = Batch\Entity::verifyIdAndStripSign($id) . '/' . $action;
+
+        try
+        {
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
+        }
+        catch (\Exception $exception)
+        {
+            // Handle exception
+        }
+
+        return $response;
+    }
 }

@@ -251,4 +251,14 @@ class Service extends Base\Service
 
         return $result->toArray();
     }
+
+    public function failProcessBatch(string $id)
+    {
+        $response = $this->app->batchService->actionInBatchService($id, 'fail');
+
+        // If batch fail successful, set status CANCELLED.
+
+        // Return true or false based on response
+        return $response;
+    }
 }
