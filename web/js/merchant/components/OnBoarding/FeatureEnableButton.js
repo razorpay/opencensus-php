@@ -111,7 +111,7 @@ export default class FeatureEnableButton extends React.Component {
   render() {
     return (
       <AsyncBtn
-        {...this.props}
+        class={this.props.className}
         onClick={this.handleEnableFeature}
         disabled={this.state.isSuccess}
       >
