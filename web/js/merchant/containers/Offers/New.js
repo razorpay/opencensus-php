@@ -424,7 +424,6 @@ class NewOfferForm extends React.Component {
                 label="Maximum Usage"
                 name="max_offer_usage"
                 placeholder="Maximum usage for this offer"
-                required
               />
 
               <hr />
