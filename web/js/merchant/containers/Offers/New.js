@@ -97,10 +97,11 @@ class NewOfferForm extends React.Component {
           this.toggleDisableState
         ),
       iins: syntheticEvent => {
+        const binRegex = /^\d{6}$/;
         let iins = syntheticEvent.target.value
           .split(',')
           .map(iin => iin.trim())
-          .filter(iin => iin.length > 5 && iin.length < 7);
+          .filter(iin => binRegex.test(iin));
         this.setState({ iins }, this.toggleDisableState);
       },
     };
@@ -180,14 +181,19 @@ class NewOfferForm extends React.Component {
               placeholder="Maximum usage of a card to avail this offer"
             />
             <Input.Select
-              label="Payment Method Type"
+              label="Card Type"
               name="payment_method_type"
-              description="Payment Method Type"
+              description="Card Type"
               onChange={this.getFormOnChangeHandler()}
-              options={[
-                { label: 'Credit Card', name: 'credit' },
-                { label: 'Debit Card', name: 'debit' },
-              ]}
+              options={(() => {
+                return this.isSelectedPaymentMethod('emi')
+                  ? [{ label: 'Credit Card', name: 'credit' }]
+                  : [
+                      { label: 'Credit Card', name: 'credit' },
+                      { label: 'Debit Card', name: 'debit' },
+                    ];
+              })()}
+              required
             />
             <Input.Select
               label="Payment Method Network"
@@ -199,6 +205,7 @@ class NewOfferForm extends React.Component {
               label="IINs"
               onChange={this.getFormOnChangeHandler('iins')}
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
+              description={this.state.iins && this.state.iins.join(', ')}
             />
           </React.Fragment>
         )) ||
@@ -286,6 +293,7 @@ class NewOfferForm extends React.Component {
           class="Input--half"
           currency="INR"
           placeholder="Discount worth in cash"
+          required
         />
       );
     }
@@ -298,6 +306,7 @@ class NewOfferForm extends React.Component {
             class="Input--half"
             placeholder="Discount worth in Percent"
             addonBefore={<span>%</span>}
+            required
             validator={val => {
               if (val > 100 || val < 0) {
                 return 'Percentage should be between 0 and 100';
@@ -310,6 +319,7 @@ class NewOfferForm extends React.Component {
             class="Input--half"
             onChange={this.getFormOnChangeHandler()}
             placeholder="Maximum cashback for this offer"
+            required
           />
         </React.Fragment>
       );
@@ -386,13 +396,6 @@ class NewOfferForm extends React.Component {
                     name: 'flat',
                   },
                 ]}
-                validator={val => {
-                  console.log('....val....', val);
-
-                  if (!val || val == '') {
-                    return 'Please select a field type';
-                  }
-                }}
               />
               {this.renderDiscountDetailsSection()}
               <hr />
@@ -403,18 +406,24 @@ class NewOfferForm extends React.Component {
                 class="Input--half"
                 onChange={this.getFormOnChangeHandler()}
                 placeholder="Minimum bill amount on for this offer"
-                required
+                validator={val => {
+                  if (this.state.discount_type === 'flat') {
+                    if (val < this.state.flat_cashback) {
+                      return 'Minimum payment is less than discount value';
+                    }
+                  }
+                }}
               />
               <Input.Select
-                label="Block Payment"
+                label="On Offer Failure"
                 name="block"
-                description="Block payment of failure of offer validation"
+                description="Block/Allow payment on failure of offer validation"
                 required
                 options={[
                   { label: 'Select Type', name: null },
-                  { label: 'Block', name: true },
+                  { label: 'Block Payment', name: true },
                   {
-                    label: 'Allow',
+                    label: 'Allow Payment',
                     name: false,
                   },
                 ]}

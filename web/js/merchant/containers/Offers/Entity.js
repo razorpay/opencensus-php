@@ -63,6 +63,7 @@ const OfferDetails = props => {
                   label="Status"
                   value={offer.active ? 'Active' : 'Inactive'}
                 />
+
                 <EntityDetailRow
                   label="Offer Name"
                   value={offer.name || '--'}
@@ -76,6 +77,10 @@ const OfferDetails = props => {
                 <EntityDetailRow
                   label="Offer Usage"
                   value={offer.current_offer_usage || '--'}
+                />
+                <EntityDetailRow
+                  label="On Offer Failure"
+                  value={offer.block ? 'Block Payment' : 'Allow Payment'}
                 />
                 <EntityDetailRow
                   label="Min Payment"

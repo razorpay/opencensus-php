@@ -2,7 +2,11 @@ import Input from 'common/new-ui/Input';
 
 export default function(props) {
   return (
-    <Input.Group label={props.label} className="InputGroup--inline">
+    <Input.Group
+      label={props.label}
+      className="InputGroup--inline"
+      required={props.required}
+    >
       <div className="Input-content">
         <Input.CurrencySelect defaultValue={props.currency} />
         <Input
