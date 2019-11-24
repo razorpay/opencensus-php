@@ -56,6 +56,8 @@ class Entity extends Base\PublicEntity
     // input key
     const ACCOUNT_NUMBER = 'account_number';
 
+    const RESPONSE_CODE   = 'response_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

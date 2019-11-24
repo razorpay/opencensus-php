@@ -56,20 +56,11 @@ class FundAccount extends Base
      */
     public function processEntryForPayoutBatch(array & $entry): FundAccountModel\Entity
     {
-        $fundAccountInput = Batch\Helpers\FundAccount::getFundAccountInput($entry);
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($fundAccountInput, $this->merchant);
-
-        if ($fundAccount !== null)
-        {
-            return $fundAccount;
-        }
-
-        // Instead of now calling processEntryAndGetEntity() rewrites few lines
-        // here to avoid double query for fund account similarity check.
-
         $contact = $this->processEntryForContact($entry);
 
-        return $this->fundAccountCore->create($fundAccountInput, $this->merchant, $contact, $this->batch);
+        $fundAccountInput = Batch\Helpers\FundAccount::getFundAccountInput($entry);
+
+        return $this->fundAccountrCore->ceate($fundAccountInput, $this->merchant, $contact, true, $this->batch);
     }
 
     public function processEntryAndGetEntity(array & $entry): FundAccountModel\Entity
@@ -97,8 +88,6 @@ class FundAccount extends Base
     {
         $input = Batch\Helpers\FundAccount::getFundAccountInput($entry, $contact);
 
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $this->merchant, $contact);
-
-        return $fundAccount ?: $this->fundAccountCore->create($input, $this->merchant, $contact, $this->batch);
+        return $this->fundAccountCore->create($input, $this->merchant, $contact, true, $this->batch);
     }
 }

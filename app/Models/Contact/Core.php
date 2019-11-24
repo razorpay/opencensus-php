@@ -18,23 +18,27 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
+        bool $allowDuplicate = false,
         string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
-        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+            if ($allowDuplicate === true)
+            {
+                $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
-        if ($contact !== null)
-        {
-            $this->trace->info(
-                TraceCode::DUPLICATE_CONTACT_FOUND,
-                [
-                    Entity::ID         => $contact->getId(),
-                    Entity::BATCH_ID   => $batchId,
-                ]);
+                if ($contact !== null)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_CONTACT_FOUND,
+                        [
+                            Entity::ID         => $contact->getId(),
+                            Entity::BATCH_ID   => $batchId,
+                        ]);
 
-            return $contact;
-        }
+                    return $contact;
+                }
+            }
 
         $contact = (new Entity)->build($input);
 
@@ -48,12 +52,6 @@ class Core extends Base\Core
         $this->setTypeIfApplicable($contact, $input);
 
         $this->repo->saveOrFail($contact);
-
-        if (optional($contact)->isActive() === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Inactive contact cannot be created ' . $contact->getEntity());
-        }
 
         return $contact;
     }
@@ -110,7 +108,7 @@ class Core extends Base\Core
 
         $input = ContactBatchHelper::getContactInput($entry);
 
-        $contact = $this->create($input, $this->merchant, $batchId);
+        $contact = $this->create($input, $this->merchant, true, $batchId);
 
         return $contact;
     }

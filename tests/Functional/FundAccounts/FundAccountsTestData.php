@@ -117,6 +117,7 @@ return [
                     'account_number' => '111000111'
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -145,6 +146,7 @@ return [
                     'account_number' => '111000111'
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -197,6 +199,7 @@ return [
                     'address' => 'amitm@upi',
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -223,6 +226,7 @@ return [
                 'details'      => [
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -249,6 +253,7 @@ return [
                 'details'      => [
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -275,6 +280,7 @@ return [
                 'details'      => [
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -971,4 +977,115 @@ return [
             ],
         ],
     ],
+
+    'testDuplicateFundAccountCreationOnApiForBankAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationOnApiForVpa' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+        ]
+    ],
+
+    'testDuplicateFundAccountCreationOnDashboardForVpa' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationOnDashboardForBankAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ]
 ];

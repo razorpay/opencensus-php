@@ -241,6 +241,7 @@ class FundAccountsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
         $this->startTest();
     }
+
     public function testBulkFundAccountWithInvalidContactId()
     {
         $this->ba->batchAuth();
@@ -251,6 +252,7 @@ class FundAccountsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
         $this->startTest();
     }
+
     public function testBulkFundAccountWithValidContactId()
     {
         $this->ba->batchAuth();
@@ -262,6 +264,7 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
         $this->startTest();
     }
+
     public function testBulkFundAccountWithSameIdempotencyKey()
     {
         $this->ba->batchAuth();
@@ -273,4 +276,75 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
         $this->startTest();
     }
+
+    // below test cases are considering duplicate checks
+    // on the same contact in context
+    public function testDuplicateFundAccountCreationOnApiForVpa()
+    {
+        $this->testCreateVpa();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testDuplicateFundAccountCreationOnApiForCard()
+    {
+        // we do not have duplicate checks for card account type
+        $this->markTestSkipped();
+    }
+
+    public function testDuplicateFundAccountCreationOnApiForBankAccount()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testDuplicateFundAccountCreationOnDashboardForVpa()
+    {
+        $this->testCreateVpa();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testDuplicateFundAccountCreationOnDashboardForBankAccount()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($fundAccount['id'], $response['id']);
+    }
+
+    // duplicate checks for same fund account details but different contacts
+    public function testDuplicateFundAccountCreationOnApiForVpaForDifferentContacts()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('contact', ['id' => '1000001contact']);
+
+
+    }
+
 }

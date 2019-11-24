@@ -89,7 +89,8 @@ return [
                 'notes'        => [
                     'test1' => 'One',
                 ],
-            ]
+            ],
+            'status_code' => '201'
         ],
     ],
 
@@ -242,26 +243,6 @@ return [
                 ],
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testFetchContactByAccountNumber' => [
-        'request'  => [
-            'url'    => '/contacts?account_number=111000',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000005contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test5.com',
-                    ],
-                ],
-            ]
         ],
     ],
 
@@ -467,4 +448,100 @@ return [
             ],
         ],
     ],
+
+    'testDuplicateContactCreationOnApi' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
+    'testDuplicateContactCreationOnDashboard' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
+    'testDuplicateContactCreationWithSameName' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testDuplicateContactCreationWithSameNameAndNullAttributes' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '200'
+        ],
+    ]
 ];

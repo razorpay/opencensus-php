@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Constants;
 use RZP\Models\FundAccount;
 
 /**
@@ -17,6 +18,26 @@ class FundAccountController extends Controller
     use Traits\HasCrudMethods;
 
     protected $service = FundAccount\Service::class;
+
+    public function create()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->create($input);
+
+        $entity = $data[Constants\Entity::FUND_ACCOUNT];
+
+        $entity = $entity->ToArrayPublic();
+
+        if (isset($data[FundAccount\Entity::RESPONSE_CODE]) === true)
+        {
+            $responseCode = $data[FundAccount\Entity::RESPONSE_CODE];
+
+            return ApiResponse::json($entity,$responseCode);
+        }
+
+        return ApiResponse::json($entity);
+    }
 
     public function get(string $id)
     {

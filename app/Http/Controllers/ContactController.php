@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Constants;
 use RZP\Models\Contact;
 
 /**
@@ -41,5 +42,15 @@ class ContactController extends Controller
         $data = $this->service()->postType($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function create()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->create($input);
+
+        return ApiResponse::json($data[Constants\Entity::CONTACT],
+                                 $data[Contact\Entity::RESPONSE_CODE]);
     }
 }

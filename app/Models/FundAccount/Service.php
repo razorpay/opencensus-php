@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Contact;
@@ -22,7 +23,6 @@ use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 class Service extends Base\Service
 {
     use Base\Traits\ServiceHasCrudMethods;
-    use Base\Traits\SensitiviseCardDetails;
 
     /**
      * @var Core
@@ -52,24 +52,19 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $this->unsetSensitiveCardDetails($input));
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST,
+                            $this->core->unsetSensitiveCardDetails($input));
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
         $source = null;
 
-        if (isset($input[Entity::CONTACT_ID]) === true) {
-            /** @var Contact\Entity $source */
-            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
-        }
-        else if (isset($input[Entity::CUSTOMER_ID]) === true) {
-            /** @var Customer\Entity $source */
-            $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+        if (isset($input[Entity::CONTACT_ID]) === true)
+        {
+            return $this->handleFundAccountCreationForContact($input);
         }
 
-        $entity = $this->core->create($input, $this->merchant, $source);
-
-        return $entity->toArrayPublic();
+        return $this->handleFundAccountCreationForCustomer($input);
     }
 
     public function fetch(string $id, array $input): array
@@ -87,7 +82,7 @@ class Service extends Base\Service
 
     public function createBulkFundAccount(array $input)
     {
-        $fundaccountBatch = new Base\PublicCollection;
+        $fundAccountBatch = new Base\PublicCollection;
 
         $validator = new Validator;
 
@@ -112,7 +107,7 @@ class Service extends Base\Service
 
                 $this->repo->transaction(function() use (
                     & $item,
-                    & $fundaccountBatch,
+                    & $fundAccountBatch,
                     & $batchId,
                     & $idempotencyKey,
                     $validator)
@@ -131,7 +126,7 @@ class Service extends Base\Service
                                             ['input' => $result->toArrayPublic(),
                                              Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
 
-                        $fundaccountBatch->push($result->toArrayPublic() +
+                        $fundAccountBatch->push($result->toArrayPublic() +
                             [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }
                     else
@@ -144,14 +139,14 @@ class Service extends Base\Service
                         {
                             $fundAccount = $this->checkFundAccountExistence($fundAccountId);
 
-                            $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                            $fundAccountBatch->push($fundAccount->toArrayPublic() +
                                 [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
                         }
                         else
                         {
                             $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
 
-                            $fundaccountBatch->push($fundAccount->toArrayPublic() +
+                            $fundAccountBatch->push($fundAccount->toArrayPublic() +
                                 [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
                         }
                     }
@@ -174,7 +169,7 @@ class Service extends Base\Service
                     ],
                 ];
 
-                $fundaccountBatch->push($exceptionData);
+                $fundAccountBatch->push($exceptionData);
             }
             catch (\Throwable $throwable)
             {
@@ -192,10 +187,10 @@ class Service extends Base\Service
                     ],
                 ];
 
-                $fundaccountBatch->push($exceptionData);
+                $fundAccountBatch->push($exceptionData);
             }
         }
-        return $fundaccountBatch->toArrayWithItems();
+        return $fundAccountBatch->toArrayWithItems();
     }
 
     /**
@@ -211,7 +206,7 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        $fundAccount = $this->core->create($input, $this->merchant, $contact, $batchId);
+        $fundAccount = $this->core->create($input, $this->merchant, $contact, true, $batchId);
 
         return $fundAccount;
     }
@@ -235,5 +230,47 @@ class Service extends Base\Service
 
             return $fundAccount;
         }
+    }
+
+    protected function handleFundAccountCreationForContact(array $input)
+    {
+        // The fund account creation method will take the parameter
+        // allowDuplicate during fund account creation. The value
+        // for this parameter is decided on the basis of origin of
+        // the request. The dashboard behaviour is yet to be finalised
+        // so for now we are going ahead with duplication checks
+        // only in API flow.
+        $responseCode  = 200;
+
+        /** @var Contact\Entity $source */
+        $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+
+        if ($this->auth->isStrictPrivateAuth() === true)
+        {
+            $entity = $this->core->create($input, $this->merchant, $source, true);
+        }
+        else
+        {
+            $entity = $this->core->create($input, $this->merchant, $source);
+        }
+
+        $responseCode = $entity->wasRecentlyCreated === true ? 201 : $responseCode;
+
+        return [
+            Constants\Entity::FUND_ACCOUNT => $entity,
+            Entity::RESPONSE_CODE          => $responseCode,
+        ];
+    }
+
+    protected function handleFundAccountCreationForCustomer(array $input)
+    {
+        /** @var Customer\Entity $source */
+        $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+
+        $entity = $this->core->create($input, $this->merchant, $source);
+
+        return [
+            Constants\Entity::FUND_ACCOUNT => $entity,
+        ];
     }
 }

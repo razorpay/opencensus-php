@@ -139,6 +139,66 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testDuplicateContactCreationOnApi()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], $contact['id']);
+    }
+
+    public function testDuplicateContactCreationOnDashboard()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['id'], $contact['id']);
+    }
+
+    public function testDuplicateContactCreationWithSameName()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], $contact['id']);
+    }
+
+    public function testDuplicateContactCreationWithSameNameAndNullAttributes()
+    {
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], $contact['id']);
+    }
+
     protected function createFundAccount($contactId)
     {
         $testdata = [
@@ -158,6 +218,7 @@ class ContactsTest extends TestCase
             'response' => [
                 'content' => [
                 ],
+                'status_code' =>201
             ],
         ];
 
