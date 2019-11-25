@@ -24,9 +24,9 @@ use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
 
 class BulkRecon extends Base\Core
 {
-    const DEFAULT_LIMIT = 1000;
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s_%s';
 
-    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+    const DEFAULT_LIMIT = 1000;
 
     const MUTEX_LOCK_TIMEOUT = 300;
 
@@ -55,7 +55,7 @@ class BulkRecon extends Base\Core
     {
         (new Validator)->validateInput('bulk_reconcile', $this->input);
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel, $this->mode);
 
         $data = $this->mutex->acquireAndRelease(
                     $mutexResource,
