@@ -3781,6 +3781,11 @@ final class Route
         //'subscription_manual_retry',
     ];
 
+    const ROUTES_THROUGH_MASTER_REPLICA = [
+        'admin_fetch_entity_multiple',
+        'admin_fetch_entity_by_id',
+    ];
+
     /**
      * @var Router
      */
@@ -4192,5 +4197,12 @@ final class Route
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac('sha1', $string, $secret);
+    }
+
+    public function routeThroughMasterReplica(): bool
+    {
+        $routeName = $this->app['request.ctx']->getRoute();
+
+        return (in_array($routeName, self::ROUTES_THROUGH_MASTER_REPLICA, true) === true);
     }
 }

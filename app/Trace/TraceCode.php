@@ -2274,6 +2274,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR            = 'PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR';
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
+    const ACTIVE_DB_CONNECTIONS                                 = 'ACTIVE_DB_CONNECTIONS';
+  
     // Rendering Preferences / Options
     const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
     const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';
