@@ -386,11 +386,11 @@ export default class UploadNACHForm extends React.Component {
           {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
 
           <AsyncBtn.Primary
-            pendingState="Creating..."
+            pendingState="Uploading..."
             onClick={this.handleSubmit}
             disabled={disabled}
           >
-            Create Registration Link
+            Upload NACH
           </AsyncBtn.Primary>
         </footer>
       </div>
