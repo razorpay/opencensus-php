@@ -98,13 +98,13 @@ abstract class NodalAccount extends Base\Core
         parent::__construct();
     }
 
-    public function initiateTransfer(Base\PublicCollection $attempts, bool $forceFlag = false): array
+    public function initiateTransfer(Base\PublicCollection $attempts): array
     {
         $this->updateAttemptStatus($attempts);
 
         $this->trace->info(TraceCode::FTA_UPDATE_STATUS);
 
-        return $this->process($attempts, $forceFlag);
+        return $this->process($attempts);
     }
 
     protected function isRefund(): bool
