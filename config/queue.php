@@ -354,6 +354,10 @@ return [
         'test'       => env('AWS_FA_VPA_VALIDATION_TEST_QUEUE'),
         'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
     ],
+    'payment_card_api_reconciliation' => [
+        'test'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */
