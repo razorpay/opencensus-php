@@ -362,6 +362,23 @@ class PaymentFetchTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testPaymentFetchINRCurrency()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        foreach (['base_amount', 'base_currency'] as $key)
+        {
+            $this->assertArrayNotHasKey($key, $paymentFetchResponse);
+        }
+    }
+
+
     public function testPaymentFetchNonINRCurrency()
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
