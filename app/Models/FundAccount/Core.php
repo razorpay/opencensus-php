@@ -110,7 +110,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($fundAccount);
             });
 
-        $this->createFTSAccountForFundAccount($source, $fundAccount, $input);
+        $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
 
         return $fundAccount;
     }
@@ -259,7 +259,9 @@ class Core extends Base\Core
         return $input;
     }
 
-    protected function createFTSAccountForFundAccount(Base\PublicEntity $source, Entity $fundAccount, array $input)
+    protected function createFTSAccountForFundAccount(array $input,
+                                                      Entity $fundAccount,
+                                                      Base\PublicEntity $source = null)
     {
         try
         {

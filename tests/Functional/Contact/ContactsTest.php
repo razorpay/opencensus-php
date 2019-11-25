@@ -175,7 +175,7 @@ class ContactsTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals($response['id'], $contact['id']);
+        $this->assertNotEquals($response['id'], $contact['id']);
     }
 
     public function testDuplicateContactCreationWithSameNameAndNullAttributes()
