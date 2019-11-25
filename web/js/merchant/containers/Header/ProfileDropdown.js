@@ -64,6 +64,11 @@ export default class ProfileDropdown extends Component {
   };
 
   showPartnerIntent = () => {
+    if (window && typeof window.hj === 'function') {
+      window.hj('trigger', 'partner_onboarding_started');
+      window.hj('tagRecording', ['partner_onboarding_started']);
+    }
+
     this.props.openModal({
       size: 'xlarge',
       disableClose: false,
@@ -72,6 +77,7 @@ export default class ProfileDropdown extends Component {
       ),
     });
   };
+
   openTicketModal = () => {
     window.rzpTicketSystem &&
       window.rzpTicketSystem.openModal('#ticket', this.props.analytics);

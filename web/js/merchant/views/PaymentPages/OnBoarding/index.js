@@ -128,25 +128,20 @@ export function getIsAllowedPaymentPagesResetOnBoarding({
 }
 
 export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
-  if (loading) {
+  if (user.isPaymentPagesEnabled || loading) {
     return true;
   }
 
-  if (!user.isPaymentPagesEnabled) {
-    setPaymentPageOnboardingData(paymentPages);
+  if (paymentPages.length) {
+    setOnBoardingDataInLocalState({
+      feature: RZPFeatures.PP,
+      data: {
+        isEnabled: true,
+      },
+    });
+
+    return true;
   }
 
-  return user.isPaymentLinksEnabled;
-}
-
-function setPaymentPageOnboardingData(paymentPages) {
-  const isEnabled = Boolean(paymentPages.length);
-
-  setOnBoardingDataInLocalState({
-    feature: RZPFeatures.PP,
-    data: {
-      isEnabled,
-      lastVisitedTime: isEnabled && Date.now(),
-    },
-  });
+  return false;
 }
