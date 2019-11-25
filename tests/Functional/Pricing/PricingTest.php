@@ -298,6 +298,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to add a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testAddPricingRuleWithFeeBearerMismatch()
+    {
+        $merchant1 = $this->fixtures->create('merchant', ['fee_bearer' => 'customer']);
+
+        $merchant2 = $this->fixtures->create('merchant', ['fee_bearer' => 'customer']);
+
+
+        $plan = $this->createPricingPlan();
+
+        $merchant1->setPricingPlan($plan['id']);
+        $merchant2->setPricingPlan($plan['id']);
+
+        $testData['request']['url'] = '/pricing/'. $plan['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testUpdatePricingPlanRule()
     {
         $content = $this->createPricingPlan2();
@@ -1026,13 +1051,13 @@ class PricingTest extends TestCase
         $this->assertNotEmpty($response);
     }
 
-    protected function assignPricingPlanToMerchant()
+    protected function assignPricingPlanToMerchant($merchantId = '10000000000000')
     {
         $id = $this->createPricingPlan()['id'];
 
-        $this->setDefaultMerchantMethods();
+        $this->setDefaultMerchantMethods($merchantId);
 
-        return $this->merchantAssignPricingPlan($id, '10000000000000');
+        return $this->merchantAssignPricingPlan($id, $merchantId);
     }
 
     protected function createCommissionPlan($pricingPlan = [])

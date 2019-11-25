@@ -1157,6 +1157,33 @@ return [
             ],
         ],
     ],
+
+    'testAddPricingRuleWithFeeBearerMismatch' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'min_fee'             => null,
+                'max_fee'             => null,
+                'fee_bearer'          => 'platform'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'exception' => [
+            'class'     => \RZP\Exception\BadRequestValidationFailureException::class
+        ]
+    ],
+
     'testUpdatePricingPlanRule' => [
         'request' => [
             'content' => [
