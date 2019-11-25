@@ -219,12 +219,15 @@ export default class ActivationWizard extends React.Component {
         if (FORM_TABS.indexOf('Needs Clarification') === -1) {
           FORM_TABS.push('Needs Clarification');
         }
-        const ndcFields = getNeedsClarificationTabsData(
-          mainFormTabsContent,
-          props.data.kyc_clarification_reasons
-        );
+        const ndcFields =
+          getNeedsClarificationTabsData(
+            mainFormTabsContent,
+            props.data.kyc_clarification_reasons
+          ) || [];
         FORM_TABS_CONTENT.push(ndcFields);
-        FORM_TABS_NAMES.push(Object.keys(ndcFields));
+        FORM_TABS_NAMES.push(
+          ndcFields.map(f => f.name).filter(f => Boolean(f))
+        );
         NEEDS_CLARIFICATION_STEP = 5;
       }
       if (!isL1Completed(this)) {
@@ -741,18 +744,23 @@ export default class ActivationWizard extends React.Component {
 
   get hasFilledClarificationDetails() {
     if (this.isOnKYCTab()) {
-      const needsClarificationContent =
-        FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP];
-      const needsClarificationFieldNames = needsClarificationContent.map(
-        field => field.name
-      );
-
-      const currentDirty = this.state.dirty; // currently filled data will be in this.state.dirty
-      const currentFilledFieldNames = currentDirty && Object.keys(currentDirty);
-
-      const hasFilledEverything = needsClarificationFieldNames.every(
-        field => currentFilledFieldNames.includes(field) && currentDirty[field]
-      );
+      const state = this.state;
+      const dynamicFieldName = {
+        address_proof_front: () => {
+          return `${state.address_proof}_front`;
+        },
+        address_proof_back: () => {
+          return `${state.address_proof}_back`;
+        },
+      };
+      const hasFilledEverything = FORM_TABS_NAMES[
+        NEEDS_CLARIFICATION_STEP
+      ].every(field => {
+        if (dynamicFieldName[field]) {
+          field = dynamicFieldName[field]();
+        }
+        return Boolean(state.dirty[field]);
+      });
 
       return hasFilledEverything;
     }
