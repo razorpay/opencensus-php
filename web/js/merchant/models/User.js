@@ -427,7 +427,7 @@ export default class User {
   }
 
   get isFirstAmountHidden() {
-    return this.getExpStatus('hide_first_amount');
+    return this.getExpStatus('hide_registration_link_first_amount');
   }
 
   get isAllowedTeamManagement() {
