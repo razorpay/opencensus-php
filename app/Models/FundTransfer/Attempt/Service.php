@@ -99,34 +99,20 @@ class Service extends Base\Service
                 'Channel can only be edited for Refund attempts!');
         }
 
-        if (isset($params[Entity::STATUS]) === true)
+        // Allowing only specific state transitions on FTA
+        //  processed -> failed
+        //  initiated -> processed
+        //  initiated -> failed
+        if ((isset($params[Entity::STATUS]) === true) and
+            (($params[Entity::STATUS] === $fundTransferAttempt->getStatus()) or
+             (in_array($params[Entity::STATUS], [Status::PROCESSED, Status::FAILED], true) === false) or
+             (in_array($fundTransferAttempt->getStatus(), [Status::PROCESSED, Status::INITIATED], true) === false)))
         {
-            // Allowing only specific state transitions on FTA
-            //  processed -> failed
-            //  initiated -> processed
-            //  initiated -> failed
-            if (($params[Entity::STATUS] === $fundTransferAttempt->getStatus()) or
-                (in_array($params[Entity::STATUS], [Status::PROCESSED, Status::FAILED], true) === false) or
-                (in_array($fundTransferAttempt->getStatus(), [Status::PROCESSED, Status::INITIATED], true) === false))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
-                    null,
-                    null,
-                    'Cant update status to ' . $params[Entity::STATUS] . ' from ' . $fundTransferAttempt->getStatus());
-            }
-
-            // Temporarily disabling status updates on processed instant refunds
-            // Waiting for product call on retries in these cases
-            if (($fundTransferAttempt->isRefund() === true) and
-                ($fundTransferAttempt->source->getSpeedProcessed() === Refund\Speed::INSTANT))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
-                    null,
-                    null,
-                    'Status update for processed refunds is temporarily disabled for Instant Refunds');
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
+                null,
+                null,
+                'Cant update status to ' . $params[Entity::STATUS] . ' from ' . $fundTransferAttempt->getStatus());
         }
     }
 

@@ -64,9 +64,10 @@ class Core extends Base\Core
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Entity::STATUS      => Status::PROCESSED,
-                        Entity::REFERENCE1  => $refund->getReference1(),
-                        Entity::MODE        => $ftaData['mode'] ?? '',
+                        Entity::STATUS        => Status::PROCESSED,
+                        Entity::REFERENCE1    => $refund->getReference1(),
+                        Entity::MODE          => $ftaData['mode'] ?? '',
+                        Constants::FTA_UPDATE => true,
                     ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);
@@ -84,8 +85,9 @@ class Core extends Base\Core
                 {
                     // Not sending reference1 in cases of failure
                     $data = [
-                        Entity::STATUS      => Status::FAILED,
-                        Entity::REFERENCE2  => $refund->getReference2(),
+                        Entity::STATUS        => Status::FAILED,
+                        Entity::REFERENCE2    => $refund->getReference2(),
+                        Constants::FTA_UPDATE => true,
                     ];
 
                     $event = Refund\ScroogeEvents::FILE_INIT_EVENT;
@@ -98,8 +100,6 @@ class Core extends Base\Core
                     if ($refund->isProcessed() === true)
                     {
                         $event = Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT;
-
-                        $refund->setStatus(Status::CREATED);
                     }
 
                     $refund->setBatchFundTransferId(null);

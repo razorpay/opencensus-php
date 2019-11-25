@@ -1565,6 +1565,7 @@ class Service extends Base\Service
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ],
                     'processed_source' => $input[Entity::MODE] ?? '',
+                    RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
                 ]
             ],
 
