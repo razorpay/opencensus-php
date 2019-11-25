@@ -1429,7 +1429,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        (new Validator)->validateInput('holiday_notify', $input);
+
         RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
@@ -2130,7 +2131,6 @@ class Service extends Base\Service
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
-
 
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {

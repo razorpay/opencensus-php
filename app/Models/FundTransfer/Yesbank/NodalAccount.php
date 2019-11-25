@@ -108,6 +108,21 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             try
             {
+                $checkAttempt = clone $attempt;
+
+                $checkAttempt->reload();
+
+                if ($checkAttempt->getStatus() !== Attempt\Status::CREATED)
+                {
+                    $this->trace->info(TraceCode::NODAL_TRANSFER_REQUEST_DUPLICATE,
+                        [
+                            'channel'       => $this->channel,
+                            'attempt_id'    => $attempt->getId(),
+                        ]);
+
+                    continue;
+                }
+
                 // Calling init will reset all the data of previous request
                 $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);

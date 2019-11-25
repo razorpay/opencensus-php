@@ -282,7 +282,8 @@ trait Authorize
 
             // TODO: This is temporarily added here until we make
             // gateway functions like authorize for bank transfer.
-            if ($payment->isBankTransfer() === true)
+            if (($payment->isBankTransfer() === true) or
+                ($payment->isNach() === true))
             {
                 return null;
             }
@@ -527,6 +528,29 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    protected function processNachPaymentCreated($payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
+
+        $this->repo->saveOrFail($token);
+
+        if ($payment->hasInvoice() === true)
+        {
+            $invoice = $payment->invoice;
+
+            if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+            {
+                $subscriptionRegistration = $invoice->entity;
+
+                (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+            }
+        }
+
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
@@ -538,6 +562,11 @@ trait Authorize
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             return $this->processCreated($payment);
+        }
+
+        if ($payment->isNach() === true)
+        {
+            return $this->processNachPaymentCreated($payment);
         }
 
         return $this->processAuth($payment);
@@ -1164,7 +1193,8 @@ trait Authorize
             return;
         }
 
-        if ($payment->isBharatQr() === true)
+        if (($payment->isBharatQr() === true) or
+            ($payment->isNach()))
         {
             return;
         }
@@ -2142,6 +2172,11 @@ trait Authorize
 
         // We do not want to call shield in case for Payments in Test mode
         if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        if ($payment->isNach() === true)
         {
             return;
         }
@@ -3131,6 +3166,10 @@ trait Authorize
             // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
+        else if ($payment->isNach() === true)
+        {
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
 
         if ($token !== null)
         {
@@ -3251,6 +3290,41 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
+        else if ($payment->isMethod(Payment\Method::NACH) === true)
+        {
+            $order = $payment->order;
+
+            $tokenRegistration = $order->getTokenRegistration();
+
+            $tokenMaxAmount = null;
+
+            if ($tokenRegistration !== null)
+            {
+                $saveMethodInput[Token\Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
+
+                $paperMandate = $tokenRegistration->paperMandate;
+
+                if ($paperMandate !== null)
+                {
+                    $bankAccount = $paperMandate->bankAccount;
+
+                    if ($bankAccount !== null)
+                    {
+                        $saveMethodInput[Token\Entity::BANK]             = $bankAccount->getBankCode();
+
+                        $saveMethodInput[Token\Entity::BENEFICIARY_NAME] = $bankAccount->getBeneficiaryName();
+
+                        $saveMethodInput[Token\Entity::ACCOUNT_NUMBER]   = $bankAccount->getAccountNumber();
+
+                        $saveMethodInput[Token\Entity::ACCOUNT_TYPE]     = $bankAccount->getAccountType();
+
+                        $saveMethodInput[Token\Entity::IFSC]             = $bankAccount->getIfscCode();
+                    }
+
+                    $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
+                }
+            }
+        }
 
         $token = null;
 
@@ -3320,6 +3394,10 @@ trait Authorize
 
             case Payment\Method::PAYLATER:
                 $this->verifyPayLaterEnabled();
+                break;
+
+            case Payment\Method::NACH:
+                $this->verifyNachEnabled();
                 break;
 
             default:
@@ -5216,6 +5294,18 @@ trait Authorize
         }
     }
 
+    protected function verifyNachEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isNachEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NACH_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyCardlessEmiEnabled()
     {
         $merchantMethods = $this->methods;
@@ -5816,6 +5906,11 @@ trait Authorize
             return true;
         }
 
+        if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
         if (($payment->isMethodCardOrEmi() === false) or
             ($payment->isRecurring() === true) or
             ($payment->isPushPaymentMethod() === true))
@@ -5853,7 +5948,8 @@ trait Authorize
             ($payment->isRecurringTypeAuto() === true) or
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
-            ($payment->isBharatQr() === true))
+            ($payment->isBharatQr() === true) or
+            ($payment->isNach() === true))
         {
             return false;
         }

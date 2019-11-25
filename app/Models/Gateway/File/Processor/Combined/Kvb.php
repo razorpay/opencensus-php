@@ -60,7 +60,7 @@ class Kvb extends Base
         $amount['refunds'] = number_format($amount['refunds'] / 100, 2, '.', '');
         $amount['claims']  = number_format($amount['claims'] / 100, 2, '.', '');
 
-        $date = Carbon::now(Timezone::IST)->format('d.m.Y');
+        $date = Carbon::yesterday(Timezone::IST)->format('d.m.Y');
 
         $config = $this->app['config']->get('nodal.axis');
 

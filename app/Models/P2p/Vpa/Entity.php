@@ -66,6 +66,8 @@ class Entity extends Base\Entity
         Entity::ACTIVE,
         Entity::VALIDATED,
         Entity::VERIFIED,
+        Entity::DEFAULT,
+        Entity::DELETED_AT,
     ];
 
     protected $visible = [
@@ -85,6 +87,7 @@ class Entity extends Base\Entity
         Entity::VERIFIED,
         Entity::DEFAULT,
         Entity::CREATED_AT,
+        Entity::DELETED_AT,
     ];
 
     protected $public = [

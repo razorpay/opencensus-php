@@ -143,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -209,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -325,6 +327,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
+        self::NACH                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
@@ -370,6 +373,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    public function getGatewayAccessCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ACCESS_CODE);
     }
 
     public function getGatewayMerchantId2()
@@ -579,6 +587,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isNachEnabled()
+    {
+        return $this->getAttribute(self::NACH);
     }
 
     public function isCardlessEmiEnabled()

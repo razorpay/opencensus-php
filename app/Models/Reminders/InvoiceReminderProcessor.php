@@ -28,7 +28,9 @@ class InvoiceReminderProcessor extends ReminderProcessor
     {
         $invoice = $this->repo->$entity->findOrFail($id);
 
-        $this->validate($invoice, $input);
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($invoice->getId());
+
+        $this->validate($invoice, $input, $reminderEntity);
 
         $reminderCount = $input['reminder_count'];
 
@@ -65,9 +67,11 @@ class InvoiceReminderProcessor extends ReminderProcessor
 
         $invoice = $this->repo->$entity->findByPublicIdAndMerchantAndUser($id, $merchant);
 
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($invoice->getId());
+
         $namespace = $this->getNamespace($invoice);
 
-        $input = $this->getNextRunAtInput($invoice, $namespace);
+        $input = $this->getNextRunAtInput($invoice, $namespace, $reminderEntity);
 
         $response = $this->reminders->nextRunAt($input);
 
@@ -85,7 +89,9 @@ class InvoiceReminderProcessor extends ReminderProcessor
         return $type;
     }
 
-    protected function getNextRunAtInput(Entity $invoice, string $namespace)
+    protected function getNextRunAtInput(Entity $invoice,
+                                         string $namespace,
+                                         $reminderEntity = null)
     {
         $input = [
             'issued_at' => $invoice->getIssuedAt(),
@@ -93,13 +99,15 @@ class InvoiceReminderProcessor extends ReminderProcessor
         ];
 
         $expireBy = $invoice->getExpireBy();
+
         if(empty($expireBy) === false)
         {
             $input['expire_by'] = $expireBy;
+
             unset($input['issued_at']);
         }
 
-        $reminderID = $invoice->getReminderId();
+        $reminderID = optional($reminderEntity)->getReminderId();
 
         if(empty($reminderID) === false)
         {
@@ -109,14 +117,14 @@ class InvoiceReminderProcessor extends ReminderProcessor
         return $input;
     }
 
-    protected function validate($invoice, $input)
+    protected function validate($invoice, $input, Invoice\Reminder\Entity $reminderEntity)
     {
         if($invoice->getStatus() !== Status::ISSUED and $invoice->getStatus() !== Status::PARTIALLY_PAID)
         {
             $this->handleInvalidReminder();
         }
 
-        if($invoice->getReminderStatus() !== Invoice\ReminderStatus::IN_PROGRESS)
+        if($reminderEntity->getReminderStatus() !== Invoice\Reminder\Status::IN_PROGRESS)
         {
             $this->handleInvalidReminder();
         }

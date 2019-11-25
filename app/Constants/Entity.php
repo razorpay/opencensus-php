@@ -106,6 +106,7 @@ class Entity
     const GATEWAY_DOWNTIME           = 'gateway_downtime';
     const MERCHANT_INVOICE           = 'merchant_invoice';
     const CREDITNOTE_INVOICE         = 'creditnote_invoice';
+    const INVOICE_REMINDER           = 'invoice_reminder';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
@@ -125,6 +126,9 @@ class Entity
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
+
+    const OPTIONS                    = 'options';
+
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
 
@@ -353,6 +357,7 @@ class Entity
         self::CUSTOMER,
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
+        self::OPTIONS,
     ];
 
     /**
@@ -448,6 +453,7 @@ class Entity
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
+        self::INVOICE_REMINDER          => \RZP\Models\Invoice\Reminder::class,
         self::MERCHANT_DOCUMENT         => \RZP\Models\Merchant\Document::class,
         self::D2C_BUREAU_DETAIL         => \RZP\Models\D2cBureauDetail::class,
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
@@ -579,6 +585,8 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+
+        self::OPTIONS               => \RZP\Models\Options::class,
     ];
 
     protected static $repository = [

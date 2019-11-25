@@ -590,7 +590,8 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if ($method !== Payment\Method::EMANDATE)
+        if (($method !== Payment\Method::EMANDATE) and
+            ($method !== Payment\Method::NACH))
         {
             $this->validateInputValues('min_amount_check', $input);
         }

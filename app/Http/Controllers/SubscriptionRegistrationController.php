@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Constants\Entity;
 
 class SubscriptionRegistrationController extends Controller
 {
@@ -95,9 +96,37 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendNotification(string $id, string $medium)
+    {
+        $data = $this->service()->sendNotification($id, $medium);
+
+        return ApiResponse::json($data);
+    }
+
+    public function cancelAuthLink(string $id)
+    {
+        $invoice = $this->service()->cancelAuthLink($id);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function cancelAuthLinksOfBatch(string $batchId)
+    {
+        $this->service(Entity::INVOICE)->cancelInvoicesOfBatch($batchId);
+
+        return ApiResponse::json([]);
+    }
+
     public function paperMandateAuthenticate()
     {
         $data = $this->service()->paperMandateAuthenticate($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function paperMandateAuthenticateProxy()
+    {
+        $data = $this->service()->paperMandateAuthenticateProxy($this->input);
 
         return ApiResponse::json($data);
     }
@@ -119,6 +148,13 @@ class SubscriptionRegistrationController extends Controller
     public function fetchAuthLinkInternal(string $id)
     {
         $data = $this->service()->fetchAuthLinkInternal($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function retryPaperMandateToken(string $tokenId)
+    {
+        $data = $this->service()->retryPaperMandateToken($tokenId);
 
         return ApiResponse::json($data);
     }
