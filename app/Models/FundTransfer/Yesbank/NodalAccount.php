@@ -43,10 +43,11 @@ class NodalAccount extends NodalBase\NodalAccount
      * Makes request to the bank for fund transfer for given attempts
      *
      * @param PublicCollection $attempts
+     * @param bool $forceFlag
      * @return array
      * @throws LogicException
      */
-    public function process(PublicCollection $attempts): array
+    public function process(PublicCollection $attempts, bool $forceFlag = false): array
     {
         $processedCount = 0;
 
@@ -63,11 +64,14 @@ class NodalAccount extends NodalBase\NodalAccount
             // initiated on non-working days/hours
             //
 
-            $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
-
-            if ($isTransferAllowedToday === false)
+            if ($forceFlag === false)
             {
-                continue;
+                $isTransferAllowedToday = $this->isTransferAllowedToday($attempt, $forceFlag);
+
+                if($isTransferAllowedToday === false)
+                {
+                    continue;
+                }
             }
 
             //if BA is not present for attempt

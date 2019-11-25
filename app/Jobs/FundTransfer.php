@@ -42,11 +42,18 @@ class FundTransfer extends Job
     //
     public $timeout = 200;
 
-    public function __construct(string $mode, string $ftaId)
+    /**
+     * @bool forceFlag
+     */
+    protected $forceFlag;
+
+    public function __construct(string $mode, string $ftaId, bool $forceFlag = false)
     {
         parent::__construct($mode);
 
         $this->ftaId = $ftaId;
+
+        $this->forceFlag = $forceFlag;
     }
 
     public function handle()
@@ -134,7 +141,7 @@ class FundTransfer extends Job
 
             $this->setModeOfFtaInitiator($ftaInitiator);
 
-            $ftaInitiator->initFundTransferOnChannel($fta, $channel);
+            $ftaInitiator->initFundTransferOnChannel($fta, $channel, $this->forceFlag);
         }
         catch (\Throwable $e)
         {
