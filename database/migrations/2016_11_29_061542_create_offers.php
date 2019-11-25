@@ -55,7 +55,7 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::CHECKOUT_DISPLAY)
                     ->default(0);
 
-            $table->string(Offer::TYPE, 15)
+            $table->string(Offer::TYPE, 20)
                   ->default(Offer::INSTANT);
 
             $table->integer(Offer::PERCENT_RATE)

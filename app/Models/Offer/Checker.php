@@ -107,16 +107,23 @@ class Checker extends Base\Core
 
     protected function checkPaymentMethod(): bool
     {
+        $result = true;
+
         $paymentMethod = $this->payment->getMethod();
 
         $offerPaymentMethod = $this->offer->getPaymentMethod();
 
         if ($offerPaymentMethod !== null)
         {
-            return ($offerPaymentMethod === $paymentMethod);
+            $result = ($offerPaymentMethod === $paymentMethod);
         }
 
-        return true;
+        if(!$result)
+        {
+
+        }
+
+        return $result;
     }
 
     protected function checkPaymentMethodType(): bool
@@ -141,6 +148,11 @@ class Checker extends Base\Core
             'payment_card_type' => $card->getType()
         ]);
 
+        if(!$result)
+        {
+
+        }
+
         return $result;
     }
 
@@ -164,6 +176,11 @@ class Checker extends Base\Core
             'offer_card_network'   => $offerPaymentNetwork,
             'payment_card_network' => $card->getNetworkCode()
         ]);
+
+        if(!$result)
+        {
+
+        }
 
         return $result;
     }
@@ -204,6 +221,8 @@ class Checker extends Base\Core
 
     protected function checkEmiDurations()
     {
+        $result = true;
+
         $emiDurations = $this->offer->getEmiDurations();
 
         if (empty($emiDurations) === true)
@@ -213,7 +232,14 @@ class Checker extends Base\Core
 
         $emiDuration = $this->payment->emiPlan->getDuration();
 
-        return (in_array($emiDuration, $emiDurations, true) === true);
+        $result = (in_array($emiDuration, $emiDurations, true) === true);
+
+        if(!$result)
+        {
+
+        }
+
+        return $result;
     }
 
     protected function checkInternational(): bool
@@ -235,6 +261,11 @@ class Checker extends Base\Core
             'card_iin'          => $card->getIin(),
             'international'     => $card->isInternational(),
         ]);
+
+        if(!$result)
+        {
+
+        }
 
         return $result;
     }
@@ -267,6 +298,8 @@ class Checker extends Base\Core
             'offer_iins' => $offerIins,
             'card_iin'   => $card->getIin()
         ]);
+
+        if(!$result)
 
         return $result;
     }

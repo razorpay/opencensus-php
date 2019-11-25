@@ -1477,6 +1477,7 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
+            'type' => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
@@ -1706,7 +1707,7 @@ class OrderTest extends TestCase
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])
     {
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
-            'force_offer' => true,
+            'force_offer' => true
         ]);
 
         $payment = $this->getDefaultPaymentArray();
