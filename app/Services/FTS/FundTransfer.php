@@ -596,8 +596,18 @@ class FundTransfer extends Base
         if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
             ($this->fta->source->isBalanceTypeBanking() === true))
         {
-            $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                      ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if (($currentTime < $this->bankingStartTime) &&
+                (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt($this->bankingStartTime);
+            }
+            else
+            {
+                $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+            }
 
             return true;
         }
