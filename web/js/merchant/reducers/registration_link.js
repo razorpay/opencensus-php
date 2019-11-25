@@ -47,7 +47,7 @@ export const downloadSignedNACHFile = data => {
     url: `token.registration/paper_mandate/uploaded_form`,
     data,
   }).then(resp => {
-    if (resp.data.url) {
+    if (resp.data && resp.data.url) {
       window.location = resp.data.url;
 
       return;
