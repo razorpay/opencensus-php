@@ -20,7 +20,7 @@ class Validator extends Base\Validator
 
     public function validateAddress(string $attribute, string $address)
     {
-        if ((preg_match(self::VPA_REGEX, $address) === 0) or
+        if (((bool) preg_match(self::VPA_REGEX, $address) === false) or
             (strlen($address) > self::MAX_LENGTH) or
             (strlen($address) < self::MIN_LENGTH))
         {
