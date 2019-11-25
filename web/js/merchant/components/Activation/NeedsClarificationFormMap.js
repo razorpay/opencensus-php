@@ -65,8 +65,10 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     //There are two ways to generate a new field
     //1. The field already is a part fo all fields in the form
     //2. Field is altogether a new attribute, then it should be generated dynamically
+    // LHS (KEYS) are server side attributes and reasons are read based on this key
+    // RHS (VALUE) are key names of UI input component that would be rendered for getting user input
     const mappedFields = {
-      address_proof_url: 'cancelled_cheque',
+      cancelled_check: 'cancelled_cheque',
       aadhar_front: 'address_proof_front',
       aadhar_back: 'address_proof_back',
       passport_front: 'address_proof_front',
@@ -220,6 +222,22 @@ const predefinedReasons = {
     },
   },
   address_proof_url: {
+    reasons: {
+      unable_to_validate_acc_number: {
+        description:
+          "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+      unable_to_validate_beneficiary_name: {
+        description:
+          "We're unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+      unable_to_validate_ifsc: {
+        description:
+          "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+    },
+  },
+  cancelled_check: {
     reasons: {
       unable_to_validate_acc_number: {
         description:
