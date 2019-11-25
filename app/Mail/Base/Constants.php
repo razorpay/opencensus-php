@@ -37,6 +37,7 @@ class Constants
     const LINKED_ACCOUNT_REVERSAL = 'linked_account_reversal';
     const RAZORPAY_X              = 'razorpay_x';
     const CAPITAL_SUPPORT         = 'capital_support';
+    const NACH                    = 'nach';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT                 => 'support@razorpay.com',
@@ -69,7 +70,9 @@ class Constants
         self::MERCHANT_ONBOARDING     => 'support@razorpay.com',
         self::LINKED_ACCOUNT_REVERSAL => 'refunds@razorpay.com',
         self::GATEWAY_POD             => 'pod.gateway@razorpay.com',
-        self::CAPITAL_SUPPORT           => 'capital.support@razorpay.com'
+        self::CAPITAL_SUPPORT         => 'capital.support@razorpay.com',
+        self::NACH                    => 'nach@razorpay.com'
+
     ];
 
     const HEADERS = [
@@ -96,6 +99,7 @@ class Constants
         self::MERCHANT_ONBOARDING     => 'support@razorpay.com',
         self::LINKED_ACCOUNT_REVERSAL => 'Linked Account Refunds File',
         self::RAZORPAY_X              => 'RazorpayX',
-        self::CAPITAL_SUPPORT         => 'Razorpay Capital'
+        self::CAPITAL_SUPPORT         => 'Razorpay Capital Team',
+        self::NACH                    => 'Razorpay Nach',
     ];
 }

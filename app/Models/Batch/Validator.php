@@ -128,6 +128,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $nachCreateRules = [
+        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:nach',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit',
+        Entity::GATEWAY     => 'required|string',
+    ];
+
     protected static $merchantOnboardingCreateRules = [
         Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE    => 'required|in:merchant_onboarding',

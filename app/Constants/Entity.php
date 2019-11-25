@@ -199,6 +199,7 @@ class Entity
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
+    const NACH_CITI              = 'nach_citi';
     const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_CBI         = 'netbanking_cbi';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -494,6 +495,7 @@ class Entity
         self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
         self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Legaldesk::class,
         self::ENACH_NPCI_NETBANKING  => \RZP\Gateway\Enach\Npci\Netbanking::class,
+        self::NACH_CITI              => \RZP\Gateway\Enach\Citi::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,

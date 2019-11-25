@@ -25,6 +25,9 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+    const CITI_NACH_REGISTER                = 'citi_nach_register';
+    const CITI_NACH_DEBIT                   = 'citi_nach_debit';
+    const CITI_NACH_DEBIT_SUMMARY           = 'citi_nach_debit_summary';
 
     const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
     const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
@@ -218,6 +221,9 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
@@ -369,6 +375,9 @@ class Type
         self::HDFC_EMANDATE_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::CITI_NACH_DEBIT_SUMMARY,
+        self::CITI_NACH_DEBIT,
+        self::CITI_NACH_REGISTER,
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,

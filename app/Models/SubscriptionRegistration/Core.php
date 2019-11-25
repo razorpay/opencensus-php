@@ -339,6 +339,38 @@ class Core extends Base\Core
         return $paymentProcessor->process($paymentInput);
     }
 
+    public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
+    {
+        if ($payment->isNach() === false)
+        {
+            return null;
+        }
+
+        $this->app['basicauth']->setMerchant($payment->merchant);
+
+        $merchant = $payment->merchant;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return null;
+        }
+
+        $subscriptionRegistration = $this->repo
+                                         ->subscription_registration
+                                         ->findByTokenIdAndMerchant($token->getId(), $merchant->getId());
+
+        if ($subscriptionRegistration === null)
+        {
+            return null;
+        }
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        return $paperMandate->getUploadedFormUrl();
+    }
+
     private function isValidForAutoCharge(Entity $tokenRegistration)
     {
         $firstChargeNeeded    = ($tokenRegistration->getAmount() > 0 ) === true;

@@ -3274,7 +3274,8 @@ class Terminal extends Base
             'created_at'                => time(),
             'updated_at'                => time(),
             'type'                      => [
-                Type::RECURRING_3DS => '1',
+                Type::RECURRING_3DS     => '1',
+                Type::RECURRING_NON_3DS => '1',
             ],
         ];
 

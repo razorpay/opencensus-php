@@ -268,6 +268,108 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchPendingNachRegistration(string $gateway, int $from, int $to)
+    {
+        $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+
+        $paymentGlobalTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::GLOBAL_TOKEN_ID);
+
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
+        $selectCols = $this->dbColumn('*');
+
+        $subQuery = Payment\Entity::query()
+            ->select($this->repo->payment->dbColumn('*'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to]);
+
+        return $this->newQuery()
+            ->select($selectCols, 'payments.id as payment_id')
+            ->joinSub(
+                $subQuery,
+                $paymentTableName,
+                function ($join) use($paymentTokenIdColumn, $paymentGlobalTokenIdColumn, $tokenIdColumn)
+                {
+                    $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
+                    $join->orOn($tokenIdColumn, '=', $paymentGlobalTokenIdColumn);
+                }
+            )
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::NACH)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->with(['customer', 'merchant'])
+            ->get();
+    }
+
+    public function fetchPendingNachDebit(string $gateway, $from, $to)
+    {
+        $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
+        $selectCols = $this->dbColumn('*');
+
+        $payments = Payment\Entity::query()
+            ->select($this->repo->payment->dbColumn('*'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to]);
+
+        return $this->newQuery()
+            ->select($selectCols,
+                'payments.id as payment_id',
+                'payments.amount as payment_amount',
+                'payments.created_at as payment_created_at',
+                'payments.email as payment_email')
+            ->joinSub(
+                $payments,
+                $paymentTableName,
+                function ($join) use($paymentTokenIdColumn, $tokenIdColumn)
+                {
+                    $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
+                }
+            )
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::NACH)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->with(['merchant', 'terminal'])
+            ->get();
+    }
+
     public function getByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
     {
         Entity::verifyIdAndStripSign($id);

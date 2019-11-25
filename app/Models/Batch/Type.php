@@ -34,6 +34,8 @@ class Type
 
     const EMANDATE                  = 'emandate';
 
+    const NACH                      = 'nach';
+
     const PAYOUT                    = 'payout';
 
     const SUB_MERCHANT              = 'sub_merchant';
@@ -92,6 +94,7 @@ class Type
     public static $appTypes = [
         self::RECONCILIATION,
         self::EMANDATE,
+        self::NACH,
         self::BANK_TRANSFER,
         self::ENTITY_MAPPING,
         self::TERMINAL,
@@ -143,6 +146,7 @@ class Type
         self::BANK_TRANSFER,
         self::RECONCILIATION,
         self::EMANDATE,
+        self::NACH,
         self::PAYOUT,
         self::SUB_MERCHANT,
         self::DIRECT_DEBIT,

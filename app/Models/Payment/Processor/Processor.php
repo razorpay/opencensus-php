@@ -3009,6 +3009,11 @@ class Processor
             return false;
         }
 
+        if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 

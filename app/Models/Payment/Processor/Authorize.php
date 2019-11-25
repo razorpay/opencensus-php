@@ -528,23 +528,26 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function processNachPaymentCreated($payment)
+    protected function processNachPaymentCreated(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
-
-        $this->repo->saveOrFail($token);
-
-        if ($payment->hasInvoice() === true)
+        if ($payment->isRecurringTypeInitial() === true)
         {
-            $invoice = $payment->invoice;
+            $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
-            if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+            $this->repo->saveOrFail($token);
+
+            if ($payment->hasInvoice() === true)
             {
-                $subscriptionRegistration = $invoice->entity;
+                $invoice = $payment->invoice;
 
-                (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+                {
+                    $subscriptionRegistration = $invoice->entity;
+
+                    (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                }
             }
         }
 
@@ -3052,6 +3055,10 @@ trait Authorize
         {
             $payment->setBank($token->getBank());
 
+            $payment->localToken()->associate($token);
+        }
+        else if ($payment->isNach() === true)
+        {
             $payment->localToken()->associate($token);
         }
 

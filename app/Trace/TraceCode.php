@@ -539,6 +539,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_RECON_FORCE_AUTH_RESPONSE                    = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
 
+
+    const NACH_DEBIT_REQUEST                                    = 'NACH_DEBIT_REQUEST';
+    const NACH_DEBIT_RESPONSE                                   = 'NACH_DEBIT_RESPONSE';
+    const NACH_FUNCTION_NOT_IMPLEMENTED                         = 'NACH_FUNCTION_NOT_IMPLEMENTED';
+
+    const NACH_REGISTER_REQUEST                                 = 'NACH_REGISTER_REQUEST';
+    const NACH_REGISTER_REQUEST_ROW                             = 'NACH_REGISTER_REQUEST_ROW';
+    const NACH_REGISTER_ROW_FAILED                              = 'NACH_REGISTER_ROW_FAILED';
+
     const RX_LOW_BALANCE_EMAIL_ALERT_FAILED                     = 'RX_LOW_BALANCE_EMAIL_ALERT_FAILED';
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
 
@@ -1310,6 +1319,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KUBERNETES_INVOICE_JOB_NAMESPACE                      = 'KUBERNETES_INVOICE_JOB_NAMESPACE';
 
     const BATCH_FILE_DELETE_ERROR                               = 'BATCH_FILE_DELETE_ERROR';
+
+    const GATEWAY_NACH_FILE_DELETE_ERROR                        = 'GATEWAY_NACH_FILE_DELETE_ERROR';
 
     const ADMIN_FILE_DELETE_ERROR                               = 'ADMIN_FILE_DELETE_ERROR';
 
