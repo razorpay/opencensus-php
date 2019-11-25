@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation\BajajFinserv;
 
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -81,7 +82,29 @@ class BajajFinservReconTest extends TestCase
 //        $payment = $this->getDbLastEntityToArray('payment');
 //        $mozart = $this->getDbLastEntityToArray('mozart');
 //        $card = $this->getDbLastEntityToArray('card');
+        $this->createSuccessPaymentEntities();
 
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'BajajFinserv');
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    protected function createSuccessPaymentEntities()
+    {
         $card = $this->fixtures->create(
             'card',
             [
@@ -140,11 +163,7 @@ class BajajFinservReconTest extends TestCase
                 'merchant_id' => '10000000000000',
             ]);
 
-        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
-
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->reconcile($uploadedFile, 'BajajFinserv');
+        return $payment;
     }
 
     protected function setBflPaymentArray()
