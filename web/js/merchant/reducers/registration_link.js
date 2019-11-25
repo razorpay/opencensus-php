@@ -47,7 +47,13 @@ export const downloadSignedNACHFile = data => {
     url: `token.registration/paper_mandate/uploaded_form`,
     data,
   }).then(resp => {
-    window.location = resp.data.url;
+    if (resp.data.url) {
+      window.location = resp.data.url;
+
+      return;
+    }
+
+    throw new Error('Signed NACH form is not available');
   });
 };
 

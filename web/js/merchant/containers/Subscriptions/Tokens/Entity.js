@@ -122,7 +122,7 @@ export default class TokenEntityContainer extends Component {
     }).catch(err => {
       this.props.showNotification({
         type: 'error',
-        message: err.errors,
+        message: err.message,
       });
     });
   };
