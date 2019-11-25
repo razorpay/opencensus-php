@@ -46,7 +46,9 @@ export const downloadSignedNACHFile = data => {
   return merchantFetch({
     url: `token.registration/paper_mandate/uploaded_form`,
     data,
-  }).then(resp => axios(resp.data.url));
+  }).then(resp => {
+    window.location = resp.data.url;
+  });
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);
