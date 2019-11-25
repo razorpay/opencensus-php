@@ -94,7 +94,7 @@ class BajajFinservReconTest extends TestCase
 
         $data = json_decode($gatewayEntity['raw'], true);
 
-        $this->assertNotNull($data['bank_payment_id']);
+        $this->assertNotNull($data['DealID']);
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -156,11 +156,18 @@ class BajajFinservReconTest extends TestCase
                 ])
             ]);
 
-        $this->fixtures->create(
+        $transaction = $this->fixtures->create(
             'transaction',
             [
                 'entity_id'   => $payment['id'],
                 'merchant_id' => '10000000000000',
+            ])->toArray();
+
+        $this->fixtures->edit(
+            'payment',
+            $payment['id'],
+            [
+                'transaction_id' => $transaction['id'],
             ]);
 
         return $payment;
