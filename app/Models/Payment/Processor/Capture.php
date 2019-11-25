@@ -393,11 +393,6 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
-        {
-            return;
-        }
-
         if($payment->getOffer()->getOfferType() !== \RZP\Models\Offer\Constants::INSTANT_OFFER)
         {
             return;
@@ -1165,8 +1160,7 @@ trait Capture
     {
         $discount = 0;
 
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null))
+        if($payment->discount !== null)
         {
             $discount = $payment->discount->getAmount();
         }

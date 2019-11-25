@@ -3953,11 +3953,6 @@ trait Authorize
 
         $this->offer = $payment->getOffer();
 
-        if ($order->isDiscountApplicable() === false)
-        {
-            return;
-        }
-
         if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;

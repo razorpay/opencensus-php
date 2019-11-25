@@ -597,7 +597,7 @@ class Entity extends Base\PublicEntity
         // because one offer of emi subvention can corresponds to multiple
         // plans which means multiple discounts are applicable.
         //
-        if (($discount === true) and ($this->getAttribute(self::TYPE) === 'instant') and
+        if (($this->getAttribute(self::TYPE) === 'instant') and
             ($this->getAttribute(self::EMI_SUBVENTION) !== true))
         {
             $data['original_amount'] = $amount;

@@ -1177,7 +1177,6 @@ class Processor
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if (($this->offer !== null) and
-            ($order->isDiscountApplicable() === true) and
             ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
 
