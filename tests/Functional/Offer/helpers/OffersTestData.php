@@ -1363,7 +1363,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
