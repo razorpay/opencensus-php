@@ -50,7 +50,10 @@ class ContactController extends Controller
 
         $data = $this->service()->create($input);
 
-        return ApiResponse::json($data[Constants\Entity::CONTACT],
-                                 $data[Contact\Entity::RESPONSE_CODE]);
+        $response = $data[Constants\Entity::CONTACT];
+
+        $responseCode = $data[Contact\Entity::RESPONSE_CODE];
+
+        return ApiResponse::json($response, $responseCode);
     }
 }

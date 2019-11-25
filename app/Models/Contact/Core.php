@@ -23,7 +23,19 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
-            if ($allowDuplicate === true)
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                $merchant->getId(),
+                $batchId);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
+        if ($allowDuplicate === true)
             {
                 $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 

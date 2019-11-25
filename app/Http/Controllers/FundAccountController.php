@@ -33,7 +33,7 @@ class FundAccountController extends Controller
         {
             $responseCode = $data[FundAccount\Entity::RESPONSE_CODE];
 
-            return ApiResponse::json($entity,$responseCode);
+            return ApiResponse::json($entity, $responseCode);
         }
 
         return ApiResponse::json($entity);

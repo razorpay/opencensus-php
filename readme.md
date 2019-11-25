@@ -72,7 +72,6 @@
 * Run `phpunit` in api root. Preferably run as `phpunit --debug` for better view of tests when running manually.
 * In case you are on 12.04, see [this question](http://stackoverflow.com/questions/1528717/phpunit-require-once-error) on how to fix the PHPUnit install.
 * In case you see this error about missing tables in api_testing database, run the following on api root: `APP_ENV=testing php artisan rzp:dbr --install`
-* In case you see error `Trait ‘RZP\Tests\Functional\Mpan\MpanTrait’ not found` or similar `class not found` error, run the following: `composer dumpautoload -o`. It regenerates the list of all classes that need to be included in the project.
 
 TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testing` file to `false` after running the tests once. This makes sure you don't run fixtures everytime and hence the tests will run faster. If you add/change/delete any fixtures or clear your test db then change them to `true` once, run tests and then change them back to `false`.
 

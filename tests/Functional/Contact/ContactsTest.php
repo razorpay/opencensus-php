@@ -199,6 +199,39 @@ class ContactsTest extends TestCase
         $this->assertEquals($response['id'], $contact['id']);
     }
 
+    public function testDuplicateContactWithEmptyValuesOfSomeAttributes()
+    {
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => null
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact1 = $this->getLastEntity('contact', true);
+
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => ''
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact2 = $this->getLastEntity('contact', true);
+
+        $this->assertEquals($contact1['id'], $contact2['id']);
+    }
+
     protected function createFundAccount($contactId)
     {
         $testdata = [
