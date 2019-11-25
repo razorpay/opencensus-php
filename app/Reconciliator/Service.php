@@ -201,14 +201,22 @@ class Service extends Base\Service
         {
             foreach (self::CPS_PARAMS as $field)
             {
+                if (empty($misParams[$field]) === true)
+                {
+                    // MIS row does not have this field, so no sense in
+                    // comparing with CPS response or sending it to CPS.
+                    continue;
+                }
+
                 if (empty($response[$paymentId][$field]) === true)
                 {
-                    // Existing data is empty, Overwrite it
+                    // Existing CPS data is empty, Overwrite it
                     $pushData[$field] = $misParams[$field];
                 }
-                else if ($response[$paymentId][$field] !== $misParams[$field])
+                else if (trim($response[$paymentId][$field]) !== $misParams[$field])
                 {
-                    // Data exists and there is mismatch. Raise alert and don't save this MIS value
+                    // CPS data and MIS data both are non empty and we have mismatch.
+                    // Raise alert and don't save this MIS value.
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'                => TraceCode::RECON_MISMATCH,
@@ -224,12 +232,6 @@ class Service extends Base\Service
 
                     // Skip saving this param
                     continue;
-                }
-                else
-                {
-                    // Field matches, send back to CPS. Not needed though, as it is already saved.
-                    // Doing this to test the flow on Prod. Can remove this ELSE part later.
-                    $pushData[$field] = $response[$paymentId][$field];
                 }
             }
         }
