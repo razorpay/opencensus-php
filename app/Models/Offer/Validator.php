@@ -44,7 +44,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
         Entity::PROCESSING_TIME     => 'filled|integer',
-        Entity::TYPE                => 'filled|in:instant,deferred',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
         Entity::CHECKOUT_DISPLAY    => 'filled|boolean',
         Entity::STARTS_AT           => 'filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',

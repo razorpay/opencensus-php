@@ -38,6 +38,8 @@ class Checker extends Base\Core
         Entity::PAYMENT_METHOD_TYPE,
         Entity::EMI_DURATIONS,
         self::CARD_USAGE,
+        Entity::MIN_AMOUNT,
+        Entity::MAX_ORDER_AMOUNT
     ];
 
     public function __construct(Entity $offer, bool $verbose = false)
@@ -431,5 +433,37 @@ class Checker extends Base\Core
         {
             $this->trace->debug($traceCode, $data);
         }
+    }
+
+    protected function checkMinAmount(): bool
+    {
+        $order = $this->payment->order;
+
+        $result = ($this->offer->getMinAmount() === null) or
+            ($order->getAmount() >= $this->offer->getMinAmount());
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
+            [
+                'result' => $result,
+            ]);
+
+        return $result;
+    }
+
+    protected function checkMaxOrderAmount(): bool
+    {
+        $order = $this->payment->order;
+
+        $result = ($this->offer->getMaxOrderAmount() === null) or
+            ($order->getAmount() <= $this->offer->getMaxOrderAmount());
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
+            [
+                'result' => $result,
+            ]);
+
+        return $result;
     }
 }
