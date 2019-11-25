@@ -781,7 +781,8 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithOffer()
     {
-        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"],
+            'error_message' => 'Offer Payment Method is not same as Selected Payment Method']);
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -1129,7 +1130,7 @@ class OrderTest extends TestCase
         $offer = $this->fixtures->create('offer', [
             'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'international' => true,
-            'error_message' => 'Offer applicable only on international cards.'
+            'error_message' => 'Selected Card is not international but offer applied requires international card'
         ]);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
@@ -1158,7 +1159,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->merchant->enableMobikwik();
 
-        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
+        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Offer Payment Method is not same as Selected Payment Method']);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
             'force_offer' => true,
@@ -1218,7 +1219,7 @@ class OrderTest extends TestCase
             'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'iins'          => ['411111'],
             'issuer'        => 'HDFC',
-            'error_message' => 'Custom error message'
+            'error_message' => 'Selected card does not belong to offer iins'
         ]);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [

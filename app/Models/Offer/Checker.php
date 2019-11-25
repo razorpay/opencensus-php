@@ -120,7 +120,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-
+            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_NOT_SAME);
         }
 
         return $result;
@@ -150,7 +150,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-
+            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_TYPE_NOT_SAME);
         }
 
         return $result;
@@ -179,7 +179,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-
+            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_NETWORK_NOT_SAME);
         }
 
         return $result;
@@ -236,7 +236,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-
+            $this->offer->setErrorMessage(PublicErrorDescription::EMI_DURATION_NOT_SAME);
         }
 
         return $result;
@@ -264,7 +264,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_INTERNATIONAL);
         }
 
         return $result;
@@ -300,6 +300,9 @@ class Checker extends Base\Core
         ]);
 
         if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::IINS_DOES_NOT_MATCH);
+        }
 
         return $result;
     }
@@ -323,6 +326,11 @@ class Checker extends Base\Core
             'payment_wallet' => $this->payment->getWallet()
         ]);
 
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_WALLET_NOT_SAME);
+        }
+
         return $result;
     }
 
@@ -335,6 +343,11 @@ class Checker extends Base\Core
             [
                 'result' => $result,
             ]);
+
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PERIOD_NOT_ACTIVE);
+        }
 
         return $result;
     }
@@ -403,6 +416,7 @@ class Checker extends Base\Core
                     // We are using < operator as paymentCount tracks the number of times payment
                     // has been made against the offer before current payment
                     $result = $paymentCount < $maxPaymentCount;
+
                     if(!$result)
                     {
                         $this->offer
@@ -470,32 +484,50 @@ class Checker extends Base\Core
 
     protected function checkMinAmount(): bool
     {
-        $order = $this->payment->order;
+        $result = true;
 
-        $result = ($this->offer->getMinAmount() === null) or
-            ($order->getAmount() >= $this->offer->getMinAmount());
+        if($this->offer->getMinAmount() !== null)
+        {
+            $order = $this->payment->order;
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
-            [
-                'result' => $result,
-            ]);
+            $result = $order->getAmount() >= $this->offer->getMinAmount();
+
+            $this->traceCheckResult(
+                TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
+                [
+                    'result' => $result,
+                ]);
+        }
+
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
+        }
 
         return $result;
     }
 
     protected function checkMaxOrderAmount(): bool
     {
-        $order = $this->payment->order;
+        $result = true;
 
-        $result = ($this->offer->getMaxOrderAmount() === null) or
-            ($order->getAmount() <= $this->offer->getMaxOrderAmount());
+        if($this->offer->getMaxOrderAmount() !== null)
+        {
+            $order = $this->payment->order;
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
-            [
-                'result' => $result,
-            ]);
+            $result = $order->getAmount() <= $this->offer->getMaxOrderAmount();
+
+            $this->traceCheckResult(
+                TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
+                [
+                    'result' => $result,
+                ]);
+        }
+
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT);
+        }
 
         return $result;
     }

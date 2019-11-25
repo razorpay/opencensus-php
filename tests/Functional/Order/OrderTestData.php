@@ -1255,7 +1255,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'description' => 'Offer Payment Method is not same as Selected Payment Method',
                 ],
             ],
             'status_code' => 400,
@@ -1271,7 +1271,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Offer applicable only on international cards.',
+                    'description' => 'Selected Card is not international but offer applied requires international card',
                 ],
             ],
             'status_code' => 400,
@@ -1303,7 +1303,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Offer Payment Method is not same as Selected Payment Method',
                 ],
             ],
             'status_code' => 400,
@@ -1319,7 +1319,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Selected card does not belong to offer iins',
                 ],
             ],
             'status_code' => 400,
