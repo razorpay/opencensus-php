@@ -2132,7 +2132,6 @@ class Service extends Base\Service
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
-
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
