@@ -17,7 +17,6 @@ import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import DocsLink from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
@@ -352,8 +351,7 @@ export default class UploadNACHForm extends React.Component {
 
           <p class="file-desc">
             If you received the customer's signed NACH form, you can upload it
-            here, for details steps and help, please read our{' '}
-            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+            here.
           </p>
 
           <FileUpload
