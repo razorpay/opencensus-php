@@ -10,7 +10,6 @@ import { isPresent } from 'common/utils/rzp-utils';
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
-  trackTaboola,
 } from 'common/utils/googleAnalytics';
 
 function L1FormSuccess(props) {
@@ -25,8 +24,6 @@ function L1FormSuccess(props) {
     {},
     'l1_'
   );
-
-  trackTaboola('l1_activation');
 
   if (props.business_type == 11) {
     const { poi_verification_status } = props;
