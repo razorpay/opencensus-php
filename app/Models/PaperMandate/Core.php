@@ -170,7 +170,7 @@ class Core extends Base\Core
         {
             $paperMandate->setUtilityCode($terminal->getGatewayMerchantId());
 
-            $paperMandate->setSponsorBankCode($terminal->getGatewayAcquirer());
+            $paperMandate->setSponsorBankCode($terminal->getGatewayAccessCode());
         }
     }
 

@@ -315,6 +315,7 @@ class Gateway
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
+        Payment\Gateway::WALLET_OPENWALLET,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,

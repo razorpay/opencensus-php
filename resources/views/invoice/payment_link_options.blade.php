@@ -719,7 +719,7 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 method: $checkout_options.method,
                 hidden: $checkout_options.hidden,
                 modal: $checkout_options.modal,
-                label: $checkout_options.label
+                partial_payment: $checkout_options.partial_payment
 
                 // : Labels in checkout
                 // name: $checkout_options.label.business_slug || invoiceObj.merchant_label,
@@ -736,6 +736,7 @@ $hostedpage_options             = $data['options']['hosted_page'];
             // }
 
             // set from Rendering preferences
+            options.name = $checkout_options.name || invoiceObj.merchant_label;
             options.description = $checkout_options.description;
 
             // : hidden option
@@ -760,8 +761,10 @@ $hostedpage_options             = $data['options']['hosted_page'];
             options.customer_id = invoiceObj.customer_details.id;
 
             if (merchant) {
-                var color = merchant.brand_color || '#168AFA';
+                var color = $checkout_options.theme.color || merchant.brand_color || '#168AFA';
                 options.theme.color = color;
+
+                options.theme.backdrop_color = $checkout_options.theme.backdrop_color;
 
                 if (merchant.image) {
                     options.image = merchant.image;

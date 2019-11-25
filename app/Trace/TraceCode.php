@@ -2302,6 +2302,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
+    const PARTNER_FETCH_FOR_SUBMERCHANT_ERROR                   = 'PARTNER_FETCH_FOR_SUBMERCHANT_ERROR';
+
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
 
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';

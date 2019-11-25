@@ -3322,8 +3322,6 @@ trait Authorize
                     }
 
                     $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
-
-                    $saveMethodInput[Token\Entity::RECURRING]   = true;
                 }
             }
         }
