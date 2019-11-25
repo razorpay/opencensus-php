@@ -697,4 +697,14 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function getRawBankStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
+            Requests::POST,
+            $input);
+    }
 }
