@@ -975,7 +975,7 @@ class Service extends Base\Service
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
 
-        $entity = $payment->toArrayPublic();
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
