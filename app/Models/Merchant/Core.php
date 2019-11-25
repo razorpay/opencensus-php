@@ -192,7 +192,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant);
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -232,13 +232,13 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
         $this->createBalance($merchant, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
-        (new Methods\Core)->setDefaultMethods($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
 
         (new Detail\Core)->createMerchantDetails($merchant);
 
