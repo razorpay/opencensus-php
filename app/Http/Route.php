@@ -1874,6 +1874,7 @@ final class Route
         // submerchants to use only one set of credentials everywhere
         'mpans_issue',
         'mpans_fetch',
+        'payment_fetch_by_id'
     ];
 
     public static $proxy = [
