@@ -34,9 +34,13 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     if (allFieldsHash[field]) {
       for (let r of clarificationDetails[origKey]) {
         if (r.reason_type === 'predefined') {
-          reasons.push(
-            predefinedReasons[origKey].reasons[r.reason_code].description
-          );
+          try {
+            reasons.push(
+              predefinedReasons[origKey].reasons[r.reason_code].description
+            );
+          } catch (error) {
+            console.log(error);
+          }
         }
       }
 
@@ -237,22 +241,6 @@ const predefinedReasons = {
       },
     },
   },
-  cancelled_check: {
-    reasons: {
-      unable_to_validate_acc_number: {
-        description:
-          "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
-      },
-      unable_to_validate_beneficiary_name: {
-        description:
-          "We're unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
-      },
-      unable_to_validate_ifsc: {
-        description:
-          "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
-      },
-    },
-  },
   promoter_address_url: {
     reasons: {
       submit_complete_director_address_proof: {
@@ -346,6 +334,18 @@ const predefinedReasons = {
       illegible_doc: {
         description:
           'The document attached is not legible. Please resubmit a clearer copy',
+      },
+      unable_to_validate_acc_number: {
+        description:
+          "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+      unable_to_validate_beneficiary_name: {
+        description:
+          "We're unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+      unable_to_validate_ifsc: {
+        description:
+          "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
       },
     },
   },
