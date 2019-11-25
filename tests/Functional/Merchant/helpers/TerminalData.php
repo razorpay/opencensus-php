@@ -2180,18 +2180,20 @@ return [
             'content' => [
                 'merchant_id'               => '10000000000000',
                 'gateway'                   => 'worldline',
+                'expected'                  => '1',
+                'card'                      => '1',
                 'gateway_merchant_id'       => '037122003842039',
                 'gateway_terminal_id'       => '70374018',
                 'gateway_acquirer'          => 'axis',
-                'card'                      => 1,
                 'gateway_terminal_password' => '9900991100',
                 'mc_mpan'                   => '5122600004774122',
                 'visa_mpan'                 => '4604901004774122',
                 'rupay_mpan'                => '6100020004774141',
                 'vpa'                       => 'MAB.037122003842039@AXISBANK',
                 'type'                      => [
-                    'non_recurring' => '1',
-                    'bharat_qr' => '1',
+                    'non_recurring'                 => '1',
+                    'bharat_qr'                     => '1',
+                    'direct_settlement_with_refund' => '1'
                 ],
             ],
             'method' => 'POST'
@@ -2392,8 +2394,7 @@ return [
                     'mc_mpan'       =>  '1234567880123456',
                     'rupay_mpan'    =>  '1234567890123457',
                     'visa_mpan'     =>  '1234567890123456'
-                ]
-
+                ],
             ]
         ]
     ],
