@@ -92,6 +92,10 @@ class Type
 
     const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
 
+    const SCB_NETBANKING_CLAIM              = 'scb_netbanking_claim';
+
+    const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -246,6 +250,8 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::KVB_NETBANKING_REFUND,
             self::KVB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -386,6 +392,8 @@ class Type
         self::CBI_NETBANKING_REFUND,
         self::KVB_NETBANKING_REFUND,
         self::KVB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,

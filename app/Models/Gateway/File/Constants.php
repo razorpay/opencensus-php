@@ -97,6 +97,7 @@ class Constants
             self::SBIN,
             self::CBI,
             self::KVB,
+            self::SCBL,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -171,6 +172,7 @@ class Constants
             self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
             self::CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::KVB         => ['kvb.netbanking.refunds@razorpay.com'],
+            self::SCBL        => ['scb.netbanking.claims@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
