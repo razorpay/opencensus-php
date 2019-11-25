@@ -79,6 +79,10 @@ class Type
     // iin batches
     const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
 
+    const IIN_HITACHI_VISA      = 'iin_hitachi_visa';
+
+    const IIN_MC_MASTERCARD     = 'iin_mc_mastercard';
+
     const MPAN                  = 'mpan';
 
     public static $disabledTypes = [
@@ -103,6 +107,8 @@ class Type
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
     ];
@@ -165,6 +171,8 @@ class Type
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
     ];
@@ -242,6 +250,8 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
         self::PRICING_RULE,
     ];
 

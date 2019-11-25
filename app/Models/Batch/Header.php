@@ -740,6 +740,21 @@ class Header
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
 
+    //Hitachi Visa IIN Batch
+    const IIN_HITACHI_VISA_ROW                   = 'row';
+
+    //MC MasterCard IIN Batch
+    const IIN_MC_MASTERCARD_COMPANY_ID           = 'COMPANY_ID';
+    const IIN_MC_MASTERCARD_COMPANY_NAME         = 'COMPANY_NAME';
+    const IIN_MC_MASTERCARD_ICA                  = 'ICA';
+    const IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM   = 'ACCOUNT_RANGE_FROM';
+    const IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO     = 'ACCOUNT_RANGE_TO';
+    const IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE   = 'BRAND_PRODUCT_CODE';
+    const IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME   = 'BRAND_PRODUCT_NAME';
+    const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
+    const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
+    const IIN_MC_MASTERCARD_REGION               = 'REGION';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2301,6 +2316,48 @@ class Header
             ]
         ],
 
+        Type::IIN_HITACHI_VISA => [
+            self::INPUT => [
+                self::IIN_HITACHI_VISA_ROW,
+            ],
+            self::OUTPUT => [
+                self::IIN_HITACHI_VISA_ROW,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::IIN_MC_MASTERCARD => [
+            self::INPUT => [
+                self::IIN_MC_MASTERCARD_COMPANY_ID,
+                self::IIN_MC_MASTERCARD_COMPANY_NAME,
+                self::IIN_MC_MASTERCARD_ICA,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME,
+                self::IIN_MC_MASTERCARD_ACCEPTANCE_BRAND,
+                self::IIN_MC_MASTERCARD_COUNTRY,
+                self::IIN_MC_MASTERCARD_REGION,
+            ],
+            self::OUTPUT => [
+                self::IIN_MC_MASTERCARD_COMPANY_ID,
+                self::IIN_MC_MASTERCARD_COMPANY_NAME,
+                self::IIN_MC_MASTERCARD_ICA,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME,
+                self::IIN_MC_MASTERCARD_ACCEPTANCE_BRAND,
+                self::IIN_MC_MASTERCARD_COUNTRY,
+                self::IIN_MC_MASTERCARD_REGION,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
         Type::PRICING_RULE => [
             self::INPUT => [
                 self::PRICING_RULE_MERCHANT_ID,
@@ -2377,6 +2434,7 @@ class Header
             // header is dynamic for these dat files, adding hack to ignore
             $actualHeaders = [];
         }
+
 
         if ($type === Type::MPAN)
         {

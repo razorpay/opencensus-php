@@ -185,6 +185,17 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $iinHitachiVisaCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $iinMcMastercardCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
