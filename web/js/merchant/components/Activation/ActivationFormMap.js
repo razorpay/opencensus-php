@@ -174,6 +174,7 @@ const businessModel = [
       label: 'Sub Category',
       name: 'business_subcategory',
       _cmp: Input.Select,
+      _autoRenderImpure: true,
       options: [],
       _optionsFn: function(activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
