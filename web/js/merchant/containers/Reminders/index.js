@@ -6,7 +6,6 @@ import {
   fetchRemindersMerchantConfigs,
 } from 'merchant/reducers/reminders';
 
-import HeaderAction from 'common/ui/HeaderAction';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 
@@ -58,18 +57,6 @@ export default class extends React.Component {
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link settlement-doc-btn"
-              href="https://razorpay.com/docs/payment-pages/"
-              target="_blank"
-            >
-              Know more about reminders <span class="icon i-external-link" />
-            </a>
-          </div>
-        </HeaderAction>
-
         {this.state.errors ? (
           <Alert type="error" message={this.state.errors} showDismiss={false} />
         ) : (
