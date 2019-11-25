@@ -67,7 +67,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     }).catch(err => {
       this.props.showNotification({
         type: 'error',
-        message: err.message,
+        message: err.errors,
       });
     });
   };

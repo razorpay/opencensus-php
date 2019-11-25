@@ -53,7 +53,9 @@ export const downloadSignedNACHFile = data => {
       return;
     }
 
-    throw new Error('Signed NACH form is not available');
+    throw {
+      errors: 'Signed NACH form is not available',
+    };
   });
 };
 
