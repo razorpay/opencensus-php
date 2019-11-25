@@ -17,7 +17,6 @@ import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import DocsLink from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
@@ -221,9 +220,8 @@ export default class UploadNACHForm extends React.Component {
             <i class="i i-info-circle" /> Details do not match
           </h5>
           <p>
-            The highlighted details on the uploaded NACH form do not match the
-            entered details. Please ensure you are uploading the correct NACH
-            form.
+            The highlighted details on the uploaded NACH form do not match.
+            Please ensure you are uploading the correct NACH form.
           </p>
         </React.Fragment>
       );
@@ -352,8 +350,7 @@ export default class UploadNACHForm extends React.Component {
 
           <p class="file-desc">
             If you received the customer's signed NACH form, you can upload it
-            here, for details steps and help, please read our{' '}
-            <DocsLink url="https://razorpay.com/docs/subscriptions/" />
+            here.
           </p>
 
           <FileUpload
@@ -388,11 +385,11 @@ export default class UploadNACHForm extends React.Component {
           {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
 
           <AsyncBtn.Primary
-            pendingState="Creating..."
+            pendingState="Uploading..."
             onClick={this.handleSubmit}
             disabled={disabled}
           >
-            Create Registration Link
+            Upload NACH
           </AsyncBtn.Primary>
         </footer>
       </div>
