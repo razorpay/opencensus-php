@@ -141,19 +141,11 @@ class Initiator extends Base\Core
 
             $data[$channel] = [];
 
-            $forceFlag = false;
-
-            if ((isset($input[Constants::IGNORE_TIME_LIMIT]) === true) and
-                ($input[Constants::IGNORE_TIME_LIMIT] === '1'))
-            {
-                $forceFlag = true;
-            }
-
             // Since yesbank fund transfer with purpose settlement need Beneficiary
             // Registration and verification, they will go via queue.
             if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
             {
-                $response = $this->dispatchTransfers($channel, $attempts, $forceFlag);
+                $response = $this->dispatchTransfers($channel, $attempts);
             }
             else
             {
@@ -167,7 +159,7 @@ class Initiator extends Base\Core
     }
 
     public function processFundTransferAttempts(
-        string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
+        string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -204,12 +196,12 @@ class Initiator extends Base\Core
 
             list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
                 $attempts,
-                function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
+                function(PublicCollection $collection) use ($purpose, $channel)
                 {
                     $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
                     return [
-                        (new $class($purpose))->initiateTransfer($collection, $forceFlag),
+                        (new $class($purpose))->initiateTransfer($collection),
                         $collection
                     ];
                 });
@@ -516,9 +508,8 @@ class Initiator extends Base\Core
      *
      * @param Entity $fta
      * @param        $channel
-     * @param        $forceFlag
      */
-    public function initFundTransferOnChannel(Entity $fta, $channel, bool $forceFlag = false)
+    public function initFundTransferOnChannel(Entity $fta, $channel)
     {
         $data = [
             'fta_id'  => $fta->getId(),
@@ -530,7 +521,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($channel, $attempts, $forceFlag);
+        $response = $this->processFundTransferAttempts($channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
@@ -595,10 +586,9 @@ class Initiator extends Base\Core
      * Takes a list of attempt ids and dispatches to the queue
      * @param string $channel
      * @param PublicCollection $attempts
-     * @param bool $forceFlag
      * @return array
      */
-    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
     {
         $attemptIds = $attempts->pluck(Entity::ID);
 
@@ -621,7 +611,7 @@ class Initiator extends Base\Core
                         'data'    => $info
                     ]);
 
-                FundTransfer::dispatch($this->mode, $id, $forceFlag);
+                FundTransfer::dispatch($this->mode, $id);
 
                 $successCount ++;
 
