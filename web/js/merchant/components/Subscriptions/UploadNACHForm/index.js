@@ -220,9 +220,8 @@ export default class UploadNACHForm extends React.Component {
             <i class="i i-info-circle" /> Details do not match
           </h5>
           <p>
-            The highlighted details on the uploaded NACH form do not match the
-            entered details. Please ensure you are uploading the correct NACH
-            form.
+            The highlighted details on the uploaded NACH form do not match.
+            Please ensure you are uploading the correct NACH form.
           </p>
         </React.Fragment>
       );
