@@ -58,12 +58,12 @@ export default class InvoiceDetailContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchInvoice(nextProps.id);
+      this.fetchDataForInvoice(nextProps.id);
     }
   }
 
-  fetchDataForInvoice = () => {
-    this.props.fetchInvoice(this.props.id);
+  fetchDataForInvoice = (id = this.props.id) => {
+    this.props.fetchInvoice(id);
     this.fetchInvoiceRemindersList();
   };
 
