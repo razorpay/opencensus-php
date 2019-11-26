@@ -79,7 +79,8 @@ class OffersPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
-        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'HDFC', 'payment_network' => null]);
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'HDFC',
+            'payment_network' => null, 'type' => 'instant']);
 
         $order = $this->fixtures->order->createWithOffers($offer, [
             'amount'      => 500000,
@@ -180,8 +181,10 @@ class OffersPaymentTest extends TestCase
 
     public function testOfferNotApplicableWithPaymentBlockedFlagNotSet()
     {
-        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['601200'],'block' => false]);
-        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false]);
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['601200'],'block' => false,
+            'type' => 'instant']);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false,
+            'type' => 'instant']);
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1,
@@ -523,7 +526,7 @@ class OffersPaymentTest extends TestCase
 
     protected function setUpOfferFailedPayment()
     {
-        $offer = $this->fixtures->create('offer');
+        $offer = $this->fixtures->create('offer', ['type'=> 'instant']);
 
         $order = $this->fixtures->create('order');
 
