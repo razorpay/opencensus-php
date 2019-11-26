@@ -285,11 +285,6 @@ class Core extends Base\Core
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
-
-            if ($input[Entity::STATUS] === Status::ACTIVATED)
-            {
-                $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
-            }
         }
 
         $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
