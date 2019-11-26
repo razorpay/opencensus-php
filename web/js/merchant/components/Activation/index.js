@@ -13,10 +13,7 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import {
-  fireAnalyticsEvents,
-  trackTaboola,
-} from 'common/utils/googleAnalytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -991,8 +988,6 @@ export default class ActivationWizard extends React.Component {
             twiData: txnId,
           });
         }
-
-        trackTaboola('l2_submission');
 
         updateHubSpotContactsProperties(
           {

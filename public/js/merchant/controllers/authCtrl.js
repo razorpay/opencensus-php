@@ -517,11 +517,6 @@ app
               event: 'signup_complete',
             });
 
-            window.rzpAnalytics({
-              name: 'taboola',
-              event: 'signup_complete',
-            });
-
             updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
