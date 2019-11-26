@@ -612,7 +612,11 @@ class Entity extends Base\PublicEntity
         if (($order !== null) and
             ($order->getMethod() === Payment\Method::NACH))
         {
-            $nachFormUrl = $order->toArrayPublic()[Order\Entity::TOKEN][SubscriptionRegistration\Entity::NACH_FORM_URL] ?? null;
+            $token = $order->toArrayPublic()[Order\Entity::TOKEN] ?? [];
+
+            $publicArray[Order\Entity::TOKEN] = $token;
+
+            $nachFormUrl = $token[SubscriptionRegistration\Entity::PREFILLED_FORM] ?? null;
 
             $publicArray[self::NACH_FORM_URL] = $nachFormUrl;
         }
