@@ -78,10 +78,10 @@ class Checker extends Base\Core
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
-
+        
         $this->order = $order;
 
-        $isMaxOfferUsage = $this->checkMaxOfferUsage();
+        $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
 
         $offerActive = $this->offer->isActive();
 
@@ -101,7 +101,7 @@ class Checker extends Base\Core
             }
         }
 
-        return (($isMaxOfferUsage === true) and
+        return (($isCurrentOfferUsageAvailable === true) and
                 ($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
@@ -434,7 +434,7 @@ class Checker extends Base\Core
     }
 
 
-    //Checks the number of successfully captured payments have been made with that offer, should
+    //Checks the number of successfully created payments have been made with that offer, should
     //not exceed the max offer usage count
     protected function checkMaxOfferUsage(): bool
     {
