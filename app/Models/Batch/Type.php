@@ -90,7 +90,7 @@ class Type
         // Removing till auth for this is figured out. Other parts of the code aren't
         // removed, since this may be necessary for the YesBank integration as well.
         //
-        self::BANK_TRANSFER,
+        //self::BANK_TRANSFER,
         // Not exposed for direct use via api/dashbaord. Its processor is internally used by other batch types.
         self::CONTACT,
     ];
