@@ -83,6 +83,7 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
     ];
 
     protected static $editRules = [

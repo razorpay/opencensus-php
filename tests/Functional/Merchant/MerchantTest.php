@@ -2078,6 +2078,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Merchant specific offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         $this->startTest();

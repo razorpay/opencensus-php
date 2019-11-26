@@ -75,9 +75,11 @@ class Checker extends Base\Core
                 ($this->checkApplicabilityOnOrder($order) === true));
     }
 
-    public function checkApplicabilityForPayment(Payment\Entity $payment): bool
+    public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
+
+        $this->order = $order;
 
         $isMaxOfferUsage = $this->checkMaxOfferUsage();
 
@@ -488,9 +490,7 @@ class Checker extends Base\Core
 
         if($this->offer->getMinAmount() !== null)
         {
-            $order = $this->payment->order;
-
-            $result = $order->getAmount() >= $this->offer->getMinAmount();
+            $result = $this->order->getAmount() >= $this->offer->getMinAmount();
 
             $this->traceCheckResult(
                 TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
@@ -513,9 +513,8 @@ class Checker extends Base\Core
 
         if($this->offer->getMaxOrderAmount() !== null)
         {
-            $order = $this->payment->order;
 
-            $result = $order->getAmount() <= $this->offer->getMaxOrderAmount();
+            $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
 
             $this->traceCheckResult(
                 TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,

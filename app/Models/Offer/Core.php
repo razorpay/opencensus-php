@@ -104,7 +104,7 @@ class Core extends Base\Core
 
         $checker = new Checker($offer, $verbose);
 
-        if ($checker->checkApplicabilityForPayment($payment) === false)
+        if ($checker->checkApplicabilityForPayment($payment, $payment->order) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
@@ -389,7 +389,7 @@ class Core extends Base\Core
         {
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityForPayment($payment))
+            if ($checker->checkApplicabilityForPayment($payment, $order))
             {
                 $applicableOffers[] = $offer->getPublicId();
             }
