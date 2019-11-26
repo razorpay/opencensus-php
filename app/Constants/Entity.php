@@ -93,6 +93,7 @@ class Entity
     const LINE_ITEM_TAX              = 'line_item_tax';
     const MERCHANT_USER              = 'merchant_user';
     const MERCHANT_EMAIL             = 'merchant_email';
+    const REFERRALS                  = 'referrals';
     const PARTNER_CONFIG             = 'partner_config';
     const DISPUTE_REASON             = 'dispute_reason';
     const NODAL_STATEMENT            = 'nodal_statement';
@@ -434,6 +435,7 @@ class Entity
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
         self::MERCHANT_USER             => \RZP\Models\Merchant\MerchantUser::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
+        self::REFERRALS                 => \RZP\Models\Merchant\Referral::class,
         self::PAYMENT_ANALYTICS         => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION        => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION        => \RZP\Models\Merchant\Promotion::class,

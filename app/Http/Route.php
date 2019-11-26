@@ -1116,6 +1116,10 @@ final class Route
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
+        'partner_referral_fetch'                   => ['get',      'merchant/{id}/referral',                         'MerchantController@fetchReferral'                                  ],
+        'partner_referral_create'                  => ['post',     'merchant/{id}/referral',                         'MerchantController@createReferral'                                 ],
+
+
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
@@ -2104,7 +2108,9 @@ final class Route
         'd2c_bureau_details_otp_submit',
         'd2c_bureau_reports_patch',
         'update_partner_type',
-    ];
+        'partner_referral_fetch',
+        'partner_referral_create',
+        ];
 
     //
     // These will run on internal auth with the assurance
