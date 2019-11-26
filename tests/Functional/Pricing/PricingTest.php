@@ -360,7 +360,7 @@ class PricingTest extends TestCase
      */
     public function testUpdatePricingPlanFeeBearerMismatch()
     {
-        $content = $this->createPricingPlan2();
+        $content = $this->createPricingPlan2(['fee_bearer' => 'customer']);
 
         $merchantAttributes = [
             'fee_bearer'        => 'customer',

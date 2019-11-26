@@ -104,6 +104,8 @@ class Core extends Base\Core
 
         $newRule->getValidator()->validateRuleDoesNotMatch($planWithoutOldRule);
 
+        $newRule->getValidator()->validateAddPlanRuleForFeeBearer($plan, $newRule);
+
         $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
 
         $this->app['workflow']
