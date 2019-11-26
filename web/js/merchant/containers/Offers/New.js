@@ -35,18 +35,36 @@ class NewOfferForm extends React.Component {
 
   toggleDisableState() {
     let disableSubmit = true;
+
     const invalidFields = document.querySelectorAll(
       '.PaymentLinks--Create .Input.is-invalid'
     );
-    if (invalidFields.length < 1) {
+    if (invalidFields.length < 1 && this.getMissingRequiredFields() < 1) {
       disableSubmit = false;
     }
     this.setState({ disableSubmit });
   }
 
+  getMissingRequiredFields() {
+    const requiredFields = ['starts_at', 'ends_at'];
+    const missingFields = [];
+    requiredFields.forEach(field => {
+      if (!this.state[field]) {
+        missingFields.push(field);
+      }
+    });
+    debugger;
+    return missingFields;
+  }
+
   tranformFormFields(form) {
     const transformed = deepClone(form);
-    const amountFields = ['max_cashback', 'flat_cashback', 'min_amount'];
+    const amountFields = [
+      'max_cashback',
+      'flat_cashback',
+      'min_amount',
+      'percent_rate',
+    ];
     const fieldsTobeDeleted = [
       'discount_type',
       'errors',
@@ -88,24 +106,23 @@ class NewOfferForm extends React.Component {
       default: syntheticEvent => {
         this.setState(
           makeState(syntheticEvent.target.name, syntheticEvent.target.value),
-          this.toggleDisableState
+          () => this.toggleDisableState()
         );
       },
-      datetime: momentObj =>
-        this.setState(
-          makeState(options[0], momentObj.unix()),
-          this.toggleDisableState
-        ),
+      datetime: momentObj => {
+        this.setState(makeState(options[0], momentObj.unix()), () =>
+          this.toggleDisableState()
+        );
+      },
       iins: syntheticEvent => {
         const binRegex = /^\d{6}$/;
         let iins = syntheticEvent.target.value
           .split(',')
           .map(iin => iin.trim())
           .filter(iin => binRegex.test(iin));
-        this.setState({ iins }, this.toggleDisableState);
+        this.setState({ iins }, () => this.toggleDisableState());
       },
     };
-
     return handlers[type] || handlers.default;
   }
 
@@ -308,6 +325,9 @@ class NewOfferForm extends React.Component {
             addonBefore={<span>%</span>}
             required
             validator={val => {
+              if (!val) {
+                return 'Should be valid number between 0 and 100';
+              }
               if (val > 100 || val < 0) {
                 return 'Percentage should be between 0 and 100';
               }
