@@ -44,7 +44,6 @@ class Order extends Base
             'merchant_id' => '10000000000000',
             'currency'    => 'INR',
             'amount'      => 100000,
-            'discount'    => true,
             'force_offer' => false,
         ];
 
