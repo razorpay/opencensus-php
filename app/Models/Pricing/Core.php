@@ -33,6 +33,8 @@ class Core extends Base\Core
 
         $rule->getValidator()->validateTypeMatch($plan);
 
+        $rule->getValidator()->validateAddPlanRuleForFeeBearer($plan, $rule);
+
         $rule->getValidator()->validatePlanTypeForOrg();
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
