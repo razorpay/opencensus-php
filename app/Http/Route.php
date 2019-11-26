@@ -1177,6 +1177,7 @@ final class Route
         'auth_link_paper_mandate_validate'              => ['post',     'token.registration/paper_mandate/validate',           'SubscriptionRegistrationController@paperMandateValidate'           ],
         'auth_link_paper_mandate_validate_proxy'        => ['post',     'token.registration/paper_mandate/validate/proxy',     'SubscriptionRegistrationController@paperMandateValidate'           ],
         'get_paper_mandate_uploaded_url'                => ['get',      'token.registration/paper_mandate/uploaded_form',      'SubscriptionRegistrationController@getUploadedPaperMandateForm'    ],
+        'nach_register_test_payment_authorize_or_fail'  => ['post',     'token.registration/auth_links/{id}/paper_mandate/test_payment','SubscriptionRegistrationController@nachRegisterTestPaymentAuthorizeOrFail'],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
@@ -2074,6 +2075,7 @@ final class Route
         'subscription_registration_fetch_link_internal',
         'get_paper_mandate_uploaded_url',
         'auth_link_paper_mandate_retry_token',
+        'nach_register_test_payment_authorize_or_fail',
         'merchant_submit_support_call_request',
         'token_fetch_card',
         'user_edit_self',

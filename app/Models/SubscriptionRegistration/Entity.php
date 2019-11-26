@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
     const PREFILLED_FORM  = 'prefilled_form';
     const UPLOAD_FORM_URL = 'upload_form_url';
     const NACH            = 'nach';
+    const SUCCEED         = 'succeed';
 
     protected static $sign = 'subr';
 

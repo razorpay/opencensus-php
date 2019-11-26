@@ -2,6 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -11,12 +12,15 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
+use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Processor\Processor;
 
 class Core extends Base\Core
 {
@@ -629,6 +633,131 @@ class Core extends Base\Core
         $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
 
         return $result;
+    }
+
+    public function nachRegisterTestPaymentAuthorizeOrFail(Entity $subscriptionRegistration, array $input)
+    {
+        $token = $subscriptionRegistration->token;
+
+        if ((empty($input[Entity::SUCCEED]) === false) and
+            ($input[Entity::SUCCEED] === true))
+        {
+            $this->updateTestTokenEntityRegister($token, Token\RecurringStatus::CONFIRMED);
+        }
+        else
+        {
+            $this->updateTestTokenEntityRegister(
+                $token,
+                Token\RecurringStatus::REJECTED,
+                'rejected by npci'
+            );
+        }
+
+        $this->authenticate($subscriptionRegistration, $token);
+
+        $payments = $token->nachPayments;
+
+        $payment = $payments->get(0);
+
+        $this->updateTestPaymentRegister($payment);
+    }
+
+    protected function updateTestPaymentRegister(Payment\Entity $payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
+        {
+            return $this->processAuthorizedTestPayment($payment);
+        }
+
+        return $this->processFailedTestPayment($payment);
+    }
+
+    protected function processFailedTestPayment(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        $e = new Exception\GatewayErrorException(
+            $errorCode,
+            null,
+            null,
+            [
+                'payment_id' => $payment->getId(),
+                'gateway'    => 'mock',
+            ]);
+
+        $processor = $processor->setPayment($payment);
+
+        $processor->updatePaymentAuthFailed($e);
+    }
+
+    protected function processAuthorizedTestPayment(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $processor = $processor->setPayment($payment);
+
+        $data = $processor->processAuth($payment);
+
+        if ($payment->hasBeenCaptured() === false)
+        {
+            $this->captureAuthorizedTestPayment($payment);
+        }
+
+        return $data;
+    }
+
+    protected function captureAuthorizedTestPayment(Payment\Entity $payment)
+    {
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'status' => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
+        $amount = $payment->getAmount();
+
+        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        if ($payment->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
+        $parameters = [
+            Payment\Entity::AMOUNT   => $amount,
+            Payment\Entity::CURRENCY => $payment->getCurrency()
+        ];
+
+        $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
+
+        $paymentProcessor->capture($payment, $parameters);
+    }
+
+    protected function updateTestTokenEntityRegister(Token\Entity $token, string $newRecurringStatus, string $failureReason = null)
+    {
+        $gatewayToken = 'dummytoken';
+
+        $tokenParams = [
+            Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
+            Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
+            Token\Entity::RECURRING_FAILURE_REASON  => $failureReason,
+        ];
+
+        (new Token\Core)->updateTokenFromNachGatewayData($token, $tokenParams);
+
+        $this->repo->saveOrFail($token);
     }
 
     protected function setDefaultValuesForBank(array & $bankInput, Customer\Entity $customer)
