@@ -78,12 +78,12 @@ class Checker extends Base\Core
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
-        
+
         $this->order = $order;
 
         $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
 
-        $offerActive = $this->offer->isActive();
+        $offerActive = $this->checkOfferActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
@@ -105,6 +105,18 @@ class Checker extends Base\Core
                 ($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
+    }
+
+    protected function checkOfferActive(): bool
+    {
+        $offerActive = $this->offer->isActive();
+
+        if(!$offerActive)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_ACTIVE);
+        }
+
+        return $offerActive;
     }
 
     protected function checkPaymentMethod(): bool

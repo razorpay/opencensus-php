@@ -921,6 +921,7 @@ class PublicErrorDescription
     const OFFER_PERIOD_NOT_ACTIVE                                                   = 'Offer Applied is not active for this time period';
     const ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT                                        = 'Order Amount is less than Offer Minimum amount';
     const ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT                                     = 'Order Amount is greater than Offer Maximum amount';
+    const OFFER_NOT_ACTIVE                                                          = 'Offer Selected is inactive';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
