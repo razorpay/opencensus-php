@@ -17,8 +17,6 @@ class Repository extends Base\Repository
     protected $entity = 'payout_link';
 
     protected $expands = [
-//        Entity::PAYMENT_PAGE_ITEMS,
-//        Entity::PAYMENT_PAGE_ITEMS . '.' . PaymentPageItem\Entity::ITEM,
     ];
 
 }

@@ -2,14 +2,11 @@
 
 namespace RZP\Models\PayoutLink;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Models\Contact;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
-use RZP\Models\Settings;
-use RZP\Constants\Timezone;
 use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -188,12 +185,12 @@ class Entity extends Base\PublicEntity
 
     public function fundAccount()
     {
-        return $this->belongsTo(FundAccount\Entity::class);
+        return $this->hasOne(FundAccount\Entity::class);
     }
 
     public function contact()
     {
-        return $this->belongsTo(Contact\Entity::class);
+        return $this->hasOne(Contact\Entity::class);
     }
 
     public function payouts()
@@ -205,137 +202,15 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getCurrency()
-    {
-        if ($this->getAttribute(self::CURRENCY) === null)
-        {
-            return Currency::INR;
-        }
-
-        return $this->getAttribute(self::CURRENCY);
-    }
-
-    public function getStatus(): string
-    {
-        return $this->getAttribute(self::STATUS);
-    }
-
-    public function getStatusReason()
-    {
-        return $this->getAttribute(self::STATUS_REASON);
-    }
-
-    public function getShortUrl()
-    {
-        return $this->getAttribute(self::SHORT_URL);
-    }
-
-    public function getExpireBy()
-    {
-        return $this->getAttribute(self::EXPIRE_BY);
-    }
-
-    public function getTimesPayable()
-    {
-        return $this->getAttribute(self::TIMES_PAYABLE);
-    }
-
-    public function getTimesPaid(): int
-    {
-        return $this->getAttribute(self::TIMES_PAID);
-    }
-
-    public function getTotalAmountPaid(): int
-    {
-        return $this->getAttribute(self::TOTAL_AMOUNT_PAID);
-    }
-
-    public function getHostedTemplateId()
-    {
-        return $this->getAttribute(self::HOSTED_TEMPLATE_ID);
-    }
-
-    public function getUdfJsonschemaId()
-    {
-        return $this->getAttribute(self::UDF_JSONSCHEMA_ID);
-    }
-
-    public function getVersion(): string
-    {
-        return $this->getSettings()[Entity::VERSION] ?? Version::V1;
-    }
-
-    public function isActive(): bool
-    {
-        return ($this->getStatus() === Status::ACTIVE);
-    }
-
-    public function isInactive(): bool
-    {
-        return ($this->getStatus() === Status::INACTIVE);
-    }
-
-    public function isExpired(): bool
-    {
-        return (($this->getStatus() === Status::INACTIVE) and
-                ($this->getStatusReason() === StatusReason::EXPIRED));
-    }
-
-    public function isCompleted(): bool
-    {
-        return (($this->getStatus() === Status::INACTIVE) and
-                ($this->getStatusReason() === StatusReason::COMPLETED));
-    }
-
-    public function isDeactivated(): bool
-    {
-        return (($this->getStatus() === Status::INACTIVE) and
-                ($this->getStatusReason() === StatusReason::DEACTIVATED));
-    }
-
-    public function isPastExpireBy(): bool
-    {
-        $now = Carbon::now(Timezone::IST)->timestamp;
-
-        return (($this->getExpireBy() !== null) and
-                ($now >= $this->getExpireBy()));
-    }
-
-    public function isTimesPayableExhausted(): bool
-    {
-        $isNewPage = (new Core)->isPaymentPageV3Enabled();
-
-        if (($this->getVersion() === Version::V1) and ($isNewPage === false))
-        {
-            return (($this->getTimesPayable() !== null) and
-                ($this->getTimesPayable() === $this->getTimesPaid()));
-        }
-
-        $paymentPageItems = $this->paymentPageItems()->get();
-
-        foreach ($paymentPageItems as $paymentPageItem)
-        {
-            if ($paymentPageItem->isStockLeft() === true)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
 
-    public function setUdfJsonschemaId(string $id)
+    public function setStatus($status)
     {
-        $this->setAttribute(self::UDF_JSONSCHEMA_ID, $id);
+        # validate status
+
+        # set it using setAttribute
     }
 
     // -------------------------------------- End Setters -----------------------------

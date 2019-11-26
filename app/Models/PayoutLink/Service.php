@@ -3,7 +3,6 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
