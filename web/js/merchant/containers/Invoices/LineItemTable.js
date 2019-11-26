@@ -138,17 +138,18 @@ export default class InvoiceLineItemTable extends Component {
                         </b>
                       </td>
                     </tr>
-                    {!invoice.subscription_id && invoiceCurrency === 'INR' && (
-                      <tr class="total amount-words">
-                        <td colSpan="3" class="text-right">
-                          <AmountInWords
-                            amount={invoiceTotal.total}
-                            prefix="(In Words)"
-                            suffix="/-"
-                          />
-                        </td>
-                      </tr>
-                    )}
+                    {!invoice.subscription_id &&
+                      invoiceCurrency === 'INR' && (
+                        <tr class="total amount-words">
+                          <td colSpan="3" class="text-right">
+                            <AmountInWords
+                              amount={invoiceTotal.total}
+                              prefix="(In Words)"
+                              suffix="/-"
+                            />
+                          </td>
+                        </tr>
+                      )}
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />

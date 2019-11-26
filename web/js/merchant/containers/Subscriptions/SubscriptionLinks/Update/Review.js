@@ -24,9 +24,7 @@ export default function UpdateSubscriptionLinkReview(props) {
 
   return (
     <div class="SubscriptionLinks--Update-review">
-      {changes.map(e => (
-        <ChangeValue {...e} />
-      ))}
+      {changes.map(e => <ChangeValue {...e} />)}
       {updateSubsStatusDesc}
     </div>
   );

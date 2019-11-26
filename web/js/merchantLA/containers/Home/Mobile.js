@@ -102,9 +102,7 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360
-                      ? 40
-                      : 57
+                      : windowWidth > 360 ? 40 : 57
                     : 0
                 }
               />

@@ -144,22 +144,23 @@ const Title = ({
           {isActivated ? (
             <span>
               Account Activated
-              {mode === 'live' && !hasKeyAccess && (
-                <span>
-                  {' '}
-                  (Limited Access)
-                  <small>
-                    <i className="i i-info-circle text-fade" />
-                    <Popover align="top" followPointer={true} theme="dark">
-                      <PopoverBody>
-                        You can still use Payment Links and Invoices. Add your
-                        Website/App URL to get access to our API’s and other
-                        products like Route, Subscriptions etc.
-                      </PopoverBody>
-                    </Popover>
-                  </small>
-                </span>
-              )}
+              {mode === 'live' &&
+                !hasKeyAccess && (
+                  <span>
+                    {' '}
+                    (Limited Access)
+                    <small>
+                      <i className="i i-info-circle text-fade" />
+                      <Popover align="top" followPointer={true} theme="dark">
+                        <PopoverBody>
+                          You can still use Payment Links and Invoices. Add your
+                          Website/App URL to get access to our API’s and other
+                          products like Route, Subscriptions etc.
+                        </PopoverBody>
+                      </Popover>
+                    </small>
+                  </span>
+                )}
             </span>
           ) : isRejected ? (
             <span>
@@ -180,9 +181,9 @@ const Title = ({
           ) : (
             <span>
               {/*
-               * If account is not activated or rejected but submitted,
-               * we show "Activation Form Submitted" with popover
-               */}
+                  * If account is not activated or rejected but submitted,
+                  * we show "Activation Form Submitted" with popover
+                  */}
               Activation Form Submitted{' '}
               <small>
                 <i className="i i-info-circle text-fade" />
@@ -373,15 +374,17 @@ export default class ActivationStep extends Component {
                   hasKeyAccess={hasKeyAccess}
                 />
               </b>
-              {!isActivated && !isSubmitted && (
-                <span className="activation-progress-num">{progress}%</span>
-              )}
+              {!isActivated &&
+                !isSubmitted && (
+                  <span className="activation-progress-num">{progress}%</span>
+                )}
             </div>
-            {!isActivated && !isSubmitted && (
-              <div>
-                <Progress progress={progress} />
-              </div>
-            )}
+            {!isActivated &&
+              !isSubmitted && (
+                <div>
+                  <Progress progress={progress} />
+                </div>
+              )}
           </div>
           <div className="step-desc">
             <Text

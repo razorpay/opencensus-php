@@ -164,11 +164,12 @@ export default class OnboardingCardInstant extends Component {
           <div className="onboarding-illustration-bottom">
             <img src="/dist/css/assets/onboarding/bottom_bg.png" />
           </div>
-          {isAccepted && integration.paymentsMade && (
-            <div className="btn-close cursor-pointer" onClick={this.onClose}>
-              &times;
-            </div>
-          )}
+          {isAccepted &&
+            integration.paymentsMade && (
+              <div className="btn-close cursor-pointer" onClick={this.onClose}>
+                &times;
+              </div>
+            )}
         </div>
         <div className="onboarding-step-switcher">
           {[0, 1, 2].map(stepNum => (

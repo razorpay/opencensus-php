@@ -92,8 +92,7 @@ export default class SetCreditAlert extends Component {
                 required
               />
               <small class="help-block">
-                <i class="i i-info-circle" />
-                &nbsp;
+                <i class="i i-info-circle" />&nbsp;
                 <span>
                   Set amount to 0 if you do not want to receive alerts
                 </span>

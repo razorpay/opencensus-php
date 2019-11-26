@@ -135,7 +135,7 @@ const getPieData = ({
   csvData = csvData.map(row => {
     // calculating %share column
     row.push(
-      `${csvGrandTotal > 0 ? ((row[1] / csvGrandTotal) * 100).toFixed(2) : 0}%`
+      `${csvGrandTotal > 0 ? (row[1] / csvGrandTotal * 100).toFixed(2) : 0}%`
     );
     return row;
   });

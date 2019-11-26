@@ -404,9 +404,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         }
 
         /*
-         * NOTE: Since payment_page_items are not shareable items with other payment pages, therefore, currency of payment_page entity is used as single source of truth .
-         * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
-         * */
+        * NOTE: Since payment_page_items are not shareable items with other payment pages, therefore, currency of payment_page entity is used as single source of truth .
+        * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
+        * */
 
         paymentPageItems.push(prunedFi);
       } else {
@@ -726,15 +726,15 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
       <div class="page-size">
         <div class="page-title">{title}</div>
 
-        {isPageReady && !!actionBtns && (
-          <div class="page-action">{actionBtns}</div>
-        )}
+        {isPageReady &&
+          !!actionBtns && <div class="page-action">{actionBtns}</div>}
 
-        {isPageReady && !!handleClose && (
-          <span class="close-btn" onClick={handleClose}>
-            ×
-          </span>
-        )}
+        {isPageReady &&
+          !!handleClose && (
+            <span class="close-btn" onClick={handleClose}>
+              ×
+            </span>
+          )}
       </div>
     </div>
   );

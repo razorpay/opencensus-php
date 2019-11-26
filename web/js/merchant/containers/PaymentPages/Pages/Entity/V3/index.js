@@ -228,7 +228,9 @@ export default class PaymentPagesV3Entity extends React.Component {
                       'btn Button--primary--invert',
                       isMobileResolution ? 'btn-xs' : 'btn-sm'
                     )}
-                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
+                    to={`/paymentpages/new?duplicate_id=${
+                      paymentPageEntity.id
+                    }`}
                   >
                     {isMobileResolution ? (
                       <i class="i i-copy" />
@@ -250,17 +252,18 @@ export default class PaymentPagesV3Entity extends React.Component {
                   </Link>
                 )}
 
-                {isRoleAllowedEdit && isActive && (
-                  <button
-                    class={classList(
-                      'btn btn-primary',
-                      isMobileResolution ? 'btn-xs' : 'btn-sm'
-                    )}
-                    onClick={this.openShareView}
-                  >
-                    {isMobileResolution ? <i class="i i-share" /> : 'Share'}
-                  </button>
-                )}
+                {isRoleAllowedEdit &&
+                  isActive && (
+                    <button
+                      class={classList(
+                        'btn btn-primary',
+                        isMobileResolution ? 'btn-xs' : 'btn-sm'
+                      )}
+                      onClick={this.openShareView}
+                    >
+                      {isMobileResolution ? <i class="i i-share" /> : 'Share'}
+                    </button>
+                  )}
               </div>
             </div>
 

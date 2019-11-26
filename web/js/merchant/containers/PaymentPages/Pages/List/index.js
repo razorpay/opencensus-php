@@ -261,14 +261,15 @@ export default class PaymentPagesContainer extends ListContainer {
           ) : (
             <PaymentPagesV2List loading={loading} paymentPages={paymentPages} />
           )}
-          {!loading && !!paymentPages.length && (
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={paymentPages.length}
-              onClick={this.paginate}
-            />
-          )}
+          {!loading &&
+            !!paymentPages.length && (
+              <Pager
+                count={this.state.count}
+                skip={this.state.skip}
+                length={paymentPages.length}
+                onClick={this.paginate}
+              />
+            )}
         </React.Fragment>
       );
     }
@@ -289,8 +290,7 @@ export default class PaymentPagesContainer extends ListContainer {
                 href="https://razorpay.com/docs/payment-pages/"
                 target="_blank"
               >
-                Documentation&nbsp;
-                <span class="icon i-external-link" />
+                Documentation&nbsp;<span class="icon i-external-link" />
               </a>
             </ShowWhen>
 

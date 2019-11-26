@@ -63,9 +63,7 @@ const Tab = ({
     trendText +=
       ' (' +
       (trend.currentCount === 0
-        ? trend.previousCount !== 0
-          ? 100
-          : 0
+        ? trend.previousCount !== 0 ? 100 : 0
         : getPercentage(currentCount, trendAbsValue)) +
       '%)';
   }
@@ -81,20 +79,21 @@ const Tab = ({
         <div>{title}</div>
       </div>
       <div className="pull-right text-right">
-        {trend.show && !trend.error && (
-          <div>
-            {trend.loading ? (
-              <PlaceholderLoader />
-            ) : (
-              <Change value={trendValue}>
-                <span>
-                  {trendText}
-                  <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
-                </span>
-              </Change>
-            )}
-          </div>
-        )}
+        {trend.show &&
+          !trend.error && (
+            <div>
+              {trend.loading ? (
+                <PlaceholderLoader />
+              ) : (
+                <Change value={trendValue}>
+                  <span>
+                    {trendText}
+                    <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                  </span>
+                </Change>
+              )}
+            </div>
+          )}
         <div>
           <Link
             target="_blank"

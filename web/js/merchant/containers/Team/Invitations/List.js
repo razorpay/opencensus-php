@@ -39,8 +39,9 @@ export default class InvitationsListContainer extends ListContainer {
             ? {
                 title: (
                   <>
-                    Pending Invitations (
-                    <small class="text-muted">{items.length}</small>)
+                    Pending Invitations (<small class="text-muted">
+                      {items.length}
+                    </small>)
                   </>
                 ),
               }

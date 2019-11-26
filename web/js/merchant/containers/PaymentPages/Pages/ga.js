@@ -31,8 +31,8 @@ export function trackShareActions(action, eventLabel) {
 }
 
 /*
- * Track click on Create Payment Link (for V2 users)
- * */
+* Track click on Create Payment Link (for V2 users)
+* */
 export function trackCreateActions(action, eventLabel) {
   track({
     eventAction: `Create - Payment Page (${action})`,
@@ -58,8 +58,8 @@ export function trackListActions(action, eventLabel) {
 }
 
 /*
- * Track the selection of template
- * */
+* Track the selection of template
+* */
 export function trackTemplateSelection(eventLabel) {
   track({
     eventAction: `Select Template`,
@@ -68,8 +68,8 @@ export function trackTemplateSelection(eventLabel) {
 }
 
 /*
- * Track the selection of template
- * */
+* Track the selection of template
+* */
 export function trackGoBackDashboard() {
   track({
     eventAction: 'Create - Click Back to Dashboard',
@@ -77,8 +77,8 @@ export function trackGoBackDashboard() {
 }
 
 /*
- * Track the selection of template
- * */
+* Track the selection of template
+* */
 export function trackGoBackToTemplates() {
   track({
     eventAction: 'Create - Click Back to Templates',
@@ -86,8 +86,8 @@ export function trackGoBackToTemplates() {
 }
 
 /*
- * Track the start creation of Payment page with what template
- * */
+* Track the start creation of Payment page with what template
+* */
 export function trackStartCreation(eventLabel) {
   track({
     eventAction: 'Create - Click Lets go',
@@ -96,8 +96,8 @@ export function trackStartCreation(eventLabel) {
 }
 
 /*
- * Track the button size selection in 'create button modal'
- * */
+* Track the button size selection in 'create button modal'
+* */
 export function trackCreateButtonSizeSelection(eventLabel) {
   track({
     eventAction: 'Create Payment Button - Copy Code',
@@ -106,8 +106,8 @@ export function trackCreateButtonSizeSelection(eventLabel) {
 }
 
 /*
- * Track the 'create button modal' close
- * */
+* Track the 'create button modal' close
+* */
 export function trackCreateButtonCancel() {
   track({
     eventAction: 'Create Payment Button - Cancel',
@@ -115,9 +115,9 @@ export function trackCreateButtonCancel() {
 }
 
 /*
- * Track the page settings data
- * label: 'Save and Publish', 'Save'
- * */
+* Track the page settings data
+* label: 'Save and Publish', 'Save'
+* */
 export function trackPageSettingsData(label, trackData) {
   track({
     eventAction: 'Page Settings - ' + label,
@@ -144,9 +144,9 @@ export function trackPageSettingsClick() {
 }
 
 /*
- * Track creation / updation of payment pages
- * type: create / save
- * */
+* Track creation / updation of payment pages
+* type: create / save
+* */
 export function trackPageSave(type, trackData) {
   if (['create', 'save'].indexOf(type.toLowerCase()) < -1) {
     throw 'Invalid track type for saving payment pages';
