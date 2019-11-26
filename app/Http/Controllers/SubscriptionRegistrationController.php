@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Constants\Entity;
 
 class SubscriptionRegistrationController extends Controller
 {
@@ -102,11 +103,27 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function notifyAuthLinksOfBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $this->service(Entity::INVOICE)->notifyInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json([]);
+    }
+
     public function cancelAuthLink(string $id)
     {
         $invoice = $this->service()->cancelAuthLink($id);
 
         return ApiResponse::json($invoice);
+    }
+
+    public function cancelAuthLinksOfBatch(string $batchId)
+    {
+        $this->service(Entity::INVOICE)->cancelInvoicesOfBatch($batchId);
+
+        return ApiResponse::json([]);
     }
 
     public function paperMandateAuthenticate()

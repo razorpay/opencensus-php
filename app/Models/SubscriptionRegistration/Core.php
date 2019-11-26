@@ -132,7 +132,7 @@ class Core extends Base\Core
 
         $paperMandateInput = [];
 
-        $this->getPaperMandateInput($input, $paperMandateInput, $subrInput);
+        $this->getPaperMandateInput($paperMandateInput, $subrInput);
 
         $bankInput = [];
 
@@ -183,7 +183,7 @@ class Core extends Base\Core
         return $subscriptionRegistration;
     }
 
-    protected function getPaperMandateInput(array & $input, array & $paperMandateInput, array & $subrInput)
+    protected function getPaperMandateInput(array & $paperMandateInput, array & $subrInput)
     {
         $method = $subrInput[Entity::METHOD] ?? null;
 
@@ -192,19 +192,21 @@ class Core extends Base\Core
             return;
         }
 
-        if (array_key_exists(Entity::CREATE_FORM, $subrInput) === true)
+        $nachArray = array_pull($subrInput, Entity::NACH, []);
+
+        if (array_key_exists(Entity::CREATE_FORM, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = array_pull($subrInput, Entity::CREATE_FORM);
+            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = $nachArray[Entity::CREATE_FORM];
         }
 
-        if (array_key_exists(PaperMandate\Entity::REFERENCE_1, $subrInput) === true)
+        if (array_key_exists(Entity::FORM_REFERENCE1, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::REFERENCE_1] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_1);
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_1] = $nachArray[Entity::FORM_REFERENCE1];
         }
 
-        if (array_key_exists(PaperMandate\Entity::REFERENCE_2, $subrInput) === true)
+        if (array_key_exists(Entity::FORM_REFERENCE2, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::REFERENCE_2] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_2);
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_2] = $nachArray[Entity::FORM_REFERENCE2];
         }
 
         if (empty($subrInput[Entity::EXPIRE_AT]) === false)
@@ -337,6 +339,38 @@ class Core extends Base\Core
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
         return $paymentProcessor->process($paymentInput);
+    }
+
+    public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
+    {
+        if ($payment->isNach() === false)
+        {
+            return null;
+        }
+
+        $this->app['basicauth']->setMerchant($payment->merchant);
+
+        $merchant = $payment->merchant;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return null;
+        }
+
+        $subscriptionRegistration = $this->repo
+                                         ->subscription_registration
+                                         ->findByTokenIdAndMerchant($token->getId(), $merchant->getId());
+
+        if ($subscriptionRegistration === null)
+        {
+            return null;
+        }
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        return $paperMandate->getUploadedFormUrl();
     }
 
     private function isValidForAutoCharge(Entity $tokenRegistration)

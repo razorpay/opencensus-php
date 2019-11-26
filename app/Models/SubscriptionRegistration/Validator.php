@@ -64,9 +64,13 @@ class Validator extends Base\Validator
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
-        Entity::CREATE_FORM                     => 'sometimes_if:method,nach|bool',
-        PaperMandate\Entity::REFERENCE_1        => 'sometimes_if:method,nach|string',
-        PaperMandate\Entity::REFERENCE_2        => 'sometimes_if:method,nach|string',
+        Entity::NACH                            => 'sometimes_if:method,nach|custom',
+    ];
+
+    protected static $nachArrayRules = [
+        Entity::CREATE_FORM     => 'sometimes|bool',
+        Entity::FORM_REFERENCE1 => 'sometimes|string',
+        Entity::FORM_REFERENCE2 => 'sometimes|string',
     ];
 
     public function validateMethodAndFirstPaymentAmount(array $input)
@@ -254,11 +258,16 @@ class Validator extends Base\Validator
             );
         }
 
-        if (count($token->payments()->get()) !== 1)
+        if (count($token->nachPayments()->get()) !== 1)
         {
             throw new BadRequestValidationFailureException(
                 'token can be retried only if exactly one payment created for it'
             );
         }
+    }
+
+    public function validateNach($attribute, $value)
+    {
+        $this->validateInput('nach_array', $value);
     }
 }

@@ -143,6 +143,8 @@ class Entity extends Base\PublicEntity
 
     const INTERNAL_REF             = 'internal_ref';
 
+    const NACH_FORM_URL            = 'nach_form_url';
+
     const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -----------------------------
@@ -471,6 +473,7 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS,
         self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
+        self::NACH_FORM_URL,
         self::CREATED_AT,
     ];
 
@@ -609,9 +612,13 @@ class Entity extends Base\PublicEntity
         if (($order !== null) and
             ($order->getMethod() === Payment\Method::NACH))
         {
-            $nachFormUrl = $order->toArrayPublic()[Order\Entity::TOKEN][SubscriptionRegistration\Entity::NACH_FORM_URL] ?? null;
+            $token = $order->toArrayPublic()[Order\Entity::TOKEN] ?? [];
 
-            $publicArray[SubscriptionRegistration\Entity::NACH_FORM_URL] = $nachFormUrl;
+            $publicArray[Order\Entity::TOKEN] = $token;
+
+            $nachFormUrl = $token[SubscriptionRegistration\Entity::PREFILLED_FORM] ?? null;
+
+            $publicArray[self::NACH_FORM_URL] = $nachFormUrl;
         }
 
         return $publicArray;

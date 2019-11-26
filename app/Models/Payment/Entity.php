@@ -172,6 +172,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -203,6 +204,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
 
     // payment services
     const API                               = 0;
@@ -377,6 +379,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+    ];
+
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::TRANSACTION,
     ];
 
     /**
@@ -1776,6 +1788,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isRoutedThroughCardPayments()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
     }
 
     public function isPushPaymentMethod()
@@ -3209,6 +3226,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->isFileBasedEmandateDebitPayment() === true)
         {
              return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
+        }
+        else if ($this->isNach() === true)
+        {
+            return self::PAYMENT_TIMEOUT_NACH;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();

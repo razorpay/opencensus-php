@@ -9,7 +9,6 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
-use RZP\Models\Admin\Org\Preferences;
 
 class Repository extends Base\Repository
 {
@@ -129,7 +128,6 @@ class Repository extends Base\Repository
         $activeMerchants = $this->repo->merchant->getQueryForActiveMerchants();
 
         return $activeMerchants->where($activatedAt, '<=', $endOfMonth->getTimestamp())
-                               ->whereIn($orgId, Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
                                ->whereNotIn($merchantId, Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)
                                ->where(function ($query) use ($parentId)
                                {

@@ -171,6 +171,8 @@ class MailTags
 
     const BANKING_ACCOUNT_STATUS_UPDATED = 'banking_account_status_updated';
 
+    const PARTNER_ON_BOARDED             = 'partner_on_boarded';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

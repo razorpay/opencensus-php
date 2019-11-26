@@ -245,9 +245,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Terminal\Entity');
     }
 
-    public function payments()
+    public function nachPayments()
     {
-        return $this->hasMany('RZP\Models\Payment\Entity');
+        return $this->hasMany('RZP\Models\Payment\Entity')
+                    ->where(Payment\Entity::METHOD, Payment\Method::NACH)
+                    ->limit(5);
     }
 
     public function hasCard()

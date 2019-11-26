@@ -959,11 +959,23 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input = []): array
     {
+        $id = Entity::stripSignWithoutValidation($id);
+
         $payment = $this->repo
                         ->payment
-                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+                        ->findOrFailByPublicIdWithParams($id, $input);
 
-        $entity = $payment->toArrayPublic();
+        $paymentMerchantId = $payment->getMerchantId();
+
+
+        if ($this->merchant->getId() !== $paymentMerchantId)
+        {
+            // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
+        }
+
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
@@ -972,6 +984,30 @@ class Service extends Base\Service
         }
 
         return $entity;
+    }
+
+    protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)
+    {
+        if($this->merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($entityMerchantId);
+
+        //submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Merchant\Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (($partner === null) or
+            ($partner->getId() !== $this->merchant->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
     }
 
     protected function addDashboardFlags(array &$entity, $payment, array $input = [])
