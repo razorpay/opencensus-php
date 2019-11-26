@@ -103,6 +103,15 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function notifyAuthLinksOfBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $this->service(Entity::INVOICE)->notifyInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json([]);
+    }
+
     public function cancelAuthLink(string $id)
     {
         $invoice = $this->service()->cancelAuthLink($id);
