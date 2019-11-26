@@ -46,10 +46,12 @@ export default ({
       </Link>
 
       <a
-        href={preFilledNachFileURL}
         class="btn btn-default m-l"
-        target="_blank"
-        onClick={trackClickDownloadNACHForm}
+        onClick={() => {
+          window.location = preFilledNachFileURL;
+
+          trackClickDownloadNACHForm();
+        }}
       >
         Download form
       </a>
