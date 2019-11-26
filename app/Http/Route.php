@@ -1313,8 +1313,16 @@ final class Route
         'merchant_mtu_update'                     => ['post',       'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
 
         // Route for Success Rate Global Configurations
-        'create_sr_level_global_config'           => ['post',       'create_sr_config',                                        'SuccessRateController@proxy'                              ],
-    ];
+        'create_sr_level_global_config'           => ['post',       'global_sr_config',                                        'SuccessRateController@proxy'                              ],
+        'update_sr_level_global_config'           => ['put',        'global_sr_config/{id}',                                   'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'global_sr_config',                                        'SuccessRateController@proxy'                              ],
+
+        // Route for Success Rate Merchant Level Configurations
+        'create_sr_level_merchant_config'         => ['post',       'merchant_sr_config',                                      'SuccessRateController@proxy'                              ],
+        'update_sr_level_merchant_config'         => ['put',        'merchant_sr_config/{id}',                                 'SuccessRateController@proxy'                              ],
+        'get_sr_level_merchant_config'            => ['get',        'merchant_sr_config/{id}',                                 'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_merchant_config'        => ['get',        'merchant_sr_config',                                      'SuccessRateController@proxy'                              ],
+     ];
 
     public static $public = [
         'checkout',
@@ -2515,6 +2523,12 @@ final class Route
 
         // SuccessRate Config Routes
         'create_sr_level_global_config',
+        'update_sr_level_global_config',
+        'get_all_sr_level_global_config',
+        'create_sr_level_merchant_config',
+        'update_sr_level_merchant_config',
+        'get_sr_level_merchant_config',
+        'get_all_sr_level_merchant_config',
     ];
 
     public static $routePermission = [
@@ -3028,6 +3042,12 @@ final class Route
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'reports_monthly_banking_invoice'           => '*',
         'create_sr_level_global_config'             => '*',
+        'update_sr_level_global_config'             => '*',
+        'get_all_sr_level_global_config'            => '*',
+        'create_sr_level_merchant_config'           => '*',
+        'update_sr_level_merchant_config'           => '*',
+        'get_sr_level_merchant_config'              => '*',
+        'get_all_sr_level_merchant_config'          => '*',
     ];
 
     public static $direct = [

@@ -244,7 +244,7 @@ class Doppler
         $request = [
             'url'       => $url,
             'method'    => $method,
-            'content'   => $content,
+            'content'   => $data,
             'headers'   => $headers,
         ];
 
@@ -274,16 +274,14 @@ class Doppler
                             $request['url'],
                             $request['headers'],
                             json_encode($request['content']),
-                            $request['method'],
-                            $request['options']);
+                            $request['method']);
                         break;
                     default:
                         $response = $this->request->request(
                             $request['url'],
                             $request['headers'],
                             null,
-                            $request['method'],
-                            $request['options']);
+                            $request['method']);
                 }
 
                 break;
