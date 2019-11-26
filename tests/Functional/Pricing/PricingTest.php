@@ -323,7 +323,7 @@ class PricingTest extends TestCase
 
         $response = $this->startTest($testData);
 
-        $this->assertContains('Unable to add rule to plan', $response['description']);
+        $this->assertContains('Unable to add rule to plan', $response['error']['description']);
     }
 
     public function testUpdatePricingPlanRule()
