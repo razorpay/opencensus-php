@@ -740,8 +740,9 @@ class Validator extends Base\Validator
 
     protected static $nachCitiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:nach_citi',
+        Entity::NACH                       => 'required|boolean|in:1',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|alpha_num|max:18',
-        Entity::GATEWAY_MERCHANT_ID2       => 'required|string|alpha_num|max:40',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string|max:40',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string|alpha_num|max:11',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
@@ -751,8 +752,9 @@ class Validator extends Base\Validator
     protected static $nachCitiEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:nach_citi',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|alpha_num|max:18',
-        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|alpha_num|max:40',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:40',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingSibTerminalRules = [
