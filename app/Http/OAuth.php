@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\App;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Http\BasicAuth\Type as AuthType;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\BasicAuth\Type as AuthType;
 
 class OAuth
 {
@@ -121,10 +123,12 @@ class OAuth
         {
             $cacheKey = $this->getCacheKey($token);
 
+            //
             // When a request is authenticated, only bearer token is available
             // So the cacheTag needs to be the hash of the bearer token itself.
+            //
             $cacheTags = $this->getCacheTagsForToken($token);
-            $response = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
+            $response  = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
         }
         catch (\Exception $exception)
         {
@@ -137,7 +141,6 @@ class OAuth
 
         try
         {
-
             if (empty($response) === true)
             {
                 $oauthServer = new OAuthServer($this->app['env']);
@@ -145,7 +148,6 @@ class OAuth
                 $response = $oauthServer->authenticateWithBearerToken($token);
 
                 $storeCache =  true;
-
             }
 
         }
@@ -161,7 +163,8 @@ class OAuth
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
 
-        try {
+        try
+        {
             if ($storeCache === true)
             {
                 list($ttl, $key) = $this->getCacheInfo($token);
@@ -282,7 +285,8 @@ class OAuth
      * Returns an error object, if there is an error.
      * Returns null otherwise.
      *
-     * @param array $response
+     * @param array  $response
+     * @param string $auth
      *
      * @return array
      */
@@ -308,11 +312,13 @@ class OAuth
         // Sets the mode for the request, and database connection
         $this->ba->authCreds->setModeAndDbConnection($mode);
 
+        $merchantId = $response[OAuthToken::MERCHANT_ID];
+
         //
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
-        $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+        $this->ba->setMerchantById($merchantId);
 
         try
         {
@@ -322,6 +328,13 @@ class OAuth
         {
             return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
+        }
+
+        $error = $this->handleAccountAuthIfApplicable();
+
+        if ($error !== null)
+        {
+            return $error;
         }
 
         // Sets the identifiers that are sent in trace logs
@@ -363,5 +376,82 @@ class OAuth
     protected function parseOAuthException()
     {
         // TODO: Add an API <> OAuth Exception map
+    }
+
+    protected function handleAccountAuthIfApplicable()
+    {
+        $partnerMerchant = $this->ba->authCreds->getMerchant();
+
+        if ((empty($partnerMerchant) === true) or
+            ($partnerMerchant->isPartner() === false) or
+            ($partnerMerchant->isPurePlatformPartner() === true))
+        {
+            return null;
+        }
+
+        $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+
+        if (empty($accountId) === true)
+        {
+            return null;
+        }
+
+        if ($partnerMerchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_OAUTH_CLIENT) === false)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
+        }
+
+        $error = $this->checkAndSetAccountId($accountId);
+
+        if ($error !== null)
+        {
+            return $error;
+        }
+    }
+
+    public function checkAndSetAccountId(string $accountId)
+    {
+        if ($this->ba->verifyAccountId($accountId) === false)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+        }
+
+        // Set account_id in creds
+        $this->ba->authCreds->creds[BasicAuth::ACCOUNT_ID] = $accountId;
+
+        // Set callback_key
+        $callbackKey = $this->ba->getCallbackKeyWithAccountId($accountId);
+        $this->ba->authCreds->setPublicKey($callbackKey);
+
+        $accountId = $this->ba->getAccountId();
+
+        /** @var Merchant\Entity $account */
+        $account = app('repo')->merchant->find($accountId);
+
+        if (empty($account) === true)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+        }
+
+        $partnerMid = $this->ba->authCreds->getMerchant()->getId();
+
+        $this->ba->setPartnerMerchantId($partnerMid);
+
+        try
+        {
+            $this->ba->authCreds->setAndCheckMerchantActivatedForLive($account);
+        }
+        catch (LogicException $e)
+        {
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED);
+        }
+
+        // merchantId should now have been set to the sub-merchant account's ID
+        $accountId = $this->ba->authCreds->getMerchant()->getId();
+
+        if ((new Merchant\Core)->isMerchantMappedToNonPurePlatformPartner($accountId, $partnerMid) === false)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
+        }
     }
 }
