@@ -81,7 +81,9 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
     reversalStatus =
       reversedAmount === 0
         ? null
-        : transfer.amount === reversedAmount ? 'full' : 'partial';
+        : transfer.amount === reversedAmount
+        ? 'full'
+        : 'partial';
 
   if (!reversalStatus) {
     return (

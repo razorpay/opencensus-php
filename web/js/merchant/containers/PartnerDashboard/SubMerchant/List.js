@@ -59,7 +59,8 @@ const activationStatus = {
     <Fragment>
       Activation Status&nbsp;
       <span>
-        <i class="i i-info-circle" />&nbsp;
+        <i class="i i-info-circle" />
+        &nbsp;
         <Popover align="top" theme="dark">
           <PopoverBody>
             Current status of merchant's activation request
@@ -74,7 +75,8 @@ const activationStatus = {
         <ActivationStatusLabel status={submerchant.details.activation_status} />
         {submerchant.details.activation_status === 'instantly_activated' && (
           <>
-            &nbsp;<i class="i i-info-circle" />
+            &nbsp;
+            <i class="i i-info-circle" />
             <Popover align="right" theme="dark">
               <PopoverBody>
                 The merchant can accept live payments but settlements will be on

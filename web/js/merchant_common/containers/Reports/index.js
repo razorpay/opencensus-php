@@ -1009,10 +1009,9 @@ export default function Reports(store, opts) {
 
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
-                        {type === 'dateRange' &&
-                          dateRangeError && (
-                            <small class="text-danger">{dateRangeError}</small>
-                          )}
+                        {type === 'dateRange' && dateRangeError && (
+                          <small class="text-danger">{dateRangeError}</small>
+                        )}
                       </div>
                     </div>
                   </div>

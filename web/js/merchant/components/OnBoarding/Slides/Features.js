@@ -66,7 +66,9 @@ export default class OnBoardingFeatures extends React.PureComponent {
         </div>
 
         <div class="Features">
-          {features.map((data, idx) => <FeatureCard {...data} key={idx} />)}
+          {features.map((data, idx) => (
+            <FeatureCard {...data} key={idx} />
+          ))}
         </div>
 
         <div class="Button-Container">

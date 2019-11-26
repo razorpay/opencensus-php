@@ -7,8 +7,8 @@ export const track = setTrackData({
 });
 
 /*
-* Track click on duplicate plan button
-* */
+ * Track click on duplicate plan button
+ * */
 export function trackClickDuplicatePlan() {
   track({
     eventAction: 'Click - Duplicate Plan',
@@ -16,8 +16,8 @@ export function trackClickDuplicatePlan() {
 }
 
 /*
-* Track click on saving duplicate plan
-* */
+ * Track click on saving duplicate plan
+ * */
 export function trackSaveDuplicatePlan() {
   track({
     eventAction: 'Save - Duplicate Plan',
@@ -25,8 +25,8 @@ export function trackSaveDuplicatePlan() {
 }
 
 /*
-* Track currency selection in create new plan
-* */
+ * Track currency selection in create new plan
+ * */
 export function trackSelectCurrency(currency) {
   defaultTrack({
     eventCategory: 'Dashboard - International - Plan',

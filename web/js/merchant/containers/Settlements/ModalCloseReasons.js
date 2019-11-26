@@ -24,9 +24,7 @@ export default class ModalCloseReasons extends Component {
     const analyticsPayload = {
       eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Reasons - ${this.props.closeOrigin}`,
-      eventLabel: `Reason - ${this.state.closeReason} - ${
-        this.props.closeOrigin
-      }`,
+      eventLabel: `Reason - ${this.state.closeReason} - ${this.props.closeOrigin}`,
     };
 
     window.rzpAnalytics(analyticsPayload);

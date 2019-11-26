@@ -591,7 +591,7 @@ function isFormValid(
       const notify_info = fields.notify_info || {};
       return (
         (!fields.customer_notify ||
-          (!!notify_info.notify_email || !!notify_info.notify_phone)) &&
+          !!notify_info.notify_email || !!notify_info.notify_phone) &&
         (internals._isNonExpiringLink || !!fields.expire_by)
       );
     }

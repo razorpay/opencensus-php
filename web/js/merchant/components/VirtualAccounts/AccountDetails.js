@@ -28,11 +28,7 @@ export default ({ virtualaccount, onCopy }) => {
             <tr>
               <td colSpan="2" class="text-center">
                 <CustomClipboard
-                  value={`Account Number: ${
-                    bankAccount.account_number
-                  }\nBeneficiary Name: ${virtualaccount.name}\nIFSC: ${
-                    bankAccount.ifsc
-                  }`}
+                  value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualaccount.name}\nIFSC: ${bankAccount.ifsc}`}
                   onCopy={() => {
                     onCopy(virtualaccount);
                   }}

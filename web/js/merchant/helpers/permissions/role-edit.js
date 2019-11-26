@@ -15,9 +15,9 @@ const {
 } = rolesList;
 
 /*
-* User level map to decide whether a module can be edited by the give role.
-*
-* */
+ * User level map to decide whether a module can be edited by the give role.
+ *
+ * */
 export default {
   home: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
   payments: [OWNER, ADMIN, MANAGER, OPERATIONS, RBL_SUPERVISOR],

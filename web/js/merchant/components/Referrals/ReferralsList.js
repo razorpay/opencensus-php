@@ -41,21 +41,20 @@ const ReferralsListItem = props => {
       <td>
         <CheckIcon value={activated} />
       </td>
-      {email !== user.email &&
-        props.showCreateLoginModal && (
-          <td>
-            <button
-              class="btn btn-xs btn-primary"
-              onClick={() => {
-                props.showCreateLoginModal(props.referral);
-              }}
-              data-tip="Provide login to submerchant with merchant email."
-              data-place="right"
-            >
-              Invite to Login
-            </button>
-          </td>
-        )}
+      {email !== user.email && props.showCreateLoginModal && (
+        <td>
+          <button
+            class="btn btn-xs btn-primary"
+            onClick={() => {
+              props.showCreateLoginModal(props.referral);
+            }}
+            data-tip="Provide login to submerchant with merchant email."
+            data-place="right"
+          >
+            Invite to Login
+          </button>
+        </td>
+      )}
     </EntityItemRow>
   );
 };

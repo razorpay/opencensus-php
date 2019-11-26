@@ -76,9 +76,7 @@ export default props => {
 
   const subTitle =
     subscription.total_count &&
-    `${subscription.paid_count} of ${
-      subscription.total_count
-    } invoices charged`;
+    `${subscription.paid_count} of ${subscription.total_count} invoices charged`;
 
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
@@ -219,37 +217,34 @@ export default props => {
 
               {scheduledChanges.isLoading && <PlaceholderLoader />}
 
-              {!scheduledChanges.isLoading &&
-                scheduledChanges.data && (
-                  <div
-                    class="update-subscription-preview alert alert-warning custom-banner"
-                    style={{ width: '100%' }}
-                  >
-                    <div>
-                      The subscription will be updated on{' '}
-                      {moment
-                        .unix(scheduledChanges.data.change_scheduled_at)
-                        .format('DD MMM, YYYY')}
-                      {!hideCancelUpdate && (
-                        <Button.Transparent
-                          onClick={cancelUpdateSubscription(subscription.id)}
-                          class="pull-right"
-                        >
-                          Cancel Update
-                        </Button.Transparent>
-                      )}
-                    </div>
-                    <ContentToggler>
-                      <span>View Details</span>
-                      <div className="full-width-item">
-                        <strong>Update Summary</strong>
-                        <UpdatedSubscriptionPreview
-                          data={subscriptionChanges}
-                        />
-                      </div>
-                    </ContentToggler>
+              {!scheduledChanges.isLoading && scheduledChanges.data && (
+                <div
+                  class="update-subscription-preview alert alert-warning custom-banner"
+                  style={{ width: '100%' }}
+                >
+                  <div>
+                    The subscription will be updated on{' '}
+                    {moment
+                      .unix(scheduledChanges.data.change_scheduled_at)
+                      .format('DD MMM, YYYY')}
+                    {!hideCancelUpdate && (
+                      <Button.Transparent
+                        onClick={cancelUpdateSubscription(subscription.id)}
+                        class="pull-right"
+                      >
+                        Cancel Update
+                      </Button.Transparent>
+                    )}
                   </div>
-                )}
+                  <ContentToggler>
+                    <span>View Details</span>
+                    <div className="full-width-item">
+                      <strong>Update Summary</strong>
+                      <UpdatedSubscriptionPreview data={subscriptionChanges} />
+                    </div>
+                  </ContentToggler>
+                </div>
+              )}
 
               <EntityDetailList
                 mode={mode}

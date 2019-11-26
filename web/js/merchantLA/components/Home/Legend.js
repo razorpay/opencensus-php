@@ -53,7 +53,7 @@ export default ({
         return (
           <LegendItem key={key}>
             <LegendLabel color={item.color}>
-              {(item.value / total * 100).toFixed(2)}%
+              {((item.value / total) * 100).toFixed(2)}%
             </LegendLabel>
             <LegendTitle>{item.label}</LegendTitle>
             <LegendContent>

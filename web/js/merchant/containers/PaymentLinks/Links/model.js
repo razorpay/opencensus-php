@@ -4,10 +4,10 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { trackFormSubmit } from './ga';
 
 /*
-*
-* Specific Api Actions of Payment Links
-*
-* */
+ *
+ * Specific Api Actions of Payment Links
+ *
+ * */
 
 export function createPaymentLink(payload) {
   const reqPayload = { ...payload };

@@ -21,7 +21,8 @@ export default ({ data, loading, error }) => {
       return {
         bg: colors[index],
         title: titleCase(method),
-        value: (100 * data[method] / total).toFixed(1).replace('.0', '') + '%',
+        value:
+          ((100 * data[method]) / total).toFixed(1).replace('.0', '') + '%',
       };
     });
   }

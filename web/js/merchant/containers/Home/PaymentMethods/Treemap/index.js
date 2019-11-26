@@ -163,7 +163,8 @@ export default class Treemap extends Component {
           </div>
           {tooltip.canBeZoomed && (
             <div className="tooltip-footer">
-              <i className="i i-hand" />Click to drill down
+              <i className="i i-hand" />
+              Click to drill down
             </div>
           )}
         </Tooltip>

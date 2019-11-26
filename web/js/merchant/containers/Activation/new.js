@@ -24,13 +24,13 @@ const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
 
 /*
-* ActivationContainer is used in:
-* 1. '/activation' route for Activation form for merchant, and
-* 2. Marketplace > Accounts for linked account (AccoundDetails)
-*
-* @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
-* @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
-* */
+ * ActivationContainer is used in:
+ * 1. '/activation' route for Activation form for merchant, and
+ * 2. Marketplace > Accounts for linked account (AccoundDetails)
+ *
+ * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
+ * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
+ * */
 @withRouter
 @connect(
   state => ({
@@ -390,9 +390,9 @@ export default class ActivationContainer extends React.Component {
   }
 
   /*
-  * 1. For linked account form, only spinner or Activation wizard.
-  * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
-  * */
+   * 1. For linked account form, only spinner or Activation wizard.
+   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
+   * */
   render() {
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
@@ -495,8 +495,8 @@ const SuccessScreen = ({ formName = 'Activation Form' }) => {
 };
 
 /*
-* Welcome screen is shown only when the user has not started filling the form. It's not shown in linked account activation but only main form.
-* */
+ * Welcome screen is shown only when the user has not started filling the form. It's not shown in linked account activation but only main form.
+ * */
 const WelcomeScreen = ({ openWizard }) => {
   return (
     <div class="Activation--welcome">
@@ -524,8 +524,8 @@ const WelcomeScreen = ({ openWizard }) => {
 // ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 
 /*
-* Check if user filled any of the fields to be filled on fresh form
-* * */
+ * Check if user filled any of the fields to be filled on fresh form
+ * * */
 function isFormTouched(data) {
   if (!data) {
     return false;

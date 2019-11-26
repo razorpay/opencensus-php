@@ -64,7 +64,9 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,

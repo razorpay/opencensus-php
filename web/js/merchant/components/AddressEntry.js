@@ -266,18 +266,17 @@ export default class AddressEntry extends React.Component {
               />
             </div>
           )}
-          {hideCountry &&
-            showDisabledCountry && (
-              <div class="col col-md-6">
-                <input
-                  value="India"
-                  placeholder="Country"
-                  class="form-control"
-                  type="text"
-                  disabled
-                />
-              </div>
-            )}
+          {hideCountry && showDisabledCountry && (
+            <div class="col col-md-6">
+              <input
+                value="India"
+                placeholder="Country"
+                class="form-control"
+                type="text"
+                disabled
+              />
+            </div>
+          )}
         </div>
       </div>
     );

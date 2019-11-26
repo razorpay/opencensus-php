@@ -177,17 +177,20 @@ export default class CheckoutTheme extends Component {
               >
                 <a target="_blank" href="https://razorpay.com/payment-gateway/">
                   Checkout page
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/payment-links/">
                   Payment Links
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/invoices/">
                   Invoices
                 </a>{' '}
                 &{' '}
                 <a target="_blank" href="https://razorpay.com/payment-pages">
                   Payment pages
-                </a>.
+                </a>
+                .
               </ShowWhen>
             </div>
           </div>

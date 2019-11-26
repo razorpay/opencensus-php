@@ -111,11 +111,7 @@ export default class ReminderSettings extends React.Component {
     this.context
       .confirm({
         header: `Disable reminders for all ${this.typeInLowerCase} ?`,
-        message: `There are ${
-          this.props.totalUnpaidLinks.count
-        } existing unpaid ${
-          this.typeInLowerCase
-        } that have reminders scheduled.`,
+        message: `There are ${this.props.totalUnpaidLinks.count} existing unpaid ${this.typeInLowerCase} that have reminders scheduled.`,
         affirmativeLabel: 'Yes, disable',
         affirmativePendingLabel: 'Disabling...',
         abortLabel: 'No, don’t!',

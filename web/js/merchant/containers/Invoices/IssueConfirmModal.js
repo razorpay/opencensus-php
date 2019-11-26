@@ -84,7 +84,9 @@ export default class IssueInvoiceConfirmModal extends Component {
           title={
             isPaymentLink
               ? 'Send Link'
-              : paymentLink ? 'Issued' : 'Issue Invoice'
+              : paymentLink
+              ? 'Issued'
+              : 'Issue Invoice'
           }
           onCloseClick={this.props.closeModal}
         />
@@ -153,9 +155,8 @@ export default class IssueInvoiceConfirmModal extends Component {
 
                 {isTestMode && (
                   <div class="alert alert-sm alert-warning">
-                    The {entityName} is created in <b>Test Mode</b>
-                    . So, only test payments can be made for this {entityName}
-                    .
+                    The {entityName} is created in <b>Test Mode</b>. So, only
+                    test payments can be made for this {entityName}.
                     {/* Also, SMS will not be sent in test mode.*/}
                   </div>
                 )}

@@ -122,9 +122,7 @@ export default class InstantActivationAnnouncements extends Component {
       <Announcement
         title={title}
         theme={theme}
-        bannerKey={`announcement-banner-${user.activation_status}-${
-          user.current
-        }`}
+        bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
         canBeClosed={user.isAccepted}
       >
         {content}

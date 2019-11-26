@@ -38,14 +38,13 @@ const renderBatchDetails = props => {
         batchId={batch.id}
       />
       <hr />
-      {stats.batch_total > stats.issued_count &&
-        batch.status !== 'created' && (
-          <LinksErrMessage
-            issuedCount={stats.issued_count}
-            onDownload={props.onDownload}
-            batchId={batch.id}
-          />
-        )}
+      {stats.batch_total > stats.issued_count && batch.status !== 'created' && (
+        <LinksErrMessage
+          issuedCount={stats.issued_count}
+          onDownload={props.onDownload}
+          batchId={batch.id}
+        />
+      )}
     </Fragment>
   );
 };
@@ -92,13 +91,12 @@ function LinksErrMessage({ issuedCount, onDownload, batchId }) {
   return (
     <small class="help-block m-l">
       <i class="i i-info-circle" /> {issuedCount === 0 ? 'The payment' : 'Some'}{' '}
-      links related to this batch were not created due to errors. Please<span
-        class="btn-link"
-        onClick={onDownload.bind(this, batchId)}
-      >
+      links related to this batch were not created due to errors. Please
+      <span class="btn-link" onClick={onDownload.bind(this, batchId)}>
         {' '}
         download{' '}
-      </span>the report containing all Payment Links data
+      </span>
+      the report containing all Payment Links data
     </small>
   );
 }

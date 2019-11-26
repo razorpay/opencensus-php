@@ -497,17 +497,16 @@ export default class AddCustomer extends Component {
               )}
             </div>
           </div>
-          {customer &&
-            customer.id && (
-              <div class="row">
-                <div class="col-md-12">
-                  <p>
-                    Note: The updated customer details will be reflected
-                    everywhere in the future.
-                  </p>
-                </div>
+          {customer && customer.id && (
+            <div class="row">
+              <div class="col-md-12">
+                <p>
+                  Note: The updated customer details will be reflected
+                  everywhere in the future.
+                </p>
               </div>
-            )}
+            </div>
+          )}
           <div class="row">
             <div class="col-md-12">
               <div class="Modal__actions">
@@ -543,7 +542,8 @@ export default class AddCustomer extends Component {
                 onClick={this.getChangeScreenHandler(0)}
                 class="text-primary cursor-pointer"
               >
-                <i class="i i-arrow-back" />Back to Customer Details
+                <i class="i i-arrow-back" />
+                Back to Customer Details
               </span>
             </div>
           </div>
@@ -620,7 +620,8 @@ export default class AddCustomer extends Component {
                 onClick={this.getChangeScreenHandler(1)}
                 class="text-primary cursor-pointer"
               >
-                <i class="i i-arrow-back" />Back to Billing Address
+                <i class="i i-arrow-back" />
+                Back to Billing Address
               </span>
             </div>
           </div>

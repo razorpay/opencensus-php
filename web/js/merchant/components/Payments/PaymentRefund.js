@@ -37,9 +37,8 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
   return (
     <span>
-      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{
-        refundSuffix
-      }
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}
+      efund{refundSuffix}
     </span>
   );
 };
@@ -104,8 +103,8 @@ export default ({
         <ShowWhen
           additionalCondition={user =>
             !user.isRefundAllowed ||
-            (user.isOrgAllowedFunctionality('card_refunds') ||
-              !(['card', 'emi'].indexOf(payment.method) !== -1))
+            user.isOrgAllowedFunctionality('card_refunds') ||
+              !(['card', 'emi'].indexOf(payment.method) !== -1)
           }
         >
           <div className="m-b">
@@ -150,17 +149,16 @@ export default ({
           {hasOpenNonFraudDisputes ? (
             <span class="text-danger">
               Refunds are disabled as there{' '}
-              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
-                1 && 's'}{' '}
-              on this payment
+              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute
+              {hasOpenNonFraudDisputes > 1 && 's'} on this payment
             </span>
           ) : null}
         </ShowWhen>
         <ShowWhen
           additionalCondition={user =>
             user.isRefundAllowed &&
-            (!user.isOrgAllowedFunctionality('card_refunds') &&
-              ['card', 'emi'].indexOf(payment.method) > -1)
+            !user.isOrgAllowedFunctionality('card_refunds') &&
+              ['card', 'emi'].indexOf(payment.method) > -1
           }
         >
           Refunds cannot be created for Card transactions

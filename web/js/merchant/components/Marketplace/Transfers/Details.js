@@ -90,7 +90,9 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,
@@ -215,18 +217,17 @@ export default class TransferDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                {transfer.recipient_details &&
-                  transfer.recipient_details.name && (
-                    <EntityDetailRow label="Linked Account">
-                      <Definition>
-                        <span>{transfer.recipient_details.name}</span>
-                        {transfer.recipient_details.email && (
-                          <span>{transfer.recipient_details.email}</span>
-                        )}
-                        <code>{transfer.recipient}</code>
-                      </Definition>
-                    </EntityDetailRow>
-                  )}
+                {transfer.recipient_details && transfer.recipient_details.name && (
+                  <EntityDetailRow label="Linked Account">
+                    <Definition>
+                      <span>{transfer.recipient_details.name}</span>
+                      {transfer.recipient_details.email && (
+                        <span>{transfer.recipient_details.email}</span>
+                      )}
+                      <code>{transfer.recipient}</code>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Amount">
                   <ContentToggler>

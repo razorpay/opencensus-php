@@ -532,10 +532,10 @@ class KeyMetricsContainer extends Component {
 
   fetchData(fetchAllCounts) {
     /*
-	 * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
-	 * and the selected tab's graph data, when ever the tab is
-	 * switched, latest data including stat for the selected tab is fetched
-	 */
+     * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
+     * and the selected tab's graph data, when ever the tab is
+     * switched, latest data including stat for the selected tab is fetched
+     */
 
     const isInitialLoad = this.state.loading;
 

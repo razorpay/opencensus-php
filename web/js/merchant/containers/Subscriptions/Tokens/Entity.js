@@ -278,7 +278,9 @@ class ErrorMessage extends React.PureComponent {
   };
 
   render() {
-    const { recurringDetails: { failure_reason } } = this.props,
+    const {
+        recurringDetails: { failure_reason },
+      } = this.props,
       isNACHError = failure_reason && failure_reason.includes('nach');
 
     if (isNACHError) {

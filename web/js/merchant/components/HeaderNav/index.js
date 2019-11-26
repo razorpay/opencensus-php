@@ -82,14 +82,13 @@ export default class HeaderNav extends Component {
       <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
           <div className="navbar-collapse" id="headerNav">
-            {!showMobileNav &&
-              !user.isOrgRZP && (
-                <img
-                  src="/img/branding/powered-by-razorpay-dashboard.png"
-                  class="rzp-branding-logo"
-                  alt="Powered by Razorpay"
-                />
-              )}
+            {!showMobileNav && !user.isOrgRZP && (
+              <img
+                src="/img/branding/powered-by-razorpay-dashboard.png"
+                class="rzp-branding-logo"
+                alt="Powered by Razorpay"
+              />
+            )}
             {showMobileNav && (
               <div className="pull-left navbar-toggle-container">
                 <button

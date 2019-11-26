@@ -132,7 +132,9 @@ export default class TransferReversal extends React.PureComponent {
       reversalStatus =
         reversedAmount === 0
           ? null
-          : transfer.amount === reversedAmount ? 'full' : 'partial';
+          : transfer.amount === reversedAmount
+          ? 'full'
+          : 'partial';
 
     if (!reversalStatus) {
       return (

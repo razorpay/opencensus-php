@@ -239,9 +239,10 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <span class="help-block label--secondary">
-                      <i class="i i-info-outline" />You can set{' '}
-                      <b>billing cycle</b> (start date and end date) and{' '}
-                      <b>trial period</b> later while, creating a subscription.
+                      <i class="i i-info-outline" />
+                      You can set <b>billing cycle</b> (start date and end date)
+                      and <b>trial period</b> later while, creating a
+                      subscription.
                     </span>
                   </div>
                 )}

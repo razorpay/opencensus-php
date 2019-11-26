@@ -228,7 +228,8 @@ export default class ReversalModal extends Component {
                   This will be a{' '}
                   <b>
                     <ReversalType {...this.props} /> reversal
-                  </b>.
+                  </b>
+                  .
                   {!isPartial && (
                     <span> Change amount for a partial reversal.</span>
                   )}

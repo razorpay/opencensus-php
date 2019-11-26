@@ -76,9 +76,10 @@ export default class MerchantUser extends GenericEntity {
     }
 
     return Promise.all(apiCalls).then(responses => {
-      return [...responses, { id: data.id, role: data.role }].reduce(
-        (newObject, response) => ({ ...response, ...newObject })
-      );
+      return [
+        ...responses,
+        { id: data.id, role: data.role },
+      ].reduce((newObject, response) => ({ ...response, ...newObject }));
     });
   }
 

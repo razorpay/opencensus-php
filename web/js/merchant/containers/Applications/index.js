@@ -65,9 +65,7 @@ export default class ApplicationContainer extends Component {
 
   revokeAccess = token => {
     this.context.confirm({
-      message: `Are you sure you want to revoke access to ${
-        token.application.name
-      }?`,
+      message: `Are you sure you want to revoke access to ${token.application.name}?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
       action: () =>

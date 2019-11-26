@@ -171,11 +171,11 @@ export default class UpdateSubscription extends React.Component {
 
     return (
       this.isFormChanged() &&
-      (!!fields.plan_id &&
+      !!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
         (validateTotalCount
           ? !validateTotalCount(fields.remaining_count)
-          : true))
+          : true)
     );
   };
 

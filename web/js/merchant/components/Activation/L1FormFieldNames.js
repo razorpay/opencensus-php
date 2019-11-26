@@ -11,11 +11,8 @@ const L1_BUSINESS_FIELD_NAMES = [
   'business_name',
   'business_website',
 ];
-const ADDRESS_FIELD_NAMES = AddressFields.map(
-  field =>
-    Array.isArray(field)
-      ? field.map(nestedField => nestedField.name)
-      : field.name
+const ADDRESS_FIELD_NAMES = AddressFields.map(field =>
+  Array.isArray(field) ? field.map(nestedField => nestedField.name) : field.name
 )
   .reduce((prevField, curField) => prevField.concat(curField), [])
   .filter(field => !!field);

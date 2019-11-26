@@ -395,10 +395,9 @@ export default class RefundModal extends Component {
         <div class="modal-body">
           {nonFraudDisputeCount ? (
             <div class="text-danger m-b">
-              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute{nonFraudDisputeCount >
-                1 && 's'}{' '}
-              raised against this payment. Kindly check the dispute details
-              before initiating a refund.
+              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
+              {nonFraudDisputeCount > 1 && 's'} raised against this payment.
+              Kindly check the dispute details before initiating a refund.
             </div>
           ) : null}
           <form
@@ -431,7 +430,8 @@ export default class RefundModal extends Component {
                   This will be a{' '}
                   <b>
                     <RefundType partial={partial} /> refund
-                  </b>.
+                  </b>
+                  .
                   {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}

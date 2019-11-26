@@ -355,8 +355,9 @@ export default class BaseForm extends React.PureComponent {
             )}
           >
             <span class="mirror-title">{mirrorDisplayName}</span>
-            {mirrorDisplayName &&
-              !isMandatory && <div class="text-optional">(Optional)</div>}
+            {mirrorDisplayName && !isMandatory && (
+              <div class="text-optional">(Optional)</div>
+            )}
           </div>
         </Input.TextareaAutoResize>
 
@@ -429,18 +430,17 @@ export default class BaseForm extends React.PureComponent {
             </div>
           </OptionsItem>
 
-          {typeof selfIndex !== 'undefined' &&
-            onDeleteField && (
-              <OptionsItem>
-                <div
-                  class="OptionsDropdown-item--delete"
-                  onClick={this.onDeleteField}
-                >
-                  <i class="i i-delete" />
-                  <div>Delete Field</div>
-                </div>
-              </OptionsItem>
-            )}
+          {typeof selfIndex !== 'undefined' && onDeleteField && (
+            <OptionsItem>
+              <div
+                class="OptionsDropdown-item--delete"
+                onClick={this.onDeleteField}
+              >
+                <i class="i i-delete" />
+                <div>Delete Field</div>
+              </div>
+            </OptionsItem>
+          )}
         </FieldOptionsDropdown>
 
         <Button.Transparent

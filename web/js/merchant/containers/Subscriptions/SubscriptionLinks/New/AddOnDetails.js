@@ -39,14 +39,13 @@ export default function NewSubscriptionLinkAddOnDetails({
             </span>
           </li>
         ))}
-        {isPresent(addons) &&
-          isPresent(addons[addons.length - 1]) && (
-            <li class="no-counter">
-              <button class="btn btn-link" onClick={props.onAddAddon}>
-                Add New Item
-              </button>
-            </li>
-          )}
+        {isPresent(addons) && isPresent(addons[addons.length - 1]) && (
+          <li class="no-counter">
+            <button class="btn btn-link" onClick={props.onAddAddon}>
+              Add New Item
+            </button>
+          </li>
+        )}
       </ol>
     </div>
   );

@@ -45,15 +45,14 @@ export default props => {
                         <Amount
                           value={dispute.amount}
                           currency={dispute.currency}
-                        />,&nbsp;
+                        />
+                        ,&nbsp;
                       </React.Fragment>
                     )}
                     {/* Text required in all types of dispute  */}
                     kindly respond to the mail sent to you by&nbsp;
-                    <Time value={dispute.respond_by} format="ll" />&nbsp; ({daysLeftInExpiry(
-                      dispute.respond_by,
-                      'in '
-                    )}).
+                    <Time value={dispute.respond_by} format="ll" />
+                    &nbsp; ({daysLeftInExpiry(dispute.respond_by, 'in ')}).
                   </p>
 
                   {/* text NOT required for fraud dispute */}

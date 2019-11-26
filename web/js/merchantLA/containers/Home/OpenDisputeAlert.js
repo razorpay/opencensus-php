@@ -41,8 +41,9 @@ export default class OpenDisputeAlert extends Component {
               Show Disputes
             </Link>
             */}
-            <span class="icon i-info-outline" />&nbsp; You can now view all your
-            disputes on the dashboard. <Link to="/disputes">Show Disputes</Link>
+            <span class="icon i-info-outline" />
+            &nbsp; You can now view all your disputes on the dashboard.{' '}
+            <Link to="/disputes">Show Disputes</Link>
             <i class="i i-close pull-right" onClick={this.handleClose} />
           </Banner>
         </div>

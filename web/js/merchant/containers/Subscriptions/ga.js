@@ -7,8 +7,8 @@ export const track = setTrackData({
 });
 
 /*
-* Track click on duplicate subscription
-* */
+ * Track click on duplicate subscription
+ * */
 export function trackClickDuplicateSubscription() {
   track({
     eventAction: 'Click - Duplicate Subscription',
@@ -16,8 +16,8 @@ export function trackClickDuplicateSubscription() {
 }
 
 /*
-* Track click on saving duplicate subscription
-* */
+ * Track click on saving duplicate subscription
+ * */
 export function trackSaveDuplicateSubscription() {
   track({
     eventAction: 'Save - Duplicate Subscription',

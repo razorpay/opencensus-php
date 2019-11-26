@@ -86,9 +86,10 @@ export default connect(null, { openModal, closeModal })(props => {
                     <React.Fragment>
                       {!hasKeyAccess && (
                         <p>
-                          You can generate API keys in Test Mode.<br />For
-                          generating keys in Live Mode, you need to provide your
-                          business website/app details while filling the
+                          You can generate API keys in Test Mode.
+                          <br />
+                          For generating keys in Live Mode, you need to provide
+                          your business website/app details while filling the
                           activation form.
                         </p>
                       )}
@@ -103,8 +104,7 @@ export default connect(null, { openModal, closeModal })(props => {
                     </React.Fragment>
                   ) : !businessWebsite ? (
                     <div>
-                      <p
-                      >{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
+                      <p>{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
                       <button
                         class="btn btn-primary"
                         onClick={() =>

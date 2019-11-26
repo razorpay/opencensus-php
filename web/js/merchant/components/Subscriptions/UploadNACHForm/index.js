@@ -370,8 +370,8 @@ export default class UploadNACHForm extends React.Component {
                 uploading
                   ? 'process'
                   : this.errorsList.length || errors.heading
-                    ? 'error'
-                    : 'success'
+                  ? 'error'
+                  : 'success'
               }`
             )}
           />

@@ -35,15 +35,14 @@ export default props => {
           </span>
         </Banner>
       )}
-      {hasNavigatedFrom === 'paymentpages' &&
-        title === 'payments' && (
-          <Banner cta="Clear" ctaUrl={`/${title}`}>
-            <span>
-              Showing all {title} for Payment Page id:{' '}
-              <b>{params.payment_link_id}</b>
-            </span>
-          </Banner>
-        )}
+      {hasNavigatedFrom === 'paymentpages' && title === 'payments' && (
+        <Banner cta="Clear" ctaUrl={`/${title}`}>
+          <span>
+            Showing all {title} for Payment Page id:{' '}
+            <b>{params.payment_link_id}</b>
+          </span>
+        </Banner>
+      )}
       <DataTable {...props} />
     </div>
   );

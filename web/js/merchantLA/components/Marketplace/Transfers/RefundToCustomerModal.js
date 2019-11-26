@@ -205,7 +205,8 @@ export default class RefundToCustomerModal extends React.Component {
                   This will be reflected as a{' '}
                   <b>
                     <RefundType partial={partial} /> reversal
-                  </b>.
+                  </b>
+                  .
                   {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}
