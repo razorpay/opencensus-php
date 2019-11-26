@@ -29,6 +29,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     // 30 minutes
     const BUFFER_TIME = 1800;
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYER_NAME,
+    ];
+
     public function __construct(string $gateway = null)
     {
         parent::__construct($gateway);

@@ -25,6 +25,17 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
+    protected $trace;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     /**
      * recurring_token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000 => 946684800
@@ -50,6 +61,7 @@ class Validator extends Base\Validator
         'email'                         => 'sometimes|nullable|email',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
+        'billing_address'               => 'sometimes',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
         'notes.merchant_order_id'       => 'required_with:signature',
@@ -578,7 +590,8 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if ($method !== Payment\Method::EMANDATE)
+        if (($method !== Payment\Method::EMANDATE) and
+            ($method !== Payment\Method::NACH))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -616,6 +629,10 @@ class Validator extends Base\Validator
 
         if ($amount > $maxAmountAllowed)
         {
+            $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+            ]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount',
@@ -813,7 +830,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');

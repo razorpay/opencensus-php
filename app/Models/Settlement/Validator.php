@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
@@ -23,6 +24,10 @@ class Validator extends Base\Validator
     protected static $batchFetchRules = [
         Entity::BATCH_FUND_TRANSFER_ID => 'required|alpha_num|size:14',
         'h2h'                          => 'required|in:0,1',
+    ];
+
+    protected static $settlementAmountRules = [
+        'balance_type' => 'sometimes|string|custom',
     ];
 
     protected static $nodalTransferRules = [
@@ -89,8 +94,22 @@ class Validator extends Base\Validator
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
         'logging'             => 'sometimes|boolean',
-        'ignore_time_limit'   => 'sometimes|string'
+        'debug'               => 'sometimes|boolean',
+        'ignore_time_limit'   => 'sometimes|string',
+        'balance_type'        => 'sometimes|string|custom',
+        'created_at'          => 'sometimes|epoch',
+        'settled_at'          => 'sometimes|epoch',
+        'initiated_at'        => 'required_with:settled_at,created_at|epoch',
     ];
+
+    protected static $settlementHolidayRules = [
+        'year'  =>  'sometimes|digits:4',
+    ];
+
+    protected function validateBalanceType($attribute, $value)
+    {
+        Balance\Type::validateSettlementBalanceType($value);
+    }
 
     protected function validateFailedResponse($attribute, $value)
     {

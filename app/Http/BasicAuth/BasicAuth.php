@@ -482,7 +482,7 @@ class BasicAuth
      * @param  string|null      $accountId
      * @return ApiResponse|null
      */
-    protected function checkAndSetAccountId(string $accountId = null)
+    public function checkAndSetAccountId(string $accountId = null)
     {
         $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
@@ -512,7 +512,7 @@ class BasicAuth
         return null;
     }
 
-    protected function getCallbackKeyWithAccountId(string $accountId): string
+    public function getCallbackKeyWithAccountId(string $accountId): string
     {
         return $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
     }
@@ -1038,7 +1038,7 @@ class BasicAuth
 
 // --------------------- Verifiers ---------------------------------------------
 
-    protected function verifyAccountId(string & $accountId)
+    public function verifyAccountId(string & $accountId)
     {
         try
         {
@@ -1170,6 +1170,18 @@ class BasicAuth
         }
 
         $appRoutes = Route::$internalApps[$this->internalApp];
+
+        //
+        // If the internal application is 'automation' and the route is proxy, authenticate requests only for
+        // white-listed merchants. Reason: Automation services should not have access to routes for all merchants
+        // via proxy also.
+        //
+        if (($this->isAutomationApp() === true) and
+            (($this->isProxyAuth() === false) or
+            ($this->isAutomationSuiteMid() === false)))
+        {
+            return false;
+        }
 
         // Now that the secret matches, check whether the current
         // route is allowed for this particular app.
@@ -1332,7 +1344,10 @@ class BasicAuth
 
     public function getKeyEntity()
     {
-        if ($this->isPartnerAuth() === true)
+        // If partner credentials are being used with submerchant header, then isPartnerAuth() will return true
+        // If partner credentials are being used without submerchant header, (partner credentials used for own behalf)
+        // then isPartnerAuth() will return false, we are returing from here since key entity is not defined for ClientAuthCreds class
+        if (($this->isPartnerAuth() === true) or (method_exists($this->authCreds, 'getKeyEntity') === false))
         {
             return;
         }
@@ -1451,6 +1466,22 @@ class BasicAuth
     public function isSubscriptionsApp()
     {
         return ($this->getInternalApp() === 'subscriptions');
+    }
+
+    public function isAutomationApp(): bool
+    {
+        return ($this->getInternalApp() === 'automation');
+    }
+
+    /**
+     * Returns true if current key(in case of proxy it is merchant identifier) is
+     * one of multiple merchant ids created for automation suite.
+     *
+     * @return boolean
+     */
+    public function isAutomationSuiteMid(): bool
+    {
+        return in_array($this->authCreds->getKey(), Merchant\Account::AUTOMATION_SUITE_MERCHANT_IDS, true);
     }
 
     public function isBatchApp(): bool
@@ -1642,6 +1673,11 @@ class BasicAuth
         return ($this->type === Type::DEVICE_AUTH);
     }
 
+    public function isDirectAuth()
+    {
+        return ($this->type === Type::DIRECT_AUTH);
+    }
+
     public function isProxyOrPrivilegeAuth()
     {
         return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
@@ -1712,9 +1748,12 @@ class BasicAuth
     /**
      * 1. Check if merchant is marked as a partner
      * 2. Set partner merchant id in the auth context
-     * 3. Fetch sub-merchant token from header
-     * 4. Set current merchant as sub-merchant
-     * 5. Check sub-merchant activated for live (We don't
+     * 3. Fetch account_id from header
+     * 4. If account_id header is null, set partner merchant as current merchant, 
+     *      allow access for whitelisted routes,
+     *      set attributes to just as they would be in private auth and return
+     * 5. Set current merchant as sub-merchant
+     * 6. Check sub-merchant activated for live (We don't
      *    care about partner merchant activation here.)
      *
      * @return null
@@ -1726,16 +1765,32 @@ class BasicAuth
             return;
         }
 
-        $accountId = $this->getAccountId();
-
-        if ($accountId === '')
-        {
-            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
-        }
-
         if ($this->isPartnerAuthAllowed() === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
+        }
+
+        $accountId = $this->getAccountId();
+
+        $route = $this->router->currentRouteName();
+
+        // If accountId is empty in partner Auth, then instead of submerchant's behalf, partner should be able to make
+        // requests on his own behalf (for whitelisted routes), just like private auth, so we are setting attributes just as they would be 
+        // in case of private auth
+        if (empty($accountId) === true)
+        {
+            if (in_array($route, Route::$partnerCredentialsWithoutSubmerchantIdWhitelist, true) === true)
+            {
+                $this->isPartnerAuth = false;
+            
+                $this->authCreds->unsetPartnerClient();
+    
+                $this->authCreds->unsetPartnerApplicationId();
+                
+                return;
+            }
+
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
         }
 
         $account = $this->repo

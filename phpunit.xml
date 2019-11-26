@@ -98,6 +98,7 @@
           <directory>./tests/Functional/User/</directory>
           <directory>./tests/Functional/VirtualAccount/</directory>
           <directory>./tests/Functional/Workflow/</directory>
+          <directory>./tests/Functional/Reminders/</directory>
           <directory>./tests/Functional/Dispute/</directory>
           <directory>./tests/Unit/</directory>
           <directory>./tests/Functional/Refund/</directory>

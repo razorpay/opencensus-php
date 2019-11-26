@@ -92,6 +92,8 @@ class Netbanking
         IFSC::FDRL,
         IFSC::IDFB,
         IFSC::RATN,
+        IFSC::UBIN,
+        IFSC::SCBL,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -106,8 +108,14 @@ class Netbanking
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
+        IFSC::KVBL,
         self::PUNB_R,
         self::BARB_R,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
     ];
 
     protected static $selfCorp = [
@@ -134,6 +142,7 @@ class Netbanking
         IFSC::IDIB,
         IFSC::CBIN,
         IFSC::SBIN,
+        self::BARB_R,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -432,6 +441,9 @@ class Netbanking
             ],
             'corp' => [
                 self::BARB_C
+            ],
+            'tpv' => [
+                self::BARB_R
             ]
         ],
         Gateway::NETBANKING_SIB => [
@@ -441,6 +453,16 @@ class Netbanking
             'tpv' => [
                 IFSC::SIBL
             ]
+        ],
+        Gateway::NETBANKING_UBI => [
+            'retail' => [
+                IFSC::UBIN,
+            ],
+        ],
+        Gateway::NETBANKING_SCB => [
+            'retail' => [
+                IFSC::SCBL,
+            ],
         ],
         Gateway::NETBANKING_CBI => [
             'retail' => [
@@ -574,6 +596,11 @@ class Netbanking
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+                IFSC::SBBJ,
+                IFSC::SBHY,
+                IFSC::SBMY,
+                IFSC::STBP,
+                IFSC::SBTR,
             ],
             'tpv' => [
                 IFSC::SBIN
@@ -586,6 +613,15 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ALLA,
+            ],
+        ],
+
+        Gateway::NETBANKING_KVB =>  [
+            'retail'    =>  [
+                IFSC::KVBL,
+            ],
+            'tpv'   => [
+                IFSC::KVBL,
             ],
         ],
     ];

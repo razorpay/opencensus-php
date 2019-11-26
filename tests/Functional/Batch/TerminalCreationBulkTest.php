@@ -60,6 +60,10 @@ class TerminalCreationBulkTest extends TestCase
             $terminals['items'][0][Terminal\Entity::GATEWAY_MERCHANT_ID],
             $entries[0][Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID]
         );
+        $this->assertEquals(
+            $terminals['items'][0][Terminal\Entity::TPV],
+            $entries[0][Batch\Header::TERMINAL_CREATION_TPV]
+        );
 
         $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
         $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
@@ -84,7 +88,7 @@ class TerminalCreationBulkTest extends TestCase
                 Batch\Header::TERMINAL_CREATION_NETBANKING           => null,
                 Batch\Header::TERMINAL_CREATION_EMANDATE             => null,
                 Batch\Header::TERMINAL_CREATION_EMI                  => null,
-                Batch\Header::TERMINAL_CREATION_UPI                  => '1',
+                Batch\Header::TERMINAL_CREATION_UPI                  => null,
                 Batch\Header::TERMINAL_CREATION_BANK_TRANSFER        => null,
                 Batch\Header::TERMINAL_CREATION_AEPS                 => null,
                 Batch\Header::TERMINAL_CREATION_EMI_DURATION         => null,

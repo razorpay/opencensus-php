@@ -45,6 +45,12 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->createClaimAndRefundPayment();
 
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
+
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
@@ -53,6 +59,40 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $this->performPostFileGenerationAssertions();
+    }
+
+    public function testMultipleRefundsSeqNo()
+    {
+        $payments    = [];
+        $refunds     = [];
+        $seqNoList   = [];
+        $expected    = [];
+
+        for ($i = 0; $i < 2; $i++)
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+            $payments[] = $this->doAuthAndCapturePayment($payment);
+        }
+
+        // full refund
+        $refunds[] = $this->refundPayment($payments[0]['id']);
+
+        // partial refunds
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+
+        // expected output
+        $expected[$refunds[0]['id']] = 1;
+        $expected[$refunds[1]['id']] = 1;
+        $expected[$refunds[2]['id']] = 2;
+
+        foreach ($refunds as $refund)
+        {
+            $seqNoList[$refund['id']] = ($this->getDbEntityById('refund', $refund['id']))->getReference3();
+        }
+
+        $this->assertArraySelectiveEquals($expected, $seqNoList);
     }
 
     public function testClaimFileWithEmandatePayment()
@@ -96,13 +136,11 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $transaction = $this->getLastEntity('transaction', true);
+        $this->updateAuthorizedAtOfPayment($payment['id']);
 
-        $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
-        ]);
+        $refund = $this->refundPayment($payment['id']);
 
-        $this->refundPayment($payment['id']);
+        $this->updateCreatedAtOfRefund($refund['id']);
     }
 
     protected function createEmandatePayment()
@@ -122,6 +160,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
             'status'  => 'SUCCESS',
             'umrn'    => '111111111111111'
         ];
+
+        $this->updateAuthorizedAtOfPayment($registerPayments[0]['payment']['id']);
 
         $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
         $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
@@ -155,7 +195,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $rfDate = Carbon::now(Timezone::IST)->format('d.m.y');
+        $rfDate = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         $expectedFilesContent = [
             'entity' => 'collection',
@@ -199,5 +239,39 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
             return true;
         });
+    }
+
+    protected function updateAuthorizedAtOfPayment($paymentId)
+    {
+        $this->fixtures->stripSign($paymentId);
+
+        // setting authorized at to 8am. Payments are picked from 8pm to 8pm cycle.
+        $authorizedAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            [
+                'authorized_at' => $authorizedAt,
+            ]);
+
+        return $paymentId;
+    }
+
+    protected function updateCreatedAtOfRefund($refundId)
+    {
+        $this->fixtures->stripSign($refundId);
+
+        // setting created at to 8am. refunds are picked from 8pm to 8pm cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'refund',
+            $refundId,
+            [
+                'created_at' => $createdAt,
+            ]);
+
+        return $refundId;
     }
 }

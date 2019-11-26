@@ -2,18 +2,21 @@
 
 namespace RZP\Models\Invoice;
 
-use Config;
 use Carbon\Carbon;
+use Config;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Options;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Options\Constants;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 
@@ -59,6 +62,10 @@ class ViewDataSerializer extends Base\Core
      * @var Merchant\Entity
      */
     protected $merchant;
+    /**
+     * @var Options\Entity
+     */
+    protected $options;
 
     public function __construct(Entity $invoice)
     {
@@ -66,6 +73,7 @@ class ViewDataSerializer extends Base\Core
 
         $this->invoice  = $invoice;
         $this->merchant = $invoice->merchant;
+        $this->options  = new Options\Core();
     }
 
     public function serializeForHosted(): array
@@ -80,6 +88,19 @@ class ViewDataSerializer extends Base\Core
             'custom_labels'    => $this->getCustomLabelValues(),
             'checkout_options' => $this->getCheckoutOptions(),
             'view_preferences' => $this->getViewPreferences(),
+        ];
+    }
+
+    public function serializeForHostedV2(): array
+    {
+        return [
+            'environment'      => $this->app->environment(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'invoicejs_url'    => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'           => $this->getMerchantKeyId(),
+            'merchant'         => $this->serializeMerchantForHosted(),
+            'invoice'          => $this->serializeInvoiceForHosted(),
+            'options'          => $this->getOptions()
         ];
     }
 
@@ -194,6 +215,22 @@ class ViewDataSerializer extends Base\Core
                     'first_payment_min_amount'  =>  'EMI AMOUNT',
                 ];
 
+                break;
+
+            case Preferences::MID_BOB:
+                $customLabels = [
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'expire_by'      => 'PAYMENT LINK EXPIRES ON',
+                    'receipt_number' => 'CREDIT CARD NUMBER',
+                ];
+                break;
+
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $customLabels = [
+                    'amount'                    => 'TOTAL OVERDUE AMOUNT',
+                    'receipt_number'            => 'LOAN ACCOUNT NUMBER',
+                    'first_payment_min_amount'  => 'EMI AMOUNT',
+                ];
                 break;
 
         }
@@ -314,6 +351,8 @@ class ViewDataSerializer extends Base\Core
         //
         $this->repo->loadRelations($this->invoice);
 
+        $this->app['basicauth']->setMerchant($this->invoice->merchant);
+
         $serialized = $this->invoice->toArrayHosted();
 
         $this->addDerivedAttributesForInvoice($serialized);
@@ -427,7 +466,16 @@ class ViewDataSerializer extends Base\Core
     {
         if ($this->invoice->isOfSubscription() === true)
         {
-            $serialized[E::SUBSCRIPTION] = $this->invoice->subscription->toArrayHosted();
+            $subscriptionId = $this->invoice->getSubscriptionId();
+
+            $subscription = $this->app['module']
+                                 ->subscription
+                                 ->fetchSubscriptionForInvoice(
+                                     Subscription\Entity::getSignedId($subscriptionId),
+                                     $this->merchant
+                                 );
+
+            $serialized[E::SUBSCRIPTION] = $subscription;
         }
     }
 
@@ -466,6 +514,10 @@ class ViewDataSerializer extends Base\Core
 
             $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
 
+            $serialized
+            [E::SUBSCRIPTION_REGISTRATION]
+            [E::PAYMENT] = $this->getNonFailurePaymentsForOrder($order);
+
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $externalEntity->entity;
@@ -493,6 +545,45 @@ class ViewDataSerializer extends Base\Core
         {
             $serialized[Entity::ENTITY_TYPE] = null;
         }
+    }
 
+    protected function getNonFailurePaymentsForOrder(Order\Entity $order)
+    {
+        $validPayments = [];
+
+        if ($order === null)
+        {
+            return $validPayments;
+        }
+
+        $payments = $order->payments;
+
+        if ($payments === null)
+        {
+            return $validPayments;
+        }
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->getStatus() !== Payment\Status::FAILED)
+            {
+                array_push($validPayments,
+                    [Payment\Entity::ID => $payment->getPublicId(),
+                        Payment\Entity::STATUS => $payment->getStatus()]
+                );
+            }
+        }
+
+        return $validPayments;
+    }
+
+    protected function getOptions(): array
+    {
+        $options = $this->options->getMergedOptions(Constants::NAMESPACE_PAYMENT_LINKS,
+                Constants::SERVICE_PAYMENT_LINKS,
+                $this->invoice->getId(),
+                $this->invoice->merchant->getId());
+
+        return $options ?? [];
     }
 }

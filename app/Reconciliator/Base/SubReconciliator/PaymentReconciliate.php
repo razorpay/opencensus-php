@@ -8,9 +8,10 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
-use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
+use RZP\Models\Batch\Entity;
+use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
@@ -33,7 +34,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
         RequestProcessor\Base::NETBANKING_CBI,
+        RequestProcessor\Base::NETBANKING_SCB,
         RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_KVB,
         RequestProcessor\Base::NETBANKING_CUB,
         RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
@@ -56,6 +59,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
+        RequestProcessor\Base::NETBANKING_BOB_V2,
+        RequestProcessor\Base::PAYPAL
     ];
 
     /**
@@ -141,9 +146,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
 
-        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+        if (static::SHOULD_ADD_ENTITY_ID_COLUMN === true)
+        {
+            $this->setReconEntityIdInOutput($paymentId);
+        }
 
-        $this->setProcessedAtInOutput();
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
         try
         {
@@ -287,6 +295,41 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
+        if ($this->payment->isRoutedThroughCardPayments() === true)
+        {
+            $this->cardsPaymentServiceDispatch($rowDetails);
+        }
+    }
+
+    /**
+     * Here we will call CPS endpoint to fetch Auth data, match with
+     * MIS data and persist again by pushing to CPS queue.
+     *
+     * @param array $rowDetails
+     */
+    protected function cardsPaymentServiceDispatch(array $rowDetails)
+    {
+        $data = [
+            'payment_id' => $this->payment->getId(),
+            'params'     => [
+                BaseReconciliate::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID],
+                BaseReconciliate::AUTH_CODE              => $rowDetails[BaseReconciliate::AUTH_CODE],
+            ],
+            'mode'       => $this->mode,
+            'gateway'    => $this->gateway,
+            'batch_id'   => $this->batch->getId(),
+        ];
+
+        CardsPaymentRecon::dispatch($data);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'  => Base\InfoCode::RECON_CPS_JOB_DISPATCH,
+                'payment_id' => $this->payment->getId(),
+            ]
+        );
     }
 
     protected function validatePaymentDetails(array $row)
@@ -644,10 +687,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $paymentService = new Payment\Service;
 
         $paymentId = $this->payment->getPublicId();
+        $amount    = $this->payment->getAmount();
 
-        $this->messenger->raiseReconAlert(
+        Base\Reconciliate::$forceAuthorizedPayments[] = [
+            'id'        => $this->payment->getId(),
+            'amount'    => $amount,
+        ];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'Payment status is failed. Doing force authorize',
                 'payment_id'      => $this->payment->getId(),
                 'amount'          => $this->payment->getAmount(),
@@ -1522,10 +1571,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,
             [
-                'message'         => 'Gateway Captured not set for the payment',
-                'info_code'       => 'GATEWAY_CAPTURED_NOT_SET',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => $this->gateway
+                'message'           => 'Gateway Captured not set for the payment',
+                'info_code'         => Base\InfoCode::GATEWAY_CAPTURED_NOT_SET,
+                'payment_id'        => $this->payment->getId(),
+                'payment_refunded'  => ($this->payment->getRefundStatus() !== null),
+                'gateway'           => $this->gateway
             ]);
 
         $this->payment->setGatewayCaptured(true);

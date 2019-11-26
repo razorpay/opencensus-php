@@ -8,14 +8,18 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
+use RZP\Models\Options;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
+use RZP\Models\Customer;
 use RZP\Models\FileStore;
+use RZP\Services\Reminders;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -42,6 +46,11 @@ class Core extends Base\Core
     protected $slack;
     protected $slackTechLogsChannel;
     protected $eventService;
+    protected $options;
+    /**
+     * @var Reminders
+     */
+    protected $reminders;
 
     public function __construct()
     {
@@ -52,6 +61,8 @@ class Core extends Base\Core
         $this->slack                = $this->app['slack'];
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
         $this->eventService         = $this->app['events'];
+        $this->options              = new Options\Core();
+        $this->reminders            = $this->app['reminders'];
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -163,6 +174,11 @@ class Core extends Base\Core
             }
         }
 
+        if (isset($input[Options\Entity::OPTIONS]) === true)
+        {
+            $this->options->createOptionForPaymentLink($input, $merchant, $invoice);
+        }
+
         return $invoice;
     }
 
@@ -207,12 +223,105 @@ class Core extends Base\Core
 
         $this->repo->loadRelations($invoice);
 
-        if ($invoice->isIssued() === true)
+        $this->handleReminderForInvoice($invoice, $input);
+
+        if ($invoice->isIssued() === true or $invoice->isPartiallyPaid() === true)
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId());
+            InvoiceJob::dispatch($this->mode, InvoiceJob::UPDATED, $invoice->getId(), $input);
         }
 
         return $invoice;
+    }
+
+    protected function changeReminderStatus(array $input, $reminderEntity): bool
+    {
+        if ((empty($input[Entity::REMINDER_ENABLE]) === false) and
+            (boolval($input[Entity::REMINDER_ENABLE]) === true))
+        {
+            return true;
+        }
+
+        if(empty($reminderEntity) === true)
+        {
+            return false;
+        }
+
+        $reminderStatus = $reminderEntity->getReminderStatus();
+
+        if((array_key_exists('expire_by', $input) === true) and
+            ((empty($reminderStatus) === false) and
+             ($reminderStatus === Reminder\Status::IN_PROGRESS or
+              $reminderStatus === Reminder\Status::FAILED)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function deleteReminder(Entity $invoice, $reminderEntity, Reminder\Core $reminderCore): bool
+    {
+        if ((empty($reminderEntity) === true) or
+            ($reminderEntity->getReminderId() === null))
+        {
+            return false;
+        }
+
+        if (empty($reminderEntity->getReminderId()) === false)
+        {
+            try {
+                $response = $this->reminders->deleteReminder($reminderEntity->getReminderId());
+
+                $reminderInput[Reminder\Entity::REMINDER_STATUS] = Reminder\Status::DISABLED;
+
+                $reminderCore->createOrUpdate($reminderInput, $invoice, $reminderEntity);
+
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null);
+
+                return false;
+            }
+        }
+
+        if(((isset($response['status_code']) === true) and ($response['status_code'] === 200)) or
+            (empty($reminderEntity->getReminderId()) === true))
+        {
+            $reminderEntity->setReminderStatus(Reminder\Status::DISABLED);
+
+            $reminderEntity->setReminderId(null);
+
+            $this->repo->saveOrFail($reminderEntity);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function handleReminderForInvoice(Entity $invoice, array $input)
+    {
+        $reminderCore = new Reminder\Core();
+
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($invoice->getId());
+
+        if($this->changeReminderStatus($input, $reminderEntity) === true)
+        {
+            $reminderInput[Reminder\Entity::REMINDER_STATUS] = Reminder\Status::PENDING;
+
+            $reminderCore->createOrUpdate($reminderInput, $invoice, $reminderEntity);
+        }
+
+        if((isset($input['reminder_enable']) === true) and
+            (boolval($input['reminder_enable']) === false))
+        {
+            $this->deleteReminder($invoice, $reminderEntity, $reminderCore);
+        }
+
     }
 
     public function updateBillingPeriod(Entity $invoice, array $input): Entity
@@ -416,9 +525,12 @@ class Core extends Base\Core
 
         $pdfPath = null;
 
-        if ($medium === NotifyMedium::EMAIL)
+        if ($invoice->isTypeOfSubscriptionRegistration() === false)
         {
-            $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
+            if ($medium === NotifyMedium::EMAIL)
+            {
+                $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
+            }
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
@@ -514,6 +626,9 @@ class Core extends Base\Core
 
         $validator->validateOperation(__FUNCTION__);
 
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
         $this->repo->transaction(
             function () use ($invoice)
             {
@@ -524,7 +639,7 @@ class Core extends Base\Core
                 $invoice->setStatus(Status::EXPIRED);
 
                 $this->repo->saveOrFail($invoice);
-            });
+            }, $maxAttempts);
 
         $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 
@@ -1069,6 +1184,17 @@ class Core extends Base\Core
             $input[Entity::RECEIPT] = $input[Entity::INVOICE_NUMBER];
 
             unset($input[Entity::INVOICE_NUMBER]);
+        }
+
+        // Sanitize Customer data before sending it to customer create module.
+        if ((empty($input[Entity::CUSTOMER]) === false) and
+            (array_key_exists(Customer\Entity::EMAIL, $input[Entity::CUSTOMER]) === true) and
+            (array_key_exists(Customer\Entity::CONTACT, $input[Entity::CUSTOMER]) === true) and
+            ($input[Entity::CUSTOMER][Customer\Entity::EMAIL] === '') and
+            ($input[Entity::CUSTOMER][Customer\Entity::CONTACT] === ''))
+        {
+            $input[Entity::CUSTOMER][Customer\Entity::EMAIL] = null;
+            $input[Entity::CUSTOMER][Customer\Entity::CONTACT] = null;
         }
     }
 }

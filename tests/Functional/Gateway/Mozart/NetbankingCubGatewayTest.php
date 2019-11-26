@@ -32,7 +32,7 @@ class NetbankingCubGatewayTest extends TestCase
     {
         $this->doNetbankingCubAuthAndCapturePayment();
 
-        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
+        $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($paymentEntity);
 

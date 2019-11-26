@@ -493,6 +493,23 @@ return [
         ],
     ],
 
+    'testPartnerAuthWithoutAccountIdInHeader' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account id is required with partner credentials',
+                ]
+        ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testRequestWithPartnerHeadersClientCreds' => [
         'request'   => [
             'url'     => '/payments',

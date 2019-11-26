@@ -25,6 +25,7 @@ abstract class Base extends BaseProcessor
     const GATEWAY_ERROR_DESCRIPTION   = 'gateway_error_description';
     // Stored in token entity
     const TOKEN_ERROR_CODE            = 'token_error_code';
+    const ACCOUNT_NUMBER              = 'account_number';
 
     /**
      * @var Payment\Processor\Processor
@@ -168,7 +169,7 @@ abstract class Base extends BaseProcessor
         $amount = $payment->getAmount();
 
         // The payment amount is inclusive of fees, so we need to capture with the original amount.
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $amount = $amount - $payment->getFee();
         }

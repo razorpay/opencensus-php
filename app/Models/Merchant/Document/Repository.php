@@ -10,6 +10,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'merchant_document';
 
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+    ];
+
     /**
      * @param $fileStoreId
      *
@@ -20,5 +24,19 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::FILE_STORE_ID, '=', $fileStoreId)
                     ->first();
+    }
+
+    /**
+     * Returns all non deleted documents for given merchantIds
+     *
+     * @param array $merchantIds
+     *
+     * @return mixed
+     */
+    public function findDocumentsForMerchantIds(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->get();
     }
 }

@@ -43,6 +43,19 @@ trait Verify
             $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
         }
 
+        if ($payment->isUpi())
+        {
+            $upi = $this->repo->upi->fetchByPaymentId($payment->getId());
+
+            if ($upi !== null)
+            {
+                $data['upi'] = [
+                    'flow'         => $upi['type'],
+                    'expiry_time'  => $upi['expiry_time'],
+                ];
+            }
+        }
+
         // So that verification calls can be made with the relevant token related information
         if ($payment->getGlobalOrLocalTokenEntity())
         {

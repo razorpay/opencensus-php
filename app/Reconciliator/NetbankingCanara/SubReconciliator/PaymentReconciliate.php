@@ -9,14 +9,8 @@ use RZP\Reconciliator\NetbankingCanara\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    protected $netbankingRepo;
 
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getPaymentId(array $row)
     {
@@ -45,7 +39,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdAndAction($paymentId,
+        return $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
             Action::AUTHORIZE);
     }
 

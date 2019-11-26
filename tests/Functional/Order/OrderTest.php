@@ -6,9 +6,12 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
@@ -43,6 +46,50 @@ class OrderTest extends TestCase
 
     public function testCreateOrder()
     {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessLessThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::CATEGORY => 5399,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+            DetailEntity::BUSINESS_TYPE     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
         $order = $this->startTest();
 
         return $order;
@@ -367,6 +414,17 @@ class OrderTest extends TestCase
         $this-> assertEquals($payments['count'], 0);
     }
 
+    public function testFetchOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/order_' . $order['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('virtual_account', $response);
+    }
+
     public function testRetrieveOrderWithReceipt()
     {
         $order = $this->fixtures->create('order');
@@ -408,7 +466,6 @@ class OrderTest extends TestCase
 
         $this->assertEquals($order['items'][0]['id'], $order['items'][0]['payments']['items'][0]['order_id']);
     }
-
 
     public function testStatusAfterPayment()
     {
@@ -468,6 +525,8 @@ class OrderTest extends TestCase
     public function testAutoCaptureFeeBearerCustomer()
     {
         $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
@@ -685,6 +744,19 @@ class OrderTest extends TestCase
         $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
 
         $preferences = $this->startTest($testData);
+    }
+
+    public function testPreferencesForOrderWithAuthType()
+    {
+        $this->testEmandateRegistrationOrderWithZeroRupeeAndTokenWithFirstAmount();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $this->startTest($testData);
     }
 
     public function testPaymentWithIncorrectBankFromOrderBank()

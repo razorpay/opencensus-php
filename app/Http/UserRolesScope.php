@@ -3,6 +3,7 @@
 namespace RZP\Http;
 
 use RZP\Models\User\Role;
+use RZP\Models\Batch\Type;
 use RZP\Models\User\BankingRole;
 
 class UserRolesScope
@@ -11,6 +12,10 @@ class UserRolesScope
      * @see https://razorpay.com/docs/v1/page/team-support
      */
     protected $routeUserRoleMap = [];
+
+    protected $batchTypeUserRoleMap = [];
+
+    const DEFAULT = 'default';
 
     public function __construct()
     {
@@ -25,10 +30,10 @@ class UserRolesScope
         $this->routeUserRoleMap = [
 
             // batch routes
-            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
-            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
-            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
-            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
+            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
+            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
+            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
+            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
 
             // payment routes
             'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
@@ -54,6 +59,9 @@ class UserRolesScope
             'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+
+            // Banking Invoice route
+            'reports_monthly_banking_invoice' => BankingRole::getDefaultRoles(),
 
             // profile routes
             'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE, Role::MANAGER],
@@ -178,6 +186,9 @@ class UserRolesScope
             // Partner routes
             'submerchants_fetch'          => Role::allExceptPaymentLinkRoles(),
             'submerchants_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
+            'fetch_partner_intent'        => [Role::OWNER],
+            'update_partner_intent'       => [Role::OWNER],
+            'update_partner_type'         => [Role::OWNER],
 
             // Reporting
             'reporting_config_get'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
@@ -194,6 +205,14 @@ class UserRolesScope
             'reporting_schedule_create'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
             'reporting_schedule_delete'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
         ];
+
+        /*
+         * This array is for batch type level user access roles map
+         */
+        $this->batchTypeUserRoleMap = [
+            Type::PAYMENT_LINK         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::SELLERAPP], BankingRole::getAllRoles()),
+            self::DEFAULT              => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
+        ];
     }
 
     /**
@@ -204,5 +223,15 @@ class UserRolesScope
     public function getRouteUserRoles(string $routeName)
     {
         return $this->routeUserRoleMap[$routeName] ?? null;
+    }
+
+    /**
+     * @param string $batchType
+     *
+     * @return array
+     */
+    public function getRouteBatchTypeUserRoles(string $batchType = self::DEFAULT): array
+    {
+        return $this->batchTypeUserRoleMap[$batchType] ?? $this->batchTypeUserRoleMap[self::DEFAULT];
     }
 }

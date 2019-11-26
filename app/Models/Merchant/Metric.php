@@ -28,6 +28,8 @@ final class Metric
 
     const INTERNATIONAL_ACTIVATION  = 'international_activation';
 
+    const UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL = 'unregistered_business_default_limit_used_total';
+
 
     const MERCHANT_ACTIVATION_STATE_TRANSITION = 'merchant_activation_state_transition';
     const MERCHANT_ACTIVATION                  = 'merchant_activation';

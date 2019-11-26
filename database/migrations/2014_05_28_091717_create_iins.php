@@ -33,6 +33,9 @@ class CreateIins extends Migration
             $table->string(IIN\Entity::SUBTYPE)
                   ->default(Card\SubType::CONSUMER);
 
+           $table->string(IIN\Entity::PRODUCT_CODE)
+                  ->nullable();
+
             $table->string(IIN\Entity::MESSAGE_TYPE)
                   ->nullable();
 

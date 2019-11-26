@@ -410,6 +410,28 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalWithWrongGatewayCase()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('upi_airtel', $terminal['gateway']);
+    }
+
+    public function testCreateMpgsTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -452,7 +474,11 @@ class TerminalTest extends TestCase
         $t = $this->deleteTerminal2('1000HdfcShared');
         $this->assertNotNull($t['deleted_at']);
 
-        $dt = Terminal\Entity::withTrashed()->findOrFail($t['id']);
+        $tId = $t['id'];
+
+        $this->fixtures->stripSign($tId);
+
+        $dt = Terminal\Entity::withTrashed()->findOrFail($tId);
 
         $this->assertEquals(0, $dt->merchants->count());
     }

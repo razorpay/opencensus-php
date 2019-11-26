@@ -59,6 +59,29 @@ class VpaTest extends TestCase
         $helper->createVpa($request['callback'], $content);
     }
 
+    public function testCreateVpaWithUppercaseUsername()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->intiateCreateVpa([
+            'username' => 'RandomCaps'
+        ]);
+
+        $this->assertSame('randomcaps@razoraxis', $request['request']['content']['customerVpa']);
+
+        $content = $this->handleSdkRequest($request);
+
+        $request = $helper->createVpa($request['callback'], $content);
+
+        $this->assertSame('randomcaps@razoraxis', $request['request']['content']['customerVpa']);
+
+        $content = $this->handleSdkRequest($request);
+
+        $vpa = $helper->createVpa($request['callback'], $content);
+
+        $this->assertSame('randomcaps@razoraxis', $vpa['address']);
+    }
+
     public function testFetchVpa()
     {
         $vpaId = $this->fixtures->vpa->getPublicId();
@@ -151,6 +174,14 @@ class VpaTest extends TestCase
         $helper->assignBankAccount($vpaId, $bankAccount->getPublicId());
 
         $this->assertSame($bankAccount->getId(), $this->fixtures->vpa->reload()->getBankAccountId());
+
+        //For axis we expire device token after assigning bank account to refresh their SDK content
+        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
+        $expireAt    = $deviceToken->getGatewayData()['expire_at'];
+
+        $this->assertTrue($deviceToken->shouldRefresh());
+        $this->assertGreaterThanOrEqual($this->testCurrentTime->getTimestamp(), $expireAt);
+
     }
 
     public function testDeleteVpa()
@@ -177,7 +208,7 @@ class VpaTest extends TestCase
         $this->assertTrue($vpa->refresh()->trashed());
 
         // Pending collect transaction should be deleted
-        $this->assertTrue($vpa->refresh()->trashed());
+        $this->assertTrue($transaction->refresh()->trashed());
     }
 
     public function testSetDefault()

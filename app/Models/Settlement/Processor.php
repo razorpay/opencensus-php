@@ -14,9 +14,10 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
 use RZP\Jobs\Settlement\Create;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant as MerchantModel;
 
@@ -49,7 +50,7 @@ class Processor extends Base\Core
 
     const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
-    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 900;
 
     public function __construct()
     {
@@ -57,7 +58,7 @@ class Processor extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->debug = true;
+        $this->debug = false;
     }
 
     /**
@@ -121,7 +122,7 @@ class Processor extends Base\Core
         return $data;
     }
 
-    public function process(array $input, $channel)
+    public function process(array $input, $channel, string $balanceType = Balance\Type::PRIMARY)
     {
         $this->setDebugStatus($input);
 
@@ -130,6 +131,12 @@ class Processor extends Base\Core
         $useQueue = $this->shouldUseQueue($input);
 
         $merchantIds = $input['merchant_ids'] ?? [];
+
+        $params =[
+          'created_at'   => $input['created_at'] ?? null,
+          'settled_at'   => $input['settled_at'] ?? null,
+          'initiate_at'  => $input['initiated_at'] ?? null
+        ];
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
@@ -146,9 +153,9 @@ class Processor extends Base\Core
 
         $data = $this->mutex->acquireAndRelease(
             $mutexResource,
-            function () use ($channel, $useQueue, $merchantIds)
+            function () use ($channel, $useQueue, $merchantIds, $balanceType, $params)
             {
-                return $this->processSettlements($channel, $useQueue, $merchantIds);
+                return $this->processSettlements($channel, $useQueue, $merchantIds, $balanceType, $params);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -164,6 +171,7 @@ class Processor extends Base\Core
             Metric::SETTLEMENTS_INITIATE_EXECUTION_TIME,
             [
                 Metric::CHANNEL                 => $channel,
+                Metric::BALANCE_TYPE            => $balanceType,
                 Metric::USING_QUEUE             => $useQueue,
                 Metric::TOTAL_MERCHANTS_COUNT   => $count,
             ], get_diff_in_millisecond($startTime));
@@ -171,14 +179,16 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function processSettlements($channel, bool $useQueue, array $merchantIds)
+    protected function processSettlements($channel, bool $useQueue, array $merchantIds, string $balanceType, array $params = [])
     {
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,
             [
-                'timestamp'   => $this->setlTime,
-                'time'        => time(),
-                'using_queue' => $useQueue,
+                'timestamp'    => $this->setlTime,
+                'time'         => time(),
+                'using_queue'  => $useQueue,
+                'params'       => $params,
+                'merchant_ids' => $merchantIds,
             ]);
 
         $response = [];
@@ -187,7 +197,7 @@ class Processor extends Base\Core
         {
             if ($useQueue === true)
             {
-                $response = $this->createSettlementsAsync($merchantIds);
+                $response = $this->createSettlementsAsync($merchantIds, $balanceType, $params);
             }
             else
             {
@@ -199,16 +209,14 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds);
+                    $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds, $params);
                 }
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED,
-                $response);
+            $this->trace->info(TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED, $response);
         }
         catch (\Throwable $e)
         {
@@ -398,15 +406,16 @@ class Processor extends Base\Core
      * @param array $inMids
      * @param array $notInMids
      * @param boolean $useLimit
+     * @param array $params
      * @return mixed
      */
-    protected function fetchRequiredEntities(
-        int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [], $useLimit = false)
+    protected function fetchRequiredEntities(int $settledAtCutOff, string $channel, array $inMids = [],
+        array $notInMids = [], $useLimit = false, array $params = [])
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
         $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit);
+                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -441,29 +450,35 @@ class Processor extends Base\Core
     }
 
     /**
-     * @param $groupedTxns
+     * @param        $groupedTxns
      * Creates a settlement entity for every group
      *
      * @param string $channel
-     * @param array $merchantSettleToPartner
+     * @param array  $merchantSettleToPartner
+     * @param array  $params
+     * @param string $balanceType
      * merchants settling to partner bank account, key will be merchantId and value will be partner bank account id
+     *
+     * @param string $balanceType
      *
      * @return array
      * Returns array with keys settlement_count, attempt_count, txn_count
      */
-    protected function createSettlementEntities($groupedTxns, string $channel, array $merchantSettleToPartner): array
+    protected function createSettlementEntities(
+        $groupedTxns, string $channel, array $merchantSettleToPartner, array $params = [], string $balanceType = Balance\Type::PRIMARY): array
     {
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
 
-        foreach ($groupedTxns as $merchantId => $txns)
+        foreach ($groupedTxns as $key => $txns)
         {
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
 
             $transactionCount = $txns->count();
 
             $customProperties = [
+                'merchant_id'           => $key,
                 'channel'               => $channel,
                 'transaction_count'     => $transactionCount,
             ];
@@ -474,7 +489,16 @@ class Processor extends Base\Core
                 null,
                 $customProperties);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner);
+            $merchantId = $txns->first()->getMerchantId();
+
+            $balance = $this->merchants[$merchantId]->getBalanceByTypeOrFail($balanceType);
+
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns(
+                $txns,
+                $channel,
+                $merchantSettleToPartner,
+                $balance,
+                $params);
 
             if ($setl !== null)
             {
@@ -502,8 +526,9 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::SETTLEMENTS_CREATED_TOTAL,
             [
-                Metric::CHANNEL => $channel,
-                Metric::MODE    => $this->mode,
+                Metric::CHANNEL      => $channel,
+                Metric::BALANCE_TYPE => $balanceType,
+                Metric::MODE         => $this->mode,
             ],
             $response['settlement_count']
         );
@@ -511,8 +536,9 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
             [
-                Metric::CHANNEL => $channel,
-                Metric::MODE    => $this->mode,
+                Metric::CHANNEL      => $channel,
+                Metric::BALANCE_TYPE => $balanceType,
+                Metric::MODE         => $this->mode,
             ],
             $response['txn_count']
         );
@@ -579,24 +605,25 @@ class Processor extends Base\Core
         return $mids;
     }
 
-    protected function createSettlementsAsync(array $merchantIds = []): array
+    protected function createSettlementsAsync(array $merchantIds, string $balanceType, array $params = []): array
     {
         $bucketTimestamp = null;
 
         if (empty($merchantIds) === true)
         {
-            // queue based implementation is indipendent of channels
-            list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket();
+            // queue based implementation is independent of channels
+            list($bucketTimestamp, $merchantIds) = (new Bucket\Core)->getMerchantIdsFromBucket($balanceType);
         }
 
-        return $this->pushMerchantsToSettlementQueue($merchantIds, $bucketTimestamp);
+        return $this->pushMerchantsToSettlementQueue($merchantIds, $balanceType, $bucketTimestamp, $params);
     }
 
-    protected function createSettlements($channel, bool $useQueue, array $merchantIds = []): array
+    protected function createSettlements(
+        $channel, bool $useQueue, array $merchantIds = [], array $params = []): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
 
-        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $merchantIds, $skipMids, false, $params);
 
         $merchantIds = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -604,7 +631,7 @@ class Processor extends Base\Core
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
 
-        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
+        return $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner, $params);
     }
 
     protected function createSettlementsForTestMode($channel): array
@@ -726,10 +753,17 @@ class Processor extends Base\Core
 
     /**
      * @param array  $merchantIds
-     * @param string $channel
+     * @param string $balanceType
+     * @param null   $bucketTimestamp
+     * @param array $params
+     *
      * @return array
      */
-    protected function pushMerchantsToSettlementQueue(array $merchantIds, $bucketTimestamp = null): array
+    protected function pushMerchantsToSettlementQueue(
+        array $merchantIds,
+        string $balanceType,
+        $bucketTimestamp = null,
+       array $params = []): array
     {
         $result = [
             'total_merchants' => count($merchantIds),
@@ -741,13 +775,14 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
             [
-                'merchant_count' => count($merchantIds)
+                'merchant_count' => count($merchantIds),
+                'balance_type'   => $balanceType,
             ]);
 
         $CountKey = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
         //
-        // add cout of total merchant IDs in cache
-        // so that it can be used to initate transfer when settlement creation is complete
+        // add count of total merchant IDs in cache
+        // so that it can be used to initiate transfer when settlement creation is complete
         //
         Cache::increment($CountKey, count($merchantIds));
 
@@ -758,16 +793,17 @@ class Processor extends Base\Core
             try
             {
                 //
-                // passing $bucketTimestamp is not necessory
+                // passing $bucketTimestamp is not necessary
                 // for now passing this, just to track the performance
                 // if timestamp exist then its a automated process else its manual
                 //
-                Create::dispatch($this->mode, $merchantId, $bucketTimestamp);
+                Create::dispatch($this->mode, $merchantId, $bucketTimestamp, $balanceType, $params);
 
                 $this->trace->info(
                     TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
                     [
-                        'merchant_id' => $merchantId
+                        'merchant_id'  => $merchantId,
+                        'balance_type' => $balanceType,
                     ]);
 
                 $this->trace->count(Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT);
@@ -779,9 +815,9 @@ class Processor extends Base\Core
                 $result['enqueue_failed'] += 1;
 
                 //
-                // in case of failures decremenet the total count stored
+                // in case of failures decrement the total count stored
                 // this will help maintain the exact count pushed to queue
-                // and also when to iniatie the transfer
+                // and also when to initiate the transfer
                 //
                 Cache::decrement($CountKey);
 
@@ -790,7 +826,8 @@ class Processor extends Base\Core
                     Trace::ERROR,
                     TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_FAILED,
                     [
-                        'merchant_id' => $merchantId
+                        'merchant_id'  => $merchantId,
+                        'balance_type' => $balanceType,
                     ]
                 );
             }
@@ -805,11 +842,14 @@ class Processor extends Base\Core
         return $result;
     }
 
-    public function fetchAndProcessTransactionsForSettlement(MerchantModel\Entity $merchant)
+    public function fetchAndProcessTransactionsForSettlement(
+        MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = [])
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ($this->isMerchantSettlementAllowed($merchant) === false)
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant);
+
+        if ($status === false)
         {
             return [
                 'settlement_count' => 0,
@@ -823,9 +863,9 @@ class Processor extends Base\Core
 
         $result = $this->mutex->acquireAndRelease(
             $resource,
-            function () use ($merchant)
+            function () use ($merchant, $channel, $balanceType, $params)
             {
-                return $this->createSettlementForMerchant($merchant);
+                return $this->createSettlementForMerchant($merchant, $channel, $balanceType, $params);
             },
             self::MUTEX_SETTLEMENT_CREATE_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -839,7 +879,17 @@ class Processor extends Base\Core
         // to fix the balance there has to be a transaction (payment/adjustment) created
         // which will add the merchant to bucket for settlement hence the process continues
         //
-        (new Bucket\Core)->markMerchantSettlementAsComplete($merchant->getId());
+        (new Bucket\Core)->markMerchantSettlementAsComplete($merchant, $balanceType);
+
+        //
+        // update the count for channel here
+        // this would help to maintain the exact settlement create count
+        //
+        $redis = app('redis')->connection();
+
+        $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($key, $channel, 1);
 
         $this->trace->count(
             Metric::SETTLEMENT_CREATED_COUNT,
@@ -850,14 +900,32 @@ class Processor extends Base\Core
         return $result;
     }
 
-    protected function createSettlementForMerchant(MerchantModel\Entity $merchant): array
+    protected function createSettlementForMerchant(
+        MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = []): array
     {
-        $channel = $merchant->getChannel();
+        RuntimeManager::setMemoryLimit('4096M');
+
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        if ($balance === null)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant does not have balance type ' . $balanceType,
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
 
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balance, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
@@ -879,7 +947,7 @@ class Processor extends Base\Core
                                 ->merchant
                                 ->findManyWithRelations(
                                     [$merchant->getId()],
-                                    ['primaryBalance', 'bankAccount'],
+                                    ['bankAccount'],
                                     [
                                         MerchantModel\Entity::ID,
                                         MerchantModel\Entity::PARENT_ID
@@ -896,7 +964,7 @@ class Processor extends Base\Core
             $merchant->getId()
         ]);
 
-        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner);
+        return $this->createSettlementEntities($transactionsGroup, $channel, $merchantSettleToPartner, $params, $balanceType);
     }
 
     protected function shouldUseQueue(array $input)

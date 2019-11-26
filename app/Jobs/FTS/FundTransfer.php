@@ -22,22 +22,15 @@ class FundTransfer extends Job
     protected $ftaId;
 
     /**
-     * @var bool
-     */
-    protected $isRegistered;
-
-    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_fund_transfer';
 
-    public function __construct(string $mode, string $id, bool $isRegistered)
+    public function __construct(string $mode, string $id)
     {
         parent::__construct($mode);
 
         $this->ftaId  = $id;
-
-        $this->isRegistered = $isRegistered;
     }
 
     /**
@@ -54,9 +47,31 @@ class FundTransfer extends Job
                     'fta_id' => $this->ftaId,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer(
-                $this->ftaId,
-                $this->isRegistered);
+            $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+            $transferService->initialize($this->ftaId);
+
+            list($initiateTransfers, $reason) = $transferService->shouldAllowTransfersViaFts();
+
+            if ($initiateTransfers === false)
+            {
+                $addedInitiateAt = $transferService->addInitiateAtIfRequired();
+
+                if ($addedInitiateAt === false) {
+
+                    $this->trace->info(TraceCode::FTS_FUND_TRANSFER_NOT_ALLOWED,
+                        [
+                            'fta_id' => $this->ftaId,
+                            'reason' => $reason,
+                        ]);
+
+                    $this->delete();
+
+                    return;
+                }
+            }
+
+            $ftsResponse = $transferService->requestFundTransfer();
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_COMPLETE,
@@ -65,6 +80,8 @@ class FundTransfer extends Job
         catch (RecordAlreadyExists $e)
         {
             $this->delete();
+
+            return;
         }
         catch (\Throwable $e)
         {

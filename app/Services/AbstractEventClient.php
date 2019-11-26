@@ -48,6 +48,8 @@ abstract class AbstractEventClient extends Base\Core
 
     /**
      * Method to build all the events together
+     *
+     * @return mixed
      */
     protected function buildRequestAndSend()
     {
@@ -80,6 +82,8 @@ abstract class AbstractEventClient extends Base\Core
 
                 $this->sendEventRequest($headers, $url, $eventDataChunk);
             }
+
+            $this->flushEvents();
         }
         catch (\Exception $e)
         {

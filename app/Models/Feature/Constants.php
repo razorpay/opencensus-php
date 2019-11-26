@@ -85,6 +85,7 @@ class Constants
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
@@ -95,7 +96,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
-    const HEADLESS                        = 'headless';
+    const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
@@ -130,6 +131,38 @@ class Constants
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
     const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
+    const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+    const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
+    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    /**
+     * When adding submerchant, whether to set international activation flow to greylist
+     * irrespective of merchant category and subcategory
+     */
+    const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
+     * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
+     */
+    const SHOW_CREDIT_SCORE               = 'show_credit_score';
+
+    /**
+     * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
+     * the submerchant is created. Else the submerchant will follow the usual kyc process
+     */
+    const KYC_HANDLED_BY_PARTNER          = 'kyc_handled_by_partner';
+
+    /**
+     * Only partners having this feature will be able to onboard the submerchants using the account apis
+     */
+    const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
+
+    /**
+     * Flag to decide whether razorpay can send communication mails to partner's submerchants
+     */
+    const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
+
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
      * this functionality will be there by default for new merchants , flag need to be enabled if
@@ -202,9 +235,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
-     * Enables workflow feature on Payout for Business Banking (RazorpayX)
-     */
+ * Enables workflow feature on Payout for Business Banking (RazorpayX)
+ */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Aggregator Partner + OAuth Client access
+     */
+    const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -331,6 +369,7 @@ class Constants
         self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
+        self::DISABLE_AMOUNT_CHECK            => true,
         self::SUBSCRIPTION_V2                 => true,
         self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,
@@ -342,7 +381,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
-        self::HEADLESS                        => true,
+        self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
@@ -397,6 +436,16 @@ class Constants
         self::BLOCK_DEBIT_2K                  => true,
         self::USE_MSWIPE_TERMINALS            => true,
         self::WALLET_AUTO_DEBIT               => true,
+        self::EXPOSE_GATEWAY_PROVIDER         => true,
+        self::KYC_HANDLED_BY_PARTNER          => true,
+        self::NO_COMM_WITH_SUBMERCHANTS       => true,
+        self::SUBMERCHANT_ONBOARDING          => true,
+        self::EXPOSE_FA_VALIDATION_UTR        => true,
+        self::VALIDATE_MERCHANT_DOMAIN        => true,
+        self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::FORCE_GREYLIST_INTERNAT         => true,
+        self::SHOW_CREDIT_SCORE               => true,
+        self::AGGREGATOR_OAUTH_CLIENT         => true,
     ];
 
     // Entity type constants
@@ -476,6 +525,11 @@ class Constants
             'display_name'  => 'On demand Payout',
             'documentation' => '',
         ],
+        self::ES_AUTOMATIC              => [
+            'feature'       => self::ES_AUTOMATIC,
+            'display_name'  => 'Es Automatic',
+            'documentation' => '',
+        ],
         self::PL_FIRST_MIN_AMOUNT       => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
@@ -521,6 +575,11 @@ class Constants
             'display_name'  => 'Razorpay X - Workflows',
             'documentation' => '',
         ],
+        self::SHOW_CREDIT_SCORE         => [
+            'feature'       => self::SHOW_CREDIT_SCORE,
+            'display_name'  => 'D2C Credit score campaign',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -536,6 +595,8 @@ class Constants
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
+        self::ES_AUTOMATIC,
+        self::SHOW_CREDIT_SCORE,
     ];
 
     /*

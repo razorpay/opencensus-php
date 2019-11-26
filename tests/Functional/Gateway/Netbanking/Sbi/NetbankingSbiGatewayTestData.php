@@ -17,7 +17,6 @@ return [
         'currency'          => 'INR',
         'description'       => 'random description',
         'card_id'           => null,
-        'bank'              => 'SBIN',
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -64,7 +63,6 @@ return [
 
     'testPaymentNetbankingEntity' => [
         'action'            => 'authorize',
-        'bank'              => 'SBIN',
         'received'          => true,
         'error_message'     => null,
         'merchant_code'     => 'RAZORPAY',

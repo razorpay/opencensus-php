@@ -161,7 +161,8 @@ class Correction extends Base\Core
 
         $processor = new Processor($this->merchantId, $this->month, $this->year);
 
-        $commissionTypes = Type::getAllTypes();
+        // TODO: Need to remove the whole correction flows.
+        $commissionTypes = Type::getAllPrimaryBalanceTypes();
 
         foreach ($commissionTypes as $type)
         {

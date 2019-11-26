@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\Payment\Action as PaymentAction;
 
 trait AuthorizeFailed
 {
@@ -24,7 +25,17 @@ trait AuthorizeFailed
 
         try
         {
-            $this->verify($input);
+            $gateway = $input['payment']['gateway'];
+
+            if (($input['payment']['cps_route'] === true) and
+                ($gateway === Payment\Gateway::NETBANKING_BOB))
+            {
+                $this->app['cps']->action($gateway, PaymentAction::VERIFY, $input);
+            }
+            else
+            {
+                $this->verify($input);
+            }
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -81,8 +92,9 @@ trait AuthorizeFailed
 
             if ($gatewayPayment !== null)
             {
-                $gatewayPayment->fill($verify->verifyResponseContent);
-                $gatewayPayment->saveOrFail();
+                $content = $verify->verifyResponseContent;
+
+                $this->updateGatewayEntityLateAuthorized($gatewayPayment, $content);
             }
 
             return $this->extractPaymentsProperties($gatewayPayment);
@@ -126,6 +138,23 @@ trait AuthorizeFailed
             $response['acquirer'][Entity::VPA] = $gatewayPayment->getVpa();
         }
 
+        if (method_exists($gatewayPayment, 'getNpciReferenceId') === true)
+        {
+            $response['acquirer'][Entity::REFERENCE16] = $gatewayPayment->getNpciReferenceId();
+        }
+
         return $response;
+    }
+
+    protected function updateGatewayEntityLateAuthorized($gatewayPayment, $content)
+    {
+        if ($this->shouldMapLateAuthorized === true)
+        {
+            $content = $this->getMappedAttributes($content);
+        }
+
+        $gatewayPayment->fill($content);
+
+        $gatewayPayment->saveOrFail();
     }
 }

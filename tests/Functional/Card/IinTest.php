@@ -113,6 +113,11 @@ class IinTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
         $this->startTest();
     }
 
@@ -131,7 +136,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless', 'charge_at_will']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'charge_at_will']);
 
         $this->startTest();
     }
@@ -156,8 +161,6 @@ class IinTest extends TestCase
         ];
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
-
-        $this->fixtures->merchant->addFeatures(['headless']);
 
         $response = $this->startTest();
 
@@ -257,7 +260,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -276,7 +279,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -449,7 +452,7 @@ class IinTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'iin'            => 112333,
+                    'iin'            => '112333',
                     'network'        => 'RuPay',
                     'type'           => 'credit',
                     'country'        => 'IN',

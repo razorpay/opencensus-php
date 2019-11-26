@@ -64,11 +64,6 @@ class BankAccount extends Base
         }
     }
 
-    public function getAccount(): BankAccountEntity
-    {
-        return $this->account;
-    }
-
     public function preProcessValidation()
     {
         try
@@ -98,20 +93,6 @@ class BankAccount extends Base
                 Constants::slackSettings()
             );
         }
-    }
-
-    /**
-     * Unused right now, everything is async
-     * @return void [type] [description]
-     */
-    public function processValidation()
-    {
-        $this->repo->assertTransactionActive();
-
-        $fundTransferAttempt = $this->createFundTransferAttempt();
-
-        // TODO: Add Trace FTA
-        // TODO: Initiate FTA here.
     }
 
     protected function createFundTransferAttempt(): Attempt\Entity
@@ -232,7 +213,7 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaProcessed(array $input)
     {
-        $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE, $input[Validation::UTR]);
 
         if ($this->validation->getRegisteredName() === null)
         {
@@ -258,7 +239,7 @@ class BankAccount extends Base
     {
         if ($input['internal_error'] === false)
         {
-            $this->markValidationAsCompleted(AccountStatus::INVALID);
+            $this->markValidationAsCompleted(AccountStatus::INVALID, $input[Validation::UTR]);
 
             return;
         }

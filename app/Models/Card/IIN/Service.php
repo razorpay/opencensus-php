@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Card\IIN;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Http\RequestHeader;
 
 class Service extends Base\Service
 {
@@ -174,6 +177,20 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function addorUpdateMultiple($iinMin, $iinMax, $input)
+    {
+        for ($i = $iinMin ; $i <= $iinMax ; $i++)
+        {
+            $iin = str_pad($i, 6, '0', STR_PAD_LEFT);
+
+            $this->addOrUpdate($iin, $input);
+        }
+
+        $count = $iinMax - $iinMin + 1;
+
+        return $count;
+    }
+
     public function addOrUpdate($id, $input) : array
     {
         $iin = $this->repo->iin->find($id);
@@ -190,14 +207,112 @@ class Service extends Base\Service
         }
     }
 
-    public function processRecord(string $type, array $input)
+    public function processRecords(string $type, array $input)
     {
+        $response = [];
+
         // hardcoding for now
-        $this->processor = new Batch\NpciRupay;
+        switch ($type)
+        {
+            case "iin_npci_rupay" :
+                $this->processor = new Batch\NpciRupay;
+                break;
+            case "iin_hitachi_visa":
+                $this->processor = new Batch\HitachiVisa;
+                break;
+            case "iin_mc_mastercard":
+                $this->processor = new Batch\McMastercard;
+                break;
+            default :
 
-        $this->processor->preprocess($input);
+        }
 
-        return $this->processor->process();
+        $IinBatchCollection = new Base\PublicCollection;
+
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        (new Validator) ->validateBatchId($batchId);
+
+        $idempotentId = null;
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_IIN_BULK_REQUEST,
+            [
+                'batch_id'  => $batchId,
+                'input'     => $input,
+            ]);
+
+        foreach($input as $entry)
+        {
+            try
+            {
+                    $idempotentId = $entry['idempotent_id'] ?? null ;
+
+                    $this->processor->preprocess($entry);
+
+                    $status = $this->processor->process();
+
+                    $data = [
+                        'batch_id'        => $batchId,
+                        'idempotent_id' => $idempotentId,
+                        'status' =>  $status,
+                    ];
+
+                    $IinBatchCollection->push($data);
+
+
+            }
+            catch(Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::ERROR,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotent_id' => $idempotentId,
+                    'status'       => 0,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $IinBatchCollection->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotent_id' => $idempotentId,
+                    'status'       => 0,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $IinBatchCollection->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_IIN_BULK_RESPONSE,
+            [
+                'batch_id'  => $batchId,
+                'output'    => $IinBatchCollection->toArrayWithItems(),
+            ]);
+
+        return $IinBatchCollection->toArrayWithItems();
     }
 
     protected function formatEditInput(Entity $iin, array & $input)

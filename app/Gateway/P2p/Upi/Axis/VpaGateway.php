@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use Carbon\Carbon;
 use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Models\P2p\Vpa\Bank;
 use RZP\Models\P2p\Vpa\Entity;
@@ -10,6 +11,7 @@ use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Models\P2p\Vpa\Credentials;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Gateway\P2p\Upi\Axis\Actions\VpaAction;
 use RZP\Models\P2p\Beneficiary\Entity as Beneficiary;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\VpaTransformer;
@@ -87,6 +89,12 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             Entity::BANK_ACCOUNT => [
                 Entity::ID  => $bankAccount[Entity::ID],
             ],
+            DeviceToken\Entity::DEVICE_TOKEN => [
+                Entity::ID                      => $this->getContextDeviceToken()->get(DeviceToken\Entity::ID),
+                Entity::GATEWAY_DATA            => [
+                    DeviceToken\Entity::EXPIRE_AT   => $this->getCurrentTimestamp(),
+                ],
+            ],
         ]);
     }
 
@@ -163,7 +171,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $request->merge([
             Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
             Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
-            Fields::CUSTOMER_PRIMARY_VPA    => $defaultVpa[Entity::ADDRESS],
+            Fields::CUSTOMER_PRIMARY_VPA    => $this->getCustomerPrimaryVpa(),
         ]);
 
         $s2s = $this->sendS2sRequest($request);
@@ -207,15 +215,15 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $vpa = new VpaTransformer($s2s[Fields::PAYLOAD]);
 
         $response->setData([
-            Beneficiary::TYPE           => 'vpa',
+            Beneficiary::TYPE           => Entity::VPA,
             Beneficiary::VALIDATED      => true,
-            Entity::HANDLE              => $handle,
-            Entity::USERNAME            => $username,
+            Entity::HANDLE              => $vpa->transformHandle(),
+            Entity::USERNAME            => $vpa->transformUsername(),
             Entity::BENEFICIARY_NAME    => $vpa->transformBeneficiaryName(),
             Entity::GATEWAY_DATA        => $vpa->transformGatewayData(),
         ]);
 
-        return $response;
+        return;
     }
 
     public function handleBeneficiary(Response $response)
@@ -344,12 +352,29 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
     {
         $hand =  $handle ?? $this->context->handleCode();
 
-        return $username . '@' . $hand;
+        // Since Axis bank is not able to handle uppercase letters
+        return strtolower($username) . '@' . $hand;
     }
 
     protected function isVpaAvailable($content) :bool
     {
         return $content[Fields::AVAILABLE] === 'true';
+    }
+
+    protected function getCustomerPrimaryVpa()
+    {
+        $vpa = $this->input->get(Entity::VPA);
+        $default = $this->input->get(Entity::DEFAULT);
+
+        $customerContact = $this->getContextDevice()->get('contact');
+
+        // If VPA is customer phone number
+        if (substr($customerContact, -10) === $vpa[Entity::USERNAME])
+        {
+            return $vpa[Entity::ADDRESS];
+        }
+
+        return $default[Entity::ADDRESS];
     }
 }
 

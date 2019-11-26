@@ -118,7 +118,7 @@ class Reconciliate extends Base\Reconciliate
             case 'razorpay.zip':
                 return '917020041206002';
 
-            // default valie is shared mid name
+            // default value is shared mid name
             default:
                 return 'RAZORPAYADD';
         }

@@ -21,6 +21,7 @@ use RZP\Models\Offer;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
@@ -28,9 +29,9 @@ use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
-use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
@@ -281,12 +282,23 @@ class Service extends Base\Service
         {
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
+            $response = $this->getResponseDataFromCache($payment);
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+
+            $this->cacheResponseData($payment, $response);
+
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
 
             return $response;
         }
@@ -303,6 +315,48 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    protected function getResponseDataFromCache($payment)
+    {
+        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        {
+            return;
+        }
+
+        $key = $payment->getPaymentResponseCacheKey();
+
+        $payload = $this->app['cache']->get($key);
+
+        if (empty($payload) === true)
+        {
+            return;
+        }
+
+        $data = Crypt::decrypt($payload);
+
+        return  $data;
+    }
+
+    protected function cacheResponseData($payment, $data)
+    {
+        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        {
+            return;
+        }
+
+        $response = $this->app->razorx->getTreatment($payment->getMerchantId(), 'redirect_cache_response', Mode::LIVE);
+
+        if (strtolower($response) !== 'on')
+        {
+            return;
+        }
+
+        $key = $payment->getPaymentResponseCacheKey();
+
+        $payload = Crypt::encrypt($data);
+
+        $this->app['cache']->put($key, $payload, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
 
     //
@@ -683,7 +737,7 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            (new TransferMetric)->pushCreateFailedMetrics($e);
+            (new Transfer\Metric)->pushCreateFailedMetrics($e);
 
             throw $e;
         }
@@ -699,9 +753,25 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $transfers = $this->repo
-                          ->transfer
-                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+        $transferStatus = Transfer\Constant::FETCH_STATUS;
+
+        $transfers = (new Transfer\Core())->getForPayment($id, $transferStatus);
+
+        $payment = $this->repo
+                        ->payment
+                        ->findByIdAndMerchant($id, $this->merchant);
+
+        if ($payment->hasOrder() === true)
+        {
+            $orderId = $payment->getApiOrderId();
+
+            $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId, $transferStatus);
+
+            foreach ($transfersFromOrder as $transferFromOrder)
+            {
+                $transfers->push($transferFromOrder);
+            }
+        }
 
         return $transfers->toArrayPublic();
     }
@@ -854,10 +924,28 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            'data'          => $data,
+            'gateway'       => $gateway,
+            'reference_id'  => $referenceId,
+            'unexpected'    => 1,
+        ]);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $merchantId = $terminal->getMerchantId();
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
-                    ->authorizePush($input, $referenceId, $gateway);
+                    ->authorizePush($input, $referenceId, $data, $terminal);
     }
 
     public function fetchMultiple(array $input)
@@ -871,11 +959,23 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input = []): array
     {
+        $id = Entity::stripSignWithoutValidation($id);
+
         $payment = $this->repo
                         ->payment
-                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+                        ->findOrFailByPublicIdWithParams($id, $input);
 
-        $entity = $payment->toArrayPublic();
+        $paymentMerchantId = $payment->getMerchantId();
+
+
+        if ($this->merchant->getId() !== $paymentMerchantId)
+        {
+            // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
+        }
+
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
@@ -884,6 +984,30 @@ class Service extends Base\Service
         }
 
         return $entity;
+    }
+
+    protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)
+    {
+        if($this->merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($entityMerchantId);
+
+        //submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Merchant\Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (($partner === null) or
+            ($partner->getId() !== $this->merchant->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
     }
 
     protected function addDashboardFlags(array &$entity, $payment, array $input = [])
@@ -1666,9 +1790,28 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function validateVpa($input)
     {
-        $data = $this->getNewProcessor()->validateVpa($input);
+        $merchant = $this->merchant;
+
+        /**
+         * - Doing this for calls from FAVpaValidation Worker since merchant is not set in async processing
+         * - Tried with basicauth but has related issues of repo null
+         */
+        if (($merchant === null) and (empty($input['merchant_id']) === false))
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+            unset($input['merchant_id']);
+        }
+
+        $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
     }

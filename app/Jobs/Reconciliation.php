@@ -32,7 +32,7 @@ class Reconciliation extends Job
 
     const MAX_KUBERNETES_JOB_COUNT = 16;
 
-    const KUBERNETES_RECON_JOB_LIST = 'kubernetes_recon_job_list';
+    const KUBERNETES_RECON_JOB_LIST = '{recon}_kubernetes_recon_job_list';
 
     // will release the batch into queue after 15 minutes again.
     const RELEASE_WAIT_SECS = 900;
@@ -80,12 +80,24 @@ class Reconciliation extends Job
             {
                 $this->modifyParams($app, $batch);
 
-                $this->addBatchInKubernetesJobList($redis, $batch->getId());
-
                 //
                 // creating job for K8s client, will spawn a new pod for running this job.
                 //
-                $app->k8s_client->createJob($this->mode, $batch->getId(), $this->params, $batch->getType());
+                $jobStatus = $app->k8s_client->createJob($this->mode, $batch->getId(), $this->params, $batch->getType());
+
+                if ($jobStatus === true)
+                {
+                    $this->addBatchInKubernetesJobList($redis, $batch->getId());
+                }
+                else
+                {
+                    //
+                    // couldn't create K8s job, deleting the job.
+                    //
+                    $this->delete();
+
+                    $jobAction = self::JOB_DELETED;
+                }
             }
 
             $this->trace->debug(
@@ -149,6 +161,8 @@ class Reconciliation extends Job
         {
             // already scheduled, another request can be deleted
             $this->delete();
+
+            $redis->HDEL(Reconciliation::KUBERNETES_RECON_JOB_LIST, $batch->getId());
 
             $jobAction = self::JOB_DELETED;
         }

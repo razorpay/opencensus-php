@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\FeeBearer;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Emi;
@@ -49,6 +51,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  */
@@ -109,6 +112,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const GATEWAY_PROVIDER      = 'gateway_provider';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -117,8 +121,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
-    // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE12           = 'reference12';
+    const FEE_BEARER            = 'fee_bearer';
+    // From 13 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
@@ -167,6 +171,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
+    const BILLING_ADDRESS       = 'billing_address';
+    const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -187,6 +193,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
+    const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -196,6 +204,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
+
+    // payment services
+    const API                               = 0;
+    const CORE_PAYMENT_SERVICE              = 1;
+    const CARD_PAYMENT_SERVICE              = 2;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -239,6 +253,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
+        self::FEE_BEARER,
     ];
 
     protected $visible = [
@@ -283,6 +298,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::GATEWAY_PROVIDER,
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
@@ -323,6 +339,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
+        self::FEE_BEARER,
     ];
 
     protected $public = [
@@ -355,12 +372,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
+        self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
         self::EMI,
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+    ];
+
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::TRANSACTION,
     ];
 
     /**
@@ -411,10 +439,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
+        self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
     ];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -481,8 +510,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
-        self::CPS_ROUTE            => false,
+        self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
+        self::FEE_BEARER           => Merchant\FeeBearer::PLATFORM,
     ];
 
     protected $amounts = [
@@ -519,7 +549,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
-        self::CPS_ROUTE            => 'bool',
+        self::CPS_ROUTE            => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -1080,6 +1110,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SETTLED_BY, $settledBy);
     }
 
+    public function setGatewayProvider($gatewayProvider)
+    {
+        $this->setAttribute(self::GATEWAY_PROVIDER, $gatewayProvider);
+    }
+
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
@@ -1171,6 +1206,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
+    public function getCpsRoute()
+    {
+        return $this->getAttribute(self::CPS_ROUTE);
+    }
+
     public function setMetadata($input)
     {
         $this->metadata = $input['_'] ?? null;
@@ -1211,6 +1251,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CPS_ROUTE, 0);
     }
 
+    public function enableCardPaymentService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 2);
+    }
+
     public function setMethod(string $method)
     {
         $this->setAttribute(self::METHOD, $method);
@@ -1249,6 +1294,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setSubscriptionId(string $subscriptionId)
     {
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
+    public function setFeeBearer($feeBearer)
+    {
+        $this->setAttribute(self::FEE_BEARER, $feeBearer);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -1324,6 +1374,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $trimmedReference16 = (blank($reference16) === true) ? null : trim($reference16);
 
         $this->attributes[self::REFERENCE16] =  $trimmedReference16;
+    }
+
+    protected function setFeeBearerAttribute($feeBearer)
+    {
+        $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($feeBearer);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1404,12 +1459,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 if (isset($upiTransactionId) === true)
                 {
-                    $acquirerData["upi_transaction_id"] = $upiTransactionId;
+                    $acquirerData['upi_transaction_id'] = $upiTransactionId;
                 }
                 break;
         }
 
         return (new Dictionary($acquirerData));
+    }
+
+    protected function getGatewayProviderAttribute()
+    {
+        $gatewayProvider = 'Razorpay';
+
+        if ($this->terminal !== null)
+        {
+            if ($this->terminal->getProcurer() !== Procurer::RAZORPAY)
+            {
+                $gatewayProvider = $this->getGateway();
+            }
+        }
+
+        return $gatewayProvider;
     }
 
     protected function getOtpAttemptsAttribute()
@@ -1446,6 +1516,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $mdr;
     }
 
+    protected function getFeeBearerAttribute()
+    {
+        if (isset($this->attributes[self::FEE_BEARER]) === false)
+        {
+            $this->attributes[self::FEE_BEARER] = 0; // 0 -> platform fee bearer
+        }
+
+        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
     public function getMetadata($key = null, $default = null)
     {
         if ($key === null)
@@ -1479,6 +1559,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getReceiverType()
     {
         return $this->getAttribute(self::RECEIVER_TYPE);
+    }
+
+    public function getFeeBearer()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->getFeeBearer();
+        }
+
+        return $this->getAttribute(self::FEE_BEARER);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -1653,6 +1744,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
     }
 
+    public function isNach()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::NACH);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
@@ -1692,6 +1788,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isRoutedThroughCardPayments()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
     }
 
     public function isPushPaymentMethod()
@@ -1762,6 +1863,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                (($this->getAttribute(self::METHOD) === Method::WALLET) and
                    ($this->getWallet() === Wallet::PAYPAL)));
     }
+
+    public function isFeeBearerCustomer()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->isFeeBearerCustomer() === true;
+        }
+
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isFeeBearerPlatform()
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeeBearerDynamic() === false))
+        {
+            return $this->merchant->isFeeBearerPlatform() === true;
+        }
+
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
 
     /**
      * Checks if card should be saved depending on if the payment is emi or
@@ -1894,7 +2018,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $amount = $this->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($this->isFeeBearerCustomer() === true)
         {
             $amount -= $this->getFee();
         }
@@ -2539,6 +2663,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicGatewayProviderAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
+        {
+            unset($array[self::GATEWAY_PROVIDER]);
+        }
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -2550,14 +2687,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->terminal()->associate($terminal);
 
-        $this->setGateway($terminal->getGateway());
+        $gateway = $terminal->getGateway();
+
+        $this->setGateway($gateway);
 
         $this->setSettledBy('Razorpay');
 
         if ($terminal->isDirectSettlement() === true)
         {
-            $gateway = $this->getGateway();
-
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
 
             $this->setSettledBy($settledBy);
@@ -3090,6 +3227,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
              return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
         }
+        else if ($this->isNach() === true)
+        {
+            return self::PAYMENT_TIMEOUT_NACH;
+        }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
@@ -3178,7 +3319,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::UPI:
                 $paymentArray[self::VPA] = self::DUMMY_VPA;
+                break;
 
+            case Method::NACH:
+                $paymentArray[self::RECURRING] = true;
+                break;
         }
 
         if (is_null($orderEntity) === false)
@@ -3238,6 +3383,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
     {
         return 'payment:redirect.authorize.' . $trackId . '.encrypt';
+    }
+
+    public function getPaymentResponseCacheKey(): string
+    {
+        return 'payment:response' . $this->getId() . '.cache';
     }
 
     public function getTransactionType()

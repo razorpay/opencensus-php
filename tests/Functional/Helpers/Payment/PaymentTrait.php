@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Models\Merchant\FeeBearer;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -1033,9 +1034,11 @@ trait PaymentTrait
             $response = $this->makeRequestAndGetContent($request);
         }
 
+        $rrn = $response['gateway_keys']['rrn'] ?? null;
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event', null, $rrn);
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1096,7 +1099,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null, $rrn = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1110,6 +1113,11 @@ trait PaymentTrait
         if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
         {
             $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        if ($rrn !== null)
+        {
+            $input['reference_no'] = $rrn;
         }
 
         $input['event'] = $event;
@@ -1187,7 +1195,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [], $gateway = null)
     {
         $this->ba->adminAuth();
 
@@ -1199,7 +1207,9 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
+        $gateway = $gateway ?? $this->gateway;
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
@@ -2107,6 +2117,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockExpressSendRequest($closure, $times = 1)
+    {
+        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+
+        $express->shouldAllowMockingProtectedMethods();
+
+        $express->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('express', $express);
+
+        return $express;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
@@ -2206,7 +2231,6 @@ trait PaymentTrait
             switch ($endpoint)
             {
                 case '/account':
-
                     $response = [
                         'body' => [
                             'fund_account_id' => random_integer(2),
@@ -2217,9 +2241,10 @@ trait PaymentTrait
                     return $response;
 
                 case '/source_account':
-
                     $response = [
-                            'message' => 'source account registered',
+                            'body'=> [
+                                'message' => 'source account registered',
+                            ]
                         ];
 
                     return $response;
@@ -2234,4 +2259,125 @@ trait PaymentTrait
 
         $this->app->instance('fts_create_account', $fts);
     }
+
+    protected function setDefaultMerchantMethods()
+    {
+        // Disable all methods and only enable card.
+        // The default pricing plan has only card enabled
+
+        $this->fixtures->merchant->disableAllMethods();
+
+        $this->fixtures->merchant->enableCard();
+    }
+
+    protected function createPricingPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    public function getPricingPlanForFeeBearerTest(string $pricingFeeBearer)
+    {
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+            'fee_bearer'                => $pricingFeeBearer,
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        return $plan;
+    }
+
+    protected function setUpMerchantForFeeBearerTest(string $merchantFeeBearer, array $pricingPlan)
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id' => $pricingPlan['id'],
+            'fee_bearer'      => $merchantFeeBearer,
+        ]);
+    }
+
+    protected function setUpAndGetPaymentArrayForFeeBearerPricingTest(string $merchantFeeBearer, string $pricingFeeBearer)
+    {
+        $this->mockCardVault();
+
+        $this->ba->publicAuth();
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $plan = $this->getPricingPlanForFeeBearerTest($pricingFeeBearer);
+
+        $this->setUpMerchantForFeeBearerTest($merchantFeeBearer, $plan);
+
+        return $this->getPaymentArrayForFeeBearerTest($merchantFeeBearer);
+    }
+
+    protected function getPaymentArrayForFeeBearerTest($merchantFeeBearer)
+    {
+        $defaultPaymentArray = $this->getDefaultPaymentArray();
+
+        $defaultPaymentArray['card']['number'] = '555555555555558';
+
+        if ($merchantFeeBearer === FeeBearer::PLATFORM)
+        {
+            return $defaultPaymentArray;
+        }
+
+        try
+        {
+            return $this->getFeesForPayment($defaultPaymentArray)['input'];
+        }
+        catch (Exception\LogicException $logicException)
+        {
+            return $defaultPaymentArray;
+        }
+    }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
 }

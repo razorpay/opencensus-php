@@ -109,6 +109,9 @@ class Entity extends Base\PublicEntity
     const CONTACT_ID    = 'contact_id';
     const CONTACT_EMAIL = 'contact_email';
     const CONTACT_TYPE  = 'contact_type';
+    const REVERSED_FROM = 'reversed_from';
+    const REVERSED_TO   = 'reversed_to';
+    const PRODUCT       = 'product';
 
     const PENDING_ON_ME    = 'pending_on_me';
     const PENDING_ON_ROLES = 'pending_on_roles';
@@ -138,6 +141,20 @@ class Entity extends Base\PublicEntity
 
     protected $queueFlag = false;
 
+    /**
+     * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
+     * from our system. Sometimes, we are not able to map a transaction to one of the payouts in our system.
+     * In these cases, we create the transaction against `external` entity. Later when we are able to map
+     * the transaction to the payout entity, we create a dummy transaction to replace the original transaction's
+     * attributes with the right payout transaction attributes. In this flow, we don't want to do any balance
+     * related stuff since that would have already been taken care of when the original transaction was created.
+     * This also ensures balance validations are not done, since they could fail because of double deductions - one
+     * via external and now another via payout.
+     *
+     * @var bool
+     */
+    protected $shouldValidateAndUpdateBalancesFlag = true;
+
     protected $entity = 'payout';
 
     protected $table  = Table::PAYOUT;
@@ -156,7 +173,6 @@ class Entity extends Base\PublicEntity
         self::PURPOSE,
         self::AMOUNT,
         self::CURRENCY,
-        self::STATUS,
         self::NOTES,
         self::PROCESSED_AT,
         self::PENDING_AT,
@@ -197,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::ATTEMPTS,
         self::UTR,
+        self::RETURN_UTR,
         self::FAILURE_REASON,
         self::REMARKS,
         self::PROCESSED_AT,
@@ -301,7 +318,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::USER_ID           => null,
-        self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::FUND_ACCOUNT_ID   => null,
         self::BATCH_ID          => null,
@@ -310,6 +326,7 @@ class Entity extends Base\PublicEntity
         self::TYPE              => self::DEFAULT,
         self::MODE              => null,
         self::UTR               => null,
+        self::RETURN_UTR        => null,
         self::FAILURE_REASON    => null,
         self::REFERENCE_ID      => null,
         self::NARRATION         => null,
@@ -476,6 +493,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function hasCustomer()
     {
         return ($this->isAttributeNotNull(self::CUSTOMER_ID) === true);
@@ -514,6 +536,11 @@ class Entity extends Base\PublicEntity
     public function toBeQueued(): bool
     {
         return ($this->queueFlag === true);
+    }
+
+    public function shouldValidateAndUpdateBalances(): bool
+    {
+        return ($this->shouldValidateAndUpdateBalancesFlag === true);
     }
 
     /**
@@ -566,6 +593,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getReturnUtr()
+    {
+        return $this->getAttribute(self::RETURN_UTR);
+    }
+
+    public function getInitiatedAt()
+    {
+        return $this->getAttribute(self::INITIATED_AT);
+    }
+
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
@@ -604,6 +641,11 @@ class Entity extends Base\PublicEntity
     public function hasBeenQueued()
     {
         return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
+    }
+
+    public function hasBeenProcessed()
+    {
+        return ($this->isAttributeNotNull(self::PROCESSED_AT) === true);
     }
 
     public function isStatusCreated(): bool
@@ -730,6 +772,11 @@ class Entity extends Base\PublicEntity
         $this->queueFlag = $flag;
     }
 
+    public function setShouldValidateAndUpdateBalancesFlag($flag)
+    {
+        $this->shouldValidateAndUpdateBalancesFlag = $flag;
+    }
+
     public function setChannel($channel)
     {
         Channel::validate($channel);
@@ -783,6 +830,8 @@ class Entity extends Base\PublicEntity
 
     protected function setStatusAttribute($status)
     {
+        $previousStatus = $this->getStatus();
+
         $this->attributes[self::STATUS] = $status;
 
         if (in_array($status, Status::$timestampedStatuses, true) === true)
@@ -804,6 +853,8 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+
+        Metric::pushStatusChangeMetrics($this, $previousStatus);
     }
 
     public function setInitiatedAt()
@@ -823,6 +874,13 @@ class Entity extends Base\PublicEntity
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    // TODO: check how to handle this
+    // JIRA: https://razorpay.atlassian.net/browse/RX-696
+    public function setReturnUtr(string $returnUtr = null)
+    {
+        $this->setAttribute(self::RETURN_UTR, $returnUtr);
     }
 
     public function setFailureReason($reason)

@@ -215,7 +215,7 @@ class Core extends Base\Core
     {
         $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
-        $existingTerminals = $this->repo->terminal->getByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         $gateway = $terminal->getGateway();
         
@@ -438,7 +438,7 @@ class Core extends Base\Core
 
     protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
-        $existingTerminals = $this->repo->terminal->getByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         // This check if this terminal is same as what
         // we are trying to edit

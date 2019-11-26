@@ -97,4 +97,13 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getSupportedModes()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getSupportedModes($input);
+
+        return ApiResponse::json($response);
+    }
 }

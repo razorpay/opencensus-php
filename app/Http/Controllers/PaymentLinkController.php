@@ -140,4 +140,39 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function migratePaymentPageItemForMinPurchase()
+    {
+        $data = $this->service()->migratePaymentPageItemForMinPurchase($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createOrder(string $id)
+    {
+        $response = $this->service()->createOrder($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createOrderOptions(string $id)
+    {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set(
+            'Access-Control-Allow-Origin',
+            $this->app['config']->get('app.payment_link_hosted_base_url')
+        );
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
+    }
+
+    public function updatePaymentPageItem(string $paymentPageItemId)
+    {
+        $response = $this->service()->updatePaymentPageItem($paymentPageItemId, $this->input);
+
+        return ApiResponse::json($response);
+    }
 }

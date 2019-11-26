@@ -14,10 +14,11 @@ use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Payout\Metric;
+use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -106,6 +107,11 @@ class Base extends BaseCore
 
             $downstreamProcessor->process();
 
+            if (empty($payout->getStatus()) === true)
+            {
+                $payout->setStatus(Status::CREATED);
+            }
+
             $this->repo->saveOrFail($payout);
 
             $this->trace->info(
@@ -114,8 +120,6 @@ class Base extends BaseCore
                     'input'       => $input,
                     'payout'      => $payout->toArray(),
                 ]);
-
-            $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
 
             return $payout;
         });
@@ -231,9 +235,16 @@ class Base extends BaseCore
 
         $this->fireEventForPayoutStatus($payout);
 
-        if ($payout->isStatusCreated() === true)
+        $accountType = $payout->balance->getAccountType();
+
+        // Since RBL transactions are created at a later stage, we skip this flow fo RBL
+
+        if ($accountType === AccountType::SHARED)
         {
-            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            if ($payout->isStatusCreated() === true)
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;
@@ -386,9 +397,16 @@ class Base extends BaseCore
                 Payout\Entity::FUND_ACCOUNT_ID);
         }
 
+        $this->validateFundAccountContact($fundAccount);
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
+    }
+
+    public function validateFundAccountContact(FundAccount\Entity $fundAccount)
+    {
+        return;
     }
 
     /**
@@ -401,6 +419,8 @@ class Base extends BaseCore
     protected function createPayoutEntity(array $input)
     {
         $payout = (new Payout\Entity);
+
+        $this->runInputValidations($payout, $input);
 
         $payout->merchant()->associate($this->merchant);
 
@@ -430,11 +450,7 @@ class Base extends BaseCore
 
         $this->batchId ? ($payout->setBatchId($this->batchId)) : ($payout->batch()->associate($this->batch));
 
-        //
-        // Doing this after all the associations since
-        // some validations run on the relations' data
-        //
-        $this->runInputValidations($payout, $input);
+        $this->runEntityValidations($payout, $input);
 
         if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
             (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
@@ -528,5 +544,10 @@ class Base extends BaseCore
         $method = Payout\Method::$destinationMethodMap[$destinationType];
 
         $payout->setMethod($method);
+    }
+
+    protected function runEntityValidations(Payout\Entity $payout, array $input)
+    {
+        return;
     }
 }

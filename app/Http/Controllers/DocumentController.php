@@ -22,4 +22,35 @@ class DocumentController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * @Todo add comments
+     * @return mixed
+     */
+    public function getMerchantDocuments()
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchActivationFilesFromDocument();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @Todo add comments
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getMerchantDocumentsByAdmin(string $merchantId)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchActivationFilesFromDocument($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function delete(string $id)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->delete($id);
+
+        return ApiResponse::json($response);
+    }
 }

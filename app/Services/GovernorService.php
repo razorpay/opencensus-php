@@ -22,6 +22,8 @@ class GovernorService
 
     // request and response fields
     const ERROR     = 'error';
+    const ERROR_MESSAGE = 'error_message';
+    const ERROR_CODE = 'error_code';
 
     const CREATE_NAMESPACE  =   [
         'url'       =>  "rule_engine/namespace",
@@ -89,7 +91,6 @@ class GovernorService
         'url'       =>  "rule_engine/rule_chain/:namespace",
         'method'    =>  "GET",
     ];
-
 
     const EXECUTE_CHAINS  =   [
         'url'       =>  "rule_engine/execute/rule_chain/:namespace",
@@ -289,9 +290,13 @@ class GovernorService
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-
     protected function jsonToArray($json)
     {
+        if (empty($json) === true)
+        {
+            return [];
+        }
+
         $decodeJson = json_decode($json, true);
 
         switch (json_last_error())
@@ -324,6 +329,41 @@ class GovernorService
         ];
     }
 
+    protected function processResponseV1($response)
+    {
+        $responseBody = $this->jsonToArray($response->body);
+
+        if ( $response->status_code != 200 )
+        {
+            if ((isset($responseBody[self::ERROR]) === true) &&
+                (isset($responseBody[self::ERROR][self::ERROR_CODE])  === true) &&
+                ($responseBody[self::ERROR][self::ERROR_CODE] === ErrorCode::BAD_REQUEST_ERROR))
+            {
+                $this->trace->error(
+                    TraceCode::GOVERNOR_SERVICE_BAD_REQUEST_ERROR,
+                    ['response' => $response]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_GOVERNOR,
+                    null,
+                    [],
+                    $responseBody[self::ERROR][self::ERROR_MESSAGE]
+                );
+            }
+
+            $this->trace->error(
+                TraceCode::GOVERNOR_SERVICE_ERROR,
+                ['response' => $response]);
+
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        return $responseBody;
+    }
+
     public function getAuthDetails(string $source) {
         switch ($source) {
             case 'cps':
@@ -339,5 +379,51 @@ class GovernorService
             default:
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+    }
+
+    public function getAdminAuthDetails() {
+
+        return [
+            $this->config['adminapi']['username'],
+            $this->config['adminapi']['password']
+        ];
+
+    }
+
+    public function sendRequestV1(string $method, string $path, string $content)
+    {
+        $url = $this->getBaseUrl() . preg_replace('/^v1\//', '', $path);
+
+        $auth = $this->getAdminAuthDetails();
+
+        $data = $this->jsonToArray($content);
+
+        if($method == 'POST'){
+            $userId = $this->app['basicauth']->getAdmin()->getId();
+            $data['created_by'] = $userId;
+        }
+
+        $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'content' => $data,
+            'headers' => $headers,
+        ];
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
+
+        $request['options'] = [
+            'auth' => $auth
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        $parsedResponse = $this->processResponseV1($response);
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse ?? []);
+
+        return $parsedResponse;
     }
 }

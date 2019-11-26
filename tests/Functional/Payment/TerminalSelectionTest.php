@@ -19,6 +19,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalSelectionTest extends TestCase
@@ -1254,7 +1255,7 @@ class TerminalSelectionTest extends TestCase
             'merchant_id' => '10000000000000'
         ]);
 
-        $expectedTerminalIds = ['1000HdfcDirect', 'SharedTrmnl124'];
+        $expectedTerminalIds = ['1000HdfcDirect'];
 
         $this->runTestCase($expectedTerminalIds);
     }
@@ -1366,6 +1367,66 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1240', $terminal->getCategory());
     }
 
+    public function testBlockedMccOnHitachiTerminal()
+    {
+        $this->fixtures->merchant->setCategory(HitachiGateway::BLACKLISTED_MCC[0]);
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment       = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment'  => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options           = new Options;
+        $selector          = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $selectedTerminals = array_filter($selectedTerminals);
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $this->assertNotEquals('hitachi', $selectedTerminals[0]->getGateway());
+    }
+
     public function testHitachiTerminalCreationOnRunWithZeroStratingCategory()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1431,67 +1492,6 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('0240', $terminal->getCategory());
     }
 
-    public function testHitachiTerminalCreationOnRunMissingDetail()
-    {
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->fixtures->merchant->setCategory('1240');
-
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
-
-        $this->app['rzp.mode'] = Mode::TEST;
-
-        $options = new Options;
-        $selector = new Selector($input, $options);
-        $selectedTerminals = $selector->select();
-
-        $this->assertEquals(1, sizeof($selectedTerminals));
-
-        $terminal = $selectedTerminals[0];
-
-        $this->assertEquals(null, $terminal);
-    }
     // should not create terminal if methood is not card or emi
     public function testHitachiTerminalCreationOnRunForWallet()
     {
@@ -1521,71 +1521,6 @@ class TerminalSelectionTest extends TestCase
 
 
         $payment = (new Payment\Entity)->fill($paymentArray);
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
-
-        $this->app['rzp.mode'] = Mode::TEST;
-
-        $options = new Options;
-        $selector = new Selector($input, $options);
-        $selectedTerminals = $selector->select();
-
-        $this->assertEquals(1, sizeof($selectedTerminals));
-
-        $terminal = $selectedTerminals[0];
-
-        $this->assertEquals(null, $terminal);
-    }
-
-    // should not create terminal if invalid state value
-    public function testHitachiTerminalCreationOnRunForInvalidState()
-    {
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->fixtures->merchant->setCategory('1240');
-
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'new',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
 
         $merchant = Merchant\Entity::find('10000000000000');
 
@@ -1977,7 +1912,9 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence making hitachi shared terminal as direct so that it does not gets filtered out and payment flow can be tested
+        $hitachiTerminal = $this->fixtures->create('terminal:direct_hitachi_terminal');
 
         $this->fixtures->create('terminal:bharat_qr_terminal');
 

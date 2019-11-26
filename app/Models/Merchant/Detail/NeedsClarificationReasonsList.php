@@ -27,50 +27,72 @@ class NeedsClarificationReasonsList
     const SUBMIT_COMPLETE_ELECTION_CARD             = 'submit_complete_election_card';
     const ADDRESS_PROOF_OUTDATED                    = 'address_proof_outdated';
 
+
     const REASON_DETAILS = [
         self::PROVIDE_POC                               => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',],
         self::INVALID_CONTACT_NUMBER                    => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please provide a valid contact number',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please provide a valid contact number',],
         self::IS_COMPANY_REG                            => [
-            NeedsClarificationReasons::DESCRIPTION => 'Is your company a registered entity?'],
+            NeedsClarificationMetaData::DESCRIPTION => 'Is your company a registered entity?'],
         self::SERVICES_OFFERED                          => [
-            NeedsClarificationReasons::DESCRIPTION => 'What are some of the services/products that are offered?',],
+            NeedsClarificationMetaData::DESCRIPTION => 'What are some of the services/products that are offered?',],
         self::WEBSITE_NOT_LIVE                          => [
-            NeedsClarificationReasons::DESCRIPTION => 'Your website/app is currently not live. When will your website go live?',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Your website/app is currently not live. When will your website go live?',],
         self::UPDATE_DIRECTOR_PAN                       => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please update PAN details of a director listed by MCA',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please update PAN details of a director listed by MCA',],
         self::UNABLE_TO_VALIDATE_ACC_NUMBER             => [
-            NeedsClarificationReasons::DESCRIPTION => 'We\'re unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'We\'re unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
         self::UNABLE_TO_VALIDATE_BENEFICIARY_NAME       => [
-            NeedsClarificationReasons::DESCRIPTION => 'We\'re unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'We\'re unable to validate the beneficiary name from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
         self::UNABLE_TO_VALIDATE_IFSC                   => [
-            NeedsClarificationReasons::DESCRIPTION => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',],
         self::SUBMIT_INCORPORATION_CERTIFICATE          => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit the Certificate of Incorporation',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit the Certificate of Incorporation',],
         self::SUBMIT_COMPLETE_PARTNERSHIP_DEED          => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit all the pages of the Partnership Deed merged as one document.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit all the pages of the Partnership Deed merged as one document.',],
         self::SUBMIT_GSTIN_MSME_SHOPS_ESTAB_CERTIFICATE => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit the GSTIN/MSME/Shops and Establishment Certificate',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit the GSTIN/MSME/Shops and Establishment Certificate',],
         self::SUBMIT_COMPLETE_TRUST_DEED                => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit all the pages of the Trust Deed merged as one document',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit all the pages of the Trust Deed merged as one document',],
         self::SUBMIT_SOCIETY_REG_CERTIFICATE            => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit the Society registration certificate',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit the Society registration certificate',],
         self::BUSINESS_PROOF_OUTDATED                   => [
-            NeedsClarificationReasons::DESCRIPTION => 'The validity of the business proof attached has elapsed. Please submit the updated registration certificate',],
+            NeedsClarificationMetaData::DESCRIPTION => 'The validity of the business proof attached has elapsed. Please submit the updated registration certificate',],
         self::ILLEGIBLE_DOC                             => [
-            NeedsClarificationReasons::DESCRIPTION => 'The document attached is not legible. Please resubmit a clearer copy',],
+            NeedsClarificationMetaData::DESCRIPTION => 'The document attached is not legible. Please resubmit a clearer copy',],
         self::SUBMIT_REG_BUSINESS_PAN_CARD              => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit a copy of the PAN Card[in the name of registered business]',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit a copy of the PAN Card[in the name of registered business]',],
         self::SUBMIT_COMPLETE_DIRECTOR_ADDRESS_PROOF    => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit address proof[both photo ID and address page merged as one document] of a director listed on the MCA website whose PAN details have been submitted under the Tab- Registration Details',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit address proof[both photo ID and address page merged as one document] of a director listed on the MCA website whose PAN details have been submitted under the Tab- Registration Details',],
         self::SUBMIT_COMPLETE_AADHAAR                   => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit both photo ID and address page of the Aadhaar Card- merged as one document ',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit both photo ID and address page of the Aadhaar Card- merged as one document ',],
         self::SUBMIT_COMPLETE_PASSPORT                  => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit both photo ID and address page of the Passport- merged as one document ',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit both photo ID and address page of the Passport- merged as one document ',],
         self::SUBMIT_COMPLETE_ELECTION_CARD             => [
-            NeedsClarificationReasons::DESCRIPTION => 'Please submit both photo ID and address page of the Election Card- merged as one document ',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please submit both photo ID and address page of the Election Card- merged as one document ',],
         self::ADDRESS_PROOF_OUTDATED                    => [
-            NeedsClarificationReasons::DESCRIPTION => 'The validity of the address proof attached has elapsed. Please submit the updated document',],
+            NeedsClarificationMetaData::DESCRIPTION => 'The validity of the address proof attached has elapsed. Please submit the updated document',],
     ];
+
+
+    /**
+     * This function checks if the given reason detail is is valid
+     *
+     * @param string $reason
+     *
+     * @return boolean true/false
+     */
+    public static function isValidPredefinedReason(string $reason): bool
+    {
+        // return false if $reason is `reason_details`
+        if (strtolower($reason) === 'reason_details')
+        {
+            return false;
+        }
+
+        $key = __CLASS__ . '::' . strtoupper($reason);
+
+        return ((defined($key) === true) and (constant($key) === $reason));
+    }
 }

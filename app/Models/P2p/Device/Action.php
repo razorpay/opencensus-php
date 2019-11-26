@@ -28,6 +28,10 @@ class Action extends Base\Action
     const DEREGISTER_SUCCESS               = 'deregisterSuccess';
     const DEREGISTER_FAILURE               = 'deregisterFailure';
 
+    const UPDATE_WITH_ACTION               = 'update_with_action';
+
+    const RESTORE_DEVICE                   = 'restore_device';
+
     protected $actionToRoute = [
         self::INITIATE_VERIFICATION            => Requests::P2P_CUSTOMER_VERIFICATION,
         self::INITIATE_VERIFICATION_SUCCESS    => Requests::P2P_CUSTOMER_VERIFICATION,
@@ -46,5 +50,17 @@ class Action extends Base\Action
         self::VERIFICATION_SUCCESS            => [
             Entity::AUTH_TOKEN                => 'default',
         ],
+        self::INITIATE_GET_TOKEN_SUCCESS      => [
+            Entity::AUTH_TOKEN                => 'default',
+        ],
     ];
+
+    protected static $updateAllowedActions = [
+        self::RESTORE_DEVICE,
+    ];
+
+    public static function getUpdateAllowedActions()
+    {
+        return self::$updateAllowedActions;
+    }
 }

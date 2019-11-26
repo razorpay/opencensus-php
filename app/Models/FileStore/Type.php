@@ -25,6 +25,9 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+    const CITI_NACH_REGISTER                = 'citi_nach_register';
+    const CITI_NACH_DEBIT                   = 'citi_nach_debit';
+    const CITI_NACH_DEBIT_SUMMARY           = 'citi_nach_debit_summary';
 
     const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
     const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
@@ -88,6 +91,14 @@ class Type
 
     const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
 
+    const KVB_NETBANKING_REFUND             = 'kvb_netbanking_refund';
+
+    const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
+
+    const SCB_NETBANKING_CLAIM              = 'scb_netbanking_claim';
+
+    const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -120,13 +131,14 @@ class Type
 
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
-    const BATCH_INPUT                       = 'batch_input';
-    const BATCH_OUTPUT                      = 'batch_output';
-    const BATCH_VALIDATED                   = 'batch_validated';
-    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
-    const BATCH_SERVICE                     = 'batch_service';
-    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
-    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT       = 'reconciliation_batch_analytics_output';
+    const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
+
+    const BATCH_INPUT                           = 'batch_input';
+    const BATCH_OUTPUT                          = 'batch_output';
+    const BATCH_VALIDATED                       = 'batch_validated';
+    const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
+    const BATCH_SERVICE                         = 'batch_service';
+    const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
 
     const BLANK                             = 'blank';
 
@@ -155,6 +167,8 @@ class Type
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
+    const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -164,6 +178,15 @@ class Type
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
+    const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
+    const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
+    const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_CANCELLED_CHECK              = 'cancelled_check';
+    const MERCHANT_PASSPORT_BACK                = 'passport_back';
+    const MERCHANT_PASSPORT_FRONT               = 'passport_front';
+    const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
+    const MERCHANT_VOTER_ID_BACK                = 'voter_id_back';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -177,6 +200,8 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+
+    const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -196,8 +221,12 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
@@ -225,6 +254,10 @@ class Type
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
             self::AXIS_NETBANKING_CLAIMS,
+            self::KVB_NETBANKING_REFUND,
+            self::KVB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -263,6 +296,8 @@ class Type
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
             self::ISG_SUMMARY,
+            self::FIRST_DATA_PARES_FILE,
+            self::BULK_DISPUTES_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -270,7 +305,6 @@ class Type
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
             self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
@@ -284,6 +318,15 @@ class Type
             self::MERCHANT_PROMOTER_ADDRESS_URL,
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
+            self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_DRIVER_LICENSE_BACK,
+            self::MERCHANT_AADHAR_FRONT,
+            self::MERCHANT_AADHAR_BACK,
+            self::MERCHANT_PASSPORT_FRONT,
+            self::MERCHANT_PASSPORT_BACK,
+            self::MERCHANT_VOTER_ID_FRONT,
+            self::MERCHANT_VOTER_ID_BACK,
+            self::MERCHANT_CANCELLED_CHECK,
         ],
 
         Constants\Entity::INVOICE => [
@@ -309,7 +352,6 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
-        self::RECONCILIATION_BATCH_OUTPUT,
         self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
@@ -333,6 +375,9 @@ class Type
         self::HDFC_EMANDATE_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::CITI_NACH_DEBIT_SUMMARY,
+        self::CITI_NACH_DEBIT,
+        self::CITI_NACH_REGISTER,
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
@@ -347,12 +392,17 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
         self::SBI_NETBANKING_REFUND,
         self::CBI_NETBANKING_REFUND,
+        self::KVB_NETBANKING_REFUND,
+        self::KVB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,
@@ -388,6 +438,8 @@ class Type
         self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
+        self::FIRST_DATA_PARES_FILE,
+        self::BULK_DISPUTES_FILE,
     ];
 
     /**
@@ -467,11 +519,11 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::FIRST_DATA_PARES_FILE,
         ],
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::ANALYTICS_BUCKET_CONFIG => [
@@ -479,7 +531,7 @@ class Type
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_DEFAULT
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BEAM_BUCKET_CONFIG => [

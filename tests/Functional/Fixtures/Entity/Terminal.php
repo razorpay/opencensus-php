@@ -87,6 +87,8 @@ class Terminal extends Base
         $this->createSharedNetbankingCubTerminal();
         $this->createSharedNetbankingIbkTerminal();
         $this->createSharedNetbankingIdbiTerminal();
+        $this->createSharedNetbankingUbiTerminal();
+        $this->createSharedNetbankingScbTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -98,6 +100,8 @@ class Terminal extends Base
         $this->createSharedFssTerminal();
         $this->createSharedEmandateAxisTerminal();
         $this->createSharedCardlessEmiTerminal();
+        $this->createSharedNetbankingKvbTerminal();
+        $this->createSharedNetbankingKvbTpvTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -416,7 +420,7 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => '3387026421',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1776,6 +1780,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementRefundIciciTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10iciciDrtseTl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'test',
+            'gateway_merchant_id2'      => 'test2',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::NON_RECURRING                 => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -2428,6 +2454,44 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingUbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_UBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_UBI,
+            'gateway_merchant_id'   => 'netbanking_ubi_merchant_id',
+            'netbanking'            => 1,
+            'gateway_secure_secret' => 'random_secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingScbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                            => Shared::NETBANKING_SCB_TERMINAL,
+            'merchant_id'                   => $merchantId,
+            'gateway'                       => Gateway::NETBANKING_SCB,
+            'gateway_merchant_id'           => 'netbanking_scb_merchant_id',
+            'gateway_secure_secret2'        => 'netbanking_scb_decryption_key',
+            'netbanking'                    => 1,
+            'gateway_secure_secret'         => 'netbanking_scb_encryption_key',
+            'gateway_terminal_password'     => 'netbanking_scb_hash_salt',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingCbiTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
@@ -2798,6 +2862,41 @@ class Terminal extends Base
         return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
     }
 
+    public function createDirectSettlementUpiAxisTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpAxTmnl',
+            'merchant_id'               => '10000000000000',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiAxisTerminal($attributes);
+    }
+
+    public function createDirectSettlementUpiMindgateTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DiSeUpMnTmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway_merchant_id'       => 'direct settlement mindgate',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+                Type::PAY                              => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)
     {
         $privateKey = 'MHQCAQEEIPk6R12xwmvV/JJDehGHSrQpNZxE3jmNXHcmgNUY2858oAcGBSuBBAAK' .
@@ -2984,6 +3083,55 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createDirectSettlementAxisMigsTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'axis_migs',
+            'gateway_merchant_id'       => '12345678',
+            'gateway_terminal_id'       => 'abcde1',
+            'gateway_terminal_password' => 'abcdef',
+            'gateway_secure_secret'     => 'supersecret',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createDirectSettlementCybersourceTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cybersource',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createDirectSettlementRefundHdfcTerminal(array $attributes = [])
     {
         $defaultValues = [
@@ -3111,4 +3259,63 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createNachTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => '1citinachDTmnl',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => Gateway::NACH_CITI,
+            'nach'                      => 1,
+            'gateway_merchant_id'       => 'NACH00000000010000',
+            'gateway_acquirer'          => 'RATN0TREASU',
+            'recurring'                 => 1,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+            'type'                      => [
+                Type::RECURRING_3DS     => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedNetbankingKvbTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_KVB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_KVB,
+            'gateway_merchant_id'   => 'netbanking_kvb_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingKvbTpvTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_KVB_TPV_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_KVB,
+            'gateway_merchant_id'   => 'netbanking_kvb_merchant_id',
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
 }

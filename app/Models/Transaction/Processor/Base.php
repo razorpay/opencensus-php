@@ -16,13 +16,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base\Entity as BaseEntity;
-use RZP\Models\Transaction as TransactionModel;
 
 abstract class Base extends BaseCore
 {
@@ -71,7 +71,7 @@ abstract class Base extends BaseCore
         $this->source = $source;
     }
 
-    public function setTransaction(TransactionModel\Entity $txn)
+    public function setTransaction(Transaction\Entity $txn)
     {
         $this->txn = $txn;
     }
@@ -171,9 +171,9 @@ abstract class Base extends BaseCore
     public function setSourceDefaults()
     {
         $txnData = [
-            TransactionModel\Entity::TYPE            => $this->source->getEntity(),
-            TransactionModel\Entity::CURRENCY        => Currency\Currency::INR,
-            TransactionModel\Entity::CHANNEL         => $this->source->merchant->getChannel(),
+            Transaction\Entity::TYPE            => $this->source->getEntity(),
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $this->source->merchant->getChannel(),
         ];
 
         $this->txn->fill($txnData);
@@ -193,19 +193,19 @@ abstract class Base extends BaseCore
 
     protected function createNewTransaction()
     {
-        $txn = new TransactionModel\Entity;
+        $txn = new Transaction\Entity;
 
         $txn->generateId();
 
         //
-        // Ideally we should have used build() here but not doing to avoiding unexpected & silent
-        // bugs/issues because we are in hurry to release x.
+        // Ideally we should have used build() here but not doing to avoid
+        // unexpected & silent bugs/issues because we are in hurry to release x.
         //
         // Call to build() will set defaults in the entity object and hence are accessible in
-        // toArrayPublic() like methods.  Also, mostly defaults of code are same as of database.
+        // toArrayPublic() like methods. Also, mostly defaults of code are same as of database.
         //
         // Needed the following attribute to exist in entity object during creation because immediately
-        // after creatiof of payout's txn we serialize payout with transaction relation. And without this
+        // after creation of payout's txn we serialize payout with transaction relation. And without this
         // line former will fail at setPublicSettlementIdAttribute().
         //
         $txn->setSettled(false);
@@ -267,7 +267,7 @@ abstract class Base extends BaseCore
 
     protected function calculateFeeDefault()
     {
-        $this->txn->setCreditType(TransactionModel\CreditType::DEFAULT);
+        $this->txn->setCreditType(Transaction\CreditType::DEFAULT);
     }
 
     protected function calculateFeeForAmountCredit()
@@ -294,7 +294,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setGratis(true);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::AMOUNT);
+        $this->txn->setCreditType(Transaction\CreditType::AMOUNT);
 
         $this->feesSplit = new BaseCollection\PublicCollection;
     }
@@ -305,7 +305,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setCredits($feeCredits);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::FEE);
+        $this->txn->setCreditType(Transaction\CreditType::FEE);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
@@ -592,7 +592,7 @@ abstract class Base extends BaseCore
      * @param Transaction\Entity $txn
      * @param null               $settledAt
      */
-    public function dispatchForSettlementBucketing(TransactionModel\Entity $txn, $settledAt = null)
+    public function dispatchForSettlementBucketing(Transaction\Entity $txn, $settledAt = null)
     {
         //
         // in case the transaction is not eligible for settlement then

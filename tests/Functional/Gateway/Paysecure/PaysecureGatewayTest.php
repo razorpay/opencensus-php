@@ -135,6 +135,21 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertSuccess($authResponse, 'redirect');
 
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertNotEmpty($payment['reference2']);
+
+        // Assert card vault exist in card entity
+        $card = $this->getDbLastEntityToArray('card');
+        $this->assertNotEmpty($card['vault_token']);
+
+        // Assert card vault token does not added in cache
+        $paymentId = substr($authResponse['razorpay_payment_id'], 4);
+        $cacheKey = sprintf(Gateway::CACHE_KEY, $paymentId);
+
+        $cacheDriver = $this->app['config']->get('cache.secure_default');
+        $redisValue = $this->app['cache']->store($cacheDriver)->get($cacheKey);
+        $this->assertEmpty($redisValue);
+
         return $authResponse;
     }
 
@@ -773,11 +788,12 @@ class PaysecureGatewayTest extends TestCase
     // the hitachi entity would not exist.
     public function testLateAuthorizedViaPurchaseTerminal()
     {
+        // making it direct terminal so that another hitachi terminal doesn't get created with default mode
         $this->fixtures->terminal->edit(
             \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
             [
                 'mode' => 2,
-
+                'merchant_id' => '10000000000000'
             ]
         );
 

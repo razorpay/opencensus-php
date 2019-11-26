@@ -16,6 +16,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
@@ -524,7 +525,16 @@ class FeaturesTest extends TestCase
 
         $this->addFeatures(Mode::LIVE, true);
 
-        Mail::assertNotSent(FeatureEnabledEmail::class);
+        Mail::assertNotQueued(FeatureEnabledEmail::class);
+    }
+
+    public function testEsEligibleEmailNotify()
+    {
+        Mail::fake();
+
+        $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
+
+        Mail::assertQueued(EsEligibleMail::class);
     }
 
     /*
@@ -553,6 +563,17 @@ class FeaturesTest extends TestCase
         $this->startTest();
 
         $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a visible merchant feature: es_automatic.
+     * Should fail if feature es_on_demand is not added to the merchant.
+     */
+    public function testEnableEsAutomaticFeaturesFailure()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     /**
@@ -607,6 +628,19 @@ class FeaturesTest extends TestCase
      */
     public function testAddMerchantEditableFeaturesOnTest()
     {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature es_automatic.
+     * It will delete feature es_on_demand in the process.
+     */
+    public function testAddMerchantEsAutomaticFeatureOnTest()
+    {
+        $this->addFeatures(Mode::TEST, false, [Constants::ES_ON_DEMAND]);
+
         $this->ba->proxyAuthTest();
 
         $this->startTest();

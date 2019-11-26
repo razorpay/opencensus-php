@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Device;
 use RZP\Exception;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -25,6 +26,8 @@ class Core extends Base\Core
 
         if ($existing)
         {
+            $this->validateExistingDevice($existing, $customer);
+
             $existing->edit($input);
 
             // We are going to change the customer here
@@ -58,5 +61,13 @@ class Core extends Base\Core
         }
 
         return $this->repo()->customer->findByIdAndMerchant($customerId, $this->context()->getMerchant());
+    }
+
+    protected function validateExistingDevice(Entity $device, Customer\Entity $customer)
+    {
+        if ($device->getCustomerId() !== $customer->getId())
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_BLONGED_TO_OTHER_CUSTOMER);
+        }
     }
 }

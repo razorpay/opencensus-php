@@ -434,6 +434,8 @@ return [
 
     E::INVOICE => [],
 
+    E::MERCHANT_INVOICE => [],
+
     E::WEBHOOK => [
         Type::PRIVATE_AUTH => [
             [
@@ -453,6 +455,8 @@ return [
     E::STATEMENT => [],
 
     E::MERCHANT_USER => [],
+
+    E::ORDER => [],
 
     E::P2P_DEVICE => [],
 

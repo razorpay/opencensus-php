@@ -80,11 +80,13 @@ class Core extends Base\Core
         $this->validatePricingPlans($input);
 
         (new Validator)->validateSettleToPartner($partner, $input, $subMerchant);
+
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
     }
 
     /**
      * If submerchant config is present, returns it. Else returns associated partners config
-     * 
+     *
      * @param Application\Entity   $application
      * @param Merchant\Entity|null $subMerchant
      *
@@ -143,6 +145,8 @@ class Core extends Base\Core
         $partner = (new Merchant\Core)->getPartnerFromApp($application);
 
         (new Validator)->validateSettleToPartner($partner, $input, $submerchant);
+
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
 
@@ -218,6 +222,15 @@ class Core extends Base\Core
         $appIds = $applications->getIds();
 
         return $this->repo->partner_config->fetchAllConfigForApps($appIds);
+    }
+
+    public function fetchAllDefaultConfigsByPartner(Merchant\Entity $partner): Base\PublicCollection
+    {
+        $configs = $this->fetchAllConfigsByPartner($partner);
+
+        return $configs->filter(function ($config) {
+            return ($config->isDefaultConfig() === true);
+        });
     }
 
     public function fetchAllEnabledConfigGroupsByPartner(Merchant\Entity $merchant)

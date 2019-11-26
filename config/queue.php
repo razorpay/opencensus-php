@@ -201,6 +201,10 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'nach_batch' => [
+        'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+        'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+    ],
     'reconciliation_batch' => [
         'test'       => env('AWS_RECON_QUEUE'),
         'live'       => env('AWS_RECON_QUEUE'),
@@ -314,6 +318,10 @@ return [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
+    'terminal_onboarding_creation'=> [
+        'test'       => env('AWS_TERMINAL_ONBOARDING_CREATION_TEST_QUEUE'),
+        'live'       => env('AWS_TERMINAL_ONBOARDING_CREATION_LIVE_QUEUE'),
+    ],
     'merchant_balance_update' => [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
@@ -334,9 +342,25 @@ return [
         'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
         'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
+    'commission' => [
+        'test'       => env('AWS_COMMISSION_QUEUE'),
+        'live'       => env('AWS_COMMISSION_QUEUE'),
+    ],
+    'fund_account_validation' => [
+        'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+        'live'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+    ],
     'mailing_list_update' => [
         'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),
+    ],
+    'fa_vpa_validation' => [
+        'test'       => env('AWS_FA_VPA_VALIDATION_TEST_QUEUE'),
+        'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
+    ],
+    'payment_card_api_reconciliation' => [
+        'test'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

@@ -22,6 +22,8 @@ class Beneficiary extends FileProcessor
 {
     const BEAM_FILE_TYPE = 'Beneficiary';
 
+    const RZP_FILE_MIME_TYPE  = 'text/plain';
+
     protected $id;
 
     protected $channel = Channel::ICICI;
@@ -167,6 +169,7 @@ class Beneficiary extends FileProcessor
         $creator = new FileStore\Creator;
 
         $file = $creator->extension(FileStore\Format::TXT)
+                        ->mime(self::RZP_FILE_MIME_TYPE)
                         ->content($txt)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)

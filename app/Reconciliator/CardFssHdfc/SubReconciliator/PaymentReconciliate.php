@@ -25,6 +25,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_GATEWAY_FEE              = 'msf_amount';
     const COLUMN_GATEWAY_SERVICE_TAX      = ['msf_tax_amount', 'gst_on_msf'];
     const COLUMN_GATEWAY_SETTLED_AT       = 'settlement_date';
+    const COLUMN_CARD_HOLDER_NAME         = 'card_holder_name';
 
     const SETTLEMENT_DATE_FORMAT     = 'd/m/Y';
 

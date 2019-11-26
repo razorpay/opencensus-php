@@ -51,7 +51,7 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
-        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer,dynamic',
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
@@ -120,11 +120,10 @@ class Repository extends Base\Repository
                       ->where(Entity::ACTIVATED, '=', 1)
                       ->where(Entity::ACTIVATED_AT, '<=', $end)
                       ->where(function ($query)
-                        {
-                            $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
-                                  ->orWhereNull(Entity::PARENT_ID);
-                        })
-                      ->whereIn(Entity::ORG_ID, Org\Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID)
+                      {
+                          $query->whereNotIn(Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                ->orWhereNull(Entity::PARENT_ID);
+                      })
                       ->take($limit)
                       ->skip($skip);
 
@@ -175,6 +174,20 @@ class Repository extends Base\Repository
                     {
                         $q->where('balance', '>', 0);
                     })->get();
+    }
+
+    public function fetchMerchantsWithPricingPlan($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->get();
+    }
+
+    public function fetchMerchantsCountWithPricingPlanId($planId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRICING_PLAN_ID, '=', $planId)
+                    ->count();
     }
 
     public function isMerchantIdRequiredForFetch()
@@ -714,6 +727,43 @@ class Repository extends Base\Repository
         }
 
         return $activatedMerchants;
+    }
+
+    /**
+     * This will give the query object for fetching active merchants
+     *
+     * @return mixed
+     */
+    public function getQueryForActiveMerchants()
+    {
+        $merchantId    = $this->dbColumn(Entity::ID);
+        $activated     = $this->dbColumn(Entity::ACTIVATED);
+        $activatedAt   = $this->dbColumn(Entity::ACTIVATED_AT);
+
+        $activeMerchants = $this->newQuery()
+                                ->select($merchantId)
+                                ->whereNotNull($activatedAt)
+                                ->where($activated, 1);
+
+        return $activeMerchants;
+    }
+
+    public function getPartnerMerchantFromSubMerchantId(string $subMerchantId)
+    {
+        $accessMapRepo = $this->repo->merchant_access_map;
+
+        // db columns
+        $accessMapOwnerId    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+        $accessMapMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantId          = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()
+                      ->select($this->getTableName() . '.*')
+                      ->join(Table::MERCHANT_ACCESS_MAP, $accessMapOwnerId, '=', $merchantId)
+                      ->where($accessMapMerchantId, '=', $subMerchantId);
+
+        return $query->firstOrFail();
     }
 
     public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds): Base\PublicCollection

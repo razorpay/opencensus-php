@@ -34,6 +34,8 @@ class Type
 
     const EMANDATE                  = 'emandate';
 
+    const NACH                      = 'nach';
+
     const PAYOUT                    = 'payout';
 
     const SUB_MERCHANT              = 'sub_merchant';
@@ -47,6 +49,8 @@ class Type
     const INSTANT_ACTIVATION        = 'instant_activation';
 
     const SUBMERCHANT_ASSIGN        = 'submerchant_assign';
+
+    const PRICING_RULE              = 'pricing_rule';
 
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
@@ -75,6 +79,10 @@ class Type
     // iin batches
     const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
 
+    const IIN_HITACHI_VISA      = 'iin_hitachi_visa';
+
+    const IIN_MC_MASTERCARD     = 'iin_mc_mastercard';
+
     const MPAN                  = 'mpan';
 
     public static $disabledTypes = [
@@ -82,7 +90,7 @@ class Type
         // Removing till auth for this is figured out. Other parts of the code aren't
         // removed, since this may be necessary for the YesBank integration as well.
         //
-        self::BANK_TRANSFER,
+        //self::BANK_TRANSFER,
         // Not exposed for direct use via api/dashbaord. Its processor is internally used by other batch types.
         self::CONTACT,
     ];
@@ -90,6 +98,7 @@ class Type
     public static $appTypes = [
         self::RECONCILIATION,
         self::EMANDATE,
+        self::NACH,
         self::BANK_TRANSFER,
         self::ENTITY_MAPPING,
         self::TERMINAL,
@@ -98,7 +107,10 @@ class Type
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
         self::MPAN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -140,6 +152,7 @@ class Type
         self::BANK_TRANSFER,
         self::RECONCILIATION,
         self::EMANDATE,
+        self::NACH,
         self::PAYOUT,
         self::SUB_MERCHANT,
         self::DIRECT_DEBIT,
@@ -158,7 +171,10 @@ class Type
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
         self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
         self::MPAN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -197,6 +213,7 @@ class Type
         self::ENTITY_MAPPING,
         self::LINKED_ACCOUNT,
         self::LINKED_ACCOUNT_REVERSAL,
+        self::INSTANT_ACTIVATION,
     ];
 
     /**
@@ -218,7 +235,9 @@ class Type
     public static $batchTypeMigrating = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::SUBMERCHANT_ASSIGN,
+        self::PRICING_RULE,
     ];
 
     /**
@@ -229,7 +248,11 @@ class Type
     public static $batchTypeMigrationCompleted = [
         self::PAYMENT_LINK,
         self::PAYOUT,
-        self::FUND_ACCOUNT
+        self::FUND_ACCOUNT,
+        self::IIN_NPCI_RUPAY,
+        self::IIN_HITACHI_VISA,
+        self::IIN_MC_MASTERCARD,
+        self::PRICING_RULE,
     ];
 
     public static function exists(string $type)

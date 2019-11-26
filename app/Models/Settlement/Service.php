@@ -7,24 +7,88 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Kotak;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
-use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
 
 class Service extends Base\Service
 {
+    public function getMerchantSettlementAmount($input)
+    {
+
+        (new Validator)->validateInput('settlement_amount', $input);
+
+        $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
+
+        $balance = $this->merchant->getBalanceByType($balanceType);
+
+        $response = [
+            'balance'              => $balance->getBalance(),
+            'settlement_amount'    => 0,
+            'next_settlement_time' => null,
+        ];
+
+        //
+        // This will give wrong result for wealthy merchant on saturdays
+        //
+        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant);
+
+        if ($status === false)
+        {
+            return $response + [
+                'no_settlement' =>  $data
+            ];
+        }
+
+        $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
+
+        $settlementDetails = (new Core)->getMerchantSettlementAmount(
+            $this->merchant,
+            $balance,
+            $nextSettlementTime);
+
+        $response = array_merge($response, $settlementDetails);
+
+        //
+        // settlement amount should be atleast 1rs
+        // and settlement amount shouldn't be more than the available balance
+        //
+        if ($response['settlement_amount'] < 100)
+        {
+            $response += [
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is less than 1 rupee'
+                ],
+            ];
+        }
+        else if ($response['settlement_amount'] > $balance->getBalance())
+        {
+            $response += [
+                'no_settlement' => [
+                    'caption' => 'Settlement might get skipped',
+                    'reason'  => 'Settlement amount is more than the available live balance',
+                ]
+            ];
+        }
+
+        return $response;
+    }
+
     public function initiateSettlements($input, $channel = null)
     {
         (new Validator)->validateInput('settlement_initiate', $input);
 
-        $data = (new Settlement\Processor)->process($input, $channel);
+        $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
+
+        $data = (new Settlement\Processor)->process($input, $channel, $balanceType);
 
         return $data;
     }
@@ -126,7 +190,38 @@ class Service extends Base\Service
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $txns = $this->repo->transaction->fetchBySettlement($setl);
+        // Maps the transaction source to the entities to be fetched for it
+        $txnToRelationFetchMap = [
+            // Maps transaction source to entities that need to be fetched
+            E::PAYMENT  => [E::ORDER, E::CARD],
+            E::REFUND   => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::ADJUSTMENT   => [
+                Adjustment\Entity::ENTITY,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::SETTLEMENT,
+        ];
+
+        $start = microtime(true);
+
+        $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
+
+        $timeTaken = get_diff_in_millisecond($start);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_FETCH,
+            [
+                'merchantId'    => $this->merchant->getId(),
+                'settlement_id' => $id,
+                'txn_count'     => $txns->count(),
+                'time_taken'    => $timeTaken
+            ]);
 
         return $txns->toArrayPublic();
     }
@@ -389,5 +484,21 @@ class Service extends Base\Service
         $redis->del($channelWiseCountKey);
 
         return $this->getProcessDetails();
+    }
+
+    public function getHolidayListForYear(array $input)
+    {
+        (new Validator)->validateInput('settlement_holiday', $input);
+
+        $year = Carbon::now(Timezone::IST)->year;
+
+        if (isset($input['year']) === true)
+        {
+            $year = (int) $input['year'];
+        }
+
+        $data = Holidays::getHolidayListForYear($year);
+
+        return $data;
     }
 }

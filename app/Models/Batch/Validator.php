@@ -10,8 +10,10 @@ use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Http\UserRolesScope;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as ME;
@@ -126,6 +128,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $nachCreateRules = [
+        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:nach',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit',
+        Entity::GATEWAY     => 'required|string',
+    ];
+
     protected static $merchantOnboardingCreateRules = [
         Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE    => 'required|in:merchant_onboarding',
@@ -176,6 +185,17 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $iinHitachiVisaCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $iinMcMastercardCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -730,7 +750,7 @@ class Validator extends Base\Validator
         // After validating contents per row only should do following aggregate validations.
 
         $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
-        $bankingBalance = $merchant->bankingBalance->getBalance();
+        $bankingBalance = $merchant->sharedBankingBalance->getBalance();
 
         if ($totalPayoutAmount > $bankingBalance)
         {
@@ -965,6 +985,27 @@ class Validator extends Base\Validator
             }
 
             $existingTransferIds[] = $transferId;
+        }
+    }
+
+    public function validateBatchTypeForUserRole(string $userRole, string $variant, string $batchType)
+    {
+        $batchTypeRoles = (new UserRolesScope())->getRouteBatchTypeUserRoles($batchType);
+
+        $hasAccess = in_array($userRole, $batchTypeRoles,true);
+
+        /*
+         * there is two conditions
+         * 1. if role does not have access throw error
+         * 2. if current user role has access then check whether role is Epos or Not
+         *  if role is not epos means it can access that route because we are restricting only epos users
+         *  if user role is epos then only those epos role user can access whose MIDs are whitelisted by experiment.
+         */
+        if(($hasAccess === false) or
+           (($userRole === Role::SELLERAPP) and
+            ($variant !== 'on')))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
     }
 }

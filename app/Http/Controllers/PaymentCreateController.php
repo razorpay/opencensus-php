@@ -109,7 +109,7 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
-        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
         {
             $input['view'] = 'html';
@@ -491,7 +491,8 @@ class PaymentCreateController extends Controller
 
                 $templateData = [
                    'data' => $data,
-                   'cdn'  => $this->config->get('url.cdn.production')
+                   'cdn'  => $this->config->get('url.cdn.production'),
+                   'production' => $this->app->environment() === Environment::PRODUCTION,
                 ];
 
                 return View::make('gateway.gatewayOtpPostForm')
@@ -552,8 +553,9 @@ class PaymentCreateController extends Controller
                                    ->with('data', $data);
                     }
                     $templateData = [
-                       'data' => $data,
-                       'cdn'  => $this->config->get('url.cdn.production')
+                       'data'       => $data,
+                       'cdn'        => $this->config->get('url.cdn.production'),
+                       'production' => $this->app->environment() === Environment::PRODUCTION,
                     ];
 
                     return View::make('gateway.gatewayOtpPostForm')
@@ -711,6 +713,7 @@ class PaymentCreateController extends Controller
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+        $postFormData['merchant_id'] = $merchant->getId();
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);
@@ -724,6 +727,7 @@ class PaymentCreateController extends Controller
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+        $postFormData['merchant_id'] = $merchant->getId();
 
         return View::make('public.paymentRedirectPostForm')
                    ->with('data', $postFormData);

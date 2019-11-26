@@ -34,6 +34,14 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
+        throw new Exception\LogicException(
+            'Not a supported action',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
+
         if ($isBharatQr === true)
         {
             $qrData = $this->getQrData($input);
@@ -50,6 +58,14 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        throw new Exception\LogicException(
+            'Not a supported action',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
 
         if ($this->isBharatQrPayment() === true)
         {
@@ -70,6 +86,14 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        throw new Exception\LogicException(
+            'Not a supported action',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
 
         $verify = new Verify($this->gateway, $input);
 
@@ -440,21 +464,18 @@ class Gateway extends Base\Gateway
     {
         if ($valid === true)
         {
-            $content = [
+            $response = [
                 'status'    => 'SUCCESS',
                 'errorMsg'  => '',
             ];
         }
         else
         {
-            $content = [
+            $response = [
                 'status'    => 'Failure',
-                'errorMsg'  => '',
+                'errorMsg'  => $exception->getMessage(),
             ];
         }
-
-        $response['Content-type'] = 'application/json';
-        $response['body'] = $content;
 
         return $response;
     }
@@ -546,6 +567,14 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        throw new Exception\LogicException(
+            'Not a supported action',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Base\Action::AUTHORIZE);
@@ -640,5 +669,15 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                $response, $this->gateway, $this->paymentId);
         }
+    }
+
+    public function createTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::CREATE_TERMINAL, $input, $this->getMode());
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::VERIFY_TERMINAL, $input, $this->getMode());
     }
 }

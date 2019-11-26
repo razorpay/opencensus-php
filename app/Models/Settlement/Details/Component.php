@@ -6,17 +6,19 @@ use RZP\Exception;
 
 class Component
 {
-    const REFUND            = 'refund';
-    const PAYOUT            = 'payout';
-    const PAYMENT           = 'payment';
-    const ADJUSTMENT        = 'adjustment';
-    const FEE               = 'fee';
-    const TAX               = 'tax';
-    const FEE_CREDITS       = 'fee_credits';
-    const REFUND_CREDITS    = 'refund_credits';
-    const TRANSFER          = 'transfer';
-    const REVERSAL          = 'reversal';
-    const DISPUTE           = 'dispute';
+    const REFUND                  = 'refund';
+    const PAYOUT                  = 'payout';
+    const PAYMENT                 = 'payment';
+    const ADJUSTMENT              = 'adjustment';
+    const FEE                     = 'fee';
+    const TAX                     = 'tax';
+    const FEE_CREDITS             = 'fee_credits';
+    const REFUND_CREDITS          = 'refund_credits';
+    const TRANSFER                = 'transfer';
+    const REVERSAL                = 'reversal';
+    const DISPUTE                 = 'dispute';
+    const COMMISSION              = 'commission';
+    const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     public static function validateComponent(string $component)
     {
@@ -41,6 +43,8 @@ class Component
             self::TRANSFER,
             self::REVERSAL,
             self::DISPUTE,
+            self::COMMISSION,
+            self::FUND_ACCOUNT_VALIDATION,
         ];
     }
 }

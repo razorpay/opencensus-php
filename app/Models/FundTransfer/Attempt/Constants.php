@@ -28,7 +28,9 @@ final class Constants
 
     const BANK_PROCESSED_TIME   = 'bank_processed_time';
 
-    const INTERNAL_ERROR      = 'internal_error';
+    const INTERNAL_ERROR        = 'internal_error';
+
+    const IGNORE_TIME_LIMIT     = 'ignore_time_limit';
 
     const MAX_UPI_AMOUNT        = 100000;
 
@@ -49,13 +51,6 @@ final class Constants
     const MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE = 1800;
 
     const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
-
-    const ALLOWED_PRODUCTS_ON_FTS = [
-        EntityConstants::REFUND,
-        EntityConstants::PAYOUT,
-        EntityConstants::FUND_ACCOUNT_VALIDATION,
-        EntityConstants::REFUND,
-    ];
 
     //Card Issuer bank IFSC Code mapping
     const BANK_IFSC = [
@@ -128,10 +123,6 @@ final class Constants
             Network::AMEX         => 'SCBL0036020',
             self::DEFAULT_NETWORK => 'SCBL0036001'
             ],
-    ];
-
-    const VIRTUAL_ACCOUNT_IFSC = [
-        'YESB0CMSNOC'
     ];
 
     const DISABLE              = 'disable';

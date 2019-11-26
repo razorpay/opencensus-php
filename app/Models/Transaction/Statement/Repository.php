@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
 
 /**
@@ -44,6 +45,15 @@ class Repository extends Transaction\Repository
     ];
 
     /**
+     * In GET and LIST for only source of type fund account validation laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypeFAV = [
+        'source.fundAccount.contact',
+        'source.fundAccount.account',
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function findByPublicIdAndMerchantForBankingBalance(
@@ -67,13 +77,22 @@ class Repository extends Transaction\Repository
 
     /**
      * {@inheritDoc}
+     *
+     * This method overrides the fetch method of RepositoryFetch class, params should match the signature of the parent
+     * method.
      */
-    public function fetch(array $input, string $merchantId = null, bool $useSlave = false): PublicCollection
+    public function fetch(array $input,
+                          string $merchantId = null,
+                          bool $useSlave = false,
+                          bool $useMasterReplica = false): PublicCollection
     {
-        $statements = parent::fetch($input, $merchantId, $useSlave);
+        $statements = parent::fetch($input, $merchantId, $useSlave, $useMasterReplica);
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+
+        // After fetching settlement collection, we lazy load source relations for Fund account validation.
+        $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
 
         return $statements;
     }
@@ -82,9 +101,11 @@ class Repository extends Transaction\Repository
     {
         $id = $params[Entity::ID];
 
-        Entity::stripSignOrFail($id);
+        $idColumn = $this->dbColumn(Entity::ID);
 
-        $query->where(Entity::ID, $id);
+        Entity::verifyIdAndStripSign($id);
+
+        $query->where($idColumn, $id);
     }
 
     /**

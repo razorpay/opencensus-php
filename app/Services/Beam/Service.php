@@ -146,7 +146,7 @@ class Service
 
         $request = $traceRequest = [
             'options' => [
-                'timeout' => 70
+                'timeout' => 180
             ],
             'content' => $data,
             'method'  => self::HTTP_POST,

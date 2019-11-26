@@ -4,13 +4,16 @@ namespace RZP\Models\Reversal;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Transaction\Type;
 use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Calculator;
 use Illuminate\Database\Query\JoinClause;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -75,19 +78,15 @@ class Repository extends Base\Repository
     public function fetchFeesAndTaxForRefundByType(
         string $merchantId,
         int $start,
-        int $end,
-        string $filterType)
+        int $end)
     {
         /*
             SELECT Sum(reversals.tax) AS tax,
                    Sum(reversals.fee) AS fee
             FROM   `reversals`
-                   INNER JOIN `refunds`
-                           ON `reversals`.`entity_id` = `refunds`.`id`
             WHERE  `reversals`.`entity_type` = ?
                    AND `reversals`.`created_at` BETWEEN ? AND ?
                    AND `reversals`.`merchant_id` = ?
-                   AND `refunds`.`base_amount` <= ?
             LIMIT  1
          */
         $query = $this->newQuery()
@@ -95,50 +94,17 @@ class Repository extends Base\Repository
             ->where($this->dbColumn(Entity::ENTITY_TYPE), '=', E::REFUND)
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
 
-        $query->join(
-            $this->repo->refund->getTableName(),
-            function(JoinClause $join)
-            {
-                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
-                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
-
-                $join->on($entityIdAttr, $refundIdAttr);
-            });
-
         $query->merchantId($merchantId);
-
-        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
-
-        switch ($filterType)
-        {
-            case InvoiceType::REFUND_LTE_1K:
-                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_1K_LTE_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
-                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            case InvoiceType::REFUND_GT_10K:
-                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
-
-                break;
-
-            default:
-                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
-        }
 
         return $query->first();
     }
 
-    public function fetchFromUtr($utr, $balanceId): Base\Collection
+    public function fetchFromUtr($utr, $amount, $balanceId): Base\Collection
     {
         $reversals = $this->newQuery()
                           ->where(Entity::BALANCE_ID, $balanceId)
                           ->where(Entity::UTR, $utr)
+                          ->where(Entity::AMOUNT, $amount)
                           ->get();
 
         if ($reversals->count() > 1)
@@ -155,4 +121,27 @@ class Repository extends Base\Repository
 
         return $reversals;
     }
+
+    public function fetchSumOfFeesAndTaxForReversalPayoutsByBalanceId($merchantId, $balanceId, $from, $to)
+    {
+        $balanceIDColumn            = $this->dbColumn(Entity::BALANCE_ID);
+        $reversalsEntityIDColumn    = $this->dbColumn(Entity::ENTITY_ID);
+        $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
+
+        $payoutsTaxColumn   = $this->repo->payout->dbColumn(Entity::TAX);
+        $payoutsFeeColumn   = $this->repo->payout->dbColumn(PayoutEntity::FEES);
+        $payoutsIDColumn    = $this->repo->payout->dbColumn(Entity::ID);
+
+        $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax, SUM(' . $payoutsFeeColumn . ') AS fee';
+
+        return $this->newQuery()
+                    ->selectRaw($columns)
+                    ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
+                    ->merchantID($merchantId)
+                    ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
+                    ->whereBetween($reversalsCreatedAtColumn, [$from, $to])
+                    ->where($balanceIDColumn, $balanceId)
+                    ->first();
+    }
+
 }

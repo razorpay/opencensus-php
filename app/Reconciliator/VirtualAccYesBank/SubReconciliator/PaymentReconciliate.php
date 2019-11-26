@@ -22,6 +22,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_TRANS_STATUS       = 'trans_status';
 
     const RECON_STATUS_CREDITED     = 'credited';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYER_NAME,
+    ];
+
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *
@@ -73,6 +80,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
             'utr'           => $row[self::COLUMN_UTR],
             'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
+            'gateway'       => $this->gateway,
         ]);
 
         $this->app['slack']->queue(
@@ -84,15 +92,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'icon'     => ':x:'
             ]
         );
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::BANK_TRANSFER_UNEXPECTED,
-                'message'       => 'Unexpected bank transfer',
-                'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
-                'utr'           => $row[self::COLUMN_UTR],
-                'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
-            ]);
     }
 
     /**

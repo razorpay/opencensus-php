@@ -11,11 +11,14 @@ use RZP\Exception\BadRequestException;
 class GatewayFile extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 5;
-    const RELEASE_WAIT_SECS    = 120;
+    const RELEASE_WAIT_SECS    = 900;
 
     protected $gatewayFileId;
 
     protected $mode;
+
+    // time (in seconds) after which the job is killed.
+    public $timeout = 900;
 
     public function __construct(string $gatewayFileId, string $mode)
     {

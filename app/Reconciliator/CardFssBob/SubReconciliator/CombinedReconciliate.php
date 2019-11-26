@@ -13,6 +13,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const PURCHASE_TXN = 'purchase';
     const REFUND_TXN   = 'refund';
 
+    const BLACKLISTED_COLUMNS = [];
+
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PURCHASE_TXN => Base\Reconciliate::PAYMENT,
         self::REFUND_TXN   => Base\Reconciliate::REFUND
@@ -30,7 +32,12 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow($row)
     {
-        $transactionType = strtolower($row[ReconciliationFields::TRANSACTION_TYPE]);
+        $columnTransactionType = array_first(ReconciliationFields::TRANSACTION_TYPE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $transactionType = strtolower($row[$columnTransactionType]);
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? null ;
     }

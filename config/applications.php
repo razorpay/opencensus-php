@@ -70,12 +70,40 @@ return [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
+        'username'  => env('MOZART_USERNAME'),
+
+        'test'  =>  [
+            'mock'      => env('MOZART_TEST_MOCK', false),
+            'url'       => env('MOZART_TEST_URL'),
+            'password'  => env('MOZART_TEST_PASSWORD'),
+            'username'  => env('MOZART_TEST_USERNAME'),
+        ],
+
+        'live'  =>  [
+            'mock'      => env('MOZART_LIVE_MOCK', false),
+            'url'       => env('MOZART_LIVE_URL'),
+            'password'  => env('MOZART_LIVE_PASSWORD'),
+            'username'  => env('MOZART_LIVE_USERNAME'),
+        ]
+    ],
+
+    'express' => [
+        'mock'      => env('EXPRESS_MOCK', false),
+        'url'       => env('EXPRESS_URL'),
+        'password'  => env('EXPRESS_PASSWORD'),
     ],
 
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'reminders' => [
+        'mock'             => env('REMINDERS_MOCK'),
+        'url'              => env('REMINDERS_URL'),
+        'secret'           => env('REMINDERS_SECRET'),
+        'reminder_secret'  => env('REMINDERS_SERVICE_SECRET')
     ],
 
     'scrooge' => [
@@ -107,13 +135,17 @@ return [
 
     'governor' => [
         'mock'      => env('GOVERNOR_SERVICE_MOCK', false),
-        'smart_routing'=> [
+        'smart_routing' => [
             'username'  => env('GOVERNOR_SMART_ROUTING_SERVICE_KEY'),
             'password'  => env('GOVERNOR_SMART_ROUTING_SERVICE_SECRET'),
         ],
-        'cps'=> [
+        'cps' => [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
+        ],
+        'adminapi'=> [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+            'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
     ],
@@ -311,14 +343,18 @@ return [
         'mock'   => env('FTS_MOCK', false),
         'secret' => env('APP_FTS_SECRET'),
         'test'   => [
-            'url'               => env('FTS_URL_TEST'),
-            'fts_key'           => env('FTS_KEY_TEST'),
-            'fts_secret'        => env('FTS_SECRET_TEST'),
+            'url'                     => env('FTS_URL_TEST'),
+            'fts_key'                 => env('FTS_KEY_TEST'),
+            'fts_secret'              => env('FTS_SECRET_TEST'),
+            'fts_dashboard_key'       => env('FTS_DASHBOARD_KEY_TEST'),
+            'fts_dashboard_secret'    => env('FTS_DASHBOARD_SECRET_TEST'),
         ],
         'live'   => [
-            'url'               => env('FTS_URL_LIVE'),
-            'fts_key'           => env('FTS_KEY_LIVE'),
-            'fts_secret'        => env('FTS_SECRET_LIVE'),
+            'url'                     => env('FTS_URL_LIVE'),
+            'fts_key'                 => env('FTS_KEY_LIVE'),
+            'fts_secret'              => env('FTS_SECRET_LIVE'),
+            'fts_dashboard_key'       => env('FTS_DASHBOARD_KEY_LIVE'),
+            'fts_dashboard_secret'    => env('FTS_DASHBOARD_SECRET_LIVE'),
         ],
     ],
 
@@ -337,6 +373,11 @@ return [
         'password'  => env('SMART_ROUTING_PASSWORD')
     ],
 
+    'doppler' => [
+        'mock'      => env('DOPPLER_MOCK'),
+        'topic'     => env('DOPPLER_SNS_TOPIC')
+    ],
+
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
     ],
@@ -345,5 +386,31 @@ return [
         'mock'     => env('HUBSPOT_MOCK', false),
         'url'      => env('HUBSPOT_URL'),
         'secret'   => env('HUBSPOT_SECRET'),
+    ],
+
+    'hyper_verge' => [
+        'url'     => env('HYPERVERGE_URL'),
+        'app_id'  => env('HYPERVERGE_APP_ID'),
+        'app_key' => env('HYPERVERGE_APP_KEY'),
+        'mock'    => env('HYPERVERGE_MOCK', false),
+    ],
+
+    'mtu_lambda' => [
+        'secret'        => env('MTU_LAMBDA_SECRET'),
+    ],
+
+    'card_payment_service' => [
+        'mock'      => env('CARD_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CARD_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CARD_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('CARD_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('CARD_PAYMENT_SERVICE_TEST_URL'),
+        ],
+    ],
+
+
+    'automation' => [
+        'secret' => env('AUTOMATION_API_SECRET'),
     ],
 ];

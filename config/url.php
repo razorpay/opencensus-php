@@ -14,6 +14,7 @@ return [
     'checkout' => [
         'production' =>  env('CHECKOUT_URL'),
         'beta'       =>  env('BETA_CHECKOUT_URL'),
+        'canary'     =>  env('CANARY_CHECKOUT_URL'),
     ],
 
     'cdn' => [

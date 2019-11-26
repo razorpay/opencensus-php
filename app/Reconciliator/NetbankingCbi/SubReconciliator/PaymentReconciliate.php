@@ -11,6 +11,8 @@ use RZP\Gateway\Mozart\NetbankingCbi\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconFields::PAYMENT_ID] ?? null;

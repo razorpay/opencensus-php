@@ -17,6 +17,8 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const TXN_REFUND         = 'refunded';              // refund
     const TXN_PAYMENT        = 'captured';              // payment
 
+    const BLACKLISTED_COLUMNS = [];
+
     /**
      * We get two types of excels for EBS recon
      * Since we do not know what kind of file it would be

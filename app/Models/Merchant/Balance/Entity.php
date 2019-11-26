@@ -151,12 +151,12 @@ class Entity extends Base\PublicEntity
 
     public function isTypePrimary(): bool
     {
-        return $this->getType() === Type::PRIMARY;
+        return ($this->getType() === Type::PRIMARY);
     }
 
     public function isTypeBanking(): bool
     {
-        return $this->getType() === Type::BANKING;
+        return ($this->getType() === Type::BANKING);
     }
 
     public function getName()
@@ -186,7 +186,12 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(\RZP\Models\Merchant\Invoice\Entity::class);
     }
 
     public function bankingAccount()

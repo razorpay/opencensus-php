@@ -2,14 +2,20 @@
 
 namespace RZP\Models\Merchant\Balance;
 
-use RZP\Constants\Product;
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
+    const COMMISSION_BALANCE_CREATE_MUTEX_PREFIX = 'commission_balance_';
+    const COMMISSION_BALANCE_CREATE_LOCK_TIMEOUT = 30; // seconds
+
     /**
      * @param Merchant\Entity $merchant
      * @param array           $input
@@ -19,6 +25,14 @@ class Core extends Base\Core
      */
     public function create(Merchant\Entity $merchant, array $input, string $mode): Entity
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_CREATE_REQUEST,
+            [
+                'input' => $input,
+                'mode'  => $mode,
+            ]
+        );
+
         $balance = (new Entity)->build($input);
 
         $balance->setConnection($mode);
@@ -62,6 +76,37 @@ class Core extends Base\Core
         }
 
         return $balance;
+    }
+
+    /**
+     * Fetches commission balance for a merchant and create if not exists
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $mode
+     *
+     * @return Entity
+     */
+    public function createOrFetchCommissionBalance(Merchant\Entity $merchant, string $mode): Entity
+    {
+        $balance = $merchant->commissionBalance;
+
+        if ($balance !== null)
+        {
+            return $balance;
+        }
+
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = self::COMMISSION_BALANCE_CREATE_MUTEX_PREFIX. $merchant->getKey();
+
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchant, $mode)
+            {
+                return $this->createOrFetchBalance($merchant, Type::COMMISSION, $mode);
+            },
+            self::COMMISSION_BALANCE_CREATE_LOCK_TIMEOUT,
+            ErrorCode::COMMISSION_BALANCE_CREATE_ALREADY_IN_PROGRESS);
     }
 
     public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
@@ -123,7 +168,7 @@ class Core extends Base\Core
         int $amount,
         string $balanceType = Type::PRIMARY) : bool
     {
-        $balance = $merchant->getBalanceByProductTypeOrFail($balanceType);
+        $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
         if ($balance->getBalance() < $amount)
         {

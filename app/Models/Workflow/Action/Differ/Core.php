@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action\Differ;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -12,6 +13,8 @@ use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Workflow\Action\Differ;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Core extends Base\Core
@@ -146,15 +149,50 @@ class Core extends Base\Core
 
             if ($mock === false)
             {
+                //
+                // ES does not store sequential array, so if notes comes as sequential array,
+                // need to convert it to associative array prepending "notes_key_"
+                //
+                // Input:
+                // "notes": [
+                //    	"Testing approve workflow"
+                //	]
+                //
+                // Outout:
+                // "notes": {
+                //    	"notes_key_0": "Testing approve workflow"
+                //	}
+                //
+                $notes = $differ[Differ\Entity::DIFF][Differ\Entity::NEW][Payout\Entity::NOTES] ?? [];
+
+                $keyDiff = array_diff(range(0, count($notes) - 1), array_keys($notes));
+
+                if ((empty($notes) === false) and
+                    (count($keyDiff) === 0))
+                {
+                    $notesDict = [];
+
+                    for ($pos = 0; $pos < count($notes); $pos++)
+                    {
+                        $notesDict["notes_key_{$pos}"] = $notes[$pos];
+                    }
+
+                    $differ[Differ\Entity::PAYLOAD][Payout\Entity::NOTES] = $notesDict;
+
+                    $differ[Differ\Entity::DIFF][Differ\Entity::NEW][Payout\Entity::NOTES] = $notesDict;
+                }
+
                 $this->esDao->storeAdminEvent(
                     strtolower($this->baseIndex), self::ES_TYPE, $differ);
             }
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            $this->trace->warning(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::HEIMDALL_ACTION_LOG_FAIL,
-                ['msg' => $e]);
+                $differ);
         }
     }
 

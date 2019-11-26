@@ -6,11 +6,22 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
+use RZP\Models\Admin\File;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
     const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+
+    // Max allowed file size - 30MB (30*1024*1024).
+    const MAX_FILE_SIZE = 31457280;
+
+    const ACCEPTED_EXTENSIONS = [
+        FileStore\Format::CSV,
+        FileStore\Format::XLS,
+        FileStore\Format::XLSX,
+    ];
 
     protected static $createRules = [
         Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
@@ -114,6 +125,17 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateBulkDisputeRequest(array $input)
+    {
+        if (empty($input[File\Core::FILE]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'file should be attached in the request to create disputes in bulk',
+                File\Core::FILE,
+                $input);
+        }
+    }
+
     /**
      *  We ensured via $editRules that $input[Entity::ACCEPTED_DISPUTE_AMOUNT] must be positive value.
      *  Here we put an upper limit to value of same.
@@ -195,6 +217,64 @@ class Validator extends Base\Validator
                 'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
                 Entity::DEDUCT_AT_ONSET,
                 $input);
+        }
+    }
+
+    // Checks if values are same in both arrays irrespective of the order for non-associative arrays
+    public function validateArrayEqual(array $a, array $b) : bool
+    {
+        return ((count($a) === count($b)) and (array_diff($a, $b) === array_diff($b, $a)));
+    }
+
+    /**
+     * Return y/Y value to true, n/N to false and other values as validation failures
+     *
+     * @param $res
+     * @return bool
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateCustomBoolean($res) : bool
+    {
+        $res = strtoupper($res);
+
+        switch ($res)
+        {
+            case 'Y':
+                return true;
+
+            case 'N':
+                return false;
+
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    'Skip field value should be Y/N'
+                );
+        }
+    }
+
+    /**
+     * Validates if the file size is within the limits and
+     * validates if extension is as expected.
+     *
+     * @param $file
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkDisputesFile($file)
+    {
+        if ($file->getSize() > self::MAX_FILE_SIZE)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'File Size exceeds max allowed size of 30MB'
+            );
+        }
+
+        $extension = $file->getClientOriginalExtension();
+
+        if (in_array($extension, self::ACCEPTED_EXTENSIONS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid File extension. Only '. implode(", ", self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
+            );
         }
     }
 }

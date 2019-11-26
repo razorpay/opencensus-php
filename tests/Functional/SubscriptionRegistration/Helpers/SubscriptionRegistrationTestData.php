@@ -481,5 +481,46 @@ return [
             ],
         ],
     ],
+
+    'testCancelAuthLinkWithCardMandate' => [
+        'request' => [
+            'url' => '/subscription_registration/auth_links/inv_1000000invoice/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'inv_1000000invoice',
+                'entity' => 'invoice',
+                'status' => 'cancelled',
+            ],
+        ],
+    ],
+
+    'testCancelAuthLinkWithBankMandate' => [
+        'request' => [
+            'url' => '/subscription_registration/auth_links/inv_1000000invoice/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'inv_1000000invoice',
+                'entity' => 'invoice',
+                'status' => 'cancelled',
+            ],
+        ],
+    ],
+
+    'testCancelAuthLinksViaBatch' => [
+        'request' => [
+            'url' => '/subscription_registration/auth_links/batch/batch_100000000batch/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

@@ -7,16 +7,15 @@ use Cache;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Payment;
-use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
-use RZP\Models\FundAccount;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
@@ -37,9 +36,6 @@ abstract class Base extends BaseModel\Core
     const RZP_STATE = 'KA';
 
     const CARD_TAX_CUT_OFF = 200000;
-
-    const REFUND_SLAB1_TAX_CUT_OFF = 100000;
-    const REFUND_SLAB2_TAX_CUT_OFF = 1000000;
 
     /**
      * For which fees needs to be calculated.
@@ -100,6 +96,13 @@ abstract class Base extends BaseModel\Core
         return ($entity->merchant->isFeeBearerCustomer() === true);
     }
 
+    protected function isFeeBearerCustomerOrDynamic()
+    {
+        $entity = $this->entity;
+
+        return ($entity->merchant->isFeeBearerCustomerOrDynamic() === true);
+    }
+
     /**
      * Gets pricing calculator for entity
      */
@@ -151,7 +154,7 @@ abstract class Base extends BaseModel\Core
     {
         $amount = $this->amount;
 
-        // In case the merchant is customer fee bearer, we shouldn't check
+        // In case the payment is customer fee bearer, we shouldn't check
         // $amount <= $totalFees because amount is already inclusive of the fees.
         if ($this->isFeeBearerCustomer() === true)
         {
@@ -191,7 +194,9 @@ abstract class Base extends BaseModel\Core
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->getBalanceByProductType($this->product);
+        $balanceType = Balance\Type::getTypeForProduct($this->product);
+
+        $merchantBalance = $this->entity->merchant->getBalanceByType($balanceType);
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
@@ -300,9 +305,7 @@ abstract class Base extends BaseModel\Core
                 ]);
         }
 
-        $subventionType = $payment->merchant->getSubventionType();
-
-        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
+        $rule = $this->chooseRuleWithAmount($rules, $amount);
 
         if ($rule === null)
         {
@@ -382,11 +385,10 @@ abstract class Base extends BaseModel\Core
      *
      * @param $rules
      * @param $amount
-     * @param $subventionType
      *
      * @return null
      */
-    protected function chooseRuleWithAmount($rules, $amount, $subventionType)
+    protected function chooseRuleWithAmount($rules, $amount)
     {
         return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
     }
@@ -605,7 +607,7 @@ abstract class Base extends BaseModel\Core
 
             $amount = $this->amount;
 
-            if ($payment->merchant->isFeeBearerCustomer() === true)
+            if ($payment->isFeeBearerCustomer() === true)
             {
                 $amount = $amount + $fee;
             }

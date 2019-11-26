@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Entity as E;
+use RZP\Gateway\GatewayManager;
 
 class CorePaymentServiceSync extends Job
 {
@@ -92,8 +93,9 @@ class CorePaymentServiceSync extends Job
 
         $action = $this->data[self::INPUT][E::ACTION];
 
-        $gatewaySync = 'RZP\Gateway\\' . studly_case($gateway) . '\\CpsGatewayEntitySync';
+        $namespace = (new GatewayManager($app))->getCpsServiceSyncDriver($gateway);
 
+        $gatewaySync = $namespace . '\\CpsGatewayEntitySync';
         if (class_exists($gatewaySync) === false)
         {
             // We are storing all gateway entities in mozart table for now
