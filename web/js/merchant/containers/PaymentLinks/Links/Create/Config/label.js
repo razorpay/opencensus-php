@@ -19,7 +19,7 @@
 
 const LABEL_MAP = {
   receipt: {
-    defaultLabel: 'receipt',
+    defaultLabel: 'Receipt No.',
     alias: [
       {
         label: 'Reference Number',
