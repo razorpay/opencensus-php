@@ -1577,6 +1577,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
+    const CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY      = 'CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';

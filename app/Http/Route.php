@@ -1176,7 +1176,7 @@ final class Route
         'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
-        //TODO: This is a hack, till batch changes with new endpoint are deployed in production
+        //TODO: This is a hack, till batch changes with new endpoint are deployed in production - https://razorpay.atlassian.net/browse/RX-798
         'bulk_contact_create'                      => ['post',     'contacts/bulk',                                  'FundAccountController@createFundAccountBulk'                       ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],

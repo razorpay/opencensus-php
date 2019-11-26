@@ -5,7 +5,6 @@ namespace RZP\Models\Contact;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**
@@ -31,6 +30,10 @@ class Core extends Base\Core
 
             if ($result !== null)
             {
+                $this->trace->info(TraceCode::CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY,
+                    ['input' => $result->toArrayPublic(),
+                     Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]]);
+
                 return $result;
             }
         }
