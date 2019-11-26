@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
@@ -34,11 +35,15 @@ class BankingAccountTest extends TestCase
 
     public function testCreateBankingAccount()
     {
+        Mail::fake();
+
         $this->startTest();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        Mail::assertQueued(XProActivation::class);
     }
 
     public function testCreateBankingAccountTwiceForSameMerchant()
