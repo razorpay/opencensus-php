@@ -591,6 +591,8 @@ final class Route
         'invoice_get_status'                       => ['get',      'invoices/{x_entity_id}/status',                  'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                        => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                        => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
+        'invoice_view_live_preferences_test'       => ['get',      'l/{id}/test',                                    'InvoiceController@getInvoiceViewForTest'                           ],
+        'invoice_view_test_preferences_test'       => ['get',      't/{id}/test',                                    'InvoiceController@getInvoiceViewForTest'                           ],
         'invoice_cancel'                           => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                      => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_issue_by_batch'                   => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
@@ -2585,7 +2587,7 @@ final class Route
         'fts_dashboard_fund_transfer_check_status',
         'fts_dashboard_raw_bank_status',
 
-		'create_merchant_options_admin',
+        'create_merchant_options_admin',
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
@@ -3129,6 +3131,8 @@ final class Route
         'pages_view_by_slug',
         'invoice_view_live',
         'invoice_view_test',
+        'invoice_view_live_preferences_test',
+        'invoice_view_test_preferences_test',
         'invoice_view_live_post',
         'invoice_view_test_post',
         'subscription_view_live',
