@@ -25,7 +25,7 @@ import ReminderSettings from 'merchant/components/Reminders/Settings';
       config => config.reminder_config.namespace === 'payment_link'
     );
 
-    const withExpireByConfigs = [],
+    let withExpireByConfigs = [],
       withOutExpireByConfigs = [],
       withExpireByMerchantConfigs = [],
       withOutExpireByMerchantConfigs = [],
@@ -44,13 +44,26 @@ import ReminderSettings from 'merchant/components/Reminders/Settings';
     merchantConfig.forEach(ele => {
       ele.channels.forEach(ele => channels.add(ele));
 
-      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
-        withExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
+      const reminderOption = serializeConfig(ele.reminder_config, true);
 
+      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
+        withExpireByMerchantConfigs.push(reminderOption);
+
+        withExpireByConfigs = withExpireByConfigs.map(item => {
+          if (item.value === reminderOption.value) return reminderOption;
+
+          return item;
+        });
         return;
       }
 
-      withOutExpireByMerchantConfigs.push(serializeMerchantConfig(ele));
+      withOutExpireByMerchantConfigs.push(reminderOption);
+
+      withOutExpireByConfigs = withOutExpireByConfigs.map(item => {
+        if (item.value === reminderOption.value) return reminderOption;
+
+        return item;
+      });
     });
 
     return {
@@ -170,14 +183,10 @@ export default class PaymentLinksSettings extends React.Component {
   }
 }
 
-function serializeConfig(item) {
+function serializeConfig(item, isSelected) {
   return {
     label: item.title,
     value: item.id,
-    disabled: false,
+    disabled: !!isSelected,
   };
-}
-
-function serializeMerchantConfig(item) {
-  return serializeConfig(item.reminder_config);
 }
