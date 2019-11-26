@@ -306,21 +306,24 @@ class PricingTest extends TestCase
      */
     public function testAddPricingRuleWithFeeBearerMismatch()
     {
-        $merchant1 = $this->fixtures->create('merchant', ['fee_bearer' => 'customer']);
-
-        $merchant2 = $this->fixtures->create('merchant', ['fee_bearer' => 'customer']);
-
-
         $plan = $this->createPricingPlan();
 
-        $merchant1->setPricingPlan($plan['id']);
-        $merchant2->setPricingPlan($plan['id']);
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $plan['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
 
         $testData['request']['url'] = '/pricing/'. $plan['id'] . '/rule';
 
         $this->ba->adminAuth();
 
-        $this->startTest($testData);
+        $response = $this->startTest($testData);
+
+        $this->assertContains('Unable to add rule to plan', $response['description']);
     }
 
     public function testUpdatePricingPlanRule()

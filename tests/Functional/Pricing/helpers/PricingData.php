@@ -1177,10 +1177,17 @@ return [
             'method' => 'POST'
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'error'   => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'fee_bearer'
+                ]
+            ],
+            'status_code'   => 400
         ],
         'exception' => [
-            'class'     => \RZP\Exception\BadRequestValidationFailureException::class
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
