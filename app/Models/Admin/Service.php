@@ -891,7 +891,8 @@ class Service extends Base\Service
             $response = (new MozartBase($this->app))->sendMozartRequest($input['namespace'],
                 $input['gateway'],
                 $input['action'],
-                $payload);
+                $payload,
+                $input['version']);
 
             $this->trace->info(TraceCode::MOZART_ACTION_COMPLETED, $response);
         }
