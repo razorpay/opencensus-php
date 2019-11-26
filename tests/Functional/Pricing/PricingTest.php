@@ -1054,13 +1054,13 @@ class PricingTest extends TestCase
         $this->assertNotEmpty($response);
     }
 
-    protected function assignPricingPlanToMerchant($merchantId = '10000000000000')
+    protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
 
-        $this->setDefaultMerchantMethods($merchantId);
+        $this->setDefaultMerchantMethods();
 
-        return $this->merchantAssignPricingPlan($id, $merchantId);
+        return $this->merchantAssignPricingPlan($id, '10000000000000');
     }
 
     protected function createCommissionPlan($pricingPlan = [])
