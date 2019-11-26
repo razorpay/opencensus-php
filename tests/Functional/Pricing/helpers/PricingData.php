@@ -1233,6 +1233,28 @@ return [
         ],
     ],
 
+    'testUpdatePricingPlanFeeBearerMismatch' => [
+        'request' => [
+            'content' => [
+                'percent_rate'  => 20,
+                'fee_bearer'    => 'platform'
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testUpdatePricingPlanRuleByRZPAdmin' => [
         'request'  => [
             'content' => [

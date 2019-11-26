@@ -352,6 +352,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to update a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testUpdatePricingPlanFeeBearerMismatch()
+    {
+        $content = $this->createPricingPlan2();
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/' . $content['rules'][0]['id'];
+
+        $this->startTest($testData);
+
+
+    }
     /**
      * RZP admin will be able to update the pricing plan for SBI or any other organisation.
      * Here, we are testing the case where RZP admin is updating SBI pricing plan rule.
