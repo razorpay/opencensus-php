@@ -557,6 +557,7 @@ class OffersPaymentTest extends TestCase
 
     }
 
+
     public function testInstantDefaultOfferWithBlockSetFalse()
     {
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,
@@ -589,6 +590,68 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($payment['id'], $discount['payment_id']);
         $this->assertEquals($order['id'], $discount['order_id']);
         $this->assertEquals($order['offer_id'], $discount['offer_id']);
+    }
+
+    public function testInstantDefaultOfferNotValidWithBlockSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false,
+            'default_offer' => true, 'type' => 'instant']);
+
+        $order = $this->createOrder();
+
+        $payment = $this->getOrderPaymentArrayFromOrderApi($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 50000, 'INR', 50000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(50000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+
+
+    public function testAlreadyDiscountedDefaultOfferWithBlockSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,
+            'default_offer' => true, 'type' => 'already_discounted']);
+
+        $order = $this->createOrder();
+
+        $payment = $this->getOrderPaymentArrayFromOrderApi($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 50000, 'INR', 50000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(50000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
     }
 
 
