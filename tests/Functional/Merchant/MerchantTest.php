@@ -2061,6 +2061,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         $this->startTest();
@@ -2131,6 +2132,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         $offer2 = $this->fixtures->create('offer:wallet', [
