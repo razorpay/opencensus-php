@@ -1311,6 +1311,9 @@ final class Route
 
         //route for updating merchant mtu
         'merchant_mtu_update'                     => ['post',       'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+
+        // Route for Success Rate Global Configurations
+        'create_sr_level_global_config'           => ['post',       'create_sr_config',                                        'SuccessRateController@proxy'                              ],
     ];
 
     public static $public = [
@@ -2509,6 +2512,9 @@ final class Route
         //FTS Dashboard routes
         'fts_dashboard_fund_transfer_update',
         'fts_dashboard_fund_transfer_status_bulk',
+
+        // SuccessRate Config Routes
+        'create_sr_level_global_config',
     ];
 
     public static $routePermission = [
@@ -3021,6 +3027,7 @@ final class Route
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'reports_monthly_banking_invoice'           => '*',
+        'create_sr_level_global_config'             => '*',
     ];
 
     public static $direct = [
