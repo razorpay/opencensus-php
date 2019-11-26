@@ -788,6 +788,60 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Unserviceable::class);
     }
 
+    public function testUpdateOnDiffBankInternalStatus()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'initiated',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'processing',
+                ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status'               => 'processing',
+                'bank_internal_status' => 'open'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getLastEntity('banking_account', true);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('initiated', $logs['items'][1]['status']);
+        $this->assertEquals('processing', $logs['items'][2]['status']);
+        $this->assertNull($logs['items'][2]['bank_status']);
+        $this->assertEquals('processing', $logs['items'][3]['status']);
+        $this->assertEquals('open', $logs['items'][3]['bank_status']);
+    }
     public function testUpdatedStatusFromProcessingToRejected()
     {
         $bankingAccount = $this->createBankingAccount();

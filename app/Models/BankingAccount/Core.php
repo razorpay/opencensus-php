@@ -276,6 +276,12 @@ class Core extends Base\Core
 
         $bankingAccount->edit($input);
 
+        // we need to store change log only when the
+        // status has changed.
+        $bankInternalStatusChanged = $bankingAccount->isDirty(Entity::BANK_INTERNAL_STATUS);
+
+        $bankingAccountStatusChanged = $bankingAccount->isDirty(Entity::STATUS);
+
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
@@ -316,11 +322,8 @@ class Core extends Base\Core
         // relations. So explicitly fetching this relation here
         $bankingAccount->load('bankingAccountDetails');
 
-        // we need to store change log only when the
-        // status has changed.
-        $newStatus = $bankingAccount->getStatus();
-
-        if ($oldStatus !== $newStatus)
+        if (($bankInternalStatusChanged === true) or
+            ($bankingAccountStatusChanged === true))
         {
             $stateCore = new State\Core;
 
