@@ -252,6 +252,15 @@ class Core extends Base\Core
     // Associate
     public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
+        if ($subr->getMethod() === Method::NACH)
+        {
+            $paperMandate = $subr->paperMandate;
+
+            $paperMandate->setStatus(PaperMandate\Status::AUTHENTICATED);
+
+            $this->repo->saveOrFail($paperMandate);
+        }
+
         $this->repo->reload($subr);
 
         $subr->token()->associate($token);

@@ -42,8 +42,9 @@ class PaperMandatePaymentTest extends TestCase
                 'amount' => 0,
                 E::SUBSCRIPTION_REGISTRATION => [
                     E::PAPER_MANDATE => [
-                        'amount' => 0,
-                        PaperMandate\Entity::STATUS => PaperMandate\Status::AUTHENTICATED,
+                        PaperMandate\Entity::AMOUNT           => 0,
+                        PaperMandate\Entity::STATUS           => PaperMandate\Status::CREATED,
+                        PaperMandate\Entity::UPLOADED_FILE_ID => '10000000000000',
                     ],
                 ],
             ],
@@ -126,7 +127,7 @@ class PaperMandatePaymentTest extends TestCase
                             'token_id' => '100000000token',
                             E::PAPER_MANDATE => [
                                 'amount' => 0,
-                                'status' => PaperMandate\Status::AUTHENTICATED,
+                                'uploaded_file_id' => '1000000000file',
                             ],
                         ],
                     ],
