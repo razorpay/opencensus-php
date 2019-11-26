@@ -52,4 +52,9 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchTotalNumberOfElements()
+    {
+        return $this->newQuery()->count();
+    }
 }

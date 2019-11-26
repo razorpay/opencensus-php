@@ -73,7 +73,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetAllPayoutAmountRules()
+    public function testGetAllPayoutAmountRulesWithPaginationLinks()
     {
 //        sd(DB::table('merchants')->select('id')->get());
 
@@ -120,7 +120,12 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             $entry['id'] = $index++;
             $this->fixtures->create('workflow_payout_amount_rules', $entry);
         }
-        $this->startTest();
+        $responseContent = $this->startTest();
+        $this->assertEquals($responseContent['links'][0]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=2');
+        $this->assertEquals($responseContent['links'][1]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=0');
+        $this->assertEquals($responseContent['links'][2]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=0');
+        $this->assertEquals($responseContent['links'][3]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=4');
+        $this->assertEquals($responseContent['links'][4]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=4');
     }
 
     public function testGetMerchantWorkflowPayoutAmountRules()

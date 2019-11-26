@@ -201,34 +201,46 @@ return [
         ],
     ],
 
-    'testGetAllPayoutAmountRules' => [
+    'testGetAllPayoutAmountRulesWithPaginationLinks' => [
         'request' => [
             'method'  => 'get',
-            'url'     => '/workflows/rules/payout_amount/all?count=3&skip=2',
+            'url'     => '/workflows/rules/payout_amount/all?count=2&skip=2',
             'content' => [],
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id'  => '10000000000000',
-                    'condition'  => null,
-                    'min_amount'  => 1001,
-                    'max_amount'  => null,
-                    'workflow_id'  => 'workflowId1000',
+                'items' => [
+                    [
+                        'merchant_id'  => '10000000000000',
+                        'condition'  => null,
+                        'min_amount'  => 1001,
+                        'max_amount'  => null,
+                        'workflow_id'  => 'workflowId1000',
+                    ],
+                    [
+                        'merchant_id'  => '10000000000000',
+                        'condition'  => null,
+                        'min_amount'  => 0,
+                        'max_amount'  => 100,
+                        'workflow_id'  => 'workflowId1001',
+                    ]
                 ],
-                [
-                    'merchant_id'  => '10000000000000',
-                    'condition'  => null,
-                    'min_amount'  => 0,
-                    'max_amount'  => 100,
-                    'workflow_id'  => 'workflowId1001',
-                ],
-                [
-                    'merchant_id'  => '10000000000000',
-                    'condition'  => null,
-                    'min_amount'  => 101,
-                    'max_amount'  => null,
-                    'workflow_id'  => 'workflowId1001',
+                'links' => [
+                    [
+                        'rel'  =>   'self',
+                    ],
+                    [
+                        'rel'  =>   'first',
+                    ],
+                    [
+                        'rel'  =>   'prev',
+                    ],
+                    [
+                        'rel'  =>   'next',
+                    ],
+                    [
+                        'rel'  =>   'last',
+                    ]
                 ]
             ]
         ]

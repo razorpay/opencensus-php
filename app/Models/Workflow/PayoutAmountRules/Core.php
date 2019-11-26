@@ -102,4 +102,76 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function getWorkflowRules($merchantId = null)
+    {
+        // Assuming admin auth initially
+        $auth = 'admin';
+
+        // If merchant id is passed through headers and not url
+        if($this->merchant)
+        {
+            $merchantId = $this->merchant->getId();
+            $auth = 'proxy';
+        }
+
+        $amountRules = $this->repo
+            ->workflow_payout_amount_rules
+            ->fetchWorkflowRulesForMerchant($merchantId);
+
+        if($auth == 'proxy')
+        {
+            return $amountRules->toArrayPublic();
+        }
+        else
+        {
+            return $amountRules->toArrayAdmin();
+        }
+    }
+
+    public function getAllWorkflowRules($limit, $offset)
+    {
+        return $this->repo
+            ->workflow_payout_amount_rules
+            ->fetchAllWorkflowRules($limit, $offset)
+            ->toArray();
+    }
+
+    public function getAllWorkflowRulesWithPaginationLinks($limit, $offset)
+    {
+        $items = $this->getAllWorkflowRules($limit, $offset);
+        $links = [];
+        $total = $this->repo->workflow_payout_amount_rules->fetchTotalNumberOfElements();
+        $links[] = [
+            "rel"   => "self",
+            "href"  => url()->full()
+        ];
+        $links[] = [
+            "rel"   => "first",
+            "href"  => url()->current()."?count=".$limit."&skip=0"
+        ];
+        if($offset >= $limit)
+        {
+            $links[] = [
+                "rel"   => "prev",
+                "href"  => url()->current()."?count=".$limit."&skip=".($offset-$limit)
+            ];
+        }
+        if($offset+$limit < $total)
+        {
+            $links[] = [
+                "rel"   => "next",
+                "href"  => url()->current()."?count=".$limit."&skip=".($offset+$limit)
+            ];
+        }
+        $links[] = [
+            "rel"   => "last",
+            "href"  => url()->current()."?count=".$limit."&skip=".($total - (($total%$limit)?($total%$limit):$limit))
+        ];
+        $data = [
+            "items" => $items,
+            "links" => $links
+        ];
+        return $data;
+    }
 }
