@@ -112,8 +112,8 @@ export default class FlashCheckout extends Component {
       // If international profiling(whitelist-blacklist-graylist) is set
       if (user.international_activation_flow) {
         /*
-         * For GrayList(international) if L1 submitted but not L2.
-         * */
+        * For GrayList(international) if L1 submitted but not L2.
+        * */
         if (
           !user.submitted &&
           user.internationalActivationFlow.isGraylistFlow

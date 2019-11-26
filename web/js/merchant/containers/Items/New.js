@@ -521,12 +521,14 @@ export default class AddItem extends Component {
                     />
                   </div>
                 </div>
-                {!showTaxes && item && item.id && (
-                  <p>
-                    Note: The updated item details will be reflected everywhere
-                    in the future.
-                  </p>
-                )}
+                {!showTaxes &&
+                  item &&
+                  item.id && (
+                    <p>
+                      Note: The updated item details will be reflected
+                      everywhere in the future.
+                    </p>
+                  )}
                 {(!showTaxes || isNonINR) && (
                   <div class="Modal__actions">
                     <AsyncButton
@@ -541,125 +543,127 @@ export default class AddItem extends Component {
                 )}
               </div>
             </div>
-            {showTaxes && !isNonINR && (
-              <div class="row ItemCreationModal__TaxContainer">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Tax Rate</label>
-                    <PowerSelect
-                      class="CheckableItem__PowerSelect ps-in-modal"
-                      placeholder="Select Tax Rate"
-                      options={gstRates}
-                      selected={taxRate}
-                      optionComponent={this.getTaxRateComponent}
-                      onChange={({ option = null }) => {
-                        this.props.change('tax_rate', option);
-                      }}
-                      searchEnabled={false}
-                    />
-                    <div class="row">
-                      <div
-                        class="col-md-12"
-                        style={{ fontSize: '0.85em', marginTop: '4px' }}
-                      >
-                        Tax breakup will be calculated automatically.
-                      </div>
-                    </div>
-                  </div>
-
-                  {showCessForm ? (
-                    cessForm
-                  ) : (
-                    <div class="row CreateItemModal__cess-form">
-                      <div class="col-md-12">
-                        <span
-                          class="text-primary cursor-pointer"
-                          onClick={e => this.setState({ showCessForm: true })}
-                        >
-                          + Add Cess
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {showTaxRadios ? (
-                    <Fragment>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <Field
-                            name="tax_inclusive"
-                            component={RadioButton}
-                            htmlValue="1"
-                            label="Tax Inclusive"
-                          />
-                        </div>
-                        <div class="col-md-6">
-                          <Field
-                            name="tax_inclusive"
-                            component={RadioButton}
-                            htmlValue="0"
-                            label="Tax Exclusive"
-                          />
-                        </div>
-                      </div>
-                    </Fragment>
-                  ) : null}
-                </div>
-                <div class="col-md-6">
-                  <div class="row ItemCreationModal__hsn-radios">
+            {showTaxes &&
+              !isNonINR && (
+                <div class="row ItemCreationModal__TaxContainer">
+                  <div class="col-md-6">
                     <div class="form-group">
+                      <label>Tax Rate</label>
+                      <PowerSelect
+                        class="CheckableItem__PowerSelect ps-in-modal"
+                        placeholder="Select Tax Rate"
+                        options={gstRates}
+                        selected={taxRate}
+                        optionComponent={this.getTaxRateComponent}
+                        onChange={({ option = null }) => {
+                          this.props.change('tax_rate', option);
+                        }}
+                        searchEnabled={false}
+                      />
+                      <div class="row">
+                        <div
+                          class="col-md-12"
+                          style={{ fontSize: '0.85em', marginTop: '4px' }}
+                        >
+                          Tax breakup will be calculated automatically.
+                        </div>
+                      </div>
+                    </div>
+
+                    {showCessForm ? (
+                      cessForm
+                    ) : (
+                      <div class="row CreateItemModal__cess-form">
+                        <div class="col-md-12">
+                          <span
+                            class="text-primary cursor-pointer"
+                            onClick={e => this.setState({ showCessForm: true })}
+                          >
+                            + Add Cess
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {showTaxRadios ? (
+                      <Fragment>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <Field
+                              name="tax_inclusive"
+                              component={RadioButton}
+                              htmlValue="1"
+                              label="Tax Inclusive"
+                            />
+                          </div>
+                          <div class="col-md-6">
+                            <Field
+                              name="tax_inclusive"
+                              component={RadioButton}
+                              htmlValue="0"
+                              label="Tax Exclusive"
+                            />
+                          </div>
+                        </div>
+                      </Fragment>
+                    ) : null}
+                  </div>
+                  <div class="col-md-6">
+                    <div class="row ItemCreationModal__hsn-radios">
+                      <div class="form-group">
+                        <div class="col-md-12">
+                          <label style={{ marginBottom: '8px' }}>
+                            HSN/SAC Code
+                          </label>
+                        </div>
+                        <div class="col-md-6">
+                          <Field
+                            name="hsn_sac_code_type"
+                            component={RadioButton}
+                            htmlValue="hsn"
+                            label="HSN Code"
+                          />
+                        </div>
+                        <div class="col-md-6">
+                          <Field
+                            name="hsn_sac_code_type"
+                            component={RadioButton}
+                            htmlValue="sac"
+                            label="SAC Code"
+                          />
+                        </div>
+                      </div>
                       <div class="col-md-12">
-                        <label style={{ marginBottom: '8px' }}>
-                          HSN/SAC Code
-                        </label>
-                      </div>
-                      <div class="col-md-6">
                         <Field
-                          name="hsn_sac_code_type"
-                          component={RadioButton}
-                          htmlValue="hsn"
-                          label="HSN Code"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <Field
-                          name="hsn_sac_code_type"
-                          component={RadioButton}
-                          htmlValue="sac"
-                          label="SAC Code"
+                          placeholder="HSN/SAC Code"
+                          name="hsn_sac_code"
+                          component={InputField}
+                          class="form-control"
+                          validate={[sacLengthValidator]}
                         />
                       </div>
                     </div>
-                    <div class="col-md-12">
-                      <Field
-                        placeholder="HSN/SAC Code"
-                        name="hsn_sac_code"
-                        component={InputField}
-                        class="form-control"
-                        validate={[sacLengthValidator]}
+                    {item &&
+                      item.id && (
+                        <p style={{ marginTop: '8px' }}>
+                          Note: The updated item details will be reflected
+                          everywhere in the future.
+                        </p>
+                      )}
+
+                    <div class="Modal__actions">
+                      <AsyncButton
+                        type="submit"
+                        class="btn btn-primary btn-block"
+                        text={this.props.saveLabel}
+                        pendingText="Saving..."
+                        disabled={invalid}
+                        onClick={handleSubmit(this.save)}
                       />
                     </div>
                   </div>
-                  {item && item.id && (
-                    <p style={{ marginTop: '8px' }}>
-                      Note: The updated item details will be reflected
-                      everywhere in the future.
-                    </p>
-                  )}
-
-                  <div class="Modal__actions">
-                    <AsyncButton
-                      type="submit"
-                      class="btn btn-primary btn-block"
-                      text={this.props.saveLabel}
-                      pendingText="Saving..."
-                      disabled={invalid}
-                      onClick={handleSubmit(this.save)}
-                    />
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </form>
         </div>
       </div>

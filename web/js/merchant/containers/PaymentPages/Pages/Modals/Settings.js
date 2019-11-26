@@ -63,8 +63,8 @@ export default class extends React.Component {
     this.props.handleAction(formData);
 
     /*
-     * Preparing Tracking data
-     * */
+    * Preparing Tracking data
+    * */
     const trackData = [];
 
     if (formData.expire_by) {

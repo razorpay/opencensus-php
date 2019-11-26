@@ -10,7 +10,9 @@ import { getCurrency } from 'common/ui/Amount';
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
   const currencySymbol = getCurrency(paymentPageEntity.currency).symbol;
-  let cls = `Field Field--disabled Field--required Field--currency-${currencySymbol.length}`;
+  let cls = `Field Field--disabled Field--required Field--currency-${
+    currencySymbol.length
+  }`;
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
@@ -36,8 +38,9 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
                   <div className="Field-el">
                     <label>
-                      <b>{amountDisplay.split('.')[0]}</b>.
-                      {amountDisplay.split('.')[1]}
+                      <b>{amountDisplay.split('.')[0]}</b>.{
+                        amountDisplay.split('.')[1]
+                      }
                     </label>
                   </div>
 

@@ -477,10 +477,11 @@ export default class ActivationWizard extends React.Component {
 
     const isValid =
       data !== void 0 &&
-      FORM_TABS.every(c =>
-        Array.isArray(c)
-          ? c.every(d => isFieldValid(d, this, data))
-          : isFieldValid(c, this, data)
+      FORM_TABS.every(
+        c =>
+          Array.isArray(c)
+            ? c.every(d => isFieldValid(d, this, data))
+            : isFieldValid(c, this, data)
       );
 
     if (this.onFormValidityChange) {

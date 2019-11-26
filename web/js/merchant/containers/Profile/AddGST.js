@@ -40,8 +40,7 @@ const selector = formValueSelector('newGST');
 export default class AddGST extends Component {
   state = {};
 
-  gst_success_msg =
-    'Entered GSTIN will be applicable only from current month onwards.';
+  gst_success_msg = 'Entered GSTIN will be applicable only from current month onwards.';
 
   componentWillMount() {
     let { merchant_gst } = this.props;

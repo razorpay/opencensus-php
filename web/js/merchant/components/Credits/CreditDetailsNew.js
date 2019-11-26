@@ -24,7 +24,7 @@ export default class CreditDetails extends Component {
   };
 
   getRemainingPercentage = ({ used, value }) => {
-    return Math.round((100 * used) / value);
+    return Math.round(100 * used / value);
   };
 
   pruneAmountCredits = (items = []) => {

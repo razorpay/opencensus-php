@@ -184,10 +184,10 @@ export const supportHashMapping = {
 };
 
 /*
- * Certain views are stand alone views with no Header or Siderbar
- * Example: payment pages
- *
- * */
+* Certain views are stand alone views with no Header or Siderbar
+* Example: payment pages
+*
+* */
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,

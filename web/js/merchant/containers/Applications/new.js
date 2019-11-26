@@ -159,7 +159,9 @@ class NewApplicationForm extends Component {
     var hostname = prefix + 'auth.razorpay.com';
     const popupUrl =
       hostname +
-      `/authorize?response_type=code&client_id=${this.state.details.client_details.dev.id}&redirect_uri=http://localhost&scope=read_only&state=current_state`;
+      `/authorize?response_type=code&client_id=${
+        this.state.details.client_details.dev.id
+      }&redirect_uri=http://localhost&scope=read_only&state=current_state`;
     window.open(popupUrl, 'PopupPreview');
   };
 
@@ -283,11 +285,7 @@ class NewApplicationForm extends Component {
   };
 
   render() {
-    const {
-      handleSubmit,
-      location: { pathname },
-      user,
-    } = this.props;
+    const { handleSubmit, location: { pathname }, user } = this.props;
     return (
       <div class="content-box new-application-form">
         <div class="content-header">

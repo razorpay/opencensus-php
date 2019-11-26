@@ -381,9 +381,7 @@ export default class InvoicesNewContainer extends Component {
     let gstin = user.gstin;
     let cin = user.company_cin;
 
-    let {
-      config: { invoice_label_field },
-    } = this.props;
+    let { config: { invoice_label_field } } = this.props;
     let merchantAltBillingLabel = user.business_name || user.business_dba;
 
     if (invoice_label_field && user[invoice_label_field]) {
@@ -815,10 +813,7 @@ export default class InvoicesNewContainer extends Component {
       eventAction: 'Change - Invoice Label',
     });
 
-    let {
-      session: { user },
-      config: { invoice_label_field },
-    } = this.props;
+    let { session: { user }, config: { invoice_label_field } } = this.props;
 
     const onSave = () => {
       this.props.closeModal();
@@ -1498,12 +1493,7 @@ export default class InvoicesNewContainer extends Component {
   };
 
   render() {
-    const {
-      handleSubmit,
-      customer,
-      invoice,
-      session: { user },
-    } = this.props;
+    const { handleSubmit, customer, invoice, session: { user } } = this.props;
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
@@ -1610,8 +1600,8 @@ export default class InvoicesNewContainer extends Component {
                     <div class="invoice">
                       {isTestMode && (
                         <div class="alert-sm alert-warning testmode-warning">
-                          Invoice is created in <b>Test Mode</b>. Only test
-                          payments can be made for this invoice
+                          Invoice is created in <b>Test Mode</b>
+                          . Only test payments can be made for this invoice
                         </div>
                       )}
                       <InvoiceLogo
@@ -1698,15 +1688,17 @@ export default class InvoicesNewContainer extends Component {
                           <div>
                             <label>BILLING TO</label>
                             <div>
-                              {customer && customer.id && !isDisabled && (
-                                <button
-                                  className="btn btn-sm btn-link edit-in-input"
-                                  onClick={this.quickEditCustomer}
-                                  type="button"
-                                >
-                                  Edit
-                                </button>
-                              )}
+                              {customer &&
+                                customer.id &&
+                                !isDisabled && (
+                                  <button
+                                    className="btn btn-sm btn-link edit-in-input"
+                                    onClick={this.quickEditCustomer}
+                                    type="button"
+                                  >
+                                    Edit
+                                  </button>
+                                )}
                               <InlineField
                                 formName="newInvoice"
                                 name="customer.id"
@@ -1737,22 +1729,28 @@ export default class InvoicesNewContainer extends Component {
                                 }}
                               />
                             </div>
-                            {customer && customer.id && (
-                              <div class="inv__customerdetails">
-                                {customer.name && <div>{customer.contact}</div>}
-                                {customer.name || customer.contact ? (
-                                  <div>{customer.email}</div>
-                                ) : (
-                                  ''
-                                )}
-                                {customer.gstin && showGstn && (
-                                  <div>
-                                    <span class="tax-heading">GSTIN - </span>
-                                    {customer.gstin}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                            {customer &&
+                              customer.id && (
+                                <div class="inv__customerdetails">
+                                  {customer.name && (
+                                    <div>{customer.contact}</div>
+                                  )}
+                                  {customer.name || customer.contact ? (
+                                    <div>{customer.email}</div>
+                                  ) : (
+                                    ''
+                                  )}
+                                  {customer.gstin &&
+                                    showGstn && (
+                                      <div>
+                                        <span class="tax-heading">
+                                          GSTIN -{' '}
+                                        </span>
+                                        {customer.gstin}
+                                      </div>
+                                    )}
+                                </div>
+                              )}
                           </div>
 
                           <div class="inv__dates-container hidden-sm">
@@ -1982,40 +1980,45 @@ export default class InvoicesNewContainer extends Component {
                                   )}
                                 </div>
                               </div>
-                              {merchantGSTIN && showGstn && (
-                                <div class="inv__place-of-supply-container">
-                                  <label class="text-uppercase">
-                                    Place of Supply
-                                  </label>
-                                  {!isDisabled ? (
-                                    <Fragment>
-                                      <div>
-                                        <PowerSelect
-                                          class="inv__state-of-delivery-list material-input"
-                                          placeholder="Select from Dropdown"
-                                          options={this.state.states || []}
-                                          selected={this.props.state_of_supply}
-                                          optionLabelPath="name"
-                                          onChange={this.changeStateOfSupply}
-                                          disabled={isDisabled}
-                                        />
-                                      </div>
-                                      {!this.props.state_of_supply && (
-                                        <div class="alert-sm alert-warning">
-                                          <i class="i i-info-circle" />
-                                          Add a Place of Supply to apply taxes
+                              {merchantGSTIN &&
+                                showGstn && (
+                                  <div class="inv__place-of-supply-container">
+                                    <label class="text-uppercase">
+                                      Place of Supply
+                                    </label>
+                                    {!isDisabled ? (
+                                      <Fragment>
+                                        <div>
+                                          <PowerSelect
+                                            class="inv__state-of-delivery-list material-input"
+                                            placeholder="Select from Dropdown"
+                                            options={this.state.states || []}
+                                            selected={
+                                              this.props.state_of_supply
+                                            }
+                                            optionLabelPath="name"
+                                            onChange={this.changeStateOfSupply}
+                                            disabled={isDisabled}
+                                          />
                                         </div>
-                                      )}
-                                    </Fragment>
-                                  ) : this.props.state_of_supply ? (
-                                    <div>{this.props.state_of_supply.name}</div>
-                                  ) : (
-                                    <div class="light-placeholder">
-                                      Place of Supply not applicable.
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                                        {!this.props.state_of_supply && (
+                                          <div class="alert-sm alert-warning">
+                                            <i class="i i-info-circle" />
+                                            Add a Place of Supply to apply taxes
+                                          </div>
+                                        )}
+                                      </Fragment>
+                                    ) : this.props.state_of_supply ? (
+                                      <div>
+                                        {this.props.state_of_supply.name}
+                                      </div>
+                                    ) : (
+                                      <div class="light-placeholder">
+                                        Place of Supply not applicable.
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                             </div>
                             <div class="col-md-12 hidden-md visible-sm-block">
                               <div class="inv__dates-container">
@@ -2280,34 +2283,35 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
-                          {!merchantGSTIN && (isNew || isDraft) && (
-                            <label
-                              class="btn btn-default btn-block btn-lg"
-                              for="gst_enabled"
-                            >
-                              <div class="row">
-                                <div class="col-xs-10">
-                                  <h3>Create GST Enabled Invoices</h3>
-                                  <p>Add your GST number</p>
-                                </div>
-                                <div class="col-xs-2">
-                                  <div class="custom-checkbox">
-                                    <Field
-                                      name="gst_enabled"
-                                      id="gst_enabled"
-                                      component="input"
-                                      type="checkbox"
-                                      disabled={locked}
-                                      class="Input-el"
-                                      checked={!!merchantGSTIN}
-                                      onChange={this.showGSTModal}
-                                    />
-                                    <div class="Input-checkbox" />
+                          {!merchantGSTIN &&
+                            (isNew || isDraft) && (
+                              <label
+                                class="btn btn-default btn-block btn-lg"
+                                for="gst_enabled"
+                              >
+                                <div class="row">
+                                  <div class="col-xs-10">
+                                    <h3>Create GST Enabled Invoices</h3>
+                                    <p>Add your GST number</p>
+                                  </div>
+                                  <div class="col-xs-2">
+                                    <div class="custom-checkbox">
+                                      <Field
+                                        name="gst_enabled"
+                                        id="gst_enabled"
+                                        component="input"
+                                        type="checkbox"
+                                        disabled={locked}
+                                        class="Input-el"
+                                        checked={!!merchantGSTIN}
+                                        onChange={this.showGSTModal}
+                                      />
+                                      <div class="Input-checkbox" />
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </label>
-                          )}
+                              </label>
+                            )}
                           <label
                             class="btn btn-default btn-block btn-lg"
                             for="partial_payment"

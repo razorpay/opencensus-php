@@ -7,8 +7,8 @@ export const track = setTrackData({
 });
 
 /*
- * Track click on duplicate invoice button
- * */
+* Track click on duplicate invoice button
+* */
 export function trackClickDuplicateInvoice() {
   track({
     eventAction: 'Click - Duplicate Invoice',
@@ -16,8 +16,8 @@ export function trackClickDuplicateInvoice() {
 }
 
 /*
- * Track click on saving duplicate invoice
- * */
+* Track click on saving duplicate invoice
+* */
 export function trackSaveDuplicateInvoice() {
   track({
     eventAction: 'Save - Duplicate Invoice',

@@ -335,9 +335,9 @@ export default class CreateNewContainer extends React.Component {
 
   toggleDisableState() {
     /*
-     * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
-     * Hence, relying on is-invalid.
-     * */
+    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
+    * Hence, relying on is-invalid.
+    * */
     // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
     const invalidFields = document.querySelectorAll(
       '.PaymentLinks--Create-Form .Input.is-invalid'

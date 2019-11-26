@@ -1,9 +1,9 @@
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 /*
- * This is not model exactly, however, this is the best place to put this utils as of now, since it's similar to model's serializer
- *
- * */
+* This is not model exactly, however, this is the best place to put this utils as of now, since it's similar to model's serializer
+*
+* */
 
 /*
   Description: Filter out extra values on basis of `resourceFields`

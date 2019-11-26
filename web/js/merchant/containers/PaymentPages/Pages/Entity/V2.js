@@ -136,14 +136,15 @@ export default class PaymentPagesV2Entity extends React.Component {
                   Edit
                 </Link>
               )}
-              {isRoleAllowedEdit && isActive && (
-                <button
-                  class="btn btn-primary btn-sm"
-                  onClick={this.openShareView}
-                >
-                  Share
-                </button>
-              )}
+              {isRoleAllowedEdit &&
+                isActive && (
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onClick={this.openShareView}
+                  >
+                    Share
+                  </button>
+                )}
             </div>
           </div>
 
@@ -154,7 +155,9 @@ export default class PaymentPagesV2Entity extends React.Component {
                 <div class="stats-info-footer">
                   <Link
                     target="_blank"
-                    to={`/payments?payment_link_id=${paymentPageEntity.id}&count=${MAX_API_COUNT}&ref=paymentpages`}
+                    to={`/payments?payment_link_id=${
+                      paymentPageEntity.id
+                    }&count=${MAX_API_COUNT}&ref=paymentpages`}
                   >
                     View payments for this page <i class="i i-chevron-right" />
                   </Link>

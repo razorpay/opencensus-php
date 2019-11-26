@@ -187,9 +187,7 @@ export default class Toggle2FA extends Component {
     return new Promise(resolve => {
       this.actionCompleted = resolve;
       if (flag) {
-        const {
-          user: { second_factor_auth_setup },
-        } = this.props.user;
+        const { user: { second_factor_auth_setup } } = this.props.user;
 
         const action =
           //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
@@ -202,9 +200,7 @@ export default class Toggle2FA extends Component {
   };
 
   render() {
-    const {
-      user: { second_factor_auth_enforced },
-    } = this.props.user;
+    const { user: { second_factor_auth_enforced } } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">

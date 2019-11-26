@@ -436,7 +436,9 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
       )}
 
       <CustomClipboard
-        value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        value={`Account Number: ${
+          bankAccount.account_number
+        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
         onCopy={() => {
           onCopy(virtualAccount);
         }}

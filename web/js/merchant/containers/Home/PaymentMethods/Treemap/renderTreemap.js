@@ -140,7 +140,7 @@ function main(
           0
         );
 
-        node.percent = ((node.value / sum) * 100).toFixed(2);
+        node.percent = (node.value / sum * 100).toFixed(2);
       }
 
       rollup(node.parent, node.color);
@@ -207,9 +207,10 @@ function main(
       .enter()
       .append('g');
 
-    g.filter(function(d) {
-      return d.key && d._children;
-    })
+    g
+      .filter(function(d) {
+        return d.key && d._children;
+      })
       .classed('children', true)
       .style('cursor', function(d) {
         return canBeZoomed(d) ? 'pointer' : 'default';
@@ -228,14 +229,16 @@ function main(
         });
 
         if (hasZoom) {
-          d3.select(this)
+          d3
+            .select(this)
             .selectAll('rect.parent')
             .style('fill-opacity', 0.1);
         }
       })
       .on('mouseleave', function(d) {
         if (canBeZoomed(d)) {
-          d3.select(this)
+          d3
+            .select(this)
             .selectAll('rect.parent')
             .style('fill-opacity', 0);
         }
@@ -261,7 +264,8 @@ function main(
       .attr('class', 'child')
       .call(rect);
 
-    g.append('rect')
+    g
+      .append('rect')
       .attr('class', 'parent')
       .call(rect);
 
@@ -272,7 +276,8 @@ function main(
       .attr('class', 'ptext')
       .style('font-size', '1em');
 
-    t.append('tspan')
+    t
+      .append('tspan')
       .attr('class', 'amount method-text')
       .style('font-size', '1em')
       .attr('dx', '1em')
@@ -289,7 +294,8 @@ function main(
         return `(${d.percent}%)`;
       });
 
-    t.append('tspan')
+    t
+      .append('tspan')
       .style('font-size', '0.6em')
       .attr('dx', '1.67em') // inverse of 0.6
       .attr('dy', '1.5em')
@@ -342,12 +348,14 @@ function main(
       g2.selectAll('text').style('fill-opacity', 0);
 
       // Transition to the new view.
-      t1.selectAll('.ptext')
+      t1
+        .selectAll('.ptext')
         .call(text)
         .style('fill-opacity', 0);
 
       t2.each('end', function(d) {
-        d3.select(this)
+        d3
+          .select(this)
           .style('font-size', d => {
             return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, 24) + 'px';
           })
@@ -476,7 +484,7 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
   rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
   rows.forEach((row, index) => {
-    row.push(((row[row.length - 1] / total) * 100).toFixed(2) + '%');
+    row.push((row[row.length - 1] / total * 100).toFixed(2) + '%');
   });
 
   rows.unshift(csvHeader);
