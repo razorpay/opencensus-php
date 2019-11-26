@@ -35,9 +35,7 @@ class Validator extends Base\Validator
             }
             else if($rule['min_amount'] > $presentAmount)
             {
-                throw new BadRequestValidationFailureException(
-                    'Ranges specified are leaving gaps'
-                );
+                break;
             }
             if($rule['max_amount'] && $rule['max_amount'] != PHP_INT_MAX)
             {
@@ -50,7 +48,7 @@ class Validator extends Base\Validator
         }
 
         throw new BadRequestValidationFailureException(
-            'Provided ranges are not complete'
+            'Ranges specified are leaving gaps'
         );
     }
 }
