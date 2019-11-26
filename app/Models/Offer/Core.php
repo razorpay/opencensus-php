@@ -140,7 +140,7 @@ class Core extends Base\Core
         //and merchant does not want to block payment for that offer, setting the original order amount
         //again for payment amount.
 
-        if($input['order_amount'] !== null && $offer->getOfferType() === Constants::INSTANT_OFFER)
+        if($offer->getOfferType() === Constants::INSTANT_OFFER && $input['order_amount'] !== null )
         {
             $payment->setAmount($input['order_amount']);
 

@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Offer;
 use Carbon\Carbon;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Order\Entity;
+use RZP\Tests\Functional\Order\OrderTest;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -284,6 +286,311 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($offer['id'], $discount['offer_id']);
     }
 
+    public function testAlreadyDiscountedOffersWithBlockedSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,
+            'type' => 'already_discounted']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testAlreadyDiscountedOffersNotValidWithBlockedSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false,
+            'type' => 'already_discounted']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testAlreadyDiscountedOffersWithBlockedSetTrue()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true,
+            'type' => 'already_discounted']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testCashbackOffersWithBlockedSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,
+            'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testCashbackOffersNotValidWithBlockedSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false,
+            'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testCashbackOffersWithBlockedSetTrue()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => true,
+            'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+    }
+
+    public function testInstantOfferWithBlockSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer2);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 90000, 'INR', 90000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(10000, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testInstantOfferNotValidWithBlockSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['501200'],'block' => false]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+        s($order);
+
+        $payment = $this->getOfferPaymentArray($order, $offer2);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 100000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(100000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(null, $discount);
+
+    }
+
+    public function testInstantDefaultOfferWithBlockSetFalse()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false,
+            'default_offer' => true, 'type' => 'instant']);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],'block' => false]);
+
+        $order = $this->createOrder();
+
+        $payment = $this->getOrderPaymentArrayFromOrderApi($order, $offer1);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(45000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 45000, 'INR', 45000);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(45000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(50000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(5000, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($order['offer_id'], $discount['offer_id']);
+    }
+
 
     public function testOfferNotApplicableWithPaymentBlockedFlagSet()
     {
@@ -511,6 +818,16 @@ class OffersPaymentTest extends TestCase
 
         $payment['order_id'] = $order->getPublicId();
         $payment['amount']   = $order->getAmount();
+
+        return $payment;
+    }
+
+    protected function getOrderPaymentArrayFromOrderApi($order)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['offer_id'] = $order['offer_id'];
+        $payment['order_id'] = $order['id'];
 
         return $payment;
     }
