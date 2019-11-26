@@ -40,6 +40,7 @@ class Validator extends Base\Validator
     protected static $bulkReconcileRules = [
         'from' => 'required_with:to|epoch|date_format:U',
         'to'   => 'required_with:from|epoch|date_format:U',
+        'limit'=> 'sometimes|int'
     ];
 
     protected static $retryBeamFileUploadRules = [

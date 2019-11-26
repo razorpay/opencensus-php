@@ -37,6 +37,8 @@ class Limit
         Type::SUB_MERCHANT                          => 5000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
+        TYPE::IIN_HITACHI_VISA                      => 500000,
+        TYPE::IIN_MC_MASTERCARD                     => 500000,
         TYPE::PRICING_RULE                          => 50000,
     ];
 

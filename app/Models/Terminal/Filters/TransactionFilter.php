@@ -330,6 +330,11 @@ class TransactionFilter extends Terminal\Filter
             {
                 return true;
             }
+
+            if ($payment->isNach() === true)
+            {
+                return true;
+            }
         }
 
         return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);

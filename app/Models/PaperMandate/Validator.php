@@ -184,14 +184,4 @@ class Validator extends Base\Validator
             );
         }
     }
-
-    public function validateCustomerToCreatePaperMandate(Customer\Entity $customer)
-    {
-        if (empty($customer->getName()) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'customer name should be present to create paper mandate'
-            );
-        }
-    }
 }

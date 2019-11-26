@@ -206,18 +206,10 @@ class Validator extends Base\Validator
 
         $tokenRegistration = $this->entity->getTokenRegistration();
 
-        if ($tokenRegistration === null)
+        if ($tokenRegistration !== null)
         {
-            throw new Exception\LogicException(
-                'token registration can\'t be null for method nach for order',
-                null,
-                [
-                    'order' => $this->entity->toArray(),
-                ]
-            );
+            $tokenRegistration->getValidator()->validatePaymentCreation();
         }
-
-        $tokenRegistration->getValidator()->validatePaymentCreation();
     }
 
     /**

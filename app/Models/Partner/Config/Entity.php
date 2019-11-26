@@ -82,13 +82,14 @@ class Entity extends PublicEntity
     ];
 
     protected $defaults = [
-        self::COMMISSIONS_ENABLED    => 0,
-        self::EXPLICIT_REFUND_FEES   => 0,
-        self::EXPLICIT_SHOULD_CHARGE => 0,
-        self::COMMISSION_MODEL       => CommissionModel::COMMISSION,
-        self::SETTLE_TO_PARTNER      => 0,
-        self::TDS_PERCENTAGE         => self::DEFAULT_TDS_PERCENTAGE,
-        self::HAS_GST_CERTIFICATE    => 0,
+        self::COMMISSIONS_ENABLED     => 0,
+        self::EXPLICIT_REFUND_FEES    => 0,
+        self::EXPLICIT_SHOULD_CHARGE  => 0,
+        self::COMMISSION_MODEL        => CommissionModel::COMMISSION,
+        self::SETTLE_TO_PARTNER       => 0,
+        self::TDS_PERCENTAGE          => self::DEFAULT_TDS_PERCENTAGE,
+        self::HAS_GST_CERTIFICATE     => 0,
+        self::DEFAULT_PAYMENT_METHODS => null,
     ];
 
     protected $casts = [
@@ -160,6 +161,11 @@ class Entity extends PublicEntity
     public function getCommissionModel(): string
     {
         return $this->getAttribute(self::COMMISSION_MODEL);
+    }
+
+    public function getDefaultPaymentMethods()
+    {
+        return $this->getAttribute(self::DEFAULT_PAYMENT_METHODS);
     }
 
     public function shouldSettleToPartner(): bool

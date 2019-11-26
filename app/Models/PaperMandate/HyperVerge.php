@@ -110,7 +110,7 @@ class HyperVerge extends Base\Core
 
         $this->validateAndFormatExtractedData($extractedMandateData, $paperMandate);
 
-        $traceExtractedMandateData = $extractedMandateData;
+        $traceExtractedMandateData = $this->getExtractedDataToTrace($extractedMandateData);
 
         unset($traceExtractedMandateData[self::DETAILS][self::IMAGE]);
 
@@ -209,6 +209,19 @@ class HyperVerge extends Base\Core
         $mappedData[Entity::ENHANCED_IMAGE]  = $extractedMandateData[self::IMAGE];
 
         return $mappedData;
+    }
+
+    protected function getExtractedDataToTrace(array & $extractedData)
+    {
+        $extractedDataToTrace = $extractedData;
+
+        unset($extractedDataToTrace[self::DETAILS][self::IMAGE]);
+        unset($extractedDataToTrace[self::DETAILS][self::BANK_NAME]);
+        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_NUMBER]);
+        unset($extractedDataToTrace[self::DETAILS][self::IFSCCode]);
+        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_TYPE]);
+
+        return $extractedDataToTrace;
     }
 
     private function getFormattedAmountFromExtracted(int $amount): int

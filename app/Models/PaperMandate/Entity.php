@@ -154,7 +154,7 @@ class Entity extends Base\PublicEntity
 
     public function getReference2()
     {
-        return $this->getAttribute(self::REFERENCE_1);
+        return $this->getAttribute(self::REFERENCE_2);
     }
 
     public function getGeneratedFileID()
@@ -176,7 +176,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedUrl($generatedFileId);
+        return (new FileUploader)->getSignedShortUrl($generatedFileId);
     }
 
     public function getUploadedFormUrl()
@@ -188,7 +188,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedUrl($uploadedFileId);
+        return (new FileUploader)->getSignedShortUrl($uploadedFileId);
     }
 
     public function getTerminalId()

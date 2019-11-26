@@ -996,6 +996,7 @@ class Service extends Base\Service
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
 
+
         $paymentIds = explode(', ', $payment->getId());
 
         $entityOffer = $this->repo
@@ -1008,7 +1009,7 @@ class Service extends Base\Service
             $payment->setOfferId($entityOffer->getOfferId());
         }
 
-        $entity = $payment->toArrayPublic();
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)

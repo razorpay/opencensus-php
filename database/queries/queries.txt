@@ -5506,6 +5506,9 @@ ALTER TABLE `p2p_concerns`
 
 -- P2P - Adding Indices
 
+ALTER TABLE `iins`
+    ADD COLUMN `product_code` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
 ---Virtual VPA----
 
 ALTER TABLE `terminals`

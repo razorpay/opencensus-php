@@ -62,6 +62,15 @@ final class FactoryData
             'updated_at'               => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\Merchant\Referral\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'ref_code'           => $faker->uniqueid,
+            'url'                => $faker->url,
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Terminal\Entity::class, [
             'id'                        => $faker->uniqueid,
             'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
