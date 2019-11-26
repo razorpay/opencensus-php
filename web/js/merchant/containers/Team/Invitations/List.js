@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import { role } from 'rzp/ui/item/pair';
+import DataTable from 'common/ui/Table/DataTable';
+import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchInvitations as fetchAll } from 'merchant/modules/collection';
+import { fetchInvitations as fetchAll } from 'merchant/reducers/collection';
 
 import Actions from './Actions';
 
@@ -39,9 +39,8 @@ export default class InvitationsListContainer extends ListContainer {
             ? {
                 title: (
                   <>
-                    Pending Invitations (<small class="text-muted">
-                      {items.length}
-                    </small>)
+                    Pending Invitations (
+                    <small class="text-muted">{items.length}</small>)
                   </>
                 ),
               }

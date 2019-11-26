@@ -1,9 +1,9 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
-import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
-import Alert from 'rzp/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
@@ -73,9 +73,7 @@ export default props => {
                 {submerchant.application && (
                   <EntityDetailRow label="Application Id">
                     <Link
-                      to={`/submerchants/applications/${
-                        submerchant.application.id
-                      }`}
+                      to={`/submerchants/applications/${submerchant.application.id}`}
                     >
                       {submerchant.application.id}
                     </Link>

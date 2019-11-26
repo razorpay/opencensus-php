@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Change from 'rzp/ui/Change';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import Change from 'common/ui/Change';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import {
   isDefined,
   getFormattedNumber,
@@ -12,11 +12,11 @@ import {
   getPercentage,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+} from 'common/utils/numerals';
 
 import Tooltip from 'merchant/components/Home/Tooltip';
 
@@ -64,7 +64,9 @@ const Tab = ({
     trendText +=
       ' (' +
       (trend.currentCount === 0
-        ? trend.previousCount !== 0 ? 100 : 0
+        ? trend.previousCount !== 0
+          ? 100
+          : 0
         : getPercentage(currentCount, trendAbsValue)) +
       '%)';
   }
@@ -80,21 +82,20 @@ const Tab = ({
         <div>{title}</div>
       </div>
       <div className="pull-right text-right">
-        {trend.show &&
-          !trend.error && (
-            <div>
-              {trend.loading ? (
-                <PlaceholderLoader />
-              ) : (
-                <Change value={trendValue}>
-                  <span>
-                    {trendText}
-                    <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
-                  </span>
-                </Change>
-              )}
-            </div>
-          )}
+        {trend.show && !trend.error && (
+          <div>
+            {trend.loading ? (
+              <PlaceholderLoader />
+            ) : (
+              <Change value={trendValue}>
+                <span>
+                  {trendText}
+                  <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                </span>
+              </Change>
+            )}
+          </div>
+        )}
         <div>
           <Link
             target="_blank"

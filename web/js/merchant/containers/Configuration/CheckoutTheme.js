@@ -2,9 +2,9 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import FileUploadButton from 'rzp/ui/FileUpload/Button';
-import { uploadLogo } from 'merchant/modules/config';
-import { showNotification } from 'rzp/modules/notifications';
+import FileUploadButton from 'common/ui/FileUpload/Button';
+import { uploadLogo } from 'merchant/reducers/config';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './paymentMethodIcons';
 
@@ -177,17 +177,20 @@ export default class CheckoutTheme extends Component {
               >
                 <a target="_blank" href="https://razorpay.com/payment-gateway/">
                   Checkout page
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/payment-links/">
                   Payment Links
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a target="_blank" href="https://razorpay.com/invoices/">
                   Invoices
                 </a>{' '}
                 &{' '}
                 <a target="_blank" href="https://razorpay.com/payment-pages">
                   Payment pages
-                </a>.
+                </a>
+                .
               </ShowWhen>
             </div>
           </div>

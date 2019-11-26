@@ -1,6 +1,6 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 
 import AddOnItem from './AddOnItem';
 
@@ -39,14 +39,13 @@ export default function NewSubscriptionLinkAddOnDetails({
             </span>
           </li>
         ))}
-        {isPresent(addons) &&
-          isPresent(addons[addons.length - 1]) && (
-            <li class="no-counter">
-              <button class="btn btn-link" onClick={props.onAddAddon}>
-                Add New Item
-              </button>
-            </li>
-          )}
+        {isPresent(addons) && isPresent(addons[addons.length - 1]) && (
+          <li class="no-counter">
+            <button class="btn btn-link" onClick={props.onAddAddon}>
+              Add New Item
+            </button>
+          </li>
+        )}
       </ol>
     </div>
   );

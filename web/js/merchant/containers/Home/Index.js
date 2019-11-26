@@ -2,24 +2,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
-import { showNotification } from 'rzp/modules/notifications';
-import { customRangeText } from 'rzp/ui/DateRangePicker';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { customRangeText } from 'common/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
   platformGroupingVals,
   groupByPlatform,
   OTHERS,
-} from 'rzp/utils/pokedex';
-import LocalStorageService from 'rzp/utils/localStorage';
-import debounce from 'rzp/utils/debounce';
-import * as ModalActions from 'rzp/modules/modals';
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { activationDuration } from 'common/data';
+} from 'common/utils/pokedex';
+import LocalStorageService from 'common/utils/localStorage';
+import debounce from 'common/utils/debounce';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { activationDuration } from 'merchant/helpers/data';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import * as HomeActions from 'merchant/modules/home';
-import { fetch } from 'merchant/modules/pokedex';
-import { fetchPayments } from 'merchant/modules/collection';
+import * as HomeActions from 'merchant/reducers/home';
+import { fetch } from 'merchant/reducers/pokedex';
+import { fetchPayments } from 'merchant/reducers/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -27,9 +28,11 @@ import {
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   trackError,
@@ -41,7 +44,7 @@ import {
   iaActivations,
 } from './ga';
 
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -113,6 +116,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCActivationSuccess:
         state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
+      showPANStatus: state.home.instantActivations.showPANStatus,
     };
   },
   {
@@ -142,11 +146,14 @@ export default class HomeContainer extends Component {
       // onboarding card is shown if this is present in localstorage
       onboardingCardToken = 'show_onboarding_card',
       // onboarding card first step is shown if this is present in localstorage
-      firstStepToken = 'onboarding_first_step';
+      firstStepToken = 'onboarding_first_step',
+      // partner onboarding is shown if user logs in for 1st time
+      partnerOnBoarding = 'partner_on_boarding_shown';
 
     // tokens particular for the current merchant
     this.onboardingBannerToken = `${onboardingCardToken}--${user.current}`;
     this.firstStepToken = `${firstStepToken}--${user.current}`;
+    this.partnerOnBoardingToken = `${partnerOnBoarding}--${user.current}`;
 
     /*
      * Earlier , the tokens apply at browser level, if old tokens are present
@@ -169,7 +176,9 @@ export default class HomeContainer extends Component {
     }
 
     const hasAccessToOnboardingBanner = (this.hasAccessToOnboardingBanner =
-      ['manager', 'owner', 'admin'].indexOf(user.role) >= 0);
+      [rolesList.MANAGER, rolesList.OWNER, rolesList.ADMIN].indexOf(
+        user.role
+      ) >= 0);
 
     const showOnboardingBanner =
         hasAccessToOnboardingBanner &&
@@ -639,6 +648,7 @@ export default class HomeContainer extends Component {
       showKYCDetails,
       hideKYCDetailsModal,
       tracking,
+      showPANStatus,
     } = this.props;
 
     const { activation_flow } = user;
@@ -705,51 +715,64 @@ export default class HomeContainer extends Component {
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
 
+    const isPartnerOnBoardingModalShown = LocalStorageService.getItem(
+      this.partnerOnBoardingToken
+    );
+
+    if (user.isPartnerIntent() && !isPartnerOnBoardingModalShown) {
+      LocalStorageService.setItem(this.partnerOnBoardingToken, true);
+      this.props.openModal({
+        size: 'xlarge',
+        disableClose: true,
+        component: <PartnerOnbr disableClose={true} />,
+      });
+    }
+
     return (
       <div class="react-root dashboard-home">
         {/* Show Diwali Promotional Banner */}
-        {this.props.user.isDiwaliPromoEnabled &&
-          !hideDiwaliPromotion && (
-            <div
-              className={`diwali-promotion-banner v2-tour-banner${
-                dismissDiwaliPromotion ? ' dismiss' : ''
-              }`}
-            >
-              <div className="banner-content">
-                <Banner cta="View T&Cs">
-                  <span class="badge m-r">SPECIAL OFFER</span>
-                  <span>
-                    {this.props.user.transaction_value
-                      ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
-                      : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
-                  </span>
-                  <span class="m-l btn-link">
-                    <ShowWhen
-                      additionalCondition={user =>
-                        user.isOrgAllowedFunctionality('external_links')
-                      }
-                    >
-                      <a href="https://razorpay.com/pricing" target="_blank">
-                        <b>View T&Cs</b>
-                      </a>
-                    </ShowWhen>
-                  </span>
-                </Banner>
-              </div>
-              <div className="banner-close">
-                <a
-                  className="banner-close-icon"
-                  onClick={this.onHideDiwaliPromotion}
-                >
-                  <i className="i i-close" />
-                </a>
-              </div>
+        {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
+          <div
+            className={`diwali-promotion-banner v2-tour-banner${
+              dismissDiwaliPromotion ? ' dismiss' : ''
+            }`}
+          >
+            <div className="banner-content">
+              <Banner cta="View T&Cs">
+                <span class="badge m-r">SPECIAL OFFER</span>
+                <span>
+                  {this.props.user.transaction_value
+                    ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
+                    : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
+                </span>
+                <span class="m-l btn-link">
+                  <ShowWhen
+                    additionalCondition={user =>
+                      user.isOrgAllowedFunctionality('external_links')
+                    }
+                  >
+                    <a href="https://razorpay.com/pricing" target="_blank">
+                      <b>View T&Cs</b>
+                    </a>
+                  </ShowWhen>
+                </span>
+              </Banner>
             </div>
-          )}
+            <div className="banner-close">
+              <a
+                className="banner-close-icon"
+                onClick={this.onHideDiwaliPromotion}
+              >
+                <i className="i i-close" />
+              </a>
+            </div>
+          </div>
+        )}
 
         {user.showInstantActivation &&
           !user.instantActivation.isL1Submitted &&
-          showOnboardingBannerFirstStep && (
+          showOnboardingBannerFirstStep &&
+          !user.isPartnerIntent() && (
             <ModalMask>
               <Modal
                 className="welcome-modal"
@@ -817,6 +840,15 @@ export default class HomeContainer extends Component {
               this.onInstantActivationSuccess();
             }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
+            user={user}
+          />
+        )}
+        {showPANStatus && (
+          <PANVerficationStatusModal
+            onClose={() => {
+              this.props.hidePANStatusModal();
+            }}
+            onGoToDashboard={this.onInstantActivationSuccess}
             user={user}
           />
         )}

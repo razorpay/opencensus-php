@@ -1,30 +1,30 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 
-import modalReducer from 'rzp/modules/modals';
-import sliderReducer from 'rzp/modules/slider';
-import notificationsReducer from 'rzp/modules/notifications';
+import modalReducer from 'merchant_common/reducers/modals';
+import sliderReducer from 'merchant_common/reducers/slider';
+import notificationsReducer from 'merchant_common/reducers/notifications';
 
-import teamReducer from 'merchantLA/modules/team';
-import sessionReducer from 'merchantLA/modules/session';
-import appReducer from 'merchantLA/modules/app';
-import homeReducer from 'merchantLA/modules/home';
-import settlementReducer from 'merchantLA/modules/settlements/details';
-import transferReducer from 'merchantLA/modules/marketplace/transfer';
-import reversalReducer from 'merchantLA/modules/marketplace/reversal';
-import creditsReducer from 'merchantLA/modules/credits';
+import teamReducer from 'merchantLA/reducers/team';
+import sessionReducer from 'merchantLA/reducers/session';
+import appReducer from 'merchantLA/reducers/app';
+import homeReducer from 'merchantLA/reducers/home';
+import settlementReducer from 'merchantLA/reducers/settlements/details';
+import transferReducer from 'merchantLA/reducers/marketplace/transfer';
+import reversalReducer from 'merchantLA/reducers/marketplace/reversal';
+import creditsReducer from 'merchantLA/reducers/credits';
 import {
   batchesReducer,
   batchDetailsReducer,
-} from 'merchantLA/modules/batches';
+} from 'merchantLA/reducers/batches';
 
 import {
   reversalsReducer,
   settlementsReducer,
   transfersReducer,
-} from 'merchantLA/modules/collection';
+} from 'merchantLA/reducers/collection';
 
-import { reportsReducer } from 'merchantLA/modules/reports';
+import { reportsReducer } from 'merchantLA/reducers/reports';
 
 export default combineReducers({
   modal: modalReducer,

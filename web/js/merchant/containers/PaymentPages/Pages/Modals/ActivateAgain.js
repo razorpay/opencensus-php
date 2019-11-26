@@ -1,11 +1,11 @@
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Button, { AsyncBtn } from 'component/Button';
-import Input from 'component/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
 
 import moment from 'moment';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
-import { isInteger } from 'rzp/utils/validators';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
+import { isInteger } from 'common/utils/validators';
 
 const expireByError = 'Expiry has passed';
 
@@ -66,11 +66,11 @@ export default class ActivateAgainModal extends React.Component {
 
   flushExpireByError() {
     /*
-    * New time must be greater than current time.
-    * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
-    * but only calendar+time will be shown to be filled again.
-    *
-    * */
+     * New time must be greater than current time.
+     * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
+     * but only calendar+time will be shown to be filled again.
+     *
+     * */
 
     const resetError =
       (this.state.hasNoExpiry == '0' && this.state.expireBy > moment()) ||

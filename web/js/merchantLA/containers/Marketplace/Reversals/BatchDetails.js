@@ -2,13 +2,13 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/modules/batches';
+import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import BatchStats from 'ui/StatsTable';
+import BatchStats from 'common/ui/StatsTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Time from 'rzp/ui/Time';
-import { status } from 'rzp/ui/item/pair';
+import Time from 'common/ui/Time';
+import { status } from 'common/ui/item/pair';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 const gaEvents = setGaTrack('Dashboard - LA Reversals - BU');

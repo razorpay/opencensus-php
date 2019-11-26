@@ -1,6 +1,6 @@
-import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { readableFileSize } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import { isBlank } from 'common/utils/rzp-utils';
 
 import Staged from './Staged';
 
@@ -173,7 +173,10 @@ export default class FileUpload extends React.Component {
     }
 
     if (this.state.isDocPreUploaded) {
-      this.setState({ isDocPreUploaded: false });
+      this.setState(
+        { isDocPreUploaded: false },
+        () => this.props.onCloseClick && this.props.onCloseClick()
+      );
 
       return;
     }
@@ -181,7 +184,7 @@ export default class FileUpload extends React.Component {
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
       },
-      _ => this.props.onCloseClick && this.props.onCloseClick()
+      () => this.props.onCloseClick && this.props.onCloseClick()
     );
   };
 
@@ -235,6 +238,7 @@ export default class FileUpload extends React.Component {
       renderStagedChildren,
       showFileSize,
       size,
+      dropZoneCavityClassName,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -252,70 +256,68 @@ export default class FileUpload extends React.Component {
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
-        {!isDocPreUploaded &&
-          (multi || !files.length) && (
-            <label
-              class={classList(
-                'Dropzone-cavity',
-                this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
-              )}
-              for={`fileInput-${name}`}
-              onDrop={isDocPreUploaded ? undefined : this.handleDrop}
-              onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
-              onDragEnter={
-                isDocPreUploaded ? undefined : this.toggleDragWithFile
-              }
-            >
-              <div class={`Dropzone-content ${size}`}>
-                {children || (
-                  <React.Fragment>
-                    <img
-                      class="Dropzone-file-icon"
-                      src={'img/files/file-placeholder.svg'}
-                      alt=""
-                    />
-                    <div class="Dropzone-content-desc">
-                      <p class="Dropzone-content-desc--primary">
-                        Drop file here or{' '}
-                        <b class="text-primary">Click to Upload</b>{' '}
-                        {maxSize && (
-                          <React.Fragment>
-                            ({readableFileSize(maxSize)} Max)
-                          </React.Fragment>
-                        )}
-                      </p>
-                      {do {
-                        const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+        {!isDocPreUploaded && (multi || !files.length) && (
+          <label
+            class={classList(
+              'Dropzone-cavity',
+              this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
+            )}
+            for={`fileInput-${name}`}
+            onDrop={isDocPreUploaded ? undefined : this.handleDrop}
+            onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
+            onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
+          >
+            <div class={`Dropzone-content ${size}`}>
+              {children || (
+                <React.Fragment>
+                  <img
+                    class="Dropzone-file-icon"
+                    src={'img/files/file-placeholder.svg'}
+                    alt=""
+                  />
+                  <div class="Dropzone-content-desc">
+                    <p class="Dropzone-content-desc--primary">
+                      Drop file here or{' '}
+                      <b class="text-primary">Click to Upload</b>{' '}
+                      {maxSize && (
+                        <React.Fragment>
+                          ({readableFileSize(maxSize)} Max)
+                        </React.Fragment>
+                      )}
+                    </p>
+                    {do {
+                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
 
-                        if (acceptedFileTypes && showAcceptInfo) {
-                          <p class="Dropzone-content-desc--secondary text-muted small-text">
-                            {acceptedFileTypes}
-                          </p>;
-                        }
-                      }}
-                    </div>
-                    <input
-                      type="file"
-                      id={`fileInput-${name}`}
-                      onChange={this.handleFileInputChange}
-                      accept={
-                        accept && accept.map(fileType => fileTypesMap[fileType])
+                      if (acceptedFileTypes && showAcceptInfo) {
+                        <p class="Dropzone-content-desc--secondary text-muted small-text">
+                          {acceptedFileTypes}
+                        </p>;
                       }
-                      disabled={disabled}
-                      hidden
-                    />
-                  </React.Fragment>
-                )}
-              </div>
-            </label>
-          )}
+                    }}
+                  </div>
+                  <input
+                    type="file"
+                    id={`fileInput-${name}`}
+                    onChange={this.handleFileInputChange}
+                    accept={
+                      accept && accept.map(fileType => fileTypesMap[fileType])
+                    }
+                    disabled={disabled}
+                    hidden
+                  />
+                </React.Fragment>
+              )}
+            </div>
+          </label>
+        )}
         {!!(isDocPreUploaded || files.length) && (
           <div
             class={classList(
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
               stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
-              disabled && 'Dropzone-cavity--disabled'
+              disabled && 'Dropzone-cavity--disabled',
+              dropZoneCavityClassName
             )}
           >
             {files.map((file, index) => (

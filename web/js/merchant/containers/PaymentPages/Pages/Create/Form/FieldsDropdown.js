@@ -1,6 +1,6 @@
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import { classList } from 'common/util';
-import debounce from 'rzp/utils/debounce';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { classList } from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
 
 export default class FieldsDropdown extends React.PureComponent {
   state = { selectedLabel: this.props.selectedLabel };
@@ -63,14 +63,13 @@ export default class FieldsDropdown extends React.PureComponent {
                 );
               })}
             </ul>
-            {showInfo &&
-              hoverOption && (
-                <div class="info">
-                  <img src={hoverOption.info.img} width="176" />
-                  <div class="title">{hoverOption.info.title}</div>
-                  <div class="description">{hoverOption.info.description}</div>
-                </div>
-              )}
+            {showInfo && hoverOption && (
+              <div class="info">
+                <img src={hoverOption.info.img} width="176" />
+                <div class="title">{hoverOption.info.title}</div>
+                <div class="description">{hoverOption.info.description}</div>
+              </div>
+            )}
           </DropdownContent>
         </Dropdown>
       </div>

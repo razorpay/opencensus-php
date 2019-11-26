@@ -2,15 +2,15 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import LocalStorageService from 'rzp/utils/localStorage';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import Image from 'rzp/ui/Image';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Group, { GroupItem } from 'rzp/ui/Group';
+import LocalStorageService from 'common/utils/localStorage';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import Image from 'common/ui/Image';
+import ModalHeader from 'common/ui/ModalHeader';
+import Group, { GroupItem } from 'common/ui/Group';
 
-import { logout, showOrHideTour } from 'merchantLA/modules/session';
+import { logout, showOrHideTour } from 'merchantLA/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 
 @withRouter
@@ -155,21 +155,19 @@ export default class ProfileDropdown extends Component {
               <div className="media-body">Raise a request</div>
             </div>
 
-            {mode === 'live' &&
-              !showMobileNav &&
-              user.isNewAnalyticsEnabled && (
-                <div
-                  class="media media-action"
-                  onClick={() => this.showOrHideTour(true)}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="i i-tour" />
-                    </div>
+            {mode === 'live' && !showMobileNav && user.isNewAnalyticsEnabled && (
+              <div
+                class="media media-action"
+                onClick={() => this.showOrHideTour(true)}
+              >
+                <div class="media-left">
+                  <div class="media-object">
+                    <i class="i i-tour" />
                   </div>
-                  <div class="media-body">Show Dashboard Home Tour</div>
                 </div>
-              )}
+                <div class="media-body">Show Dashboard Home Tour</div>
+              </div>
+            )}
 
             <div class="media loggedin-as">
               <div class="media-body">

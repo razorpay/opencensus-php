@@ -1,13 +1,24 @@
-import Button, { AsyncBtn } from 'component/Button';
+import RTracking from 'react-tracking';
 
+import Button from 'common/new-ui/Button';
+
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
+)
 export default class OnBoardingFeatures extends React.PureComponent {
-  handleBackButton = (...args) => {
-    window.rzpAnalytics({
-      eventCategory: `Onboarding Card (${this.props.feature})`,
-      eventAction: `Page ${this.props.active} - Back CTA`,
-    });
+  handleBackButton = () => {
+    this.props.prev(() => {
+      window.rzpAnalytics({
+        eventCategory: `Onboarding Card (${this.props.feature})`,
+        eventAction: `Page ${this.props.active} - Back CTA`,
+      });
 
-    this.props.prev(args);
+      this.props.tracking.trackEvent(
+        window.rzpQ
+          .productOnboarding()
+          .success(`${this.props.feature}.onboarding.features_back`)
+      );
+    });
   };
 
   render() {
@@ -55,7 +66,9 @@ export default class OnBoardingFeatures extends React.PureComponent {
         </div>
 
         <div class="Features">
-          {features.map((data, idx) => <FeatureCard {...data} key={idx} />)}
+          {features.map((data, idx) => (
+            <FeatureCard {...data} key={idx} />
+          ))}
         </div>
 
         <div class="Button-Container">
@@ -83,18 +96,31 @@ const FeatureCard = ({ icon, title, desc }) => (
   </div>
 );
 
-const FeatureLink = ({ ga, url, page, label, feature }) => (
-  <a
-    class="external-link"
-    onClick={() => {
-      window.rzpAnalytics({
-        eventCategory: `Onboarding Card (${feature})`,
-        eventAction: `Page ${page} - ${ga}`,
-      });
+@RTracking(props =>
+  window.rzpQ.component(`${props.feature}_onboarding_feature_page`)
+)
+class FeatureLink extends React.PureComponent {
+  handleFeatureLink = () => {
+    const { ga, url, page, label, feature } = this.props;
 
-      window.open(url);
-    }}
-  >
-    {label}
-  </a>
-);
+    window.rzpAnalytics({
+      eventCategory: `Onboarding Card (${feature})`,
+      eventAction: `Page ${page} - ${ga}`,
+    });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .productOnboarding()
+        .success(`${props.feature}.onboarding.features_hyperlink`)
+    );
+
+    window.open(url);
+  };
+  render() {
+    return (
+      <a class="external-link" onClick={this.handleFeatureLink}>
+        {this.props.label}
+      </a>
+    );
+  }
+}

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/modules/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
 
 @connect(state => {
   return {
@@ -60,7 +60,8 @@ export default class ProductActivationBanner extends Component {
               go through the{' '}
               <a class="btn-link" target="_blank" href={productDocs}>
                 documentation
-              </a>.
+              </a>
+              .
             </div>
             <div>
               To activate {productName} in live mode, you can request for

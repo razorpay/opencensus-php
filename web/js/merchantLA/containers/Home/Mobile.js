@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Header from 'rzp/ui/Header';
-import Amount from 'rzp/ui/Amount';
-import Sticky from 'rzp/ui/Sticky';
-import DateRangePicker from 'rzp/ui/DateRangePicker';
+import Header from 'common/ui/Header';
+import Amount from 'common/ui/Amount';
+import Sticky from 'common/ui/Sticky';
+import DateRangePicker from 'common/ui/DateRangePicker';
 
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
@@ -102,7 +102,9 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360 ? 40 : 57
+                      : windowWidth > 360
+                      ? 40
+                      : 57
                     : 0
                 }
               />

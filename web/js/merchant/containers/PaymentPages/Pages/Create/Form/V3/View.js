@@ -10,7 +10,7 @@ import {
   updateInFormItems,
   isFormItemOfTypeAmount,
   reorderFormItems,
-} from 'merchant/modules/wysiwyg';
+} from 'merchant/reducers/wysiwyg';
 import { constructFieldSchema } from '../UDF_Fields/V3';
 import { constructAmountField } from '../Amount_Fields/V3';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
@@ -43,6 +43,7 @@ class SortableFormItemsList extends React.Component {
               <Sortable_AmountDisplayField
                 key={fi.item.name}
                 index={idx}
+                indexInRenderOrder={idx}
                 field={fi}
                 currency={currency}
                 isListSorting={isListSorting}
@@ -58,6 +59,7 @@ class SortableFormItemsList extends React.Component {
               <Sortable_UDFDisplayField
                 key={fi.name}
                 index={idx}
+                indexInRenderOrder={idx}
                 field={fi}
                 isListSorting={isListSorting}
                 checkoutOptions={checkoutOptions}
@@ -82,8 +84,30 @@ class SortableFormItemsList extends React.Component {
 export default class View extends React.PureComponent {
   state = {
     isListSorting: false,
-    hasAmountItem: null,
+    totalAmountItems: null,
   };
+
+  componentDidUpdate(prevProps) {
+    const { paymentPageEntity: prevPaymentPageEntity } = prevProps;
+    const { paymentPageEntity: curPaymentPageEntity } = this.props;
+
+    const isPageNavigatedToOtherId =
+      !prevPaymentPageEntity ||
+      !curPaymentPageEntity ||
+      prevPaymentPageEntity.id !== curPaymentPageEntity.id;
+    const isSamePageButDataFetchedAfterwards =
+      prevPaymentPageEntity.id === curPaymentPageEntity.id &&
+      !prevPaymentPageEntity.payment_page_items;
+
+    if (
+      (isPageNavigatedToOtherId || isSamePageButDataFetchedAfterwards) &&
+      curPaymentPageEntity.payment_page_items
+    ) {
+      this.setState({
+        totalAmountItems: curPaymentPageEntity.payment_page_items.length,
+      });
+    }
+  }
 
   onSubmitAmountField = (formData, indexInFormItems) => {
     const amountItem = constructAmountField(formData);
@@ -94,7 +118,7 @@ export default class View extends React.PureComponent {
     });
 
     this.setState({
-      hasAmountItem: this.state.hasAmountItem + 1,
+      totalAmountItems: this.state.totalAmountItems + 1,
     });
   };
 
@@ -102,7 +126,7 @@ export default class View extends React.PureComponent {
     this.props.deleteInFormItems(indexInFormItems);
 
     this.setState({
-      hasAmountItem: this.state.hasAmountItem - 1,
+      totalAmountItems: this.state.totalAmountItems - 1,
     });
   };
 
@@ -145,10 +169,12 @@ export default class View extends React.PureComponent {
 
   validateSameTitleExists = (title, fieldSelfIndex) => {
     const allFieldsTitles = this.props.FORM_ITEMS.map(f => {
-      return isFormItemOfTypeAmount(f) ? f.item.name : f.title;
+      return isFormItemOfTypeAmount(f)
+        ? f.item.name.toLowerCase()
+        : f.title.toLowerCase();
     });
 
-    const sameTitleIndex = allFieldsTitles.indexOf(title);
+    const sameTitleIndex = allFieldsTitles.indexOf(title.toLowerCase());
 
     if (sameTitleIndex > -1 && sameTitleIndex !== fieldSelfIndex) {
       return true;
@@ -193,16 +219,10 @@ export default class View extends React.PureComponent {
 
     const isPaymentPageEditMode = !!paymentPageEntity.id; // If it has reached uptil here, and id exist, then it's edit mode of existing payment page.
 
-    const hasAmountItem =
-      this.state.hasAmountItem !== null
-        ? this.state.hasAmountItem
-        : paymentPageEntity.payment_page_items &&
-          paymentPageEntity.payment_page_items.length;
-
     return (
       <React.Fragment>
         <div class="UI-form">
-          {!hasAmountItem && (
+          {!this.state.totalAmountItems && (
             <div class="Field Field-dummyAmount">
               <div class="Field-label" style={{ opacity: 0.6 }}>
                 Amount

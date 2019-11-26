@@ -2,16 +2,19 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 import User from 'merchant/models/User';
 
-import { toggle2FaEnforcement, updateSelfContact } from 'merchant/modules/team';
-import { updateSession } from 'merchant/modules/session';
+import {
+  toggle2FaEnforcement,
+  updateSelfContact,
+} from 'merchant/reducers/team';
+import { updateSession } from 'merchant/reducers/session';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import SwitchField from 'rzp/ui/Forms/SwitchField';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import {
   VerifyOtp,
   AskMobileNumber,
@@ -184,7 +187,9 @@ export default class Toggle2FA extends Component {
     return new Promise(resolve => {
       this.actionCompleted = resolve;
       if (flag) {
-        const { user: { second_factor_auth_setup } } = this.props.user;
+        const {
+          user: { second_factor_auth_setup },
+        } = this.props.user;
 
         const action =
           //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
@@ -197,7 +202,9 @@ export default class Toggle2FA extends Component {
   };
 
   render() {
-    const { user: { second_factor_auth_enforced } } = this.props.user;
+    const {
+      user: { second_factor_auth_enforced },
+    } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">

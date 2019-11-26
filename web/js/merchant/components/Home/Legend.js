@@ -5,12 +5,12 @@ import Legend, {
   LegendLabel,
   LegendTitle,
   LegendContent,
-} from 'rzp/ui/Legend';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+} from 'common/ui/Legend';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+} from 'common/utils/numerals';
 
 import Tooltip from 'merchant/components/Home/Tooltip';
 
@@ -53,7 +53,7 @@ export default ({
         return (
           <LegendItem key={key}>
             <LegendLabel color={item.color}>
-              {(item.value / total * 100).toFixed(2)}%
+              {((item.value / total) * 100).toFixed(2)}%
             </LegendLabel>
             <LegendTitle>{item.label}</LegendTitle>
             <LegendContent>

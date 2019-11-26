@@ -1,6 +1,6 @@
 import { Line } from 'react-chartjs-2';
 
-import { namedColors } from 'rzp/utils/chart/colors';
+import { namedColors } from 'common/utils/chart/colors';
 
 import options from './data';
 

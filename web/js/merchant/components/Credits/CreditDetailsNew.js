@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class CreditDetails extends Component {
   state = {
@@ -24,7 +24,7 @@ export default class CreditDetails extends Component {
   };
 
   getRemainingPercentage = ({ used, value }) => {
-    return Math.round(100 * used / value);
+    return Math.round((100 * used) / value);
   };
 
   pruneAmountCredits = (items = []) => {

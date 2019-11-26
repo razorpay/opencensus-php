@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
-import InlineField from 'rzp/ui/Forms/InlineField';
-import InputField from 'rzp/ui/Forms/InputField';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
+import InlineField from 'common/ui/Forms/InlineField';
+import InputField from 'common/ui/Forms/InputField';
+import TypeAhead from 'common/ui/Select/TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
-import Amount from 'rzp/ui/Amount';
-import * as ModalActions from 'rzp/modules/modals';
-import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
 import Item from 'merchant/models/Item';
 import { track } from './ga';
 
@@ -489,16 +489,14 @@ export default class InvoiceLineItem extends React.Component {
 
           <div class="item-ac-container">
             <div>
-              {selectedOption &&
-                selectedOption.item_id &&
-                !disabled && (
-                  <button
-                    class="btn btn-sm btn-link btn-purple edit-in-input ps-item__editbtn"
-                    onClick={this.quickEditItem}
-                  >
-                    Edit
-                  </button>
-                )}
+              {selectedOption && selectedOption.item_id && !disabled && (
+                <button
+                  class="btn btn-sm btn-link btn-purple edit-in-input ps-item__editbtn"
+                  onClick={this.quickEditItem}
+                >
+                  Edit
+                </button>
+              )}
               <InlineField
                 keepValueInBG={false}
                 formName="newInvoice"
@@ -528,13 +526,12 @@ export default class InvoiceLineItem extends React.Component {
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>
-            {itemHSNSAC &&
-              applyTaxes && (
-                <p>
-                  <span class="light">{HSNSACLabel} - </span>
-                  <strong>{itemHSNSAC}</strong>
-                </p>
-              )}
+            {itemHSNSAC && applyTaxes && (
+              <p>
+                <span class="light">{HSNSACLabel} - </span>
+                <strong>{itemHSNSAC}</strong>
+              </p>
+            )}
           </div>
         </td>
 
@@ -549,18 +546,17 @@ export default class InvoiceLineItem extends React.Component {
             rightAlign={true}
             disabled={disabled}
           />
-          {selectedOption.item_id &&
-            applyTaxes && (
-              <div class="tax-details">
-                {gstSlab &&
-                  gstSlab.groups.map(group => (
-                    <p key={`${selectedOption.item_id}_${group}`}>
-                      {group} @ {gstSlab.perGroup / 10000.0}%
-                    </p>
-                  ))}
-                {cess && <p>Cess @ {cess / 100.0}%</p>}
-              </div>
-            )}
+          {selectedOption.item_id && applyTaxes && (
+            <div class="tax-details">
+              {gstSlab &&
+                gstSlab.groups.map(group => (
+                  <p key={`${selectedOption.item_id}_${group}`}>
+                    {group} @ {gstSlab.perGroup / 10000.0}%
+                  </p>
+                ))}
+              {cess && <p>Cess @ {cess / 100.0}%</p>}
+            </div>
+          )}
         </td>
 
         <td class="lineItem__qty">
@@ -582,59 +578,57 @@ export default class InvoiceLineItem extends React.Component {
           <div class="item-total">
             <Amount value={lineItemTotal * 100} currency={invoiceCurrency} />
           </div>
-          {selectedOption.item_id &&
-            applyTaxes && (
-              <div class="tax-details">
-                {gstSlab &&
-                  gstSlab.groups.map(group => (
-                    <p key={`${selectedOption.item_id}_${group}_rate`}>
-                      {selectedOption.tax_inclusive ? '' : '+ '}
-                      <Amount
-                        value={
-                          calculateTax(
-                            lineItemTotalFloat,
-                            selectedOption.tax_rate / 100,
-                            selectedOption.tax_inclusive
-                          ) *
-                          100 /
-                          gstSlab.groups.length
-                        }
-                        currency={invoiceCurrency}
-                      />
-                    </p>
-                  ))}
-                {cess && (
-                  <p>
+          {selectedOption.item_id && applyTaxes && (
+            <div class="tax-details">
+              {gstSlab &&
+                gstSlab.groups.map(group => (
+                  <p key={`${selectedOption.item_id}_${group}_rate`}>
                     {selectedOption.tax_inclusive ? '' : '+ '}
                     <Amount
                       value={
-                        calculateTax(
+                        (calculateTax(
                           lineItemTotalFloat,
-                          cess / 100,
+                          selectedOption.tax_rate / 100,
                           selectedOption.tax_inclusive
-                        ) * 100
+                        ) *
+                          100) /
+                        gstSlab.groups.length
                       }
                       currency={invoiceCurrency}
                     />
                   </p>
-                )}
-                {(gstSlab || cess) && (
-                  <div class="tax-calc-details">
-                    <p>
-                      <em>
-                        Tax{' '}
-                        {selectedOption.tax_inclusive
-                          ? 'Inclusive'
-                          : 'Exclusive'},
-                      </em>
-                    </p>
-                    <p>
-                      <em>Rounded-off</em>
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                ))}
+              {cess && (
+                <p>
+                  {selectedOption.tax_inclusive ? '' : '+ '}
+                  <Amount
+                    value={
+                      calculateTax(
+                        lineItemTotalFloat,
+                        cess / 100,
+                        selectedOption.tax_inclusive
+                      ) * 100
+                    }
+                    currency={invoiceCurrency}
+                  />
+                </p>
+              )}
+              {(gstSlab || cess) && (
+                <div class="tax-calc-details">
+                  <p>
+                    <em>
+                      Tax{' '}
+                      {selectedOption.tax_inclusive ? 'Inclusive' : 'Exclusive'}
+                      ,
+                    </em>
+                  </p>
+                  <p>
+                    <em>Rounded-off</em>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </td>
       </tr>
     );

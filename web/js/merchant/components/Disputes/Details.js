@@ -1,14 +1,14 @@
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase } from 'rzp/utils/rzp-utils';
-import { daysLeftInExpiry } from 'merchant/utils/disputes';
+import { titleCase } from 'common/utils/rzp-utils';
+import { daysFromToday } from 'common/utils/rzp-utils';
 
 export default props => {
   const { dispute, isLoading, error } = props;
@@ -45,15 +45,14 @@ export default props => {
                         <Amount
                           value={dispute.amount}
                           currency={dispute.currency}
-                        />,&nbsp;
+                        />
+                        ,&nbsp;
                       </React.Fragment>
                     )}
                     {/* Text required in all types of dispute  */}
                     kindly respond to the mail sent to you by&nbsp;
-                    <Time value={dispute.respond_by} format="ll" />&nbsp; ({daysLeftInExpiry(
-                      dispute.respond_by,
-                      'in '
-                    )}).
+                    <Time value={dispute.respond_by} format="ll" />
+                    &nbsp; ({daysLeftInExpiry(dispute.respond_by, 'in ')}).
                   </p>
 
                   {/* text NOT required for fraud dispute */}
@@ -130,4 +129,15 @@ export default props => {
       )}
     </div>
   );
+};
+
+export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
+  const daysLeft = daysFromToday(expiresOn);
+  if (daysLeft < 0) {
+    return <span class="text-muted">Passed</span>;
+  } else if (daysLeft === 0) {
+    return <strong class="text-danger">Today</strong>;
+  } else {
+    return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+  }
 };

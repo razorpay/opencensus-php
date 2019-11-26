@@ -4,8 +4,8 @@ import {
   getFormattedAmountNew,
   getFormattedNumber,
   rupeesToPaise,
-} from 'rzp/utils/rzp-utils';
-import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
+} from 'common/utils/rzp-utils';
+import { getMillisecondsFromBreakdown } from 'common/utils/chart/new';
 
 import { trackTooltipDeepdive } from './ga';
 

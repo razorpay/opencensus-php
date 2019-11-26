@@ -1,11 +1,11 @@
-import { titleCase } from 'rzp/utils/rzp-utils';
-import Amount from 'rzp/ui/Amount';
-import TableBody from 'rzp/ui/TableBody';
+import { titleCase } from 'common/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import TableBody from 'common/ui/TableBody';
 
 /*
-* Settlement api is not changed for LA. So, components come as Payment, Refund, Tax and Fee.
-* We just want Transfers and Reversals as replacement of Payment and Refunds
-* */
+ * Settlement api is not changed for LA. So, components come as Payment, Refund, Tax and Fee.
+ * We just want Transfers and Reversals as replacement of Payment and Refunds
+ * */
 
 function _getOverwrittenKey(title) {
   switch (title) {
@@ -46,11 +46,10 @@ export default ({ items, loading }) => {
           </tr>
         </thead>
         <TableBody colSpan={4} isLoading={loading} rows={items}>
-          {items.map(
-            (breakup, index) =>
-              excludeKeys.indexOf(breakup.component) !== -1 ? null : (
-                <Breakup key={`breakup_${index}`} breakup={breakup} />
-              )
+          {items.map((breakup, index) =>
+            excludeKeys.indexOf(breakup.component) !== -1 ? null : (
+              <Breakup key={`breakup_${index}`} breakup={breakup} />
+            )
           )}
         </TableBody>
       </table>

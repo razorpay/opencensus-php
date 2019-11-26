@@ -6,8 +6,8 @@ import BatchList from 'merchant/containers/BatchNew/List';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchHostMandateBatches as fetchAll } from 'merchant/modules/batches';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { fetchHostMandateBatches as fetchAll } from 'merchant/reducers/batches';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import CreateBatch from './CreateBatch';
 
@@ -27,7 +27,7 @@ const ExtraFilterFields = () => (
     <label>Batch Type</label>
     <Field name="type" component="select" class="form-control input-sm">
       <option value="">Both</option>
-      <option value="auth_link">Authorization Link</option>
+      <option value="auth_link">Registration Link</option>
       <option value="recurring_charge">Recurring Charge</option>
     </Field>
   </div>

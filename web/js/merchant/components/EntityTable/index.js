@@ -1,8 +1,8 @@
 import moment from 'moment';
 
-import Banner from 'rzp/ui/Banner';
-import DataTable from 'rzp/ui/Table/DataTable';
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import Banner from 'common/ui/Banner';
+import DataTable from 'common/ui/Table/DataTable';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
 const dateFormat = 'DD MMM YYYY';
 
@@ -35,15 +35,14 @@ export default props => {
           </span>
         </Banner>
       )}
-      {hasNavigatedFrom === 'paymentpages' &&
-        title === 'payments' && (
-          <Banner cta="Clear" ctaUrl={`/${title}`}>
-            <span>
-              Showing all {title} for Payment Page id:{' '}
-              <b>{params.payment_link_id}</b>
-            </span>
-          </Banner>
-        )}
+      {hasNavigatedFrom === 'paymentpages' && title === 'payments' && (
+        <Banner cta="Clear" ctaUrl={`/${title}`}>
+          <span>
+            Showing all {title} for Payment Page id:{' '}
+            <b>{params.payment_link_id}</b>
+          </span>
+        </Banner>
+      )}
       <DataTable {...props} />
     </div>
   );

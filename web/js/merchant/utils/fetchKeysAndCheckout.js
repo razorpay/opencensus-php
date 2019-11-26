@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import loadScript from 'rzp/utils/loadScript';
+import loadScript from 'common/utils/loadScript';
 
 export const fetchKeys = currentUser => {
   return merchantFetch('keys').then(response => {

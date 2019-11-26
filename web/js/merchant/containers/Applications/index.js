@@ -9,9 +9,9 @@ import {
   NoConnectedApps,
   LoadingConnectedApps,
 } from 'merchant/components/Applications/NoConnectedApps';
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as ModalActions from 'rzp/modules/modals';
-import * as ApplicationActions from 'merchant/modules/applications';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as ApplicationActions from 'merchant/reducers/applications';
 
 @connect(
   state => {
@@ -65,9 +65,7 @@ export default class ApplicationContainer extends Component {
 
   revokeAccess = token => {
     this.context.confirm({
-      message: `Are you sure you want to revoke access to ${
-        token.application.name
-      }?`,
+      message: `Are you sure you want to revoke access to ${token.application.name}?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
       action: () =>

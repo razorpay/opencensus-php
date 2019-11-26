@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 
-import { getFormattedAmountNew, getFormattedNumber } from 'rzp/utils/rzp-utils';
+import {
+  getFormattedAmountNew,
+  getFormattedNumber,
+} from 'common/utils/rzp-utils';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -42,16 +45,15 @@ class MobileTraffic extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading &&
-            !!data && (
-              <StackedBars
-                data={data}
-                textKey={'label'}
-                formatValue={
-                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
-                }
-              />
-            )}
+          {!isLoading && !!data && (
+            <StackedBars
+              data={data}
+              textKey={'label'}
+              formatValue={
+                (isCurrency && getFormattedAmountNew) || getFormattedNumber
+              }
+            />
+          )}
         </PanelBody>
       </GenericPanel>
     );

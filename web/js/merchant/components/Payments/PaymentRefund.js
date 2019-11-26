@@ -1,18 +1,18 @@
 import React from 'react';
 
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import DataTable from 'rzp/ui/Table/DataTable';
-import LoaderDots from 'rzp/ui/LoaderDots';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import DataTable from 'common/ui/Table/DataTable';
+import LoaderDots from 'common/ui/LoaderDots';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import {
   refundId,
   amount,
   createdAt,
   refundMode,
   refundStatus,
-} from 'rzp/ui/item/pair';
+} from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -37,9 +37,8 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
   return (
     <span>
-      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{
-        refundSuffix
-      }
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}
+      efund{refundSuffix}
     </span>
   );
 };
@@ -104,8 +103,8 @@ export default ({
         <ShowWhen
           additionalCondition={user =>
             !user.isRefundAllowed ||
-            (user.isOrgAllowedFunctionality('card_refunds') ||
-              !(['card', 'emi'].indexOf(payment.method) !== -1))
+            user.isOrgAllowedFunctionality('card_refunds') ||
+              !(['card', 'emi'].indexOf(payment.method) !== -1)
           }
         >
           <div className="m-b">
@@ -150,17 +149,16 @@ export default ({
           {hasOpenNonFraudDisputes ? (
             <span class="text-danger">
               Refunds are disabled as there{' '}
-              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
-                1 && 's'}{' '}
-              on this payment
+              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute
+              {hasOpenNonFraudDisputes > 1 && 's'} on this payment
             </span>
           ) : null}
         </ShowWhen>
         <ShowWhen
           additionalCondition={user =>
             user.isRefundAllowed &&
-            (!user.isOrgAllowedFunctionality('card_refunds') &&
-              ['card', 'emi'].indexOf(payment.method) > -1)
+            !user.isOrgAllowedFunctionality('card_refunds') &&
+              ['card', 'emi'].indexOf(payment.method) > -1
           }
         >
           Refunds cannot be created for Card transactions

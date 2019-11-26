@@ -1,4 +1,4 @@
-import defaultTrack, { setTrackData } from 'rzp/utils/googleAnalytics';
+import defaultTrack, { setTrackData } from 'common/utils/googleAnalytics';
 
 const eventCategory = 'Dashboard - Payment Links';
 
@@ -30,8 +30,8 @@ export function trackTogglePartialPayment(paymentLinkId, action, value) {
 }
 
 /*
-* Track click on Create Payment Link (for V2 users)
-* */
+ * Track click on Create Payment Link (for V2 users)
+ * */
 export function trackOpenCreateForm(e) {
   track({
     eventAction: 'Open Form - New Payment Link',
@@ -40,8 +40,8 @@ export function trackOpenCreateForm(e) {
 }
 
 /*
-* Track click on "What's this" helper text
-* */
+ * Track click on "What's this" helper text
+ * */
 export function trackHelpClick(e) {
   track({
     eventAction: "Click - Create Payment Link - What's This",
@@ -50,9 +50,9 @@ export function trackHelpClick(e) {
 }
 
 /*
-* Track click on submit form
-* @params {String} data
-* */
+ * Track click on submit form
+ * @params {String} data
+ * */
 export function trackFormSubmit(data) {
   track({
     eventAction: 'Submit Form - New Payment Link',
@@ -61,9 +61,9 @@ export function trackFormSubmit(data) {
 }
 
 /*
-* Track click on submit form
-* @params {String} data
-* */
+ * Track click on submit form
+ * @params {String} data
+ * */
 export function closePaymentLinkForm(text) {
   track({
     eventAction: 'Close Form - New Payment Link',
@@ -72,8 +72,8 @@ export function closePaymentLinkForm(text) {
 }
 
 /*
-* Track click on duplicate payment link button
-* */
+ * Track click on duplicate payment link button
+ * */
 export function trackClickDuplicatePaymentLink() {
   track({
     eventAction: 'Click - Duplicate Payment Link',
@@ -81,8 +81,8 @@ export function trackClickDuplicatePaymentLink() {
 }
 
 /*
-* Track click on saving duplicate payment link
-* */
+ * Track click on saving duplicate payment link
+ * */
 export function trackSaveDuplicatePaymentLink() {
   track({
     eventAction: 'Save - Duplicate Payment Link',

@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 import ajax from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
-import { closeModal } from 'rzp/modules/modals';
-import Button, { AsyncBtn } from 'component/Button';
-import { updateFeatures } from 'merchant/modules/config';
+import { closeModal } from 'merchant_common/reducers/modals';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { updateFeatures } from 'merchant/reducers/config';
 import User, { setFeatures } from 'merchant/models/User';
-import * as SessionActions from 'merchant/modules/session';
-import { showNotification } from 'rzp/modules/notifications';
+import * as SessionActions from 'merchant/reducers/session';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalCloseReasons from './ModalCloseReasons';
 
 @connect(
@@ -31,6 +31,7 @@ export default class ScheduledModal extends Component {
       autoEnabled: false,
       isLoading: false,
       modalClosed: false,
+      errors: '',
     };
   }
 
@@ -92,49 +93,66 @@ export default class ScheduledModal extends Component {
           isLoading: false,
         });
       })
-      .catch(response => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Error while retrieving Scheduled Pricing',
-          hidePrevious: true,
+      .catch(() => {
+        this.setState({
+          errors: 'Error while retrieving Scheduled Pricing',
         });
-        this.props.closeModal();
+        this.fireGAEvent({
+          eventAction: `Click on Enable`,
+          eventLabel: `Failure while fetching price`,
+        });
       });
   };
 
   onEnable = () => {
     this.fireGAEvent({
       eventAction: `ES Modal`,
-      eventLabel: `On-Demand Success | Enable Scheduled ES`,
+      eventLabel: `Scheduled ES Enabling attempt | Enable Scheduled ES`,
     });
-    let payload = {
-      features: {
-        es_on_demand: '0',
-        es_automatic: '1',
-      },
-      should_sync: 1,
-    };
     this.setState({
       isLoading: true,
     });
-    this.props
-      .updateFeatures(payload, this.props.user.current)
-      .then(res => {
-        let newUser = new User(this.props.user);
-        newUser.features = setFeatures(res.success ? res.data.features : []);
-        this.props.updateSession({ user: newUser });
+    ajax(
+      {
+        url: 'es/scheduled',
+        method: 'POST',
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(() => {
+        let updatedUser = new User(this.props.user);
+        updatedUser
+          .fetch()
+          .then(res => {
+            this.props.updateSession({ user: res.data });
+            this.setState({
+              autoEnabled: true,
+              isLoading: false,
+            });
+            this.fireGAEvent({
+              eventAction: `ES Modal`,
+              eventLabel: `Scheduled ES Success | Enable Scheduled ES`,
+            });
+          })
+          .catch(() => {
+            this.props.showNotification({
+              type: 'error',
+              message: 'Error loading user profile',
+            });
+            this.props.closeModal();
+          });
+      })
+      .catch(({ errors }) => {
+        const error = (errors || [])[0];
+        this.fireGAEvent({
+          eventAction: `ES Modal`,
+          eventLabel: `ES Scheduled Enabling failure | ${error}`,
+        });
         this.setState({
-          autoEnabled: true,
+          errors: error,
           isLoading: false,
         });
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'There was a problem enabling ES - Scheduling',
-          hidePrevious: true,
-        });
-        this.props.closeModal();
       });
   };
 
@@ -160,9 +178,8 @@ export default class ScheduledModal extends Component {
           onCloseClick={() => this.props.closeModal()}
         />
         <div className="modal-body">
-          Your Early settlement feature request has been sent to Razorpay's
-          operation team. Thus early settlement feature will be activated in 1
-          working day.
+          Congratulations, Your Early Settlement feature has now been enabled.
+          Never fall short of cash now!
           <div className="border">
             <p>
               Early settlement applies to domestic settlements only. For
@@ -174,7 +191,7 @@ export default class ScheduledModal extends Component {
           </div>
           <a
             target="_blank"
-            href="https://razorpay.freshdesk.com/support/solutions/folders/11000011340"
+            href="https://razorpay.com/capital/#faqs"
             className="highlight-support"
             onClick={() => {
               this.fireGAEvent({
@@ -204,7 +221,11 @@ export default class ScheduledModal extends Component {
         <ModalHeader
           title={'Enable Early Settlement'}
           onCloseClick={() => {
-            this.setState({ modalClosed: true });
+            if (this.state.errors) {
+              this.props.closeModal();
+            } else {
+              this.setState({ modalClosed: true });
+            }
           }}
         />
         <div className="modal-body">
@@ -219,36 +240,44 @@ export default class ScheduledModal extends Component {
               {` `}Learn more
             </a>
           </div>
-          <div className="overflow-box">
-            <div className="schedule-header">
-              Here's how instantly it works:
+          {!this.state.errors ? (
+            <div className="overflow-box">
+              <div className="schedule-header">
+                Here's how instantly it works:
+              </div>
+              <div className="schedule-desc-container">
+                <ul className="schedule-desc">
+                  <li>
+                    Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
+                    settled
+                  </li>
+                  {!this.state.isLoading && (
+                    <li>
+                      A Minimal fee of <b>{`${this.state.fees / 100}%`}</b>{' '}
+                      charged for each settlement
+                    </li>
+                  )}
+                </ul>
+              </div>
+              <div className="schedule-img-container">
+                <img src={'/dist/css/assets/settlements-blue-box.png'} />
+              </div>
+              <div>
+                <AsyncBtn.Primary
+                  class={'enable-schedule-btn'}
+                  pendingState="Enabling..."
+                  onClick={this.onEnable}
+                  disabled={this.state.isLoading}
+                >
+                  Enable Early Settlement
+                </AsyncBtn.Primary>
+              </div>
             </div>
-            <div className="schedule-desc-container">
-              <ul className="schedule-desc">
-                <li>
-                  Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
-                  settled
-                </li>
-                <li>
-                  A Minimal fee of <b>{`${this.state.fees / 100}%`}</b> charged
-                  for each settlement
-                </li>
-              </ul>
+          ) : (
+            <div style={{ color: 'red', marginTop: 20 }}>
+              {this.state.errors}
             </div>
-            <div className="schedule-img-container">
-              <img src={'/dist/css/assets/settlements-blue-box.png'} />
-            </div>
-            <div>
-              <AsyncBtn.Primary
-                class={'enable-schedule-btn'}
-                pendingState="Enabling..."
-                onClick={this.onEnable}
-                disabled={this.state.isLoading}
-              >
-                Enable Early Settlement
-              </AsyncBtn.Primary>
-            </div>
-          </div>
+          )}
           <div className="border">
             <p>
               Early settlement applies to domestic settlements only. For

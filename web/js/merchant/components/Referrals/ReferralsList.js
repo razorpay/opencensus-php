@@ -1,6 +1,6 @@
-import TableBody from 'rzp/ui/TableBody';
-import Time from 'rzp/ui/Time';
-import CheckIcon from 'rzp/ui/CheckIcon';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import CheckIcon from 'common/ui/CheckIcon';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ReferralsListItem = props => {
@@ -41,21 +41,20 @@ const ReferralsListItem = props => {
       <td>
         <CheckIcon value={activated} />
       </td>
-      {email !== user.email &&
-        props.showCreateLoginModal && (
-          <td>
-            <button
-              class="btn btn-xs btn-primary"
-              onClick={() => {
-                props.showCreateLoginModal(props.referral);
-              }}
-              data-tip="Provide login to submerchant with merchant email."
-              data-place="right"
-            >
-              Invite to Login
-            </button>
-          </td>
-        )}
+      {email !== user.email && props.showCreateLoginModal && (
+        <td>
+          <button
+            class="btn btn-xs btn-primary"
+            onClick={() => {
+              props.showCreateLoginModal(props.referral);
+            }}
+            data-tip="Provide login to submerchant with merchant email."
+            data-place="right"
+          >
+            Invite to Login
+          </button>
+        </td>
+      )}
     </EntityItemRow>
   );
 };

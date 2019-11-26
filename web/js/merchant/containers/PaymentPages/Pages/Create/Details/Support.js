@@ -1,8 +1,8 @@
-import Input from 'component/Input';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import Button from 'component/Button';
+import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Button from 'common/new-ui/Button';
 import RemoveBtn from '../RemoveBtn';
-import { isEmail } from 'rzp/utils/validators';
+import { isEmail } from 'common/utils/validators';
 
 const phoneIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

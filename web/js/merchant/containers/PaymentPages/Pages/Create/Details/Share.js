@@ -1,5 +1,5 @@
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import Button from 'component/Button';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Button from 'common/new-ui/Button';
 import RemoveBtn from '../RemoveBtn';
 
 export default class extends React.PureComponent {

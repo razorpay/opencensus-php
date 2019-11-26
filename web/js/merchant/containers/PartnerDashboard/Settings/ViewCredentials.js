@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { closeModal } from 'rzp/modules/modals';
+import { closeModal } from 'merchant_common/reducers/modals';
 
-import InputField from 'rzp/ui/Forms/InputField';
+import InputField from 'common/ui/Forms/InputField';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
+import ModalHeader from 'common/ui/ModalHeader';
 
 @connect(null, { closeModal })
 export default class ViewCredentials extends Component {
@@ -55,9 +55,7 @@ export default class ViewCredentials extends Component {
           <div class="Modal__Actions clearfix">
             <a
               class="btn btn-primary btn-block"
-              href={`/keys/csv/?id=${credentials.id}&secret=${
-                credentials.secret
-              }`}
+              href={`/keys/csv/?id=${credentials.id}&secret=${credentials.secret}`}
             >
               Download Token
             </a>

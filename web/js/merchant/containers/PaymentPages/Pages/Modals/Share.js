@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Button, { AsyncBtn } from 'component/Button';
-import Form from 'component/Form';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import Input from 'component/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Input from 'common/new-ui/Input';
 
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import PPEmbedButtonView from './EmbedButton';
 
-import { isEmail, isPhone } from 'rzp/utils/validators';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { isEmail, isPhone } from 'common/utils/validators';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import { isMobileAndTablet } from 'common/util';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
 const twitterBase = 'https://twitter.com/share?url=';
@@ -243,42 +243,41 @@ export default class extends React.PureComponent {
               </div>
             )}
 
-            {isPaymentPagesV2 &&
-              isNew && (
-                <div class="Share-section">
-                  <span class="label--faded">
-                    <i class="i i-embed-btn" />
-                    Embed Payment Button
+            {isPaymentPagesV2 && isNew && (
+              <div class="Share-section">
+                <span class="label--faded">
+                  <i class="i i-embed-btn" />
+                  Embed Payment Button
+                </span>
+                <div style={{ display: 'inline-block' }}>
+                  <span class="help-content">
+                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                    <Popover
+                      align="top"
+                      theme="dark"
+                      parentQuerySelector=".ReactModal__Content"
+                    >
+                      <PopoverBody>
+                        Your customers can pay from your website by clicking on
+                        this Payment Button
+                      </PopoverBody>
+                    </Popover>
                   </span>
-                  <div style={{ display: 'inline-block' }}>
-                    <span class="help-content">
-                      <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                      <Popover
-                        align="top"
-                        theme="dark"
-                        parentQuerySelector=".ReactModal__Content"
-                      >
-                        <PopoverBody>
-                          Your customers can pay from your website by clicking
-                          on this Payment Button
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                  <Button.Transparent
-                    type="button"
-                    class="Button--Link"
-                    onClick={this.openEmbedButtonView}
-                    style={{ float: 'right' }}
-                  >
-                    <b>Create</b>
-                  </Button.Transparent>
                 </div>
-              )}
+                <Button.Transparent
+                  type="button"
+                  class="Button--Link"
+                  onClick={this.openEmbedButtonView}
+                  style={{ float: 'right' }}
+                >
+                  <b>Create</b>
+                </Button.Transparent>
+              </div>
+            )}
 
             <div class="Share-section">
               <span class="label--faded">
-                <i class="i i-share" /> Share{' '}
+                <i class="i i-share-circle" /> Share{' '}
               </span>
               {this.state.description && (
                 <div class="social-media" style={{ display: 'inline-block' }}>

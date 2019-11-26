@@ -1,6 +1,6 @@
 import Entity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, isBlank } from 'common/utils/rzp-utils';
 
 export default class Referral extends Entity {
   resourceUrl = 'referrals';
@@ -12,8 +12,8 @@ export default class Referral extends Entity {
       },
     }).then(response => {
       /* `fetchAll` for referrals send `response.data` instead of
-      * `response.data.items`
-      */
+       * `response.data.items`
+       */
       response.data = response.data.map(item => new Referral(item));
       return response;
     });

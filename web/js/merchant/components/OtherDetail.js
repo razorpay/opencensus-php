@@ -1,7 +1,7 @@
-import { getType } from 'rzp/utils/entity';
-import { humanize } from 'rzp/utils/rzp-utils';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import { getType } from 'common/utils/entity';
+import { humanize } from 'common/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 import EntityDetailRow from './EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { NavLink } from 'react-router-dom';

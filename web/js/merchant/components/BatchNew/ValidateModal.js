@@ -2,7 +2,7 @@ import { Component } from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
 import FileUpload from 'merchant/components/File/Upload';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
@@ -16,6 +16,7 @@ export default class BatchValidateModal extends Component {
       sampleUrl,
       docUrl,
       batchType,
+      batchTypeText = '',
       maxRows,
       onFileChange,
       onBiggerFileSize,
@@ -81,8 +82,9 @@ export default class BatchValidateModal extends Component {
               <li>The amount mentioned should be in paise.</li>
               {batchType && (
                 <li>
-                  The receipt id for all {titleCase(batchType)}s should be
-                  unique.
+                  The receipt id for all{' '}
+                  {batchTypeText ? batchTypeText : titleCase(batchType)}s should
+                  be unique.
                 </li>
               )}
               {maxRows && (

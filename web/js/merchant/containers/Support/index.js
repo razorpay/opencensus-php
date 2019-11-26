@@ -4,7 +4,7 @@ import SupportHeader from 'merchant/components/Support/SupportHeader';
 import SupportBody from 'merchant/components/Support/SupportBody';
 
 import { trackSupportButton } from './ga';
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class Support extends Component {
   state = {
@@ -58,6 +58,7 @@ export default class Support extends Component {
   };
 
   render() {
+    const { user } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
 
     if (location.hostname !== 'dashboard.razorpay.com') {
@@ -76,6 +77,7 @@ export default class Support extends Component {
           isOpened={isOpened}
           onChat={this.handleChat}
           notifyCount={notifyCount}
+          isSupportCallEnabled={user.isSupportCallEnabled}
         />
       </div>
     );

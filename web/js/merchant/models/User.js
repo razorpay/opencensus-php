@@ -1,19 +1,20 @@
 import ajax from 'merchant/utils/ajax';
-import { filterBy } from 'rzp/utils/rzp-utils';
-import { RZPFeatures } from 'rzp/utils/constants';
+import { filterBy } from 'common/utils/rzp-utils';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import { fetchFeaturesAjax } from 'merchant/modules/config';
-import LocalStorageService from 'rzp/utils/localStorage';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
+import LocalStorageService from 'common/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
-import { getExperiment } from 'common/util';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   roleEditPermissions,
   roleViewPermissions,
   antiOrgsModules,
   antiOrgsFeatures,
-} from '../resources/permissions';
+} from 'merchant/helpers/permissions';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -156,6 +157,8 @@ export default class User {
   get instantActivation() {
     return {
       activation_flow: this.activation_flow,
+      business_type: this.business_type,
+      activated: this.activated,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -169,8 +172,15 @@ export default class User {
         return this.activation_flow === 'greylist';
       },
 
+      get isUnregBizActivated() {
+        return this.activated === 1;
+      },
+
       get isL1Submitted() {
-        return !!this.activation_flow;
+        return (
+          (this.business_type != 11 && !!this.activation_flow) ||
+          this.isUnregBizActivated
+        );
       },
     };
   }
@@ -310,6 +320,18 @@ export default class User {
       : !!this.partner_type;
   }
 
+  // checks if the merchant or user has shown intent to become partner
+  isPartnerIntent() {
+    return this.partner_type === null && this.partner_intent;
+  }
+
+  isSignUpPartnerIntent() {
+    return (
+      this.partner_type === null &&
+      this.partner_intent &&
+      this.merchant_partner_intent === false
+    );
+  }
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
@@ -336,6 +358,10 @@ export default class User {
 
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
+  }
+
+  get isCreditPullEnabled() {
+    return this.isFeatureEnabled('show_credit_score');
   }
 
   get isDiwaliPromoEnabled() {
@@ -395,6 +421,15 @@ export default class User {
     return this.getExpStatus('show_commission_balance');
   }
 
+  get isUnregBizFlowEnabled() {
+    // return true;
+    return this.getExpStatus('non_registered_onboarding');
+  }
+
+  get isFirstAmountHidden() {
+    return this.getExpStatus('hide_registration_link_first_amount');
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
@@ -402,11 +437,28 @@ export default class User {
   }
 
   get isCustomNotesDropdownEnabled() {
-    return this.getExpStatus('custom_notes');
+    return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
     return this.getExpStatus('sellerapp_PL_batch_upload');
+  }
+
+  get isSellerAppRole() {
+    const userRole = this.userRole;
+    return (
+      [rolesList.SELLERAPP, rolesList.SELLERAPP_PLUS].indexOf(userRole) > -1
+    );
+  }
+
+  get isSupportCallEnabled() {
+    return this.getExpStatus('support_call');
+  }
+
+  get isUnregisteredBusiness() {
+    const userBusinessType = Number(this.business_type);
+    const UNREGISTERED_BUSINESS_TYPES = [2, 11];
+    return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
   }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted

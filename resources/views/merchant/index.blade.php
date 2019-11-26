@@ -43,6 +43,7 @@
     window.rzp_org = {!! $org !!};
     window.notifications = {!! $notifications !!};
     window.api_host = "{!! $api_host !!}"
+    window.custom_notes = {!! $custom_notes !!};
   </script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')

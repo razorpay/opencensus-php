@@ -4,16 +4,16 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import Input from 'component/Input';
-import InputField from 'rzp/ui/Forms/InputField';
-import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
-import Alert from 'rzp/ui/Forms/Alert';
-import { required } from 'rzp/utils/validators';
-import { savePlan } from 'merchant/modules/plans';
-import { showNotification } from 'rzp/modules/notifications';
+import Input from 'common/new-ui/Input';
+import InputField from 'common/ui/Forms/InputField';
+import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
+import Alert from 'common/ui/Forms/Alert';
+import { required } from 'common/utils/validators';
+import { savePlan } from 'merchant/reducers/plans';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
-import { fetchPlan } from 'merchant/modules/plans';
+import { fetchPlan } from 'merchant/reducers/plans';
 import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
 
 import {
@@ -21,7 +21,7 @@ import {
   getEventCategoryFromPath,
   getURLQueryParams,
   paiseToRupees,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 const selector = formValueSelector('newPlan');
 
@@ -239,9 +239,10 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <span class="help-block label--secondary">
-                      <i class="i i-info-outline" />You can set{' '}
-                      <b>billing cycle</b> (start date and end date) and{' '}
-                      <b>trial period</b> later while, creating a subscription.
+                      <i class="i i-info-outline" />
+                      You can set <b>billing cycle</b> (start date and end date)
+                      and <b>trial period</b> later while, creating a
+                      subscription.
                     </span>
                   </div>
                 )}

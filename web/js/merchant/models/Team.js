@@ -1,7 +1,7 @@
 import store from 'merchant/store';
 import GenericEntity from './GenericEntity';
 
-import { pickProps } from 'rzp/utils/rzp-utils';
+import { pickProps } from 'common/utils/rzp-utils';
 
 export default class MerchantUser extends GenericEntity {
   resourceUrl = 'merchants-users';
@@ -76,9 +76,10 @@ export default class MerchantUser extends GenericEntity {
     }
 
     return Promise.all(apiCalls).then(responses => {
-      return [...responses, { id: data.id, role: data.role }].reduce(
-        (newObject, response) => ({ ...response, ...newObject })
-      );
+      return [
+        ...responses,
+        { id: data.id, role: data.role },
+      ].reduce((newObject, response) => ({ ...response, ...newObject }));
     });
   }
 

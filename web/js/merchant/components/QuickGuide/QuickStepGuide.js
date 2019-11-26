@@ -1,4 +1,4 @@
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import StepGuide from 'merchant/components/StepGuide';
 import Step from 'merchant/components/StepGuide/Step';

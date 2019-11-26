@@ -2,14 +2,14 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import CheckboxField from 'rzp/ui/Forms/CheckboxField';
-import { closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
+import ModalHeader from 'common/ui/ModalHeader';
+import CheckboxField from 'common/ui/Forms/CheckboxField';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   issuePaymentLinkBatch,
   editIssuableBatchList,
-} from 'merchant/modules/batches';
+} from 'merchant/reducers/batches';
 
 @connect(state => state.session, {
   showNotification,
@@ -83,8 +83,8 @@ export default class IssueAllLinksModal extends Component {
 
             {mode === 'test' && (
               <div class="alert alert-sm alert-warning">
-                Payment links were created in <b>Test Mode</b>
-                . So, only test payments can be made.
+                Payment links were created in <b>Test Mode</b>. So, only test
+                payments can be made.
                 {/* Also, SMS will not be sent in test mode. */}
               </div>
             )}

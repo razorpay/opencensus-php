@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { closeModal } from 'rzp/modules/modals';
-import Button from 'component/Button';
+import ModalHeader from 'common/ui/ModalHeader';
+import { closeModal } from 'merchant_common/reducers/modals';
+import Button from 'common/new-ui/Button';
 import { CLOSEOPTIONS } from './CloseReasons';
 
 @connect(state => ({ user: state.session.user }), {
@@ -24,9 +24,7 @@ export default class ModalCloseReasons extends Component {
     const analyticsPayload = {
       eventCategory: 'Dashboard - Early Settlement',
       eventAction: `Reasons - ${this.props.closeOrigin}`,
-      eventLabel: `Reason - ${this.state.closeReason} - ${
-        this.props.closeOrigin
-      }`,
+      eventLabel: `Reason - ${this.state.closeReason} - ${this.props.closeOrigin}`,
     };
 
     window.rzpAnalytics(analyticsPayload);

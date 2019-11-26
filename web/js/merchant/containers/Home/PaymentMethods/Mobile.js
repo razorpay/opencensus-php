@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 
-import { globalGroupTitleMap } from 'rzp/utils/pokedex';
+import { globalGroupTitleMap } from 'common/utils/pokedex';
 import {
   getFormattedAmountNew,
   getFormattedNumber,
   titleCase,
   getArraySorterFromArray,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 import GenericPanel, {
   PanelTopbar,
@@ -61,19 +61,18 @@ class MobilePaymentMethods extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading &&
-            !hasNoData && (
-              <StackedBars
-                data={data}
-                textKey={aggKey}
-                getColor={getPaymentMethodColor}
-                formatText={formatText}
-                orderBy={this.sorter}
-                formatValue={
-                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
-                }
-              />
-            )}
+          {!isLoading && !hasNoData && (
+            <StackedBars
+              data={data}
+              textKey={aggKey}
+              getColor={getPaymentMethodColor}
+              formatText={formatText}
+              orderBy={this.sorter}
+              formatValue={
+                (isCurrency && getFormattedAmountNew) || getFormattedNumber
+              }
+            />
+          )}
         </PanelBody>
       </GenericPanel>
     );

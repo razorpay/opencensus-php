@@ -7,7 +7,7 @@ import State from 'merchant/models/State';
 import {
   getCountryPINcodeType,
   isValidZipcodeCountryWise,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 
 /**
  * Finds a state from the states-list by it's name.
@@ -266,18 +266,17 @@ export default class AddressEntry extends React.Component {
               />
             </div>
           )}
-          {hideCountry &&
-            showDisabledCountry && (
-              <div class="col col-md-6">
-                <input
-                  value="India"
-                  placeholder="Country"
-                  class="form-control"
-                  type="text"
-                  disabled
-                />
-              </div>
-            )}
+          {hideCountry && showDisabledCountry && (
+            <div class="col col-md-6">
+              <input
+                value="India"
+                placeholder="Country"
+                class="form-control"
+                type="text"
+                disabled
+              />
+            </div>
+          )}
         </div>
       </div>
     );

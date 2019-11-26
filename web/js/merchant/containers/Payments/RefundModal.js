@@ -3,24 +3,24 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { Link } from 'react-router-dom';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { AmountTooltip } from 'rzp/ui/Amount';
+import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import { AmountTooltip } from 'common/ui/Amount';
 import {
   isBlank,
   rupeesToPaise,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
+} from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
   fetchRefunds,
   fetchTransfers,
-} from 'merchant/modules/payments/details';
-import { closeModal } from 'rzp/modules/modals';
+} from 'merchant/reducers/payments/details';
+import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 export const isPartialPayment = props => {
@@ -395,10 +395,9 @@ export default class RefundModal extends Component {
         <div class="modal-body">
           {nonFraudDisputeCount ? (
             <div class="text-danger m-b">
-              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute{nonFraudDisputeCount >
-                1 && 's'}{' '}
-              raised against this payment. Kindly check the dispute details
-              before initiating a refund.
+              There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
+              {nonFraudDisputeCount > 1 && 's'} raised against this payment.
+              Kindly check the dispute details before initiating a refund.
             </div>
           ) : null}
           <form
@@ -431,7 +430,8 @@ export default class RefundModal extends Component {
                   This will be a{' '}
                   <b>
                     <RefundType partial={partial} /> refund
-                  </b>.
+                  </b>
+                  .
                   {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}

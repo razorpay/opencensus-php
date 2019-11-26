@@ -1,8 +1,8 @@
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { validatePANCard, isUrlLenient } from 'rzp/utils/validators';
+import { validatePANCard, isUrlLenient } from 'common/utils/validators';
 
 import AddressFields from './AddressFieldsMap';
 
@@ -16,6 +16,7 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
+const NOT_YET_REGISTERED = 11;
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -200,5 +201,7 @@ function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
+  return (
+    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
+  );
 }

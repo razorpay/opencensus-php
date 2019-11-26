@@ -1,4 +1,4 @@
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 
 export default function UpdateSubscriptionLinkReview(props) {
   const changes = changeData(props);
@@ -24,7 +24,9 @@ export default function UpdateSubscriptionLinkReview(props) {
 
   return (
     <div class="SubscriptionLinks--Update-review">
-      {changes.map(e => <ChangeValue {...e} />)}
+      {changes.map(e => (
+        <ChangeValue {...e} />
+      ))}
       {updateSubsStatusDesc}
     </div>
   );

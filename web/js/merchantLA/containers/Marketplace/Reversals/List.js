@@ -2,14 +2,14 @@ import { connect } from 'react-redux';
 import { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import HeaderAction from 'common/ui/HeaderAction';
 import ReversalsTable from './ReversalsTable';
 import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
-import { fetchBalanceAction } from 'merchantLA/modules/credits';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { fetchBalanceAction } from 'merchantLA/reducers/credits';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 @connect(
   state => {
     return {
@@ -27,7 +27,10 @@ export default class ReversalsListContainer extends Component {
   }
 
   render() {
-    const { balanceData: { loading, data: balanceData }, user } = this.props,
+    const {
+        balanceData: { loading, data: balanceData },
+        user,
+      } = this.props,
       merchant = user.merchants[user.current] || {},
       isBalanceSource = merchant.refund_source === 'balance',
       balance = isBalanceSource

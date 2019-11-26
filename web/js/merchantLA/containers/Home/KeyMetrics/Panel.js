@@ -4,26 +4,26 @@ import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
 
-import Definition from 'rzp/ui/Definition';
-import Change from 'rzp/ui/Change';
-import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import { namedColors } from 'rzp/utils/chart/colors';
+import Definition from 'common/ui/Definition';
+import Change from 'common/ui/Change';
+import { BtnGroup, Btn } from 'common/ui/BtnGroup/index.js';
+import { namedColors } from 'common/utils/chart/colors';
 import {
   isDefined,
   titleCase,
   paiseToRupees,
   getPercentage,
-} from 'rzp/utils/rzp-utils';
-import debounce from 'rzp/utils/debounce';
-import { timeScale } from 'rzp/utils/chart/new.js';
-import takeScreenshot from 'rzp/utils/screenshot';
-import Group, { GroupItem } from 'rzp/ui/Group';
+} from 'common/utils/rzp-utils';
+import debounce from 'common/utils/debounce';
+import { timeScale } from 'common/utils/chart/new.js';
+import takeScreenshot from 'common/utils/screenshot';
+import Group, { GroupItem } from 'common/ui/Group';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import GenericTooltip from 'rzp/ui/Tooltip';
+} from 'common/utils/numerals';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import GenericTooltip from 'common/ui/Tooltip';
 
 import { tabsMeta, breakdownVals, breakdownValsMap } from './data';
 import GroupingDropdown from 'merchantLA/containers/Home/GroupingDropdown';
@@ -262,7 +262,9 @@ class Panel extends Component {
       trendText +=
         ' (' +
         (trend.currentCount === 0
-          ? trend.previousCount !== 0 ? 100 : 0
+          ? trend.previousCount !== 0
+            ? 100
+            : 0
           : getPercentage(currentCount, trendAbsValue)) +
         '%)';
     }
@@ -297,47 +299,42 @@ class Panel extends Component {
         error={data.error}
       >
         <PanelTopbar className="clearfix">
-          {data.trend.show &&
-            !data.trend.error && (
-              <div
-                className={`pull-left ${
-                  data.trend.loading ? ' trend-loading' : ''
-                }`}
-              >
-                <div>
-                  <Change value={trendValue}>
+          {data.trend.show && !data.trend.error && (
+            <div
+              className={`pull-left ${
+                data.trend.loading ? ' trend-loading' : ''
+              }`}
+            >
+              <div>
+                <Change value={trendValue}>
+                  {trend.loading ? (
+                    <PlaceholderLoader />
+                  ) : (
+                    <span>
+                      {trendText}
+                      <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
+                    </span>
+                  )}
+                </Change>
+                <Definition>
+                  <span className="text-fade">
                     {trend.loading ? (
                       <PlaceholderLoader />
                     ) : (
                       <span>
-                        {trendText}
-                        <Tooltip
-                          value={trendAbsValue}
-                          isCurrency={isCurrency}
-                        />
+                        Compared to:
+                        <span>
+                          {<span>&nbsp;&nbsp;</span>}
+                          {trend.startDate.format(dateFormat)}{' '}
+                        </span>
+                        -<span> {trend.endDate.format(dateFormat)} </span>
                       </span>
                     )}
-                  </Change>
-                  <Definition>
-                    <span className="text-fade">
-                      {trend.loading ? (
-                        <PlaceholderLoader />
-                      ) : (
-                        <span>
-                          Compared to:
-                          <span>
-                            {<span>&nbsp;&nbsp;</span>}
-                            {trend.startDate.format(dateFormat)}{' '}
-                          </span>
-                          -
-                          <span> {trend.endDate.format(dateFormat)} </span>
-                        </span>
-                      )}
-                    </span>
-                  </Definition>
-                </div>
+                  </span>
+                </Definition>
               </div>
-            )}
+            </div>
+          )}
           <div className="panel-actions pull-right">
             <BtnGroup
               className="panel-action-item time-breakdown"
@@ -395,16 +392,15 @@ class Panel extends Component {
                 />
               </div>
             )}
-            {filters &&
-              filters.length > 0 && (
-                <div className="panel-action-item">
-                  <FilteringDropdown
-                    onFilterChange={this.handleFilterChange}
-                    filters={filters}
-                    selectedFilters={selectedFilters}
-                  />
-                </div>
-              )}
+            {filters && filters.length > 0 && (
+              <div className="panel-action-item">
+                <FilteringDropdown
+                  onFilterChange={this.handleFilterChange}
+                  filters={filters}
+                  selectedFilters={selectedFilters}
+                />
+              </div>
+            )}
             <div id="keymetrics-download" className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
@@ -423,23 +419,19 @@ class Panel extends Component {
             ref={node => (this.panelBody = node)}
           >
             <div className="chart-container">
-              {!data.loading &&
-                data.histogram &&
-                !this.state.hideGraph && (
-                  <Line
-                    options={chartOptions}
-                    data={getChartData}
-                    ref={node => (this.chartInstance = node)}
-                  />
-                )}
-            </div>
-            {!noGrouping &&
-              !data.loading &&
-              data.legendData && (
-                <div>
-                  <Legend data={data.legendData} isCurrency={isCurrency} />
-                </div>
+              {!data.loading && data.histogram && !this.state.hideGraph && (
+                <Line
+                  options={chartOptions}
+                  data={getChartData}
+                  ref={node => (this.chartInstance = node)}
+                />
               )}
+            </div>
+            {!noGrouping && !data.loading && data.legendData && (
+              <div>
+                <Legend data={data.legendData} isCurrency={isCurrency} />
+              </div>
+            )}
           </div>
         </PanelBody>
 

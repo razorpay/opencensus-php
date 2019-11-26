@@ -1,17 +1,16 @@
-import Form from 'component/Form';
-import Input from 'component/Input';
-import Button from 'component/Button';
-import { classList, getFormattedAmount } from 'common/util';
-import Amount, { AmountTooltip } from 'rzp/ui/Amount';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
+import { classList } from 'common/utils/rzp-utils';
+import { getFormattedAmount } from 'common/utils/rzp-utils';
+import Amount, { AmountTooltip } from 'common/ui/Amount';
 import EditLayer from '../../EditLayer';
-import { getCurrency } from 'rzp/ui/Amount';
+import { getCurrency } from 'common/ui/Amount';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
   const currencySymbol = getCurrency(paymentPageEntity.currency).symbol;
-  let cls = `Field Field--disabled Field--required Field--currency-${
-    currencySymbol.length
-  }`;
+  let cls = `Field Field--disabled Field--required Field--currency-${currencySymbol.length}`;
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
@@ -37,9 +36,8 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
                   <div className="Field-el">
                     <label>
-                      <b>{amountDisplay.split('.')[0]}</b>.{
-                        amountDisplay.split('.')[1]
-                      }
+                      <b>{amountDisplay.split('.')[0]}</b>.
+                      {amountDisplay.split('.')[1]}
                     </label>
                   </div>
 

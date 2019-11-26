@@ -2,10 +2,10 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Link } from 'react-router-dom';
-import Banner from 'rzp/ui/Banner';
+import Banner from 'common/ui/Banner';
 
 // NOTE: this component is not being used currently but will be used in future
-import { fetchOpen as fetchOpenDisputes } from 'merchantLA/modules/disputes/details';
+import { fetchOpen as fetchOpenDisputes } from 'merchantLA/reducers/disputes/details';
 
 @connect(
   state => ({
@@ -41,8 +41,9 @@ export default class OpenDisputeAlert extends Component {
               Show Disputes
             </Link>
             */}
-            <span class="icon i-info-outline" />&nbsp; You can now view all your
-            disputes on the dashboard. <Link to="/disputes">Show Disputes</Link>
+            <span class="icon i-info-outline" />
+            &nbsp; You can now view all your disputes on the dashboard.{' '}
+            <Link to="/disputes">Show Disputes</Link>
             <i class="i i-close pull-right" onClick={this.handleClose} />
           </Banner>
         </div>

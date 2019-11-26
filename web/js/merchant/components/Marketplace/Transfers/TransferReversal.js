@@ -2,12 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import DataTable from 'rzp/ui/Table/DataTable';
-import LoaderDots from 'rzp/ui/LoaderDots';
-import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import DataTable from 'common/ui/Table/DataTable';
+import LoaderDots from 'common/ui/LoaderDots';
+import { reversalId, amount, createdAt } from 'common/ui/item/pair';
 
 /*
  * Design:
@@ -81,7 +81,9 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
     reversalStatus =
       reversedAmount === 0
         ? null
-        : transfer.amount === reversedAmount ? 'full' : 'partial';
+        : transfer.amount === reversedAmount
+        ? 'full'
+        : 'partial';
 
   if (!reversalStatus) {
     return (

@@ -1,5 +1,5 @@
-import { titleCase, colors } from 'rzp/utils/rzp-utils';
-import LoaderDots from 'rzp/ui/LoaderDots';
+import { titleCase, colors } from 'common/utils/rzp-utils';
+import LoaderDots from 'common/ui/LoaderDots';
 
 export default ({ data, loading, error }) => {
   let methodBreakup = [null];
@@ -21,7 +21,8 @@ export default ({ data, loading, error }) => {
       return {
         bg: colors[index],
         title: titleCase(method),
-        value: (100 * data[method] / total).toFixed(1).replace('.0', '') + '%',
+        value:
+          ((100 * data[method]) / total).toFixed(1).replace('.0', '') + '%',
       };
     });
   }

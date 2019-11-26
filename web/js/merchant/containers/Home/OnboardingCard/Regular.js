@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import LocalStorageService from 'rzp/utils/localStorage';
+import Group, { GroupItem } from 'common/ui/Group';
+import LocalStorageService from 'common/utils/localStorage';
 
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
@@ -82,10 +82,8 @@ export default class OnboardingCard extends Component {
       FirstStep = (
         <div class="media-body">
           <div class="media-heading">
-            <span className="highlight">W</span>elcome{user.isOrgRZP
-              ? ' to Razorpay!'
-              : '!'}{' '}
-            Let's get you going.
+            <span className="highlight">W</span>elcome
+            {user.isOrgRZP ? ' to Razorpay!' : '!'} Let's get you going.
           </div>
           <div className="onboarding-desc">
             Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to

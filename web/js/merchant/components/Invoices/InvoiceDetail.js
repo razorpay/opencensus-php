@@ -1,23 +1,25 @@
 import { NavLink, Link } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Definition from 'rzp/ui/Definition';
-import Spinner from 'rzp/ui/Spinner';
-import Banner from 'rzp/ui/Banner';
-import DataTable from 'rzp/ui/Table/DataTable';
-import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Banner from 'common/ui/Banner';
+import DataTable from 'common/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'common/ui/item/pair';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
-import Button, { AsyncBtn } from 'component/Button';
-import Input from 'component/Input';
-import Stepper from 'component/Stepper';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import Stepper from 'common/new-ui/Stepper';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import Tooltip from 'rzp/ui/Tooltip';
+import Tooltip from 'common/ui/Tooltip';
 import ScheduledBanner from 'merchant/containers/Settlements/ScheduledBanner';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   EditExpiry,
@@ -122,6 +124,7 @@ export default props => {
     isAutoRemindersUpdating,
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
+    isPaymentLinksRemindersEnabled,
   } = props;
 
   let status = invoice.status;
@@ -160,7 +163,7 @@ export default props => {
                 <i class="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
-              {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
+              {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button class="btn Button--primary" onClick={props.onIssue}>
@@ -196,16 +199,15 @@ export default props => {
                   value={() => (
                     <div>
                       <InvoiceStatusLabel status={invoice.status} />
-                      {isRoleAllowedEdit &&
-                        isIssued && (
-                          <Button.Transparent
-                            class="Button--Link"
-                            style={{ marginLeft: 12 }}
-                            onClick={props.onCancel}
-                          >
-                            Cancel Link
-                          </Button.Transparent>
-                        )}
+                      {isRoleAllowedEdit && isIssued && (
+                        <Button.Transparent
+                          class="Button--Link"
+                          style={{ marginLeft: 12 }}
+                          onClick={props.onCancel}
+                        >
+                          Cancel Link
+                        </Button.Transparent>
+                      )}
                     </div>
                   )}
                 />
@@ -219,42 +221,40 @@ export default props => {
                       value={() => (
                         <div>
                           {isPartialPayment ? 'Enabled' : 'Disabled'}
-                          {isRoleAllowedEdit &&
-                            isIssued && (
-                              <AsyncBtn.Transparent
-                                onClick={() => {
-                                  const toEnablePartialPayment = +!isPartialPayment;
-                                  editPaymentLink({
-                                    partial_payment: toEnablePartialPayment,
-                                  });
+                          {isRoleAllowedEdit && isIssued && (
+                            <AsyncBtn.Transparent
+                              onClick={() => {
+                                const toEnablePartialPayment = +!isPartialPayment;
+                                editPaymentLink({
+                                  partial_payment: toEnablePartialPayment,
+                                });
 
-                                  trackTogglePartialPayment(
-                                    invoice.id,
-                                    'Toggle Partial Payment',
-                                    toEnablePartialPayment
-                                  );
-                                }}
-                                class="Button--Link"
-                                style={{ marginLeft: 12 }}
-                                pendingState={
-                                  isPartialPayment ? 'Disabling' : 'Enabling'
-                                }
-                              >
-                                {isPartialPayment ? 'Disable' : 'Enable'}
-                              </AsyncBtn.Transparent>
-                            )}
-                          {isMinimumFirstPaymentEnabled &&
-                            isPartialPayment && (
-                              <EditMinimumAmount
-                                value={invoice.first_payment_min_amount}
-                                maximum={invoice.amount}
-                                currency={invoice.currency}
-                                entityId={invoice.id}
-                                editFn={editPaymentLink}
-                                trackerFn={() => {}}
-                                isRoleAllowedEdit={isRoleAllowedEdit}
-                              />
-                            )}
+                                trackTogglePartialPayment(
+                                  invoice.id,
+                                  'Toggle Partial Payment',
+                                  toEnablePartialPayment
+                                );
+                              }}
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              pendingState={
+                                isPartialPayment ? 'Disabling' : 'Enabling'
+                              }
+                            >
+                              {isPartialPayment ? 'Disable' : 'Enable'}
+                            </AsyncBtn.Transparent>
+                          )}
+                          {isMinimumFirstPaymentEnabled && isPartialPayment && (
+                            <EditMinimumAmount
+                              value={invoice.first_payment_min_amount}
+                              maximum={invoice.amount}
+                              currency={invoice.currency}
+                              entityId={invoice.id}
+                              editFn={editPaymentLink}
+                              trackerFn={() => {}}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                            />
+                          )}
                         </div>
                       )}
                     />;
@@ -295,7 +295,7 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled && (
+                {user.isRemindersEnabled && isPaymentLinksRemindersEnabled && (
                   <EntityDetailRow label="Reminders">
                     <Input.Check
                       name="auto_reminders"
@@ -314,6 +314,19 @@ export default props => {
                         isPaymentLinkClosed
                       )}
                     />
+                  </EntityDetailRow>
+                )}
+
+                {user.isRemindersEnabled && !isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <div class="Input-content">
+                      Reminders are not set for payment links.
+                      <br />
+                      Set it up{' '}
+                      <Link target="_blank" to="/reminders">
+                        here
+                      </Link>
+                    </div>
                   </EntityDetailRow>
                 )}
 
@@ -389,16 +402,17 @@ export default props => {
                 ) : (
                   <EditBusinessSegment
                     isRoleAllowedEdit={isRoleAllowedEdit}
-                    merchantId={user.current}
                     value={invoice.notes}
                     editFn={editPaymentLink}
                     entityId={invoice.id}
                     trackerFn={trackDetailViewEdits}
                   />
                 )}
-                {/*user.isOndemandSettlementEnabled && (
-                  <ScheduledBanner fromWhere="Payment Pages" />
-                )*/}
+                {user.isOndemandSettlementEnabled && (
+                  <ShowWhen myRole="owner admin finance">
+                    <ScheduledBanner fromWhere="Payment Pages" />
+                  </ShowWhen>
+                )}
               </div>
             </div>
           </div>
@@ -418,7 +432,7 @@ const getRemindersStepperData = (
     .map(reminder => {
       const currDate = moment(undefined),
         reminderDate = moment(reminder * 1000),
-        isPendingState = reminderDate.diff(currDate, 'days');
+        isPendingState = reminderDate.isAfter(currDate);
 
       if (isPaymentLinkClosed && isPendingState) {
         return null;
@@ -427,7 +441,9 @@ const getRemindersStepperData = (
       const newReminder = {
         status: !isRemindersEnabled
           ? 'disabled'
-          : isPendingState > 0 ? 'pending' : 'completed',
+          : isPendingState > 0
+          ? 'pending'
+          : 'completed',
         time_to_sent: reminder,
       };
 

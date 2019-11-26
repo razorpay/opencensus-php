@@ -3,14 +3,14 @@ import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 
-import Amount from 'rzp/ui/Amount';
-import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
-import Definition from 'rzp/ui/Definition';
-import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
+import Amount from 'common/ui/Amount';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
 import { SingleDatePicker } from 'react-dates';
-import { nextWorkingDay, isHoliday } from 'rzp/utils/bankHolidays';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { nextWorkingDay, isHoliday } from 'common/utils/bankHolidays';
+import { titleCase } from 'common/utils/rzp-utils';
 import TransferReversal from 'merchantLA/components/Marketplace/Transfers/TransferReversal';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -64,7 +64,9 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,

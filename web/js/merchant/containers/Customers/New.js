@@ -3,27 +3,27 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
-import InputField from 'rzp/ui/Forms/InputField';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
+import InputField from 'common/ui/Forms/InputField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
 
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
   isValidZipcodeCountryWise,
   isValidGSTIN,
-} from 'rzp/utils/rzp-utils';
-import { email, phone, validateGSTIN } from 'rzp/utils/validators';
+} from 'common/utils/rzp-utils';
+import { email, phone, validateGSTIN } from 'common/utils/validators';
 
-import * as CustomerActions from 'merchant/modules/customers';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import * as CustomerActions from 'merchant/reducers/customers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-import { fetchStates } from 'merchant/modules/states';
+import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/components/AddressEntry.js';
 
-import Countries from 'common/countries.json';
+import Countries from 'merchant/helpers/countries.json';
 
 @connect(
   state => {
@@ -497,17 +497,16 @@ export default class AddCustomer extends Component {
               )}
             </div>
           </div>
-          {customer &&
-            customer.id && (
-              <div class="row">
-                <div class="col-md-12">
-                  <p>
-                    Note: The updated customer details will be reflected
-                    everywhere in the future.
-                  </p>
-                </div>
+          {customer && customer.id && (
+            <div class="row">
+              <div class="col-md-12">
+                <p>
+                  Note: The updated customer details will be reflected
+                  everywhere in the future.
+                </p>
               </div>
-            )}
+            </div>
+          )}
           <div class="row">
             <div class="col-md-12">
               <div class="Modal__actions">
@@ -543,7 +542,8 @@ export default class AddCustomer extends Component {
                 onClick={this.getChangeScreenHandler(0)}
                 class="text-primary cursor-pointer"
               >
-                <i class="i i-arrow-back" />Back to Customer Details
+                <i class="i i-arrow-back" />
+                Back to Customer Details
               </span>
             </div>
           </div>
@@ -620,7 +620,8 @@ export default class AddCustomer extends Component {
                 onClick={this.getChangeScreenHandler(1)}
                 class="text-primary cursor-pointer"
               >
-                <i class="i i-arrow-back" />Back to Billing Address
+                <i class="i i-arrow-back" />
+                Back to Billing Address
               </span>
             </div>
           </div>
@@ -689,7 +690,7 @@ AddCustomer.defaultProps = {
   showGSTN: true,
 };
 
-const validateZipCode = (country, zipcode) => {
+export const validateZipCode = (country, zipcode) => {
   if (zipcode && country && !isValidZipcodeCountryWise(country, zipcode)) {
     return 'Please enter a valid pin code for the selected country';
   }

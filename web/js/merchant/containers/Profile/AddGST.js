@@ -4,16 +4,16 @@ import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import Banner from 'rzp/ui/Banner';
-import InputField from 'rzp/ui/Forms/InputField';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { saveGST } from 'merchant/modules/profile';
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import { required, validateGSTIN } from 'rzp/utils/validators';
-import { updateSession } from 'merchant/modules/session';
+import Banner from 'common/ui/Banner';
+import InputField from 'common/ui/Forms/InputField';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { saveGST } from 'merchant/reducers/profile';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { required, validateGSTIN } from 'common/utils/validators';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -40,7 +40,8 @@ const selector = formValueSelector('newGST');
 export default class AddGST extends Component {
   state = {};
 
-  gst_success_msg = 'Entered GSTIN will be applicable only from current month onwards.';
+  gst_success_msg =
+    'Entered GSTIN will be applicable only from current month onwards.';
 
   componentWillMount() {
     let { merchant_gst } = this.props;

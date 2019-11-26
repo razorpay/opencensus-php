@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
-import Definition from 'rzp/ui/Definition';
-import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import { titleCase } from 'common/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
@@ -69,13 +69,12 @@ export default class ReversalDetails extends Component {
                   />
                 )}
 
-                {isRefundsAllowed &&
-                  isLAInitiator && (
-                    <EntityDetailRow
-                      label="Customer Refund ID"
-                      value={_ => reversal.customer_refund_id}
-                    />
-                  )}
+                {isRefundsAllowed && isLAInitiator && (
+                  <EntityDetailRow
+                    label="Customer Refund ID"
+                    value={_ => reversal.customer_refund_id}
+                  />
+                )}
 
                 <EntityDetailRow
                   label="Created At"

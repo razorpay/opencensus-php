@@ -1,6 +1,6 @@
 import React from 'react';
 import { PowerSelect } from 'react-power-select';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 const SelectConfig = ({
   configs,
