@@ -26,7 +26,7 @@ class Repository extends Base\Repository
             ->take($limit)
             ->skip($offset)
             ->get()
-            ->groupBy('merchant_id');
+            ->sortBy('merchant_id');
     }
 
     public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)

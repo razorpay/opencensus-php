@@ -136,7 +136,7 @@ class WorkflowController extends Controller
     public function getAllWorkflowPayoutAmountRules()
     {
         $limit = Request::get('count');
-        $offset = Request::get('startFrom');
+        $offset = Request::get('skip');
 
         $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit, $offset);
 

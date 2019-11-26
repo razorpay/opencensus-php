@@ -37,7 +37,7 @@ class Service extends Base\Service
         return $this->repo
             ->workflow_payout_amount_rules
             ->fetchAllWorkflowRules($limit, $offset)
-            ->toArrayPublic();
+            ->toArray();
     }
 
     public function createWorkflowPayoutAmountRules($input): array
