@@ -2098,6 +2098,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Shared olamoney offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         //
