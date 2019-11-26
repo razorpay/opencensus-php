@@ -3011,7 +3011,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function dissociateOffer(Offer\Entity $offer)
     {
-        $this->offers()->detach($offer);
+        $this->offers()->detach($offer->getId());
     }
 
     /**
@@ -3020,8 +3020,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
-        return $this->offers->first();
+        return $this->offers()->first();
     }
+
 
 // --------------- Relation to other entity section ends -----------------------
 

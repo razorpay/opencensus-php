@@ -139,7 +139,6 @@ class Core extends Base\Core
         //In case of discounted offer where Rzp modifies the amount, if offer validations fails
         //and merchant does not want to block payment for that offer, setting the original order amount
         //again for payment amount.
-        $order = $payment->order;
 
         if($input['order_amount'] !== null && $offer->getOfferType() === Constants::INSTANT_OFFER)
         {
@@ -148,13 +147,8 @@ class Core extends Base\Core
             $payment->setBaseAmount($input['order_amount']);
         }
 
-        //Setting discount flag to false to avoid modify amount to discounted amount while capturing the
-        // payment.
-        $order->setDiscount(false);
-
         //As offer is not applicable, dissociating it
         $payment->dissociateOffer($offer);
-
     }
 
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)

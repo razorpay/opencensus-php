@@ -9,4 +9,5 @@ final class Constants
 {
     const INSTANT_OFFER                                  = 'instant';
     const CASHBACK_OFFER                                 = 'deferred';
+    const ALREADY_DISCOUNTED                             = 'already_discounted';
 }

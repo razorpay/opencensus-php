@@ -3953,12 +3953,12 @@ trait Authorize
 
         $this->offer = $payment->getOffer();
 
-        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
+        if($payment->getOffer() === null)
         {
             return;
         }
 
-        if ($this->offer === null)
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }

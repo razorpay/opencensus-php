@@ -68,8 +68,6 @@ class Order extends Base
 
     public function createWithUndiscountedOffers($offers, array $attributes = [])
     {
-        $attributes['discount'] = false;
-
         return $this->createWithOffers($offers, $attributes);
     }
 

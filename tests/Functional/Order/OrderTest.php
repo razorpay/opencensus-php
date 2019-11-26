@@ -1219,7 +1219,8 @@ class OrderTest extends TestCase
             'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'iins'          => ['411111'],
             'issuer'        => 'HDFC',
-            'error_message' => 'Selected card does not belong to offer iins'
+            'error_message' => 'Selected card does not belong to offer iins',
+            'type'          => 'already_discounted'
         ]);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
@@ -1453,6 +1454,7 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
+            'type'   => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer);
@@ -1512,6 +1514,7 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
+            'type'      => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
@@ -1546,6 +1549,7 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
+            'type'      => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer1);
