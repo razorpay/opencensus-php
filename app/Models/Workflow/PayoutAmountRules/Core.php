@@ -64,6 +64,7 @@ class Core extends Base\Core
         $rules = $input['rules'];
         $merchantId = $this->merchant->getId();
 
+        // Check if workflow belongs to merchant in context through proxyAuth
         foreach ($rules as $rule)
         {
             $workflow = $this->repo->workflow->findOrFailPublic($rule['workflow_id'])->toArray();
@@ -77,6 +78,7 @@ class Core extends Base\Core
             }
         }
 
+        // Ensure that workflow rules do not exist already
         if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
         {
             throw new Exception\BadRequestException(
@@ -87,6 +89,7 @@ class Core extends Base\Core
 
         (new Entity())->getValidator()->checkForValidAmountRanges($rules);
 
+        // Insert all rules together into database
         $this->repo->transaction( function() use ($rules, $merchantId){
             foreach($rules as $rule)
             {
@@ -98,6 +101,7 @@ class Core extends Base\Core
             }
         });
 
+        // Return inserted elements
         $response = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArrayAdmin();
 
         return $response;
@@ -108,7 +112,7 @@ class Core extends Base\Core
         // Assuming admin auth initially
         $auth = 'admin';
 
-        // If merchant id is passed through headers and not url
+        // If merchant id is passed through proxyAuth and not url
         if($this->merchant)
         {
             $merchantId = $this->merchant->getId();
@@ -121,10 +125,12 @@ class Core extends Base\Core
 
         if($auth == 'proxy')
         {
+            // An existing api returns in this format for proxyAuth which is maintained
             return $amountRules->toArrayPublic();
         }
         else
         {
+            // Returns in a format including containing more fields like id in database
             return $amountRules->toArrayAdmin();
         }
     }
@@ -142,14 +148,20 @@ class Core extends Base\Core
         $items = $this->getAllWorkflowRules($limit, $offset);
         $links = [];
         $total = $this->repo->workflow_payout_amount_rules->fetchTotalNumberOfElements();
+
+        // Link to current page
         $links[] = [
             "rel"   => "self",
             "href"  => url()->full()
         ];
+
+        // Link to first page
         $links[] = [
             "rel"   => "first",
             "href"  => url()->current()."?count=".$limit."&skip=0"
         ];
+
+        // Link to prev page
         if($offset >= $limit)
         {
             $links[] = [
@@ -157,6 +169,8 @@ class Core extends Base\Core
                 "href"  => url()->current()."?count=".$limit."&skip=".($offset-$limit)
             ];
         }
+
+        // Link to next page
         if($offset+$limit < $total)
         {
             $links[] = [
@@ -164,14 +178,19 @@ class Core extends Base\Core
                 "href"  => url()->current()."?count=".$limit."&skip=".($offset+$limit)
             ];
         }
+
+        // Link to last page
         $links[] = [
             "rel"   => "last",
             "href"  => url()->current()."?count=".$limit."&skip=".($total - (($total%$limit)?($total%$limit):$limit))
         ];
+
+        // Join data items and links and send in response
         $data = [
             "items" => $items,
             "links" => $links
         ];
+
         return $data;
     }
 }
