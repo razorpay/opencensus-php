@@ -31,6 +31,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
+use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
@@ -50,6 +51,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property UpiTransfer\Entity     $upiTransfer
  * @property PaymentLink\Entity     $paymentLink
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
@@ -2928,6 +2930,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function bharatQr()
     {
         return $this->hasOne('RZP\Models\BharatQr\Entity');
+    }
+
+    public function upiTransfer()
+    {
+        return $this->hasOne('RZP\Models\UpiTransfer\Entity');
     }
 
     public function batch()

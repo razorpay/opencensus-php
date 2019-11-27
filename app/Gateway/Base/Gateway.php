@@ -1641,6 +1641,12 @@ class Gateway
                 ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
+    protected function isUpiTransferPayment(): bool
+    {
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::VPA));
+    }
+
     /**
      * Returns the external mock url
      * Used for gateway testing using mock in func
