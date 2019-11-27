@@ -2343,7 +2343,7 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </div>
                           </label>
-                          {true && (
+                          {showEditInvoiceLabelOption && (
                             <button
                               class="btn btn-default btn-block btn-lg"
                               onClick={this.showEditInvoiceLabelModal}
