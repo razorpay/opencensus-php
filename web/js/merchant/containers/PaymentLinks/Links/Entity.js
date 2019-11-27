@@ -53,7 +53,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.fetchDataForInvoice(this.props.id);
+    this.fetchDataForInvoice();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -64,7 +64,7 @@ export default class InvoiceDetailContainer extends Component {
 
   fetchDataForInvoice = (id = this.props.id) => {
     this.props.fetchInvoice(id);
-    this.fetchInvoiceRemindersList(id);
+    this.fetchInvoiceRemindersList();
   };
 
   fetchInvoiceRemindersList = (id = this.props.id) => {
