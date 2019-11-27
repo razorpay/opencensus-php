@@ -3224,6 +3224,8 @@ class Processor
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
+                $this->setAnalyticsLog($payment);
+
                 $payment->setAuthType(Payment\AuthType::_3DS);
 
                 $payment->setAuthenticationGateway(null);
