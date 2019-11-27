@@ -3484,11 +3484,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, Carbon $expectedDate, $messageType): string
     {
         $messageSlaDone = null;
+        $messageVoidRefund = null;
         $messageEntity = Refund\Constants::PAYMENT;
         $messageStatus = $this->getStatus();
         $messageLateAuth = ($this->isLateAuthorized() === true);
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }
