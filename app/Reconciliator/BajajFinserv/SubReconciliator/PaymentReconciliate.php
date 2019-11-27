@@ -17,14 +17,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row['asset_serial_numberimei'] ?? null;
     }
 
+    protected function getArn($row)
+    {
+        return $row['utr_no'] ?? null;
+    }
+
     protected function getReconPaymentAmount(array $row)
     {
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]) ?? null;
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT] ?? null);
     }
 
     protected function getGatewayTransactionId(array $row)
     {
-        if (isset($row[self::COLUMN_GATEWAY_TRANSACTION_ID]) === false)
+        if (empty($row[self::COLUMN_GATEWAY_TRANSACTION_ID]) === true)
         {
             return null;
         }

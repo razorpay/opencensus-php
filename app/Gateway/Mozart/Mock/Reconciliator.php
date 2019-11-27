@@ -320,7 +320,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'Dealer ID'                           => $row['payment']['id'],
                 'Type of Txn'                         => 'Sale',
                 'RRN'                                 => $gatewayData['DealID'],
-                'Transaction Date'                    => 'Sale',
+                'Transaction Date'                    => $date,
                 'Disbursement Date'                   => $date,
                 'Amount Financed (Rs) '               => (string)$row['payment']['amount'] / 100,
                 'Scheme Desc'                         => '123445',
@@ -333,8 +333,14 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
             $this->content($col, 'col_payment_bfl_recon');
 
+            if (empty($col) === true)
+            {
+                continue;
+            }
+
             $data[] = $col;
         }
+
         return $data;
     }
 

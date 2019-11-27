@@ -55,34 +55,24 @@ class BajajFinservReconTest extends TestCase
 
     public function testPaymentRecon()
     {
-//        $this->ba->publicAuth();
-//
-//        $this->doAuthPayment($this->payment);
-//        $paymentEntity = $this->getDbLastEntity('payment');
-//
-//        $url = $this->getOtpSubmitUrl($paymentEntity);
-//
-//        $request = [
-//            'request'   => [
-//                'method'    => 'POST',
-//                'url' => $url,
-//                'content'   => [
-//                    'type'  => 'otp',
-//                    'otp'   => '111111'
-//                ]
-//            ],
-//            'response'  => [
-//                'content'     => [],
-//                'status_code' => 200,
-//            ],
-//        ];
-//
-//        $this->runRequestResponseFlow($request);
-//
-//        $payment = $this->getDbLastEntityToArray('payment');
-//        $mozart = $this->getDbLastEntityToArray('mozart');
-//        $card = $this->getDbLastEntityToArray('card');
-        $this->createSuccessPaymentEntities();
+        $card = $this->createCardEntity();
+
+        // Payment marked as success in db and in recon
+        $payment_success = $this->createPaymentEntities($card);
+
+        // Payment marked as failure in db, but moved to auth from recon
+        $payment_late_auth = $this->createPaymentEntities($card, 'failed');
+
+         // Payment marked as failure in db and missing in recon file
+        $payment_failure = $this->createPaymentEntities($card, 'failed');
+
+        $this->mockReconContentFunction(function (& $content) use ($payment_failure)
+        {
+            if ($content['Dealer ID'] === $payment_failure['id'])
+            {
+                $content = [];
+            }
+        });
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
@@ -90,20 +80,29 @@ class BajajFinservReconTest extends TestCase
 
         $this->reconcile($uploadedFile, 'BajajFinserv');
 
-        $gatewayEntity = $this->getDbLastEntity('mozart');
+        $this->paymentSuccessAsserts($payment_success);
 
-        $data = json_decode($gatewayEntity['raw'], true);
+        $this->paymentSuccessAsserts($payment_late_auth);
 
-        $this->assertNotNull($data['DealID']);
+        $this->paymentFailureAsserts($payment_failure);
 
-        $transactionEntity = $this->getDbLastEntity('transaction');
+        $batch = $this->getDbLastEntityToArray('batch');
 
-        $this->assertNotNull($transactionEntity['reconciled_at']);
-
-        $this->assertBatchStatus(Status::PROCESSED);
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'BajajFinserv',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 2,
+                'success_count'   => 2,
+                'processed_count' => 2,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
     }
 
-    protected function createSuccessPaymentEntities()
+    protected function createCardEntity()
     {
         $card = $this->fixtures->create(
             'card',
@@ -123,13 +122,18 @@ class BajajFinservReconTest extends TestCase
                 'global_fingerprint' => '==gMxITMyEDMwADMwQDMzAjM'
             ])->toArray();
 
+        return $card;
+    }
+
+    protected function createPaymentEntities($card, $status = 'authorized')
+    {
         $payment = $this->fixtures->create(
             'payment',
             [
                 'merchant_id'       => '10000000000000',
                 'amount'            => 500000,
                 'method'            => 'emi',
-                'status'            => 'authorized',
+                'status'            => $status,
                 'amount_authorized' => 500000,
                 'card_id'           => $card['id'],
                 'emi_plan_id'       => '30111111111110',
@@ -138,39 +142,118 @@ class BajajFinservReconTest extends TestCase
                 'terminal_id'       => 'AqdfGh5460opVt',
             ])->toArray();
 
-        $this->fixtures->create(
-            'mozart',
-            [
-                'payment_id' => $payment['id'],
-                'action'     => 'authorize',
-                'amount'     => 500000,
-                'gateway'    => 'bajajfinserv',
-                'raw'        => json_encode([
-                    'DealID'           => 'CS905114097404',
-                    'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                    'OrderNo'          => '104',
-                    'RequestID'        => 'RZP190219162906768',
-                    'Responsecode'     => '0',
-                    'received'         => true,
-                    'status'           => 'created',
-                ])
-            ]);
+        if (($status === 'authorized') or ($status === 'captured'))
+        {
+            $this->fixtures->create(
+                'mozart',
+                [
+                    'payment_id' => $payment['id'],
+                    'action'     => 'authorize',
+                    'amount'     => 500000,
+                    'gateway'    => 'bajajfinserv',
+                    'raw'        => json_encode([
+                        'DealID'           => 'CS905114097404',
+                        'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                        'OrderNo'          => '104',
+                        'RequestID'        => 'RZP190219162906768',
+                        'Responsecode'     => '0',
+                        'received'         => true,
+                        'status'           => 'created',
+                    ])
+                ]);
 
-        $transaction = $this->fixtures->create(
-            'transaction',
-            [
-                'entity_id'   => $payment['id'],
-                'merchant_id' => '10000000000000',
-            ])->toArray();
+            $transaction = $this->fixtures->create(
+                'transaction',
+                [
+                    'entity_id'   => $payment['id'],
+                    'merchant_id' => '10000000000000',
+                ])->toArray();
 
-        $this->fixtures->edit(
-            'payment',
-            $payment['id'],
-            [
-                'transaction_id' => $transaction['id'],
-            ]);
+            $this->fixtures->edit(
+                'payment',
+                $payment['id'],
+                [
+                    'transaction_id' => $transaction['id'],
+                ]);
+        }
+        else
+        {
+            $this->fixtures->create(
+                'mozart',
+                [
+                    'payment_id' => $payment['id'],
+                    'action'     => 'authorize',
+                    'amount'     => 500000,
+                    'gateway'    => 'bajajfinserv',
+                    'raw'        => json_encode(
+                        [
+                            "Key"              => "4962575618567464",
+                            "reqid"            => "RZP251119085000847",
+                            "DealID"           => "",
+                            "rqtype"           => "AUTH",
+                            "status"           => "verification_failed",
+                            "valkey"           => "4962575618567464",
+                            "OrderNo"          => "DivEQedPoBab3x",
+                            "enqinfo"          => [
+                                [
+                                    "Key"              => "4962575618567464",
+                                    "DEALID"           => null,
+                                    "ORDERNO"          => "DivEQedPoBab3x",
+                                    "REQUESTID"        => "RZP211119083050976",
+                                    "RESPONSECODE"     => "36",
+                                    "ERRORDESCRIPTION" => "AMOUNT FINANCED SHOULD BE LESS THAN OR EQUAL TO THE MAXIMUM AMOUNT FINANCED AMOUNT AT SCHEME LEVEL"
+                                ]
+                            ],
+                            "errdesc"          => "AMOUNT FINANCED SHOULD BE LESS THAN OR EQUAL TO THE MAXIMUM AMOUNT FINANCED AMOUNT AT SCHEME LEVEL",
+                            "rescode"          => "36",
+                            "MobileNo"         => "6953",
+                            "received"         => true,
+                            "RequestID"        => "RZP211119083050976",
+                            "requeryid"        => "RZP211119083050976",
+                            "Responsecode"     => "36",
+                            "Errordescription" => "AMOUNT FINANCED SHOULD BE LESS THAN OR EQUAL TO THE MAXIMUM AMOUNT FINANCED AMOUNT AT SCHEME LEVEL"
+                        ]
+                    )
+                ]);
+        }
 
         return $payment;
+    }
+
+    protected function paymentSuccessAsserts(array $payment)
+    {
+        $payment = $this->getDbEntity('payment', ['id' => $payment['id']])->toArray();
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'     => 'authorized',
+                'reference1' => '911082787695',
+            ],
+            $payment
+        );
+
+        $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $payment['id']]);
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['DealID']);
+
+        $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $payment['id']]);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    protected function paymentFailureAsserts(array $payment)
+    {
+        $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $payment['id']]);
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertEmpty($data['DealID']);
+
+        $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $payment['id']]);
+
+        $this->assertNull($transactionEntity);
     }
 
     protected function setBflPaymentArray()
