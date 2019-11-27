@@ -1,4 +1,5 @@
 import Definition from 'common/ui/Definition';
+import Amount from 'common/ui/Amount';
 
 const PaymentDetails = ({ invoice }) => (
   <Definition placeholder="--">
