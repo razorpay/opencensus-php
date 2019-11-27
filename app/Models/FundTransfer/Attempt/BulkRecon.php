@@ -24,7 +24,9 @@ use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
 
 class BulkRecon extends Base\Core
 {
-    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s_%s';
+
+    const DEFAULT_LIMIT = 1000;
 
     const MUTEX_LOCK_TIMEOUT = 300;
 
@@ -53,7 +55,7 @@ class BulkRecon extends Base\Core
     {
         (new Validator)->validateInput('bulk_reconcile', $this->input);
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel, $this->mode);
 
         $data = $this->mutex->acquireAndRelease(
                     $mutexResource,
@@ -89,11 +91,23 @@ class BulkRecon extends Base\Core
 
     public function processEntities()
     {
+        $limit = self::DEFAULT_LIMIT;
+
         list($from, $to) = $this->getTimestamps();
+
+        if (isset($this->input['limit']) === true)
+        {
+            $limit = $this->input['limit'];
+        }
 
         $attempts = $this->repo
                          ->fund_transfer_attempt
-                         ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to);
+                         ->getAttemptsBetweenTimestampsWithStatus(
+                             $this->channel,
+                             Status::INITIATED,
+                             $from,
+                             $to,
+                             $limit);
 
         (new Lock( $this->channel))->acquireLockAndProcessAttempts(
             $attempts,

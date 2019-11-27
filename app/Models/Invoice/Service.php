@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
@@ -371,7 +372,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getInvoiceViewData(string $invoiceId): array
+ public function getInvoiceViewData(string $invoiceId): array
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
@@ -385,7 +386,56 @@ class Service extends Base\Service
 
         $invoice->getValidator()->validateInvoiceViewable();
 
-        return (new ViewDataSerializer($invoice))->serializeForHosted();
+        // Get razorx treatment
+        $variant = $this->app->razorx->getTreatment(
+            $invoice->merchant->getId(),
+            Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
+            $mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+        }
+        else
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHosted();
+        }
+    }
+
+	/*
+	 * Below function is added to test Rendering Preferences on a different route.
+	 * Will delete after testing.
+	 */
+    public function getInvoiceViewDataForTest(string $invoiceId): array
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $invoice = $this->repo->invoice->findByPublicId($invoiceId);
+
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
+
+        $invoice->getValidator()->validateInvoiceViewable();
+
+        // Get razorx treatment
+        $variant = $this->app->razorx->getTreatment(
+            $invoice->merchant->getId(),
+            Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
+            $mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+        }
+        else
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+        }
     }
 
     /**

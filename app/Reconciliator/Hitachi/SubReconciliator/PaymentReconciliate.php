@@ -468,15 +468,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Payment currency mismatch',
+                    'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

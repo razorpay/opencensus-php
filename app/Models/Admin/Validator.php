@@ -156,4 +156,13 @@ class Validator extends Base\Validator
         'type' => 'required|string',
         'data' => 'required|array|min:1',
     ];
+
+    protected static $mozartGatewayPvtRules = [
+        'gateway'            => 'required|string|in:citi,icici,yesbank_upi',
+        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration',
+        'namespace'          => 'required|string',
+        'payload'            => 'required|array',
+        'payload.entities'   => 'required|array',
+        'version'            => 'required|string|in:v1,v2',
+    ];
 }

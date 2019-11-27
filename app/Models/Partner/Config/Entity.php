@@ -29,6 +29,7 @@ class Entity extends PublicEntity
     const HAS_GST_CERTIFICATE     = 'has_gst_certificate';
     const EXPLICIT_REFUND_FEES    = 'explicit_refund_fees';
     const EXPLICIT_SHOULD_CHARGE  = 'explicit_should_charge';
+    const DEFAULT_PAYMENT_METHODS = 'default_payment_methods';
 
     const DEFAULT_TDS_PERCENTAGE  = 500;
 
@@ -43,6 +44,7 @@ class Entity extends PublicEntity
         self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
+        self::DEFAULT_PAYMENT_METHODS,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
         self::SETTLE_TO_PARTNER,
@@ -63,6 +65,7 @@ class Entity extends PublicEntity
         self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
+        self::DEFAULT_PAYMENT_METHODS,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
         self::SETTLE_TO_PARTNER,
@@ -79,22 +82,24 @@ class Entity extends PublicEntity
     ];
 
     protected $defaults = [
-        self::COMMISSIONS_ENABLED    => 0,
-        self::EXPLICIT_REFUND_FEES   => 0,
-        self::EXPLICIT_SHOULD_CHARGE => 0,
-        self::COMMISSION_MODEL       => CommissionModel::COMMISSION,
-        self::SETTLE_TO_PARTNER      => 0,
-        self::TDS_PERCENTAGE         => self::DEFAULT_TDS_PERCENTAGE,
-        self::HAS_GST_CERTIFICATE    => 0,
+        self::COMMISSIONS_ENABLED     => 0,
+        self::EXPLICIT_REFUND_FEES    => 0,
+        self::EXPLICIT_SHOULD_CHARGE  => 0,
+        self::COMMISSION_MODEL        => CommissionModel::COMMISSION,
+        self::SETTLE_TO_PARTNER       => 0,
+        self::TDS_PERCENTAGE          => self::DEFAULT_TDS_PERCENTAGE,
+        self::HAS_GST_CERTIFICATE     => 0,
+        self::DEFAULT_PAYMENT_METHODS => null,
     ];
 
     protected $casts = [
-        self::COMMISSIONS_ENABLED    => 'bool',
-        self::EXPLICIT_REFUND_FEES   => 'bool',
-        self::EXPLICIT_SHOULD_CHARGE => 'bool',
-        self::SETTLE_TO_PARTNER      => 'bool',
-        self::TDS_PERCENTAGE         => 'int',
-        self::HAS_GST_CERTIFICATE    => 'bool',
+        self::COMMISSIONS_ENABLED     => 'bool',
+        self::DEFAULT_PAYMENT_METHODS => 'array',
+        self::EXPLICIT_REFUND_FEES    => 'bool',
+        self::EXPLICIT_SHOULD_CHARGE  => 'bool',
+        self::SETTLE_TO_PARTNER       => 'bool',
+        self::TDS_PERCENTAGE          => 'int',
+        self::HAS_GST_CERTIFICATE     => 'bool',
     ];
 
     protected static $unsetCreateInput = [Constants::APPLICATION_ID, Constants::PARTNER_ID];
@@ -156,6 +161,11 @@ class Entity extends PublicEntity
     public function getCommissionModel(): string
     {
         return $this->getAttribute(self::COMMISSION_MODEL);
+    }
+
+    public function getDefaultPaymentMethods()
+    {
+        return $this->getAttribute(self::DEFAULT_PAYMENT_METHODS);
     }
 
     public function shouldSettleToPartner(): bool

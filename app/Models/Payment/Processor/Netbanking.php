@@ -113,10 +113,8 @@ class Netbanking
         self::BARB_R,
         IFSC::SBBJ,
         IFSC::SBHY,
-        IFSC::SBNX,
         IFSC::SBMY,
-        IFSC::SBPX,
-        IFSC::SBSX,
+        IFSC::STBP,
         IFSC::SBTR,
     ];
 
@@ -600,10 +598,8 @@ class Netbanking
                 IFSC::SBIN,
                 IFSC::SBBJ,
                 IFSC::SBHY,
-                IFSC::SBNX,
                 IFSC::SBMY,
-                IFSC::SBPX,
-                IFSC::SBSX,
+                IFSC::STBP,
                 IFSC::SBTR,
             ],
             'tpv' => [

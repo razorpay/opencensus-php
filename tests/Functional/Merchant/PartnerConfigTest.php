@@ -50,6 +50,79 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddingConfigWithDefaultPaymentMethods()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->startTest();
+    }
+
+    public function testAddingConfigWithDefaultPaymentMethodsForPurePlatform()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testEditingConfigWithSettingDefaultPaymentMethodsToEmpty()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $partnerConfig = $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                   => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'          => 'merchant',
+                'entity_id'            => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'          => 'application',
+                'origin_id'            => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'  => 1,
+                'implicit_plan_id'     => '10ZeroPricingP',
+                'explicit_plan_id'     => '10ZeroPricingP',
+                'explicit_refund_fees' => 1,
+                'default_payment_methods' => [
+                    Merchant\Methods\Entity::NETBANKING  => true,
+                    Merchant\Methods\Entity::CREDIT_CARD => true,
+                    Merchant\Methods\Entity::DEBIT_CARD  => true,
+                ],
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testAddingConfigWithIncorrectDefaultPaymentMethods()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->startTest();
+    }
+
     public function testAddingConfigWhenBothAppAndPartnerIdNotSent()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);

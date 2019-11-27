@@ -172,6 +172,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -203,6 +204,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
 
     // payment services
     const API                               = 0;
@@ -337,6 +339,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
+        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -377,6 +380,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+        self::OFFER_ID,
+    ];
+
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::TRANSACTION,
     ];
 
     /**
@@ -429,6 +443,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
+        self::OFFER_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1284,9 +1299,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+
+    public function setOfferId(string $offerId)
+    {
+        $this->setAttribute(self::OFFER_ID, $offerId);
+
+    }
+
     public function setFeeBearer($feeBearer)
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
+
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -1778,16 +1801,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isRoutedThroughCardPayments()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
+    }
+
     public function isPushPaymentMethod()
     {
         return ($this->isBankTransfer() === true) or
                ($this->isBharatQr() === true) or
+               ($this->isUpiTransfer() === true) or
                ($this->isUpi() === true);
     }
 
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
+    /**
+     * UPI transfer is the case of smart collect where payment method is UPI and
+     * receiver type will be VPA and is different from normal UPI transactions.
+     *
+     * @return bool
+     */
+    public function isUpiTransfer()
+    {
+        return (($this->isUpi() === true) and
+               ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
     public function isGateway($gateway)
@@ -2576,6 +2617,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicOfferIdAttribute(array & $array)
+    {
+        if (isset($array[self::OFFER_ID]))
+        {
+            $array[self::OFFER_ID] =
+                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
+        }
+    }
+
     public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
@@ -2989,6 +3039,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->offers()->attach($offer);
     }
 
+    public function dissociateOffer(Offer\Entity $offer)
+    {
+        $this->offers()->detach($offer);
+    }
+
     /**
      * Works cos we only associate one offer with payment
      * @return Offer\Entity
@@ -3209,6 +3264,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->isFileBasedEmandateDebitPayment() === true)
         {
              return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
+        }
+        else if ($this->isNach() === true)
+        {
+            return self::PAYMENT_TIMEOUT_NACH;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();

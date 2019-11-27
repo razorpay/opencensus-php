@@ -53,7 +53,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(86, $count);
+        $this->assertEquals(83, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -79,7 +79,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(86, $count);
+        $this->assertEquals(83, $count);
     }
 
     public function testBulkMethodUpdate()
@@ -311,21 +311,6 @@ class MethodsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
-    }
-
-    public function testFetchGooglePayForCardsMethod()
-    {
-        $this->ba->proxyAuth();
-
-        $response = $this->startTest();
-
-        $this->assertFalse($response[Feature\Constants::GOOGLE_PAY_CARDS]);
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
-
-        $response = $this->startTest();
-
-        $this->assertTrue($response[Feature\Constants::GOOGLE_PAY_CARDS]);
     }
 
     public function testEnableEmi()

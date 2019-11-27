@@ -330,6 +330,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
+    const BAD_REQUEST_MERCHANT_REFERRAL_DOES_NOT_EXIST                          = 'Merchant referral does not Exist';
+
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
 
@@ -906,6 +908,11 @@ class PublicErrorDescription
 
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
+
+
+    //Offer
+    const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
+    const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';

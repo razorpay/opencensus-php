@@ -34,6 +34,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\AuthType;
 use RZP\Constants\Entity as E;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
@@ -1066,12 +1067,8 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
-        // Adding cybersource check until cybersource emi payments are fixed
-        if (((empty($gatewayInput['authenticate']['gateway']) === false) and
-             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway())) or
-            (($payment->getGateway() === E::CYBERSOURCE) and
-             ($payment->isMethod(Payment\Method::CARD) === false)))
+        // Check if payment is card
+        if ($payment->isMethod(Payment\Method::CARD) === false)
         {
             $payment->disableCpsRoute();
 
@@ -1127,12 +1124,21 @@ class Processor
     {
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
+        if (empty($payment->getAuthenticationGateway()) === false)
+        {
+            $featureFlag .= '_' .$payment->getAuthenticationGateway();
+        }
+
         $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
-            'payment_id'     => $payment->getId(),
-            'merchant_id'    => $payment->getMerchantId(),
-            'razorx_variant' => $variant,
+            'payment_id'             => $payment->getId(),
+            'merchant_id'            => $payment->getMerchantId(),
+            'gateway'                => $payment->getGateway(),
+            'authentication_gateway' => $payment->getAuthenticationGateway(),
+            'auth_type'              => $payment->getAuthType() ?? AuthType::_3DS,
+            'feature_flag'           => $featureFlag,
+            'razorx_variant'         => $variant,
         ]);
 
         return $variant;
@@ -1178,6 +1184,10 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
+            $input['order_amount'] = $orderAmount;
         }
     }
 
@@ -1724,23 +1734,31 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->lockDecrementCurrentOfferUsage($payment);
+        }
+
+
         //TODO: Remove this later
-        try
-        {
-            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                [
-                    'payment'             => $this->payment->toArray(),
-                    'code'                => $code,
-                    'internal_code'       => $internalCode,
-                    'error'               => $e->getMessage()
-                ]
-            );
-        }
+//        try
+//        {
+//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+//        }
+//        catch (\Throwable $e)
+//        {
+//            $this->trace->info(
+//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                [
+//                    'payment'             => $this->payment->toArray(),
+//                    'code'                => $code,
+//                    'internal_code'       => $internalCode,
+//                    'error'               => $e->getMessage()
+//                ]
+//            );
+//        }
     }
 
     /**
@@ -3000,6 +3018,11 @@ class Processor
             // If the payment is a second recurring payment of a file-based emandate bank
             // we do not hit the gateway, we send a debit request asynchronously
             //
+            return false;
+        }
+
+        if ($payment->isNach() === true)
+        {
             return false;
         }
 

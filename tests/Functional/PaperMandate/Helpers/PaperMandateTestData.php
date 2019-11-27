@@ -20,9 +20,11 @@ return [
                     'first_payment_amount' => '5000',
                     'max_amount' => '500000',
                     'expire_at' => '2047483647',
-                    'create_form' => true,
-                    'reference_1' => 'ttt',
-                    'reference_2' => 'qqq',
+                    'nach' => [
+                        'create_form' => true,
+                        'form_reference1' => 'ttt',
+                        'form_reference2' => 'qqq',
+                    ],
                     'bank_account' =>
                     [
                         'account_number' => '1111111111111',
@@ -42,9 +44,11 @@ return [
                 'receipt'        => 'rcptid #1',
                 'token'          =>   [
                     'method'        => 'nach',
-                    'create_form'   =>  true,
-                    'reference_1'   =>  'ttt',
-                    'reference_2'   =>  'ttt',
+                    'nach' => [
+                        'create_form'     => true,
+                        'form_reference1' => 'ttt',
+                        'form_reference2' => 'qqq',
+                    ],
                 ],
             ],
         ],
@@ -64,9 +68,11 @@ return [
                         'first_payment_amount' => '500000',
                         'max_amount' => '500',
                         'expire_at' => '2047483647',
-                        'create_form' => true,
-                        'reference_1' => 'ttt',
-                        'reference_2' => 'qqq'
+                        'nach' => [
+                            'create_form'     => true,
+                            'form_reference1' => 'ttt',
+                            'form_reference2' => 'qqq',
+                        ],
                     ]
             ],
             'method'    => 'POST',

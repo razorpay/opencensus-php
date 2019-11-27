@@ -157,4 +157,42 @@ class NetbankingScbGatewayTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
     }
+
+    public function testRefundPayment()
+    {
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->payment = $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+    }
+
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->payment = $this->refundPayment($payment['id'], 200, ['failed' => true]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->assertEquals(1, $refund['attempts']);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount' => $refund['amount']],'netbanking_scb');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $this->assertEquals(1, $refund['attempts']);
+    }
 }

@@ -2132,7 +2132,6 @@ class Service extends Base\Service
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
-
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -3559,5 +3558,40 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+
+        return $referrals->toArrayPublic();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partner = $this->fetchPartner();
+
+        (new Referral\Validator)->validateForReferral($partner);
+
+        $referral = (new Referral\Core)->createOrFetch($merchant);
+
+        return $referral->toArrayPublic();
     }
 }

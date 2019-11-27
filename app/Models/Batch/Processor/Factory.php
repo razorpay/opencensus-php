@@ -29,6 +29,12 @@ class Factory
             Batch\Entity::GATEWAY,
         ],
 
+        Batch\Type::NACH  => [
+            Batch\Entity::TYPE,
+            Batch\Entity::SUB_TYPE,
+            Batch\Entity::GATEWAY,
+        ],
+
         Batch\Type::TERMINAL => [
             Batch\Entity::TYPE,
             Batch\Entity::SUB_TYPE

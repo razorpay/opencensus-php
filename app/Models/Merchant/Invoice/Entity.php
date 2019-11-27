@@ -161,6 +161,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GSTIN, $gstin);
     }
 
+    /**
+     * Invoice number generator for merchant_invoice
+     *
+     * Format for Invoice Number on PG
+     * <12 chars invoice_code> + <mmyy>
+     * Where Invoice code = < first 8 chars of MID> + <last 4 chars of MID>
+     *
+     * Format for Invoice Number on X
+     * <11 chars of MID> + `-` + <mmyy>
+     *
+     * Relevant Slack threads for information :
+     * https://razorpay.slack.com/archives/CE4DMABE3/p1573094789005300
+     * https://razorpay.slack.com/archives/CE4DMABE3/p1573012152427700
+     *
+     * @param int    $month
+     * @param int    $year
+     * @param string $balanceType
+     */
     public function generateInvoiceNumber(int $month, int $year, string $balanceType = BalanceType::PRIMARY)
     {
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');

@@ -134,9 +134,6 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
-    const TRANSLATE_WEBHOOK               = 'translate_webhook';
-    const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -238,9 +235,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
-     * Enables workflow feature on Payout for Business Banking (RazorpayX)
-     */
+ * Enables workflow feature on Payout for Business Banking (RazorpayX)
+ */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Aggregator Partner + OAuth Client access
+     */
+    const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -441,9 +443,9 @@ class Constants
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
-        self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
         self::SHOW_CREDIT_SCORE               => true,
+        self::AGGREGATOR_OAUTH_CLIENT         => true,
     ];
 
     // Entity type constants

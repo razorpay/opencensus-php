@@ -771,6 +771,17 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $template = 'sms.custom_invoice.rbl_agri_loan';
+                $sender   = 'RBLBNK';
+                $params = [
+                    'receipt'       => $receipt,
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set

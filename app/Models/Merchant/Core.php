@@ -11,6 +11,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -192,7 +193,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant);
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -232,13 +233,13 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
         $this->createBalance($merchant, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
-        (new Methods\Core)->setDefaultMethods($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
 
         (new Detail\Core)->createMerchantDetails($merchant);
 
@@ -1165,7 +1166,7 @@ class Core extends Base\Core
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
@@ -1178,14 +1179,30 @@ class Core extends Base\Core
                 PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
             ];
 
-            $config = (new PartnerConfig\Core)->create($application, $config);
+            (new PartnerConfig\Core)->create($application, $config);
 
+            return $partner;
         });
+
+        $this->sendPartnerOnBoardedEmail($partner);
 
         return [
             'partner_type'              => $partnerType,
             'has_commission_configs'    => true,
         ];
+    }
+
+    protected function sendPartnerOnBoardedEmail(Entity $partner)
+    {
+        $data = [
+            'name'         => $partner->getName(),
+            'email'        => $partner->getEmail(),
+            'partner_type' => $partner->getPartnerType(),
+        ];
+
+        $email = new PartnerOnBoarded($data);
+
+        Mail::queue($email);
     }
 
     /**
