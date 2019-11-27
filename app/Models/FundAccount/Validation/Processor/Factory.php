@@ -18,7 +18,7 @@ class Factory
     {
         $type = $fundAccountValidation->fundAccount->account->getEntityName();
 
-        if (in_array($type, [camel_case(Entity::BANK_ACCOUNT), camel_case(Entity::VPA)]) === false)
+        if (in_array($type, [Entity::BANK_ACCOUNT, Entity::VPA]) === false)
         {
             throw new BadRequestValidationFailureException(
                 "Invalid fund account type: " . $type
