@@ -37,7 +37,7 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
-                    ->latest(Entity::UPDATED_AT)
+                    ->latest()
                     ->first();
     }
 

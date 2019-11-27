@@ -47,7 +47,7 @@ class FundAccountController extends Controller
     }
 
     /**
-     *  Route to create bulk contacts.
+     *  Route to create bulk fund accounts
      *  Currently it is used by batch Service
      */
     public function createFundAccountBulk()

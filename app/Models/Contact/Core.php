@@ -25,35 +25,37 @@ class Core extends Base\Core
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                $merchant->getId(),
-                $batchId);
+                                                                 $merchant->getId(),
+                                                                 $batchId);
 
             if ($result !== null)
             {
                 $this->trace->info(TraceCode::CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY,
-                    ['input' => $result->toArrayPublic(),
-                     Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]]);
+                                   [
+                                       'input' => $result->toArrayPublic(),
+                                       Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]
+                                   ]);
 
                 return $result;
             }
         }
 
-        if ($allowDuplicate === true)
+        if ($checkForDuplicate === true)
+        {
+            $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+
+            if ($contact !== null)
             {
-                $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+                $this->trace->info(
+                    TraceCode::DUPLICATE_CONTACT_FOUND,
+                    [
+                        Entity::ID         => $contact->getId(),
+                        Entity::BATCH_ID   => $batchId,
+                    ]);
 
-                if ($contact !== null)
-                {
-                    $this->trace->info(
-                        TraceCode::DUPLICATE_CONTACT_FOUND,
-                        [
-                            Entity::ID         => $contact->getId(),
-                            Entity::BATCH_ID   => $batchId,
-                        ]);
-
-                    return $contact;
-                }
+                return $contact;
             }
+        }
 
         $contact = (new Entity)->build($input);
 

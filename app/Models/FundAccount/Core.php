@@ -29,6 +29,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
      * @param string $batchId
+     * @param bool $checkForDuplicate
      *
      * @return Entity
      * @throws BadRequestValidationFailureException
@@ -36,7 +37,7 @@ class Core extends Base\Core
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
-                           bool $allowDuplicate = false,
+                           bool $checkForDuplicate = false,
                            string $batchId = null): Entity
     {
         $traceRequest = $this->unsetSensitiveCardDetails($input);
@@ -65,7 +66,7 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
-        if ($source instanceof Contact\Entity and $allowDuplicate === true)
+        if ($source instanceof Contact\Entity and $checkForDuplicate === true)
         {
             $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
                 $input,
