@@ -1653,9 +1653,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_EMAIL_ADD_REQUEST                            = 'MERCHANT_EMAIL_ADD_REQUEST';
     const MERCHANT_REFERRAL_CREATE_REQUEST                      = 'MERCHANT_REFERRAL_CREATE_REQUEST';
+    const MERCHANT_REFERRAL_APPLY_REQUEST                       = 'MERCHANT_REFERRAL_APPLY_REQUEST';
     const MERCHANT_REFERRAL_FETCH_REQUEST                       = 'MERCHANT_REFERRAL_FETCH_REQUEST';
     const MERCHANT_REFERRAL_CODE_CREATE_CONFLICT                = 'MERCHANT_REFERRAL_CODE_CREATE_CONFLICT';
-
 
     const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
@@ -2299,7 +2299,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CPS_SWITCH_ROUTE_CALLBACK                     = 'GATEWAY_CPS_SWITCH_ROUTE_CALLBACK';
 
     const ACTIVE_DB_CONNECTIONS                                 = 'ACTIVE_DB_CONNECTIONS';
-  
+
     // Rendering Preferences / Options
     const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
     const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';
