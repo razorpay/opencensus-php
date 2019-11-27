@@ -29,6 +29,12 @@ class FundAccountController extends Controller
 
         $entity = $entity->ToArrayPublic();
 
+        // fund account can be created for different sources like
+        // contact and customer. The API response for fund account
+        // creation of contact will be different. The response code
+        // will be passed by the service and since the behaviour
+        // for other sources remain the same, we are keeping an isset
+        // check.
         if (isset($data[FundAccount\Entity::RESPONSE_CODE]) === true)
         {
             $responseCode = $data[FundAccount\Entity::RESPONSE_CODE];
