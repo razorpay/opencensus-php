@@ -48,6 +48,6 @@ class Observer extends BaseObserver
     {
         $this->validateEntity($iin);
 
-        $iin->flushCache($iin->getEntity() . '_' . $iin->getId());
+        $iin->flushCache($iin->getEntity() . '_' . $iin->getIin());
     }
 }

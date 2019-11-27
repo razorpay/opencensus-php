@@ -467,7 +467,9 @@ class IinTest extends TestCase
 
         $this->runRequestResponseFlow($request);
 
-        Event::assertDispatched(CacheHit::class, function ($e)
+        //Since after update cache is flushed, for next request cacheMiss happens .
+
+        Event::assertDispatched(CacheMissed::class, function ($e)
         {
             foreach ($e->tags as $tag)
             {
