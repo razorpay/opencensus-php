@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Config;
 use Carbon\Carbon;
-
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
@@ -26,12 +29,12 @@ class IrctcRefund extends Base
 
         $refund = $this->$processor($entry, $payment);
 
-        $entry[Batch\Header::STATUS]       = Batch\Status::SUCCESS;
-        $entry[Batch\Header::REFUND_ID]    = $refund->getPublicId();
-        $entry[Batch\Header::REFUND_DATE]  = $this->getRefundDate($refund);
+        $entry[Batch\Header::STATUS]      = Batch\Status::SUCCESS;
+        $entry[Batch\Header::REFUND_ID]   = $refund->getPublicId();
+        $entry[Batch\Header::REFUND_DATE] = $this->getRefundDate($refund);
     }
 
-    protected function processRTypeRefunds(array $entry, Payment\Entity $payment)
+    protected function processRTypeRefunds(array & $entry, Payment\Entity $payment)
     {
         $paymentProcessor = (new PaymentProcessor($this->merchant));
 
@@ -44,7 +47,27 @@ class IrctcRefund extends Base
             return $refund;
         }
 
-        return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
+        $formattedAmount = $this->getFormattedAmount($entry[Batch\Header::REFUND_AMOUNT]);
+
+        $amount = $payment->getBaseAmount();
+
+        if ($this->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
+        if ($formattedAmount === $amount)
+        {
+            return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
+        }
+        else
+        {
+            $entry[Batch\Header::BANK_REMARKS] = 'Rejected - Amount Mismatch';
+
+            $this->sendSlackNotification($amount, $formattedAmount);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND);
+        }
     }
 
     protected function processCTypeRefunds(array $entry, Payment\Entity $payment)
@@ -137,5 +160,29 @@ class IrctcRefund extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
+    }
+
+    public function getFormattedAmount($amt)
+    {
+        return intval($amt * 100);
+    }
+
+    /**
+     * Sends slack notification for this alert to appropriate channel
+     * @param $expectedAmount
+     * @param $givenAmount
+     */
+    public function sendSlackNotification($expectedAmount, $givenAmount)
+    {
+        $this->app['slack']->queue(
+                                    TraceCode::IRCTC_REFUND_AMOUNT_MISMATCH,
+                                    [
+                                        'message'         => 'Rejected - Amount Mismatch IRCTC Refund',
+                                        'expected_amount' => $expectedAmount,
+                                        'recon_amount'    => $givenAmount,
+                                    ],
+                                    [
+                                        'channel'   => Config::get('slack.channels.ops_irctc'),
+                                    ]);
     }
 }
