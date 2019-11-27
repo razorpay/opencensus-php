@@ -1,0 +1,47 @@
+import Stepper from 'common/new-ui/Stepper';
+
+const ReminderStepsDetails = ({
+  isRemindersEnabled,
+  nextReminders,
+  isAutoRemindersUpdating,
+  isPaymentLinkClosed,
+}) => {
+  const reminderStepsData = nextReminders
+    .map(reminder => {
+      const currDate = moment(undefined),
+        reminderDate = moment(reminder * 1000),
+        isPendingState = reminderDate.isAfter(currDate);
+
+      if (isPaymentLinkClosed && isPendingState) {
+        return null;
+      }
+
+      const newReminder = {
+        status: !isRemindersEnabled
+          ? 'disabled'
+          : isPendingState > 0 ? 'pending' : 'completed',
+        time_to_sent: reminder,
+      };
+
+      return {
+        status: newReminder.status,
+        type: (
+          <i
+            class={`i i-${
+              newReminder.status === 'completed' ? 'check-circle' : 'bullet'
+            }`}
+          />
+        ),
+        label: isAutoRemindersUpdating ? (
+          <PlaceholderLoader />
+        ) : (
+          moment(newReminder.time_to_sent * 1000).format('DD MMM YYYY')
+        ),
+      };
+    })
+    .filter(ele => ele !== null);
+
+  return <Stepper list={reminderStepsData} />;
+};
+
+export default ReminderStepsDetails;

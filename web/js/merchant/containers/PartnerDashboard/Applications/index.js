@@ -1,7 +1,7 @@
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import Applications from 'merchant/containers/Applications';
-import WriteApplicationEntity from 'merchant/containers/Applications/new';
+import Applications from 'merchant/views/Settings/Applications';
+import WriteApplicationEntity from 'merchant/views/Settings/Applications/new';
 
 export default function PartnerApplications() {
   return (

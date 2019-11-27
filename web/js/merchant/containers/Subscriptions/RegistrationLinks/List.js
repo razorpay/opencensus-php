@@ -13,7 +13,7 @@ import {
 import { fetchRegistrationLinks as fetchAll } from 'merchant/reducers/collection';
 
 import { getTime } from 'common/ui/item';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 
 import ListContainer from 'merchant/containers/ListContainer';
 

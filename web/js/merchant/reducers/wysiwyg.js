@@ -11,10 +11,10 @@ import {
 } from 'common/utils/immutable';
 
 import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
-import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
+import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 
 // TODO: Remove dependency from here
-import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form/UDF_Fields/preAddedFields';
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/preAddedFields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
