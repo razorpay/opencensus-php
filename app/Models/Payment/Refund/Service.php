@@ -1428,6 +1428,13 @@ class Service extends Base\Service
 
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
+                                $skipMerchantWebhooks = $input['skip_merchant_webhooks'] ?? false;
+
+                                if ($skipMerchantWebhooks === true)
+                                {
+                                    break;
+                                }
+
                                 $processor->eventRefundSpeedChanged($refund);
 
                                 $processor->eventRefundProcessed($refund);
