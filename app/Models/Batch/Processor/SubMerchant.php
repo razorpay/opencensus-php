@@ -13,6 +13,7 @@ use RZP\Constants\Entity as CE;
 use RZP\Models\Batch\Constants;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as ME;
+use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -101,12 +102,14 @@ class SubMerchant extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
+        $subMerchant = $this->repo->transactionOnLiveAndTest(function() use (& $entry)
         {
-            $this->createSubMerchantForEntry($entry);
-
+            $subMerchant = $this->createSubMerchantForEntry($entry);
             $this->unsetExtraOutputKeys($entry);
+            return $subMerchant;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail(optional($subMerchant)->getId());
     }
 
     protected function performPreProcessingActions()
