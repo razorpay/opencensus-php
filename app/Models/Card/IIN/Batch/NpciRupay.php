@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card\IIN\Batch;
 
+use RZP\Models\Bank;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Type;
 use RZP\Models\Card\Network;
@@ -36,6 +37,50 @@ class NpciRupay extends Base
         'D' => MessageType::DMS,
     ];
 
+    const IIN_DEBIT_CATEGORY_MAPPING = [
+        "01" => [
+            "01" => IIN\Category::CLASSIC,
+            "03" => IIN\Category::PLATINUM,
+            "21" => IIN\Category::SELECT,
+            "22" => IIN\Category::CLASSIC,
+            "24" => IIN\Category::PLATINUM,
+            "25" => IIN\Category::CLASSIC,
+        ],
+        "05" => [
+            "01" => IIN\Category::CLASSIC,
+        ],
+    ];
+
+    const IIN_CREDIT_CATEGORY_MAPPING = [
+        "01" => [
+            "01" => IIN\Category::CLASSIC,
+            "03" => IIN\Category::PLATINUM,
+            "21" => IIN\Category::SELECT,
+        ],
+        "04" => [
+            "21" => IIN\Category::SELECT,
+        ],
+    ];
+
+    const IIN_PREPAID_CATEGORY_MAPPING = [
+        "01" => [
+            "01" => IIN\Category::CLASSIC,
+            "12" => IIN\Category::CLASSIC,
+            "15" => IIN\Category::CLASSIC,
+        ],
+        "05" => [
+            "01" => IIN\Category::CLASSIC,
+            "03" => IIN\Category::PLATINUM,
+            "12" => IIN\Category::CLASSIC,
+            "15" => IIN\Category::CLASSIC,
+        ],
+        "06" => [
+            "12" => IIN\Category::CLASSIC,
+        ]
+    ];
+
+
+
     public function preprocess($entry)
     {
         parent::preprocess($entry);
@@ -53,11 +98,18 @@ class NpciRupay extends Base
         return false;
     }
 
-    public function getIin()
+    public function getIinMin()
     {
-        $iin = substr($this->row, 11, 6);
+        $iinMin = substr($this->row, 11, 6);
 
-        return $iin;
+        return $iinMin;
+    }
+
+    public function getIinMax()
+    {
+        $iinMax = substr($this->row, 20, 6);
+
+        return $iinMax;
     }
 
     public function getType()
@@ -76,7 +128,12 @@ class NpciRupay extends Base
 
     public function getCountry()
     {
-        $country = substr($this->row, 47, 2);
+        $country = trim(substr($this->row, 47, 2));
+
+        if (empty($country) === true)
+        {
+            return null;
+        }
 
         return $country;
     }
@@ -90,7 +147,15 @@ class NpciRupay extends Base
             return;
         }
 
-        $issuer = substr($this->row, 0, 4);
+        $issuer = trim(substr($this->row, 0, 4));
+
+        //Since RuPay files have this mapping wrong
+        $issuer = ($issuer === "IDFC") ? "IDFB" : $issuer;
+
+        if (empty($issuer) === true)
+        {
+            return null;
+        }
 
         return $issuer;
     }
@@ -106,7 +171,35 @@ class NpciRupay extends Base
 
     public function getCategory()
     {
-        // TODO
+        $network = $this->getNetworkCode();
+
+        if ($network !== Network::RUPAY)
+        {
+            return;
+        }
+
+        $type = $this->getType();
+
+        $subCategory = substr($this->row, 34, 2);
+
+        $variant = substr($this->row, 36, 2);
+
+        switch ($type)
+        {
+            case Type::DEBIT:
+                $category = self::IIN_DEBIT_CATEGORY_MAPPING[$subCategory][$variant] ?? null;
+                break;
+            case Type::CREDIT:
+                $category = self::IIN_CREDIT_CATEGORY_MAPPING[$subCategory][$variant] ?? null;
+                break;
+            case Type::PREPAID:
+                $category = self::IIN_PREPAID_CATEGORY_MAPPING[$subCategory][$variant] ?? null;
+                break;
+            default :
+                return;
+        }
+
+        return $category;
     }
 
     public function getMessageType()
@@ -116,5 +209,22 @@ class NpciRupay extends Base
         $messageType = self::IIN_MESSAGE_TYPE_MAPPING[$messageTypeValue] ?? null;
 
         return $messageType;
+    }
+
+    public function getProductCode()
+    {
+        // TODO
+    }
+
+    public function getIssuerName()
+    {
+        $issuer = $this->getIssuer();
+
+        if (Bank\IFSC::exists($issuer) === true)
+        {
+            return Bank\Name::getName($issuer);
+        }
+
+        return null;
     }
 }

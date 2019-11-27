@@ -17,12 +17,12 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 class Receiver extends Base\Core
 {
     const BANK_ACCOUNT      = 'bank_account';
-    // const VPA               = 'vpa';
+    const VPA               = 'vpa';
     const QR_CODE           = 'qr_code';
 
     const TYPES = [
         self::BANK_ACCOUNT,
-        // self::VPA,
+        self::VPA,
         self::QR_CODE,
     ];
 

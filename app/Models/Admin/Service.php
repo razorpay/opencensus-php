@@ -4,6 +4,7 @@ namespace RZP\Models\Admin;
 
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs;
@@ -89,7 +90,7 @@ class Service extends Base\Service
             return $retEntity;
         }
 
-        $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
+        $entity = $this->fetchEntityByNameAndId($entity, $id, $input,true);
 
         return $entity->toArrayAdmin();
     }
@@ -138,8 +139,11 @@ class Service extends Base\Service
     protected function fetchEntityByNameAndId(
         string $entity,
         string $id,
-        array $input = []): Base\PublicEntity
+        array $input = [],
+        bool $useMasterEsReplica = false): Base\PublicEntity
     {
+        $this->traceActiveDbConnections();
+
         Entity::validateEntityOrFailPublic($entity);
 
         $entityClass = Entity::getEntityClass($entity);
@@ -151,13 +155,24 @@ class Service extends Base\Service
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }
 
-        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input);
+        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input, $useMasterEsReplica);
+
+        $this->traceActiveDbConnections();
 
         return $entity;
     }
 
+    protected function traceActiveDbConnections()
+    {
+        $activeDbConnection = array_keys(DB::getConnections());
+
+        $this->trace->info(TraceCode::ACTIVE_DB_CONNECTIONS, $activeDbConnection);
+    }
+
     public function fetchMultipleEntities($entity, $input)
     {
+        $this->traceActiveDbConnections();
+
         $this->validateEntityTypeForRestrictedOrg($entity);
 
         $entities = $this->handleExternalEntity($entity, $input);
@@ -169,7 +184,13 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
-        $entities = $this->repo->$entity->fetch($input);
+        $entities = $this->repo->$entity->fetch(
+            $input,
+            null,
+            false,
+            true);
+
+        $this->traceActiveDbConnections();
 
         return $entities->toArrayAdmin();
     }
@@ -870,7 +891,8 @@ class Service extends Base\Service
             $response = (new MozartBase($this->app))->sendMozartRequest($input['namespace'],
                 $input['gateway'],
                 $input['action'],
-                $payload);
+                $payload,
+                $input['version']);
 
             $this->trace->info(TraceCode::MOZART_ACTION_COMPLETED, $response);
         }

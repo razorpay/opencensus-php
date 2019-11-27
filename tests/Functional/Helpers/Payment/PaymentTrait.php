@@ -1195,7 +1195,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [], $gateway = null)
     {
         $this->ba->adminAuth();
 
@@ -1207,7 +1207,9 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
+        $gateway = $gateway ?? $this->gateway;
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;

@@ -59,6 +59,8 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
 
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/admin/attempts/verify';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';

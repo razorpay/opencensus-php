@@ -20,7 +20,7 @@ use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 
 abstract class Processor extends Base\Core
 {
-    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s_%s';
 
     const VERIFY_MUTEX_RESOURCE = 'SETTLEMENT_VERIFICATION_%s';
 
@@ -68,7 +68,7 @@ abstract class Processor extends Base\Core
      */
     public function process($input)
     {
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel, $this->mode);
 
         $data = $this->mutex->acquireAndRelease(
                                 $mutexResource,

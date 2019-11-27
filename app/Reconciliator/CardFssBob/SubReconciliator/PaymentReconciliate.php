@@ -75,7 +75,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $this->getReconCurrency($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -83,7 +83,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                     'info_code'         => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

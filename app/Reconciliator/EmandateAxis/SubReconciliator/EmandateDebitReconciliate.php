@@ -111,7 +111,8 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
             [
                 'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'Invalid payment status sent',
-                'row'             => $row,
+                'payment_id'      => $this->payment->getId(),
+                'status'          => $status,
                 'gateway'         => $this->gateway
             ]);
     }
@@ -145,7 +146,6 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 

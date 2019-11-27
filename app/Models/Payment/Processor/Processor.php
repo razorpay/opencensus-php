@@ -1743,22 +1743,22 @@ class Processor
 
 
         //TODO: Remove this later
-        try
-        {
-            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                [
-                    'payment'             => $this->payment->toArray(),
-                    'code'                => $code,
-                    'internal_code'       => $internalCode,
-                    'error'               => $e->getMessage()
-                ]
-            );
-        }
+//        try
+//        {
+//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+//        }
+//        catch (\Throwable $e)
+//        {
+//            $this->trace->info(
+//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                [
+//                    'payment'             => $this->payment->toArray(),
+//                    'code'                => $code,
+//                    'internal_code'       => $internalCode,
+//                    'error'               => $e->getMessage()
+//                ]
+//            );
+//        }
     }
 
     /**
@@ -3018,6 +3018,11 @@ class Processor
             // If the payment is a second recurring payment of a file-based emandate bank
             // we do not hit the gateway, we send a debit request asynchronously
             //
+            return false;
+        }
+
+        if ($payment->isNach() === true)
+        {
             return false;
         }
 

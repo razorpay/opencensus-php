@@ -26,4 +26,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function getRawBankStatus()
+    {
+        $response = $this->app['fts_fund_transfer']->getRawBankStatus($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

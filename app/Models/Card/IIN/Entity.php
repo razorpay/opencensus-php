@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const NETWORK       = 'network';
     const TYPE          = 'type';
     const SUBTYPE       = 'sub_type';
+    const PRODUCT_CODE  = 'product_code';
     const COUNTRY       = 'country';
     const ISSUER        = 'issuer';
     const ISSUER_NAME   = 'issuer_name';
@@ -63,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::TYPE,
         self::SUBTYPE,
+        self::PRODUCT_CODE,
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -82,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::TYPE,
         self::SUBTYPE,
+        self::PRODUCT_CODE,
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -103,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::CATEGORY,
         self::TYPE,
+        self::PRODUCT_CODE,
         self::COUNTRY,
         self::ISSUER,
         self::ISSUER_NAME,
@@ -124,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::SUBTYPE        => Card\SubType::CONSUMER,
         self::CATEGORY       => null,
         self::ISSUER         => null,
+        self::PRODUCT_CODE     => null,
     ];
 
     protected $casts = [
@@ -260,11 +265,6 @@ class Entity extends Base\PublicEntity
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);
-    }
-
-    protected function getIinAttribute()
-    {
-        return (int) $this->attributes[self::IIN];
     }
 
     public function getIssuer()

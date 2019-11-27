@@ -231,6 +231,132 @@ return [
         ],
     ],
 
+    'testAddingConfigWithDefaultPaymentMethods' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'         => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'          => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'     => 1,
+                'commission_model'        => 'subvention',
+                'default_payment_methods' => [
+                    'credit_card' => true,
+                    'debit_card'  => true,
+                    'netbanking'  => true,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type'             => 'application',
+                'entity_id'               => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commission_model'        => 'subvention',
+                'commissions_enabled'     => true,
+                'default_payment_methods' => [
+                    'credit_card' => true,
+                    'debit_card'  => true,
+                    'netbanking'  => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testEditingConfigWithSettingDefaultPaymentMethodsToEmpty' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'default_plan_id'         => '10ZeroPricingP',
+                'commissions_enabled'     => 0,
+                'implicit_plan_id'        => null,
+                'explicit_plan_id'        => null,
+                'implicit_expiry_at'      => null,
+                'settle_to_partner'       => 1,
+                'has_gst_certificate'     => true,
+                'default_payment_methods' => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'               => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'               => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'         => '10ZeroPricingP',
+                'commissions_enabled'     => false,
+                'implicit_plan_id'        => null,
+                'explicit_plan_id'        => null,
+                'implicit_expiry_at'      => null,
+                'explicit_refund_fees'    => true,
+                'explicit_should_charge'  => false,
+                'commission_model'        => 'commission',
+                'tds_percentage'          => Entity::DEFAULT_TDS_PERCENTAGE,
+                'has_gst_certificate'     => true,
+                'default_payment_methods' => []
+            ],
+        ],
+    ],
+
+    'testAddingConfigWithDefaultPaymentMethodsForPurePlatform' => [
+        'request'   => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'         => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commissions_enabled'     => 1,
+                'commission_model'        => 'subvention',
+                'default_payment_methods' => [
+                    'credit_card' => true,
+                    'debit_card'  => true,
+                    'netbanking'  => true,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID,
+        ],
+    ],
+
+    'testAddingConfigWithIncorrectDefaultPaymentMethods' => [
+        'request'   => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'         => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'          => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'     => 1,
+                'commission_model'        => 'subvention',
+                'default_payment_methods' => [
+                    'card'       => true,
+                    'debit_card' => true,
+                    'netbanking' => true,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'card is/are not required and should not be sent',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testAddingConfigForPlatformPartnerUsingPartnerId' => [
         'request'   => [
             'url'     => '/partner_configs',
