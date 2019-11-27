@@ -30,7 +30,6 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         parent::setUp();
 
         DB::table('admins')->update(['allow_all_merchants' => 1]);
-
     }
 
     public function testCreateRulesWithOverlappingRanges()
@@ -75,16 +74,6 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testGetAllPayoutAmountRulesWithPaginationLinks()
     {
-//        sd(DB::table('merchants')->select('id')->get());
-
-//        $workflowPermissions = $this->getPermissions('workflow');
-//
-//        $this->input = [
-//            'org_id'      => $this->org->getId(),
-//            'permissions' => array_slice($workflowPermissions, 0, 2),
-//        ];
-//
-//        $this->createWorkflow($this->input);
         $this->ba->adminAuth();
 
         $entries = [
