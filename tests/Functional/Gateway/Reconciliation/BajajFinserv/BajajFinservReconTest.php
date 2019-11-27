@@ -16,8 +16,6 @@ class BajajFinservReconTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/BajajFinservReconTestData.php';
-
         parent::setUp();
 
         $this->gateway = 'bajajfinserv';
@@ -27,8 +25,6 @@ class BajajFinservReconTest extends TestCase
         $this->ba->publicAuth();
 
         $this->setBflPaymentArray();
-
-//        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

@@ -12,9 +12,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const COLUMN_GATEWAY_TRANSACTION_ID = 'rrn';
 
+    const COLUMN_PAYMENT_ID = 'asset_serial_numberimei';
+
     protected function getPaymentId(array $row)
     {
-        return $row['asset_serial_numberimei'] ?? null;
+        return $row[self::COLUMN_PAYMENT_ID] ?? null;
     }
 
     protected function getArn($row)
