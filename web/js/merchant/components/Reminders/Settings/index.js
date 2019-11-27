@@ -138,6 +138,17 @@ export default class ReminderSettings extends React.Component {
       });
   };
 
+  getUpdatedReminderOptionsList = (listType, newList) => {
+    return this.state[listType].map(reminder => {
+      const disabled = !!findBy(newList, 'value', reminder.value);
+
+      return {
+        ...reminder,
+        disabled,
+      };
+    });
+  };
+
   onChange = type => list => {
     const listType =
       type === 'withExpiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
@@ -149,14 +160,7 @@ export default class ReminderSettings extends React.Component {
         ...this.state.settings,
         [type]: newList,
       },
-      [listType]: this.state[listType].map(reminder => {
-        const disabled = !!findBy(newList, 'value', reminder.value);
-
-        return {
-          ...reminder,
-          disabled,
-        };
-      }),
+      [listType]: this.getUpdatedReminderOptionsList(listType, newList),
     });
   };
 
