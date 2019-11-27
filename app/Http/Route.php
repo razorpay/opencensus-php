@@ -477,6 +477,7 @@ final class Route
         'entity_tax_update'                        => ['put',      'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
         'entity_balance_id_update'                 => ['post',     'admin/{entity}/balance_id_update',               'AdminController@updateEntityBalanceIdInBulk'                       ],
         'admin_get_file'                           => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
+        'admin_post_stork'                         => ['post',     'admin/stork/{path?}',                            'AdminController@postStork'                                         ],
         'send_test_newsletter'                     => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                          => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'bulk_data_entry'                          => ['post',     'admin/bulkcreate',                               'AdminController@bulkCreateEntity'                                  ],
@@ -2188,6 +2189,7 @@ final class Route
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
+        'admin_post_stork',
         // workflows
         'workflow_create',
         'workflow_get',
@@ -2722,6 +2724,7 @@ final class Route
         'merchant_fetch_users'                     => '*',
         'admin_change_password'                    => '*',
         'admin_get_file'                           => '*',
+        'admin_post_stork'                         => Permission::STORK_WRITE_OPERATION,
         'invitation_fetch'                         => '*',
         'pricing_create_plan'                      => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,

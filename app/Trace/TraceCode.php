@@ -2252,6 +2252,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
     const STORK_WEBHOOK_MIGRATE_SUMMARY                         = 'STORK_WEBHOOK_MIGRATE_SUMMARY';
+    const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
+    const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
 
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';
