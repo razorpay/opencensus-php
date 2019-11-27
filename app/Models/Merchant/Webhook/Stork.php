@@ -91,6 +91,27 @@ class Stork
             ]);
     }
 
+    public function invalidateCacheForBothModeWithoutFail(string $merchantId = null)
+    {
+        if ($merchantId !== null)
+        {
+            (new self)->invalidateCacheWithoutFail($merchantId, 'live');
+            (new self)->invalidateCacheWithoutFail($merchantId, 'test');
+        }
+    }
+
+    public function invalidateCacheWithoutFail(string $merchantId, string $mode)
+    {
+        try
+        {
+            $this->invalidateCache($merchantId, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            app()->trace->traceException($e);
+        }
+    }
+
     public function invalidateCache(string $merchantId, string $mode)
     {
         $this->service->init($mode);
