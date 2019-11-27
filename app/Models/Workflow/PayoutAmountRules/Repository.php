@@ -3,7 +3,6 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\DB;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
@@ -55,6 +54,7 @@ class Repository extends Base\Repository
 
     public function fetchTotalNumberOfElements()
     {
-        return $this->newQuery()->count();
+        return $this->newQuery()
+            ->count();
     }
 }
