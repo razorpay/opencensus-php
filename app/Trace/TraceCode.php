@@ -1475,6 +1475,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                                  = 'OFFER_UPDATE_REQUEST';
     const OFFER_DEACTIVATE                                      = 'OFFER_DEACTIVATE';
+    const OFFER_ACTIVATE                                        = 'OFFER_ACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                             = 'OFFER_MERCHANT_UPDATE_REQ';
     const OFFER_APPLIED_ON_PAYMENT                              = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT                          = 'OFFER_NOT_APPLIED_ON_PAYMENT';
@@ -1491,6 +1492,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_ISSUER_CHECK                               = 'OFFER_CARD_ISSUER_CHECK';
     const OFFER_CARD_INTERNATIONAL_CHECK                        = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                                = 'OFFER_CARD_USAGE_CHECK';
+    const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
 
     // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                          = 'ADD_GATEWAY_PRIORITY_REQUEST';

@@ -1184,6 +1184,10 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
+            $input['order_amount'] = $orderAmount;
         }
     }
 
@@ -1729,6 +1733,14 @@ class Processor
 
             $notifier->trigger(Payment\Event::FAILED);
         }
+
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->lockDecrementCurrentOfferUsage($payment);
+        }
+
 
         //TODO: Remove this later
 //        try
