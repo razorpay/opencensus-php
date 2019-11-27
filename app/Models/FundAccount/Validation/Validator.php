@@ -3,8 +3,11 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Base;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
+
 
 class Validator extends Base\Validator
 {
@@ -57,6 +60,26 @@ class Validator extends Base\Validator
                 throw new BadRequestValidationFailureException(
                     'Invalid currency field for fund account of type vpa.');
             }
+        }
+    }
+
+    /**
+     * @param Entity $validation
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBalanceId(Entity $validation)
+    {
+        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING)
+            && ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
+        {
+            throw new BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
+                Merchant\Balance\Entity::ACCOUNT_NUMBER,
+                [
+                    Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),
+                ]
+            );
         }
     }
 }

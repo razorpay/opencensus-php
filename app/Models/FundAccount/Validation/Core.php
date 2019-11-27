@@ -201,25 +201,15 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING)
-            && ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
-                Merchant\Balance\Entity::ACCOUNT_NUMBER,
-                [
-                    Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),
-                ]
-            );
-        }
-
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
+            $inputValidator = $validation->getValidator();
+
+            $inputValidator->validateBalanceId($validation);
+
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
             $validation->associateFundAccount($fundAccount);
-
-            $inputValidator = $validation->getValidator();
 
             $inputValidator->validateAmount($validation, $input);
 
