@@ -32,6 +32,11 @@ class PoaVerifierMock extends PoaVerifier
                 $body = $this->getMozartPayloadForAadharOcr();
 
                 break;
+
+            case Constants::AADHAAR_FRONT_COMPLETE:
+                $body = $this->getMozartPayloadForAadhaarCompleteOcr();
+
+                break;
             default:
                 throw new Requests_Exception('Error when fetching ocr data', 'timeout/downtime');
         }
@@ -237,6 +242,105 @@ class PoaVerifierMock extends PoaVerifier
             'error'             => null,
             'external_trace_id' => '',
             'mozart_id'         => 'bmdl7lfm5e0jj2to72e0',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $body;
+    }
+
+    protected function getMozartPayloadForAadhaarCompleteOcr() {
+        $body = [
+            'data'              => [
+                '_raw'    => '',
+                'content' => [
+                    'response' => [
+                        'requestId'  => 'b00d3d45-22c8-4b0c-9a05-2475e7f92dad',
+                        'result'     => [
+                            [
+                                'details' => [
+                                    'aadhaar' => [
+                                        'conf'     => 0.9,
+                                        'isMasked' => 'no',
+                                        'value'    => '823679449784'
+                                    ],
+                                    'dob'     => [
+                                        'conf'  => 0,
+                                        'value' => ''
+                                    ],
+                                    'father'  => [
+                                        'conf'  => 0,
+                                        'value' => ''
+                                    ],
+                                    'gender'  => [
+                                        'conf'  => 1,
+                                        'value' => 'MALE'
+                                    ],
+                                    'address' => [
+                                        'conf'  => 0,
+                                        'value' => 'D.No:17-274,VijayaNagar, Machilipatnam - 521002'
+                                    ],
+                                    'name'    => [
+                                        'conf'  => 1,
+                                        'value' => 'ABCDE FGHIJ'
+                                    ],
+                                    'qr'      => [
+                                        'value' => ''
+                                    ],
+                                    'yob'     => [
+                                        'conf'  => 0.9,
+                                        'value' => '1992'
+                                    ]
+                                ],
+                                'type'    => 'Aadhaar Front Top'
+                            ],
+                            [
+                                'details' => [
+                                    'aadhaar' => [
+                                        'conf'     => 0.9,
+                                        'isMasked' => 'no',
+                                        'value'    => '823679449784'
+                                    ],
+                                    'dob'     => [
+                                        'conf'  => 0,
+                                        'value' => ''
+                                    ],
+                                    'father'  => [
+                                        'conf'  => 0,
+                                        'value' => ''
+                                    ],
+                                    'gender'  => [
+                                        'conf'  => 1,
+                                        'value' => 'MALE'
+                                    ],
+                                    'mother'  => [
+                                        'conf'  => 0,
+                                        'value' => ''
+                                    ],
+                                    'name'    => [
+                                        'conf'  => 1,
+                                        'value' => 'ABCDE FGHIJ'
+                                    ],
+                                    'qr'      => [
+                                        'value' => ''
+                                    ],
+                                    'yob'     => [
+                                        'conf'  => 0.9,
+                                        'value' => '1992'
+                                    ]
+                                ],
+                                'type'    => 'Aadhaar Front Bottom'
+                            ],
+
+                        ],
+                        'statusCode' => 101
+                    ]
+                ],
+                'status'  => 'successful'
+            ],
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => 'bmercp99qbm0u76u3t9g',
             'next'              => [],
             'success'           => true
         ];

@@ -528,7 +528,7 @@ return [
                     'account_type' => 'vpa',
                     'active'       => true,
                     'details'      => [
-                        'address' => "jayesh@upi"
+                        'address' => "withname@razorpay"
                     ],
                 ],
                 'amount'       => null,
@@ -539,6 +539,16 @@ return [
                     'account_status'  => null,
                     'registered_name' => null,
                 ],
+            ],
+        ],
+    ],
+    'testFixTransactionSettledAt' => [
+        'request' => [
+            'url'     => '/transactions/fund_account_validation/settled/fix',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

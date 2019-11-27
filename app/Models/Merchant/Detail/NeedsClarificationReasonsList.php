@@ -27,6 +27,7 @@ class NeedsClarificationReasonsList
     const SUBMIT_COMPLETE_ELECTION_CARD             = 'submit_complete_election_card';
     const ADDRESS_PROOF_OUTDATED                    = 'address_proof_outdated';
 
+
     const REASON_DETAILS = [
         self::PROVIDE_POC                               => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',],

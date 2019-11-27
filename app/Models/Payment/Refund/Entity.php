@@ -1044,8 +1044,9 @@ class Entity extends Base\PublicEntity
         $messageEntity = Constants::REFUND;
         $messageSlaDone = ($days < 0 === true) ? false : true;
         $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
+        $messageVoidRefund = !$this->payment->isGatewayCaptured();
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }

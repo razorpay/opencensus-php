@@ -87,7 +87,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -370,7 +370,7 @@ trait Capture
      */
     protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
@@ -437,7 +437,9 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        //
+        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -808,7 +810,8 @@ trait Capture
         $payment = $this->payment;
 
         if (($payment->isBankTransfer() === false) and
-            ($payment->isBharatQr() === false))
+            ($payment->isBharatQr() === false) and
+            ($payment->isUpiTransfer() === false))
         {
             return;
         }
@@ -855,7 +858,7 @@ trait Capture
 
         $payment->setTax($txn->getTax());
 
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($payment->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());

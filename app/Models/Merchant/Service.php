@@ -605,6 +605,8 @@ class Service extends Base\Service
 
         (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
+        $this->validatePricingPlanForFeeBearer($merchant, $plan);
+
         $originalPricingPlan = null;
 
         if (empty($merchant->pricing) === false)
@@ -1427,7 +1429,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        (new Validator)->validateInput('holiday_notify', $input);
+
         RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
@@ -2128,7 +2131,6 @@ class Service extends Base\Service
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
-
 
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
@@ -3522,5 +3524,74 @@ class Service extends Base\Service
 
             $i++;
         }
+    }
+
+    /**
+     * @param Entity $merchant
+     * @param Plan $plan
+     * @throws Exception\BadRequestValidationFailureException
+     *
+     * Ensures that all pricing rules in plan have the same feeBearer value as the merchant
+     * the plan is being assigned to.
+     *
+     * This is not applicable in case of dynamic fee bearer.
+     */
+    public function validatePricingPlanForFeeBearer(Merchant\Entity $merchant, Plan $plan)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        $merchantFeeBearer = $merchant->getFeeBearer();
+
+        foreach ($plan as $pricing)
+        {
+            $pricingFeeBearer = $pricing->getFeeBearer();
+
+            if ($pricingFeeBearer !== $merchantFeeBearer)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_FEE_BEARER_MISMATCH,
+                    'fee_bearer',
+                    'The merchant is ' . $merchantFeeBearer . ' fee bearer. Cannot assign ' . $pricingFeeBearer . ' fee bearer pricing rule to merchant'
+                );
+            }
+        }
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+
+        return $referrals->toArrayPublic();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partner = $this->fetchPartner();
+
+        (new Referral\Validator)->validateForReferral($partner);
+
+        $referral = (new Referral\Core)->createOrFetch($merchant);
+
+        return $referral->toArrayPublic();
     }
 }

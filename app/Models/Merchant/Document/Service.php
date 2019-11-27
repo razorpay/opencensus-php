@@ -45,4 +45,13 @@ class Service extends Base\Service
 
         return $this->core->fetchActivationFilesFromDocument($mid);
     }
+
+    public function delete(string $id)
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $response = $this->core->delete($entity);
+
+        return $response;
+    }
 }

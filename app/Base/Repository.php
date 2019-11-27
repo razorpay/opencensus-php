@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use Database\Connection;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
@@ -854,6 +855,20 @@ class Repository extends \Razorpay\Spine\Repository
     protected function hasEntityFetch(): bool
     {
         return (empty($this->entityFetch) === false);
+    }
+
+    protected function getMasterReplicaConnection(string $mode = null)
+    {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
+
+        $connection = ($mode === Mode::TEST) ? Connection::MASTER_REPLICA_TEST : Connection::MASTER_REPLICA_LIVE;
+
+        return $connection;
     }
 
     protected function getSlaveConnection(string $mode = null)

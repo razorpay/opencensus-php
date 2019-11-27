@@ -1263,4 +1263,25 @@ class TerminalTest extends TestCase
         // Adding below assert to check if the org is being associated to terminal (via merchant) properly
         $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
+
+    public function testAssignUpiMindgateVirtualVPATerminal()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignUpiMindgateVirtualVPATerminalWithoutConfig()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

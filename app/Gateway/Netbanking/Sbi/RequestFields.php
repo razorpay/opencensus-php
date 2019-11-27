@@ -42,7 +42,7 @@ class RequestFields
 
     const MERCHANT_CODE = 'merchant_code'; // gateway merchant id
 
-    const ACCOUNT_NUMBER = 'Debit_Account_No';
+    const ACCOUNT_NUMBER = 'debit_accountno';
 
     // Verify request fields
     const BANK_REF_NO = 'bank_ref_no';

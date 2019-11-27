@@ -3,6 +3,7 @@
 namespace RZP\Services\Mock;
 
 use RZP\Exception\BaseException;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Services\CardPaymentService as BaseCardPaymentService;
 
 class CardPaymentService extends BaseCardPaymentService
@@ -25,5 +26,17 @@ class CardPaymentService extends BaseCardPaymentService
     public function fetch(string $entityName, string $id, $input)
     {
         return [];
+    }
+
+    public function fetchAuthorizationData(array $input)
+    {
+        $paymentId = $input['payment_ids'][0];
+
+        return [
+            $paymentId => [
+                Reconciliate::GATEWAY_TRANSACTION_ID    => '1234456789',
+                Reconciliate::AUTH_CODE                 => '',
+            ]
+        ];
     }
 }

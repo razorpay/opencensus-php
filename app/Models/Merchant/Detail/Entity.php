@@ -111,6 +111,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
     const COUPON_CODE                        = 'coupon_code';
+    const REFERRAL_CODE                      = 'referral_code';
 
     const SUBMIT                             = 'submit';
     const ARCHIVE                            = 'archive';
@@ -716,6 +717,11 @@ class Entity extends Base\PublicEntity
     public function isPoaVerified() : bool
     {
         return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isPoiVerified() : bool
+    {
+        return ($this->getPoiVerificationStatus() === POIStatus::VERIFIED);
     }
 
     public function isBankDetailStatusVerified() : bool

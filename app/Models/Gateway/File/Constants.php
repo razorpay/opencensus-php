@@ -45,8 +45,11 @@ class Constants
     const SIB              = 'sib';
     const FIRST_DATA       = 'first_data';
     const SBIN             = 'sbin';
+    const KVB              = 'kvb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
+
+    const PAPER_NACH_CITI       = 'paper_nach_citi';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -95,6 +98,8 @@ class Constants
             self::IDBI,
             self::SBIN,
             self::CBI,
+            self::KVB,
+            self::SCBL,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -107,6 +112,13 @@ class Constants
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
         ],
+        Type::NACH_DEBIT => [
+            self::PAPER_NACH_CITI,
+        ],
+        Type::NACH_REGISTER => [
+            self::PAPER_NACH_CITI,
+        ],
+
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
@@ -130,6 +142,8 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::NACH_DEBIT        => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::NACH_REGISTER     => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
     ];
@@ -168,6 +182,8 @@ class Constants
             self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
             self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
             self::CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::KVB         => ['kvb.netbanking.refunds@razorpay.com'],
+            self::SCBL        => ['scb.netbanking.claims@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -184,7 +200,15 @@ class Constants
             self::SBI                   => [''],
         ],
 
-        Type::EMI => [
+        Type::NACH_DEBIT => [
+            self::PAPER_NACH_CITI                  => [''],
+        ],
+
+        Type::NACH_REGISTER => [
+            self::PAPER_NACH_CITI                  => [''],
+        ],
+
+            Type::EMI => [
             self::AXIS     => ['axiscards.emi@razorpay.com'],
             self::INDUSIND => ['indusind.emi@razorpay.com'],
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],

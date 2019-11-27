@@ -8,9 +8,10 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
-use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
+use RZP\Models\Batch\Entity;
+use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
@@ -33,7 +34,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
         RequestProcessor\Base::NETBANKING_CBI,
+        RequestProcessor\Base::NETBANKING_SCB,
         RequestProcessor\Base::NETBANKING_YESB,
+        RequestProcessor\Base::NETBANKING_KVB,
         RequestProcessor\Base::NETBANKING_CUB,
         RequestProcessor\Base::NETBANKING_IBK,
         RequestProcessor\Base::JIOMONEY,
@@ -57,7 +60,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
         RequestProcessor\Base::NETBANKING_BOB_V2,
-        RequestProcessor\Base::PAYPAL
+        RequestProcessor\Base::PAYPAL,
+        RequestProcessor\Base::BAJAJFINSERV,
     ];
 
     /**
@@ -292,6 +296,41 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
+        if ($this->payment->isRoutedThroughCardPayments() === true)
+        {
+            $this->cardsPaymentServiceDispatch($rowDetails);
+        }
+    }
+
+    /**
+     * Here we will call CPS endpoint to fetch Auth data, match with
+     * MIS data and persist again by pushing to CPS queue.
+     *
+     * @param array $rowDetails
+     */
+    protected function cardsPaymentServiceDispatch(array $rowDetails)
+    {
+        $data = [
+            'payment_id' => $this->payment->getId(),
+            'params'     => [
+                BaseReconciliate::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID],
+                BaseReconciliate::AUTH_CODE              => $rowDetails[BaseReconciliate::AUTH_CODE],
+            ],
+            'mode'       => $this->mode,
+            'gateway'    => $this->gateway,
+            'batch_id'   => $this->batch->getId(),
+        ];
+
+        CardsPaymentRecon::dispatch($data);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'  => Base\InfoCode::RECON_CPS_JOB_DISPATCH,
+                'payment_id' => $this->payment->getId(),
+            ]
+        );
     }
 
     protected function validatePaymentDetails(array $row)

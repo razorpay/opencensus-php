@@ -11,9 +11,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|max:1000000000|custom',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:1000000000|custom',
         Entity::TYPE                     => 'filled|string|custom',
         Entity::DEBIT_TYPE               => 'filled|string|custom',
+        Entity::TERMINAL_ID              => 'filled|string',
         Entity::BANK_ACCOUNT             => 'required|array',
         Entity::FREQUENCY                => 'filled|string|custom',
         Entity::REFERENCE_1              => 'sometimes|string|max:50',
@@ -176,20 +177,10 @@ class Validator extends Base\Validator
 
     public function validatePaymentCreation()
     {
-        if ($this->entity->getStatus() !== Status::AUTHENTICATED)
+        if (empty($this->entity->getUploadedFileID()) === true)
         {
             throw new BadRequestValidationFailureException(
                 'payment can\'t be created without nach form submission'
-            );
-        }
-    }
-
-    public function validateCustomerToCreatePaperMandate(Customer\Entity $customer)
-    {
-        if (empty($customer->getName()) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'customer name should be present to create paper mandate'
             );
         }
     }

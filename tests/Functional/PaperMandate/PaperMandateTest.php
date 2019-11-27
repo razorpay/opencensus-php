@@ -9,6 +9,7 @@ use RZP\Models\PaperMandate;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -22,6 +23,8 @@ class PaperMandateTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/Helpers/PaperMandateTestData.php';
 
         parent::setUp();
+
+        (new Terminal)->createNachTerminal();
 
         $this->ba->proxyAuth();
     }
@@ -56,7 +59,7 @@ class PaperMandateTest extends TestCase
 
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
-        $this->assertEquals(PaperMandate\Status::AUTHENTICATED, $paperMandate->getStatus());
+        $this->assertEquals('mandate', $paperMandate->getUploadedFileID());
     }
 
     public function testAuthenticatePaperMandateWithoutCustomerSign()
@@ -168,7 +171,10 @@ class PaperMandateTest extends TestCase
     {
         $callable = function ()
         {
-            return ['outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf'))];
+            return [
+                'outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf')),
+                'uid'         => 'XXXXXXX'
+            ];
         };
 
         return $this->mockHyperVerge($callable);

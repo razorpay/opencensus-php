@@ -52,6 +52,10 @@ class HyperVerge extends Base\Core
     const TO_BE_REVIEWED           = 'to-be-reviewed';
     const DETAILS                  = 'details';
 
+    const FORM_CHECKSUM            = 'uid';
+    const SET_FORM_CHECKSUM        = 'setUid';
+    const DETECT_FORM_CHECKSUM     = 'detectUid';
+
     // Bank account types
     const SB     = 'SB';
     const CA     = 'CA';
@@ -95,13 +99,16 @@ class HyperVerge extends Base\Core
         self::NACH_TYPE,
     ];
 
-    public function generatePaperMandateForm(Entity $paperMandate): string
+    public function generatePaperMandateForm(Entity $paperMandate): array
     {
         $input = $this->getGenerateMandateInput($paperMandate);
 
         $response = $this->app->hyperVerge->generateNACH($input, $paperMandate);
 
-        return $response[self::OUTPUT_IMAGE];
+        return [
+            Entity::GENERATED_IMAGE => $response[self::OUTPUT_IMAGE],
+            Entity::FORM_CHECKSUM   => $response[self::FORM_CHECKSUM],
+        ];
     }
 
     public function extractPaperMandateFormData(Entity $paperMandate, array $input): array
@@ -110,7 +117,7 @@ class HyperVerge extends Base\Core
 
         $this->validateAndFormatExtractedData($extractedMandateData, $paperMandate);
 
-        $traceExtractedMandateData = $extractedMandateData;
+        $traceExtractedMandateData = $this->getExtractedDataToTrace($extractedMandateData);
 
         unset($traceExtractedMandateData[self::DETAILS][self::IMAGE]);
 
@@ -120,7 +127,7 @@ class HyperVerge extends Base\Core
                 'extracted_data' => $traceExtractedMandateData,
             ]);
 
-        $mappedMandateData = $this->mapFromHyperVerge($extractedMandateData[self::DETAILS], $paperMandate);
+        $mappedMandateData = $this->mapFromHyperVerge($extractedMandateData[self::DETAILS]);
 
         return $mappedMandateData;
     }
@@ -208,7 +215,22 @@ class HyperVerge extends Base\Core
 
         $mappedData[Entity::ENHANCED_IMAGE]  = $extractedMandateData[self::IMAGE];
 
+        $mappedData[Entity::FORM_CHECKSUM]   = $extractedMandateData[self::FORM_CHECKSUM];
+
         return $mappedData;
+    }
+
+    protected function getExtractedDataToTrace(array & $extractedData)
+    {
+        $extractedDataToTrace = $extractedData;
+
+        unset($extractedDataToTrace[self::DETAILS][self::IMAGE]);
+        unset($extractedDataToTrace[self::DETAILS][self::BANK_NAME]);
+        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_NUMBER]);
+        unset($extractedDataToTrace[self::DETAILS][self::IFSCCode]);
+        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_TYPE]);
+
+        return $extractedDataToTrace;
     }
 
     private function getFormattedAmountFromExtracted(int $amount): int
@@ -357,6 +379,8 @@ class HyperVerge extends Base\Core
         {
             $input[self::TERTIARY_ACCOUNT_HOLDER] = $paperMandateDetails[Entity::TERTIARY_ACCOUNT_HOLDER];
         }
+
+        $input[self::SET_FORM_CHECKSUM] = "yes";
 
         $logoUrl = $this->merchant->getLogoUrl();
 

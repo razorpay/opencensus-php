@@ -2,6 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -11,12 +12,15 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
+use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Processor\Processor;
 
 class Core extends Base\Core
 {
@@ -132,7 +136,7 @@ class Core extends Base\Core
 
         $paperMandateInput = [];
 
-        $this->getPaperMandateInput($input, $paperMandateInput, $subrInput);
+        $this->getPaperMandateInput($paperMandateInput, $subrInput);
 
         $bankInput = [];
 
@@ -168,9 +172,11 @@ class Core extends Base\Core
 
         if (empty($paperMandateInput) === false)
         {
-            if (empty($subscriptionRegistration->getMaxAmount()) === false)
+            $maxAmount = $subscriptionRegistration->getMaxAmount();
+
+            if ($maxAmount !== NULL)
             {
-                $paperMandateInput[PaperMandate\Entity::AMOUNT] = $subscriptionRegistration->getMaxAmount();
+                $paperMandateInput[PaperMandate\Entity::AMOUNT] = $maxAmount;
             }
 
             $paperMandate = (new PaperMandate\Core)->create($paperMandateInput, $customer);
@@ -181,7 +187,7 @@ class Core extends Base\Core
         return $subscriptionRegistration;
     }
 
-    protected function getPaperMandateInput(array & $input, array & $paperMandateInput, array & $subrInput)
+    protected function getPaperMandateInput(array & $paperMandateInput, array & $subrInput)
     {
         $method = $subrInput[Entity::METHOD] ?? null;
 
@@ -190,19 +196,21 @@ class Core extends Base\Core
             return;
         }
 
-        if (array_key_exists(Entity::CREATE_FORM, $subrInput) === true)
+        $nachArray = array_pull($subrInput, Entity::NACH, []);
+
+        if (array_key_exists(Entity::CREATE_FORM, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = array_pull($subrInput, Entity::CREATE_FORM);
+            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = $nachArray[Entity::CREATE_FORM];
         }
 
-        if (array_key_exists(PaperMandate\Entity::REFERENCE_1, $subrInput) === true)
+        if (array_key_exists(Entity::FORM_REFERENCE1, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::REFERENCE_1] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_1);
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_1] = $nachArray[Entity::FORM_REFERENCE1];
         }
 
-        if (array_key_exists(PaperMandate\Entity::REFERENCE_2, $subrInput) === true)
+        if (array_key_exists(Entity::FORM_REFERENCE2, $nachArray) === true)
         {
-            $paperMandateInput[PaperMandate\Entity::REFERENCE_2] = array_pull($subrInput, PaperMandate\Entity::REFERENCE_2);
+            $paperMandateInput[PaperMandate\Entity::REFERENCE_2] = $nachArray[Entity::FORM_REFERENCE2];
         }
 
         if (empty($subrInput[Entity::EXPIRE_AT]) === false)
@@ -248,6 +256,15 @@ class Core extends Base\Core
     // Associate
     public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
+        if ($subr->getMethod() === Method::NACH)
+        {
+            $paperMandate = $subr->paperMandate;
+
+            $paperMandate->setStatus(PaperMandate\Status::AUTHENTICATED);
+
+            $this->repo->saveOrFail($paperMandate);
+        }
+
         $this->repo->reload($subr);
 
         $subr->token()->associate($token);
@@ -335,6 +352,38 @@ class Core extends Base\Core
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
         return $paymentProcessor->process($paymentInput);
+    }
+
+    public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
+    {
+        if ($payment->isNach() === false)
+        {
+            return null;
+        }
+
+        $this->app['basicauth']->setMerchant($payment->merchant);
+
+        $merchant = $payment->merchant;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return null;
+        }
+
+        $subscriptionRegistration = $this->repo
+                                         ->subscription_registration
+                                         ->findByTokenIdAndMerchant($token->getId(), $merchant->getId());
+
+        if ($subscriptionRegistration === null)
+        {
+            return null;
+        }
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        return $paperMandate->getUploadedFormUrl();
     }
 
     private function isValidForAutoCharge(Entity $tokenRegistration)
@@ -534,7 +583,7 @@ class Core extends Base\Core
 
     public function paperMandateAuthenticate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = ['success' => true];
+        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
         $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
 
@@ -544,11 +593,11 @@ class Core extends Base\Core
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === false)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
         {
             $result = [
-                'success' => false,
-                'errors'  => $validationResult['errors'],
+                SubscriptionRegistrationConstants::SUCCESS => false,
+                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
             ];
         }
 
@@ -561,7 +610,7 @@ class Core extends Base\Core
 
     public function paperMandateValidate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = ['success' => true];
+        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
         $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
 
@@ -571,11 +620,11 @@ class Core extends Base\Core
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === false)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
         {
             $result = [
-                'success' => false,
-                'errors'  => $validationResult['errors'],
+                SubscriptionRegistrationConstants::SUCCESS => false,
+                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
             ];
         }
 
@@ -584,6 +633,131 @@ class Core extends Base\Core
         $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
 
         return $result;
+    }
+
+    public function nachRegisterTestPaymentAuthorizeOrFail(Entity $subscriptionRegistration, array $input)
+    {
+        $token = $subscriptionRegistration->token;
+
+        if ((empty($input[Entity::SUCCEED]) === false) and
+            ($input[Entity::SUCCEED] === true))
+        {
+            $this->updateTestTokenEntityRegister($token, Token\RecurringStatus::CONFIRMED);
+        }
+        else
+        {
+            $this->updateTestTokenEntityRegister(
+                $token,
+                Token\RecurringStatus::REJECTED,
+                'rejected by npci'
+            );
+        }
+
+        $this->authenticate($subscriptionRegistration, $token);
+
+        $payments = $token->nachPayments;
+
+        $payment = $payments->get(0);
+
+        $this->updateTestPaymentRegister($payment);
+    }
+
+    protected function updateTestPaymentRegister(Payment\Entity $payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
+        {
+            return $this->processAuthorizedTestPayment($payment);
+        }
+
+        return $this->processFailedTestPayment($payment);
+    }
+
+    protected function processFailedTestPayment(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        $e = new Exception\GatewayErrorException(
+            $errorCode,
+            null,
+            null,
+            [
+                'payment_id' => $payment->getId(),
+                'gateway'    => 'mock',
+            ]);
+
+        $processor = $processor->setPayment($payment);
+
+        $processor->updatePaymentAuthFailed($e);
+    }
+
+    protected function processAuthorizedTestPayment(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $processor = $processor->setPayment($payment);
+
+        $data = $processor->processAuth($payment);
+
+        if ($payment->hasBeenCaptured() === false)
+        {
+            $this->captureAuthorizedTestPayment($payment);
+        }
+
+        return $data;
+    }
+
+    protected function captureAuthorizedTestPayment(Payment\Entity $payment)
+    {
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'status' => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
+        $amount = $payment->getAmount();
+
+        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        if ($payment->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
+        $parameters = [
+            Payment\Entity::AMOUNT   => $amount,
+            Payment\Entity::CURRENCY => $payment->getCurrency()
+        ];
+
+        $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
+
+        $paymentProcessor->capture($payment, $parameters);
+    }
+
+    protected function updateTestTokenEntityRegister(Token\Entity $token, string $newRecurringStatus, string $failureReason = null)
+    {
+        $gatewayToken = 'dummytoken';
+
+        $tokenParams = [
+            Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
+            Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
+            Token\Entity::RECURRING_FAILURE_REASON  => $failureReason,
+        ];
+
+        (new Token\Core)->updateTokenFromNachGatewayData($token, $tokenParams);
+
+        $this->repo->saveOrFail($token);
     }
 
     protected function setDefaultValuesForBank(array & $bankInput, Customer\Entity $customer)

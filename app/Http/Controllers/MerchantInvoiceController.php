@@ -49,4 +49,13 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json($invoices);
     }
+
+    public function verify()
+    {
+        $input = Request::all();
+
+        $invoices = $this->service()->verify($input);
+
+        return ApiResponse::json($invoices);
+    }
 }
