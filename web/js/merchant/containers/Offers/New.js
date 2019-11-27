@@ -53,7 +53,7 @@ class NewOfferForm extends React.Component {
         missingFields.push(field);
       }
     });
-    debugger;
+
     return missingFields;
   }
 
@@ -348,162 +348,157 @@ class NewOfferForm extends React.Component {
 
   render() {
     return (
-      <div className="modal-body OfferCreationModal">
-        <div class="PaymentLinks--Create Wizard">
-          <main class="form-container">
-            <main-title class="main-title">Create New Offer</main-title>
-            <Form
-              autoComplete="off"
-              layout="tabular"
-              onChange={this.getFormOnChangeHandler()}
-            >
-              {/* ALERTS */}
-              {this.props.mode === 'test' && (
-                <Alert type="warning">
-                  You are creating the offer in <b>Test Mode</b>. So, only test
-                  payments can be made for it.
-                </Alert>
-              )}
-              <Alert type="error" message={this.state.errors} />
-              <h4>Basic Details</h4>
-              <Input
-                label="Offer Name"
-                name="name"
-                placeholder="Offer Short name"
-                autoFocus={true}
-                required
-                validator={val => {
-                  if (!val || val.length < 4) {
-                    return 'Short name should be at least of 4 characters';
-                  }
-                  if (val.length > 50) {
-                    return 'Short name should not exceed 50 characters';
-                  }
-                }}
-              />
-              <Input
-                label="Display Text"
-                name="display_text"
-                placeholder="Display text for offer"
-                required
-                validator={val => {
-                  if (!val || val.length < 4) {
-                    return 'Short name should be at least of 4 characters';
-                  }
-                  if (val.length > 250) {
-                    return 'Short name should not exceed 250 characters';
-                  }
-                }}
-              />
-              <Input
-                label="Terms"
-                name="terms"
-                placeholder="Terms and conditions for offer"
-              />
-              <hr />
-              <h4>Discount</h4>
-              <Input.Select
-                name="discount_type"
-                label="Discount Type"
-                placeholder="Discount Type"
-                onChange={this.getFormOnChangeHandler()}
-                required
-                options={[
-                  { label: 'Select Type', name: '' },
-                  { label: 'Percentage', name: 'percent' },
-                  {
-                    label: 'Flat',
-                    name: 'flat',
-                  },
-                ]}
-              />
-              {this.renderDiscountDetailsSection()}
-              <hr />
-              <h4>Checks</h4>
-              <Input.CurrencyInput
-                label="Minimum Payment"
-                name="min_amount"
-                class="Input--half"
-                onChange={this.getFormOnChangeHandler()}
-                placeholder="Minimum bill amount on for this offer"
-                validator={val => {
-                  if (this.state.discount_type === 'flat') {
-                    if (val < this.state.flat_cashback) {
-                      return 'Minimum payment is less than discount value';
-                    }
-                  }
-                }}
-              />
-              <Input.Select
-                label="On Offer Failure"
-                name="block"
-                description="Block/Allow payment on failure of offer validation"
-                required
-                options={[
-                  { label: 'Select Type', name: null },
-                  { label: 'Block Payment', name: true },
-                  {
-                    label: 'Allow Payment',
-                    name: false,
-                  },
-                ]}
-              />
-              <Input
-                type="Number"
-                label="Maximum Usage"
-                name="max_offer_usage"
-                placeholder="Maximum usage for this offer"
-              />
-
-              <hr />
-              <h4>Payment Method</h4>
-              {this.renderPaymentMethods()}
-              <hr />
-              <h4>Duration</h4>
-              <Input.DateTime
-                label="Starting On"
-                name="starts_at"
-                description="Start date for offer"
-                onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
-                isInline
-                required
-                validator={val => {
-                  if (moment() > val) {
-                    return 'Start date cannot be in past.';
-                  }
-                }}
-              />
-              <Input.DateTime
-                label="Expires On"
-                name="ends_at"
-                onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
-                description="Expiry date for offer"
-                isInline
-                required
-                validator={val => {
-                  if (this.state.starts_at > val.unix()) {
-                    return 'End date cannot be less that start date.';
-                  }
-                }}
-              />
-              <hr />
-            </Form>
-          </main>
-          <footer>
-            {/* Action Button 1 */}
-            {this.props.onClose && (
-              <Button onClick={e => this.props.onClose()}>Cancel</Button>
+      <div class="PaymentLinks--Create Wizard">
+        <main class="form-container">
+          <main-title class="main-title">Create New Offer</main-title>
+          <Form
+            autoComplete="off"
+            layout="tabular"
+            onChange={this.getFormOnChangeHandler()}
+          >
+            {/* ALERTS */}
+            {this.props.mode === 'test' && (
+              <Alert type="warning">
+                You are creating the offer in <b>Test Mode</b>. So, only test
+                payments can be made for it.
+              </Alert>
             )}
-            {/* Action Button 2 */}
-            <AsyncBtn.Primary
-              onClick={this.onCreate}
-              pendingState={'Creating...'}
-              disabled={this.state.disableSubmit}
-            >
-              Create Offer
-            </AsyncBtn.Primary>
-          </footer>
-        </div>
+            <Alert type="error" message={this.state.errors} />
+            <h4>Basic Details</h4>
+            <Input
+              label="Offer Name"
+              name="name"
+              placeholder="Offer Short name"
+              autoFocus={true}
+              required
+              validator={val => {
+                if (!val || val.length < 4) {
+                  return 'Short name should be at least of 4 characters';
+                }
+                if (val.length > 50) {
+                  return 'Short name should not exceed 50 characters';
+                }
+              }}
+            />
+            <Input
+              label="Display Text"
+              name="display_text"
+              placeholder="Display text for offer"
+              required
+              validator={val => {
+                if (!val || val.length < 4) {
+                  return 'Short name should be at least of 4 characters';
+                }
+                if (val.length > 250) {
+                  return 'Short name should not exceed 250 characters';
+                }
+              }}
+            />
+            <Input
+              label="Terms"
+              name="terms"
+              placeholder="Terms and conditions for offer"
+              required
+            />
+            <hr />
+            <h4>Discount</h4>
+            <Input.Select
+              name="discount_type"
+              label="Discount Type"
+              placeholder="Discount Type"
+              onChange={this.getFormOnChangeHandler()}
+              required
+              options={[
+                { label: 'Select Type', name: '' },
+                { label: 'Percentage', name: 'percent' },
+                { label: 'Flat', name: 'flat' },
+              ]}
+            />
+            {this.renderDiscountDetailsSection()}
+            <hr />
+            <h4>Checks</h4>
+            <Input.CurrencyInput
+              label="Minimum Payment"
+              name="min_amount"
+              class="Input--half"
+              onChange={this.getFormOnChangeHandler()}
+              placeholder="Minimum bill amount on for this offer"
+              validator={val => {
+                if (this.state.discount_type === 'flat') {
+                  if (val < this.state.flat_cashback) {
+                    return 'Minimum payment is less than discount value';
+                  }
+                }
+              }}
+            />
+            <Input.Select
+              label="On Offer Failure"
+              name="block"
+              description="Block/Allow payment on failure of offer validation"
+              required
+              options={[
+                { label: 'Select Type', name: '' }, // empty string is treated as null and throws required error
+                { label: 'Block Payment', name: true },
+                { label: 'Allow Payment', name: false },
+              ]}
+            />
+            <Input
+              type="Number"
+              label="Maximum Usage"
+              name="max_offer_usage"
+              placeholder="Maximum usage for this offer"
+            />
+
+            <hr />
+            <h4>Payment Method</h4>
+            {this.renderPaymentMethods()}
+            <hr />
+            <h4>Duration</h4>
+            <Input.DateTime
+              label="Starting On"
+              name="starts_at"
+              description="Start date for offer"
+              onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
+              isInline
+              required
+              defaultValue={''}
+              validator={val => {
+                if (moment() > val) {
+                  return 'Start date cannot be in past.';
+                }
+              }}
+            />
+            <Input.DateTime
+              label="Expires On"
+              name="ends_at"
+              onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
+              description="Expiry date for offer"
+              isInline
+              required
+              defaultValue={''}
+              validator={val => {
+                if (this.state.starts_at > val.unix()) {
+                  return 'End date cannot be less that start date.';
+                }
+              }}
+            />
+            <hr />
+          </Form>
+        </main>
+        <footer>
+          {/* Action Button 1 */}
+          {this.props.onClose && (
+            <Button onClick={e => this.props.onClose()}>Cancel</Button>
+          )}
+          {/* Action Button 2 */}
+          <AsyncBtn.Primary
+            onClick={this.onCreate}
+            pendingState={'Creating...'}
+            disabled={this.state.disableSubmit}
+          >
+            Create Offer
+          </AsyncBtn.Primary>
+        </footer>
       </div>
     );
   }
