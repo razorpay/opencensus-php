@@ -132,7 +132,7 @@ class Core extends Base\Core
     {
         $defaultOffers = (new Offer\Core)->fetchDefaultOffers();
 
-        foreach($defaultOffers as  $offer)
+        foreach($defaultOffers as $offer)
         {
             $this->validateAndAssociateDefaultOffer($order, $offer);
         }
@@ -142,7 +142,10 @@ class Core extends Base\Core
     {
         $offer = (new Offer\Core)->validateDefaultOfferForOrder($order, $offer);
 
-        $this->associateOffer($order, $offer);
+        if($offer !== null)
+        {
+            $this->associateOffer($order, $offer);
+        }
     }
 
     protected function associateOffer(Entity $order,  offer\Entity $offer)
