@@ -106,6 +106,7 @@ class Base extends Core
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
     const PAYPAL                 = 'Paypal';
+    const BAJAJFINSERV           = 'BajajFinserv';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -170,6 +171,7 @@ class Base extends Core
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
+        self::BAJAJFINSERV           => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -268,6 +270,7 @@ class Base extends Core
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],
+        Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
     ];
 
     /**
