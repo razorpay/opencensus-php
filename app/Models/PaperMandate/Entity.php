@@ -139,8 +139,6 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_1              => null,
         self::REFERENCE_2              => null,
         self::END_AT                   => null,
-        self::SPONSOR_BANK_CODE        => 'RATN0TREASU', // dummy value, will be removed in payment/nach PR
-        self::UTILITY_CODE             => 'NACH00000000013149', // dummy value, will be removed in payment/nach PR
         self::SECONDARY_ACCOUNT_HOLDER => null,
         self::TERTIARY_ACCOUNT_HOLDER  => null,
         self::FORM_CHECKSUM            => null,
@@ -198,6 +196,16 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getStartAt()
+    {
+        return $this->getAttribute(self::START_AT);
+    }
+
+    public function getEndAt()
+    {
+        return $this->getAttribute(self::END_AT);
     }
 
     public function setStatus(string $status)
