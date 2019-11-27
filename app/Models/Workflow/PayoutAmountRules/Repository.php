@@ -19,7 +19,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllWorkflowRules($limit, $offset)
+    public function fetchAllWorkflowRules($limit = 10, $offset = 0)
     {
         return $this->newQuery()
             ->take($limit)
