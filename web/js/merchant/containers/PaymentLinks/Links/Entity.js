@@ -53,7 +53,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.fetchDataForInvoice();
+    this.fetchDataForInvoice(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -64,10 +64,10 @@ export default class InvoiceDetailContainer extends Component {
 
   fetchDataForInvoice = (id = this.props.id) => {
     this.props.fetchInvoice(id);
-    this.fetchInvoiceRemindersList();
+    this.fetchInvoiceRemindersList(id);
   };
 
-  fetchInvoiceRemindersList = () => {
+  fetchInvoiceRemindersList = (id = this.props.id) => {
     if (!this.props.user.isRemindersEnabled) {
       return;
     }
@@ -80,7 +80,7 @@ export default class InvoiceDetailContainer extends Component {
       promiseList.push(Promise.resolve());
     }
 
-    promiseList.push(InvoiceActions.fetchInvoiceRemindersList(this.props.id));
+    promiseList.push(InvoiceActions.fetchInvoiceRemindersList(id));
 
     Promise.all(promiseList).then(respList => {
       const paymentLinksRemindersSettings =
