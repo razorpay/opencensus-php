@@ -568,4 +568,37 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFundAccValidationBankingFailedAmountVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedCurrencyVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedMissingFundAccountId()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->startTest();
+    }
 }

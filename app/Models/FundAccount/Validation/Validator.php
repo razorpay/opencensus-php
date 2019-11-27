@@ -82,4 +82,29 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    /**
+     * @param $validation
+     * @param $input
+     *
+     * @throws \RZP\Exception\AssertionException
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateFundAccount($validation, $input)
+    {
+        assertTrue(isset($input['fund_account']) === true);
+
+        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING)
+            && (empty($input['fund_account']['id']) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING,
+                Merchant\Balance\Entity::ACCOUNT_NUMBER,
+                [
+                    Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),
+                ]
+            );
+        }
+
+    }
 }

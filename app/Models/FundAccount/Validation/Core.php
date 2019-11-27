@@ -171,8 +171,6 @@ class Core extends Base\Core
      */
     protected function createOrGetFundAccount(array $input, Merchant\Entity $merchant): FundAccount\Entity
     {
-        assertTrue(isset($input['fund_account']) === true);
-
         try
         {
             if (empty($input['fund_account']['id']) === false)
@@ -206,6 +204,8 @@ class Core extends Base\Core
             $inputValidator = $validation->getValidator();
 
             $inputValidator->validateBalanceId($validation);
+
+            $inputValidator->validateFundAccount($validation, $input);
 
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
