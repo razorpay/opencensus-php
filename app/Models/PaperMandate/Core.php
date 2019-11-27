@@ -100,8 +100,6 @@ class Core extends Base\Core
         {
             $paperMandate->setUploadedFileId($uploadedFileId);
 
-            $paperMandate->setStatus(Status::AUTHENTICATED);
-
             $paperMandate->saveOrFail();
         }
 

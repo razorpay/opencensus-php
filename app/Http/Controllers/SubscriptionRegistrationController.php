@@ -167,4 +167,11 @@ class SubscriptionRegistrationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function nachRegisterTestPaymentAuthorizeOrFail(string $id)
+    {
+        $data = $this->service()->nachRegisterTestPaymentAuthorizeOrFail($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
 }

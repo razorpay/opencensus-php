@@ -995,8 +995,7 @@ class Service extends Base\Service
             // the partner merchant of that submerchant
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
-
-
+        
         $paymentIds = explode(', ', $payment->getId());
 
         $entityOffer = $this->repo

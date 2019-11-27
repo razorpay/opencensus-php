@@ -2502,7 +2502,7 @@ return [
             'status_code'  => 200,
         ]
     ],
-    
+
     'testTerminalOnboardingVerificationCronCase3'    => [
         'request' => [
             'url'     => '/terminals/onboard/verification',
@@ -2541,4 +2541,63 @@ return [
             ]
         ]
     ],
+
+    'testAssignUpiMindgateVirtualVPATerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'                     => 'upi_mindgate',
+                'gateway_acquirer'            => 'hdfc',
+                'gateway_merchant_id'         => '12345',
+                'gateway_merchant_id2'        => '12345678',
+                'gateway_terminal_password'   => 'password',
+                'upi'                         => 1,
+                'type'                        => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+                'virtual_upi_root'            => 'rzp.',
+                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_handle'          => 'hdfcbank',
+            ],
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminalWithoutConfig' => [
+        'request'   => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'password',
+                'upi'                       => 1,
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
 ];

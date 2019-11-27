@@ -376,6 +376,27 @@ class Service extends Base\Service
         return $this->createPaymentForPaperMandate([Entity::ORDER_ID => $order->getPublicId()]);
     }
 
+    public function nachRegisterTestPaymentAuthorizeOrFail(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $subscriptionRegistration = $invoice->entity;
+
+        if (($subscriptionRegistration === null) or
+            ($invoice->getEntityType() !== Constants\Entity::SUBSCRIPTION_REGISTRATION))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'id provided does not exist'
+            );
+        }
+
+        $subscriptionRegistration->getValidator()->validateNachRegisterTestPaymentAuthorizeOrFail();
+
+        (new Validator)->validateInput('nach_register_test_payment', $input);
+
+        return $this->core->nachRegisterTestPaymentAuthorizeOrFail($subscriptionRegistration, $input);
+    }
+
     protected function getSubscriptionRegistrationForToken(string $tokenId)
     {
         $tokenId = Token\Entity::stripDefaultSign($tokenId);

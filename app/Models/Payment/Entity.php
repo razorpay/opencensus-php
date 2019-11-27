@@ -1810,12 +1810,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return ($this->isBankTransfer() === true) or
                ($this->isBharatQr() === true) or
+               ($this->isUpiTransfer() === true) or
                ($this->isUpi() === true);
     }
 
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
+    /**
+     * UPI transfer is the case of smart collect where payment method is UPI and
+     * receiver type will be VPA and is different from normal UPI transactions.
+     *
+     * @return bool
+     */
+    public function isUpiTransfer()
+    {
+        return (($this->isUpi() === true) and
+               ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
     public function isGateway($gateway)
