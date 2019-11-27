@@ -193,7 +193,6 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
-     * @throws Exception\BadRequestException
      */
     protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
     {

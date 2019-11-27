@@ -2,13 +2,28 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+use RZP\Models\FundAccount\Entity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 class Factory
 {
+    /**
+     * @param FundAccountValidation\Entity $fundAccountValidation
+     *
+     * @return Base
+     * @throws BadRequestValidationFailureException
+     */
     public static function get(FundAccountValidation\Entity $fundAccountValidation): Base
     {
         $type = $fundAccountValidation->fundAccount->account->getEntityName();
+
+        if (in_array($type, [camel_case(Entity::BANK_ACCOUNT), camel_case(Entity::VPA)]) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                "Invalid fund account type: " . $type
+            );
+        }
 
         $processor = __NAMESPACE__ . '\\' . studly_case($type);
 

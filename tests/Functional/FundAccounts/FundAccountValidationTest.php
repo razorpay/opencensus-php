@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use Queue;
 use \RZP\Constants;
+use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundAccount\Validation\Entity;
@@ -598,6 +599,23 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationBankingFailedMissingFundAccountId()
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationFailedFundAccountCardType()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->mockCardVault();
+
+        $fundAccountResponse = $this->createFundAccountCard();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
         $this->startTest();
     }

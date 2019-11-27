@@ -669,4 +669,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testFundAccValidationFailedFundAccountCardType' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid fund account type: card',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
