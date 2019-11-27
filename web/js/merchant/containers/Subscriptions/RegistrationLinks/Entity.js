@@ -17,6 +17,7 @@ import {
   fetchRegistrationLink,
   downloadSignedNACHFile,
 } from 'merchant/reducers/registration_link';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import CopyLink from 'merchant/components/CopyLink';
 
@@ -32,7 +33,7 @@ import {
   state => ({
     ...state.registrationLink,
   }),
-  { fetchRegistrationLink }
+  { fetchRegistrationLink, showNotification }
 )
 export default class RegistrationLinkEntityContainer extends React.Component {
   get paymentMethod() {
@@ -63,6 +64,11 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   downloadSignedNACHFile = () => {
     return downloadSignedNACHFile({
       auth_link_id: this.props.id,
+    }).catch(err => {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
     });
   };
 
@@ -133,7 +139,11 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                             entity.is_nach_form_uploaded &&
                             this.downloadSignedNACHFile
                           }
-                          preFilledNachFileURL={entity.nach_form_url}
+                          preFilledNachFileURL={
+                            entity.token &&
+                            entity.token.nach &&
+                            entity.token.nach.prefilled_form
+                          }
                           trackClickUploadNACHForm={trackClickUploadNACHForm}
                           trackClickDownloadNACHForm={
                             trackClickDownloadNACHForm

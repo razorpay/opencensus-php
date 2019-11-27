@@ -8,6 +8,7 @@ import {
 } from './PaymentDetails/utils';
 
 export default ({
+  isFirstAmountHidden,
   defaultMandateMaxAmount,
   defaultFirstChargeAmount,
   tokenHasNoExpiry,
@@ -40,20 +41,22 @@ export default ({
       />
     </Input.Group>
 
-    <Input
-      name="firstPaymentAmount"
-      type="number"
-      placeholder={defaultFirstChargeAmount}
-      size="half_big"
-      label="Amount"
-      class="Input--Amount"
-      description="Amount of First Charge"
-      value={firstPaymentAmount}
-      validator={firstPaymentAmountValidator(mandateMaxAmount)}
-      addonBefore={
-        <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-      }
-    />
+    {!isFirstAmountHidden && (
+      <Input
+        name="firstPaymentAmount"
+        type="number"
+        placeholder={defaultFirstChargeAmount}
+        size="half_big"
+        label="Amount"
+        class="Input--Amount"
+        description="Amount of First Charge"
+        value={firstPaymentAmount}
+        validator={firstPaymentAmountValidator(mandateMaxAmount)}
+        addonBefore={
+          <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
+        }
+      />
+    )}
 
     <Input
       name="mandateMaxAmount"

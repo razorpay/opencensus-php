@@ -66,7 +66,7 @@ const NACHMandatoryFields = [
 const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
 @withRouter
-@connect(null, {
+@connect(state => ({ user: state.session.user }), {
   openModal,
   closeModal,
   saveInvoice,
@@ -478,6 +478,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 2: {
         return (
           <TokenDetailsForm
+            isFirstAmountHidden={this.props.user.isFirstAmountHidden}
             amount={formFields.amount}
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}

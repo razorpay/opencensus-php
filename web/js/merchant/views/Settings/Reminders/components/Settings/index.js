@@ -15,7 +15,7 @@ const initState = {
   withExpiry: [],
   withOutExpiry: [],
   advancedSettings: {
-    scheduledTime: '10AM - 12PM',
+    scheduledTime: '10AM - 12PM and 3PM - 5PM',
     channels: {
       sms: false,
       email: false,
@@ -52,7 +52,7 @@ export default class ReminderSettings extends React.Component {
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
         advancedSettings: {
-          scheduledTime: '10AM - 12PM',
+          scheduledTime: '10AM - 12PM and 3PM - 5PM',
           channels: {
             sms: props.channels.includes('sms'),
             email: props.channels.includes('email'),
@@ -64,7 +64,7 @@ export default class ReminderSettings extends React.Component {
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
         advancedSettings: {
-          scheduledTime: '10AM - 12PM',
+          scheduledTime: '10AM - 12PM and 3PM - 5PM',
           channels: {
             sms: props.channels.includes('sms'),
             email: props.channels.includes('email'),
@@ -138,20 +138,29 @@ export default class ReminderSettings extends React.Component {
       });
   };
 
-  onChange = type => (list, name) => {
+  getUpdatedReminderOptionsList = (listType, newList) => {
+    return this.state[listType].map(reminder => {
+      const disabled = !!findBy(newList, 'value', reminder.value);
+
+      return {
+        ...reminder,
+        disabled,
+      };
+    });
+  };
+
+  onChange = type => list => {
     const listType =
-      name === 'with_expiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
+      type === 'withExpiry' ? 'withExpireByConfigs' : 'withOutExpireByConfigs';
+
+    const newList = list.map(ele => ({ ...ele, disabled: true }));
 
     this.setState({
       settings: {
         ...this.state.settings,
-        [type]: list,
+        [type]: newList,
       },
-      [listType]: this.state[listType].map(reminder => {
-        reminder.disabled = !!findBy(list, 'value', reminder.value);
-
-        return reminder;
-      }),
+      [listType]: this.getUpdatedReminderOptionsList(listType, newList),
     });
   };
 

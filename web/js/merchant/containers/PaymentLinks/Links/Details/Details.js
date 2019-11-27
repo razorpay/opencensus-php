@@ -65,7 +65,11 @@ export default props => {
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
   const isRemindersEnabled =
-    invoice.reminder_status && !(invoice.reminder_status === 'disabled');
+    invoice.reminder_status &&
+    !(
+      invoice.reminder_status === 'disabled' ||
+      invoice.reminder_status === 'failed'
+    );
 
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 

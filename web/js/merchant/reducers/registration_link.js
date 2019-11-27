@@ -46,7 +46,17 @@ export const downloadSignedNACHFile = data => {
   return merchantFetch({
     url: `token.registration/paper_mandate/uploaded_form`,
     data,
-  }).then(resp => axios(resp.data.url));
+  }).then(resp => {
+    if (resp.data && resp.data.url) {
+      window.location = resp.data.url;
+
+      return;
+    }
+
+    throw {
+      errors: 'Signed NACH form is not available',
+    };
+  });
 };
 
 export default makeEntityReducer(REGISTRATION_LINK_FETCH);
