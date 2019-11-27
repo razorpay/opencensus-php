@@ -183,10 +183,10 @@ export default class PaymentLinksSettings extends React.Component {
   }
 }
 
-function serializeConfig(item, disabled) {
+function serializeConfig(item, disabled = false) {
   return {
     label: item.title,
     value: item.id,
-    disabled: !!disabled,
+    disabled,
   };
 }
