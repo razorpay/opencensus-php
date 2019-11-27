@@ -5,6 +5,7 @@ import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
+import Tooltip from 'common/ui/Tooltip';
 
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
@@ -12,11 +13,14 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import NACHDetails from 'merchant/components/Subscriptions/UploadNACHForm/Details';
+import SendLinkModal from 'merchant/components/Entity/SendLinkModal';
 
 import {
+  notifyCustomer,
   fetchRegistrationLink,
   downloadSignedNACHFile,
 } from 'merchant/reducers/registration_link';
+import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import CopyLink from 'merchant/components/CopyLink';
@@ -33,7 +37,11 @@ import {
   state => ({
     ...state.registrationLink,
   }),
-  { fetchRegistrationLink, showNotification }
+  {
+    fetchRegistrationLink,
+    showNotification,
+    openModal,
+  }
 )
 export default class RegistrationLinkEntityContainer extends React.Component {
   get paymentMethod() {
@@ -72,8 +80,61 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     });
   };
 
+  onResendLinkSubmit = notifyProps => {
+    let promises = [];
+
+    if (notifyProps.email === '1') {
+      promises.push(notifyCustomer(this.props.id, 'email'));
+    }
+    if (notifyProps.sms === '1') {
+      promises.push(notifyCustomer(this.props.id, 'sms'));
+    }
+
+    return Promise.all(promises)
+      .then(([emailStatus, smsStatus]) => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Link sent successfully!',
+        });
+      })
+      .catch(error => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: error.errors,
+          },
+        });
+      });
+  };
+
+  openResendLinkModal = () => {
+    const { customer_details } = this.props.entity;
+
+    this.props.openModal({
+      size: 'medium',
+      component: (
+        <SendLinkModal
+          class="alert-sm"
+          email={customer_details.customer_email}
+          sms={customer_details.customer_contact}
+          description="Are you sure you want to send the registration link again?"
+          testModeMessage={
+            <div>
+              This registration link is created in <strong>Test Mode</strong>.
+              So only test payments can be made for this registration link.
+            </div>
+          }
+          onSubmit={this.onResendLinkSubmit}
+        />
+      ),
+    });
+  };
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
+
+    let isSmsOrEmailSent =
+      entity.sms_status === 'sent' || entity.email_status === 'sent';
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -83,7 +144,20 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           </div>
         ) : (
           <div class="panel panel-default SliderPanel RegistrationLinks--Details">
-            <div class="panel-heading">{entity.id}</div>
+            <div class="panel-heading">
+              {entity.id}
+
+              <button
+                onClick={this.openResendLinkModal}
+                class="btn btn-primary pull-right"
+              >
+                <Tooltip theme="dark">
+                  {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                </Tooltip>
+
+                <i className="i i-send" />
+              </button>
+            </div>
             <Alert type="error" message={error} />
             {!!Object.keys(entity).length && (
               <div class="SliderPanel__Body">

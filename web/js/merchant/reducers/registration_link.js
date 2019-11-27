@@ -6,6 +6,13 @@ import { makeEntityReducer } from 'merchant_common/reducers/entity';
 const REGISTRATION_LINK_FETCH = 'REGISTRATION_LINK_FETCH';
 const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
 
+export const notifyCustomer = (id, type) => {
+  return merchantFetch({
+    url: `subscription_registration/auth_links/${id}/notify/${type}`,
+    method: 'post',
+  });
+};
+
 export const fetchRegistrationLink = id => ({
   type: REGISTRATION_LINK_FETCH,
   payload: merchantFetch(
