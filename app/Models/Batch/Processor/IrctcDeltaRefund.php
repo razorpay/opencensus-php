@@ -31,7 +31,7 @@ class IrctcDeltaRefund extends IrctcRefund
         foreach ($entries as & $entry)
         {
             $status = '6';
-            $remarks = $entry[Batch\Header::BANK_REMARKS] ?? 'Not Refunded';
+            $remarks = 'Not Refunded';
 
             if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
             {
@@ -48,7 +48,7 @@ class IrctcDeltaRefund extends IrctcRefund
                 Batch\Header::BANK_REMARKS            => $remarks,
 
                 //
-                // Refund ID and refund date will not be set in following case.
+                // Refund ID and refund date will not be set In following case.
                 // When the refund is created via payment auto refund cron, then receipt is null
                 // and thus we could not find the refund entity corresponding to this entry, as
                 // query to fetch refund uses receipt number.
