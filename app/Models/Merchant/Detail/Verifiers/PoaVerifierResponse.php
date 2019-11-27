@@ -21,37 +21,58 @@ class PoaVerifierResponse
         return $ocrName;
     }
 
+    /**
+     * Parses and extracts the name from OCR response
+     * @param $responseFromOCR
+     * @return name |null
+     */
     private function parseResponseAndGetNameFromOCR($responseFromOCR)
     {
-        if (empty($responseFromOCR) === true)
+        if (empty($responseFromOCR) === false and $this->isPOAVerifierResponseSuccess($responseFromOCR) === false)
         {
             return null;
         }
-
-        $result = flatten_array($responseFromOCR);
-
-        $key = 'data.content.response.result.0.details.name.value';
-
-        // For "Passport Front" the key is
-        // data.content.response.result.0.details.givenName.value
-        // For "Aadhaar Front Bottom" and "Voterid Front" the key
-        // is data.content.response.result.0.details.name.value
-
-        if (isset($result['data.content.response.result.0.type']) === true)
+        $ocrResult = $responseFromOCR['data']['content']['response']['result'];
+        foreach ($ocrResult as $res)
         {
-            $type = strtolower($result['data.content.response.result.0.type']);
-
-            if (strpos($type, 'passport') !== false)
+            $flattenOcrResult = flatten_array($res);
+            $ocrNameKey = $this->getOcrNameKeyByType($flattenOcrResult['type']);
+            if (empty($flattenOcrResult[$ocrNameKey]) === false)
             {
-                $key = 'data.content.response.result.0.details.givenName.value';
+                return $flattenOcrResult[$ocrNameKey];
             }
         }
-
-        if (isset($result[$key]) === true)
-        {
-            return $result[$key];
-        }
-
         return null;
+    }
+
+    /**
+     * For "Passport Front" the key is details.givenName.value
+     * For "Aadhaar Front Bottom" and "Voterid Front" the key is details.name.value
+     * @param $type
+     * @return string
+     */
+    private function getOcrNameKeyByType($type)
+    {
+        switch ($type)
+        {
+            case stripos($type, 'Passport front'):
+                $key = 'details.givenName.value';
+                break;
+            case stripos($type, 'Aadhaar front bottom'):
+            case stripos($type, 'Voterid front'):
+                $key = 'details.name.value';
+                break;
+            default:
+                $key = '';
+        }
+        return $key;
+    }
+
+    private function isPOAVerifierResponseSuccess($responseFromOCR)
+    {
+        $response = flatten_array($responseFromOCR);
+        return (isset ($response['success']) and ($response['success'] === true)) and
+            ((isset($response['data.content.response.statusCode']) === true) and
+                ($response['data.content.response.statusCode'] === 101));
     }
 }

@@ -482,7 +482,7 @@ class BasicAuth
      * @param  string|null      $accountId
      * @return ApiResponse|null
      */
-    protected function checkAndSetAccountId(string $accountId = null)
+    public function checkAndSetAccountId(string $accountId = null)
     {
         $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
@@ -512,7 +512,7 @@ class BasicAuth
         return null;
     }
 
-    protected function getCallbackKeyWithAccountId(string $accountId): string
+    public function getCallbackKeyWithAccountId(string $accountId): string
     {
         return $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
     }
@@ -1038,7 +1038,7 @@ class BasicAuth
 
 // --------------------- Verifiers ---------------------------------------------
 
-    protected function verifyAccountId(string & $accountId)
+    public function verifyAccountId(string & $accountId)
     {
         try
         {

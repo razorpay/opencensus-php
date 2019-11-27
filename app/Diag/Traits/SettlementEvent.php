@@ -15,7 +15,7 @@ trait SettlementEvent
         \Throwable $ex = null,
         array $customProperties = [])
     {
-        $requestId = $this->app['request']->getId();
+        $requestId = $this->app['request']->getTaskId();
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 

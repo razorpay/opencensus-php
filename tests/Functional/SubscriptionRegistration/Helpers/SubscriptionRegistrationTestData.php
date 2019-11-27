@@ -511,5 +511,16 @@ return [
             ],
         ],
     ],
+
+    'testCancelAuthLinksViaBatch' => [
+        'request' => [
+            'url' => '/subscription_registration/auth_links/batch/batch_100000000batch/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

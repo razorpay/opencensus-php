@@ -10,10 +10,11 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN            => 'required|digits:6',
+        Entity::IIN            => 'required|string|regex:/^[0-9]{6}$/',
         Entity::NETWORK        => 'required',
         Entity::TYPE           => 'required',
         Entity::SUBTYPE        => 'filled|string|custom',
+        Entity::PRODUCT_CODE     => 'sometimes',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -30,6 +31,7 @@ class Validator extends Base\Validator
         Entity::NETWORK        => 'required_with:category',
         Entity::TYPE           => 'required_with:category',
         Entity::SUBTYPE        => 'filled|string|custom',
+        Entity::PRODUCT_CODE     => 'sometimes',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
         Entity::ISSUER         => 'sometimes',
@@ -58,6 +60,7 @@ class Validator extends Base\Validator
         Entity::TYPE,
         Entity::CATEGORY,
         Entity::ISSUER,
+        Entity::COUNTRY,
     ];
 
     protected static $editValidators = [
@@ -65,6 +68,7 @@ class Validator extends Base\Validator
         Entity::TYPE,
         Entity::CATEGORY,
         Entity::ISSUER,
+        Entity::COUNTRY,
     ];
 
     protected static $binListValidationRules = [
@@ -190,6 +194,19 @@ class Validator extends Base\Validator
                 [
                     $attribute => $value,
                 ]);
+        }
+    }
+
+    protected function validateCountry($input)
+    {
+        if (isset($input[Entity::COUNTRY]) === false)
+        {
+            return;
+        }
+        if (Country::isValid($input[Entity::COUNTRY]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Country Code: '.$input[Entity::COUNTRY]);
         }
     }
 }

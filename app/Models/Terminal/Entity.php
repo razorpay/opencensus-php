@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 25;
+    const MAX_TERMINALS_COUNT           = 200;
     const DEFAULT_CURRENCY              = 'INR';
 
     /**
@@ -314,7 +314,7 @@ class Entity extends Base\PublicEntity
         self::VPA                        => null,
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
-        self::RUPAY_MPAN                 => null,        
+        self::RUPAY_MPAN                 => null,
     ];
 
     protected $casts = [
@@ -373,6 +373,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    public function getGatewayAccessCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ACCESS_CODE);
     }
 
     public function getGatewayMerchantId2()
@@ -1309,6 +1314,11 @@ class Entity extends Base\PublicEntity
     public function isBharatQr()
     {
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
+    }
+
+    public function isUpiTransfer()
+    {
+        return ($this->isTypeApplicable(Type::UPI_TRANSFER) === true);
     }
 
     public function isMoto()

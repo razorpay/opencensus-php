@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
-    const TIMEOUT       = 10;
+    const TIMEOUT       = 15;
 
     const CONNECT_TIMEOUT = 1;
 

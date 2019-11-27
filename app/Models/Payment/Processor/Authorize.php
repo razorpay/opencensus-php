@@ -359,22 +359,22 @@ trait Authorize
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 //TODO: Remove this later
-                try
-                {
-                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->info(
-                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                        [
-                            'payment'             => $payment->toArray(),
-                            'code'                => $errorCode,
-                            'internal_code'       => $internalErrorCode,
-                            'error'               => $e->getMessage()
-                        ]
-                    );
-                }
+//                try
+//                {
+//                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+//                }
+//                catch (\Throwable $e)
+//                {
+//                    $this->trace->info(
+//                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                        [
+//                            'payment'             => $payment->toArray(),
+//                            'code'                => $errorCode,
+//                            'internal_code'       => $internalErrorCode,
+//                            'error'               => $e->getMessage()
+//                        ]
+//                    );
+//                }
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -528,23 +528,26 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function processNachPaymentCreated($payment)
+    protected function processNachPaymentCreated(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
-
-        $this->repo->saveOrFail($token);
-
-        if ($payment->hasInvoice() === true)
+        if ($payment->isRecurringTypeInitial() === true)
         {
-            $invoice = $payment->invoice;
+            $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
-            if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+            $this->repo->saveOrFail($token);
+
+            if ($payment->hasInvoice() === true)
             {
-                $subscriptionRegistration = $invoice->entity;
+                $invoice = $payment->invoice;
 
-                (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+                {
+                    $subscriptionRegistration = $invoice->entity;
+
+                    (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                }
             }
         }
 
@@ -1199,6 +1202,10 @@ trait Authorize
             return;
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            return;
+        }
         //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.
@@ -1686,7 +1693,7 @@ trait Authorize
 
         if ($offer !== null)
         {
-            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment, $input);
         }
     }
 
@@ -3054,6 +3061,10 @@ trait Authorize
 
             $payment->localToken()->associate($token);
         }
+        else if ($payment->isNach() === true)
+        {
+            $payment->localToken()->associate($token);
+        }
 
         //else @todo for wallets
     }
@@ -3322,8 +3333,6 @@ trait Authorize
                     }
 
                     $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
-
-                    $saveMethodInput[Token\Entity::RECURRING]   = true;
                 }
             }
         }
@@ -5586,20 +5595,20 @@ trait Authorize
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
             //TODO: Remove this later
-            try
-            {
-                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(
-                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                    [
-                        'payment'             => $payment->toArray(),
-                        'error'               => $e->getMessage()
-                    ]
-                );
-            }
+//            try
+//            {
+//                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+//            }
+//            catch (\Throwable $e)
+//            {
+//                $this->trace->info(
+//                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                    [
+//                        'payment'             => $payment->toArray(),
+//                        'error'               => $e->getMessage()
+//                    ]
+//                );
+//            }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
@@ -5644,10 +5653,11 @@ trait Authorize
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
         //
-        // No gateway for bank transfer or Bharat Qr, everything is internal
+        // No gateway for bank transfer or Bharat Qr or UPI Transfer, everything is internal
         //
         if (($payment->isBankTransfer() === true) or
-            ($payment->isBharatQr() === true))
+            ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true))
         {
             return false;
         }
@@ -5944,6 +5954,7 @@ trait Authorize
          * 4. Payment is method is banktransfer, upi
          * 5. auth type is OTP or preferred auth contains OTP
          * 6. BharathQR payment
+         * 7. Payment receiver is VPA
          */
         if (($this->app['basicauth']->isPrivateAuth() === false) or
             ($this->app['api.route']->isS2SJsonRoute($routeName) === false) or
@@ -5951,6 +5962,7 @@ trait Authorize
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
             ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true) or
             ($payment->isNach() === true))
         {
             return false;

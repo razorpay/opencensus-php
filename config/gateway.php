@@ -25,6 +25,7 @@ return [
         'esigner_legaldesk',
         'enach_rbl',
         'enach_npci_netbanking',
+        'nach_citi',
         'ebs',
         'first_data',
         'hdfc',

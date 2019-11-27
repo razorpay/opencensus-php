@@ -124,11 +124,13 @@ class SubReconciliate extends Base\Core
 
     protected static $currentRowNumber = -1;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct();
 
         $this->gateway = $gateway;
+
+        $this->batch = $batch;
 
         $this->core = new Core;
 

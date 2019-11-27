@@ -149,4 +149,28 @@ class VerifyRefundData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_scb($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'code' => '0',
+                    'errorCode' => 000,
+                    'message' => 'successful',
+                    'txnStatus' => 'SUCCESS',
+                    'paymentId' => $entities['payment']['id'],
+                    'amount' => $entities['payment']['amount'],
+                    'hash' => 'abcd',
+                    '_raw' => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        $this->content($response, 'verify_refund');
+
+        return $response;
+    }
 }

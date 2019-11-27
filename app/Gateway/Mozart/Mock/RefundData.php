@@ -112,5 +112,28 @@ class RefundData extends Base\Mock\Server
 
         return $response;
     }
+
+    public static function netbanking_scb($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    "_raw" => "{\"data\":{\"refund_id\":5621,\"transaction_id\":\"HDVISC1234\",\"merchant_order_id\":\"1234\",\"merchant_refund_id\": \"123456\",\"refund_reference_no\":\"RRN1234\"}}",
+        "merchant_order_id" => "1234",
+        "success_status" => "success",
+        "refund_id" => 5621,
+        "merchant_refund_id" => "123456",
+        "refund_reference_no" => "RRN1234",
+        "transaction_id" => "HDVISC1234",
+        "status" => "refund_successful"
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }
 
