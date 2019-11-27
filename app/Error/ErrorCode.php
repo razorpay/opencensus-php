@@ -653,6 +653,7 @@ class ErrorCode
 
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                                 = 'BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
+    const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY                                = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                           = 'BAD_REQUEST_CARD_STOLEN_OR_LOST';
     const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                                 = 'BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE';

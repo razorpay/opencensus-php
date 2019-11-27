@@ -63,6 +63,7 @@ final class Shield
     const ACTION_ALLOW            = 'allow';
     const ACTION_REVIEW           = 'review';
     const ACTION_BLOCK            = 'block';
+    const MAXMIND_SCORE           = 'maxmind_score';
 
     const ALLOWED_ACTIONS         = [
         self::ACTION_ALLOW,

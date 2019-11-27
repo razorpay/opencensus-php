@@ -126,10 +126,16 @@ class Metadata
 
     // types of risk engines
     const MAXMIND     = 'maxmind';
+    const MAXMIND_V2  = 'maxmind_v2';
+    const SHIELD      = 'shield';
+    const SHIELD_V2   = 'shield_v2';
 
     // enum for risk engine
     const RISK_ENGINE_VALUES = [
-        self::MAXMIND  => 1,
+        self::MAXMIND    => 1,
+        self::SHIELD     => 2,
+        self::MAXMIND_V2 => 3,
+        self::SHIELD_V2  => 4,
     ];
 
     public static function getStringForValue($value, array $map)
