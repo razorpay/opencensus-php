@@ -532,7 +532,8 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($payment->isRecurringTypeInitial() === true)
+        if (($payment->isRecurringTypeInitial() === true) and
+            ($token->getRecurringStatus() === null))
         {
             $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
