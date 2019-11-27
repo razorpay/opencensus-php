@@ -102,13 +102,18 @@ class Stork
 
     public function invalidateCacheWithoutFail(string $merchantId, string $mode)
     {
-        try
+        $maxAttempts = 2;
+        while ($maxAttempts--)
         {
-            $this->invalidateCache($merchantId, $mode);
-        }
-        catch (\Throwable $e)
-        {
-            app()->trace->traceException($e);
+            try
+            {
+                $this->invalidateCache($merchantId, $mode);
+                return;
+            }
+            catch (\Throwable $e)
+            {
+                app()->trace->traceException($e);
+            }
         }
     }
 

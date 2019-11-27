@@ -362,7 +362,7 @@ class AdminController extends Controller
      */
     public function postStork(string $path)
     {
-        $mode = $this->ba->getMode();
+        $mode  = $this->ba->getMode();
         $input = Request::all();
         $this->trace->info(TraceCode::STORK_ADMIN_REQUEST, compact('mode', 'input'));
 
@@ -370,8 +370,8 @@ class AdminController extends Controller
         $service->init($mode);
 
         $response = $service->request($path, $input);
-        $code = $response->status_code;
-        $body = json_decode($response->body, true);
+        $code     = $response->status_code;
+        $body     = json_decode($response->body, true);
         $response = compact('code', 'body');
 
         $this->trace->info(TraceCode::STORK_ADMIN_RESPONSE, $response);
