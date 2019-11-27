@@ -20,6 +20,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -69,9 +70,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
-        'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled|custom',
+        'receiver.type'                 => 'required_with:receiver|filled|string',
+        'receiver.id'                   => 'required_with:receiver|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
@@ -396,6 +397,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid upi provider given: ' . $upiProvider);
+        }
+    }
+
+    protected function validateReceiver($attribute, $receiver)
+    {
+        if (Receiver::areTypesValid([$receiver['type']]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid receiver type: ' . $receiver['type']);
+        }
+
+        $requiredLength = 17;
+
+        if ($receiver['type'] === Receiver::VPA)
+        {
+            $requiredLength = 18;
+        }
+
+        if (strlen($receiver['id']) !== $requiredLength)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The receiver.id must be ' . $requiredLength . ' characters for receiver.type.' . $receiver['type']);
         }
     }
 
