@@ -109,6 +109,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                      = 'UPI transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank transfers are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT                = 'Bharat Qr is not enabled for merchant';
+    const BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT              = 'Virtual VPA is not enabled for merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
@@ -284,6 +285,7 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT                  = 'Receiver type is already present for the virtual account';
 
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';

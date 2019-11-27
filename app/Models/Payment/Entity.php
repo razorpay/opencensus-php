@@ -1828,7 +1828,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isUpiTransfer()
     {
         return (($this->isUpi() === true) and
-               ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
+                ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
     public function isGateway($gateway)

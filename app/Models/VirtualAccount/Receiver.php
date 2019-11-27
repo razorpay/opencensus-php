@@ -4,14 +4,10 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 
-use RZP\Exception;
-use RZP\Models\BankAccount\Generator;
-use RZP\Models\QrCode;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\QrCode;
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver extends Base\Core
@@ -69,6 +65,15 @@ class Receiver extends Base\Core
         $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
+    }
+
+    public function buildVPA(Entity $virtualAccount, array $options): Vpa\Entity
+    {
+        $validator = $virtualAccount->getValidator();
+
+        $validator->validateInput('vpaReceiverOption', $options);
+
+        return (new Vpa\Generator($this->merchant, $options))->generate($virtualAccount);
     }
 
     protected function getQrCodeEntityParams(Entity $virtualAccount, array $options): array
