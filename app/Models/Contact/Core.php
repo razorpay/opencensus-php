@@ -17,7 +17,7 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        bool $allowDuplicate = false,
+        bool $checkForDuplicate = false,
         string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);

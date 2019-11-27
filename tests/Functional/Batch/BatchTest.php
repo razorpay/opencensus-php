@@ -124,7 +124,6 @@ class BatchTest extends TestCase
 
     public function testSendMailFromBatchService()
     {
-        $this->markTestSkipped();
 
         Mail::fake();
 

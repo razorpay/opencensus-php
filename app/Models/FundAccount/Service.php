@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundAccount;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
@@ -241,7 +243,7 @@ class Service extends Base\Service
         // the request. The dashboard behaviour is yet to be finalised
         // so for now we are going ahead with duplication checks
         // only in API flow.
-        $responseCode  = 200;
+        $responseCode  = Response::HTTP_OK;
 
         /** @var Contact\Entity $source */
         $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
@@ -255,7 +257,7 @@ class Service extends Base\Service
             $entity = $this->core->create($input, $this->merchant, $source);
         }
 
-        $responseCode = $entity->wasRecentlyCreated === true ? 201 : $responseCode;
+        $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : $responseCode;
 
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,

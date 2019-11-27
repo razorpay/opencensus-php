@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Contact;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\FundAccount\Service as FundAccountService;
@@ -51,14 +53,14 @@ class Service extends Base\Service
         // same for now on dashboard. Eventually once the designs will be ready, contact
         // creation flow will be different for the dashboard
 
-        $responseCode  = 200;
+        $responseCode  = Response::HTTP_OK;
 
         // request comes from API
         if ($this->auth->isStrictPrivateAuth() === true)
         {
             $entity = $this->core->create($input, $this->merchant, true);
 
-            $responseCode = $entity->wasRecentlyCreated === true ? 201 : $responseCode;
+            $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : $responseCode;
         }
         else
         {
