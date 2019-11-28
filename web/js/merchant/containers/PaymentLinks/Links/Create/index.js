@@ -769,13 +769,11 @@ const getDefaultPLExpiryTimeFromRazorXExperiment = experiments => {
 
   Object.keys(experiments).forEach(experimentName => {
     if (experimentName.includes('pl-expiry-in-hrs-')) {
-      const experimentNameSplitList = experimentName.split('-');
+      const experimentNameSplitList = experimentName.split('-'),
+        lastEle = experimentNameSplitList[experimentNameSplitList.length - 1],
+        lastEleAsNumber = !isNaN(lastEle) && Number(lastEle);
 
-      const lastEle = Number(
-        experimentNameSplitList[experimentNameSplitList.length - 1]
-      );
-
-      if (lastEle && Number.isInteger(lastEle)) {
+      if (lastEleAsNumber > 0) {
         plExpiryTime = lastEle;
       }
     }
