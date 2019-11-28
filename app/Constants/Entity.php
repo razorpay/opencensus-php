@@ -86,6 +86,7 @@ class Entity
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
+    const UPI_TRANSFER               = 'upi_transfer';
     const ENTITY_ORIGIN              = 'entity_origin';
     const GATEWAY_TOKEN              = 'gateway_token';
     const BANK_TRANSFER              = 'bank_transfer';

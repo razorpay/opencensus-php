@@ -148,6 +148,11 @@ class Processor
     const CARD_PAYMENTS_PREFIX    = 'card_payments_gateway_routing';
 
     /**
+     * 3D Secure international feature flag
+     */
+    const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -3218,6 +3223,8 @@ class Processor
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
+
+                $this->setAnalyticsLog($payment);
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
 

@@ -1070,4 +1070,28 @@ class Pricing extends Base
             $this->edit($row['id'], array_merge($attributes, $row));
         }
     }
+
+    public function createUpiTransferPricingPlan()
+    {
+        $pricingPlanId = 'upiTrnsfrPrcng';
+
+        $rows = [
+            [
+                'id'             => '1zE31zbybacaaa',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'Upi Transfer pricing',
+                'feature'        => 'payment',
+                'payment_method' => 'upi',
+                'percent_rate'   => 100,
+                'fixed_rate'     => 0,
+                'max_fee'        => 5000,
+                'receiver_type'  => 'vpa',
+                'org_id'         => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
+    }
 }

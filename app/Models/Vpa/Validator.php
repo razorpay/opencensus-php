@@ -11,6 +11,11 @@ class Validator extends Base\Validator
         Entity::ADDRESS => 'required|string|between:3,100|regex:"[a-zA-Z0-9][a-zA-Z0-9\.-]{2,}@[a-zA-Z]+"|custom',
     ];
 
+    protected static $createVirtualVpaRules = [
+        Entity::USERNAME => 'required|string|max:40',
+        Entity::ADDRESS  => 'required|string|between:3,100|regex:"[a-zA-Z0-9][a-zA-Z0-9\.-]{2,}@[a-zA-Z]+"|custom',
+    ];
+
     public function validateAddress(string $attribute, string $address)
     {
         if (strpos($address, Entity::AROBASE) === false)

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Enach\Citi;
 
 use RZP\Models\Merchant;
 use RZP\Gateway\Enach\Base;
+use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 
 class Fields
@@ -65,12 +66,14 @@ class Fields
      * @param Token\Entity $token
      * @param string $paymentId
      * @param Merchant\Entity $merchant
+     * @param PaperMandate\Entity $paperMandate
      * @return array
      */
     public static function getNachRegistrationData(
         Token\Entity $token,
         string $paymentId,
-        Merchant\Entity $merchant
+        Merchant\Entity $merchant,
+        PaperMandate\Entity $paperMandate
     ): array
     {
         $merchantCategory = $merchant->getCategory();
@@ -88,8 +91,12 @@ class Fields
         $categoryDescription = Base\CategoryCode::getCategoryDescriptionFromCode($categoryCode);
 
         $customerName = $token['beneficiary_name'] ?? $token->customer->getName();
+
         $customerName = substr($customerName, 0, 40);
 
+        $startDate = $paperMandate->getStartAt();
+
+        $endDate = $paperMandate->getEndAt();
 
         return [
             NachRegisterFileHeadings::CATEGORY_CODE                 => $categoryCode,
@@ -101,8 +108,8 @@ class Fields
             NachRegisterFileHeadings::ACCOUNT_TYPE                  => $accountType,
             NachRegisterFileHeadings::BANK_NAME                     => $bankName,
             NachRegisterFileHeadings::BANK_IFSC                     => $ifsc,
-            self::START_TIMESTAMP                                   => $token->getCreatedAt(),
-            self::END_TIMESTAMP                                     => $token->getExpiredAt(),
+            self::START_TIMESTAMP                                   => $startDate,
+            self::END_TIMESTAMP                                     => $endDate,
         ];
     }
 }

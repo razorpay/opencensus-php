@@ -1362,6 +1362,15 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
+    public  function isValidVirtualVpaForTerminal(string $virtualVpa)
+    {
+        $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+
+        $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
+
+        return (substr($virtualVpa, 0, strlen($prefix)) === $prefix) && (substr($virtualVpa, -strlen($handle), strlen($virtualVpa)) === $handle);
+    }
+
     /**
      * This is being overridden because, we don't always want to add sub merchants
      * to the serialized data as it involves a db call. Only when serializing

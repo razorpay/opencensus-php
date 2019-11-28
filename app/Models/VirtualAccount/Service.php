@@ -446,4 +446,27 @@ class Service extends Base\Service
 
         return $processor;
     }
+
+    public function addReceiver(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($virtualAccount->isClosed())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+        }
+
+        $this->verifyMerchantCategory();
+
+        $this->verifyMerchantIsLiveForLiveRequest();
+
+        $virtualAccount = $this->core->addReceiver($virtualAccount, $input, $this->merchant);
+
+        return $virtualAccount->toArrayPublic();
+    }
 }

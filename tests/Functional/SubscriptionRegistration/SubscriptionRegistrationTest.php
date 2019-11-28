@@ -520,4 +520,42 @@ class SubscriptionRegistrationTest extends TestCase
              ->shouldReceive('getBatchesFromBatchService')
              ->andReturnNull();
     }
+
+    public function testResendAuthLinkViaSms()
+    {
+        $subrAttributes = ['method' => 'card', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+    }
+
+    public function testResendAuthLinkViaEmail()
+    {
+        $subrAttributes = ['method' => 'emandate', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+    }
 }

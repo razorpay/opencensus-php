@@ -35,6 +35,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findLatestByPayment($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
         $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;

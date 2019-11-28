@@ -42,6 +42,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
@@ -2977,6 +2978,8 @@ class Service extends Base\Service
 
             $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
     }
 
     /**
