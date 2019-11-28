@@ -304,12 +304,12 @@ class NewOfferForm extends React.Component {
     let type = this.state.discount_type;
     if (type && type === 'flat') {
       return (
-        <Input.CurrencyInput
+        <Input
           label="Discount Worth"
           name="flat_cashback"
           class="Input--half"
-          currency="INR"
-          placeholder="Discount worth in cash"
+          addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+          description="Discount worth in cash"
           required
         />
       );
@@ -321,7 +321,7 @@ class NewOfferForm extends React.Component {
             label="Discount Worth"
             name="percent_rate"
             class="Input--half"
-            placeholder="Discount worth in Percent"
+            description="Discount worth in Percent"
             addonBefore={<span>%</span>}
             required
             validator={val => {
@@ -333,12 +333,14 @@ class NewOfferForm extends React.Component {
               }
             }}
           />
-          <Input.CurrencyInput
+          <Input
             label="Maximum Cashback"
             name="max_cashback"
             class="Input--half"
+            type="number"
             onChange={this.getFormOnChangeHandler()}
-            placeholder="Maximum cashback for this offer"
+            description="Maximum cashback for this offer"
+            addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
             required
           />
         </React.Fragment>
@@ -417,12 +419,13 @@ class NewOfferForm extends React.Component {
             {this.renderDiscountDetailsSection()}
             <hr />
             <h4>Checks</h4>
-            <Input.CurrencyInput
+            <Input
               label="Minimum Payment"
               name="min_amount"
               class="Input--half"
+              addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
               onChange={this.getFormOnChangeHandler()}
-              placeholder="Minimum bill amount on for this offer"
+              description="Minimum bill amount on for this offer"
               validator={val => {
                 if (this.state.discount_type === 'flat') {
                   if (val < this.state.flat_cashback) {
@@ -430,6 +433,7 @@ class NewOfferForm extends React.Component {
                   }
                 }
               }}
+              {...{ required: this.state.discount_type === 'flat' }}
             />
             <Input.Select
               label="On Offer Failure"
