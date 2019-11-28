@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import DataTable from 'common/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'common/ui/item/pair';
+import Time from 'common/ui/Time';
 
 const PaymentDetails = ({ invoice }) => (
   <Definition placeholder="--">
