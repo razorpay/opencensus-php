@@ -20,19 +20,34 @@ const OfferDetails = props => {
     ) : (
       <Amount value={offer.flat_cashback} cureency={'INR'} />
     );
-  const renderPaymentMethod = () => {
-    let paymentMethod = offer.payment_method;
-    if (paymentMethod === null) {
-      return '--';
-    }
+
+  const renderPaymentDetails = () => {
+    let paymentMethod = offer.payment_method || '--';
+    let iins = (offer.iins && offer.iins.join(', ')) || '--';
     if (paymentMethod == 'card') {
       if (offer.payment_method_type == 'credit') {
-        return 'Credit Card';
+        paymentMethod = 'Credit Card';
       }
-      return 'Debit Card';
+      paymentMethod = 'Debit Card';
     }
-    return paymentMethod;
+
+    return (
+      <React.Fragment>
+        <EntityDetailRow label="Method" value={paymentMethod} />
+        {offer.payment_method == 'card' ? (
+          <React.Fragment>
+            <EntityDetailRow label="IINs" value={iins} />
+            <EntityDetailRow
+              label="Network"
+              value={offer.payment_network || '--'}
+            />
+          </React.Fragment>
+        ) : null}
+        <EntityDetailRow label="Bank Name" value={offer.issuer || '--'} />
+      </React.Fragment>
+    );
   };
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -124,11 +139,7 @@ const OfferDetails = props => {
                   value={offer.max_offer_usage || '--'}
                 />
 
-                <EntityDetailRow label="Method" value={renderPaymentMethod} />
-                <EntityDetailRow
-                  label="Bank Name"
-                  value={offer.issuer || '--'}
-                />
+                {renderPaymentDetails()}
               </div>
             </div>
           </div>
