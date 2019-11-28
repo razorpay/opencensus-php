@@ -1,7 +1,10 @@
 
+
 $failedColor = #f56a6a
 $successColor = #0b5
+$color-pending = #FFBA00;
 
+// these styles will be deprecated once async reports UI is in production
 .report-loader
   .i-info-circle
     margin-right: 5px
@@ -41,3 +44,26 @@ $successColor = #0b5
     margin-top: -5px
   button
     padding: 6px 38px
+
+// async report styles
+$logItemBackground = #F8F8F8;
+$logItemBorderColor = #DFE5E7;
+.LogList
+  .LogItem
+    padding: 16px;
+    background-color: $logItemBackground;
+    border: 1px solid $logItemBorderColor;
+    border-radius: 4px;
+
+    &--created
+      .LogStatus
+        color: $color-pending;
+
+    &--no-data
+      .LogStatus
+        color: $textDangerColor;
+
+    &__Body
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
