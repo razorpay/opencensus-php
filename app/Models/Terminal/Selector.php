@@ -753,19 +753,6 @@ class Selector extends Base\Core
         $merchantData['fee_bearer']        = $merchant->getFeeBearer();
         $merchantData['org_id']            = $merchant->getOrgId();
 
-        $subMerchantIds = [];
-
-        if ($merchant->isPartner() === true)
-        {
-            $subMerchants = (new MerchantCore())->listSubmerchants($merchant, []);
-
-            foreach ($subMerchants as $subMerchant)
-            {
-                $subMerchantIds[] = $subMerchant->getId();
-            }
-        }
-        $merchantData['sub_merchants_ids']  = $subMerchantIds;
-
         return $merchantData;
     }
 
