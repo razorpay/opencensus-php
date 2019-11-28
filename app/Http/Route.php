@@ -1351,6 +1351,9 @@ final class Route
         'delete_merchant_options'                 => ['delete',    'options/{id}',                                              'OptionsController@deleteOption'                          ],
 
         'create_merchant_options_admin'           => ['post',      'options/{merchantId}',                                      'OptionsController@createOptionsAdmin'                    ],
+        'read_merchant_options_admin'             => ['get',       'options/{namespace}/{service}/{merchantId}',                'OptionsController@getOptionsAdmin'                       ],
+        'update_merchant_options_admin'           => ['patch',     'options/{namespace}/{service}/{merchantId}',                'OptionsController@updateOptionsAdmin'                    ],
+        'delete_merchant_options_admin'           => ['delete',    'options/{namespace}/{service}/{merchantId}',                'OptionsController@deleteOptionAdmin'                     ],
 
         //developed for Facebook testing allowing facebook change activation status of any merchant. Behind feature flag present in omega only.
         'merchant_activation_update_partner'      => ['put',      'partner/merchant/{id}/activation/update',                    'MerchantController@putEditMerchantDetailsAfterLockPartner' ],
@@ -1868,6 +1871,9 @@ final class Route
         'update_merchant_options',
         'delete_merchant_options',
         'create_merchant_options_admin',
+        'read_merchant_options_admin',
+        'update_merchant_options_admin',
+        'delete_merchant_options_admin',
         'subscription_registration_resend_link',
         'subscription_registration_cancel_link',
     ];
@@ -2600,6 +2606,9 @@ final class Route
         'fts_dashboard_raw_bank_status',
 
         'create_merchant_options_admin',
+        'read_merchant_options_admin',
+        'update_merchant_options_admin',
+        'delete_merchant_options_admin',
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
@@ -3125,6 +3134,9 @@ final class Route
         'setl_holidays'                             => '*',
 
         'create_merchant_options_admin'             => '*',
+        'read_merchant_options_admin'               => '*',
+        'update_merchant_options_admin'             => '*',
+        'delete_merchant_options_admin'             => '*',
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,

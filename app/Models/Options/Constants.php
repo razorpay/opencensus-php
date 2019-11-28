@@ -33,6 +33,8 @@ class Constants
     .'You may want to update or delete existing';
     const ERROR_MSG_DUPLICATE_SERVICE_REF_ID_FIELD      = 'Entry with fields %s=%s and %s=%s and %s=%s '
     .'already exists for merchant. You may want to update or delete existing';
+    const ERROR_MSG_NO_ENTITY_FOR_MID                   = 'No entity with namespace=%s, service=%s and '
+    .'merchant=%s found';
     const ERROR_MSG_NAMESPACE_NOT_SUPPORTED             = 'Namespace %s is not valid';
     const ERROR_MSG_SERVICE_NOT_SUPPORTED               = 'Service %s is not valid';
 
