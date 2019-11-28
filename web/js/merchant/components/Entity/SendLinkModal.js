@@ -49,9 +49,16 @@ export default class extends React.PureComponent {
               fieldLabel={phone}
             />
 
-            <p>{description2}</p>
+            <p class="m-b">{description2}</p>
 
-            {isTestMode && <Alert type="warning" message={testModeMessage} />}
+            {isTestMode && (
+              <Alert
+                class="m-b"
+                type="warning"
+                message={testModeMessage}
+                showDismiss={false}
+              />
+            )}
 
             <AsyncBtn.Primary
               type="submit"
