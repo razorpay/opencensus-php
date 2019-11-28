@@ -29,7 +29,7 @@ class PayoutLinksPayoutsTable extends Migration
 
             $table->foreign('payout_link_id')
                   ->references(PayoutLink::ID)
-                  ->on(Table::PAYOUT_LINKS)
+                  ->on(Table::PAYOUT_LINK)
                   ->on_delete('restrict');
 
             $table->foreign('payout_id')

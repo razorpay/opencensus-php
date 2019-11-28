@@ -2,6 +2,7 @@
 
 use RZP\Constants\Table;
 use RZP\Models\PayoutLink\Entity;
+use RZP\Models\Currency\Currency;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -19,7 +20,7 @@ class CreatePayoutLinksTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::PAYOUT_LINKS, function (Blueprint $table) {
+        Schema::create(Table::PAYOUT_LINK, function (Blueprint $table) {
 
             $table->engine = 'InnoDB';
 
@@ -52,9 +53,10 @@ class CreatePayoutLinksTable extends Migration
                   ->nullable();
 
             $table->string(\RZP\Models\PaymentLink\Entity::CURRENCY, 3)
-                  ->nullable();
+                  ->default(Currency::INR);
 
-            $table->integer(Entity::CANCELLED_AT);
+            $table->integer(Entity::CANCELLED_AT)
+                  ->nullable();
 
             $table->index(Entity::CREATED_AT);
 
@@ -68,7 +70,9 @@ class CreatePayoutLinksTable extends Migration
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
-            $table->timestamps();
+            $table->integer(Entity::CREATED_AT);
+
+            $table->integer(Entity::UPDATED_AT);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant::ID)

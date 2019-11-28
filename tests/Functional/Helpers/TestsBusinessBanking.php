@@ -94,6 +94,7 @@ trait TestsBusinessBanking
         $this->bankingBalance = $bankingBalance;
         $this->virtualAccount = $virtualAccount;
         $this->bankAccount    = $bankAccount;
+
     }
 
     protected function setUpMerchantForBusinessBankingLive(
@@ -193,7 +194,7 @@ trait TestsBusinessBanking
                 'source_id'   => $this->contact->getId(),
             ],
             [
-                'name'           => "test",
+                'name'           => 'test',
                 'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
@@ -209,7 +210,7 @@ trait TestsBusinessBanking
             'type'                => 'pricing',
             'plan_id'             => '1hDYlICobzOCYt',
             'product'             => 'banking',
-            "feature"             => 'fund_account_validation',
+            'feature'             => 'fund_account_validation',
             'payment_method'      => 'bank_account',
             'account_type'        => 'shared'
         ];

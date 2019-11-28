@@ -33,6 +33,10 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
 
+    protected $generateIdOnCreate = true;
+
+    protected $entity = 'payout_link';
+
     protected $amounts = [
       self::AMOUNT
     ];
@@ -133,7 +137,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION           => null,
         self::RECEIPT               => null,
         self::NOTES                 => [],
-        self::STATUS                => Status::CREATED,
+        self::STATUS                => Status::ISSUED,
         self::CANCELLED_AT          => null,
     ];
 
