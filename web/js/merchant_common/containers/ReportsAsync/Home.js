@@ -5,26 +5,22 @@ import LogList from './Logs/List';
 
 export default class ReportHome extends React.PureComponent {
   static defaultProps = {
-    logs: [
-      {
-        id: 1,
-        name: 'Payment Report',
-        format: 'csv',
-        created_at: 1574829610,
-        start_time: 1574775699,
-        end_time: 1574775699,
-        status: 'processed',
-        fileId: null,
-        template_overrides: {
-          file_meta: {
-            extension: 'csv',
-          },
-        },
-      },
-    ],
+    config: {
+      id: 'config_edFWoe78RbLHwO',
+      consumer: '100000Razorpay',
+      report_type: 'merchant',
+      type: 'transfers',
+      scheduled: false,
+      name: 'Transfers',
+    },
   };
 
+  componentDidMount() {
+    this.props.fetchLogs();
+  }
+
   render() {
+    const { logs, config } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -34,7 +30,7 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div class="content-wrapper">
-              <LogList logs={this.props.logs} />
+              <LogList {...logs} config={config} />
             </div>
           </content>
         </tabbed-container>

@@ -4,6 +4,8 @@ import { getFormattedDate } from './utils';
 import KindOfLog from './components/KindOfLog';
 import LogStatus from './components/LogStatus';
 
+const DEFAULT_FILE_FORMAT = 'csv';
+
 export default function LogItem(props) {
   const startDate = getFormattedDate(props.start_time);
   const endDate = getFormattedDate(props.end_time);
@@ -12,7 +14,7 @@ export default function LogItem(props) {
       <div className="LogItem__Body">
         <div>
           <p>
-            <strong>{props.name}</strong>
+            <strong>{props.configName}</strong>
           </p>
           <p class="text-muted">
             ({startDate} - {endDate})
@@ -20,7 +22,12 @@ export default function LogItem(props) {
         </div>
         <div>
           <label>Format</label>
-          <p class="text-muted">{getFileFormat(props)}</p>
+          <p class="text-muted">
+            {getFileFormat({
+              logTemplate: props.template_overrides,
+              configTemplate: props.configTemplate,
+            }).toUpperCase()}
+          </p>
         </div>
 
         <KindOfLog
@@ -35,7 +42,12 @@ export default function LogItem(props) {
   );
 }
 
-function getFileFormat({ template_overrides: templateOverride }) {
-  const extension = ((templateOverride || {}).file_meta | {}).extension;
-  return extension || '--';
+function getFileFormat({ logTemplate, configTemplate }) {
+  const extension =
+    extractExtension(logTemplate) || extractExtension(configTemplate);
+  return extension || DEFAULT_FILE_FORMAT;
+}
+
+function extractExtension(template) {
+  return ((template || {}).file_meta || {} || {}).extension;
 }

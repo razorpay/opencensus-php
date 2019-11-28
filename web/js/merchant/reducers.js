@@ -69,7 +69,7 @@ import {
 } from 'merchant/reducers/collection';
 
 import { teamReducer } from 'merchant/reducers/team';
-import { reportsAsyncReducer } from 'merchant/reducers/reports/home';
+import reportsAsyncReducer from 'merchant/reducers/reports/home';
 
 import {
   subscriptionsReducer,
