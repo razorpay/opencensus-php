@@ -90,6 +90,7 @@ class UserController extends Controller
             }
             else {
                 $data['custom_notes'] = null;
+                $data['pl_expiry_in_hrs'] = null;
             }
 
             return view('merchant.index', $data);
