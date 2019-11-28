@@ -263,8 +263,7 @@ class Service extends Base\Service
 
         $batch = $this->fetchBatchById($id);
 
-        if ($batch[Entity::STATUS] === Status::PROCESSED or
-            $batch[Entity::STATUS] === Status::PARTIALLY_PROCESSED)
+        if ($batch[Entity::STATUS] === Status::PROCESSED) // What happens when status is FAILED?
         {
             $this->trace->info(
                 TraceCode::BATCH_ALREADY_PROCESSED,
