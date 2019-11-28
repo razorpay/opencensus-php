@@ -289,23 +289,18 @@ return [
 
                 "entity"    =>  "collection",
                 'count'     =>  2,
-                'admin'     =>  true,
                 'items'     =>  [
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  0,
-                        'max_amount'    =>  100,
-                        'entity'        =>  'workflow_payout_amount_rules',
-                        'admin'         =>  true
+                        'max_amount'    =>  100
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  101,
-                        'max_amount'    =>  null,
-                        'entity'        =>  'workflow_payout_amount_rules',
-                        'admin'         =>  true
+                        'max_amount'    =>  null
                     ]
                 ]
 
