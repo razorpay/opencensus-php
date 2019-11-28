@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -59,37 +57,9 @@ class Core extends Base\Core
         return $evaluatedRule;
     }
 
-    public function createWorkflowPayoutAmountRules($input): array
+    public function createWorkflowPayoutAmountRules($rules): array
     {
-        $rules = $input['rules'];
         $merchantId = $this->merchant->getId();
-
-        // Check if workflow belongs to merchant in context through proxyAuth
-        foreach ($rules as $rule)
-        {
-            $workflow = $this->repo->workflow->findOrFailPublic($rule['workflow_id'])->toArray();
-
-            if($merchantId != $workflow['merchant_id'])
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
-                    null,
-                    ['id' => $rule['workflow_id']]);
-            }
-        }
-
-        // Ensure that workflow rules do not exist already
-        if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_RULES_UPDATE_OR_DELETE_NOT_ALLOWED,
-                null,
-                ['id' => $merchantId]);
-        }
-
-        (new Entity())->getValidator()->checkForValidAmountRanges($rules);
-
-        (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
 
         // Insert all rules together into database
         $this->repo->transaction( function() use ($rules, $merchantId){
@@ -133,7 +103,7 @@ class Core extends Base\Core
         else
         {
             // Returns in a format including containing more fields like id in database
-            return $amountRules->toArrayAdmin();
+            return $amountRules->toArrayWithItems();
         }
     }
 
