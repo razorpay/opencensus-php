@@ -487,7 +487,7 @@ class Inferno
             $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $event);
 
             $headers = $response['headers'];
-            $event   = $response['content'];
+            $event   = $response['body'];
         }
 
         $hmac = static::generateHMAC($event, $secret);

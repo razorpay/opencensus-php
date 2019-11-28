@@ -23,6 +23,12 @@ class Mozart
 
     const DEFAULT_MOZART_VERSION = 'v1';
 
+    // Mozart constants
+    const HEADERS                        = 'headers';
+    const BODY                           = 'body';
+    const WEBHOOK                        = 'webhook';
+    const TRANSLATE                      = 'translate';
+
     // Mozart error constants
     const DESCRIPTION                    = 'description';
     const GATEWAY_ERROR_CODE             = 'gateway_error_code';
@@ -95,6 +101,15 @@ class Mozart
         return $responseArray;
     }
 
+    public function translateWebhook(string $path, string $payload) : array
+    {
+        $request = $this->getTranslateWebhookRequest($path, $payload);
+
+        $response = $this->sendRequest($request);
+
+        return $response;
+    }
+
     protected function getUrl(): string
     {
         $baseUrl = $this->config->get('applications.mozart.url');
@@ -147,7 +162,7 @@ class Mozart
     {
         try
         {
-            $responseBody = $this->sendRequest($request);
+            $responseBody = $this->sendRequest($request)[self::BODY];
 
             return $responseBody;
         }
@@ -204,7 +219,11 @@ class Mozart
 
         $this->validateResponse($response);
 
-        return $response->body;
+        return
+            [
+                self::HEADERS       =>  $response->headers->getAll(),
+                self::BODY          =>  $response->body,
+            ];
     }
 
     protected function validateResponse(\Requests_Response $response)
@@ -311,5 +330,28 @@ class Mozart
         }
 
         return $decodedJson;
+    }
+
+    protected function getTranslateWebhookRequest(string $path, string $payload)
+    {
+        return [
+            'url'       => $this->getTranslateWebhookUrl($path),
+            'content'   => $payload,
+            'method'    => Requests::POST,
+            'options'   => ['auth'  => $this->getAuthenticationDetails()],
+        ];
+    }
+
+    protected function getTranslateWebhookUrl(string $path) : string
+    {
+        $baseUrl = $this->config->get('applications.mozart.url');
+
+        $namespace = self::WEBHOOK;
+
+        $version = self::DEFAULT_MOZART_VERSION;
+
+        $action = self::TRANSLATE;
+
+        return "{$baseUrl}{$namespace}/{$path}/{$version}/{$action}";
     }
 }
