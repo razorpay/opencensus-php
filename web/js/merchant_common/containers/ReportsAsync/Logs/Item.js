@@ -9,6 +9,7 @@ const DEFAULT_FILE_FORMAT = 'csv';
 export default function LogItem(props) {
   const startDate = getFormattedDate(props.start_time);
   const endDate = getFormattedDate(props.end_time);
+
   return (
     <div class={classList('LogItem', `LogItem--${props.status}`)}>
       <div className="LogItem__Body">
@@ -35,7 +36,11 @@ export default function LogItem(props) {
           createdAt={props.created_at}
         />
 
-        <LogStatus {...props} />
+        <LogStatus
+          status={props.status}
+          fileId={props.file_id}
+          onDownloadClick={props.onDownloadClick}
+        />
       </div>
       <div className="LogItem__InfoBar">{props.info}</div>
     </div>

@@ -26,7 +26,7 @@ function renderDownloadButton({ fileId, onDownloadClick }) {
       data-file-id={fileId}
       onClick={onDownloadClick}
     >
-      <strong>Download</strong>
+      Download
     </button>
   );
 }
