@@ -15,8 +15,8 @@ class Service extends Base\Service
      */
     public function getDefaultExpiryTimeForPaymentLinksForMerchant(string $currentMerchantId)
     {
-        $customNotes = Constants::getDefaultExpiryTimeForPaymentLinksByMID($currentMerchantId);
+        $defaultExpiryTime = Constants::getDefaultExpiryTimeForPaymentLinksByMID($currentMerchantId);
 
-        return $customNotes;
+        return $defaultExpiryTime;
     }
 }
