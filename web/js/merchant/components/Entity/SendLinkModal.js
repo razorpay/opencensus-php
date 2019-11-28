@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import { closeModal } from 'merchant_common/reducers/modals';
 
 import ModalHeader from 'common/ui/ModalHeader';
@@ -17,37 +19,50 @@ import Alert from 'common/ui/Forms/Alert';
 export default class extends React.PureComponent {
   render() {
     const {
+      isTestMode,
       email,
       phone,
       description1,
       description2,
       testModeMessage,
+      closeModal,
     } = this.props;
 
     return (
       <div class="SendLink--Modal">
         <ModalHeader title="Send Link" onCloseClick={closeModal} />
+        <div class="modal-body">
+          <Form class="full-span" onSubmit={this.props.onSubmit}>
+            <p>{description1}</p>
 
-        <Form class="full-span" onSubmit={this.props.onSubmit}>
-          <p>{description1}</p>
+            <Input.Check
+              name="email"
+              class="InputGroup--vTop"
+              defaultValue={'1'}
+              fieldLabel={email}
+            />
 
-          <Input.Check name="email" defaultValue={'1'} label={email} />
+            <Input.Check
+              name="phone"
+              class="InputGroup--vTop"
+              defaultValue={'1'}
+              fieldLabel={phone}
+            />
 
-          <Input.Check name="phone" defaultValue={'1'} label={phone} />
+            <p>{description2}</p>
 
-          <p>{description2}</p>
+            {isTestMode && <Alert type="warning" message={testModeMessage} />}
 
-          {isTestMode && <Alert type="warning" message={testModeMessage} />}
-
-          <AsyncBtn.Primary
-            type="submit"
-            pendingClass="small spinner"
-            pendingText="Sending..."
-            onClick={this.props.onSubmit}
-          >
-            Send Link
-          </AsyncBtn.Primary>
-        </Form>
+            <AsyncBtn.Primary
+              type="submit"
+              pendingState="Sending..."
+              class="btn-block"
+              onClick={this.props.onSubmit}
+            >
+              Send Link
+            </AsyncBtn.Primary>
+          </Form>
+        </div>
       </div>
     );
   }
