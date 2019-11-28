@@ -74,6 +74,9 @@ class CreatePayoutLinksTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable();
+
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)

@@ -6,18 +6,24 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Models\PayoutLink\Status;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class PayoutLinkTest extends TestCase
 {
 
     use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/helpers/TestData.php';
+
         parent::setUp();
 
-        $this->ba->privateAuth();
+//        $this->ba->privateAuth();
 
         $this->createContact();
 
@@ -43,7 +49,6 @@ class PayoutLinkTest extends TestCase
         $payout_link = (new PayoutLink)->build($input);
 
         $payout_link->saveOrFail();
-
     }
 
     /**
@@ -51,9 +56,7 @@ class PayoutLinkTest extends TestCase
      */
     public function testPayoutCreationAndLinkingToPayoutLinks()
     {
-//        $this->testPayoutLinkCreation();
-
-
+        # unsure how to do this one ... just not able to do it!!!!!!!!!!!!!!!!!!
     }
 
 }

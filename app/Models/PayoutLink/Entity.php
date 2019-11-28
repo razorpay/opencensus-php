@@ -7,6 +7,7 @@ use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -146,6 +147,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DESCRIPTION,
     ];
+
+    protected $table  = Table::PAYOUT_LINK;
 
     // -------------------------------------- Relations -------------------------------
 

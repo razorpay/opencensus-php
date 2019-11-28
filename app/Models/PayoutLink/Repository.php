@@ -15,8 +15,4 @@ use RZP\Models\PaymentLink\PaymentPageItem;
 class Repository extends Base\Repository
 {
     protected $entity = 'payout_link';
-
-    protected $expands = [
-    ];
-
 }
