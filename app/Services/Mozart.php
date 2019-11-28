@@ -26,6 +26,9 @@ class Mozart
     // Mozart constants
     const HEADERS                        = 'headers';
     const BODY                           = 'body';
+    const CONTENT                        = 'content';
+    const STATUS_CODE                    = 'status_code';
+    const URL                            = 'url';
     const WEBHOOK                        = 'webhook';
     const TRANSLATE                      = 'translate';
 
@@ -105,7 +108,35 @@ class Mozart
     {
         $request = $this->getTranslateWebhookRequest($path, $payload);
 
-        $response = $this->sendRequest($request);
+        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, [
+            self::URL           => $request[self::URL],
+            self::CONTENT       => $request[self::CONTENT],
+        ]);
+
+        try
+        {
+            $response = $this->sendRequest($request);
+        }
+        catch (\Exception $exception)
+        {
+            $data = [
+                'exception'          => $exception->getMessage(),
+                self::URL            => $request[self::URL],
+                self::CONTENT        => $request[self::CONTENT],
+            ];
+
+            $this->trace->error(TraceCode::MOZART_SERVICE_REQUEST_FAILED, $data);
+
+            throw new Exception\IntegrationException(
+                $exception->getMessage(),
+                ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR);
+
+        }
+
+        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, [
+            self::STATUS_CODE   => $response[self::STATUS_CODE],
+            self::BODY          => $response[self::BODY],
+        ]);
 
         return $response;
     }
@@ -223,6 +254,7 @@ class Mozart
             [
                 self::HEADERS       =>  $response->headers->getAll(),
                 self::BODY          =>  $response->body,
+                self::STATUS_CODE   =>  $response->status_code,
             ];
     }
 
