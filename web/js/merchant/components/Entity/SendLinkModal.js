@@ -33,23 +33,13 @@ export default class extends React.PureComponent {
         <ModalHeader title="Send Link" onCloseClick={closeModal} />
         <div class="modal-body">
           <Form class="full-span" onSubmit={this.props.onSubmit}>
-            <p>{description1}</p>
+            {description1 && <p>{description1}</p>}
 
-            <Input.Check
-              name="email"
-              class="InputGroup--vTop"
-              defaultValue={'1'}
-              fieldLabel={email}
-            />
+            <Input.Check name="email" defaultValue={'1'} fieldLabel={email} />
 
-            <Input.Check
-              name="phone"
-              class="InputGroup--vTop"
-              defaultValue={'1'}
-              fieldLabel={phone}
-            />
+            <Input.Check name="phone" defaultValue={'1'} fieldLabel={phone} />
 
-            <p class="m-b">{description2}</p>
+            {description2 && <p class="m-b">{description2}</p>}
 
             {isTestMode && (
               <Alert
