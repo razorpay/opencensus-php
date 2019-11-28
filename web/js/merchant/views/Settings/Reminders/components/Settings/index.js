@@ -15,7 +15,7 @@ const initState = {
   withExpiry: [],
   withOutExpiry: [],
   advancedSettings: {
-    scheduledTime: '8AM - 11AM and 3PM - 5PM',
+    scheduledTime: '8AM - 11AM and 3PM - 6PM',
     channels: {
       sms: false,
       email: false,
@@ -52,7 +52,7 @@ export default class ReminderSettings extends React.Component {
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
         advancedSettings: {
-          scheduledTime: '8AM - 11AM and 3PM - 5PM',
+          scheduledTime: '8AM - 11AM and 3PM - 6PM',
           channels: {
             sms: props.channels.includes('sms'),
             email: props.channels.includes('email'),
@@ -64,7 +64,7 @@ export default class ReminderSettings extends React.Component {
         withExpiry: props.withExpiry,
         withOutExpiry: props.withOutExpiry,
         advancedSettings: {
-          scheduledTime: '8AM - 11AM and 3PM - 5PM',
+          scheduledTime: '8AM - 11AM and 3PM - 6PM',
           channels: {
             sms: props.channels.includes('sms'),
             email: props.channels.includes('email'),
