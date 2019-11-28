@@ -2347,6 +2347,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
 
+    // Trace Code for Merchant status
+
+    const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
+    const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
