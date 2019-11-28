@@ -51,4 +51,14 @@ class Validator extends Base\Validator
             'Ranges specified are leaving gaps'
         );
     }
+
+    public function ensureDistinctWorkflowIds($rules)
+    {
+        if(count($rules) != count(array_unique(array_column($rules, 'workflow_id'))))
+        {
+            throw new BadRequestValidationFailureException(
+                'Each workflow can have only one amount range'
+            );
+        }
+    }
 }

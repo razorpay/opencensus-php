@@ -75,6 +75,17 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
+    public function testDuplicateWorkflowIds()
+    {
+        $this->ba->adminProxyAuth();
+
+        for ($index = 0; $index < 3; $index++) {
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = $this->workflowIds[0];
+        }
+
+        $this->startTest();
+    }
+
     public function testCreateWorkflowPayoutAmountRules()
     {
         $this->ba->adminProxyAuth();
