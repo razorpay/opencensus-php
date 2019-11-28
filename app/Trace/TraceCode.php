@@ -2067,6 +2067,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED              = 'FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED';
     const FTS_TRANSFER_RETRY_ACTION_INIT                        = 'FTS_TRANSFER_RETRY_ACTION_INIT';
     const FTS_TRANSFER_RETRY_ACTION_COMPLETE                    = 'FTS_TRANSFER_RETRY_ACTION_COMPLETE';
+    const FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION         = 'FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
