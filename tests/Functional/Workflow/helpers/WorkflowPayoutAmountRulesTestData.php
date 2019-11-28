@@ -13,17 +13,14 @@ return [
             'content' => [
                     'rules' => [
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	0,
                         'max_amount'	=>	100000
                     ],
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	100001,
                         'max_amount'	=>	1000000
                     ],
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	1000001,
                         'max_amount'	=>	null
                     ]
@@ -41,7 +38,6 @@ return [
                         'condition'     =>  null,
                         'min_amount'    =>  0,
                         'max_amount'    =>  100000,
-                        'workflow_id'   =>  'workflowId1000',
                         'entity'        =>  'workflow_payout_amount_rules',
                         'admin'         =>  true
                     ],
@@ -50,7 +46,6 @@ return [
                         'condition'     =>  null,
                         'min_amount'    =>  100001,
                         'max_amount'    =>  1000000,
-                        'workflow_id'   =>  'workflowId1000',
                         'entity'        =>  'workflow_payout_amount_rules',
                         'admin'         =>  true
                     ],
@@ -59,7 +54,6 @@ return [
                         'condition'     => null,
                         'min_amount'    => 1000001,
                         'max_amount'    => null,
-                        'workflow_id'   => 'workflowId1000',
                         'entity'        => 'workflow_payout_amount_rules',
                         'admin'         =>  true
                     ]
@@ -75,14 +69,16 @@ return [
             'content' => [
                 'rules' => [
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	0,
                         'max_amount'	=>	100001
                     ],
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	100001,
-                        'max_amount'	=>	null
+                        'max_amount'	=>	1000000
+                    ],
+                    [
+                        'min_amount'	=>	1000001,
+                        'max_amount'	=>  null
                     ]
                 ]
             ],
@@ -110,14 +106,16 @@ return [
             'content' => [
                 'rules' => [
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	0,
                         'max_amount'	=>	100000
                     ],
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	100002,
-                        'max_amount'	=>	null
+                        'max_amount'	=>	1000000
+                    ],
+                    [
+                        'min_amount'	=>	1000001,
+                        'max_amount'	=>  null
                     ]
                 ]
             ],
@@ -145,9 +143,9 @@ return [
             'content' => [
                 'rules' => [
                     [
-                        'workflow_id'	=>	'workflowId',
+                        'workflow_id'   =>  'wrongWorkflowId',
                         'min_amount'	=>	0,
-                        'max_amount'	=>	100000
+                        'max_amount'	=>	null
                     ]
                 ]
             ],
@@ -214,14 +212,12 @@ return [
                         'condition'     =>  null,
                         'min_amount'    =>  1001,
                         'max_amount'    =>  null,
-                        'workflow_id'   =>  'workflowId1000',
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  0,
                         'max_amount'    =>  100,
-                        'workflow_id'   =>  'workflowId1001',
                     ]
                 ],
                 'links' => [
@@ -263,7 +259,6 @@ return [
                         'condition'     =>  null,
                         'min_amount'    =>  0,
                         'max_amount'    =>  100,
-                        'workflow_id'   =>  'workflowId1000',
                         'entity'        =>  'workflow_payout_amount_rules',
                         'admin'         =>  true
                     ],
@@ -272,7 +267,6 @@ return [
                         'condition'     =>  null,
                         'min_amount'    =>  101,
                         'max_amount'    =>  null,
-                        'workflow_id'   =>  'workflowId1000',
                         'entity'        =>  'workflow_payout_amount_rules',
                         'admin'         =>  true
                     ]
