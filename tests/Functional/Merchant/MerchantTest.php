@@ -2061,7 +2061,6 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
         ]);
 
         $this->startTest();
@@ -2079,7 +2078,6 @@ class MerchantTest extends TestCase
             'display_text'     => 'Merchant specific offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
         ]);
 
         $this->startTest();
@@ -2099,7 +2097,6 @@ class MerchantTest extends TestCase
             'display_text'     => 'Shared olamoney offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
         ]);
 
         //
@@ -2132,7 +2129,6 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
         ]);
 
         $offer2 = $this->fixtures->create('offer:wallet', [
@@ -2141,7 +2137,6 @@ class MerchantTest extends TestCase
             'display_text'     => 'Merchant specific offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
         ]);
 
         $response = $this->startTest();
