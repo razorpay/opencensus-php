@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import * as OffersActions from 'merchant/reducers/offers/offerDetails';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
 
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
@@ -47,7 +47,6 @@ const OfferDetails = props => {
       </React.Fragment>
     );
   };
-
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -76,7 +75,18 @@ const OfferDetails = props => {
                 />
                 <EntityDetailRow
                   label="Status"
-                  value={offer.active ? 'Active' : 'Inactive'}
+                  value={() => (
+                    <Fragment>
+                      {offer.active ? 'Active' : 'Inactive'}
+                      <Button.Transparent
+                        class="Button--Link"
+                        style={{ marginLeft: 12 }}
+                        onClick={props.onActivationToggle}
+                      >
+                        {offer.active ? 'Disable' : 'Enable'}
+                      </Button.Transparent>
+                    </Fragment>
+                  )}
                 />
 
                 <EntityDetailRow
@@ -153,7 +163,6 @@ const OfferDetails = props => {
   ...OffersActions,
   ...ModalActions,
   ...NotificationsActions,
-  updatePLInReduxList,
 })
 export default class Entity extends Component {
   static contextTypes = {
@@ -177,6 +186,56 @@ export default class Entity extends Component {
     }
   }
 
+  toggleActivation = () => {
+    let offer = this.props.offer;
+    const actionName = offer.active ? 'Disable' : 'Enable';
+    offer.active = offer.active ? 0 : 1; //for false send 1 as new value to toggle it
+    let header = `${actionName} Offer`;
+    this.context.confirm({
+      header,
+      message: () => (
+        <div class="text-semi-muted">
+          <p>The offer will be {actionName}d</p>
+        </div>
+      ),
+      affirmativeLabel: `Yes, ${actionName}`,
+      affirmativePendingLabel: 'Requesting...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return offer
+          .save()
+          .then(offer => {
+            this.props.fetchOffer(offer.id);
+            //analytics code here
+            this.props.showNotification({
+              type: 'success',
+              message: `Offer ${actionName}d!`,
+            });
+          })
+          .catch(({ errors }) => {
+            if (
+              !errors ||
+              (errors instanceof Array === true &&
+                (!errors.length || !errors[0]))
+            ) {
+              errors = 'Some network error has occurred';
+            }
+
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      },
+      onMount: () => {
+        //analytics code here
+      },
+      abort: () => {
+        //analytics code here
+      },
+    });
+  };
+
   render() {
     let { loading, offer, user } = this.props;
     let statusMsg = this.state.statusMsg;
@@ -188,7 +247,7 @@ export default class Entity extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         onIssue={() => {}}
-        onCancel={() => {}}
+        onActivationToggle={this.toggleActivation}
         editPaymentLink={() => {}}
         isRoleAllowedEdit={user.isAllowedEdit('offers')}
       />
