@@ -702,6 +702,35 @@ return [
         ]
     ],
 
+    'testSharedTerminalFilter'  => [
+        'payment_options' => [
+            'method' => Method::CARD,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'        => Method::CARD,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
+                'type'          => 'filter',
+                'filter_type'   => 'select',
+                'group'         => 'shared_terminal_filter',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcDirect',
+            '1000AxisDirect',
+            '1000SharpTrmnl'
+        ]
+    ],
+
     'testUpiFilter'  => [
         'payment_options' => [
             'method' => Method::UPI,
@@ -1355,7 +1384,6 @@ return [
         'expected_terminal_ids' => [
             '1000HdfcDirect',
             '1000AxisDirect',
-            '1000HdfcShared',
         ],
     ],
 

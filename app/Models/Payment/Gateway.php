@@ -72,6 +72,7 @@ class Gateway
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_YESB        = 'netbanking_yesb';
     const NETBANKING_KVB         = 'netbanking_kvb';
+    const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -87,7 +88,6 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
-    const NACH_CITI              = 'nach_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -171,7 +171,8 @@ class Gateway
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER],
-        self::MPGS         => [self::ACQUIRER_HDFC],
+        self::WORLDLINE    => [self::ACQUIRER_AXIS],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
     ];
 
     const POWER_WALLETS = [
@@ -315,6 +316,7 @@ class Gateway
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
+        Payment\Gateway::WALLET_OPENWALLET,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
@@ -629,6 +631,7 @@ class Gateway
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
     ];
@@ -1204,6 +1207,10 @@ class Gateway
         self::WORLDLINE,
     ];
 
+    public static $upiTransferGateway = [
+        self::UPI_MINDGATE,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
@@ -1459,10 +1466,8 @@ class Gateway
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
         IFSC::SBBJ         => Gateway::NETBANKING_SBI,
         IFSC::SBHY         => Gateway::NETBANKING_SBI,
-        IFSC::SBNX         => Gateway::NETBANKING_SBI,
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
-        IFSC::SBPX         => Gateway::NETBANKING_SBI,
-        IFSC::SBSX         => Gateway::NETBANKING_SBI,
+        IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
     ];
 
@@ -1836,6 +1841,11 @@ class Gateway
     public static function isValidBharatQrGateway($gateway)
     {
         return in_array($gateway , self::$bharatQrGateways, true);
+    }
+
+    public static function isValidUpiTransferGateway($gateway)
+    {
+        return in_array($gateway , self::$upiTransferGateway, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)
@@ -2216,6 +2226,7 @@ class Gateway
         $gateways = [
             self::MPGS,
             self::CYBERSOURCE,
+            self::MPI_BLADE,
         ];
 
         return (in_array($gateway, $gateways, true));

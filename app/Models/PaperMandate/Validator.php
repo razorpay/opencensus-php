@@ -170,27 +170,17 @@ class Validator extends Base\Validator
         if ($this->entity->getStatus() !== Status::CREATED)
         {
             throw new BadRequestValidationFailureException(
-                'form has been already uploaded successfully'
+                'form has already been uploaded successfully'
             );
         }
     }
 
     public function validatePaymentCreation()
     {
-        if ($this->entity->getStatus() !== Status::AUTHENTICATED)
+        if (empty($this->entity->getUploadedFileID()) === true)
         {
             throw new BadRequestValidationFailureException(
                 'payment can\'t be created without nach form submission'
-            );
-        }
-    }
-
-    public function validateCustomerToCreatePaperMandate(Customer\Entity $customer)
-    {
-        if (empty($customer->getName()) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'customer name should be present to create paper mandate'
             );
         }
     }

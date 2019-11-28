@@ -513,6 +513,37 @@ return [
         ],
     ],
 
+    'testZeroPartnerPricingRule' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '20MerchantPlan',
+                    'percent_rate' => '20',
+                ],
+                [
+                    'plan_id'      => 'zeroPartnerPln',
+                    'percent_rate' => '0',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '20MerchantPlan',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => 'zeroPartnerPln',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
     'testGSTOnCommissionForPaymentWithNoGST' => [
         'setup' => [
             'create_partner'     => [

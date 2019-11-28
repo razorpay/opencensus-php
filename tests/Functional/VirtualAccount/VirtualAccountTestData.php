@@ -671,4 +671,89 @@ return [
             ],
         ],
     ],
+
+    'testCreateVirtualAccountWithVpa' => [
+        'name'        => 'Test virtual account',
+        'entity'      => 'virtual_account',
+        'status'      => 'active',
+        'description' => 'VA for tests',
+        'receivers'   => [
+            [
+                "entity"   => "vpa",
+                "username" => "rzp.test.testvpa",
+                "handle"   => "hdfcbank",
+                "address"  => "rzp.test.testvpa@hdfcbank"
+            ],
+        ],
+    ],
+
+    'testAddVpaToExistingVirtualAccount' => [
+        'name'        => 'Test virtual account',
+        'entity'      => 'virtual_account',
+        'status'      => 'active',
+        'description' => 'VA for tests',
+        'receivers'   => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
+            [
+                "entity"   => "vpa",
+                "username" => "rzp.test.testvpa",
+                "handle"   => "hdfcbank",
+                "address"  => "rzp.test.testvpa@hdfcbank"
+            ],
+        ],
+    ],
+
+    'testWebhookVirtualAccountCreatedForVpa' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'virtual_account.created',
+            'contains' => [
+                'virtual_account',
+            ],
+            'payload'  => [
+                'virtual_account' => [
+                    'entity' => [
+                        'name'        => 'Test virtual account',
+                        'entity'      => 'virtual_account',
+                        'status'      => 'active',
+                        'description' => 'VA for tests',
+                        'notes'       => [],
+                        'amount_paid' => 0,
+                        'customer_id' => null,
+                        'receivers'   => [
+                            [
+                                "entity"   => "vpa",
+                                "username" => "rzp.test.testvpa",
+                                "handle"   => "hdfcbank",
+                                "address"  => "rzp.test.testvpa@hdfcbank"
+                            ],
+                        ],
+                        "close_by"    => null,
+                        "closed_at"   => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddVpaToExistingVAWithVpa' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Receiver type is already present for the virtual account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT,
+        ],
+    ],
 ];

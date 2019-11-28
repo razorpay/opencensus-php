@@ -5,10 +5,11 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Mockery;
 use Closure;
 
-use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Webhook;
+use RZP\Models\Transfer;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -69,6 +70,12 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($order['id'], $transfer['source']);
 
         $this->assertEquals('processed', $transfer['status']);
+
+        Transfer\Entity::verifyIdAndSilentlyStripSign($transfer['id']);
+
+        $payment = $this->getDbEntity('payment', ['transfer_id' => $transfer['id']]);
+
+        $this->assertArraySelectiveEquals(['roll_no' => 'iec2011025'], $payment->getNotes()->toArray());
     }
 
     public function testProcessOrderTransfersPartialPayment()

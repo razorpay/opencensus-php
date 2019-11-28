@@ -42,6 +42,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
@@ -2132,7 +2133,6 @@ class Service extends Base\Service
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
-
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -2978,6 +2978,8 @@ class Service extends Base\Service
 
             $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
     }
 
     /**
@@ -3559,5 +3561,40 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+
+        return $referrals->toArrayPublic();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partner = $this->fetchPartner();
+
+        (new Referral\Validator)->validateForReferral($partner);
+
+        $referral = (new Referral\Core)->createOrFetch($merchant);
+
+        return $referral->toArrayPublic();
     }
 }

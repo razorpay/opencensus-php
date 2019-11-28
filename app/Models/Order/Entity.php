@@ -129,6 +129,8 @@ class Entity extends Base\PublicEntity
 
     const VIRTUAL_ACCOUNT   = 'virtual_account';
 
+    const AUTH_TYPE = 'auth_type';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -392,6 +394,11 @@ class Entity extends Base\PublicEntity
     public function setFirstPaymentMinAmount(int $amount = null)
     {
         return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
+    }
+
+    public function setDiscount(bool $discount )
+    {
+        return $this->setAttribute(self::DISCOUNT, $discount);
     }
 
     public function getStatus()

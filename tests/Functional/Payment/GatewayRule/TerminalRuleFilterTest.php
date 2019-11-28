@@ -118,6 +118,30 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testSharedTerminalFilter()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('terminal:shared_axis_terminal');
+        $directAxisTerminal =  $this->fixtures->create('terminal:shared_axis_terminal', [
+            'id'          => '1000AxisDirect',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        // Result set will contain shared terminal iff direct terminal from that gateway is not available
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testUpiFilter()
     {
         $this->fixtures->create('terminal:shared_upi_mindgate_terminal');

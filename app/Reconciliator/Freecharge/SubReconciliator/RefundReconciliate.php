@@ -74,7 +74,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'refund_id'     => $this->refund->getId(),
+                    'date'          => $row[self::COLUMN_SETTLED_AT],
                     'gateway'       => $this->gateway
                 ]);
 

@@ -306,6 +306,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
+                    'payment_id'        => $this->payment->getId(),
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
                     'gateway'           => $this->gateway
@@ -362,6 +363,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'message'           => 'Unable to get the card locale. This is unexpected.',
                     'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'payment_id'        => $this->payment->getId(),
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => $this->gateway

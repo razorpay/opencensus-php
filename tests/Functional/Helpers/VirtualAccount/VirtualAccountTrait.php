@@ -13,7 +13,9 @@ trait VirtualAccountTrait
         array $input = [],
         $numeric = true,
         $descriptor = null,
-        $qrCode = false)
+        $qrCode = false,
+        $vpa = false,
+        $vpaDescriptor = null)
     {
         $defaultValues = $this->getDefaultVirtualAccountRequestArray();
 
@@ -30,6 +32,16 @@ trait VirtualAccountTrait
         if ($qrCode === true)
         {
             $defaultValues['receivers']['types'] = ['qr_code'];
+        }
+
+        if($vpa === true)
+        {
+            $defaultValues['receivers']['types'] = ['vpa'];
+        }
+
+        if ($vpaDescriptor !== null)
+        {
+            $defaultValues['receivers']['vpa']['descriptor'] = $vpaDescriptor;
         }
 
         $attributes = array_merge($defaultValues, $input);
@@ -351,5 +363,26 @@ trait VirtualAccountTrait
                 'a' => 'b',
             ],
         ];
+    }
+
+    private function addReceiverToVirtualAccount(string $virtualAccountId, string $receiverType, $input = [])
+    {
+        $content = [
+            "receivers" => [
+                'types'       => [
+                    $receiverType
+                ],
+                $receiverType => $input
+            ]
+        ];
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/virtual_accounts/' . $virtualAccountId . '/receiver',
+            'content' => $content,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 }

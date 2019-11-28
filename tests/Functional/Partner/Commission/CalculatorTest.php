@@ -128,6 +128,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testZeroPartnerPricingRule()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     /**
      * Asserts that the commission gets created if implicit pricing is expired and but explicit pricing is defined.
      */

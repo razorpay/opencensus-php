@@ -14,6 +14,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\Base\InfoCode;
 
 class CardPaymentService
 {
@@ -76,6 +77,23 @@ class CardPaymentService
         $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
 
         return $request;
+    }
+
+    public function fetchAuthorizationData(array $input)
+    {
+        $request = [
+            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'method'  => 'POST',
+            'content' => $input,
+            'headers' => [
+                'task_id'       => $this->app['request']->getTaskId(),
+                'request_id'    => $this->app['request']->getId(),
+            ],
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        return $this->jsonToArray($response->body);
     }
 
     protected function getBaseUrl(): string
