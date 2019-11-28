@@ -570,7 +570,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Penny Testing is not supported for a given account number.',
+                    'description' => 'Penny Testing is not supported for the given account number.',
                 ],
             ],
             'status_code' => 400,
@@ -659,7 +659,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Fund account id is missing.',
+                    'description' => 'Fund account id is missing. New Fund account creation is not allowed here.',
                 ],
             ],
             'status_code' => 400,

@@ -99,12 +99,11 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING,
-                Merchant\Balance\Entity::ACCOUNT_NUMBER,
+                Entity::FUND_ACCOUNT,
                 [
                     Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),
                 ]
             );
         }
-
     }
 }

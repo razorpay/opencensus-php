@@ -521,8 +521,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE              = 'The fees calculated for fund account validation is greater than available fee credits or balance.';
-    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE             = 'Penny Testing is not supported for a given account number.';
-    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING           = 'Fund account id is missing.';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE             = 'Penny Testing is not supported for the given account number.';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING           = 'Fund account id is missing. New Fund account creation is not allowed here.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
