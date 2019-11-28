@@ -638,11 +638,19 @@ class BatchMicroService
             ]
         );
 
-        $relativeUrl = Batch\Entity::verifyIdAndStripSign($id) . '/' . $action;
+        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id) . '/' . $action;
 
         try
         {
             $options['mode'] = $this->mode;
+
+            $this->trace->info(
+                TraceCode::LOOKING_FOR_MISTAKES,
+                [
+                    'relative_url' => $relativeUrl,
+                    'options' => $options,
+                ]
+            );
 
             $response = $this->getResponseFromBatchService($relativeUrl, Requests::POST, $options);
         }
@@ -659,7 +667,7 @@ class BatchMicroService
         }
 
         $this->trace->info(
-            TraceCode::FAIL_BATCH_PROCESS_SUCCEEDED,
+            TraceCode::FAIL_BATCH_PROCESS_SUCCESS,
             [
                 'batch_id' => $id,
             ]
