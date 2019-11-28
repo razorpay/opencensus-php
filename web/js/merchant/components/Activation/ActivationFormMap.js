@@ -702,7 +702,7 @@ export const ndcFields = [
   {
     label: 'Cancelled Cheque Copy',
     name: 'cancelled_cheque',
-    uploadAs: 'address_proof_url',
+    uploadAs: 'cancelled_check',
     _type: 'address_proof_upload_doc',
     _autoRenderImpure: true,
     description: 'Please upload a copy of cancelled cheque.',
