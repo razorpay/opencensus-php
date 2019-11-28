@@ -1,6 +1,6 @@
 import { Component, isValidElement } from 'react';
 import PropTypes from 'prop-types';
-import { makeArray } from 'common/utils/rzp-utils';
+import { makeArray, classList } from 'common/utils/rzp-utils';
 
 class Alert extends Component {
   constructor() {
@@ -39,9 +39,12 @@ class Alert extends Component {
 
     return (
       <div
-        class={`alert alert-dismissable alert-${
-          props.type === 'error' ? 'danger' : props.type
-        }`}
+        class={classList(
+          'alert',
+          'alert-dismissable',
+          `alert-${props.type === 'error' ? 'danger' : props.type}`,
+          props.className
+        )}
         style={{ borderRadius: 0 }}
       >
         {props.showDismiss && (
