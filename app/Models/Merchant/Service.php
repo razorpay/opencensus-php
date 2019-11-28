@@ -60,6 +60,8 @@ class Service extends Base\Service
     const OAUTH_MAIL      = 'oauth_mail';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 500;
+
     /**
      * Creates a merchant and saves in database
      *
@@ -2953,6 +2955,10 @@ class Service extends Base\Service
         $partner = $this->fetchPartner();
 
         (new Validator)->validateInput('list_submerchants', $input);
+
+        // add default params
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 
