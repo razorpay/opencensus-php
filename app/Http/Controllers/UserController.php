@@ -86,7 +86,7 @@ class UserController extends Controller
             if(is_null($currentMerchantId) === false)
             {
                 $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
-                $data['pl_expiry_in_hrs'] = json_encode((new Merchant\CustomNotes\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
+                $data['pl_expiry_in_hrs'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
             }
             else {
                 $data['custom_notes'] = null;
