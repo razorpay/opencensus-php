@@ -22,7 +22,6 @@ class Status
     const PARTIALLY_PROCESSED = 'partially_processed';
     const FAILED              = 'failed';
     const PROCESSED           = 'processed';
-    const CANCELLED           = 'cancelled';
 
     //
     // Additional constants used as values of STATUS
@@ -36,7 +35,6 @@ class Status
         self::PARTIALLY_PROCESSED,
         self::FAILED,
         self::PROCESSED,
-        self::CANCELLED,
     ];
 
     public static function validateStatus(string $type)

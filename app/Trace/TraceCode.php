@@ -2120,7 +2120,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
     const BATCH_SERVICE_BAD_REQUEST                             = 'BATCH_SERVICE_BAD_REQUEST';
     const BATCH_SERVICE_FAILED                                  = 'BATCH_SERVICE_FAILED';
-    const BATCH_ACTION_BATCH_SERVICE                            = 'BATCH_ACTION_BATCH_SERVICE';
+    const FAIL_BATCH_PROCESS_IF_REQUIRED                        = 'FAIL_BATCH_PROCESS_IF_REQUIRED';
+    const PERFORM_ACTION_BATCH_SERVICE                          = 'PERFORM_ACTION_BATCH_SERVICE';
+    const FAIL_BATCH_PROCESS_SUCCEEDED                          = 'FAIL_BATCH_PROCESS_SUCCEEDED';
+    const FAIL_BATCH_PROCESS_FAILED                             = 'FAIL_BATCH_PROCESS_FAILED';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';

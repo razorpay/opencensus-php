@@ -213,7 +213,7 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        if ((new Batch\Service())->failProcessBatch($batchId) === false)
+        if ((new Batch\Service())->failBatchProcessIfRequired($batchId) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
@@ -221,7 +221,7 @@ class Service extends Base\Service
                 [
                     'batch_id' => $batchId,
                 ],
-                'Batch processing abort failed, unable to cancel'
+                'Batch process ongoing, unable to cancel'
             );
         }
 

@@ -628,10 +628,10 @@ class BatchMicroService
         return true;
     }
 
-    public function actionInBatchService(string $id, string $action)
+    public function performActionInBatchService(string $id, string $action)
     {
         $this->trace->info(
-            TraceCode::BATCH_ACTION_BATCH_SERVICE,
+            TraceCode::PERFORM_ACTION_BATCH_SERVICE,
             [
                 'batch_id' => $id,
                 'action' => $action,
@@ -644,13 +644,27 @@ class BatchMicroService
         {
             $options['mode'] = $this->mode;
 
-            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::POST, $options);
         }
         catch (\Exception $exception)
         {
-            // Handle exception
+            $this->trace->error(
+                TraceCode::FAIL_BATCH_PROCESS_FAILED, // Suggestions?
+                [
+                    'batch_id' => $id,
+                ]
+            );
+
+            return false;
         }
 
-        return $response;
+        $this->trace->info(
+            TraceCode::FAIL_BATCH_PROCESS_SUCCEEDED,
+            [
+                'batch_id' => $id,
+            ]
+        );
+
+        return true;
     }
 }

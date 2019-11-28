@@ -252,13 +252,31 @@ class Service extends Base\Service
         return $result->toArray();
     }
 
-    public function failProcessBatch(string $id)
+    public function failBatchProcessIfRequired(string $id): bool
     {
-        $response = $this->app->batchService->actionInBatchService($id, 'fail');
+        $this->trace->info(
+            TraceCode::FAIL_BATCH_PROCESS_IF_REQUIRED, // Suggestions?
+            [
+                'batch_id' => $id,
+            ]
+        );
 
-        // If batch fail successful, set status CANCELLED.
+        $batch = $this->getBatchById($id);
 
-        // Return true or false based on response
-        return $response;
+        if ($batch[Entity::STATUS] === Status::PROCESSED or
+            $batch[Entity::STATUS] === Status::PARTIALLY_PROCESSED)
+        {
+            $this->trace->info(
+                TraceCode::BATCH_ALREADY_PROCESSED,
+                [
+                    'batch_id' => $id,
+                    'status' => $batch[Entity::STATUS],
+                ]
+            );
+
+            return true;
+        }
+
+        return $this->app->batchService->performActionInBatchService($id, 'fail');
     }
 }
