@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Merchant\CustomNotes;
+namespace App\Merchant\PaymentLinkCustomization;
 
 class Constants
 {
