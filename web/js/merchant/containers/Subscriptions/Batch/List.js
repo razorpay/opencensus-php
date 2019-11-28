@@ -27,7 +27,7 @@ const ExtraFilterFields = () => (
     <label>Batch Type</label>
     <Field name="type" component="select" class="form-control input-sm">
       <option value="">Both</option>
-      <option value="auth_link">Authorization Link</option>
+      <option value="auth_link">Registration Link</option>
       <option value="recurring_charge">Recurring Charge</option>
     </Field>
   </div>

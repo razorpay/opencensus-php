@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 import AddOnsModal from 'merchant/components/Subscriptions/AddOnsModal';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
-import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
+import CreditNoteDetails from 'merchant/components/Subscriptions/CreditNoteDetails';
 
 import Plan from 'merchant/models/Plan';
 

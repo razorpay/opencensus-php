@@ -20,7 +20,7 @@ import { luminateRow } from 'merchant/reducers/app';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import { saveVirtualAccount } from 'merchant/reducers/virtualaccounts';
 
-import CustomerCreation from 'merchant/containers/Customers/New';
+import CustomerCreation from 'merchant/views/Customers/New';
 
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
