@@ -261,7 +261,7 @@ class Service extends Base\Service
             ]
         );
 
-        $batch = $this->getBatchById($id);
+        $batch = $this->fetchBatchById($id);
 
         if ($batch[Entity::STATUS] === Status::PROCESSED or
             $batch[Entity::STATUS] === Status::PARTIALLY_PROCESSED)
