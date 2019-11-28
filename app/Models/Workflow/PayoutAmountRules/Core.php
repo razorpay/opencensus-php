@@ -89,6 +89,8 @@ class Core extends Base\Core
 
         (new Entity())->getValidator()->checkForValidAmountRanges($rules);
 
+        (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
+
         // Insert all rules together into database
         $this->repo->transaction( function() use ($rules, $merchantId){
             foreach($rules as $rule)

@@ -167,6 +167,43 @@ return [
         ],
     ],
 
+    'testDuplicateWorkflowIds' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100000
+                    ],
+                    [
+                        'min_amount'	=>	100001,
+                        'max_amount'	=>	1000000
+                    ],
+                    [
+                        'min_amount'	=>	1000001,
+                        'max_amount'	=>	null
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Each workflow can have only one amount range',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditWorkflowPayoutAmountRules' => [
         'request' => [
             'method'  => 'POST',
