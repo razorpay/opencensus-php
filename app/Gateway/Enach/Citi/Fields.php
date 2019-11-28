@@ -23,8 +23,6 @@ class Fields
     const PRODUCT_TYPE                                    = 'ACH';
     const BENEFICIARY_AADHAR_NUMBER                       = '               ';
     const FILLER                                          = '       ';
-    // TODO CLIENT CODE Will be provided by CITI
-    const CLIENT_CODE                                     = 'DUMMY';
     const END_TIMESTAMP                                   = 'end_timestamp';
     const START_TIMESTAMP                                 = 'start_timestamp';
     const FREQUENCY                                       = 'As & when Presented';
@@ -98,10 +96,12 @@ class Fields
 
         $endDate = $paperMandate->getEndAt();
 
+        $terminal = $token->terminal;
+
         return [
             NachRegisterFileHeadings::CATEGORY_CODE                 => $categoryCode,
             NachRegisterFileHeadings::CATEGORY_DESCRIPTION          => $categoryDescription,
-            NachRegisterFileHeadings::CLIENT_CODE                   => self::CLIENT_CODE,
+            NachRegisterFileHeadings::CLIENT_CODE                   => $terminal->getGatewayTerminalId(),
             NachRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,
             NachRegisterFileHeadings::CUSTOMER_ACCOUNT_NUMBER       => $accountNumber,
             NachRegisterFileHeadings::CUSTOMER_NAME                 => $customerName,
