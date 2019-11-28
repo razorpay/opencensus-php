@@ -38,11 +38,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple(string $orgId, array $input, $permission = null)
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $workflows = $this->repo->workflow->findByOrgId($orgId);
+        $workflows = $this->repo->workflow->findByOrgId($orgId, $permission);
 
         return $workflows->toArrayPublic();
     }
