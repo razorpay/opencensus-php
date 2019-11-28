@@ -26,13 +26,9 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const AMOUNT                = 'amount';
     const NOTES                 = 'notes';
-    const BANK_TRANSFER_MODES   = 'bank_transfer_modeS';
     const DESCRIPTION           = 'description';
     const RECEIPT               = 'receipt';
     const CURRENCY              = 'currency';
-    const NOTIFICATION_CHANNELS = 'notification_channels';
-    const EXPIRE_AT             = 'expire_at';
-    const EXPIRED_AT            = 'expired_at';
     const CANCELLED_AT          = 'cancelled_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -42,7 +38,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
-        self::EXPIRE_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -56,15 +51,12 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::CURRENCY,
-        self::EXPIRE_AT,
-        self::NOTIFICATION_CHANNELS,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
         self::STATUS,
         self::CREATED_AT,
-        self::EXPIRED_AT,
         self::CANCELLED_AT
     ];
 
@@ -76,17 +68,13 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::AMOUNT,
-        self::BANK_TRANSFER_MODES,
         self::CURRENCY,
-        self::EXPIRE_AT,
-        self::NOTIFICATION_CHANNELS,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
         self::STATUS,
         self::CREATED_AT,
-        self::EXPIRED_AT,
         self::CANCELLED_AT,
         self::UPDATED_AT
     ];
@@ -99,17 +87,13 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::AMOUNT,
-        self::BANK_TRANSFER_MODES,
         self::CURRENCY,
-        self::EXPIRE_AT,
-        self::NOTIFICATION_CHANNELS,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
         self::STATUS,
         self::CREATED_AT,
-        self::EXPIRED_AT,
         self::CANCELLED_AT,
         self::UPDATED_AT
     ];
@@ -119,12 +103,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
-        self::EXPIRE_AT,
-        self::NOTIFICATION_CHANNELS,
-        self::BANK_TRANSFER_MODES,
         self::DESCRIPTION,
         self::RECEIPT,
-        self::EXPIRED_AT,
         self::CANCELLED_AT
     ];
 
@@ -133,12 +113,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
-        self::EXPIRE_AT,
-        self::NOTIFICATION_CHANNELS,
-        self::BANK_TRANSFER_MODES,
         self::DESCRIPTION,
         self::RECEIPT,
-        self::EXPIRED_AT,
         self::CANCELLED_AT
     ];
 
@@ -153,15 +129,11 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID           => null,
         self::USER_ID               => null,
         self::AMOUNT                => null,
-        self::BANK_TRANSFER_MODES   => null,
         self::CURRENCY              => Currency::INR,
-        self::EXPIRE_AT             => null,
-        self::NOTIFICATION_CHANNELS => [],
         self::DESCRIPTION           => null,
         self::RECEIPT               => null,
         self::NOTES                 => [],
         self::STATUS                => Status::CREATED,
-        self::EXPIRED_AT            => null,
         self::CANCELLED_AT          => null,
     ];
 
@@ -195,7 +167,7 @@ class Entity extends Base\PublicEntity
 
     public function payouts()
     {
-        return $this->hasMany(Payout\Entity::class);
+        return $this->belongsToMany(Payout\Entity::class);
     }
 
     // -------------------------------------- End Relations ---------------------------
@@ -208,9 +180,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        # validate status
-
-        # set it using setAttribute
+        #todo:pl, need to fill this function
     }
 
     // -------------------------------------- End Setters -----------------------------

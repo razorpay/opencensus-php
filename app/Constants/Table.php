@@ -42,6 +42,7 @@ class Table
     const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
+    const PAYOUT_LINKS          = 'payout_links';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';
