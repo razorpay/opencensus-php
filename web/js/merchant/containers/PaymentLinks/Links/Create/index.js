@@ -232,16 +232,10 @@ export default class CreateNewContainer extends React.Component {
 
     trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
 
-    const defaultPLExpiryByTime = getDefaultPLExpiryTimeFromRazorXExperiment(
-      this.props.user.experiments
-    );
+    const defaultPLExpiryByTime = window.pl_expiry_in_hrs;
 
-    const isDefaultExpireByForPLEnabled =
-      defaultPLExpiryByTime &&
-      props.user.isDefaultPLExpireBySetFromRazorX(defaultPLExpiryByTime);
-
-    if (isDefaultExpireByForPLEnabled) {
-      const nextDate = moment(new Date()).add(expireByTime, 'hours');
+    if (defaultPLExpiryByTime) {
+      const nextDate = moment(new Date()).add(defaultPLExpiryByTime, 'hours');
 
       this.state.dirty.expire_by = nextDate;
       this.state._name.expire_by_date = nextDate;
@@ -795,21 +789,3 @@ class CreateWizard extends React.Component {
     );
   }
 }
-
-const getDefaultPLExpiryTimeFromRazorXExperiment = experiments => {
-  let plExpiryTime = null;
-
-  Object.keys(experiments).forEach(experimentName => {
-    if (experimentName.includes('pl-expiry-in-hrs-')) {
-      const experimentNameSplitList = experimentName.split('-'),
-        lastEle = experimentNameSplitList[experimentNameSplitList.length - 1],
-        lastEleAsNumber = !isNaN(lastEle) && Number(lastEle);
-
-      if (lastEleAsNumber > 0) {
-        plExpiryTime = lastEle;
-      }
-    }
-  });
-
-  return plExpiryTime;
-};
