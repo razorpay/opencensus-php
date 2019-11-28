@@ -22,7 +22,7 @@ import Announcement from 'merchant/components/Announcements/Instant';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'common/new-ui/Button';
-import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';

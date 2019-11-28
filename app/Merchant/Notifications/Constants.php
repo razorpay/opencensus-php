@@ -181,7 +181,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'tags'  => ['show_credit_score'],
+                'features'  => ['show_credit_score'],
                 'role'  => ['owner'],
             ],
         ],

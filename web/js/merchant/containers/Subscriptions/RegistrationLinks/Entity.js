@@ -19,7 +19,7 @@ import {
 } from 'merchant/reducers/registration_link';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 
 import {
   trackOpenAuthLink,
