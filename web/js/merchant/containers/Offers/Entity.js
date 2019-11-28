@@ -16,7 +16,7 @@ const OfferDetails = props => {
   let discountType = offer.percent_rate !== null ? 'Percentage' : 'Flat';
   let discountWorth =
     offer.percent_rate !== null ? (
-      <span>{offer.percent_rate}%</span>
+      <span>{offer.percent_rate / 100}%</span>
     ) : (
       <Amount value={offer.flat_cashback} cureency={'INR'} />
     );
