@@ -260,7 +260,7 @@ export default class CreateNewContainer extends React.Component {
           value: data.notes[key],
         }));
 
-        this.setState({
+        const newState = {
           dirty: {
             currency: data.currency,
             description: data.description,
@@ -279,7 +279,22 @@ export default class CreateNewContainer extends React.Component {
             hasNoExpiry: expire_by ? '0' : '1',
             expire_by_date: expire_by ? expire_by : null,
           },
-        });
+        };
+
+        const defaultPLExpiryByTime = window.pl_expiry_in_hrs;
+
+        if (defaultPLExpiryByTime) {
+          const nextDate = moment(new Date()).add(
+            defaultPLExpiryByTime,
+            'hours'
+          );
+
+          newState.dirty.expire_by = nextDate;
+          newState._name.expire_by_date = nextDate;
+          newState._name.hasNoExpiry = '0';
+        }
+
+        this.setState(newState);
 
         // state.dirty.notes of this component has different structure than defaultValue of notes component. So, after defaultValue is set, updating notes value in state.dirty
         setTimeout(_ => this.onChangeNotes(defaultValueNotes), 0);
