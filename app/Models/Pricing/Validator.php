@@ -545,7 +545,7 @@ class Validator extends Base\Validator
      * @param Entity $rule
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateAddPlanRuleForFeeBearer(Plan $plan, Pricing\Entity $rule)
+    public function validateRuleForFeeBearer(Plan $plan, Pricing\Entity $rule)
     {
         $merchants = (new Merchant\Repository())->fetchMerchantsWithPricingPlan($rule->getPlanId());
 
