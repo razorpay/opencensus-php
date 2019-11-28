@@ -310,6 +310,8 @@ class NewOfferForm extends React.Component {
           class="Input--half"
           addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
           description="Discount worth in cash"
+          pattern="[0-9]+(\.[0-9][0-9]?)?"
+          patternError="Please enter number upto 2 decimal points"
           required
         />
       );
@@ -324,6 +326,8 @@ class NewOfferForm extends React.Component {
             description="Discount worth in Percent"
             addonBefore={<span>%</span>}
             required
+            pattern="[0-9]+(\.[0-9][0-9]?)?"
+            patternError="Please enter number upto 2 decimal points"
             validator={val => {
               if (!val) {
                 return 'Should be valid number between 0 and 100';
@@ -337,10 +341,11 @@ class NewOfferForm extends React.Component {
             label="Maximum Cashback"
             name="max_cashback"
             class="Input--half"
-            type="number"
             onChange={this.getFormOnChangeHandler()}
             description="Maximum cashback for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+            pattern="[0-9]+(\.[0-9][0-9]?)?"
+            patternError="Please enter number upto 2 decimal points"
             required
           />
         </React.Fragment>
@@ -426,6 +431,8 @@ class NewOfferForm extends React.Component {
               addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
               onChange={this.getFormOnChangeHandler()}
               description="Minimum bill amount on for this offer"
+              pattern="[0-9]+(\.[0-9][0-9]?)?"
+              patternError="Please enter number upto 2 decimal points"
               validator={val => {
                 if (this.state.discount_type === 'flat') {
                   if (val < this.state.flat_cashback) {
