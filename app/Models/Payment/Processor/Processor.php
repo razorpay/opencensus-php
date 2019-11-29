@@ -41,7 +41,6 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
@@ -1752,8 +1751,7 @@ class Processor
 
         $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
 
-        if (($this->mode === RZPMode::LIVE) and
-            (($isProduction === true)) and
+        if (($isProduction === true) and
             (strtolower($variant) === 'on'))
         {
             //TODO: Remove this later

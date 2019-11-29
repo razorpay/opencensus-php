@@ -52,7 +52,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Constants\Mode as RZPMode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -363,8 +362,7 @@ trait Authorize
 
                 $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
 
-                if (($this->mode === RZPMode::LIVE) and
-                    ($isProduction === true) and
+                if (($isProduction === true) and
                     (strtolower($variant) === 'on'))
                 {
                     //TODO: Remove this later
@@ -5610,8 +5608,7 @@ trait Authorize
 
             $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
 
-            if (($this->mode === RZPMode::LIVE) and
-                ($isProduction === true) and
+            if (($isProduction === true) and
                 (strtolower($variant) === 'on'))
             {
                 //TODO: Remove this later
