@@ -613,16 +613,13 @@ class WebhookTest extends TestCase
 
         $payment  = $this->getDefaultPaymentArray();
 
-        // mock express and inferno requests
-        $this->mockExpressSendRequest(function ($path, $content) use ($translatedWebhookBody) {
+        // mock mozart webhook translate and inferno requests
+        $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
 
-            $response = new \Requests_Response();
-
-            $response->body = $translatedWebhookBody;
-
-            $response->headers['request-id'] = '12345678';
-
-            return $response;
+            return [
+                'body'      => $translatedWebhookBody,
+                'headers'   => ['request-id' => ['12345678']],
+            ];
         });
 
         $webhookFired = [];
@@ -662,7 +659,7 @@ class WebhookTest extends TestCase
 
         $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
 
-        $this->mockExpressSendRequest(null, 0);
+        $this->mockMozartWebhookTranslateRequest(null, 0);
 
         $payment = $this->getDefaultPaymentArray();
 
