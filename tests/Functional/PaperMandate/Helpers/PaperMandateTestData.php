@@ -377,6 +377,11 @@ return [
                         'value' => 'TEST',
                         'conf' => 100,
                     ),
+                'uid' => [
+                    'to-be-reviewed' => 'no',
+                    'value' => 'XXXXXXX',
+                    'conf' => 100,
+                ],
             ),
     ),
 

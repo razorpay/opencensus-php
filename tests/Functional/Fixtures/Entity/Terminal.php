@@ -3318,7 +3318,7 @@ class Terminal extends Base
 
         return $this->create($attributes);
     }
-  
+
     public function createVpaTerminal(array $attributes = [])
     {
         $defaultValues = [

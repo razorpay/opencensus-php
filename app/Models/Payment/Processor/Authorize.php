@@ -543,7 +543,8 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($payment->isRecurringTypeInitial() === true)
+        if (($payment->isRecurringTypeInitial() === true) and
+            ($token->getRecurringStatus() === null))
         {
             $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
@@ -2114,7 +2115,7 @@ trait Authorize
 
                 try
                 {
-                    $this->validateFraudDetectionV2($payment);
+                    $this->validateFraudDetectionV2($payment, $this->merchant);
                 }
                 catch (Exception\IntegrationException $exception)
                 {
@@ -6132,6 +6133,8 @@ trait Authorize
                 $inputDetails = $this->getInputDetails($payment, $key);
 
                 $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setAnalyticsLog($payment);
 
                 /*
                  * In double redirect scenario terminal will be set

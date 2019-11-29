@@ -108,6 +108,124 @@ class OptionsTest extends TestCase
         $this->startTest();
     }
 
+    public function testOptionsFetchByAdmin()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsFetchByAdminFailure1()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsFetchByAdminFailure2()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsFetchByAdminFailure3()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsDeleteSuccessAdmin()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOptionWithNamespaceAndServiceAndMerchantId();
+        $this->startTest();
+    }
+
+    public function testOptionsDeleteByAdminFailure1()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsDeleteByAdminFailure2()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsDeleteByAdminFailure3()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsPatchAdmin()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOptionWithNamespaceAndServiceAndMerchantId();
+        $this->startTest();
+    }
+
+    public function testOptionsUpdateByAdminFailure1()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsUpdateByAdminFailure2()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsUpdateByAdminFailure3()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOption();
+        $this->startTest();
+    }
+
+    public function testOptionsUpdateByAdminForMissingEntityFailure()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->startTest();
+    }
+
+    public function testOptionsDeleteByAdminForMissingEntityFailure()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->startTest();
+    }
+
+    public function testDuplicateCreateOptionsForMerchantAdmin()
+    {
+        $this->ba->adminAuth();
+        $this->createMerchant();
+        $this->createOptionWithNamespaceAndServiceAndMerchantId();
+        $this->startTest();
+    }
+
     protected function createOption()
     {
         $attributes[Entity::ID]      		= self::TEST_OPTION_ID;
@@ -122,6 +240,17 @@ class OptionsTest extends TestCase
         $attributes[Entity::OPTIONS_JSON]   = self::TEST_OPTIONS_JSON;
         $attributes[Entity::NAMESPACE]      = self::TEST_NAMESPACE;
         $attributes[Entity::SERVICE_TYPE]   = self::TEST_SERVICE;
+
+        return $this->fixtures->create('options', $attributes);
+    }
+
+    protected function createOptionWithNamespaceAndServiceAndMerchantId()
+    {
+        $attributes[Entity::ID]      		= self::TEST_OPTION_ID;
+        $attributes[Entity::OPTIONS_JSON]   = self::TEST_OPTIONS_JSON;
+        $attributes[Entity::NAMESPACE]      = self::TEST_NAMESPACE;
+        $attributes[Entity::SERVICE_TYPE]   = self::TEST_SERVICE;
+        $attributes[Entity::MERCHANT_ID]    = self::TEST_MERCHANT_ID;
 
         return $this->fixtures->create('options', $attributes);
     }

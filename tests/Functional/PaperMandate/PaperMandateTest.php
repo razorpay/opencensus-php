@@ -171,7 +171,10 @@ class PaperMandateTest extends TestCase
     {
         $callable = function ()
         {
-            return ['outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf'))];
+            return [
+                'outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf')),
+                'uid'         => 'XXXXXXX'
+            ];
         };
 
         return $this->mockHyperVerge($callable);

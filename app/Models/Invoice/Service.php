@@ -325,6 +325,8 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
+        $invoice->setRelation('entity', $invoice->entity);
+
         $data = $this->core->sendNotification($invoice, $medium);
 
         return $data;

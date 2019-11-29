@@ -1522,10 +1522,15 @@ class Repository extends Base\Repository
                               ->virtual_account
                               ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
-        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+        $vpaId = $this->repo
+                      ->virtual_account
+                      ->dbColumn(VirtualAccount\Entity::VPA_ID);
+
+        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
                     {
                         $join->on($paymentReceiverId, '=', $qrcodeId);
                         $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        $join->orOn($paymentReceiverId, '=', $vpaId);
                     })
               ->where($virtualAccountIdCol, '=', $virtualAccountId);
     }

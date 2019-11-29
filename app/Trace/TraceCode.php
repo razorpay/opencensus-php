@@ -274,6 +274,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
+    const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
+
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
@@ -390,6 +392,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_DETECTION_PURGE_COMPLETED            = 'GATEWAY_DOWNTIME_DETECTION_PURGE_COMPLETED';
 
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE         = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
+    const UPI_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE          = 'UPI_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
 
     const CARD_NETWORK_INVALID                                  = 'CARD_NETWORK_INVALID';
     const IIN_MESSAGE_TYPE_MISSING                              = 'IIN_MESSAGE_TYPE_MISSING';
@@ -953,6 +956,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_UNAVAILABLE                           = 'VIRTUAL_ACCOUNT_UNAVAILABLE';
     const VIRTUAL_ACCOUNT_SHARED_ACCOUNT_CREATED                = 'VIRTUAL_ACCOUNT_SHARED_ACCOUNT_CREATED';
     const VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED               = 'VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED';
+    const VIRTUAL_ACCOUNT_ADD_RECEIVER                          = 'VIRTUAL_ACCOUNT_ADD_RECEIVER';
 
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                              = 'BANK_TRANSFER_PROCESSING';
@@ -984,6 +988,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION              = 'BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION';
     const BHARAT_QR_UNEXPECTED_PAYMENT                          = 'BHARAT_QR_UNEXPECTED_PAYMENT';
     const BHARAT_QR_PAYMENT_VALIDATE_REQUEST                    = 'BHARAT_QR_PAYMENT_VALIDATE_REQUEST';
+
+    const UPI_TRANSFER_PAYMENT_PROCESS_REQUEST                  = 'UPI_TRANSFER_PAYMENT_PROCESS_REQUEST';
+    const UPI_TRANSFER_PAYMENT_PROCESSING_FAILED                = 'UPI_TRANSFER_PAYMENT_PROCESSING_FAILED';
+    const UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION           = 'UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION';
+    const UPI_TRANSFER_UNEXPECTED_PAYMENT                       = 'UPI_TRANSFER_UNEXPECTED_PAYMENT';
+    const UPI_TRANSFER_PAYMENT_VALIDATE_REQUEST                 = 'UPI_TRANSFER_PAYMENT_VALIDATE_REQUEST';
 
     const PAYMENT_RECEIVED_VIA_RECEIVER                         = 'PAYMENT_RECEIVED_VIA_RECEIVER';
     const PAYMENT_RECEIVER_UPDATE_FAILURE                       = 'PAYMENT_RECEIVER_UPDATE_FAILURE';
@@ -1299,7 +1309,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_ERROR                                       = 'BATCH_JOB_ERROR';
     const IRCTC_BATCH_JOB_RECEIVED                              = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                                 = 'IRCTC_BATCH_JOB_ERROR';
-    const IRCTC_REFUND_AMOUNT_MISMATCH                          = 'IRCTC_REFUND_AMOUNT_MISMATCH';
     const KUBERNETES_BATCH_JOB_CREATED                          = 'KUBERNETES_BATCH_JOB_CREATED';
     const KUBERNETES_BATCH_JOB_EXISTS                           = 'KUBERNETES_BATCH_JOB_EXISTS';
     const KUBERNETES_BATCH_JOB_ERROR                            = 'KUBERNETES_BATCH_JOB_ERROR';
@@ -2058,6 +2067,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED              = 'FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED';
     const FTS_TRANSFER_RETRY_ACTION_INIT                        = 'FTS_TRANSFER_RETRY_ACTION_INIT';
     const FTS_TRANSFER_RETRY_ACTION_COMPLETE                    = 'FTS_TRANSFER_RETRY_ACTION_COMPLETE';
+    const FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION         = 'FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
@@ -2250,6 +2260,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
     const STORK_WEBHOOK_MIGRATE_SUMMARY                         = 'STORK_WEBHOOK_MIGRATE_SUMMARY';
+    const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
+    const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
 
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';
@@ -2335,6 +2347,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
 
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
+
+    // Trace Code for Merchant status
+
+    const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
+    const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
