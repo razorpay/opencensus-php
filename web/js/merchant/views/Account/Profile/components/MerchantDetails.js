@@ -180,7 +180,22 @@ const MerchantDetails = ({
             )}
           />
           <DetailRow
-            label="Business Website/App details"
+            label={() => (
+              <div>
+                <span>Business Website/App details</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        These are the verified websites on which payments can be
+                        integrated.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
             value={() =>
               !user.has_key_access ? (
                 !user.business_website ? (
