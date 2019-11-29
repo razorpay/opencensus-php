@@ -644,20 +644,12 @@ class BatchMicroService
         {
             $options['mode'] = $this->mode;
 
-            $this->trace->info(
-                TraceCode::LOOKING_FOR_MISTAKES,
-                [
-                    'relative_url' => $relativeUrl,
-                    'options' => $options,
-                ]
-            );
-
             $response = $this->getResponseFromBatchService($relativeUrl, Requests::POST, $options);
         }
         catch (\Exception $exception)
         {
             $this->trace->error(
-                TraceCode::FAIL_BATCH_PROCESS_FAILED, // Suggestions?
+                TraceCode::FAIL_BATCH_BATCH_SERVICE_FAILED, // Suggestions?
                 [
                     'batch_id' => $id,
                 ]
@@ -667,7 +659,7 @@ class BatchMicroService
         }
 
         $this->trace->info(
-            TraceCode::FAIL_BATCH_PROCESS_SUCCESS,
+            TraceCode::FAIL_BATCH_BATCH_SERVICE_SUCCESS,
             [
                 'batch_id' => $id,
             ]

@@ -254,19 +254,13 @@ class Service extends Base\Service
 
     public function failBatchProcessIfRequired(string $id): bool
     {
-        $this->trace->info(
-            TraceCode::FAIL_BATCH_PROCESS_IF_REQUIRED, // Suggestions?
-            [
-                'batch_id' => $id,
-            ]
-        );
-
         $batch = $this->fetchBatchById($id);
 
-        if ($batch[Entity::STATUS] === Status::PROCESSED) // What happens when status is FAILED?
+        if ($batch[Entity::STATUS] === Status::PROCESSED or
+            $batch[Entity::STATUS] === Status::FAILED)
         {
             $this->trace->info(
-                TraceCode::BATCH_ALREADY_PROCESSED,
+                TraceCode::FAIL_BATCH_NOT_REQUIRED,
                 [
                     'batch_id' => $id,
                     'status' => $batch[Entity::STATUS],
@@ -275,6 +269,13 @@ class Service extends Base\Service
 
             return true;
         }
+
+        $this->trace->info(
+            TraceCode::FAIL_BATCH_BATCH_SERVICE,
+            [
+                'batch_id' => $id,
+            ]
+        );
 
         return $this->app->batchService->performActionInBatchService($id, 'fail');
     }
