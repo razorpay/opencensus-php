@@ -2779,9 +2779,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $data;
     }
 
-    public function toArrayPublic()
+    public function toArrayPublicWithExpand()
     {
-        $data =  parent::toArrayPublic();
+        $data =  parent::toArrayPublicWithExpand();
 
         if ($this->getCurrency() !== Currency\Currency::INR)
         {
