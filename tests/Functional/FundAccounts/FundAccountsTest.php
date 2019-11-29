@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Contacts;
 use Queue;
 
 use RZP\Models\Feature;
+use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -349,14 +350,40 @@ class FundAccountsTest extends TestCase
         $this->assertNotEquals($fundAccount['id'], $response['id']);
     }
 
-    // duplicate checks for same fund account details but different contacts
-    public function testDuplicateFundAccountCreationOnApiForVpaForDifferentContacts()
+    public function testCreateDuplicateFundAccountOnApi()
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
+        $this->testCreateFundAccountBankAccount();
 
-        $this->fixtures->create('contact', ['id' => '1000001contact']);
+        $contact = $this->getLastEntity('contact', true);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                           ->willReturn('create_duplicate');
+
+        $this->ba->privateAuth();
+
+        $request =  [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($contact['id'], $response['id']);
     }
-
 }

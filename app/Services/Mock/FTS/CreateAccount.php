@@ -8,7 +8,7 @@ use RZP\Services\FTS\CreateAccount as BaseCreateAccount;
 
 class CreateAccount extends BaseCreateAccount
 {
-    public function createFundAccount(string $id, string $type, string $product): array
+    public function createFundAccount( ): array
     {
         return [
                 'body' => [
