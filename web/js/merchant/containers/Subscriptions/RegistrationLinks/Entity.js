@@ -133,8 +133,11 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   render() {
     const { loading: isLoading, entity, error } = this.props;
 
-    let isSmsOrEmailSent =
-      entity.sms_status === 'sent' || entity.email_status === 'sent';
+    const isSmsOrEmailSent =
+        entity.sms_status === 'sent' || entity.email_status === 'sent',
+      isIssued = entity.status === 'issued',
+      isTotalAmountPaid = entity.amount === entity.amount_paid,
+      showReResendLink = isIssued && !isTotalAmountPaid;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -147,16 +150,20 @@ export default class RegistrationLinkEntityContainer extends React.Component {
             <div class="panel-heading">
               {entity.id}
 
-              <button
-                onClick={this.openResendLinkModal}
-                class="btn btn-primary pull-right"
-              >
-                <Tooltip theme="dark">
-                  {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
-                </Tooltip>
+              {showReResendLink && (
+                <div class="btn-toolbar pull-right">
+                  <button
+                    onClick={this.openResendLinkModal}
+                    class="btn Button--primary"
+                  >
+                    <Tooltip theme="dark">
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </Tooltip>
 
-                <i className="i i-send" />
-              </button>
+                    <i className="i i-send" />
+                  </button>
+                </div>
+              )}
             </div>
             <Alert type="error" message={error} />
             {!!Object.keys(entity).length && (
