@@ -6,8 +6,12 @@ export default function LogList(props) {
   const { items, config } = props;
 
   const onDownloadClick = ({ target }) => {
-    const fileId = target.dataset.fileId;
-    downloadFromUFH(fileId);
+    const { fileId, consumerId } = target.dataset;
+    const accountId =
+      props.currentMerchantId !== consumerId
+        ? consumerId.replace('acc_')
+        : undefined;
+    downloadFromUFH(fileId, accountId);
   };
 
   return (

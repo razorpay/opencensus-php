@@ -19,12 +19,13 @@ function renderActionBasedOnStatus({ status, ...props }) {
   }
 }
 
-function renderDownloadButton({ fileId, onDownloadClick }) {
+function renderDownloadButton(props) {
   return (
     <button
       class="btn btn-link"
-      data-file-id={fileId}
-      onClick={onDownloadClick}
+      data-file-id={props.fileId}
+      data-consumer-id={props.consumerId}
+      onClick={props.onDownloadClick}
     >
       Download
     </button>

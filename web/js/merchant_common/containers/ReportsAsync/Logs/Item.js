@@ -40,6 +40,7 @@ export default function LogItem(props) {
           status={props.status}
           fileId={props.file_id}
           onDownloadClick={props.onDownloadClick}
+          consumerId={props.consumer}
         />
       </div>
       <div className="LogItem__InfoBar">{props.info}</div>

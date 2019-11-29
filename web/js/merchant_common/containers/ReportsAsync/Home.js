@@ -20,7 +20,7 @@ export default class ReportHome extends React.PureComponent {
   }
 
   render() {
-    const { logs, config } = this.props;
+    const { logs, config, user } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -30,7 +30,11 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div class="content-wrapper">
-              <LogList {...logs} config={config} />
+              <LogList
+                currentMerchantId={user.current}
+                {...logs}
+                config={config}
+              />
             </div>
           </content>
         </tabbed-container>
