@@ -32,6 +32,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\AuthType;
@@ -40,6 +41,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
@@ -1741,24 +1743,32 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
 
-        //TODO: Remove this later
-//        try
-//        {
-//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-//        }
-//        catch (\Throwable $e)
-//        {
-//            $this->trace->info(
-//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                [
-//                    'payment'             => $this->payment->toArray(),
-//                    'code'                => $code,
-//                    'internal_code'       => $internalCode,
-//                    'error'               => $e->getMessage()
-//                ]
-//            );
-//        }
+        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+        if (($this->mode === RZPMode::LIVE) and
+            (($isProduction === true)) and
+            (strtolower($variant) === 'on'))
+        {
+            //TODO: Remove this later
+            try
+            {
+                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $this->payment->toArray(),
+                        'code'                => $code,
+                        'internal_code'       => $internalCode,
+                        'error'               => $e->getMessage()
+                    ]
+                );
+            }
+        }
     }
 
     /**

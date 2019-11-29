@@ -52,6 +52,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
+use RZP\Constants\Mode as RZPMode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -358,23 +359,33 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                //TODO: Remove this later
-//                try
-//                {
-//                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
-//                }
-//                catch (\Throwable $e)
-//                {
-//                    $this->trace->info(
-//                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                        [
-//                            'payment'             => $payment->toArray(),
-//                            'code'                => $errorCode,
-//                            'internal_code'       => $internalErrorCode,
-//                            'error'               => $e->getMessage()
-//                        ]
-//                    );
-//                }
+                $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+                if (($this->mode === RZPMode::LIVE) and
+                    ($isProduction === true) and
+                    (strtolower($variant) === 'on'))
+                {
+                    //TODO: Remove this later
+                    try
+                    {
+                        $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
+                            $errorCode, $internalErrorCode);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->info(
+                            TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                            [
+                                'payment'             => $payment->toArray(),
+                                'code'                => $errorCode,
+                                'internal_code'       => $internalErrorCode,
+                                'error'               => $e->getMessage()
+                            ]
+                        );
+                    }
+                }
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -5594,21 +5605,30 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            //TODO: Remove this later
-//            try
-//            {
-//                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
-//            }
-//            catch (\Throwable $e)
-//            {
-//                $this->trace->info(
-//                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                    [
-//                        'payment'             => $payment->toArray(),
-//                        'error'               => $e->getMessage()
-//                    ]
-//                );
-//            }
+            $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+            $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+            if (($this->mode === RZPMode::LIVE) and
+                ($isProduction === true) and
+                (strtolower($variant) === 'on'))
+            {
+                //TODO: Remove this later
+                try
+                {
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'error'               => $e->getMessage()
+                        ]
+                    );
+                }
+            }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
