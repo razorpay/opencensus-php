@@ -37,7 +37,9 @@ export default class extends React.PureComponent {
   };
 
   onSubmit = () => {
-    this.props.onSubmit(this.state._dirty);
+    return this.props
+      .onSubmit(this.state._dirty)
+      .then(() => this.props.closeModal());
   };
 
   render() {
