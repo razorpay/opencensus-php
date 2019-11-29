@@ -12,9 +12,9 @@ import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
-import InvoicesList from 'merchant/components/Invoices/InvoicesList';
+import InvoicesList from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
+import InvoiceListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';

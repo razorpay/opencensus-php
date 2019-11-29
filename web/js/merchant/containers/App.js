@@ -21,7 +21,7 @@ import * as ConfigActions from 'merchant/reducers/config';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import AddGST from 'merchant/containers/Profile/AddGST';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
 import {

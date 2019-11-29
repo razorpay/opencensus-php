@@ -12,7 +12,7 @@ import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDet
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
 import { fetchUser } from 'merchantLA/reducers/session';
 import PasswordForm from './PasswordForm';
-import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
+import DisplayNameForm from 'merchant/views/Account/Profile/components/DisplayNameForm';
 
 import { updateDisplayName } from 'merchantLA/reducers/profile';
 import { updateSession } from 'merchantLA/reducers/session';

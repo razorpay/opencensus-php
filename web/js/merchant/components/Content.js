@@ -8,20 +8,20 @@ import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
-import Transactions from 'merchant/containers/Transactions';
-import Settlements from 'merchant/containers/Settlements/List';
+import Transactions from 'merchant/views/Transactions';
+import Settlements from 'merchant/views/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
-import PaymentPages from 'merchant/containers/PaymentPages/Index';
-import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
-import InvoicingContainer from 'merchant/containers/Invoicing';
-import InvoicesNew from 'merchant/containers/Invoices/New';
+import PaymentPages from 'merchant/views/PaymentPages';
+import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
+import InvoicesContainer from 'merchant/views/Invoices';
+import InvoicesNew from 'merchant/views/Invoices/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
-import Customers from 'merchant/containers/Customers/List';
+import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
 import ReportsAsync from 'merchant/containers/ReportsAsync/Home';
-import MyAccount from 'merchant/containers/MyAccount';
-import Settings from 'merchant/containers/Settings';
+import MyAccount from 'merchant/views/Account';
+import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -173,7 +173,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/invoices"
             exact
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
           <ShowWhenRoute
@@ -188,7 +188,7 @@ export default class Content extends Component {
           />
           <ShowWhenRoute
             path="/items"
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
 
@@ -241,7 +241,7 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
-            path="/authlinks"
+            path="/registration_links"
             component={Subscriptions}
             additionalCondition={user =>
               user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled

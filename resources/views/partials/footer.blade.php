@@ -35,7 +35,7 @@
 
     if(window.analytics){
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','taboola'],
+          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
           {
             ga: 'UA-53341507-2',
             fb: '697927486977350',
