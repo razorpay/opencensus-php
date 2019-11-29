@@ -23,7 +23,7 @@ export default class extends React.PureComponent {
     this.state = {
       _dirty: {
         email: '1',
-        phone: '1',
+        sms: '1',
       },
     };
   }
@@ -44,7 +44,7 @@ export default class extends React.PureComponent {
     const {
       isTestMode,
       email,
-      phone,
+      sms,
       description,
       children,
       testModeMessage,
@@ -67,11 +67,11 @@ export default class extends React.PureComponent {
               />
             )}
 
-            {phone && (
+            {sms && (
               <Input.Check
-                name="phone"
-                defaultValue={this.state._dirty.phone}
-                fieldLabel={phone}
+                name="sms"
+                defaultValue={this.state._dirty.sms}
+                fieldLabel={sms}
               />
             )}
 
