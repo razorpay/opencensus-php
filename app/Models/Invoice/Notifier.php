@@ -5,15 +5,17 @@ namespace RZP\Models\Invoice;
 use Mail;
 use Config;
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Services\Reminders;
+use RZP\Models\Invoice\Reminder;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
 {
@@ -27,6 +29,10 @@ class Notifier extends Base\Core
     protected $issuedPdfPath;
     protected $mode;
     protected $raven;
+    /**
+     * @var Reminders
+     */
+    protected $reminders;
     protected $slack;
     protected $slackTechLogsChannel;
 
@@ -41,6 +47,8 @@ class Notifier extends Base\Core
         $this->mode = $this->app['rzp.mode'];
 
         $this->raven = $this->app['raven'];
+
+        $this->reminders = $this->app['reminders'];
 
         $this->slack = $this->app['slack'];
 
@@ -85,6 +93,95 @@ class Notifier extends Base\Core
         return $this->emailInvoiceExpiredToCustomer();
     }
 
+    public function createOrUpdateReminder(): bool
+    {
+        $this->invoice->reload();
+
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($this->invoice->getId());
+
+        $merchantId = $this->invoice->getMerchantId();
+
+        if((empty($reminderEntity) === false) and
+            ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+            (empty($reminderEntity->getReminderId()) === true))
+        {
+            $request = $this->getRemindersCreateReminderInput();
+
+            $response = [];
+
+            try {
+                $response = $this->reminders->createReminder($request, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
+
+            $this->setReminderResponse($response, $reminderEntity);
+        }
+        elseif ((empty($reminderEntity) === false) and
+                ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+                (empty($reminderEntity->getReminderId()) === false))
+        {
+            $reminderId = $reminderEntity->getReminderId();
+
+            $request = $this->getRemindersUpdateReminderInput();
+
+            $response = [];
+
+            try {
+                $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
+
+            if(empty($response['id']) === true)
+            {
+                return false;
+            }
+
+            $reminderEntity->setReminderStatus(Reminder\Status::IN_PROGRESS);
+
+            $this->repo->saveOrFail($reminderEntity);
+        }
+
+        return true;
+    }
+
+    public function setReminderResponse($response, Reminder\Entity $reminder): bool
+    {
+        if(empty($response['id']) === false)
+        {
+            $reminder->setReminderStatus(Reminder\Status::IN_PROGRESS);
+
+            $reminder->setReminderId($response['id']);
+        }
+        else
+        {
+            $reminder->setReminderStatus(Reminder\Status::FAILED);
+        }
+
+        $this->repo->saveOrFail($reminder);
+
+        return true;
+    }
+
     //  -------------------------------------------------------------------
 
     public function canNotifyInvoiceIssuedToCustomer(): bool
@@ -111,7 +208,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceIssuedToCustomer(): bool
+    public function emailInvoiceIssuedToCustomer($reminder = false, $newShortUrl = null): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -131,6 +228,12 @@ class Notifier extends Base\Core
         $this->trace->count(Metric::INVOICE_EMAIL_NOTIFY_TOTAL, $dimensions);
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+
+        if (($reminder === true) and (empty($newShortUrl) === false))
+        {
+            $viewPayload['reminder'] = true;
+            $viewPayload['invoice']['short_url'] = $newShortUrl;
+        }
 
         $fileData = [
             'name' => $this->invoice->getPdfDisplayName(),
@@ -178,7 +281,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function smsInvoiceIssuedToCustomer(): bool
+    public function smsInvoiceIssuedToCustomer($reminders = false, $newShortUrl = null): bool
     {
         $contact = $this->invoice->getCustomerContact();
 
@@ -190,7 +293,7 @@ class Notifier extends Base\Core
         $dimensions = $this->invoice->getMetricDimensions(['sms_type' => 'issued']);
         $this->trace->count(Metric::INVOICE_SMS_NOTIFY_TOTAL, $dimensions);
 
-        $request = $this->getRavenSendInvoiceRequestInput($contact);
+        $request = $this->getRavenSendInvoiceRequestInput($contact, $reminders, $newShortUrl);
 
         try
         {
@@ -344,14 +447,84 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function getRavenSendInvoiceRequestInput(string $contact): array
+    protected function getRemindersCreateReminderInput(): array
+    {
+        $reminderData = [
+            'issued_at' => $this->invoice->getIssuedAt(),
+        ];
+
+        if($this->invoice->getExpireBy() !== null)
+        {
+            $reminderData['expire_by'] = $this->invoice->getExpireBy();
+            unset($reminderData['issued_at']);
+        }
+
+        $request = [
+            'namespace'     => 'payment_link',
+            'entity_id'     => $this->invoice->getId(),
+            'entity_type'   => $this->invoice->getEntityName(),
+            'reminder_data' => $reminderData,
+            'callback_url'  => $this->getCallbackUrlForReminder(),
+        ];
+
+        return $request;
+    }
+
+    protected function getRemindersUpdateReminderInput(): array
+    {
+
+        $reminderData = [
+            'issued_at'  => $this->invoice->getIssuedAt(),
+        ];
+
+        $expireBy = $this->invoice->getExpireBy();
+
+        if(empty($expireBy) === false)
+        {
+            $reminderData['expire_by'] = $expireBy;
+            unset($reminderData['issued_at']);
+        }
+
+        $request = [
+            'reminder_data' => $reminderData
+        ];
+
+        return $request;
+    }
+
+    protected function getCallbackUrlForReminder()
+    {
+        $baseUrl = 'reminders/send';
+
+        $mode = $this->mode;
+
+        $entity = $this->invoice->getEntityName();
+
+        $namespace = 'payment_link';
+
+        $invoiceId = $this->invoice->getId();
+
+        $callbackURL = sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $invoiceId);
+
+        return $callbackURL;
+    }
+
+    protected function getRavenSendInvoiceRequestInput(string $contact, $reminder = false, $newShortUrl = null): array
     {
         $merchant = $this->invoice->merchant;
 
-        $defaultTemplate = 'sms.invoice';
+        $invoiceLink = $this->invoice->getShortUrl();
+
+        if(($reminder === true) and (empty($newShortUrl) === false))
+        {
+            $invoiceLink = $newShortUrl;
+        }
+
+        $defaultTemplate = $reminder ? 'sms.reminder_invoice' : 'sms.invoice';
+
         $defaultParams   = [
             'merchant_name' => $merchant->getBillingLabel(),
-            'invoice_link'  => $this->invoice->getShortUrl(),
+            'invoice_link'  => $invoiceLink,
             'currency'      => $this->invoice->getCurrency(),
             'amount'        => $this->invoice->getAmount() / 100,
         ];
@@ -362,7 +535,7 @@ class Notifier extends Base\Core
         }
         else
         {
-            $custom = $this->getCustomRavenTemplateAndParams($merchant);
+            $custom = $this->getCustomRavenTemplateAndParams($merchant, $reminder, $newShortUrl);
         }
 
         $customTemplate = $custom['template'];
@@ -371,7 +544,7 @@ class Notifier extends Base\Core
 
         $request = [
             'receiver' => $contact,
-            'source'   => "api.{$this->mode}.invoice",
+            'source'   => $reminder ? "api.{$this->mode}.reminder_invoice" : "api.{$this->mode}.invoice",
             'template' => $customTemplate ?? $defaultTemplate,
             'params'   => $customParams ?? $defaultParams,
         ];
@@ -391,13 +564,18 @@ class Notifier extends Base\Core
         return $request;
     }
 
-    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
+    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant, $reminder = false, $newShortUrl = null): array
     {
         $template = $params = $sender = null;
 
         $receipt = $this->invoice->getReceipt();
 
         $invoiceLink = $this->invoice->getShortUrl();
+
+        if(($reminder === true) and (empty($newShortUrl)) === false)
+        {
+            $invoiceLink = $newShortUrl;
+        }
 
         $expireBy = $this->invoice->getExpireBy();
 
@@ -481,6 +659,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_INDIABULLS_FINANCE:
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabull_custom';
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
@@ -585,6 +764,25 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_BAGIC:
+                $template = 'sms.custom_invoice.bagic_pl';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $template = 'sms.custom_invoice.rbl_agri_loan';
+                $sender   = 'RBLBNK';
+                $params = [
+                    'receipt'       => $receipt,
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -630,6 +828,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_INDIABULLS_FINANCE:
 
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabulls_finance';
                 $params   = [
                     'receipt'      => $receipt,
@@ -649,6 +848,16 @@ class Notifier extends Base\Core
                     'invoice_link'     => $invoiceLink,
                     'rejection_reason' => $notes['rejection_reason'] ?? '',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_BAGIC:
+
+                $template = 'sms.custom_invoice.bagic_sub';
+
+                $params = [
+                    'invoice_link'    => $invoiceLink
                 ];
 
                 break;

@@ -281,6 +281,22 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_scb($input)
+    {
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'get',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_cbi($input)
     {
         $request = [
@@ -297,6 +313,27 @@ class Server extends Base\Mock\Server
         $url = $this->route->getUrlWithPublicAuth(
             'gateway_payment_callback_yesb_post',
             [
+                'paymentId' => $input['paymentId'],
+                'amount'    => number_format($input['amount'] / 100, 2, '.', '')
+            ]);
+
+        $request = [
+            'url'     => $url,
+            'content' => ['encdata' => 'dummy_response_data'],
+            'method'  => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_kvb($input)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_static_callback_post',
+            [
+                'method'    => 'netbanking',
+                'gateway'   => 'netbanking_kvb',
+                'mode'      => 'test',
                 'paymentId' => $input['paymentId'],
                 'amount'    => number_format($input['amount'] / 100, 2, '.', '')
             ]);
@@ -373,7 +410,7 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
-        $mockCase = $this->app['config']->get('atos_terminal_onboarding_creation.case');
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_creation.case');
 
         switch ($mockCase)
         {
@@ -402,7 +439,7 @@ class Server extends Base\Mock\Server
                         'gateway_status_code'       =>  0,
                         'internal_error_code'       =>  "BAD_REQUEST_VALIDATION_FAILURE",
                     ],
-                    'success'   => false,   
+                    'success'   => false,
                  ];
                  break;
 
@@ -420,10 +457,10 @@ class Server extends Base\Mock\Server
                         'gateway_status_code'       =>  200,
                         'internal_error_code'       =>  'GATEWAY_ERROR_UNKNOWN_ERROR',
                     ],
-                    'success'   => false,   
+                    'success'   => false,
                 ];
                 break;
-            
+
             case "4":
                 $responseBody = [
                     'data' => [],
@@ -472,7 +509,7 @@ class Server extends Base\Mock\Server
 
     public function verifyTerminal($body)
     {
-        $mockCase = $this->app['config']->get('atos_terminal_onboarding_verification.case');
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_verification.case');
 
         switch ($mockCase)
         {

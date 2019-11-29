@@ -31,8 +31,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "id"      => '%s',
-                "deleted" => true
+                'verification' => [
+                    'required_fields' => [
+                        'address_proof_url',
+                    ]
+                ],
             ]
         ]
     ],
@@ -116,6 +119,28 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, zip.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testFileUploadDocumentTypeInvalid' => [
+        'request'   => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'abc'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invalid document type:abc',
                 ],
             ],
             'status_code' => 400,

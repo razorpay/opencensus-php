@@ -27,19 +27,14 @@ class MerchantDocumentTest Extends TestCase
     {
         $merchantDocument = $this->fixtures->create('merchant_document');
 
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];
 
         $request['url'] = sprintf($request['url'], 'doc_' . $merchantDocument['id']);
 
         $this->testData[__FUNCTION__]['request'] = $request;
-
-        //response edited
-        $response = $this->testData[__FUNCTION__]['response'];
-
-        $response['content']['id'] = sprintf($response['content']['id'], 'doc_' . $merchantDocument['id']);
-
-        $this->testData[__FUNCTION__]['response'] = $response;
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDocument['merchant_id']);
 
@@ -87,6 +82,21 @@ class MerchantDocumentTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $fileStoreEntry = $this->getDbEntityById('file_store', $merchantDocumentEntry['file_store_id'], 'test');
+
+        $this->assertTrue(substr($fileStoreEntry->getName(), -2) === "/a");
+    }
+
+    public function testFileUploadDocumentTypeInvalid()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $this->startTest();
     }
 
     public function testFileUploadFileNotExist()
@@ -152,6 +162,7 @@ class MerchantDocumentTest Extends TestCase
             Constants::PASSPORT_FRONT,
             Constants::AADHAR_FRONT,
             Constants::VOTER_ID_FRONT,
+            Constants::AADHAAR_FRONT_COMPLETE
         ];
 
         $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');

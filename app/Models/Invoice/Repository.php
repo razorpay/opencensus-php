@@ -33,7 +33,9 @@ class Repository extends Base\Repository
     ];
 
     protected $invoiceCountRules = [
-        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18'
+        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
+        Entity::TYPE              => 'sometimes|string|custom',
+        Entity::STATUS            => 'sometimes|string',
     ];
 
     protected $entityFetchParamRules = [
@@ -55,7 +57,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
-        self::EXPAND . '.*'       => 'filled|string|in:payments,payments.card,user',
+        self::EXPAND . '.*'       => 'filled|string|in:payments,payments.card,user,invoice_reminder',
         Entity::IDEMPOTENCY_KEY   => 'sometimes|alpha_num',
     ];
 
@@ -115,9 +117,14 @@ class Repository extends Base\Repository
 
         $query = $this->getQueryForFindWithParams($input);
 
-        $invoice = $query->merchantId($merchant->getId())
-                         ->where(Entity::ENTITY_TYPE, $entityType)
-                         ->findOrFailPublic($id);
+        $query = $query->merchantId($merchant->getId());
+
+        if (empty($entityType) === false)
+        {
+            $query = $query->where(Entity::ENTITY_TYPE, $entityType);
+        }
+
+        $invoice = $query->findOrFailPublic($id);
 
         $invoice->merchant()->associate($merchant);
 
@@ -126,7 +133,7 @@ class Repository extends Base\Repository
         // user id is not same as passed userId.
         //
         if (($userId !== null) and
-            ($userRole === Role::SELLERAPP) and
+            (($userRole === Role::SELLERAPP) or ($userRole === Role::SELLERAPP_PLUS)) and
             ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
@@ -160,7 +167,14 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
+        $merchantId = optional($this->merchant)->getId();
+
         $this->buildQueryWithParams($query, $params);
+
+        if ($merchantId !== null)
+        {
+            $query = $query->merchantId($merchantId);
+        }
 
         $invoiceCount = $query->count();
 
@@ -415,8 +429,9 @@ class Repository extends Base\Repository
 
     public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
     {
-        $collection = $this->newQuery()
+        $collection = $this->newQueryWithConnection($this->getSlaveConnection())
                            ->selectRaw(Entity::BATCH_ID . ', COUNT(1) as count')
+                           ->where(Entity::MERCHANT_ID, $this->merchant->getId())
                            ->whereIn(Entity::BATCH_ID, $batchIds)
                            ->where(Entity::STATUS, '!=', Status::DRAFT)
                            ->groupBy(Entity::BATCH_ID)

@@ -11,6 +11,7 @@ use Request;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
@@ -25,6 +26,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -39,7 +41,9 @@ use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use RZP\Constants\{Mode, Entity as CE};
+use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -54,6 +58,9 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
+    const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
+
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 500;
 
     /**
      * Creates a merchant and saves in database
@@ -203,6 +210,38 @@ class Service extends Base\Service
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
             $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @throws \Throwable
+     */
+    protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        $this->repo->assertTransactionActive();
+
+        $partnerUserId = $partner->primaryOwner()->getId();
+
+        if (($partner->isFullyManagedPartner() === true) or
+            ($partner->isAggregatorPartner() === true))
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+
+                $this->core()->detachSubMerchantOwner($partnerUserId, $submerchant);
+
+                if ($submerchant->primaryOwner() === null)
+                {
+                    $this->trace->info(TraceCode::SUBMERCHANT_PRIMARY_OWNER_NOT_PRESENT,
+                                       [
+                                           'submerchant' => $submerchant,
+                                       ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_OWNER_NOT_PRESENT_FOR_USER);
+                }
+            });
         }
     }
 
@@ -568,6 +607,8 @@ class Service extends Base\Service
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
         (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
+
+        $this->validatePricingPlanForFeeBearer($merchant, $plan);
 
         $originalPricingPlan = null;
 
@@ -1391,7 +1432,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        (new Validator)->validateInput('holiday_notify', $input);
+
         RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
@@ -1691,6 +1733,90 @@ class Service extends Base\Service
         }
 
         return $scheduledPricing->toArrayPublic();
+    }
+
+    public function enableScheduledEs(): array
+    {
+        $this->repo->transactionOnLiveAndTest(function ()
+        {
+            $userRole = $this->repo
+                             ->merchant
+                             ->getMerchantUserMapping(
+                                 $this->merchant->getId(),
+                                 $this->user->getId(),
+                                 null,
+                                 Product::PRIMARY)
+                             ->pivot
+                             ->role;
+
+            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                        'role',
+                                                        $userRole);
+            }
+
+            $this->getScheduledEarlySettlementPricingForMerchant();
+
+            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+
+            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                    Schedule\Period::HOURLY,
+                                                    1,
+                                                    null,
+                                                    0,
+                                                    0,
+                                                    ScheduleTask\Type::SETTLEMENT);
+
+            if ($schedule === null)
+            {
+                throw new Exception\LogicException(
+                    'Schedule for Scheduled Automatic settlement was not found.',
+                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+                );
+            }
+
+            foreach ($scheduledTasks as $scheduledTask)
+            {
+                $input = [
+                    ScheduleTask\Entity::METHOD      => $scheduledTask[ScheduleTask\Entity::METHOD],
+                    ScheduleTask\Entity::TYPE        => $scheduledTask[ScheduleTask\Entity::TYPE],
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+                ];
+
+                $this->app['workflow']->skipWorkflows(function() use ($input)
+                {
+                    (new ScheduleTask\Core)->createOrUpdate($this->merchant, $this->merchant, $input);
+                });
+            }
+
+            $this->deleteTag($this->merchant->getId(), self::ES_ON_DEMAND_ANNOUNCEMENT_TAG);
+
+            $this->addOrRemoveMerchantFeatures([
+                                                    Entity::FEATURES => [
+                                                        Feature\Constants::ES_AUTOMATIC => 1
+                                                    ],
+                                                    Feature\Entity::SHOULD_SYNC => 1]);
+
+            $tags = $this->merchant->tagNames();
+
+            array_walk($tags, function(& $tag)
+            {
+                $tag = substr($tag, 0, 2);
+            });
+
+            if (in_array('KA', $tags) === true)
+            {
+                // for key accounts, send Feature enabled mail to Capital product team
+                $data['merchant'] = $this->merchant->toArrayPublic();
+
+                $esNotifyEmail = new EsEnabledNotify($data);
+
+                Mail::queue($esNotifyEmail);
+            }
+        });
+
+        return ['success' => true];
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -2008,7 +2134,6 @@ class Service extends Base\Service
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
-
 
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
@@ -2679,6 +2804,50 @@ class Service extends Base\Service
         return $this->mapSubmerchant($partner, $submerchantId);
     }
 
+    public function fetchPartnerIntent(): array
+    {
+
+        $response = (new Settings\Service)->get(
+            Constants::PARTNER,
+            Constants::PARTNER_INTENT);
+
+        $partnerIntent = $response['settings'];
+
+        if ($partnerIntent instanceof Dictionary)
+        {
+            $partnerIntent = null;
+        }
+        else
+        {
+            $partnerIntent = boolVal($partnerIntent);
+        }
+
+        return [
+            Constants::PARTNER_INTENT       => $partnerIntent,
+        ];
+    }
+
+    /**
+     * Updates partner_intent key in settings table
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updatePartnerIntent(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_intent', $input);
+
+        (new Settings\Service)->upsert(
+            Constants::PARTNER,
+            $input);
+
+        // since Settings/Service->upsert does not return anything hence,
+        // returning whatever was passed in input
+        return [
+            Constants::PARTNER_INTENT   => $input[Constants::PARTNER_INTENT],
+        ];
+    }
+
     /**
      * @param string $merchantId
      *
@@ -2756,6 +2925,15 @@ class Service extends Base\Service
         return $partner;
     }
 
+    public function updatePartnerType(array $input): array
+    {
+        (new Validator)->validateInput('update_partner_type', $input);
+
+        $partnerType = $input[Entity::PARTNER_TYPE];
+
+        return $this->core()->updatePartnerType($this->merchant, $partnerType);
+    }
+
     public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
@@ -2778,6 +2956,10 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('list_submerchants', $input);
 
+        // add default params
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();
@@ -2785,6 +2967,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
@@ -2792,7 +2978,14 @@ class Service extends Base\Service
 
         $submerchant = $this->fetchSubmerchant($merchantId);
 
-        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+
+            $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+            $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
+        });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
     }
 
     /**
@@ -3340,5 +3533,74 @@ class Service extends Base\Service
 
             $i++;
         }
+    }
+
+    /**
+     * @param Entity $merchant
+     * @param Plan $plan
+     * @throws Exception\BadRequestValidationFailureException
+     *
+     * Ensures that all pricing rules in plan have the same feeBearer value as the merchant
+     * the plan is being assigned to.
+     *
+     * This is not applicable in case of dynamic fee bearer.
+     */
+    public function validatePricingPlanForFeeBearer(Merchant\Entity $merchant, Plan $plan)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        $merchantFeeBearer = $merchant->getFeeBearer();
+
+        foreach ($plan as $pricing)
+        {
+            $pricingFeeBearer = $pricing->getFeeBearer();
+
+            if ($pricingFeeBearer !== $merchantFeeBearer)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_FEE_BEARER_MISMATCH,
+                    'fee_bearer',
+                    'The merchant is ' . $merchantFeeBearer . ' fee bearer. Cannot assign ' . $pricingFeeBearer . ' fee bearer pricing rule to merchant'
+                );
+            }
+        }
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+
+        return $referrals->toArrayPublic();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createReferral(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partner = $this->fetchPartner();
+
+        (new Referral\Validator)->validateForReferral($partner);
+
+        $referral = (new Referral\Core)->createOrFetch($merchant);
+
+        return $referral->toArrayPublic();
     }
 }

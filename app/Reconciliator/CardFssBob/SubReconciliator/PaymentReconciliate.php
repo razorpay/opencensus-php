@@ -22,7 +22,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     public function getPaymentId(array $row)
     {
-        $paymentId = $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+        $columnPaymentId = array_first(ReconciliationFields::MERCHANT_TRACK_ID, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $paymentId = $row[$columnPaymentId] ?? null;
 
         return trim(str_replace("'", '', $paymentId));
     }
@@ -54,7 +59,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
+        $columnAmount = array_first(ReconciliationFields::TRANSACTION_AMOUNT, function ($col) use ($row)
+        {
+            return (isset($row[$col]) === true);
+        });
+
+        return Helper::getIntegerFormattedAmount($row[$columnAmount] ?? null);
     }
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
@@ -65,7 +75,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $this->getReconCurrency($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -73,7 +83,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                     'info_code'         => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -85,12 +94,22 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconCurrency($row)
     {
-        return trim($row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null);
+        $columnReconCurrency = array_first(ReconciliationFields::TRANSACTION_CURRENCY_CODE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return trim($row[$columnReconCurrency] ?? null);
     }
 
     public function getReferenceNumber($row)
     {
-        $rrn = $row[ReconciliationFields::RRN] ?? null;
+        $columnRrn = array_first(ReconciliationFields::RRN, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $rrn = $row[$columnRrn] ?? null;
 
         return trim(str_replace("'", '', $rrn ?? null));
     }
@@ -110,7 +129,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if (empty($rrn) === true)
         {
-            $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
+            $this->reportMissingColumn($row, implode(',', ReconciliationFields::RRN));
         }
         else if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
         {
@@ -127,7 +146,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getOnusIndicator($row)
     {
-        return strtolower($row[ReconciliationFields::ONUS_INDICATOR]?? '');
+        $columnOnusIndicator = array_first(ReconciliationFields::ONUS_INDICATOR, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return strtolower($row[$columnOnusIndicator] ?? '');
     }
 
     public function getGatewayPayment($paymentId)
@@ -144,7 +168,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconciliationFields::TRANSACTION_DATE] ?? null;
+        $columnTranDate = array_first(ReconciliationFields::TRANSACTION_DATE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return $row[$columnTranDate] ?? null;
     }
 
     /**
@@ -168,7 +197,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getCardType($row)
     {
-        $cardType = explode(' ', strtolower($row[ReconciliationFields::PAYMENT_METHOD] ?? null))[0];
+        $columnPaymentMethod = array_first(ReconciliationFields::PAYMENT_METHOD, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $cardType = explode(' ', strtolower($row[$columnPaymentMethod] ?? null))[0];
 
         if (in_array($cardType, [BaseReconciliate::DEBIT, BaseReconciliate::CREDIT]) === false)
         {
@@ -243,7 +277,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::GST);
         }
 
-        $csfTax = (isset($row[ReconciliationFields::MSF_AMOUNT]) === true) ? abs($row[ReconciliationFields::CSF_TAX]) : 0;
+        $columnMsfAmount = array_first(ReconciliationFields::MSF_AMOUNT, function ($col) use ($row)
+        {
+            return (isset($row[$col]) === true);
+        });
+
+        $csfTax = (isset($row[$columnMsfAmount]) === true) ? abs($row[ReconciliationFields::CSF_TAX] ?? 0) : 0;
 
         $gstTax = abs($row[ReconciliationFields::GST]);
 
@@ -259,32 +298,45 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getGatewayFee($row)
     {
-        if (isset($row[ReconciliationFields::MSF_AMOUNT]) === false)
+        $columnMsfAmount = array_first(ReconciliationFields::MSF_AMOUNT, function ($col) use ($row)
         {
-            $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
+            return (isset($row[$col]) === true);
+        });
+
+        if ($columnMsfAmount === null)
+        {
+            $this->reportMissingColumn($row, implode(',', ReconciliationFields::MSF_AMOUNT));
         }
 
-        if (isset($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) === true)
+        $columnLateSettlementFee = array_first(ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT, function ($col) use ($row)
         {
-            $lateSettlementFee = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]));
-        }
+            return (isset($row[$col]) === true);
+        });
 
+        if ($columnLateSettlementFee !== null)
+        {
+            $lateSettlementFee = Helper::getIntegerFormattedAmount($row[$columnLateSettlementFee]);
+        }
         else
         {
             $lateSettlementFee = 0;
         }
 
-        if (isset($row[ReconciliationFields::RRF_AMOUNT]) === true)
+        $columnRrfAmount = array_first(ReconciliationFields::RRF_AMOUNT, function ($col) use ($row)
         {
-            $rrfAmount = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::RRF_AMOUNT]));
-        }
+            return (isset($row[$col]) === true);
+        });
 
+        if ($columnRrfAmount !== null)
+        {
+            $rrfAmount = Helper::getIntegerFormattedAmount($row[$columnRrfAmount]);
+        }
         else
         {
             $rrfAmount = 0;
         }
 
-        $msfAmount = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::MSF_AMOUNT]));
+        $msfAmount = Helper::getIntegerFormattedAmount($row[$columnMsfAmount]);
 
         // This $tax is already in paisa
         $tax = $this->getGatewayServiceTax($row);
@@ -301,19 +353,29 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getGatewayTransactionId(array $row)
     {
-        return trim(str_replace("'", '', $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null));
+        $columnPgTranId = array_first(ReconciliationFields::PG_TRANSACTION_ID, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return trim(str_replace("'", '', $row[$columnPgTranId] ?? null));
     }
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === true)
+        $columnGatewaySettledDate = array_first(ReconciliationFields::GATEWAY_SETTLED_DATE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        if (empty($row[$columnGatewaySettledDate]) === true)
         {
             return null;
         }
 
         $gatewaySettledAtTimestamp = null;
 
-        $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
+        $settledAt = $row[$columnGatewaySettledDate];
 
         try
         {
@@ -336,14 +398,19 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getAuthCode($row)
     {
-        if (isset($row[ReconciliationFields::AUTH_CODE]) === false)
+        $columnAuthCode = array_first(ReconciliationFields::AUTH_CODE, function ($col) use ($row)
         {
-            $this->reportMissingColumn($row, ReconciliationFields::AUTH_CODE);
+            return (empty($row[$col]) === false);
+        });
+
+        if ($columnAuthCode === null)
+        {
+            $this->reportMissingColumn($row, implode(',', ReconciliationFields::AUTH_CODE));
 
             return null;
         }
 
-        return $row[ReconciliationFields::AUTH_CODE];
+        return $row[$columnAuthCode];
     }
 
     /**

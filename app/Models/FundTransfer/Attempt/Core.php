@@ -377,6 +377,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($fta);
     }
 
+    /**
+     * To Update FTA and source Using incoming webhook from FTS
+     *
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
     public function updateFundTransfer(array $input)
     {
         // TODO: should support bulk updates
@@ -473,6 +480,8 @@ class Core extends Base\Core
         {
             $fta->merchant->setHoldFunds(true);
 
+            $fta->merchant->setHoldFundsReason('bank account/transaction was rejected from bank');
+
             $this->repo->saveOrFail($fta->merchant);
         }
     }
@@ -487,7 +496,7 @@ class Core extends Base\Core
 
         $bankStatusCode = $fta->getBankStatusCode();
 
-        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode, $fta->getBankResponseCode());
 
         $ftaData = [
             'bank_account_id'   => $fta->getBankAccountId(),
@@ -764,20 +773,30 @@ class Core extends Base\Core
 
     protected function getChannelForPayout(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
     {
-        $key = ConfigKey::PREFIX . 'fts_payout_' . strtolower($accountType);
-
-        $rampingEnabled = $this->getRampingStatus($source, $key);
-
-        if ($rampingEnabled === true)
+        if (empty($source->getChannel()) === true)
         {
-            if (empty($source->getChannel()) === false)
-            {
-                return [true, $source->getChannel()];
-            }
-            else
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
+            return [false, Settlement\Channel::YESBANK];
+        }
+
+        $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();
+
+        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_INIT, ['key' => $key]);
+
+        $rampOnFts  = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_COMPLETE, [
+            'key'         => $key,
+            'mode'        => $this->mode,
+            'ramp_status' => $rampOnFts,
+        ]);
+
+        if (strtolower($rampOnFts) === 'on')
+        {
+            return [true, $source->getChannel()];
         }
 
         $isFTS = (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true)? true: false;

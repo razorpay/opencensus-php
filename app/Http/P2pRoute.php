@@ -265,6 +265,20 @@ final class P2pRoute
                 'callback/{gateway}',
                 'UpiController@gatewayCallback'
             ],
+
+        /*************** Merchant **************/
+        Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE           =>
+            [
+                'post',
+                'merchant/beneficiaries/validate',
+                'BeneficiaryController@validateBeneficiary'
+            ],
+        Requests::P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION       =>
+            [
+                'post',
+                'merchant/devices/{device_id}/{action}',
+                'DeviceController@updateWithAction'
+            ],
     ];
 
     public static $public = [
@@ -318,6 +332,11 @@ final class P2pRoute
 
     public static $direct = [
         Requests::P2P_GATEWAY_CALLBACK,
+    ];
+
+    public static $private = [
+        Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE,
+        Requests::P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION,
     ];
 
     public static $routePermission = [];

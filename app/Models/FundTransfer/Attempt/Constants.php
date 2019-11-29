@@ -28,7 +28,9 @@ final class Constants
 
     const BANK_PROCESSED_TIME   = 'bank_processed_time';
 
-    const INTERNAL_ERROR      = 'internal_error';
+    const INTERNAL_ERROR        = 'internal_error';
+
+    const IGNORE_TIME_LIMIT     = 'ignore_time_limit';
 
     const MAX_UPI_AMOUNT        = 100000;
 
@@ -121,10 +123,6 @@ final class Constants
             Network::AMEX         => 'SCBL0036020',
             self::DEFAULT_NETWORK => 'SCBL0036001'
             ],
-    ];
-
-    const VIRTUAL_ACCOUNT_IFSC = [
-        'YESB0CMSNOC'
     ];
 
     const DISABLE              = 'disable';

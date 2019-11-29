@@ -153,7 +153,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'amount'            => $this->refund->getBaseAmount(),
                     'currency'          => $this->payment->getCurrency(),
                     'payment_id'        => $this->payment->getId(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

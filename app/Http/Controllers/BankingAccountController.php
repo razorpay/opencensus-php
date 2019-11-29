@@ -9,11 +9,11 @@ class BankingAccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
-    public function storeCredentialsAndActivateAccount(string $id)
+    public function activate(string $id)
     {
         $input = Request::all();
 
-        $response = $this->service()->storeCredentialsAndActivateAccount($id, $input);
+        $response = $this->service()->activate($id, $input);
 
         return ApiResponse::json($response);
     }

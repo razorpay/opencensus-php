@@ -111,6 +111,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
     const COUPON_CODE                        = 'coupon_code';
+    const REFERRAL_CODE                      = 'referral_code';
 
     const SUBMIT                             = 'submit';
     const ARCHIVE                            = 'archive';
@@ -123,6 +124,7 @@ class Entity extends Base\PublicEntity
     const MERCHANTS                          = 'merchants';
     const ACTIVATION_FLOW                    = 'activation_flow';
     const INTERNATIONAL_ACTIVATION_FLOW      = 'international_activation_flow';
+    const LIVE_TRANSACTION_DONE              = 'live_transaction_done';
     const KYC_CLARIFICATION_REASONS          = 'kyc_clarification_reasons';
     const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
     const CLARIFICATION_REASONS              = 'clarification_reasons';
@@ -235,6 +237,7 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::INTERNATIONAL_ACTIVATION_FLOW,
         self::CUSTOM_FIELDS,
+        self::LIVE_TRANSACTION_DONE,
         self::DATE_OF_BIRTH,
         self::KYC_CLARIFICATION_REASONS,
         self::KYC_ADDITIONAL_DETAILS,
@@ -334,6 +337,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
         self::INTERNATIONAL_ACTIVATION_FLOW,
+        self::LIVE_TRANSACTION_DONE,
         self::KYC_CLARIFICATION_REASONS,
         self::KYC_ADDITIONAL_DETAILS,
     ];
@@ -450,8 +454,8 @@ class Entity extends Base\PublicEntity
 
     public function hasBankAccountDetails(): bool
     {
-        $ifscCode      = $this->getAttribute(self::BANK_BRANCH_IFSC);
-        $accountNumber = $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+        $ifscCode      = $this->getBankBranchIfsc();
+        $accountNumber = $this->getBankAccountNumber();
 
         return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
     }
@@ -480,6 +484,21 @@ class Entity extends Base\PublicEntity
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);
+    }
+
+    public function getBankAccountName()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NAME);
+    }
+
+    public function getBankAccountNumber()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+    }
+
+    public function getBankBranchIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
     }
 
     public function getCompanyCin()
@@ -670,6 +689,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_NAME, $name);
     }
 
+    public function setBankDetailsVerificationStatus(string $bankDetailsVerificationStatus)
+    {
+        $this->setAttribute(self::BANK_DETAILS_VERIFICATION_STATUS, $bankDetailsVerificationStatus);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
@@ -693,6 +717,11 @@ class Entity extends Base\PublicEntity
     public function isPoaVerified() : bool
     {
         return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
+    }
+
+    public function isPoiVerified() : bool
+    {
+        return ($this->getPoiVerificationStatus() === POIStatus::VERIFIED);
     }
 
     public function isBankDetailStatusVerified() : bool
@@ -720,7 +749,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::POI_VERIFICATION_STATUS);
     }
 
-    public function setPoiVerificationStatus(string $status)
+    public function setPoiVerificationStatus(string $status = null)
     {
         return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);
     }
@@ -792,7 +821,12 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessType()
     {
-        return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
+        return BusinessType::getKeyFromIndex($this->getBusinessTypeValue());
+    }
+
+    public function getBusinessTypeValue()
+    {
+        return $this->getAttribute(self::BUSINESS_TYPE);
     }
 
     public function isUnregisteredBusiness(): bool
@@ -853,6 +887,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionValue()
     {
         return $this->getAttribute(self::TRANSACTION_VALUE);
+    }
+
+    public function getBusinessInternational()
+    {
+        return $this->getAttribute(self::BUSINESS_INTERNATIONAL);
     }
 
     public function getBusinessModel()
@@ -945,5 +984,15 @@ class Entity extends Base\PublicEntity
     public function setCustomFields(array $customFields)
     {
         $this->setAttribute(self::CUSTOM_FIELDS, $customFields);
+    }
+
+    public function getIfsc()
+    {
+        return $this->getAttribute(self::BANK_BRANCH_IFSC);
+    }
+
+    public function getLiveTransactionDone()
+    {
+        return $this->getAttribute(self::LIVE_TRANSACTION_DONE);
     }
 }

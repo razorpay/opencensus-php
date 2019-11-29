@@ -11,12 +11,14 @@ class Type
     const AMFI_CERTIFICATE               = 'amfi_certificate';
     const PPI_LICENSE                    = 'ppi_license';
     const DRIVER_LICENSE_FRONT           = 'driver_license_front';
+    const DRIVER_LICENSE_BACK            = 'driver_license_back';
     const AADHAR_FRONT                   = 'aadhar_front';
     const AADHAR_BACK                    = 'aadhar_back';
     const PASSPORT_BACK                  = 'passport_back';
     const PASSPORT_FRONT                 = 'passport_front';
     const VOTER_ID_FRONT                 = 'voter_id_front';
     const VOTER_ID_BACK                  = 'voter_id_back';
+    const CANCELLED_CHECK                = 'cancelled_check';
     const BUSINESS_PROOF_URL             = 'business_proof_url';
     const BUSINESS_OPERATION_PROOF_URL   = 'business_operation_proof_url';
     const BUSINESS_PAN_URL               = 'business_pan_url';

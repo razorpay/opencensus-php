@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -45,6 +46,7 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Base\Collection    $activeBankingAccounts
  * @property Balance\Entity     $commissionBalance
  */
 class Entity extends Base\PublicEntity
@@ -52,6 +54,8 @@ class Entity extends Base\PublicEntity
     use Taggable;
     use NotesTrait;
     use Cacheable;
+
+    const ID_LENGTH = 14;
 
     const ID                             = 'id';
     const ORG_ID                         = 'org_id';
@@ -72,7 +76,11 @@ class Entity extends Base\PublicEntity
     const RECEIPT_EMAIL_ENABLED          = 'receipt_email_enabled';
     const CHANNEL                        = 'channel';
     const WEBSITE                        = 'website';
+
+    // this is same as mcc in legal entity table.
+    // This will be removed after migrating to legal entity
     const CATEGORY                       = 'category';
+
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
     const WHITELISTED_DOMAINS            = 'whitelisted_domains';
@@ -108,6 +116,7 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
     const PARTNERSHIP_URL                = 'partnership_url';
+    const LEGAL_ENTITY_ID                = 'legal_entity_id';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -454,8 +463,9 @@ class Entity extends Base\PublicEntity
         self::APPLICATION,
     ];
 
-    const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
-    const RISK_THRESHOLD_DEFAULT     = 8;
+    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
+    const RISK_THRESHOLD_DEFAULT                      = 8;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -497,9 +507,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isFeeBearerDynamic()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::DYNAMIC;
+    }
+
+    public function isFeeBearerCustomerOrDynamic()
+    {
+        return (($this->isFeeBearerDynamic() === true) or
+                ($this->isFeeBearerCustomer() === true));
     }
 
     public function isPrepaid()
@@ -520,6 +546,11 @@ class Entity extends Base\PublicEntity
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
+    public function getLegalEntityId()
+    {
+        return $this->getAttribute(self::LEGAL_ENTITY_ID);
     }
 
     public function getReceiptEmailTriggerEvent()
@@ -800,25 +831,31 @@ class Entity extends Base\PublicEntity
     public function suspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, time());
-        $this->setAttribute(self::LIVE, false);
-        $this->setAttribute(self::HOLD_FUNDS, true);
+        $this->liveDisable();
+        $this->setHoldFunds(true);
+
+        $this->fireEventWithMerchantPayload('api.account.suspended');
     }
 
     public function unsuspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, null);
-        $this->setAttribute(self::LIVE, true);
-        $this->setAttribute(self::HOLD_FUNDS, false);
+        $this->liveEnable();
+        $this->setHoldFunds(false);
     }
 
     public function liveEnable()
     {
         $this->setAttribute(self::LIVE, true);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_enabled');
     }
 
     public function liveDisable()
     {
         $this->setAttribute(self::LIVE, false);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_disabled');
     }
 
     public function archive()
@@ -918,11 +955,17 @@ class Entity extends Base\PublicEntity
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function bankingBalance()
+    public function sharedBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
+    }
+
+    public function bankingBalances()
+    {
+        return $this->hasMany(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
     public function commissionBalance()
@@ -939,7 +982,7 @@ class Entity extends Base\PublicEntity
                 return $this->primaryBalance;
 
             case Balance\Type::BANKING:
-                return $this->bankingBalance;
+                return $this->sharedBankingBalance;
 
             case Balance\Type::COMMISSION:
                 return $this->commissionBalance;
@@ -976,6 +1019,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
+    public function merchantDocuments()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Document\Entity');
+    }
+
+    public function legalEntity()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\LegalEntity\Entity');
     }
 
     public function methods()
@@ -1151,6 +1204,12 @@ class Entity extends Base\PublicEntity
     public function bankingAccounts()
     {
         return $this->hasMany(BankingAccount\Entity::class);
+    }
+
+    public function activeBankingAccounts()
+    {
+        return $this->bankingAccounts()
+                    ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED);
     }
 
     protected function getMaxPaymentAmountAttribute()
@@ -1571,6 +1630,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
     }
 
+    public function forceGreyListInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);
+    }
+
     public function createCustomerOnContactEmailNull(): bool
     {
         return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
@@ -1697,6 +1761,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
@@ -1725,6 +1794,22 @@ class Entity extends Base\PublicEntity
     public function setHoldFunds($holdFunds)
     {
         $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
+
+        if ($holdFunds === true)
+        {
+            $this->fireEventWithMerchantPayload('api.account.funds_hold');
+        }
+        else
+        {
+            $this->setHoldFundsReason();
+
+            $this->fireEventWithMerchantPayload('api.account.funds_unhold');
+        }
+    }
+
+    public function setHoldFundsReason(string $reason = null)
+    {
+        $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
     }
 
     public function isReceiptEmailsEnabled()
@@ -1752,17 +1837,6 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $riskThreshold;
-    }
-
-    public function getSubventionType()
-    {
-        // Move to subvention type if ever.
-        if ($this->isFeeBearerCustomer())
-        {
-            return FeeBearer::CUSTOMER;
-        }
-
-        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
@@ -1838,11 +1912,15 @@ class Entity extends Base\PublicEntity
     public function enableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, true);
+
+        $this->fireEventWithMerchantPayload('api.account.international_enabled');
     }
 
     public function disableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, false);
+
+        $this->fireEventWithMerchantPayload('api.account.international_disabled');
     }
 
     /** Overridden from the PublicEntity */
@@ -2143,6 +2221,7 @@ class Entity extends Base\PublicEntity
             self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
             self::EMAIL          => $this->getAttribute(self::EMAIL),
             self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ACTIVATED_AT   => $this->getAttribute(self::ACTIVATED_AT),
             self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
@@ -2279,5 +2358,18 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    protected function fireEventWithMerchantPayload(string $event)
+    {
+        $entity = clone $this;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $entity,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $app['events']->fire($event, $eventPayload);
     }
 }

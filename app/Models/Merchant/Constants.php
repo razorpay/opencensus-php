@@ -29,6 +29,10 @@ final class Constants
     const AGGREGATOR                              = 'aggregator';
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
+    const PARTNER_INTENT                          = 'partner_intent';
+    const TRANSLATE_WEBHOOK_URL                   = 'translate_webhook_url';
+
+    const DOCUMENT_TYPE                           = 'document_type';
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';

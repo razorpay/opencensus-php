@@ -25,17 +25,18 @@ class Validator extends Base\Validator
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
 
     protected static $createRules = [
-        Entity::ID                    => 'sometimes|max:14',
-        Entity::NAME                  => 'sometimes|string|max:200',
-        Entity::EMAIL                 => 'required|email|unique:users,email',
-        Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
-        Entity::CONTACT_MOBILE        => 'sometimes|max:15',
-        Entity::REMEMBER_TOKEN        => 'sometimes',
-        Entity::CONFIRM_TOKEN         => 'sometimes',
-        Entity::CAPTCHA               => 'required_without:captcha_disable',
-        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
-        Entity::SETTINGS              => 'nullable|associative_array',
+        Entity::ID                              => 'sometimes|max:14',
+        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::EMAIL                           => 'required|email|unique:users,email',
+        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15',
+        Entity::REMEMBER_TOKEN                  => 'sometimes',
+        Entity::CONFIRM_TOKEN                   => 'sometimes',
+        Entity::CAPTCHA                         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
+        Entity::SETTINGS                        => 'nullable|associative_array',
+        Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -151,9 +152,18 @@ class Validator extends Base\Validator
         'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
     ];
 
+    protected static $sendOtpWithContactRules = [
+        Entity::ACTION          => 'required|filled|in:bureau_verify',
+        Entity::TOKEN           => 'sometimes|filled',
+        Entity::CONTACT_MOBILE  => 'required|max:15',
+        Entity::MEDIUM          => 'sometimes|filled|in:sms',
+    ];
+
     protected static $verifyOtpRules = [
-        Entity::OTP   => 'required|filled|min:4',
-        Entity::TOKEN => 'required|unsigned_id',
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::TOKEN           => 'required|unsigned_id',
+        Entity::ACTION          => 'sometimes|filled|in:bureau_verify',
+        Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify|max:15',
     ];
 
     protected static $teamManagementValidators = [

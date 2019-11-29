@@ -6,15 +6,14 @@ use DB;
 use RZP\Constants;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\HubspotClient;
-use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -22,12 +21,21 @@ use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 /**
  * @group dns-sensitive
  */
-class MerchantDetailTest extends TestCase
+class MerchantDetailTest extends OAuthTestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
+
+    const PARTNER                = 'partner';
+    const ACTIVATION             = 'activation';
+    const DEACTIVATION           = 'deactivation';
+    const DUMMY_APP_ID_1         = '8ckeirnw84ifke';
+    const DUMMY_APP_ID_2         = '10000RandomApp';
+    const DUMMY_APP_ID_3         = '11111RandomApp';
+    const DEFAULT_MERCHANT_ID    = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID = '10000000000009';
 
     public function setUp()
     {
@@ -90,6 +98,19 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+
+        // assert legal entity data
+        $legalEntity    = $this->getDbLastEntity('legal_entity');
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        // asserting that penny testing should not happen for linked account
+        $this->assertNull($merchantDetail->getPoaVerificationStatus());
+        $this->assertNull($merchantDetail->getBankDetailsVerificationStatus());
+
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 8931);
+        $this->assertEquals('financial_services', $legalEntity->getBusinessCategory());
+        $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
     public function testSubmitWithInvalidFields()
@@ -373,7 +394,11 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchValidStatusChange()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $attributes = [
+            'submitted' => true,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
@@ -387,8 +412,9 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsPatchInvalidStatusChange()
     {
-        $attributes     = [
+        $attributes = [
             'bank_details_verification_status' => 'verified',
+            'submitted'                        => true,
         ];
         $merchantDetail = $this->fixtures->create('merchant_detail', $attributes);
         $merchant       = $merchantDetail->merchant;
@@ -715,6 +741,38 @@ class MerchantDetailTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateSuccess()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('1', $testMerchant->merchantDetail->getLiveTransactionDone());
+
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('1', $liveMerchant->merchantDetail->getLiveTransactionDone());
+    }
+
+    public function testMerchantsMtuUpdateIdFailure()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantsMtuUpdateLiveTransactionFailure()
+    {
+        $this->ba->appAuth();
+
         $this->startTest();
     }
 
@@ -833,7 +891,8 @@ class MerchantDetailTest extends TestCase
      */
     public function testUnsupportedActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
 
@@ -1024,5 +1083,66 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+    }
+
+    public function testPutPreSignUpDetailsWithReferralCode()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $referredSubMerchant = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals');
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test')
+                                 ->toArray();
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+    }
+
+    public function testPutPreSignUpDetailsWithInvalidReferralCode()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $referredSubMerchant = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals');
+
+        $this->ba->proxyAuth('rzp_live_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'live');
+
+        $this->assertSame(null, $merchantAcessMap);
+
+        $this->assertEmpty($referredSubMerchant->tagNames());
     }
 }

@@ -2180,18 +2180,20 @@ return [
             'content' => [
                 'merchant_id'               => '10000000000000',
                 'gateway'                   => 'worldline',
+                'expected'                  => '1',
+                'card'                      => '1',
                 'gateway_merchant_id'       => '037122003842039',
                 'gateway_terminal_id'       => '70374018',
                 'gateway_acquirer'          => 'axis',
-                'card'                      => 1,
                 'gateway_terminal_password' => '9900991100',
                 'mc_mpan'                   => '5122600004774122',
                 'visa_mpan'                 => '4604901004774122',
                 'rupay_mpan'                => '6100020004774141',
                 'vpa'                       => 'MAB.037122003842039@AXISBANK',
                 'type'                      => [
-                    'non_recurring' => '1',
-                    'bharat_qr' => '1',
+                    'non_recurring'                 => '1',
+                    'bharat_qr'                     => '1',
+                    'direct_settlement_with_refund' => '1'
                 ],
             ],
             'method' => 'POST'
@@ -2392,8 +2394,7 @@ return [
                     'mc_mpan'       =>  '1234567880123456',
                     'rupay_mpan'    =>  '1234567890123457',
                     'visa_mpan'     =>  '1234567890123456'
-                ]
-
+                ],
             ]
         ]
     ],
@@ -2501,7 +2502,7 @@ return [
             'status_code'  => 200,
         ]
     ],
-    
+
     'testTerminalOnboardingVerificationCronCase3'    => [
         'request' => [
             'url'     => '/terminals/onboard/verification',
@@ -2521,4 +2522,82 @@ return [
             'status_code'  => 200,
         ]
     ],
+
+    'testCreateTerminalWithWrongGatewayCase'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upI_airtel',
+                'gateway_merchant_id'       => 'MER0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MER0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'                     => 'upi_mindgate',
+                'gateway_acquirer'            => 'hdfc',
+                'gateway_merchant_id'         => '12345',
+                'gateway_merchant_id2'        => '12345678',
+                'gateway_terminal_password'   => 'password',
+                'upi'                         => 1,
+                'type'                        => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+                'virtual_upi_root'            => 'rzp.',
+                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_handle'          => 'hdfcbank',
+            ],
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminalWithoutConfig' => [
+        'request'   => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'password',
+                'upi'                       => 1,
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
 ];

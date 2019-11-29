@@ -8,9 +8,12 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
@@ -305,7 +308,7 @@ class PaymentCreateTest extends TestCase
         $payment['amount'] = '50000001';
 
         $testData = $this->testData[__FUNCTION__];
-        
+
         $this->runRequestResponseFlow($testData, function() use ($payment)
         {
             $this->doAuthPayment($payment);
@@ -1109,6 +1112,60 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('hdfc', $payment['settled_by']);
     }
 
+    public function testDirectSettlementPaymentCustomerFeeBearerForNonHDFCOrgId()
+    {
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Admin\Org\Entity::RAZORPAY_ORG_ID
+            ]
+        );
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getFeesForPayment($payment)['input'];
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals('1000SharpTrmnl', $payment['terminal_id']);
+        $this->assertEquals('Razorpay', $payment['settled_by']);
+    }
+
+    public function testDirectSettlementPaymentCustomerFeeBearerForHDFCOrgId()
+    {
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Admin\Org\Entity::HDFC_ORG_ID
+            ]
+        );
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
+        $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getFeesForPayment($payment)['input'];
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
     public function testDirectSettlementAxisMigsPayment()
     {
         $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
@@ -1420,6 +1477,70 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testPublishEventToDopplerViaSNS()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $order = $this->fixtures->create('order', ['bank' => IFSC::KKBK, 'account_number' => '923729373']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['bank'] = IFSC::KKBK;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        // mocking the gateway call and return exception
+        $this->mockGatewayException();
+
+        // testing failure event here
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\BadRequestException::class);
+
+        // mocking the gateway call and return success
+        $this->mockGatewaySuccess();
+
+        // testing success event here
+        $this->doAuthPayment($payment);
+    }
+
+    protected function mockGatewayException()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+                ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway, $action, $input, $mode)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+
+    protected function mockGatewaySuccess()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                return null;
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+
     protected function mockGateway()
     {
         $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
@@ -1437,6 +1558,8 @@ class PaymentCreateTest extends TestCase
     }
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
+        $this->markTestSkipped();
+
         $this->changeEnvToNonTest();
 
         $this->ba->publicLiveAuth();
@@ -2203,4 +2326,154 @@ class PaymentCreateTest extends TestCase
             $this->assertArrayHasKey('razorpay_payment_id', $content);
         }
     }
+
+
+    // begin tests for fee_bearer attribute of pricing plans and merchant
+
+    public function testPaymentCreateMerchantPlatformBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::PLATFORM,
+            FeeBearer::PLATFORM);
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+    }
+
+    public function testPaymentCreateMerchantCustomerBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::CUSTOMER,
+            FeeBearer::PLATFORM);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->expectExceptionMessage('Invalid rule count');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testPaymentCreateMerchantDynamicBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::DYNAMIC,
+            FeeBearer::PLATFORM);
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+    }
+
+    public function testPaymentCreateMerchantPlatformBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::PLATFORM,
+            FeeBearer::CUSTOMER);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->expectExceptionMessage('Invalid rule count');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testPaymentCreateMerchantCustomerBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::CUSTOMER,
+            FeeBearer::CUSTOMER);
+
+        $paymentFromResponse = $this->doAuthAndGetPayment($paymentArray);
+
+        $captureAmount = $paymentArray['amount'] - $paymentArray['fee'];
+
+        $this->capturePayment($paymentFromResponse['id'], $captureAmount, 'INR', $paymentArray['amount']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::CUSTOMER, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+
+        $this->assertEquals($paymentArray['fee'], $payment['fee']);
+    }
+
+    public function testPaymentCreateMerchantDynamicBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::DYNAMIC,
+            FeeBearer::CUSTOMER);
+
+        $paymentFromResponse = $this->doAuthAndGetPayment($paymentArray);
+
+        $captureAmount = $paymentArray['amount'] - $paymentArray['fee'];
+
+        $this->capturePayment($paymentFromResponse['id'], $captureAmount, 'INR', $paymentArray['amount']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::CUSTOMER, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+
+        $this->assertEquals($paymentArray['fee'], $payment['fee']);
+    }
+
+    public function testPaymentCreatePlatformBearerNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::PLATFORM, FeeBearer::PLATFORM);
+
+        $paymentArray['currency'] = 'USD';
+
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+    }
+
+    public function testPaymentCreateCustomerBearerMerchantNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::CUSTOMER, FeeBearer::CUSTOMER);
+
+        $paymentArray['currency'] = 'USD';
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Currency is not supported');
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+    }
+
+    public function testPaymentCreateDynamicBearerMerchantNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::DYNAMIC, FeeBearer::CUSTOMER);
+
+        $paymentArray['currency'] = 'USD';
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Currency is not supported');
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+    }
+    // end tests for fee_bearer attribute of pricing plans and merchant
 }

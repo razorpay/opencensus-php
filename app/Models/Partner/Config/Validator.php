@@ -7,42 +7,43 @@ use RZP\Exception;
 use RZP\Models\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-
-use Razorpay\OAuth\Application;
+use RZP\Models\Merchant\Methods;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Constants::PARTNER_ID          => 'required_without:'.Constants::APPLICATION_ID.'|alpha_num|size:14',
-        Constants::APPLICATION_ID      => 'required_without:'.Constants::PARTNER_ID.'|alpha_num|size:14',
-        Constants::SUBMERCHANT_ID      => 'filled|alpha_num|size:14',
-        Entity::REVISIT_AT             => 'sometimes|integer',
-        Entity::DEFAULT_PLAN_ID        => 'required|alpha_num|size:14',
-        Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
-        Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
-        Entity::COMMISSION_MODEL       => 'sometimes|string|custom', // will make required once dashboard admin changes go live
-        Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer|nullable',
-        Entity::COMMISSIONS_ENABLED    => 'required|boolean',
-        Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
-        Entity::EXPLICIT_SHOULD_CHARGE => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
-        Entity::SETTLE_TO_PARTNER      => 'sometimes|boolean',
-        Entity::TDS_PERCENTAGE         => 'sometimes|integer',
-        Entity::HAS_GST_CERTIFICATE    => 'sometimes|boolean',
+        Constants::PARTNER_ID           => 'required_without:' . Constants::APPLICATION_ID . '|alpha_num|size:14',
+        Constants::APPLICATION_ID       => 'required_without:' . Constants::PARTNER_ID . '|alpha_num|size:14',
+        Constants::SUBMERCHANT_ID       => 'filled|alpha_num|size:14',
+        Entity::REVISIT_AT              => 'sometimes|integer',
+        Entity::DEFAULT_PLAN_ID         => 'required|alpha_num|size:14',
+        Entity::IMPLICIT_PLAN_ID        => 'sometimes|alpha_num|size:14|nullable',
+        Entity::EXPLICIT_PLAN_ID        => 'sometimes|alpha_num|size:14|nullable',
+        Entity::COMMISSION_MODEL        => 'sometimes|string|custom', // will make required once dashboard admin changes go live
+        Entity::IMPLICIT_EXPIRY_AT      => 'sometimes|integer|nullable',
+        Entity::COMMISSIONS_ENABLED     => 'required|boolean',
+        Entity::EXPLICIT_REFUND_FEES    => 'required_with:' . Entity::EXPLICIT_PLAN_ID . '|boolean',
+        Entity::EXPLICIT_SHOULD_CHARGE  => 'required_with:' . Entity::EXPLICIT_PLAN_ID . '|boolean',
+        Entity::SETTLE_TO_PARTNER       => 'sometimes|boolean',
+        Entity::TDS_PERCENTAGE          => 'sometimes|integer',
+        Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
+        Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
     ];
 
     protected static $editRules = [
-        Entity::REVISIT_AT             => 'sometimes|integer',
-        Entity::DEFAULT_PLAN_ID        => 'sometimes|alpha_num|size:14',
-        Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
-        Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
-        Entity::COMMISSION_MODEL       => 'sometimes|string|custom', // will make required once dashboard admin changes go live
-        Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer|nullable',
-        Entity::COMMISSIONS_ENABLED    => 'sometimes|boolean',
-        Entity::EXPLICIT_REFUND_FEES   => 'sometimes|boolean',
-        Entity::EXPLICIT_SHOULD_CHARGE => 'sometimes|boolean',
-        Entity::SETTLE_TO_PARTNER      => 'sometimes|boolean',
-        Entity::TDS_PERCENTAGE         => 'sometimes|integer',
-        Entity::HAS_GST_CERTIFICATE    => 'sometimes|boolean',
+        Entity::REVISIT_AT              => 'sometimes|integer',
+        Entity::DEFAULT_PLAN_ID         => 'sometimes|alpha_num|size:14',
+        Entity::IMPLICIT_PLAN_ID        => 'sometimes|alpha_num|size:14|nullable',
+        Entity::EXPLICIT_PLAN_ID        => 'sometimes|alpha_num|size:14|nullable',
+        Entity::COMMISSION_MODEL        => 'sometimes|string|custom', // will make required once dashboard admin changes go live
+        Entity::IMPLICIT_EXPIRY_AT      => 'sometimes|integer|nullable',
+        Entity::COMMISSIONS_ENABLED     => 'sometimes|boolean',
+        Entity::EXPLICIT_REFUND_FEES    => 'sometimes|boolean',
+        Entity::EXPLICIT_SHOULD_CHARGE  => 'sometimes|boolean',
+        Entity::SETTLE_TO_PARTNER       => 'sometimes|boolean',
+        Entity::TDS_PERCENTAGE          => 'sometimes|integer',
+        Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
+        Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
     ];
 
     protected static $createValidators = [
@@ -113,5 +114,41 @@ class Validator extends Base\Validator
                 Entity::SETTLE_TO_PARTNER,
                 $input);
         }
+    }
+
+    /**
+     * Blocks non Default Payment Methods Partner Types to set/update Payment Methods
+     *
+     * @param Merchant\Entity $partner
+     * @param array           $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePaymentMethodsForPartnerType(Merchant\Entity $partner, array $input)
+    {
+        if (empty($input[Entity::DEFAULT_PAYMENT_METHODS]) === true)
+        {
+            return;
+        }
+
+        $partnerType = $partner->getPartnerType();
+
+        if (in_array($partnerType, Partner\Constants::$defaultPaymentMethodsPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID,
+                Entity::DEFAULT_PAYMENT_METHODS,
+                $input);
+        }
+    }
+
+    public function validateDefaultPaymentMethods(string $attribute, $value)
+    {
+        if (isset($value) === false)
+        {
+            return;
+        }
+
+        (new Methods\Validator())->validateInput('set_methods', $value);
     }
 }

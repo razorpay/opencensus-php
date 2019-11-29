@@ -27,4 +27,9 @@ class Entity extends Pivot
     const UPDATED_AT  = 'updated_at';
 
     protected $table = Table::MERCHANT_USERS;
+
+    public function getRole()
+    {
+        return $this->getAttribute(self::ROLE);
+    }
 }

@@ -29,7 +29,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
     public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
-        parent::__construct($gateway);
+        parent::__construct($gateway, $batch);
 
         $this->messenger->batch = $batch;
     }
@@ -70,7 +70,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                         'message'       => $message,
-                        'row_details'   => $row,
                         'extra_details' => $extraDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -167,7 +166,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                             [
                                 'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                                 'message'       => $message,
-                                'row_details'   => $row,
                                 'extra_details' => $extraDetails,
                                 'gateway'       => $this->gateway
                             ]);

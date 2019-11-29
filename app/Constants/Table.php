@@ -39,6 +39,7 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
@@ -81,8 +82,10 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
+    const UPI_TRANSFER               = 'upi_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
     const SCHEDULE_TASK              = 'schedule_tasks';
     const PARTNER_CONFIG             = 'partner_configs';
@@ -110,7 +113,11 @@ class Table
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details'; 
+    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
+    const REFERRALS                  = 'referrals';
+
+    const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
+    const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -206,6 +213,7 @@ class Table
     // Banking Accounts Tables
     const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 
     // P2P Service Tables
@@ -226,7 +234,11 @@ class Table
 
     const CREDITNOTE_INVOICE   = 'creditnote_invoices';
 
+    const INVOICE_REMINDER   = 'invoice_reminders';
+
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
+
+    const OPTIONS              = 'options';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

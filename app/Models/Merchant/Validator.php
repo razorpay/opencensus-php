@@ -47,6 +47,7 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
+        Constants::PARTNER_INTENT           => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -64,7 +65,7 @@ class Validator extends Base\Validator
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD                        => 'sometimes|integer|min:0|max:100',
-        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform',
+        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform,dynamic',
         Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',
@@ -293,8 +294,21 @@ class Validator extends Base\Validator
         'limit' => 'sometimes|integer',
     ];
 
+    protected static $updatePartnerIntentRules = [
+        Constants::PARTNER_INTENT       => 'required|boolean',
+    ];
+
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+    ];
+
     protected static $preferencesRules = [
         'contact_id'  => 'filled|public_id',
+    ];
+
+    protected static $holidayNotifyRules = [
+        'lists'   => 'required|string',
+        'action'  => 'required|string',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -730,8 +744,7 @@ class Validator extends Base\Validator
             }
             // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
             else if (($input['es_enabled'] === false) and
-                     (($feature === Feature\Constants::ES_AUTOMATIC) or
-                     ($feature === Feature\Constants::ES_ON_DEMAND)))
+                    ($feature === Feature\Constants::ES_AUTOMATIC))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
@@ -1322,6 +1335,23 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+
         }
     }
 }

@@ -66,6 +66,7 @@ class Base extends Core
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_SIB         = 'NetbankingSib';
+    const NETBANKING_SCB         = 'NetbankingScb';
     const NETBANKING_CBI         = 'NetbankingCbi';
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
@@ -83,6 +84,7 @@ class Base extends Core
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
     const NETBANKING_SBI         = 'NetbankingSbi';
+    const NETBANKING_KVB         = 'NetbankingKvb';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -103,7 +105,8 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
-    const PAYPAL                 = 'paypal';
+    const PAYPAL                 = 'Paypal';
+    const BAJAJFINSERV           = 'BajajFinserv';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -127,6 +130,7 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_SIB         => ['epayments@sib.co.in'],
+        self::NETBANKING_SCB         => ['no-reply@northakross.com'],
         self::NETBANKING_CBI         => ['smcbipso@centralbankofindia.org.in'],
         self::NETBANKING_YESB        => [''],
         self::NETBANKING_CUB         => [''],
@@ -146,6 +150,7 @@ class Base extends Core
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
         self::NETBANKING_SBI         => ['fssrecon.inbdau@sbi.co.in'],
+        self::NETBANKING_KVB         => ['atmcashtally@kvbmail.com', 'lakshmim@kvbmail.com'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -165,6 +170,8 @@ class Base extends Core
         self::ISG                    => [],
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
+        self::PAYPAL                 => [],
+        self::BAJAJFINSERV           => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -197,6 +204,7 @@ class Base extends Core
         Gateway::NETBANKING_IDFC        => self::NETBANKING_IDFC,
         Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
         Gateway::NETBANKING_SIB         => self::NETBANKING_SIB,
+        Gateway::NETBANKING_SCB         => self::NETBANKING_SCB,
         Gateway::NETBANKING_CBI         => self::NETBANKING_CBI,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
@@ -216,6 +224,7 @@ class Base extends Core
         Gateway::NETBANKING_ALLAHABAD   => self::NETBANKING_ALLAHABAD,
         Gateway::NETBANKING_CANARA      => self::NETBANKING_CANARA,
         Gateway::NETBANKING_SBI         => self::NETBANKING_SBI,
+        Gateway::NETBANKING_KVB         => self::NETBANKING_KVB,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,
@@ -257,9 +266,11 @@ class Base extends Core
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
         Gateway::WALLET_PHONEPE         => self::PHONEPE,
+        Gateway::WALLET_PAYPAL          => self::PAYPAL,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],
+        Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
     ];
 
     /**

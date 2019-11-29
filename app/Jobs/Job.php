@@ -4,10 +4,12 @@ namespace RZP\Jobs;
 
 use App;
 use Illuminate\Bus\Queueable;
-use RZP\Models\Admin\ConfigKey;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 
 class Job implements ShouldQueue
 {
@@ -188,5 +190,54 @@ class Job implements ShouldQueue
         $this->repoManager->resetConnectionAttributes();
 
         ConfigKey::resetFetchedKeys();
+
+        //
+        // reset the job timeout
+        //
+        $this->registerJobTimeoutSignal($app);
+    }
+
+    /**
+     * Determine if "async" signals are supported.
+     *
+     * @return bool
+     */
+    protected function supportsAsyncSignals()
+    {
+        return (version_compare(PHP_VERSION, '7.1.0') >= 0) and
+            (extension_loaded('pcntl') === true);
+    }
+
+    /**
+     * Register the worker timeout handler (PHP 7.1+).
+     * this will override the default SIGALRM signal handler
+     * this will add a trace before terminating the job
+     * which will provide the details of termination if its caused job by timeout
+     *
+     * @param $app
+     * @return void
+     */
+    protected function registerJobTimeoutSignal($app)
+    {
+        if ($this->supportsAsyncSignals() === true)
+        {
+            //
+            // this will override the default laravel handler where it just terminated the job.
+            //
+            // We will register a signal handler for the alarm signal so that we can kill this
+            // process if it is running too long because it has frozen. This uses the async
+            // signals supported in recent versions of PHP to accomplish it conveniently.
+            //
+            pcntl_signal(SIGALRM, function () use ($app){
+                $this->trace->error(
+                    TraceCode::QUEUE_JOB_TIMEOUT,
+                    [
+                        'job'     => $this->getJobName(),
+                        'timeout' => $this->timeout,
+                    ]);
+
+                $app['queue.worker']->kill(1);
+            });
+        }
     }
 }

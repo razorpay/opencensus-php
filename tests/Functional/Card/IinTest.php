@@ -113,6 +113,11 @@ class IinTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
         $this->startTest();
     }
 
@@ -447,7 +452,7 @@ class IinTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'iin'            => 112333,
+                    'iin'            => '112333',
                     'network'        => 'RuPay',
                     'type'           => 'credit',
                     'country'        => 'IN',
@@ -462,7 +467,9 @@ class IinTest extends TestCase
 
         $this->runRequestResponseFlow($request);
 
-        Event::assertDispatched(CacheHit::class, function ($e)
+        //Since after update cache is flushed, for next request cacheMiss happens .
+
+        Event::assertDispatched(CacheMissed::class, function ($e)
         {
             foreach ($e->tags as $tag)
             {

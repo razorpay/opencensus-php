@@ -36,6 +36,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
 use RZP\Models\Transaction;
@@ -51,7 +52,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -282,7 +282,8 @@ trait Authorize
 
             // TODO: This is temporarily added here until we make
             // gateway functions like authorize for bank transfer.
-            if ($payment->isBankTransfer() === true)
+            if (($payment->isBankTransfer() === true) or
+                ($payment->isNach() === true))
             {
                 return null;
             }
@@ -342,12 +343,38 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
+                // Payment Authentication failed for the gateway.
+                // That means we could not redirect to the ACS page using $terminal->gateway() or,
+                // mpi_blade in case terminal is authorization terminals like Hitachi.
+
                 $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
 
                 if ($retryOnSameGateway === true)
                 {
                     continue;
                 }
+
+                $errorCode = $e->getError()->getPublicErrorCode();
+
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+                //TODO: Remove this later
+//                try
+//                {
+//                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
+//                }
+//                catch (\Throwable $e)
+//                {
+//                    $this->trace->info(
+//                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                        [
+//                            'payment'             => $payment->toArray(),
+//                            'code'                => $errorCode,
+//                            'internal_code'       => $internalErrorCode,
+//                            'error'               => $e->getMessage()
+//                        ]
+//                    );
+//                }
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -357,8 +384,6 @@ trait Authorize
                 $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
@@ -503,6 +528,33 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    protected function processNachPaymentCreated(Payment\Entity $payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if (($payment->isRecurringTypeInitial() === true) and
+            ($token->getRecurringStatus() === null))
+        {
+            $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
+
+            $this->repo->saveOrFail($token);
+
+            if ($payment->hasInvoice() === true)
+            {
+                $invoice = $payment->invoice;
+
+                if ($invoice->getEntityType() === Entity::SUBSCRIPTION_REGISTRATION)
+                {
+                    $subscriptionRegistration = $invoice->entity;
+
+                    (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                }
+            }
+        }
+
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
@@ -514,6 +566,11 @@ trait Authorize
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             return $this->processCreated($payment);
+        }
+
+        if ($payment->isNach() === true)
+        {
+            return $this->processNachPaymentCreated($payment);
         }
 
         return $this->processAuth($payment);
@@ -1140,11 +1197,16 @@ trait Authorize
             return;
         }
 
-        if ($payment->isBharatQr() === true)
+        if (($payment->isBharatQr() === true) or
+            ($payment->isNach()))
         {
             return;
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            return;
+        }
         //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.
@@ -1478,7 +1540,7 @@ trait Authorize
         }
 
         // Customer fee bearer is not allowed on netbanking recurring
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed. Please contact the merchant for further assistance.',
@@ -1632,7 +1694,7 @@ trait Authorize
 
         if ($offer !== null)
         {
-            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment, $input);
         }
     }
 
@@ -1941,10 +2003,13 @@ trait Authorize
         }
     }
 
-    /*
-     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+    /**
+     * Function gets called processAndReturnTerminal and processAndReturnFees, in this flow
      * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
      * to avoid this we run the flow in beginTransactionAndRollback
+     *
+     * @param $payment
+     * @param $input
      */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
@@ -2039,7 +2104,7 @@ trait Authorize
 
                 try
                 {
-                    $this->validateFraudDetectionV2($payment);
+                    $this->validateFraudDetectionV2($payment, $this->merchant);
                 }
                 catch (Exception\IntegrationException $exception)
                 {
@@ -2115,6 +2180,11 @@ trait Authorize
 
         // We do not want to call shield in case for Payments in Test mode
         if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        if ($payment->isNach() === true)
         {
             return;
         }
@@ -2203,7 +2273,7 @@ trait Authorize
 
     protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
     {
-        $data = ['payment' => $payment->toArray()];
+        $data = ['payment' => $payment->toArrayGateway()];
 
         if ($payment->getGlobalOrLocalTokenEntity() !== null)
         {
@@ -2290,14 +2360,14 @@ trait Authorize
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
             if (($merchant->convertOnApi() === null) or
-                ($merchant->isFeeBearerCustomer() === true))
+                ($merchant->isFeeBearerCustomerOrDynamic() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                     null,
                     [
                         'convert_on_api'        => $merchant->convertOnApi(),
-                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomer(),
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
                         'payment_id'            => $payment->getId(),
                         'currency'              => $currency,
                     ]);
@@ -2461,7 +2531,7 @@ trait Authorize
 
             $emiDuration = $input['emi_duration'];
 
-            $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
         if ($payment->isCardlessEmi() === true)
@@ -2992,6 +3062,10 @@ trait Authorize
 
             $payment->localToken()->associate($token);
         }
+        else if ($payment->isNach() === true)
+        {
+            $payment->localToken()->associate($token);
+        }
 
         //else @todo for wallets
     }
@@ -3102,6 +3176,10 @@ trait Authorize
         else if ($payment->isEmandate() === true)
         {
             // save emandate bank locally for local customer
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
+        else if ($payment->isNach() === true)
+        {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -3224,6 +3302,41 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::WALLET] = $payment->getWallet();
         }
+        else if ($payment->isMethod(Payment\Method::NACH) === true)
+        {
+            $order = $payment->order;
+
+            $tokenRegistration = $order->getTokenRegistration();
+
+            $tokenMaxAmount = null;
+
+            if ($tokenRegistration !== null)
+            {
+                $saveMethodInput[Token\Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
+
+                $paperMandate = $tokenRegistration->paperMandate;
+
+                if ($paperMandate !== null)
+                {
+                    $bankAccount = $paperMandate->bankAccount;
+
+                    if ($bankAccount !== null)
+                    {
+                        $saveMethodInput[Token\Entity::BANK]             = $bankAccount->getBankCode();
+
+                        $saveMethodInput[Token\Entity::BENEFICIARY_NAME] = $bankAccount->getBeneficiaryName();
+
+                        $saveMethodInput[Token\Entity::ACCOUNT_NUMBER]   = $bankAccount->getAccountNumber();
+
+                        $saveMethodInput[Token\Entity::ACCOUNT_TYPE]     = $bankAccount->getAccountType();
+
+                        $saveMethodInput[Token\Entity::IFSC]             = $bankAccount->getIfscCode();
+                    }
+
+                    $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
+                }
+            }
+        }
 
         $token = null;
 
@@ -3295,6 +3408,10 @@ trait Authorize
                 $this->verifyPayLaterEnabled();
                 break;
 
+            case Payment\Method::NACH:
+                $this->verifyNachEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -3325,6 +3442,8 @@ trait Authorize
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
         $payment->emiPlan()->associate($emiPlan);
+
+        return $emiPlan->toArray();
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
@@ -5187,6 +5306,18 @@ trait Authorize
         }
     }
 
+    protected function verifyNachEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isNachEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NACH_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyCardlessEmiEnabled()
     {
         $merchantMethods = $this->methods;
@@ -5464,6 +5595,22 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
+            //TODO: Remove this later
+//            try
+//            {
+//                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+//            }
+//            catch (\Throwable $e)
+//            {
+//                $this->trace->info(
+//                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                    [
+//                        'payment'             => $payment->toArray(),
+//                        'error'               => $e->getMessage()
+//                    ]
+//                );
+//            }
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
@@ -5507,10 +5654,11 @@ trait Authorize
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
         //
-        // No gateway for bank transfer or Bharat Qr, everything is internal
+        // No gateway for bank transfer or Bharat Qr or UPI Transfer, everything is internal
         //
         if (($payment->isBankTransfer() === true) or
-            ($payment->isBharatQr() === true))
+            ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true))
         {
             return false;
         }
@@ -5771,6 +5919,11 @@ trait Authorize
             return true;
         }
 
+        if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
         if (($payment->isMethodCardOrEmi() === false) or
             ($payment->isRecurring() === true) or
             ($payment->isPushPaymentMethod() === true))
@@ -5802,13 +5955,16 @@ trait Authorize
          * 4. Payment is method is banktransfer, upi
          * 5. auth type is OTP or preferred auth contains OTP
          * 6. BharathQR payment
+         * 7. Payment receiver is VPA
          */
         if (($this->app['basicauth']->isPrivateAuth() === false) or
             ($this->app['api.route']->isS2SJsonRoute($routeName) === false) or
             ($payment->isRecurringTypeAuto() === true) or
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
-            ($payment->isBharatQr() === true))
+            ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true) or
+            ($payment->isNach() === true))
         {
             return false;
         }
@@ -5957,6 +6113,8 @@ trait Authorize
                 $inputDetails = $this->getInputDetails($payment, $key);
 
                 $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setAnalyticsLog($payment);
 
                 /*
                  * In double redirect scenario terminal will be set
@@ -6137,7 +6295,7 @@ trait Authorize
 
             unset($billingAddressFromInput['postal_code']);
         }
-        
+
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 }

@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\RecurringType;
 
 class Sbi extends Base
 {
@@ -18,7 +21,7 @@ class Sbi extends Base
 
         return [
             self::PAYMENT_ID            => $row[ Batch\Header::SBI_EM_DEBIT_CUSTOMER_REF_NO ],
-            self::ACCOUNT_NUMBER        => ltrim($row[ Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER], '0'),
+            self::ACCOUNT_NUMBER        => $row[ Batch\Header::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER],
             self::GATEWAY_ERROR_MESSAGE => $row[ Batch\Header::SBI_EM_DEBIT_REASON],
             self::GATEWAY_RESPONSE_CODE => $row[ Batch\Header::SBI_EM_DEBIT_DEBIT_STATUS],
             self::AMOUNT                => $row[ Batch\Header::SBI_EM_DEBIT_AMOUNT],
@@ -54,5 +57,39 @@ class Sbi extends Base
     protected function getStartRowExcelFiles()
     {
         return 6;
+    }
+
+    protected function getPayment(array $content)
+    {
+        $paymentId = $content[self::PAYMENT_ID];
+
+        // Get payment
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $tokenAccNo = ltrim($token->getAccountNumber(), '0');
+
+        $fileAccountNumber = ltrim($content[self::ACCOUNT_NUMBER], '0');
+
+        if (($payment->isCreated() === false) or
+            ($payment->getGateway() !== $this->gateway) or
+            ($payment->getRecurringType() !== RecurringType::AUTO) or
+            ($token === null) or
+            ($tokenAccNo !== $fileAccountNumber))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
+                null,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'account_number' => $fileAccountNumber,
+                    'token_id' => $token->getId(),
+                    'gateway' => 'netbanking_sbi'
+                ]);
+        }
+
+        return $payment;
     }
 }

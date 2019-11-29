@@ -44,6 +44,9 @@ class CreateFundAccountValidations extends Migration
             $table->string(E::REGISTERED_NAME, 255)
                   ->nullable();
 
+            $table->string(E::UTR, 255)
+                ->nullable();
+
             $table->integer(E::FEES)
                   ->unsigned()
                   ->nullable();
@@ -53,9 +56,11 @@ class CreateFundAccountValidations extends Migration
                   ->nullable();
 
             $table->bigInteger(E::AMOUNT)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
-            $table->char(E::CURRENCY, Payment::CURRENCY_LENGTH);
+            $table->char(E::CURRENCY, Payment::CURRENCY_LENGTH)
+                  ->nullable();
 
             $table->char(E::BATCH_FUND_TRANSFER_ID, E::ID_LENGTH)
                   ->nullable();

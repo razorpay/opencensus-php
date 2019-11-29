@@ -6,6 +6,7 @@ use Elasticsearch\ClientBuilder;
 
 use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\InvalidArgumentException;
 
 class EsClient
@@ -293,6 +294,8 @@ class EsClient
             return null;
         }
 
+        $this->trace->info(TraceCode::ES_SEARCH_QUERY, ['params' => $params]);
+
         $searchResponse = $this->heimdallClient->search($params);
 
         if ($searchResponse[Es::HITS]['total'] === 0)
@@ -312,6 +315,8 @@ class EsClient
             return null;
         }
 
+        $this->trace->info(TraceCode::ES_UPDATE_ACTION, ['params' => $params]);
+
         $updateResponse = $this->heimdallClient->update($params);
 
         return true;
@@ -324,6 +329,8 @@ class EsClient
 
     public function indexHeimdall($params)
     {
+        $this->trace->info(TraceCode::ES_INDEX_REQUEST, ['params' => $params]);
+
         $this->heimdallClient->index($params);
     }
 

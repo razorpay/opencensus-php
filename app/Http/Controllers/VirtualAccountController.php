@@ -34,7 +34,9 @@ class VirtualAccountController extends Controller
 
     public function getPayments(string $id)
     {
-        $response = $this->service()->fetchPayments($id);
+        $input = Request::all();
+
+        $response = $this->service()->fetchPayments($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -42,6 +44,15 @@ class VirtualAccountController extends Controller
     public function refundExcessPayments()
     {
         $data = $this->service()->refundExcessPayments();
+
+        return ApiResponse::json($data);
+    }
+
+    public function addReceiver(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addReceiver($id, $input);
 
         return ApiResponse::json($data);
     }

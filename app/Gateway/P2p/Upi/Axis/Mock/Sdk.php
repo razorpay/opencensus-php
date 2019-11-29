@@ -378,7 +378,7 @@ class Sdk
             Fields::IFSC                    => $code . str_random(5),
             Fields::NAME                    => $code . ' Bank Customer',
             Fields::BRANCH_NAME             => 'Kormangala',
-            Fields::BANK_ACCOUNT_UNIQUE_ID  => str_random(32),
+            Fields::BANK_ACCOUNT_UNIQUE_ID  => 'UniqueWithCode' . $mask,
             Fields::OTP_LENGTH              => '6',
             Fields::ATM_PIN_LENGTH          => '4',
         ];

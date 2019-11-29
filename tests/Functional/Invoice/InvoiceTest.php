@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Invoice\Entity;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
@@ -325,6 +326,54 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($invoice['customer_details']['email'], 'a@b.com');
         $this->assertEquals($invoice['customer_details']['contact'], '+919918899029');
+    }
+
+    public function testCreateLinkReminderEnable()
+    {
+        $this->startTest();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $id = $invoice['id'];
+
+        $id = Entity::stripDefaultSign($id);
+
+        $invoiceObj = $this->getDbEntityById('invoice', $id);
+
+        $invoiceReminder = $this->getDbEntity("invoice_reminder", ["invoice_id" => $id]);
+
+        $this->assertNotNull($invoiceReminder['reminder_id']);
+
+    }
+
+    public function testCreateLinkReminderDisable()
+    {
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $id = $invoice['id'];
+
+        $id = Entity::stripDefaultSign($id);
+
+        $invoiceObj = $this->getDbEntityById('invoice', $id);
+
+        $this->assertNull($invoiceObj['reminder_id']);
+    }
+
+    public function testCreateLinkReminderFieldNotThere()
+    {
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $id = $invoice['id'];
+
+        $id = Entity::stripDefaultSign($id);
+
+        $invoiceObj = $this->getDbEntityById('invoice', $id);
+
+        $this->assertNull($invoiceObj['reminder_id']);
     }
 
     public function testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled()

@@ -854,10 +854,12 @@ if (!function_exists('get_similar_text_percent'))
      * @param string $first
      * @param string $second
      *
-     * @return int
+     * @return float
      */
-    function get_similar_text_percent(string $first, string $second)
+    function get_similar_text_percent(string $first, string $second) : float
     {
+
+
         $first = strtolower(preg_replace('/\s+/', '', $first));
 
         $second = strtolower(preg_replace('/\s+/', '', $second));

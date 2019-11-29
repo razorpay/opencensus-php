@@ -56,17 +56,16 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $merchantId
-     * @param string $type
-     *
+     * @param array $merchantIds
+     * @param array $types
      * @return mixed
      */
-    public function getAllEmailsForMerchantAndType(string $merchantId, string $type)
+    public function getEmailsByMerchantIdsAndTypes(array $merchantIds, array $types)
     {
         return $this->newQuery()
-                    ->select(Entity::EMAIL)
-                    ->merchantId($merchantId)
-                    ->where(Entity::TYPE, $type)
-                    ->pluck(Entity::EMAIL);
+                    ->select(Entity::MERCHANT_ID, Entity::TYPE, Entity::EMAIL)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->whereIn(Entity::TYPE, $types)
+                    ->get();
     }
 }

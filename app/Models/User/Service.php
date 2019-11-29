@@ -123,8 +123,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 Merchant\Entity::EMAIL => $user[Entity::EMAIL],
-                Merchant\Entity::NAME  => $businessName
+                Merchant\Entity::NAME  => $businessName,
             ];
+
+            if (isset($input[Merchant\Constants::PARTNER_INTENT]))
+            {
+                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $input[Merchant\Constants::PARTNER_INTENT];
+            }
 
             if (empty($tokenData) === false)
             {
@@ -691,6 +696,13 @@ class Service extends Base\Service
         $this->user->getValidator()->validateSendOtpOperation($input);
 
         return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function sendOtpWithContact(array $input)
+    {
+        $this->user->getValidator()->validateInput('sendOtpWithContact', $input);
+
+        return $this->core()->sendOtpWithContact($input, $this->merchant, $this->user);
     }
 
     public function verifyContactWithOtp(array $input): array

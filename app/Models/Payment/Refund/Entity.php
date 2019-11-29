@@ -73,9 +73,6 @@ class Entity extends Base\PublicEntity
     const RRN                    = 'rrn';
     const UTR                    = 'utr';
 
-    const RESPONSE_CODE          = 'code';
-    const RESPONSE_BODY          = 'body';
-
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
      */
@@ -94,6 +91,10 @@ class Entity extends Base\PublicEntity
     const SPEED_DECISIONED       = 'speed_decisioned';
     const FEE                    = 'fee';
     const TAX                    = 'tax';
+
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    const MODE_REQUESTED         = 'mode_requested';
 
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
@@ -146,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::SPEED_REQUESTED,
+        self::MODE_REQUESTED,
         self::SPEED_DECISIONED,
         self::SPEED_PROCESSED,
         self::FEE,
@@ -444,6 +446,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SPEED_REQUESTED);
     }
 
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    public function getModeRequested()
+    {
+        return $this->getAttribute(self::MODE_REQUESTED);
+    }
+
     public function getSpeedDecisioned()
     {
         return $this->getAttribute(self::SPEED_DECISIONED);
@@ -616,6 +625,13 @@ class Entity extends Base\PublicEntity
     public function setSpeedRequested(string $speedRequested)
     {
         $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
+    }
+
+    // This is only a virtual attribute, not stored in the refund entity in the DB -
+    // only being used for pricing and passing to Scrooge
+    public function setModeRequested(string $modeRequested)
+    {
+        $this->setAttribute(self::MODE_REQUESTED, $modeRequested);
     }
 
     public function setSpeedDecisioned(string $speedDecisioned)
@@ -1028,8 +1044,9 @@ class Entity extends Base\PublicEntity
         $messageEntity = Constants::REFUND;
         $messageSlaDone = ($days < 0 === true) ? false : true;
         $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
+        $messageVoidRefund = !$this->payment->isGatewayCaptured();
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }
@@ -1148,11 +1165,11 @@ class Entity extends Base\PublicEntity
             {
                 $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
 
-                $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+                $scroogeResponseCode = $scroogeResponse[Constants::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+                    $scroogeResponseBody = $scroogeResponse[Constants::RESPONSE_BODY];
 
                     $scroogeStatus =
                         (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';

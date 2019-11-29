@@ -46,6 +46,13 @@ class ScheduleController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getScheduleTasks($type)
+    {
+        $data = $this->service()->getScheduleTasks($type);
+
+        return ApiResponse::json($data);
+    }
+
     public function putSchedule($id)
     {
         $input = Request::all();

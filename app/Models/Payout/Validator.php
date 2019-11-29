@@ -12,8 +12,10 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Settlement\Channel as BankChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
@@ -124,16 +126,36 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
     ];
 
-    protected static $fundAccountPayoutValidators = [
-        'fund_account_mode',
-    ];
-
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
     }
 
-    protected function validateFundAccountMode($input)
+    public function validateModeSetForChannels()
+    {
+        $payout = $this->entity;
+
+        $mode = $payout->getMode();
+
+        if (empty($mode) === true)
+        {
+            $channel = $payout->getChannel();
+
+            if (($channel === BankChannel::CITI) or
+                ($channel === BankChannel::ICICI))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_REQUIRED,
+                    null,
+                    [
+                        'id'        => $payout->getid(),
+                        'channel'   => $channel,
+                    ]);
+            }
+        }
+    }
+
+    public function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;

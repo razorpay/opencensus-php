@@ -2,11 +2,15 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use DB;
 use Config;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -16,7 +20,9 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 /**
  * @group dns-sensitive
@@ -27,6 +33,7 @@ class ActivationTest extends TestCase
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use FundAccountValidationTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
 
@@ -35,7 +42,6 @@ class ActivationTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 
         parent::setUp();
-
         $this->setupMockDns();
 
         $this->fixtures->create('org:hdfc_org');
@@ -95,6 +101,67 @@ class ActivationTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+
+        // assert legal entity data
+        $legalEntity = $this->getDbLastEntity('legal_entity');
+
+        $this->assertEquals($merchant->getLegalEntityId(), $legalEntity->getId());
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 5691);
+        $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
+        $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+    }
+
+
+    public function testPostInstantActivationWithBalanceCreation()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $balanceId = '12212121';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $timeStamp = Carbon::now()->getTimestamp();
+
+        DB::connection('live')->table('balance')
+          ->insert([
+                       'id' => $balanceId,
+                       'merchant_id' => $merchantId,
+                       'type' => \RZP\Models\Merchant\Balance\Type::PRIMARY,
+                       'currency' => Currency::INR,
+                       'name' => 'test',
+                       'balance' => 0,
+                       'created_at' => $timeStamp,
+                       'updated_at' => $timeStamp,
+                   ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->mockHubSpotClient('trackL1ContactProperties');
+
+        $this->startTest();
+
+        $merchantBalance = $this->getDbEntity('balance', [
+            'merchant_id' => $merchantId,
+        ], 'live');
+
+        $this->assertEquals($merchantBalance->getId(), $balanceId);
+
+    }
+
+    public function testPostInstantActivationForUnregisteredRazorxOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
     }
 
     public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
@@ -258,11 +325,11 @@ class ActivationTest extends TestCase
                     ->method($methodName);
     }
 
-    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
     {
         $testData                       = &$this->testData[$functionName];
 
-        $uniqueLocalId                  = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl', $featureName, Mode::TEST);
+        $uniqueLocalId                  = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }
@@ -531,7 +598,6 @@ class ActivationTest extends TestCase
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
 
         $this->startTest();
-
         $testData = $this->testData['submitKyc'];
         $this->startTest($testData);
     }
@@ -553,7 +619,7 @@ class ActivationTest extends TestCase
 
     public function testKycUnregisteredCanSubmitWithDL()
     {
-        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT]);
+        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK]);
     }
 
     public function testKycUnregisteredCanSubmitWithVoterId()
@@ -571,13 +637,18 @@ class ActivationTest extends TestCase
             'business_type' => 2,
         ];
 
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+                                              '100000Razorpay',
+                                              [
+                                                  'pricing_plan_id' => $plan->getPlanId()
+                                              ]);
         $data = array_merge($data, $otherMerchantDetailAttributes);
 
         $this->fixtures->create('merchant_detail', $data);
 
         $testSuit = 'validateUnregisteredKycSubmission';
-
-        $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -614,6 +685,14 @@ class ActivationTest extends TestCase
             'submitKycActivated'
         ];
 
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+                                              '100000Razorpay',
+                                              [
+                                                  'pricing_plan_id' => $plan->getPlanId()
+                                              ]);
+
         foreach ($testSuits as $index => $testSuit)
         {
             $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
@@ -641,6 +720,13 @@ class ActivationTest extends TestCase
 
         $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
 
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+                                              '100000Razorpay',
+                                              [
+                                                  'pricing_plan_id' => $plan->getPlanId()
+                                              ]);
 
         $testSuits = [
             'testKycSubmissionWhenPoaIsFailed',
@@ -670,6 +756,7 @@ class ActivationTest extends TestCase
             'promoter_address_url'             => '124',
             'business_type'                    => 2,
             'poa_verification_status'          => $poaVerificationStatus,
+            'poi_verification_status'          => 'verified',
             'bank_details_verification_status' => $bankDetailsVerificationStatus,
         ];
         $data = array_merge($data, $otherMerchantDetailAttributes);
@@ -1317,6 +1404,150 @@ class ActivationTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankDetailsVerificationStatusForUnRegisteredBusiness()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type' => 2]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_front');
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_back');
+
+        $this->fixtures->merchant->addFeatures(['fund_account_validations']);
+
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+                                              '100000Razorpay',
+                                              [
+                                                  'pricing_plan_id' => $plan->getPlanId()
+                                              ]);
+
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', $merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getBankDetailsVerificationStatus(), 'initiated');
+    }
+
+    public function testSuccessBankDetailsVerification()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'pankaj k',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->fixtures->create('fund_account_validation', $attribute);
+
+        $fav  = $this->getLastEntity('fund_account_validation', true, 'test');
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+
+        $merchant  = $this->getDbEntityById('merchant', $merchantDetail['merchant_id']);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'verified');
+
+        $this->assertEquals($merchantDetail->getActivationStatus(), 'activated');
+    }
+
+    public function testFailureBankDetailsVerification()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type' => 2,
+                                                   "promoter_pan_name"       => "pankaj kumar",]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
+            ValidationEntity::ACCOUNT_STATUS  => "invalid",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    public function testFailureBankDetailsVerificationForNameMismatchCase()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "random name",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    public function testFailureBankDetailsVerificationForBankNameMismatchCase()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'puneet jain',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    /**
+     * @param $attribute
+     * @param $merchantDetail
+     */
+    protected function validateBankDetailFailureCase($attribute, $merchantDetail): void
+    {
+        $this->fixtures->create('fund_account_validation', $attribute);
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'test');
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetail['merchant_id']);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'failed');
+
+        $this->assertEquals($merchantDetail->getActivationStatus(), 'under_review');
+    }
+
     /**
      * @param        $merchantId
      * @param        $documentType
@@ -1331,5 +1562,22 @@ class ActivationTest extends TestCase
                 'document_type' => $documentType,
                 'ocr_verify'    => $ocrVerificationStatus,
             ]);
+    }
+
+    protected function createZeroFundAccountValidationPricingPlan()
+    {
+        $pricingPlan = [
+            'plan_name'      => 'Zero pricing plan',
+            'percent_rate'   => 0,
+            'fixed_rate'     => 0,
+            "min_fee"=> 0,
+            'org_id'         => '100000razorpay',
+            'type'           => 'pricing',
+            'product'        => 'primary',
+            "feature"        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+        ];
+
+        return $this->fixtures->create('pricing', $pricingPlan);
     }
 }

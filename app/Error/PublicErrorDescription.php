@@ -109,6 +109,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                      = 'UPI transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank transfers are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT                = 'Bharat Qr is not enabled for merchant';
+    const BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT              = 'Virtual VPA is not enabled for merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
@@ -193,7 +194,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
-
+    const BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL                              = 'Invalid mode sent for the payout';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -284,6 +285,7 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT                  = 'Receiver type is already present for the virtual account';
 
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
@@ -330,6 +332,10 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
+    const BAD_REQUEST_MERCHANT_REFERRAL_DOES_NOT_EXIST                          = 'Merchant referral does not Exist';
+
+
+    const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -570,6 +576,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
     const BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE                       = 'You cannot enable/disable features in live mode';
     const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The given feature is already assigned to the merchant';
+    const BAD_REQUEST_MERCHANT_NOT_EXIST                                        = 'The given merchant ID is not present';
     const BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST                                = 'The given feature do not exist for above merchants. Rest are processed';
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID                = 'The product onboarding status provided is invalid';
     const BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED        = 'The product activation form is already submitted.';
@@ -639,6 +646,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
+    const BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED                                = 'We are not supporting (unregistered businesses) at the moment. We shall inform you when we start supporting';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                             = 'We don\'t support this business category';
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                 = 'Invalid File format. Only pdf, png and jpg is allowed.';
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                 = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required';
@@ -771,6 +779,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
+    const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
 
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
@@ -895,7 +904,20 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
+    const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH       = 'Access forbidden for requested resource';
 
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
+
+
+    //Offer
+    const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
+    const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
+
+    const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'Looks like your phone number could not be found in our existing database. Please check your phone number';
+
+    //FTS
+    const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED             = 'Fund Account could not be created for source account';
 }

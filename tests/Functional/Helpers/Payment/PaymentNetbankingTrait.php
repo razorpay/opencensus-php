@@ -26,7 +26,8 @@ trait PaymentNetbankingTrait
         if ($gateway === 'netbanking_kotak' or
             $gateway === 'netbanking_corporation' or
             $gateway === 'netbanking_canara' or
-            $gateway === 'netbanking_yesb')
+            $gateway === 'netbanking_yesb' or
+            $gateway === 'netbanking_kvb')
         {
             // Make sure bank's callback are on public auth
             $this->ba->publicCallbackAuth();

@@ -245,6 +245,8 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
+            Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
 
 
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
@@ -309,7 +311,57 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-
+            // Service: Stork
+            Entity::STORK_WEBHOOK => [
+                'owner_id' => [
+                    Fetch::LABEL => 'Owner id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_TRANSFERS => [
+                'source_type'         => [
+                    Fetch::LABEL    => 'Source Type',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'source_id'         => [
+                    Fetch::LABEL        => 'Source id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getFtsSupportedChannels(),
+                ],
+                'bank_status_code' => [
+                    Fetch::LABEL    => 'Bank Status Code',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'Merchant Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_ATTEMPTS     => [
+                'transfer_id'       => [
+                    Fetch::LABEL        => 'Transfer Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::FTS_FUND_ACCOUNT => [],
+            Entity::FTS_BENEFICIARY_STATUS => [
+                'fund_account_id' => [
+                    Fetch::LABEL    => 'Fund Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'source_account_id'       => [
+                    Fetch::LABEL        => 'Source Account Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ]
+            ]
         ];
     }
 
@@ -1266,6 +1318,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::MERCHANT_DOCUMENT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::MERCHANT => [
                 'activated' => [
                     Fetch::LABEL  => 'Activated',
@@ -1358,6 +1414,10 @@ class AdminFetch
                 'receipt_email_enabled' => [
                     Fetch::LABEL  => 'Receipt Email_enabled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'legal_entity_id' => [
+                    Fetch::LABEL  => 'Legal Entity Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'fee_bearer' => [
                     Fetch::LABEL  => 'Fee Bearer',

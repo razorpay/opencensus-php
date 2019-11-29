@@ -41,7 +41,7 @@ trait FundAccountValidationTrait
         $this->assertEquals('fund_account_validation', $txn['type']);
         // Fee Bearer is always Platform for Fund Account Validation
         $this->assertEquals('platform', $txn['fee_bearer']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);

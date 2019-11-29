@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
@@ -39,8 +40,6 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CARD_CACHE_TTL = 20;
-    const PROXY_ENABLED_FILE = '/tmp/hitachi';
-
     const TIME_FORMAT               = 'His';
     const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
@@ -67,13 +66,6 @@ class Gateway extends Base\Gateway
         ResponseFields::MERCHANT_REFERENCE  => Entity::MERCHANT_REFERENCE,
         ResponseFields::AUTH_ID             => Entity::AUTH_ID,
     ];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->proxy = $this->app['config']->get('gateway.razorpay_proxy_address');
-    }
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -151,7 +143,7 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::AUTHORIZE);
 
         if ($this->isBharatQrPayment() === true)
         {
@@ -189,6 +181,16 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
+// Risk validation for international payments after authentication response 'N'
+        if (isset($input['payment_analytics']['risk_score']) === true )
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->validateRiskScore($input);
+            }
+        }
+
         return $this->authorizeNotEnrolled($input);
     }
 
@@ -217,6 +219,16 @@ class Gateway extends Base\Gateway
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $this->setCardNumberAndCvv($input);
+
+       //Risk validation for international payments with Pares response as 'A'
+        if (isset($input['payment_analytics']['risk_score']) === true)
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->decideRiskValidationStep($input, $authResponse);
+            }
+        }
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
@@ -397,17 +409,6 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA256, $str);
     }
 
-    public function getStatusRequest(array $request): array
-    {
-        $this->proxyRequestIfApplicable($request);
-
-        $request['options']['timeout'] = 60;
-
-        $request['options']['verify'] = false;
-
-        return $request;
-    }
-
     protected function validateChecksumAndGetQrData($input)
     {
         //
@@ -547,7 +548,8 @@ class Gateway extends Base\Gateway
     {
         return (
             ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
-            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) and
+            (empty($input['payment'][Payment\Entity::RECEIVER_TYPE]) === true)
         );
     }
 
@@ -1488,28 +1490,11 @@ class Gateway extends Base\Gateway
 
     protected function sendGatewayRequest($request)
     {
-        $this->proxyRequestIfApplicable($request);
-
         $response = parent::sendGatewayRequest($request);
 
         $body = $response->body;
 
         return $this->parseResponseBody($body);
-    }
-
-    protected function proxyRequestIfApplicable(&$request)
-    {
-        // If proxy enable file exists then proxy this request via tinyproxy
-        if (file_exists(self::PROXY_ENABLED_FILE) === true)
-        {
-            $request['options']['proxy'] = $this->proxy;
-
-            $this->trace->info(TraceCode::HITACHI_CALL_WITH_PROXY);
-        }
-        else
-        {
-            $this->trace->info(TraceCode::HITACHI_CALL_WITHOUT_PROXY);
-        }
     }
 
     protected function parseResponseBody(string $body)

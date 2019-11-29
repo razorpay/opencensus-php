@@ -54,6 +54,12 @@ class CreateP2pBankAccountTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            // Indices
+
+            $table->index([Entity::DEVICE_ID, Entity::HANDLE]);
+            $table->index([Entity::ACCOUNT_NUMBER, Entity::IFSC]);
+            $table->index(Entity::CREATED_AT);
         });
     }
 

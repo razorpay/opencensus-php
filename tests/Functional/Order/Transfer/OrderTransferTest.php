@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Mockery;
 use Closure;
 
-use RZP\Models\Merchant\Webhook;
+use RZP\Models\Transfer;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -44,12 +46,17 @@ class OrderTransferTest extends TestCase
 
     public function testCreateOrderTransfersInsufficientBalance()
     {
+        $order = $this->testCreateOrderTransfers();
+
         $this->fixtures->merchant->editBalance(100);
 
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
-        {
-            $this->testCreateOrderTransfers();
-        });
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->assertEquals(PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE, $transfer['message']);
     }
 
     public function testProcessOrderTransfers()
@@ -63,6 +70,12 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($order['id'], $transfer['source']);
 
         $this->assertEquals('processed', $transfer['status']);
+
+        Transfer\Entity::verifyIdAndSilentlyStripSign($transfer['id']);
+
+        $payment = $this->getDbEntity('payment', ['transfer_id' => $transfer['id']]);
+
+        $this->assertArraySelectiveEquals(['roll_no' => 'iec2011025'], $payment->getNotes()->toArray());
     }
 
     public function testProcessOrderTransfersPartialPayment()

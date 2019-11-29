@@ -272,6 +272,86 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertRegistrationDetails($registerPayments);
     }
 
+    public function testRegisterReconInvalidAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111',
+            'accNo'   => '12345678900000'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $this->assertEquals('emandate', $batch['type']);
+
+        $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals('partially_processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $registerPayments[0]['payment']['id']);
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $registerPayments[0]['payment']['id']]);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $this->assertNull($token['gateway_token']);
+
+        $this->assertNull($successNetbanking['si_status']);
+
+        $this->assertNull($successNetbanking['si_token']);
+    }
+
+    public function testRegisterReconZeroPaddedAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111',
+            'accNo'   => '0012345678901234'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $this->assertEquals('emandate', $batch['type']);
+
+        $this->assertEquals('created', $batch['status']);
+
+        $successPayment = $this->getDbEntityById('payment', $registerPayments[0]['payment']['id']);
+
+        $successToken = $successPayment->getGlobalOrLocalTokenEntity();
+
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $registerPayments[0]['payment']['id']]);
+
+        $this->assertEquals('captured', $successPayment['status']);
+
+        $this->assertEquals('confirmed', $successToken['recurring_status']);
+
+        $this->assertNotNull($successToken['gateway_token']);
+
+        $this->assertEquals('confirmed', $successNetbanking['si_status']);
+
+        $this->assertNotNull($successNetbanking['si_token']);
+
+        $this->assertTrue($successNetbanking['received']);
+
+        $this->assertTrue($successPayment->transaction->isReconciled());
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals('processed', $batch['status']);
+    }
+
     public function testEmandateDebit()
     {
         $registerPayments[] = [
@@ -354,6 +434,54 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('created', $batch['status']);
 
         $this->assertDebitDetails($debitPayments);
+    }
+
+    // Use case where sbi appends additional 0s to the account number
+    public function testDebitFileReconWithModifiedAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+        $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $token = $this->getLastEntity('token', true);
+
+        $debitPayments[] = [
+            'payment' => $this->createSecondReccuringPayment($token),
+            'status'  => 'Success',
+            'AccNo'   => '0012345678901234',
+        ];
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        foreach ($debitPayments as $entry)
+        {
+            $this->fixtures->edit('payment', $entry['payment']['id'], ['created_at' => $createdAt]);
+        }
+
+        $this->generateDebitGatewayFile();
+
+        $batch = $this->uploadDebitBatchFile($debitPayments);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('processed', $batch['status']);
+
+        $successPayment = $this->getDbEntityById('payment', $debitPayments[0]['payment']['id']);
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $debitPayments[0]['payment']['id']]);
+
+        $this->assertEquals('captured', $successPayment['status']);
+        $this->assertTrue($successNetbanking['received']);
+        $this->assertEquals('Success', $successNetbanking['status']);
+        $this->assertTrue($successPayment->transaction->isReconciled());
     }
 
     public function testEmandateRefund()

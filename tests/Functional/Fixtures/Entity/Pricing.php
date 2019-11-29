@@ -8,9 +8,12 @@ use RZP\Models\Pricing\Feature;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class Pricing extends Base
 {
+    use DbEntityFetchTrait;
+
     const DEFAULT_PRICING_PLAN_ID    = '1hDYlICobzOCYt';
     const DEFAULT_COMMISSION_PLAN_ID = 'C6rNP3xJcsMXQY';
 
@@ -43,10 +46,8 @@ class Pricing extends Base
         return $pricing;
     }
 
-    public function createDefaultPlan()
+    protected function getDefultPlanArray($pricingPlanId = self::DEFAULT_PRICING_PLAN_ID)
     {
-        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
-
         $rows = [
             [
                 'id'                  => '1nvp2XPMmaRLxb',
@@ -139,6 +140,19 @@ class Pricing extends Base
                 'feature'             => 'payment',
                 'payment_method'      => 'emandate',
                 'payment_method_type' => 'netbanking',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zD0BXpeOJaqPP',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'nach',
                 'payment_network'     => null,
                 'payment_issuer'      => 'initial',
                 'percent_rate'        => 0,
@@ -409,7 +423,21 @@ class Pricing extends Base
             ],
         ];
 
+        return $rows;
+    }
+
+    public function createDefaultPlan()
+    {
+        $rows = $this->getDefultPlanArray();
+
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function editDefaultPlan($attributes = [])
+    {
+        $rows = $this->getDefultPlanArray();
+
+        $this->editPricingPlan($rows, $attributes);
     }
 
     public function createDefaultBankingPlan()
@@ -695,7 +723,30 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
-    public function createDefaultCommissionPlan()
+    public function createInstantRefundsModeLevelPricingPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbyaD',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'IMPS',
+                'fixed_rate'          => 600,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
+    protected function getDefaultCommissionPlanArray()
     {
         $rows = [
             [
@@ -722,7 +773,21 @@ class Pricing extends Base
             ],
         ];
 
+        return $rows;
+    }
+
+    public function createDefaultCommissionPlan()
+    {
+        $rows = $this->getDefaultCommissionPlanArray();
+
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function editDefaultCommissionPlan($attributes = [])
+    {
+        $rows = $this->getDefaultCommissionPlanArray();
+
+        $this->editPricingPlan($rows, $attributes);
     }
 
     public function createPricingPlanForDifferentOrg($orgId)
@@ -892,7 +957,7 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
-    public function createTwoPercentPricingPlan($attributes = [])
+    protected function getTwoPercentPricingPlanArray($attributes = [])
     {
         $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
 
@@ -910,8 +975,24 @@ class Pricing extends Base
             ],
         ];
 
+        return $rows;
+    }
+
+    public function createTwoPercentPricingPlan($attributes = [])
+    {
+
+        $rows = $this->getTwoPercentPricingPlanArray($attributes);
+
         $this->addPricingRulesToDb($rows);
     }
+
+    public function  editTwoPercentPricingPlan($attributes = [])
+    {
+        $rows = $this->getTwoPercentPricingPlanArray();
+
+        $this->editPricingPlan($rows, $attributes);
+    }
+
 
     public function createImplicitPartnerPricingPlan($attributes = [])
     {
@@ -932,6 +1013,30 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function editAllPricingPlanRules(string $planId, array $attributes = [])
+    {
+        $planRules = $this->getDbEntities('pricing', ['plan_id' => $planId],'live')->toArray();
+
+        $rules = [];
+
+        foreach ($planRules as $rule)
+        {
+            $rules[] = ['id' => $rule['id']];
+        }
+
+        $this->editPricingPlan($rules, $attributes);
+    }
+
+    public function createDefaultPartnerCommissionPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getPartnerCommissionPlanData());
+    }
+
+    public function createDefaultPlanForSubmerchantsOfOnboardedPartners()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getSubmerchantPricingOfOnboardedPartners());
     }
 
     protected function addPricingRulesToDb($rows)
@@ -956,5 +1061,37 @@ class Pricing extends Base
         }
 
         return $accountType;
+    }
+
+    protected function editPricingPlan($rows, $attributes)
+    {
+        foreach ($rows as $row)
+        {
+            $this->edit($row['id'], array_merge($attributes, $row));
+        }
+    }
+
+    public function createUpiTransferPricingPlan()
+    {
+        $pricingPlanId = 'upiTrnsfrPrcng';
+
+        $rows = [
+            [
+                'id'             => '1zE31zbybacaaa',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'Upi Transfer pricing',
+                'feature'        => 'payment',
+                'payment_method' => 'upi',
+                'percent_rate'   => 100,
+                'fixed_rate'     => 0,
+                'max_fee'        => 5000,
+                'receiver_type'  => 'vpa',
+                'org_id'         => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
     }
 }

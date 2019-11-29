@@ -87,7 +87,8 @@ class Validator extends Base\Validator
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
-        Entity::INTERNAL_COMMENT                => 'sometimes|max:255'
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+        Entity::DETAILS                         => 'sometimes|array',
     ];
 
     protected static $internalEditRules = [
@@ -106,6 +107,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+        Entity::DETAILS                         => 'sometimes|array',
     ];
 
     protected static $internalEditValidators = [

@@ -3,6 +3,9 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 
 class Holidays
@@ -190,6 +193,7 @@ class Holidays
             10 => [
                 2  => 'Mahatma Gandhi Jayanti',
                 8  => 'Dussehra / Vijaya Dasami',
+                21 => 'Election Day in Mumbai',
                 28 => 'Diwali',
             ],
             11 => [
@@ -455,5 +459,40 @@ class Holidays
                                           ->hour(0)
                                           ->minute(0)
                                           ->second(0);
+    }
+
+    /**
+     * given the year it will return the list of holidays
+     * if the holiday list is not available then it'll throw an exception
+     *
+     * @param int $year
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public static function getHolidayListForYear(int $year): array
+    {
+        if (isset(self::$holidays[$year]) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $holidayDetails = [];
+
+        foreach (self::$holidays[$year] as $month => $holiday)
+        {
+            foreach ($holiday as $day => $description)
+            {
+                $date = Carbon::createFromDate($year, $month, $day, Timezone::IST);
+
+                $holidayDetails[] = [
+                    'date'        => $date->format('d/m/Y'),
+                    'description' => $description,
+                ];
+            }
+        }
+
+        return [
+            $year => $holidayDetails
+        ];
     }
 }

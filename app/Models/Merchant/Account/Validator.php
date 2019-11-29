@@ -35,13 +35,16 @@ class Validator extends Merchant\Validator
     protected static $createAccountRules = [
         Constants::ENTITY          => 'required|string|in:'.CE::ACCOUNT,
         Constants::BUSINESS_ENTITY => 'sometimes|string',
+        Constants::LEGAL_ENTITY_ID => 'sometimes|string',
         Constants::MANAGED         => 'sometimes|boolean',
-        Constants::EMAIL           => 'required|email',
-        Constants::PHONE           => 'required|numeric|digits:10',
+        Constants::EMAIL           => 'sometimes|email',
+        Constants::PHONE           => 'sometimes|numeric|digits:10',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'required|array',
         Constants::SETTLEMENT      => 'sometimes|array',
+        Constants::SETTINGS        => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
+        Constants::CONTACT_INFO    => 'sometimes|array',
     ];
 
     protected static $editAccountRules = [
@@ -53,6 +56,7 @@ class Validator extends Merchant\Validator
 
     protected static $profileRules = [
         Constants::ADDRESSES         => 'required|array|max:2',
+        Constants::ADDRESSES . '.*'  => 'filled|array',
         Constants::NAME              => 'required|string',
         Constants::DESCRIPTION       => 'sometimes|string',
         Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
@@ -67,6 +71,7 @@ class Validator extends Merchant\Validator
         Constants::DISPUTE           => 'sometimes|array',
         Constants::BILLING_LABEL     => 'required|string|max:25',
         Constants::IDENTIFICATION    => 'sometimes|array',
+        Constants::OWNER_INFO        => 'sometimes|array',
     ];
 
     protected static $editProfileRules = [
@@ -91,7 +96,7 @@ class Validator extends Merchant\Validator
         Constants::LINE1         => 'required|string|max:100',
         Constants::LINE2         => 'required|string',
         Constants::CITY          => 'required|string',
-        Constants::DISTRICT_NAME => 'required|string',
+        Constants::DISTRICT_NAME => 'sometimes|string',
         Constants::STATE         => 'required|string',
         Constants::PIN           => 'required|string',
         Constants::COUNTRY       => 'required|string',
@@ -140,6 +145,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $bankAccountRules = [
+        Constants::NOTES          => 'sometimes|notes',
         Constants::IFSC           => 'required|string|size:11',
         Constants::NAME           => 'required|string|max:50',
         Constants::ACCOUNT_NUMBER => 'required|string|max:16',
@@ -156,9 +162,30 @@ class Validator extends Merchant\Validator
         Constants::DOCUMENT              => 'sometimes|string',
     ];
 
+    protected static $ownerInfoRules = [
+        Constants::NAME           => 'required|string',
+        Constants::IDENTIFICATION => 'required|array|size:1',
+    ];
+
+    protected static $contactInfoRules = [
+        Constants::NAME  => 'required|string',
+        Constants::EMAIL => 'required|email',
+        Constants::PHONE => 'required|numeric|digits:10',
+    ];
+
+    protected static $settingsRules = [
+        Constants::PAYMENT => 'sometimes|array|custom:payment_settings',
+    ];
+
+    protected static $paymentSettingsRules = [
+        Constants::INTERNATIONAL => 'sometimes|boolean',
+    ];
+
     protected static $createAccountValidators = [
         'profile_input',
         'settlement_input',
+        'contact_info_input',
+        'settings_input',
     ];
 
     protected static $editAccountValidators = [
@@ -198,7 +225,34 @@ class Validator extends Merchant\Validator
 
         $this->validateEmails($profileInput);
 
+        $this->validateOwnerInfo($profileInput);
+
         $this->validateIdentificationDocuments($profileInput);
+    }
+
+    protected function validateSettingsInput(array $input)
+    {
+        if (isset($input[Constants::SETTINGS]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('settings', $input[Constants::SETTINGS]);
+    }
+
+    protected function validatePaymentSettings($attribute, $value)
+    {
+        $this->validateInput('payment_settings', $value);
+    }
+
+    protected function validateContactInfoInput(array $input)
+    {
+        if (isset($input[Constants::CONTACT_INFO]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('contact_info', $input[Constants::CONTACT_INFO]);
     }
 
     protected function validateAddresses(array $profileInput, string $action = '')
@@ -217,6 +271,21 @@ class Validator extends Merchant\Validator
         }
 
         foreach ($profileInput[Constants::IDENTIFICATION] as $document)
+        {
+            $this->validateInput('document', $document);
+        }
+    }
+
+    protected function validateOwnerInfo(array $profileInput)
+    {
+        if (isset($profileInput[Constants::OWNER_INFO]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('owner_info', $profileInput[Constants::OWNER_INFO]);
+
+        foreach ($profileInput[Constants::OWNER_INFO][Constants::IDENTIFICATION] as $document)
         {
             $this->validateInput('document', $document);
         }

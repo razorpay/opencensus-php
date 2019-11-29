@@ -32,9 +32,11 @@ class Core extends Base\Core
 
             $gatewayFiles->push($gatewayFile);
 
+            $target = $gatewayFile->getTarget();
+
             // If the request is made via cron, we do the processing
             // asynchronously via queue, else we do it in sync
-            if ($this->app['basicauth']->isCron() === true)
+            if (($this->app['basicauth']->isCron() === true) or ($this->isAsyncGateway($target) === true))
             {
                 $this->processAsync($gatewayFile);
             }
@@ -112,5 +114,10 @@ class Core extends Base\Core
     protected function processAsync(Entity $gatewayFile)
     {
         GatewayFileJob::dispatch($gatewayFile->getId(), $this->mode);
+    }
+
+    protected function isAsyncGateway($target)
+    {
+        return in_array($target, Constants::ASYNC_GATEWAYS, true);
     }
 }

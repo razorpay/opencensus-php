@@ -232,10 +232,18 @@ class Service extends Base\Service
 
         $orderIds = $this->repo->transfer->fetchTransfersToRetry();
 
-        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY);
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_STARTED,
+                           [
+                               'order_ids' => $orderIds
+                           ]);
 
         foreach ($orderIds as $orderId)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                               [
+                                   'order_id' => $orderId
+                               ]);
+
             $order = $this->repo->order->find($orderId);
 
             if ($order === null)
@@ -250,7 +258,7 @@ class Service extends Base\Service
                 continue;
             }
 
-            if ((new PaymentProcessor($this->merchant))->shouldProcessOrderTransfer($payment) === false)
+            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
             {
                 continue;
             }
@@ -280,6 +288,11 @@ class Service extends Base\Service
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
+                           [
+                               'processed_order_ids' => $transferOrderIds
+                           ]);
 
         return $transferOrderIds;
     }

@@ -3,9 +3,11 @@
 namespace RZP\Services\FTS;
 
 use Requests;
+use Requests_Response;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
@@ -42,6 +44,24 @@ class Base
 
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
+
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
+    const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
+
+    const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
+
+    const FUND_ACCOUNT_STATUS_FETCH_URI  = '/admin/account/status';
+
+    const FUND_TRANSFER_STATUS_FETCH_URI = '/admin/transfer/status';
+
+    const FUND_TRANSFER_ATTEMPTS_UPDATE_URI = '/admin/attempts/update';
+
+    const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/admin/transfers/status';
+
+    const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
+
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/admin/attempts/verify';
 
     // Headers
     const ACCEPT        = 'Accept';
@@ -103,7 +123,14 @@ class Base
     {
         $request = $this->generateRequest($method, $endpoint, $data);
 
-        $response = $this->sendFtsRequest($request);
+        if ($this->mode === Mode::TEST)
+        {
+            $response = $this->getMockResponseByEndpoint($endpoint);
+        }
+        else
+        {
+            $response = $this->sendFtsRequest($request);
+        }
 
         $this->trace->info(TraceCode::FTS_RESPONSE, [
             'response' => $response->body
@@ -177,7 +204,7 @@ class Base
      * @return \Requests_Response
      * @throws \Throwable
      */
-    protected function sendFtsRequest(array $request): \Requests_Response
+    protected function sendFtsRequest(array $request): Requests_Response
     {
         $this->traceRequest($request);
 
@@ -222,11 +249,11 @@ class Base
     /**
      * Method to parse response from FTS
      *
-     * @param \Requests_Response $response
+     * @param  $response
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response): array
+    protected function parseResponse(Requests_Response $response): array
     {
         $code = null;
 
@@ -260,5 +287,38 @@ class Base
     public static function isValidFtsAction(string $action): bool
     {
         return (in_array($action, self::ALLOWED_FTS_ACTION, true) === true);
+    }
+
+    protected function getMockResponseByEndpoint(string $endpoint)
+    {
+        if ($endpoint === self::FUND_TRANSFER_CREATE_URI)
+        {
+            return $this->mockCreateFundTransferResponse();
+        }
+    }
+
+    public function mockCreateFundTransferResponse()
+    {
+        $response = new Requests_Response();
+
+        $response->status_code = 201;
+
+        $content = json_encode([
+                Constants::STATUS           => Constants::STATUS_CREATED,
+                Constants::MESSAGE          => 'fund transfer sent to fts.',
+                Constants::FUND_TRANSFER_ID => random_integer(2),
+                Constants::FUND_ACCOUNT_ID  => random_integer(2),
+        ]);
+
+        $response->body = $content;
+
+        return $response;
+    }
+
+    protected function setDashboardAuth()
+    {
+        $this->key     = $this->config[$this->mode]['fts_dashboard_key'];
+
+        $this->secret  = $this->config[$this->mode]['fts_dashboard_secret'];
     }
 }

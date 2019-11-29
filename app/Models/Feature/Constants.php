@@ -132,7 +132,20 @@ class Constants
     const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+    const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    /**
+     * When adding submerchant, whether to set international activation flow to greylist
+     * irrespective of merchant category and subcategory
+     */
+    const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
+     * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
+     */
+    const SHOW_CREDIT_SCORE               = 'show_credit_score';
 
     /**
      * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
@@ -222,9 +235,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
-     * Enables workflow feature on Payout for Business Banking (RazorpayX)
-     */
+ * Enables workflow feature on Payout for Business Banking (RazorpayX)
+ */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Aggregator Partner + OAuth Client access
+     */
+    const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -422,7 +440,12 @@ class Constants
         self::KYC_HANDLED_BY_PARTNER          => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
+        self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
+        self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::FORCE_GREYLIST_INTERNAT         => true,
+        self::SHOW_CREDIT_SCORE               => true,
+        self::AGGREGATOR_OAUTH_CLIENT         => true,
     ];
 
     // Entity type constants
@@ -552,6 +575,11 @@ class Constants
             'display_name'  => 'Razorpay X - Workflows',
             'documentation' => '',
         ],
+        self::SHOW_CREDIT_SCORE         => [
+            'feature'       => self::SHOW_CREDIT_SCORE,
+            'display_name'  => 'D2C Credit score campaign',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -568,7 +596,7 @@ class Constants
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
-        self::ES_ON_DEMAND,
+        self::SHOW_CREDIT_SCORE,
     ];
 
     /*

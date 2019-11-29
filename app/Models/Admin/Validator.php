@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
+        ConfigKey::CARD_PAYMENT_SERVICE_ENABLED       => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
         ConfigKey::FTS_PAYOUT_VPA                     => 'filled|string',
@@ -69,10 +70,12 @@ class Validator extends Base\Validator
         ConfigKey::FTS_PAYOUT_BANK_ACCOUNT            => 'filled|string',
 
 
-        ConfigKey::ATOS_TID_RANGE_LIST                => 'filled|array',
-        ConfigKey::ATOS_TID_RANGE_LIST.'.*'           => 'filled|array',
+        ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
+        ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
         ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
         ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
+
+        ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
@@ -81,6 +84,7 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
+        ConfigKey::FTS_BENEFICIARY                  => 'filled|array',
     ];
 
     protected static $setGatewayDowntimeRedisKeysRules = [
@@ -151,5 +155,14 @@ class Validator extends Base\Validator
     protected static $bulkCreateEntityRules = [
         'type' => 'required|string',
         'data' => 'required|array|min:1',
+    ];
+
+    protected static $mozartGatewayPvtRules = [
+        'gateway'            => 'required|string|in:citi,icici,yesbank_upi',
+        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration',
+        'namespace'          => 'required|string',
+        'payload'            => 'required|array',
+        'payload.entities'   => 'required|array',
+        'version'            => 'required|string|in:v1,v2',
     ];
 }

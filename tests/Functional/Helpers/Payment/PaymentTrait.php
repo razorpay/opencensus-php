@@ -6,6 +6,8 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -1194,7 +1196,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [], $gateway = null)
     {
         $this->ba->adminAuth();
 
@@ -1206,7 +1208,9 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
+        $gateway = $gateway ?? $this->gateway;
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
@@ -1995,6 +1999,7 @@ trait PaymentTrait
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',
+                        '514906' => '35.0',
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)
@@ -2114,6 +2119,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockExpressSendRequest($closure, $times = 1)
+    {
+        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+
+        $express->shouldAllowMockingProtectedMethods();
+
+        $express->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('express', $express);
+
+        return $express;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
@@ -2124,19 +2144,64 @@ trait PaymentTrait
                 {
                     $bin = $payment->card->getIin();
 
-                    $binRiskMapping = [
+                    $riskData = [];
+
+                    $binWithHighRiskScore = [
+                        '514906',
+                        '556763',
+                    ];
+
+                    $binConfirmedRiskMapping = [
                         '401201',
                     ];
 
-                    if (in_array($bin, $binRiskMapping) === true)
+                    $binSuspectedRiskMapping = [];
+
+                    if (in_array($bin, $binWithHighRiskScore) === true)
                     {
-                        return [
-                            Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
-                            Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
-                        ];
+                        $riskScore = 35;
+                    }
+                    else
+                    {
+                        $riskScore = 0.01;
                     }
 
-                    return null;
+                    if (in_array($bin, $binConfirmedRiskMapping) === true)
+                    {
+                        $recommendedAction = ShieldConstants::ACTION_BLOCK;
+                    }
+                    elseif (in_array($bin, $binSuspectedRiskMapping) === true)
+                    {
+                            $recommendedAction = ShieldConstants::ACTION_REVIEW;
+                    }
+                    else
+                    {
+                            $recommendedAction = ShieldConstants::ACTION_ALLOW;
+                    }
+
+                    switch ($recommendedAction)
+                    {
+                        case ShieldConstants::ACTION_BLOCK:
+                            $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                            $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD;
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+
+                        case ShieldConstants::ACTION_REVIEW:
+                            $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
+                            $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+
+                        default:
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+                    }
+
+                    return $riskData;
                 });
 
         $this->app->instance('shield.service', $shield);
@@ -2213,7 +2278,6 @@ trait PaymentTrait
             switch ($endpoint)
             {
                 case '/account':
-
                     $response = [
                         'body' => [
                             'fund_account_id' => random_integer(2),
@@ -2224,9 +2288,10 @@ trait PaymentTrait
                     return $response;
 
                 case '/source_account':
-
                     $response = [
-                            'message' => 'source account registered',
+                            'body'=> [
+                                'message' => 'source account registered',
+                            ]
                         ];
 
                     return $response;
@@ -2240,6 +2305,112 @@ trait PaymentTrait
             ->andReturnUsing($callable);
 
         $this->app->instance('fts_create_account', $fts);
+    }
+
+    protected function setDefaultMerchantMethods()
+    {
+        // Disable all methods and only enable card.
+        // The default pricing plan has only card enabled
+
+        $this->fixtures->merchant->disableAllMethods();
+
+        $this->fixtures->merchant->enableCard();
+    }
+
+    protected function createPricingPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    public function getPricingPlanForFeeBearerTest(string $pricingFeeBearer)
+    {
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+            'fee_bearer'                => $pricingFeeBearer,
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        return $plan;
+    }
+
+    protected function setUpMerchantForFeeBearerTest(string $merchantFeeBearer, array $pricingPlan)
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id' => $pricingPlan['id'],
+            'fee_bearer'      => $merchantFeeBearer,
+        ]);
+    }
+
+    protected function setUpAndGetPaymentArrayForFeeBearerPricingTest(string $merchantFeeBearer, string $pricingFeeBearer)
+    {
+        $this->mockCardVault();
+
+        $this->ba->publicAuth();
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $plan = $this->getPricingPlanForFeeBearerTest($pricingFeeBearer);
+
+        $this->setUpMerchantForFeeBearerTest($merchantFeeBearer, $plan);
+
+        return $this->getPaymentArrayForFeeBearerTest($merchantFeeBearer);
+    }
+
+    protected function getPaymentArrayForFeeBearerTest($merchantFeeBearer)
+    {
+        $defaultPaymentArray = $this->getDefaultPaymentArray();
+
+        $defaultPaymentArray['card']['number'] = '555555555555558';
+
+        if ($merchantFeeBearer === FeeBearer::PLATFORM)
+        {
+            return $defaultPaymentArray;
+        }
+
+        try
+        {
+            return $this->getFeesForPayment($defaultPaymentArray)['input'];
+        }
+        catch (Exception\LogicException $logicException)
+        {
+            return $defaultPaymentArray;
+        }
     }
 
     protected function getDefaultBillingAddressArray()

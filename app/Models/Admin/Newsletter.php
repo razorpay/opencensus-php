@@ -25,6 +25,8 @@ class Newsletter
 
     const WAIT_BEFORE_RETRY = 10;
 
+    const EMAIL = 'email';
+
     function __construct(
         $subject,
         $msg,
@@ -184,9 +186,10 @@ class Newsletter
     /**
      * Uploads additional merchants to the mailing list
      * @param  string $lists list of applied filters in csv
+     * @param  $action
      * @return null
      */
-    public function createMailingListAndGetEmails($lists)
+    public function createMailingListAndGetEmails($lists, $action = null)
     {
         $listAddress = $this->getMailgunListAddress();
 
@@ -195,7 +198,10 @@ class Newsletter
             return $listAddress;
         }
 
-        $this->addListMembersToMailgun($lists, $listAddress);
+        if($action != self::EMAIL)
+        {
+            $this->addListMembersToMailgun($lists, $listAddress);
+        }
 
         return $listAddress;
     }
@@ -251,12 +257,12 @@ class Newsletter
         return $this->app['mailgun']->getMailgunInstance();
     }
 
-    public function send()
+    public function send($action = null)
     {
         if (isset($this->lists))
         {
             // This also sets the count internally
-            $this->email = $this->createMailingListAndGetEmails($this->lists);
+            $this->email = $this->createMailingListAndGetEmails($this->lists, $action);
         }
 
         if ($this->testListMemberAdd)

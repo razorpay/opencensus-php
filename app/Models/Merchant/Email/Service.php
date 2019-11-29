@@ -79,19 +79,27 @@ class Service extends Base\Service
     }
 
     /**
-     * Fetch all merchant's single type of emails from databases as an array
+     * Fetch emails aggregated on merchant level by types
      *
-     * @param string $merchantId
-     * @param string $type
-     *
+     * @param array $merchantIds
+     * @param array $types
      * @return array
      */
-    public function fetchAllEmailsForMerchantAndType(string $merchantId, string $type) : array
+    public function fetchEmailByMerchantIdsAndTypes(array $merchantIds, array $types): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $emailsArray = $this->core()->fetchEmailByMerchantIdsAndTypes($merchantIds, $types);
 
-        $emails = $this->core()->fetchAllEmailsForMerchantAndType($merchant, $type);
+        // For aggregating mails on merchant level by type and exploding emails
+        $merchantEmailMap = [];
 
-        return $emails;
+        foreach ($emailsArray as $emailArray)
+        {
+            $merchantEmailMap[$emailArray[Entity::MERCHANT_ID]][$emailArray[Entity::TYPE]] = array_map(
+                'trim',
+                explode(',', $emailArray['email'])
+            );
+        }
+
+        return $merchantEmailMap;
     }
 }

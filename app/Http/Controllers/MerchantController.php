@@ -584,6 +584,13 @@ class MerchantController extends Controller
         return (new Report\Types\InvoiceReport)->getInvoiceReport($input);
     }
 
+    public function generateBankingInvoice()
+    {
+        $input = Request::all();
+
+        return $this->service('merchant_invoice')->requestBankingInvoice($input);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday
@@ -708,10 +715,17 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-  
+
     public function getScheduledEarlySettlementPricingForMerchant()
     {
         $data = $this->service()->getScheduledEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
+    public function enableScheduledEs()
+    {
+        $data = $this->service()->enableScheduledEs();
 
         return ApiResponse::json($data);
     }
@@ -814,6 +828,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function putEditMerchantDetailsAfterLockPartner($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetailsByPartner($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantDetailMigrate()
     {
         $input = Request::all();
@@ -869,6 +892,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateActivationStatusPartner($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatusByPartner($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -1136,6 +1168,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function merchantsMtuUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->merchantsMtuUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantActivationReviewers()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
@@ -1171,6 +1212,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchPartnerIntent()
+    {
+        $response = $this->service()->fetchPartnerIntent();
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePartnerIntent()
+    {
+        $input = Request::all();
+
+        $response =$this->service()->updatePartnerIntent($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param string $merchantId
      *
@@ -1197,6 +1254,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->listSubmerchants($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePartnerType()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePartnerType($input);
 
         return ApiResponse::json($response);
     }
@@ -1370,5 +1436,29 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $this->service()->removeSuspendedMerchantsFromMailingList($input);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function fetchReferral(string  $merchantId)
+    {
+        $response = $this->service()->fetchReferral($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function createReferral(string  $merchantId)
+    {
+        $response = $this->service()->createReferral($merchantId);
+
+        return ApiResponse::json($response);
     }
 }

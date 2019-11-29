@@ -348,6 +348,11 @@ class Entity extends Base\PublicEntity
         return Metadata::getStringForValue($value, Metadata::INTEGRATION_VALUES);
     }
 
+    public function getRiskScore()
+    {
+        return $this->getAttribute(self::RISK_SCORE);
+    }
+
     protected function getRiskEngineAttribute()
     {
         $value = $this->attributes[self::RISK_ENGINE];

@@ -46,26 +46,13 @@ configure_dark(){
     echo QUEUE_DRIVER=sync >> ./environment/.env.production
     echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
     echo "MOZART_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_TEST_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_LIVE_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
     echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_LIVE_URL=\"https://cps-dark-live.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
-}
-
-set_hitachi_proxy_flag() {
-  hitachi_file=/tmp/hitachi
-  val=`echo "$NODE_NAME" | awk -F- '{print $4}'`
-
-  ## This check is for ramping up hitachi calls through proxy.
-  ## On non-whitelisted subnets, we will create /tmp/hitachi file
-  ## based on which the call will be proxied to tinyproxy.
-  ## after the ramp is complete & prod is stable, this method should be removed.
-  if [ "$val" = "4" ]; then
-    rm -f $hitachi_file
-    echo "Hitachi gateway calls going out directly."
-  else
-    touch $hitachi_file
-    echo "Hitachi gateway calls going out via proxy."
-  fi
+    echo "CARD_PAYMENT_SERVICE_LIVE_URL=\"https://payments-card-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_TEST_URL=\"https://payments-card-test-dark.razorpay.com/v1/\"" >> ./environment/.env.production
 }
 
 run_migration_job(){
@@ -89,7 +76,6 @@ start_apache(){
 initialize(){
   fix_permissions
   configure
-  set_hitachi_proxy_flag
 }
 
 ### Check that atleast either webapp or supervisor is specified
@@ -124,6 +110,13 @@ main() {
     batch_id=$3
     mode=$4
     php artisan "${command}" "${batch_id}" "${mode}"
+  elif [[ "${app_type}" == "merchantInvoice-job" ]]; then
+    echo "Starting K8s Job"
+    command=$2
+    mode=$3
+    year=$4
+    month=$5
+    php artisan "${command}" "${mode}" "${year}" "${month}"
   elif [[ "${app_type}" == "sqs" ]]; then
     sleep_time=$2
     #['sqs', '10']

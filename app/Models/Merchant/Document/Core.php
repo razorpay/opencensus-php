@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Document;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
@@ -19,9 +20,13 @@ class Core extends Base\Core
      */
     public function delete(Entity $document)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_DELETE_REQUEST, ['id' => $document->getId()]);
 
-        return $this->repo->deleteOrFail($document);
+        $this->repo->deleteOrFail($document);
+
+        return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
     }
 
     /**
@@ -101,6 +106,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($document);
         });
 
+        $this->pushEventsAndMetrics($merchant, $input);
 
         return $merchantDetailCore->createResponse($merchantDetails);
     }
@@ -112,7 +118,9 @@ class Core extends Base\Core
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
-        $documentsResponse = $this->documentResponse($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $documentsResponse = $this->documentResponse($merchant);
 
         $detailService = new Detail\Service();
 
@@ -146,16 +154,25 @@ class Core extends Base\Core
         }
     }
 
-    /** R
-     * @param string $merchantId
+    /**
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
-    public function documentResponse(string $merchantId): array
+    public function documentResponse(Merchant\Entity $merchant): array
     {
-        $documents = $this->repo->merchant_document->findAllDocumentsByMerchantID($merchantId);
-
         $documentsResponse = [];
+
+        $merchants = (new Merchant\Core)->getAllMerchantsMappedToMerchantLegalEntity($merchant);
+
+        if ($merchants->isEmpty() === false)
+        {
+            $documents = $this->repo->merchant_document->findDocumentsForMerchantIds($merchants->getIds());
+        }
+        else
+        {
+            $documents = $merchant->merchantDocuments;
+        }
 
         foreach ($documents as $document)
         {
@@ -196,11 +213,16 @@ class Core extends Base\Core
 
         $ocrMatchingPercentage = 0;
 
-        if ((isset($ocrDetails[Constants::NAME]) === true) and
+        if ((empty($ocrDetails[Constants::NAME]) === false) and
             empty($promoterPanName) === false)
         {
             $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);
         }
+
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $document->getDocumentType()
+                            ]);
 
         $this->setOcrVerificationStatus($document, $ocrMatchingPercentage);
     }
@@ -262,5 +284,22 @@ class Core extends Base\Core
             $ocrVerifiedStatus = OcrVerificationStatus::VERIFIED;
         }
         $document->setOcrVerify($ocrVerifiedStatus);
+    }
+
+    protected function pushEventsAndMetrics(Merchant\Entity $merchant, array $input)
+    {
+        $eventAttributes = [];
+
+        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
+        {
+            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
+        }
+
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $input[Entity::DOCUMENT_TYPE]
+                            ]);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
 }

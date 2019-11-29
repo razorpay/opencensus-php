@@ -34,6 +34,8 @@ final class Constants
 
     const CHANNEL                        = 'channel';
 
+    const CONFIGURATION                  = 'configuration';
+
     const MESSAGE                        = 'message';
 
     const ACCOUNT                        = 'account';
@@ -43,6 +45,8 @@ final class Constants
     const PRODUCT                        = 'product';
 
     const USERNAME                       = 'username';
+
+    const ON_DEMAND                      = 'on_demand';
 
     const IFSC_CODE                      = 'ifsc_code';
 
@@ -126,6 +130,8 @@ final class Constants
 
     const RTGS_CUTOFF_HOUR_MIN           = 8;
 
+    const BENEFICIARY_REQUIRED          = 'beneficiary_required';
+
     const BENEFICIARY_BANK_NAME          = 'beneficiary_bank_name';
 
     const FUND_ACCOUNT_VALIDATION        = 'fund_account_validation';
@@ -135,4 +141,8 @@ final class Constants
     const RTGS_REVISED_CUTOFF_HOUR_MAX   = 17;
 
     const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
+
+    const BENEFICIARY_STATUS             = 'beneficiary_status';
+
+    const COMPLETED                      = 'COMPLETED';
 }

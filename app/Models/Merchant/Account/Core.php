@@ -3,14 +3,13 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Exception;
-use RZP\Models\State;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Product;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Webhook\Stork;
 
 class Core extends Merchant\Core
 {
@@ -93,20 +92,26 @@ class Core extends Merchant\Core
      */
     public function createAccount(Merchant\Entity $partner, array $input): Merchant\Entity
     {
+        $this->trace->info(
+            TraceCode::ACCOUNT_CREATION_REQUEST,
+            [
+                'input'      => $input,
+            ]);
+
         $this->validatePartnerAccess($partner);
 
         (new Validator)->validateInput('create_account', $input);
-
-        $partner->getValidator()->validateMerchantEmailUnique($input[Constants::EMAIL], $partner->getOrgId());
 
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
-            $this->activateSubMerchantIfApplicable($partner, $subMerchant);
+            $this->submitDetailsAndActivateIfApplicable($partner, $subMerchant);
 
             return $subMerchant;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($account->getId());
 
         return $account;
     }
@@ -185,67 +190,37 @@ class Core extends Merchant\Core
                     ->fetchSubmerchantsByAppIds($appIds, $input, $relations);
     }
 
-    protected function activateSubMerchantIfApplicable(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    protected function submitDetailsAndActivateIfApplicable(Merchant\Entity $partner, Merchant\Entity $subMerchant)
     {
+        $merchantDetailCore = new Detail\Core;
+
         // if partner is handling kyc, directly activate the submerchant
         if ($partner->isKycHandledByPartner() === true)
         {
-            $this->activateSubMerchant($subMerchant);
+            $merchantDetailCore->submitActivationForm($subMerchant);
+
+            $input = [
+                Detail\Entity::ACTIVATION_STATUS => Detail\Status::ACTIVATED,
+            ];
+
+            $merchantDetailCore->updateActivationStatus($subMerchant, $input, $partner);
         }
         else
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            // auto submit the activation form if all requirements are met
+            $input = [
+                Detail\Entity::SUBMIT => '1',
+            ];
+
+            $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
         }
-    }
-
-    protected function activateSubMerchant(Merchant\Entity $subMerchant)
-    {
-        $this->repo->assertTransactionActive();
-
-        $subMerchantDetails = $subMerchant->merchantDetail;
-
-        $stateCore          = new State\Core;
-        $merchantDetailCore = new Detail\Core;
-
-        $stateData = [
-            State\Entity::NAME => Detail\Status::UNDER_REVIEW,
-        ];
-
-        $stateCore->createForMakerAndEntity($stateData, $subMerchant, $subMerchantDetails);
-
-        $merchantDetailCore->checkAndMarkHasKeyAccess($subMerchantDetails, $subMerchant);
-
-        $merchantDetailCore->markSubmittedAndLock($subMerchantDetails);
-
-        $merchantDetailCore->updateActivationSource($subMerchant, Product::PRIMARY);
-
-        // bank account can be optional in cases where submerchant payments can get settled to partner
-        if ($subMerchantDetails->hasBankAccountDetails() === true)
-        {
-            $merchantDetailCore->setBankAccountForMerchant($subMerchantDetails);
-        }
-
-        $subMerchantDetails->edit([Detail\Entity::ACTIVATION_STATUS => Detail\Status::ACTIVATED]);
-
-        $this->repo->saveOrFail($subMerchantDetails);
-
-        $subMerchant->activate();
-
-        $this->repo->saveOrFail($subMerchant);
-
-        $stateData = [
-            State\Entity::NAME => Detail\Status::ACTIVATED,
-        ];
-
-        $stateCore->createForMakerAndEntity($stateData, $subMerchant, $subMerchantDetails);
-
-        // after activating, create live balance
-        $this->createBalance($subMerchant, 'live');
     }
 
     protected function createSubmerchantAndAssociatedEntities(Merchant\Entity $partner, array $input): Merchant\Entity
     {
         $this->repo->assertTransactionActive();
+
+        Helper::validateCreateInputForKyc($partner, $input);
 
         $subMerchantCreateInput = Helper::getSubMerchantCreateInput($input);
 
@@ -256,9 +231,46 @@ class Core extends Merchant\Core
         $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
         $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
 
+        $this->fillBankAccountNotes($subMerchant, $input);
+
+        $this->updateActivationFlows($partner, $subMerchant);
+
         $this->upsertMerchantEmails($subMerchant, $input);
 
         return $subMerchant;
+    }
+
+    protected function updateActivationFlows(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        $merchantDetailsCore = new Detail\Core;
+
+        $merchantDetailsCore->autoUpdateMerchantActivationFlows($subMerchant, $partner);
+
+        // fetch merchant details and save to db as above method does not save it
+        $subMerchantDetails = $merchantDetailsCore->getMerchantDetails($subMerchant);
+
+        $this->repo->saveOrFail($subMerchantDetails);
+    }
+
+    /**
+     * This fills notes only in test mode.
+     * The notes will be copied to live mode once bank account is created in live mode
+     *
+     * @param Merchant\Entity $subMerchant
+     * @param array           $input
+     */
+    protected function fillBankAccountNotes(Merchant\Entity $subMerchant, array $input)
+    {
+        $notes = Helper::getBankAccountNotesFromInput($input);
+
+        if (empty($notes) === false)
+        {
+            $bankAccount = $this->repo->bank_account->getBankAccountOnConnection($subMerchant, Mode::TEST);
+
+            $bankAccount->setNotes($notes);
+
+            $this->repo->bank_account->saveOrFail($bankAccount);
+        }
     }
 
     protected function fillSubMerchant(string $subMerchantId, array $input): Merchant\Entity
@@ -271,6 +283,13 @@ class Core extends Merchant\Core
 
         $subMerchant->fill($subMerchantInput);
 
+        if (empty($input[Constants::LEGAL_ENTITY_ID]) === false)
+        {
+            $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Constants::LEGAL_ENTITY_ID]);
+
+            $subMerchant->legalEntity()->associate($legalEntity);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         return $subMerchant;
@@ -282,19 +301,11 @@ class Core extends Merchant\Core
 
         $detailInput = Helper::getSubMerchantDetailInput($input);
 
-        $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant, $detailInput);
+        $merchantDetailsCore = new Detail\Core;
 
-        $subMerchantDetails->edit($detailInput);
-
-        (new Detail\Core)->autoUpdateMerchantCategoryDetailsIfApplicable($subMerchantDetails, $subMerchant);
+        $subMerchantDetails = $merchantDetailsCore->editMerchantDetailFields($subMerchant, $detailInput);
 
         $subMerchantDetails->getValidator()->validateMerchantHasRegisteredAddress();
-
-        $this->repo->saveOrFail($subMerchantDetails);
-
-        $subMerchant = $this->syncMerchantEntityFields($subMerchant, $detailInput);
-
-        $this->repo->saveOrFail($subMerchant);
 
         return $subMerchant;
     }

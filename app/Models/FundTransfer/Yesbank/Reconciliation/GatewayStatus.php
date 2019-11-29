@@ -70,7 +70,7 @@ class GatewayStatus extends BaseStatus
     const ERSP80016 = '80016'; const ERSP90152 = '90152'; const ERSP90185 = '90185'; const ERSP90290 = '90290';
     const ERSP90296 = '90296'; const ERSP90188 = '90188'; const ERSP8014 = '8014'; const U71 = 'U71';
     const U74 = 'U74'; const U75 = 'U75'; const U76 = 'U76'; const U95 = 'U95'; const U96 = 'U96';
-    const U97 = 'U97';
+    const U97 = 'U97'; const RR = 'RR'; const U82 = 'U82'; const U85 = 'U85'; const U87 = 'U87';
 
     // We get this error code in Verify response. Mostly it should be failed only. Anyway, will be
     // removing this soon. Not going to rely on Verify later except in timeout or pending cases.
@@ -198,9 +198,9 @@ class GatewayStatus extends BaseStatus
         self::ZB                             => 'Invalid beneficiary PSP',
         self::YG                             => 'Payout failed due to beneficiary PSP',
         self::X1                             => 'Beneficiary is facing issues. Reinitiate transfer after 30 min.',
-        self::UT                             => 'Payout timed out. Try again later',
-        self::BT                             => 'Payout timed out. Try again later',
-        self::RB                             => 'Payout failed. Contact support for help.',
+        self::UT                             => 'Timeout error. Contact support for help. Reinitiate transfer after 60 min.',
+        self::BT                             => 'Timeout as Beneficiary is not available. Reinitiate transfer after 30 min.',
+        self::RB                             => 'Payout reversed due to timeout. Reinitiate transfer after 30 min.',
         self::RP                             => 'Payout failed. Contact support for help.',
         self::ERSP32                         => 'Payout failed. Contact support for help.',
         self::ERSP21                         => 'Payout failed. Contact support for help.',
@@ -223,14 +223,14 @@ class GatewayStatus extends BaseStatus
         self::U17                            => 'PSP is not registered. Check VPA for any issue',
         self::U18                            => 'Payout failed. Contact support for help.',
         self::U19                            => 'Payout failed. Contact support for help.',
-        self::U20                            => 'Payout failed. Contact support for help.',
+        self::U20                            => 'Timeout during authorization',
         self::U21                            => 'Payout failed. Contact support for help.',
         self::U22                            => 'Payout failed. Contact support for help.',
         self::U23                            => 'Payout failed. Contact support for help.',
         self::U24                            => 'Payout failed. Contact support for help.',
         self::U25                            => 'Payout failed. Contact support for help.',
-        self::U26                            => 'Beneficiarys PSP is facing issues',
-        self::U27                            => 'No resposne from Beneficiarys PSP ',
+        self::U26                            => 'Beneficiary PSP is facing issues',
+        self::U27                            => 'No response from Beneficiary PSP ',
         self::U28                            => 'Contacts PSP is facing issues. Try again later.',
         self::U29                            => 'Cannot resolve UPI address',
         self::U30                            => 'Payout failed. Contact support for help.',
@@ -259,10 +259,10 @@ class GatewayStatus extends BaseStatus
         self::U53                            => 'Payout failed. Issue with beneficiary PSP.',
         self::U54                            => 'Payout failed. Contact support for help.',
         self::U66                            => 'Failed due to fingerprint mismatch',
-        self::U67                            => 'Payout failed. Contact support for help.',
-        self::U68                            => 'Payout failed. Contact support for help.',
+        self::U67                            => 'Payout failed due to timeout issue.',
+        self::U68                            => 'Payout failed due to timeout issue.',
         self::U69                            => 'Collect request timed out',
-        self::U70                            => 'Payout failed. Contact support for help.',
+        self::U70                            => 'Delay in response',
         self::U77                            => 'Beneficiary is blocked by bank',
         self::U88                            => 'Payout failed. Contact support for help.',
         self::U78                            => 'Beneficiary bank is offline. Reinitiate transfer after 60 min.',
@@ -348,6 +348,10 @@ class GatewayStatus extends BaseStatus
         self::U95                            => 'Beneficiary VPA is disabled',
         self::U96                            => 'Payout failed. Beneficiary account number same as payer',
         self::U97                            => 'No response from PSP',
+        self::RR                             => 'Beneficiary bank not available. Reinitiate transfer after 60 min.',
+        self::U82                            => 'Payout failed. Contact support for help.',
+        self::U85                            => 'Payout failed. Contact support for help.',
+        self::U87                            => 'Payout failed. Contact support for help.',
     ];
 
     const FAILURE_CODE_INTERNAL_MAPPING = [
@@ -597,6 +601,10 @@ class GatewayStatus extends BaseStatus
         self::U95                               => 'PAYEE VPA AADHAAR OR IIN VPA IS DISABLED',
         self::U96                               => "PAYER AND PAYEE IFSC/ACNUM CAN'T BE SAME",
         self::U97                               => 'PSP REQUEST META ACKNOWLEDGEMENT NOT RECEIVED',
+        self::RR                                => 'DEBIT REVERSAL TIMEOUT(REVERSAL)',
+        self::U82                               => 'READ TIMEOUT IN REQPAY CREDIT',
+        self::U85                               => 'CONNECTION TIMEOUT IN REQPAY DEBIT',
+        self::U87                               => 'READ TIMEOUT IN REQPAY DEBIT',
     ];
 
     public static function getSuccessfulStatus(): array

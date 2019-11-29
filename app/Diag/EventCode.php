@@ -76,9 +76,9 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
-    const PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
+    const PAYMENT_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
         'group' => 'internal_checks',
-        'name'  => 'payment.sorted.terminals.received.from.smart.routing'
+        'name'  => 'payment.terminals.received.from.smart.routing'
     ];
 
     const PAYMENT_CREATION_PROCESSED                    = [
@@ -441,7 +441,7 @@ class EventCode
 
     const KYC_SAVE_MODIFICATIONS_FAILED = [
         'group' => 'onboarding',
-        'name'  => 'kyc.save_registration_details.failed',
+        'name'  => 'kyc.save_modifications.failed',
     ];
 
     const PAYMENT_PAGE_CREATED = [

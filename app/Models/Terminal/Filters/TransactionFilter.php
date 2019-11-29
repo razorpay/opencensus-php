@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -38,14 +39,16 @@ class TransactionFilter extends Terminal\Filter
         'upi',
         'pharma',
         'corporate',
-        'mcc',
         'auth_type',
         'bharat_qr',
+        'bank_account_type',
+        'capability',
+        'blacklisted_mcc',
         'direct_settlement',
         'fee_bearer',
-        'bank_account_type',
-        'hitachi_shared_terminal',
-        'capability',
+        'shared_terminal',
+        'mcc',
+        'upi_transfer',
     ];
 
     public function methodFilter($terminal)
@@ -91,6 +94,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::PAYLATER:
                 return (($terminal->isPayLaterEnabled() === true) and
                         ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+
+            case Method::NACH:
+                return $terminal->isNachEnabled();
 
             default:
                 throw new Exception\LogicException(
@@ -325,6 +331,11 @@ class TransactionFilter extends Terminal\Filter
             {
                 return true;
             }
+
+            if ($payment->isNach() === true)
+            {
+                return true;
+            }
         }
 
         return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
@@ -547,17 +558,17 @@ class TransactionFilter extends Terminal\Filter
     }
 
     /**
-     * For card / emi payments, selects terminals with null mcc or with mcc
-     * matching that of the merchant
+     * For card / emi payments, selects terminal with gateway not hitachi
+     * and merchant mcc not in blacklist mcc array
      *
      * @param  Terminal\Entity $terminal
-     * @param array            $applicableTerminals
      *
      * @return bool
      */
-    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    public function blacklistedMccFilter(Terminal\Entity $terminal)
     {
         $merchant = $this->input['merchant'];
+
         $merchantMcc = $merchant->getCategory();
 
         // These MCCs are blacklisted by RBL and Hitachi. Hence, should not go via hitachi.
@@ -569,6 +580,24 @@ class TransactionFilter extends Terminal\Filter
         {
             return false;
         }
+
+        return true;
+    }
+
+    /**
+     * For card / emi payments, selects terminals with null mcc or with mcc
+     * matching that of the merchant
+     *
+     * @param  Terminal\Entity $terminal
+     * @param array            $applicableTerminals
+     *
+     * @return bool
+     */
+    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $merchant = $this->input['merchant'];
+
+        $merchantMcc = $merchant->getCategory();
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
             (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))
@@ -601,6 +630,48 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    // filter rejects all shared terminal if there is a atleast one direct terminal present on same gateway
+    // filter selects all shared terminal if there is no direct terminal on same gateway
+    public function sharedTerminalFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        //
+        // If terminal is direct for the merchant, we always select it.
+        //
+        if ($terminal->isDirectForMerchant() === true)
+        {
+            return true;
+        }
+
+        $currentGateway = $terminal->getGateway();
+
+        $directTerminalsOnSameGateway = false;
+
+        foreach ($applicableTerminals as $applicableTerminal)
+        {
+            if (($applicableTerminal->isDirectForMerchant() === true) and
+                ($applicableTerminal->getGateway() === $currentGateway))
+            {
+                // breaking once we get direct terminal on the same gateway as of current terminal
+                $directTerminalsOnSameGateway = true;
+                break;
+            }
+        }
+
+        if ($directTerminalsOnSameGateway === true)
+        {
+            return false;
         }
 
         return true;
@@ -763,6 +834,26 @@ class TransactionFilter extends Terminal\Filter
         }
     }
 
+    protected function upiTransferFilter($terminal)
+    {
+        if ($this->input['payment']->isUpiTransfer() === true)
+        {
+            if ((empty($terminal->getVirtualUpiHandle()) === true) or
+                (empty($terminal->getVirtualUpiRoot()) === true) or
+                (empty($terminal->getVirtualUpiMerchantPrefix()) === true))
+            {
+                return false;
+            }
+
+            if ($terminal->isUpiTransfer() === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function directSettlementFilter($terminal, $applicableTerminals)
     {
        $directSettlementTerminals = array_filter(
@@ -788,9 +879,25 @@ class TransactionFilter extends Terminal\Filter
 
     public function feeBearerFilter($terminal, $applicableTerminals)
     {
-        if ($this->input['merchant']->isFeeBearerCustomer() === true)
+        /*
+         * For customer fee bearer payments, we are responsible for adding fees to payment amount and settling only
+         * actual payment amount (not fees) to the merchant. For direct settlements, Razorpay does not have control over
+         * the amount that finally gets settled to merchant by the bank. For this reason, there's a check  that skips
+         * direct settlement terminals for customer fee bearer merchants.
+         *
+         *
+         * Direct settlement terminals are being used by various HDFC VAS merchants, some of whom are on customer
+         * fee bearer. We are explicitly allowing direct settlement terminals for such merchants, otherwise
+         * the payments will fail with "no terminal found"
+         *
+         *
+         */
+        if ($this->input['payment']->isFeeBearerCustomer() === true)
         {
-            return ($terminal->isDirectSettlement() === false);
+            if ($terminal->isDirectSettlement() === true)
+            {
+                return ($this->input['merchant']->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID);
+            }
         }
 
         return true;

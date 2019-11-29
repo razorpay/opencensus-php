@@ -19,6 +19,9 @@ use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
 
 class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 {
+    // 9 minutes in seconds
+    const DEFAULT_TOKEN_EXPIRY_TIME = 540;
+
     protected $actionMap = DeviceAction::MAP;
 
     public function initiateVerification(Response $response)
@@ -83,6 +86,8 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
         if ($response->hasRequest() === false)
         {
+            $deviceTokenExpireAt = $this->getCurrentTimestamp() + self::DEFAULT_TOKEN_EXPIRY_TIME;
+
             $response->setData([
                 Fields::TOKEN       => $this->input->get(Entity::REGISTER_TOKEN)->get(Fields::TOKEN),
                 Fields::DEVICE_DATA => [
@@ -91,6 +96,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
                         Fields::DEVICE_FINGERPRINT      => $sdk->get(Fields::DEVICE_FINGERPRINT),
                         Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
                         Fields::SIM_ID                  => $deviceData[Fields::SDK][Fields::SIM_ID],
+                        DeviceToken\Entity::EXPIRE_AT   => $deviceTokenExpireAt,
                     ],
                 ],
             ]);
@@ -131,9 +137,15 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
             throw $this->p2pGatewayException(ErrorMap::INACTIVE_DEVICE, [Entity::SDK => $sdk]);
         }
 
+        $deviceTokenExpireAt = $this->getCurrentTimestamp() + self::DEFAULT_TOKEN_EXPIRY_TIME;
+
         $response->setData([
-            Fields::GATEWAY_DATA => [
-                Fields::DEVICE_FINGERPRINT  => $sdk[Fields::DEVICE_FINGERPRINT],
+            Entity::DEVICE_TOKEN => [
+                Entity::ID              => $this->getContextDeviceToken()->get(Entity::ID),
+                Entity::GATEWAY_DATA => [
+                    Fields::DEVICE_FINGERPRINT      => $sdk[Fields::DEVICE_FINGERPRINT],
+                    DeviceToken\Entity::EXPIRE_AT   => $deviceTokenExpireAt,
+                ]
             ]
         ]);
 

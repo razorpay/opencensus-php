@@ -17,11 +17,7 @@ class Gateway extends Equitas\Gateway
             'mock_netbanking_payment',
             ['bank' => $this->bank]);
 
-        $urlcomponents = parse_url($request['url']);
-
-        parse_str($urlcomponents['query'], $query);
-
-        $request['url'] = $url . '&' . http_build_query($query);
+        $request['url'] = $url;
 
         return $request;
     }

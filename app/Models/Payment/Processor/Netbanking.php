@@ -93,6 +93,7 @@ class Netbanking
         IFSC::IDFB,
         IFSC::RATN,
         IFSC::UBIN,
+        IFSC::SCBL,
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
@@ -107,8 +108,14 @@ class Netbanking
         IFSC::YESB,
         IFSC::IBKL,
         IFSC::SIBL,
+        IFSC::KVBL,
         self::PUNB_R,
         self::BARB_R,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
     ];
 
     protected static $selfCorp = [
@@ -452,6 +459,11 @@ class Netbanking
                 IFSC::UBIN,
             ],
         ],
+        Gateway::NETBANKING_SCB => [
+            'retail' => [
+                IFSC::SCBL,
+            ],
+        ],
         Gateway::NETBANKING_CBI => [
             'retail' => [
                 IFSC::CBIN
@@ -584,6 +596,11 @@ class Netbanking
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+                IFSC::SBBJ,
+                IFSC::SBHY,
+                IFSC::SBMY,
+                IFSC::STBP,
+                IFSC::SBTR,
             ],
             'tpv' => [
                 IFSC::SBIN
@@ -596,6 +613,15 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ALLA,
+            ],
+        ],
+
+        Gateway::NETBANKING_KVB =>  [
+            'retail'    =>  [
+                IFSC::KVBL,
+            ],
+            'tpv'   => [
+                IFSC::KVBL,
             ],
         ],
     ];

@@ -32,7 +32,12 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow($row)
     {
-        $transactionType = strtolower($row[ReconciliationFields::TRANSACTION_TYPE]);
+        $columnTransactionType = array_first(ReconciliationFields::TRANSACTION_TYPE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $transactionType = strtolower($row[$columnTransactionType]);
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? null ;
     }

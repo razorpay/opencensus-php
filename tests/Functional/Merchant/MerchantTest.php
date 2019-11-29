@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -2846,6 +2847,140 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableEsScheduledSuccess()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $scheduleTaskUpi = [
+            'method'        => 'upi',
+            'international' => 0,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskUpi);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(1, $features['items']);
+
+        $this->assertEquals('es_automatic', $features['items'][0]['name']);
+
+        $scheduleTaskUpi['schedule_id'] = '100001schedule';
+
+        $scheduleTasks = $this->getEntities('schedule_task', [], true);
+
+        $this->assertArraySelectiveEquals($scheduleTaskUpi,
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', 'upi'));
+
+        $this->assertArraySelectiveEquals($scheduleTaskCard,
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', 'card'));
+
+        $this->assertArraySelectiveEquals([
+                                            'method'        => null,
+                                            'international' => 0,
+                                            'entity_type'   =>'merchant',
+                                            'schedule_id'   =>'100001schedule'
+                                          ],
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', null));
+
+        $this->assertNotEquals('100001schedule', $scheduleTasks['items'][2]['schedule_id']);
+    }
+
+    public function testEnableEsScheduledUnknownScheduleFailure()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testEnableEsScheduledUneditableFeature()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'hh',
+            ]);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testEnableEsScheduledEsautomaticPricingUnavailable()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1AXp2Xd3t5aRLX']);
+
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'hh',
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
     public function testPutEmiMethod()
     {
         $this->fixtures->create('pricing:emi_pricing_plan');
@@ -5009,6 +5144,74 @@ class MerchantTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntent()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentForMerchantWithoutPartnerIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentTrue()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', true)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+                        ->upsert('partner_intent', false)
+                        ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentNull()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

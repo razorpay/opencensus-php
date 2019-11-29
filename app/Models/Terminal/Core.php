@@ -215,7 +215,7 @@ class Core extends Base\Core
     {
         $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
-        $existingTerminals = $this->repo->terminal->getByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         $gateway = $terminal->getGateway();
         

@@ -3320,6 +3320,74 @@ return [
         ]
     ],
 
+    'testEnableEsScheduledSuccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledUnknownScheduleFailure' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Schedule not found in database.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE,
+        ],
+    ],
+
+    'testEnableEsScheduledUneditableFeature' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEnableEsScheduledEsautomaticPricingUnavailable' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
+        ],
+    ],
+
     'testPutEmiMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
@@ -5160,6 +5228,93 @@ return [
                 'feature2' => ['result' => 'off'],
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntent'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentForMerchantWithoutPartnerIntent' => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => null,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentWithPartnerIntentFalse'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentTrue'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 0 //sends false,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '0',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentFalse' => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentNull'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
         ],
     ],
 ];

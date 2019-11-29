@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
+    const NACH                          = 'nach';
     const CARDLESS_EMI                  = 'cardless_emi';
     const PAYLATER                      = 'paylater';
     const EMI_DURATION                  = 'emi_duration';
@@ -85,6 +86,11 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER                = 'account_number';
     const IFSC_CODE                     = 'ifsc_code';
 
+    //used for virtual VPA
+    const VIRTUAL_UPI_ROOT               = 'virtual_upi_root';
+    const VIRTUAL_UPI_MERCHANT_PREFIX    = 'virtual_upi_merchant_prefix';
+    const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
+
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
     //
@@ -102,7 +108,7 @@ class Entity extends Base\PublicEntity
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 25;
+    const MAX_TERMINALS_COUNT           = 200;
     const DEFAULT_CURRENCY              = 'INR';
 
     /**
@@ -137,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -171,6 +178,9 @@ class Entity extends Base\PublicEntity
         self::IFSC_CODE,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::VIRTUAL_UPI_ROOT,
+        self::VIRTUAL_UPI_MERCHANT_PREFIX,
+        self::VIRTUAL_UPI_HANDLE,
     ];
 
     protected $public = [
@@ -200,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -231,6 +242,9 @@ class Entity extends Base\PublicEntity
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
+        self::VIRTUAL_UPI_ROOT,
+        self::VIRTUAL_UPI_MERCHANT_PREFIX,
+        self::VIRTUAL_UPI_HANDLE,
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::MPAN,
@@ -260,6 +274,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
         self::TYPE,
+        self::GATEWAY,
     ];
 
     protected $defaults = [
@@ -299,7 +314,7 @@ class Entity extends Base\PublicEntity
         self::VPA                        => null,
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
-        self::RUPAY_MPAN                 => null,        
+        self::RUPAY_MPAN                 => null,
     ];
 
     protected $casts = [
@@ -312,6 +327,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
+        self::NACH                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
@@ -357,6 +373,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    public function getGatewayAccessCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ACCESS_CODE);
     }
 
     public function getGatewayMerchantId2()
@@ -566,6 +587,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isNachEnabled()
+    {
+        return $this->getAttribute(self::NACH);
     }
 
     public function isCardlessEmiEnabled()
@@ -906,6 +932,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA);
     }
 
+    public function getVirtualUpiRoot()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_ROOT);
+    }
+
+    public function getVirtualUpiMerchantPrefix()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+    }
+
+    public function getVirtualUpiHandle()
+    {
+        return $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
+    }
+
     // returns vpa for terminal by first checking vpa attribute and if not present then returns gatewayMerchantId2 value
     // for some gateways like upi_mindgate vpa is stored in gatewayMerchantId2, and not in vpa
     public function getVpaForTerminal()
@@ -948,6 +989,11 @@ class Entity extends Base\PublicEntity
         {
             $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
         }
+    }
+
+    protected function modifyGateway(& $input)
+    {
+        $input[self::GATEWAY] = strtolower($input[self::GATEWAY]);
     }
 
     // ---------------------- END MODIFIERS ----------------------
@@ -1270,6 +1316,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
+    public function isUpiTransfer()
+    {
+        return ($this->isTypeApplicable(Type::UPI_TRANSFER) === true);
+    }
+
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
@@ -1309,6 +1360,15 @@ class Entity extends Base\PublicEntity
     public function isDomestic()
     {
         return ($this->isCardEnabled() === true);
+    }
+
+    public  function isValidVirtualVpaForTerminal(string $virtualVpa)
+    {
+        $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+
+        $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
+
+        return (substr($virtualVpa, 0, strlen($prefix)) === $prefix) && (substr($virtualVpa, -strlen($handle), strlen($virtualVpa)) === $handle);
     }
 
     /**

@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 class Core extends Base\Core
 {
     const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+    const VA_ADD_RECEIVER            = 'va_add_receiver';
 
     public function __construct()
     {
@@ -113,7 +114,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
+        return $this->create($input, $merchant, null, null, $merchant->sharedBankingBalance);
     }
 
     public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
@@ -179,6 +180,7 @@ class Core extends Base\Core
         $input = [
             Entity::RECEIVERS => [
                 Entity::TYPES => [
+                    Receiver::VPA,
                     Receiver::QR_CODE,
                     Receiver::BANK_ACCOUNT
                 ]
@@ -276,12 +278,22 @@ class Core extends Base\Core
                 $this->verifyBharatQrEnabled($virtualAccount->merchant);
                 break;
 
+            case Receiver::VPA:
+                $this->verifyVPAEnabled($virtualAccount->merchant);
+                break;
+
             default:
                 // We don't throw exception here
                 // because receiver is already validated
                 // and we don't want to put any validation
                 // for receiver being enabled by default
                 return;
+        }
+
+        if ($virtualAccount->isReceiverPresent($receiver))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT);
         }
     }
 
@@ -325,6 +337,17 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
         }
 
+        /*
+         @todo:: Uncomment this once deleted_at added to vpas table
+        $vpa = $virtualAccount->vpa;
+
+        if ($vpa !== null)
+        {
+            $this->repo->deleteOrFail($vpa);
+
+            $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
+        }*/
+
         $virtualAccount->setStatus(Status::CLOSED);
 
         $currentTime = Carbon::now()->getTimestamp();
@@ -360,6 +383,17 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
         }
 
+    }
+
+    protected function verifyVPAEnabled(Merchant $merchant)
+    {
+        $feature = Feature\Constants::VIRTUAL_ACCOUNTS;
+
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT);
+        }
     }
 
     public function eventVirtualAccountCredited(Payment $payment)
@@ -403,5 +437,26 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
+    }
+
+    public function addReceiver(Entity $virtualAccount, array $input)
+    {
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
+            function() use ($input, $virtualAccount) {
+
+                $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+
+                $this->repo->saveOrFail($virtualAccount);
+
+                return $virtualAccount;
+            },
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+            5,
+            200,
+            400);
+
+        return $virtualAccount;
     }
 }

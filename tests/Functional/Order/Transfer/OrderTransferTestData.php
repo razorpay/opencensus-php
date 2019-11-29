@@ -2,7 +2,6 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateOrderTransfers' => [
@@ -15,8 +14,14 @@ return [
                 'transfers' => [
                     [
                         'account'  => 'acc_10000000000001',
-                        'amount'   => '20000',
+                        'amount'   => '50000',
                         'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],
@@ -28,27 +33,17 @@ return [
                 'transfers' => [
                     [
                         'recipient' => 'acc_10000000000001',
-                        'amount'    => 20000,
+                        'amount'    => 50000,
                         'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],
-        ],
-    ],
-
-    'testCreateOrderTransfersInsufficientBalance' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
         ],
     ],
 
@@ -78,7 +73,7 @@ return [
                         [
                             'entity'                  => 'transfer',
                             'recipient'               => 'acc_10000000000001',
-                            'amount'                  => 20000,
+                            'amount'                  => 50000,
                             'currency'                => 'INR',
                             'amount_reversed'         => 0,
                             'notes'                   => [],
@@ -102,7 +97,7 @@ return [
         'response' => [
             'content' => [
                 'entity'   => 'reversal',
-                'amount'   => 20000,
+                'amount'   => 50000,
                 'currency' => 'INR',
             ],
         ],
@@ -121,7 +116,7 @@ return [
                     'entity' => [
                         'entity'                  => 'transfer',
                         'recipient'               => 'acc_10000000000001',
-                        'amount'                  => 20000,
+                        'amount'                  => 50000,
                         'currency'                => 'INR',
                         'amount_reversed'         => 0,
                         'notes'                   => [],
@@ -147,7 +142,7 @@ return [
                 'transfers'       => [
                     [
                         'account'  => 'acc_10000000000001',
-                        'amount'   => '20000',
+                        'amount'   => '50000',
                         'currency' => 'INR',
                     ],
                 ],

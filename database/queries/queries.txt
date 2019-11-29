@@ -168,6 +168,9 @@ ALTER TABLE netbanking
     ADD COLUMN date VARCHAR(255) AFTER reference1,
     ADD COLUMN refund_id CHAR(14) AFTER date;
 
+ALTER TABLE netbanking
+    ADD INDEX `netbanking_refund_id_index` (`refund_id`);
+
 ALTER TABLE billdesk
     ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action;
 
@@ -5327,6 +5330,12 @@ ALTER table terminals
     ADD COLUMN `req_rrn` VARCHAR(255) NULL AFTER `ifsc_code`,
     ADD INDEX terminals_req_rrn_index (`req_rrn`);
 
+ALTER TABLE  merchant_banks
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
+ALTER TABLE  terminals
+	ADD COLUMN nach tinyint(4) NOT NULL default 0 after emandate;
+
 ALTER TABLE adjustment
     ADD COLUMN balance_id char(14) DEFAULT NULL AFTER `transaction_id`,
     ADD INDEX `adjustment_balance_id_index` (`balance_id`);
@@ -5366,12 +5375,14 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+
 ALTER TABLE merchant_details
 add column `kyc_clarification_reasons` JSON NULL,
 add column `kyc_additional_details` JSON NULL;
 
 ALTER TABLE pricing
     ADD COLUMN fee_bearer INT UNSIGNED DEFAULT 0 AFTER international; # 0 is platform fee bearer
+
 
 ALTER TABLE `transfers`
 ADD COLUMN `status` VARCHAR(255) NOT NULL DEFAULT 'processed' AFTER `source_type`,
@@ -5386,6 +5397,10 @@ ALTER TABLE `addresses`
 ALTER TABLE merchant_documents
     ADD COLUMN `ocr_verify` varchar(30) DEFAULT NULL AFTER `entity_type`;
 
+ALTER TABLE invoices
+    ADD `reminder_id` CHAR(14) DEFAULT NULL AFTER `status`,
+    ADD `reminder_status` VARCHAR(255) DEFAULT NULL AFTER `reminder_id`;
+
 ALTER TABLE partner_configs
     ADD COLUMN tds_percentage INT(11) NOT NULL DEFAULT 500 AFTER settle_to_partner,
     ADD COLUMN has_gst_certificate TINYINT(1) NOT NULL DEFAULT 0 AFTER tds_percentage;
@@ -5399,8 +5414,133 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
+ALTER TABLE offers
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
+# adds fee_bearer column for payments (renaming the existing column 'reference12')
+ALTER TABLE payments
+    CHANGE COLUMN reference12 fee_bearer BIGINT;
+
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number varchar(255) NOT NULL,
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER amount_due,
+    ADD INDEX merchant_invoice_balance_id_index (balance_id);
+
 ALTER TABLE merchants
-   ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+    ADD COLUMN whitelisted_domains VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_test;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL after registered_name;
+
+ALTER TABLE `transfers`
+  CHANGE `transaction_id` `transaction_id` CHAR(14) NULL DEFAULT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN `legal_entity_id` CHAR(14) DEFAULT NULL AFTER `parent_id`,
+    ADD INDEX `merchants_legal_entity_id_index` (`legal_entity_id`);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN `notes` text DEFAULT NULL AFTER `virtual`;
+
+ALTER TABLE merchant_details
+    ADD COLUMN `live_transaction_done` TINYINT(1) DEFAULT 0 AFTER `international_activation_flow`;
+
+ALTER TABLE `settlement_details`
+    MODIFY COLUMN `component` varchar(255);
+
+-- P2P - Adding Indices
+
+ALTER TABLE `p2p_bank_accounts`
+    ADD INDEX `p2p_bank_accounts_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_bank_accounts_account_number_ifsc_index`(`account_number`, `ifsc`),
+    ADD INDEX `p2p_bank_accounts_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_beneficiaries`
+    ADD INDEX `p2p_beneficiaries_device_id_index`(`device_id`),
+    ADD INDEX `p2p_beneficiaries_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_devices`
+    ADD INDEX `p2p_devices_customer_id_index`(`customer_id`),
+    ADD INDEX `p2p_devices_contact_index`(`contact`),
+    ADD INDEX `p2p_devices_auth_token_index`(`auth_token`),
+    ADD INDEX `p2p_devices_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_device_tokens`
+    ADD INDEX `p2p_device_tokens_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_device_tokens_status_index`(`status`),
+    ADD INDEX `p2p_device_tokens_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_register_tokens`
+    ADD INDEX `p2p_register_tokens_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_register_tokens_status_index`(`status`),
+    ADD INDEX `p2p_register_tokens_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_transactions`
+    ADD INDEX `p2p_transactions_device_id_handle_status_index`(`device_id`, `handle`, `status`),
+    ADD INDEX `p2p_transactions_customer_id_index`(`customer_id`),
+    ADD INDEX `p2p_transactions_status_index`(`status`),
+    ADD INDEX `p2p_transactions_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_upi_transactions`
+    ADD INDEX `p2p_upi_transactions_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_upi_transactions_network_transaction_id_index`(`network_transaction_id`),
+    ADD INDEX `p2p_upi_transactions_rrn_index`(`rrn`),
+    ADD INDEX `p2p_upi_transactions_gateway_error_code_index`(`gateway_error_code`),
+    ADD INDEX `p2p_upi_transactions_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_vpa`
+    ADD INDEX `p2p_vpa_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_vpa_username_handle_index`(`username`, `handle`),
+    ADD INDEX `p2p_vpa_bank_account_id_index`(`bank_account_id`),
+    ADD INDEX `p2p_vpa_created_at_index`(`created_at`);
+
+ALTER TABLE `p2p_concerns`
+    ADD INDEX `p2p_concerns_device_id_handle_index`(`device_id`, `handle`),
+    ADD INDEX `p2p_concerns_transaction_id_created_at_index`(`transaction_id`, `created_at`),
+    ADD INDEX `p2p_concerns_status_index`(`status`),
+    ADD INDEX `p2p_concerns_gateway_reference_id_index`(`gateway_reference_id`),
+    ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
+
+-- P2P - Adding Indices
+
+ALTER TABLE `iins`
+    ADD COLUMN `product_code` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
+---Virtual VPA----
+
+ALTER TABLE `terminals`
+  ADD COLUMN `virtual_upi_root` VARCHAR(20) NULL DEFAULT NULL after `ifsc_code`,
+  ADD COLUMN `virtual_upi_merchant_prefix` VARCHAR(20) NULL DEFAULT NULL  after `virtual_upi_root`,
+  ADD COLUMN `virtual_upi_handle` VARCHAR(20) NULL DEFAULT NULL after `virtual_upi_merchant_prefix`;
+
+ALTER TABLE `virtual_accounts`
+  CHANGE COLUMN`vpa` `vpa_id` VARCHAR(14) NULL DEFAULT NULL;
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN currency currency CHAR(3) NULL;
+
+ALTER TABLE fund_account_validations
+    CHANGE COLUMN amount amount bigint NULL;
+
+ALTER TABLE `mozart`
+    ADD INDEX `mozart_payment_id_index` (`payment_id`),
+    ADD INDEX `mozart_refund_id_index` (`refund_id`),
+    ADD INDEX `mozart_created_at_index` (`created_at`);
+
+ALTER TABLE `terminals`
+    ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE banking_account_statement
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX banking_account_statement_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL AFTER updated_at,
+    ADD INDEX external_deleted_at_index (deleted_at);
+
+ALTER TABLE partner_configs
+    ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
 
 ALTER TABLE gateway_downtimes
     Add COLUMN psp VARCHAR(50) DEFAULT NULL AFTER method;

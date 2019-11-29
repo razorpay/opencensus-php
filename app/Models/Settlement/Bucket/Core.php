@@ -13,6 +13,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant as ME;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
@@ -23,6 +24,27 @@ class Core extends Base\Core
         $this->preference = new Preference;
 
         parent::__construct();
+    }
+
+    /**
+     * give next settlement time based on bucketing entry
+     *
+     * @param MerchantEntity $merchant
+     * @param Balance\Entity $balance
+     * @return int
+     */
+    public function getNextSettlementTime(MerchantEntity $merchant, Balance\Entity $balance): int
+    {
+        $bucket = $this->repo
+                       ->settlement_bucket
+                       ->getNextSettlementTime($merchant->getId(), $balance->getType());
+
+        if ($bucket === null)
+        {
+            return 0;
+        }
+
+        return $bucket->getBucketTimestamp();
     }
 
     public function deleteCompletedBucketEntries(array $input): array
@@ -233,7 +255,11 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function addToBucket(string $merchantId, int $bucketTimestamp, string $balanceType, $settlementTime = null): bool
+    public function addToBucket(
+        string $merchantId,
+        int $bucketTimestamp,
+        string $balanceType,
+        $settlementTime = null): bool
     {
         $data = [
             Entity::MERCHANT_ID      => $merchantId,
