@@ -19,13 +19,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllWorkflowRules($limit = 10, $offset = 0)
+    public function fetchAllWorkflowRules($limit, $offset)
     {
         return $this->newQuery()
+            ->orderBy('merchant_id')
             ->take($limit)
             ->skip($offset)
-            ->get()
-            ->sortBy('merchant_id');
+            ->get();
     }
 
     public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)

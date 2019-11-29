@@ -139,7 +139,7 @@ class WorkflowController extends Controller
         $limit = Request::get('count');
         $offset = Request::get('skip');
 
-        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit, $offset);
+        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit ?? 10, $offset ?? 0);
 
         return ApiResponse::json($data);
     }
