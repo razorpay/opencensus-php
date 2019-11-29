@@ -1,4 +1,5 @@
 import Stepper from 'common/new-ui/Stepper';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 const ReminderStepsDetails = ({
   isRemindersEnabled,
