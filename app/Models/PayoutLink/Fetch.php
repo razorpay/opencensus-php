@@ -36,6 +36,9 @@ class Fetch extends BaseFetch
     ];
 
     const SIGNED_IDS = [
+        Entity::ID,
+        Entity::CONTACT_ID,
+        Entity::FUND_ACCOUNT_ID,
     ];
 
     const ES_FIELDS = [

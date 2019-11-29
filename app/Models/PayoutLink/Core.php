@@ -3,27 +3,74 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
-use RZP\Models\PayoutLink\Entity as PayoutLink;
+use RZP\Models\PayoutLink\Clients\Contact;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Contact\Entity as ContactEntity;
 
 class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
-        #todo: pl fill this function
-        // This will also create the contact if necessary
+        #todo: pl a log here
+        array_pull($input, 'XDEBUG_SESSION_START');
 
-        $input = [
-            PayoutLink::CONTACT_ID      => 'BXV5GAmaJEcGr1',
-            PayoutLink::FUND_ACCOUNT_ID => 'D6Z9Jfir2egAUT',
-            PayoutLink::SHORT_URL       => 'http://rzp.io/faking_url',
-            PayoutLink::MERCHANT_ID     => 'D5mLvCOvhuV1hN',
-            PayoutLink::STATUS          => Status::ISSUED,
-            PayoutLink::AMOUNT          => 1000,
-        ];
+        # remove all the contact information from here
+        # check if we have to create a contact and create one if required
+        # add that info in the final input
+        # build the payoutlink and save it
+        # return
+        # errors thrown
+        # all the contact related errors, see if you can just throw them from what ever is returned
+        # all the payout links errors, that the DB will create
+        # see how the exceptions are thrown too
 
-        $payout_link = (new PayoutLink)->build($input);
+        $validator = (new Entity())->getValidator();
 
-        $payout_link->saveOrFail();
+        $validator->validateInput('compositeCreate', $input);
 
+        $this->processContact($input);
+
+        $payoutLink = (new Entity)->build($input);
+
+        $this->generateAndSetShortUrl($payoutLink);
+
+        $payoutLink->merchant()->associate($this->merchant);
+
+        $payoutLink->saveOrFail();
+
+        return $payoutLink;
+    }
+
+    protected function generateAndSetShortUrl(Entity &$payoutLink)
+    {
+        $shortUrl = 'https://fakeurl.com';
+
+        $payoutLink->setShortUrl($shortUrl);
+    }
+
+    protected function processContact(array &$input)
+    {
+        $contact = array_pull($input, 'contact');
+
+        $contactId = array_pull($contact, 'contact_id');
+
+        if ($contactId === null)
+        {
+            #todo: pl a log here
+            $contactClient = new Clients\Contact();
+
+            try
+            {
+                $contactEntity = $contactClient->createContact($contact,  $this->merchant);
+
+                $input['contact_id'] = $contactEntity->getId();
+            }
+            catch(\Exception $e)
+            {
+                #todo: pl a  log here
+                dd($e);
+                #todo: pl raise the exception so that this becomes a client error ?
+            }
+        }
     }
 }

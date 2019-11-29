@@ -174,9 +174,9 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Setters ------------------------------
 
-    public function setStatus($status)
+    public function setShortUrl($shortUrl)
     {
-        #todo:pl, need to fill this function
+        $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
     // -------------------------------------- End Setters -----------------------------
