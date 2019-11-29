@@ -65,7 +65,7 @@ class Core extends Base\Core
         $this->repo->transaction( function() use ($rules, $merchantId){
             foreach($rules as $rule)
             {
-                $rule['merchant_id'] = $merchantId;
+                $rule[Entity::MERCHANT_ID] = $merchantId;
                 $payoutAmountRules = new Entity();
                 $payoutAmountRules->build($rule);
 

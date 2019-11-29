@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     public function fetchAllWorkflowRules($limit, $offset)
     {
         return $this->newQuery()
-            ->orderBy('merchant_id')
+            ->orderBy(Entity::MERCHANT_ID)
             ->take($limit)
             ->skip($offset)
             ->get();

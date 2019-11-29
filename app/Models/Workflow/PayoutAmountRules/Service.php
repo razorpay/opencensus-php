@@ -28,14 +28,14 @@ class Service extends Base\Service
         // Check if workflow belongs to merchant in context
         foreach ($rules as $rule)
         {
-            $workflow = $this->repo->workflow->findOrFailPublic($rule['workflow_id'])->toArray();
+            $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID])->toArray();
 
-            if($merchantId != $workflow['merchant_id'])
+            if($merchantId != $workflow[Entity::MERCHANT_ID])
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
                     null,
-                    ['id' => $rule['workflow_id']]);
+                    ['id' => $rule[Entity::WORKFLOW_ID]]);
             }
         }
 
