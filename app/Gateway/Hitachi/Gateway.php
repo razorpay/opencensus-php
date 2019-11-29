@@ -143,7 +143,7 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::AUTHORIZE);
 
         if ($this->isBharatQrPayment() === true)
         {
@@ -181,6 +181,16 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
+// Risk validation for international payments after authentication response 'N'
+        if (isset($input['payment_analytics']['risk_score']) === true )
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->validateRiskScore($input);
+            }
+        }
+
         return $this->authorizeNotEnrolled($input);
     }
 
@@ -209,6 +219,16 @@ class Gateway extends Base\Gateway
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $this->setCardNumberAndCvv($input);
+
+       //Risk validation for international payments with Pares response as 'A'
+        if (isset($input['payment_analytics']['risk_score']) === true)
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->decideRiskValidationStep($input, $authResponse);
+            }
+        }
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 

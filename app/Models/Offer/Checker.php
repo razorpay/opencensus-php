@@ -4,10 +4,12 @@ namespace RZP\Models\Offer;
 
 use App;
 use Carbon\Carbon;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Core;
 
 class Checker extends Base\Core
 {
@@ -72,6 +74,8 @@ class Checker extends Base\Core
     {
         $this->payment = $payment;
 
+        $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
+
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
@@ -90,7 +94,8 @@ class Checker extends Base\Core
             }
         }
 
-        return (($offerActive === true) and
+        return (($isCurrentOfferUsageAvailable === true) and
+                ($offerActive === true) and
                 ($validOfferPeriod === true) and
                 ($checkResult === true));
     }
@@ -359,13 +364,53 @@ class Checker extends Base\Core
 
                     // We are using < operator as paymentCount tracks the number of times payment
                     // has been made against the offer before current payment
-                    return $paymentCount < $maxPaymentCount;
+                    $result = $paymentCount < $maxPaymentCount;
+                    if(!$result)
+                    {
+                        $this->offer
+                             ->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                    }
+
+                    return $result;
                 }
             }
         }
 
         return true;
     }
+
+
+    //Checks the number of successfully created payments have been made with that offer, should
+    //not exceed the max offer usage count
+    protected function checkMaxOfferUsage(): bool
+    {
+        $result = true;
+
+        if($this->offer->getMaxOfferUsage() !== NULL)
+        {
+            $core = new \RZP\Models\Offer\Core();
+
+            $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
+
+            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+
+            $this->traceCheckResult(
+                TraceCode::OFFER_USAGE_CHECK,
+                [
+                    'result' => $result,
+                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                    'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
+                ]);
+
+            if(!$result)
+            {
+                $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            }
+        }
+
+        return $result;
+    }
+
 
     protected function getCardVaultToken(): string
     {

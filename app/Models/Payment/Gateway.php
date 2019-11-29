@@ -72,6 +72,7 @@ class Gateway
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_YESB        = 'netbanking_yesb';
     const NETBANKING_KVB         = 'netbanking_kvb';
+    const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -87,7 +88,6 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
-    const NACH_CITI              = 'nach_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -171,6 +171,7 @@ class Gateway
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER],
+        self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
     ];
 
@@ -315,6 +316,7 @@ class Gateway
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
+        Payment\Gateway::WALLET_OPENWALLET,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
@@ -1205,6 +1207,10 @@ class Gateway
         self::WORLDLINE,
     ];
 
+    public static $upiTransferGateway = [
+        self::UPI_MINDGATE,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
@@ -1835,6 +1841,11 @@ class Gateway
     public static function isValidBharatQrGateway($gateway)
     {
         return in_array($gateway , self::$bharatQrGateways, true);
+    }
+
+    public static function isValidUpiTransferGateway($gateway)
+    {
+        return in_array($gateway , self::$upiTransferGateway, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)

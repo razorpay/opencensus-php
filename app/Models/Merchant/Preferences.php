@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature\Constants as Feature;
 use Symfony\Component\HttpFoundation\HeaderBag as Headers;
 
 class Preferences
@@ -298,6 +300,36 @@ class Preferences
      */
     const NO_MERCHANT_INVOICE_MIDS = [
         self::MID_AIRTEL,
+    ];
+
+    // MSwipe Configurations
+    const MSWIPE_PARTNER_MID            = 'BiKdKIgjODkDca';
+    const MSWIPE_PRICING_PLAN_ID        = 'CeW6THajbzAkCC';
+    const MSWIPE_SETTLEMENT_SCHEDULE_ID = '7xc78ePv15g3bz';
+    const MSWIPE_FEATURE_LIST           = [
+        Feature::EMAIL_OPTIONAL,
+        Feature::EXPOSE_CARD_IIN,
+        Feature::USE_MSWIPE_TERMINALS,
+        Feature::EXPOSE_ARN_PAYMENT,
+    ];
+    const MSWIPE_METHOD_LIST            = [
+        Methods\Entity::CREDIT_CARD   => 1,
+        Methods\Entity::DEBIT_CARD    => 1,
+        Methods\Entity::NETBANKING    => 1,
+        Methods\Entity::EMI           => 0,
+        Methods\Entity::UPI           => 0,
+        Methods\Entity::BANK_TRANSFER => 0,
+        Methods\Entity::MOBIKWIK      => 1,
+        Methods\Entity::FREECHARGE    => 1,
+        Methods\Entity::AIRTELMONEY   => 1,
+        Methods\Entity::PAYZAPP       => 1,
+        Methods\Entity::JIOMONEY      => 1,
+        Methods\Entity::PAYUMONEY     => 1,
+        Methods\Entity::MPESA         => 1,
+        Methods\Entity::PHONEPE       => 1,
+        Methods\Entity::CARD_NETWORKS => [
+            Network::DICL => 0,
+        ]
     ];
 
     public static function checkZohoHeaders(Headers $headers)

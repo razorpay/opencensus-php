@@ -33,34 +33,6 @@ return [
         ],
     ],
 
-    'testCreateOptionsForMerchantAdmin' => [
-        'request'  => [
-            'url'     => '/options/100DemoAccount',
-            'method'  => 'post',
-            'content' => [
-                'namespace'       => 'payment_links',
-                'service_type'    => 'invoices',
-                'options'         => [
-                    'checkout'    => [
-                        'label'   => [
-                            'min_amount'  => 'Test first amount'
-                        ]
-                    ]
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'namespace'       => 'payment_links',
-                'service_type'    => 'invoices',
-                'reference_id'    => null,
-                'scope'           => 'global',
-                'options_json'    => '{"checkout":{"label":{"min_amount":"Test first amount"}}}',
-                'merchant_id'     => '100DemoAccount'
-            ],
-        ],
-    ],
-
     'testCreateOptionsForMerchantWithReferenceId' => [
         'request'  => [
             'url'     => '/options',
@@ -341,5 +313,332 @@ return [
                 'options_json'    => '{"checkout":{"label":{"min_amount":"Modify this field value"}}}'
             ]
         ]
+    ],
+
+    'testCreateOptionsForMerchantAdmin' => [
+        'request'  => [
+            'url'     => '/options/100DemoAccount',
+            'method'  => 'post',
+            'content' => [
+                'namespace'       => 'payment_links',
+                'service_type'    => 'invoices',
+                'options'         => [
+                    'checkout'    => [
+                        'label'   => [
+                            'min_amount'  => 'Test first amount'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'namespace'       => 'payment_links',
+                'service_type'    => 'invoices',
+                'reference_id'    => null,
+                'scope'           => 'global',
+                'options_json'    => '{"checkout":{"label":{"min_amount":"Test first amount"}}}',
+                'merchant_id'     => '100DemoAccount'
+            ],
+        ],
+    ],
+
+    'testOptionsPatchAdmin' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/100DemoAccount',
+            'method'  => 'patch',
+            'content' => [
+                'options'         => [
+                    'checkout'    => [
+                        'label'   => [
+                            'min_amount'  => 'Modify this field value'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'namespace'       => 'payment_links',
+                'service_type'    => 'invoices',
+                'scope'           => 'global',
+                'options_json'    => '{"checkout":{"label":{"min_amount":"Modify this field value"}}}',
+                'merchant_id'     => '100DemoAccount'
+            ]
+        ]
+    ],
+
+    'testOptionsFetchByAdmin' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/100DemoAccount',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'defaultOptions'   => [],
+                'merchantOptions'  => [],
+                'serviceOptions'   => [],
+                'mergedOptions'    => []
+            ]
+        ]
+    ],
+
+    'testOptionsFetchByAdminFailure1' => [
+        'request'  => [
+            'url'     => '/options/wrong_namespace_name/invoices/100DemoAccount',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Namespace wrong_namespace_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsFetchByAdminFailure2' => [
+        'request'  => [
+            'url'     => '/options/payment_links/wrong_service_name/100DemoAccount',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Service wrong_service_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsFetchByAdminFailure3' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/wrong_merchant_name',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testOptionsDeleteSuccessAdmin' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/100DemoAccount',
+            'method'  => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'id'         => 'opt_Ddl2qTGP3uHL2O',
+                'deleted'    => true
+            ]
+        ]
+    ],
+
+    'testOptionsDeleteByAdminFailure1' => [
+        'request'  => [
+            'url'     => '/options/wrong_namespace_name/invoices/100DemoAccount',
+            'method'  => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Namespace wrong_namespace_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsDeleteByAdminFailure2' => [
+        'request'  => [
+            'url'     => '/options/payment_links/wrong_service_name/100DemoAccount',
+            'method'  => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Service wrong_service_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsDeleteByAdminFailure3' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/wrong_merchant_name',
+            'method'  => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+
+    'testOptionsUpdateByAdminFailure1' => [
+        'request'  => [
+            'url'     => '/options/wrong_namespace_name/invoices/100DemoAccount',
+            'method'  => 'patch'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Namespace wrong_namespace_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsUpdateByAdminFailure2' => [
+        'request'  => [
+            'url'     => '/options/payment_links/wrong_service_name/100DemoAccount',
+            'method'  => 'patch'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Service wrong_service_name is not valid'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsUpdateByAdminFailure3' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/wrong_merchant_name',
+            'method'  => 'patch'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testOptionsUpdateByAdminForMissingEntityFailure' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/100DemoAccount',
+            'method'  => 'patch'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'No entity with namespace=payment_links, service=invoices and merchant=100DemoAccount found'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOptionsDeleteByAdminForMissingEntityFailure' => [
+        'request'  => [
+            'url'     => '/options/payment_links/invoices/100DemoAccount',
+            'method'  => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'No entity with namespace=payment_links, service=invoices and merchant=100DemoAccount found'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDuplicateCreateOptionsForMerchantAdmin' => [
+        'request'  => [
+            'url'     => '/options/100DemoAccount',
+            'method'  => 'post',
+            'content' => [
+                'namespace'       => 'payment_links',
+                'service_type'    => 'invoices',
+                'options'         => [
+                    'checkout'    => [
+                        'label'   => [
+                            'min_amount'  => 'Test first amount'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error'           => [
+                    'code'        		=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Entry with field namespace=payment_links already exists for merchant. You may want to update or delete existing'
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 ];

@@ -148,6 +148,11 @@ class Processor
     const CARD_PAYMENTS_PREFIX    = 'card_payments_gateway_routing';
 
     /**
+     * 3D Secure international feature flag
+     */
+    const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -1184,6 +1189,10 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
+            $input['order_amount'] = $orderAmount;
         }
     }
 
@@ -1730,23 +1739,31 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->lockDecrementCurrentOfferUsage($payment);
+        }
+
+
         //TODO: Remove this later
-        try
-        {
-            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                [
-                    'payment'             => $this->payment->toArray(),
-                    'code'                => $code,
-                    'internal_code'       => $internalCode,
-                    'error'               => $e->getMessage()
-                ]
-            );
-        }
+//        try
+//        {
+//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+//        }
+//        catch (\Throwable $e)
+//        {
+//            $this->trace->info(
+//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                [
+//                    'payment'             => $this->payment->toArray(),
+//                    'code'                => $code,
+//                    'internal_code'       => $internalCode,
+//                    'error'               => $e->getMessage()
+//                ]
+//            );
+//        }
     }
 
     /**
@@ -3009,6 +3026,11 @@ class Processor
             return false;
         }
 
+        if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -3201,6 +3223,8 @@ class Processor
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
+
+                $this->setAnalyticsLog($payment);
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
 

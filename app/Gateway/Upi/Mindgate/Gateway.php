@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
@@ -34,7 +35,7 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
-    const TIMEOUT       = 10;
+    const TIMEOUT       = 15;
 
     const CONNECT_TIMEOUT = 1;
 
@@ -87,7 +88,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::AUTHENTICATE);
 
-        if ($this->isBharatQrPayment() === true)
+        if (($this->isBharatQrPayment() === true) or
+            ($this->isUpiTransferPayment() === true))
         {
             $attributes = $this->getBharatqrGatewayAttributes($input);
 
@@ -303,7 +305,11 @@ class Gateway extends Base\Gateway
 
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
+        $payeeVaDetails = $this->parsePayeeVaDetails($response[ResponseFields::REFERENCE_7]);
+
         $response = array_merge($response, $bankDetails);
+
+        $response = array_merge($response, $payeeVaDetails);
 
         if ($isBharatQr === true)
         {
@@ -343,6 +349,30 @@ class Gateway extends Base\Gateway
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
+        ];
+    }
+
+    public function getUpiTransferData(array $input)
+    {
+        $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $upiTransferData = [
+            UpiTransfer\GatewayResponseParams::AMOUNT                => $amount,
+            UpiTransfer\GatewayResponseParams::GATEWAY               => $this->gateway,
+            UpiTransfer\GatewayResponseParams::PAYER_VPA             => $input[ResponseFields::PAYER_VA],
+            UpiTransfer\GatewayResponseParams::PAYEE_VPA             => $input[ResponseFields::PAYEE_VA],
+            UpiTransfer\GatewayResponseParams::PAYER_BANK            => $input[ResponseFields::BANK_NAME],
+            UpiTransfer\GatewayResponseParams::PAYER_IFSC            => $input[ResponseFields::IFSC_CODE],
+            UpiTransfer\GatewayResponseParams::PAYER_ACCOUNT         => $input[ResponseFields::ACCOUNT_NUMBER],
+            UpiTransfer\GatewayResponseParams::TRANSACTION_TIME      => $input[ResponseFields::TXN_AUTH_DATE],
+            UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
+            UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[ResponseFields::NPCI_UPI_TXN_ID],
+            UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+        ];
+
+        return [
+            'callback_data'     => $input,
+            'upi_transfer_data' => $upiTransferData
         ];
     }
 
@@ -494,6 +524,29 @@ class Gateway extends Base\Gateway
         }
 
         return $bankReferenceArray;
+    }
+
+    protected function parsePayeeVaDetails($payeeVaReference)
+    {
+        $fields = constant(__NAMESPACE__ . '\ResponseFields::PAYEE_VA_DETAILS');
+
+        $values = explode(ResponseFields::BANK_REFERENCE_SEPARATOR, $payeeVaReference);
+
+        $payeeVaReferenceArray = [];
+
+        $index = 0;
+
+        if (empty($values) === false)
+        {
+            foreach ($fields as $key)
+            {
+                $payeeVaReferenceArray[$key] = $values[$index];
+
+                $index++;
+            }
+        }
+
+        return $payeeVaReferenceArray;
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)

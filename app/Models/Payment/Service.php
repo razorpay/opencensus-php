@@ -954,7 +954,28 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
+        $this->getOfferIdsForPayments($payments);
+
         return $payments->toArrayPublic();
+    }
+
+    protected function getOfferIdsForPayments($payments)
+    {
+        $paymentIds = $payments->pluck('id');
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds);
+
+        $plucked = $entityOffer->pluck('offer_id', 'entity_id');
+
+        foreach($payments as $payment)
+        {
+            if($plucked->has($payment->getId()))
+            {
+                $payment->setOfferId($plucked->get($payment->getId()));
+            }
+        }
     }
 
     public function fetch(string $id, array $input = []): array
@@ -975,7 +996,19 @@ class Service extends Base\Service
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
 
-        $entity = $payment->toArrayPublic();
+        $paymentIds = explode(', ', $payment->getId());
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds)
+                            ->first();
+
+        if($entityOffer !== null)
+        {
+            $payment->setOfferId($entityOffer->getOfferId());
+        }
+
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)

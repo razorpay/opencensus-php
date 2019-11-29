@@ -29,7 +29,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
     public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
-        parent::__construct($gateway);
+        parent::__construct($gateway, $batch);
 
         $this->messenger->batch = $batch;
     }

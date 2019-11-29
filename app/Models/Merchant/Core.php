@@ -39,7 +39,10 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -192,7 +195,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant);
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -232,13 +235,13 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
         $this->createBalance($merchant, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
-        (new Methods\Core)->setDefaultMethods($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
 
         (new Detail\Core)->createMerchantDetails($merchant);
 
@@ -510,6 +513,22 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $mode);
+
+        // Avoid Creating a new Balance of type Primary if already exists for the merchant,
+        // This a Safety Check to avoid multiple primary balances being created,
+        // applicable (rare scenarios, due to unknown bug) when a Whitelist Merchant is instantly activated
+        // with primary balance is created but activated flag not set
+        if ($merchantBalance !== null)
+        {
+            $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
+                               [
+                                   "balance_id" => $merchantBalance->getId()
+                               ]);
+
+            return $merchantBalance;
+        }
+
         $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
@@ -1165,7 +1184,7 @@ class Core extends Base\Core
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
@@ -1178,14 +1197,30 @@ class Core extends Base\Core
                 PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
             ];
 
-            $config = (new PartnerConfig\Core)->create($application, $config);
+            (new PartnerConfig\Core)->create($application, $config);
 
+            return $partner;
         });
+
+        $this->sendPartnerOnBoardedEmail($partner);
 
         return [
             'partner_type'              => $partnerType,
             'has_commission_configs'    => true,
         ];
+    }
+
+    protected function sendPartnerOnBoardedEmail(Entity $partner)
+    {
+        $data = [
+            'name'         => $partner->getName(),
+            'email'        => $partner->getEmail(),
+            'partner_type' => $partner->getPartnerType(),
+        ];
+
+        $email = new PartnerOnBoarded($data);
+
+        Mail::queue($email);
     }
 
     /**
@@ -1251,6 +1286,8 @@ class Core extends Base\Core
 
             return $accessMap;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
 
         return $accessMap->toArrayPublic();
     }

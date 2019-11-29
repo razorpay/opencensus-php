@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use Queue;
+use RZP\Jobs;
 use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -819,6 +821,69 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Tests recon and gateway data update for cybersource payment
+    // which is being routed through Cards Payment Service (CPS).
+    //
+    public function testAxisCyberSourceCpsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($payment1['reference1']);
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment1['id'], ['cps_route' => 2]);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        // Recon should not overwrite reference2 if it was saved before
+        $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Tests whether recon batch is getting created and the
+    // batch job is getting queued in the desired queue.
+    //
+    public function testAxisCyberSourceReconQueueAndBatchStatus()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+
+        Queue::fake();
+
+        $this->runForFiles([$file], 'Axis');
+
+        Queue::assertPushedOn(env('AWS_RECON_QUEUE'), Jobs\Batch::class);
+
+        $this->assertBatchStatus(Status::CREATED);
     }
 
     public function testAxisCyberSourceReconPaymentModifiedFile()
@@ -1739,6 +1804,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
 
         $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
 

@@ -386,6 +386,11 @@ class Entity extends Base\PublicEntity
                                              ->value(Detail\Entity::GATEWAY_VALUE);
     }
 
+    public function getPincode()
+    {
+        return $this->getAttribute(self::PINCODE);
+    }
+
     // --------------------------- Relations ---------------------------------- //
 
     public function merchant()

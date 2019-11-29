@@ -325,6 +325,8 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
+        $invoice->setRelation('entity', $invoice->entity);
+
         $data = $this->core->sendNotification($invoice, $medium);
 
         return $data;
@@ -390,7 +392,7 @@ class Service extends Base\Service
         $variant = $this->app->razorx->getTreatment(
             $invoice->merchant->getId(),
             Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
-			$mode
+            $mode
         );
 
         if (strtolower($variant) === 'on')
@@ -400,6 +402,41 @@ class Service extends Base\Service
         else
         {
             return (new ViewDataSerializer($invoice))->serializeForHosted();
+        }
+    }
+
+	/*
+	 * Below function is added to test Rendering Preferences on a different route.
+	 * Will delete after testing.
+	 */
+    public function getInvoiceViewDataForTest(string $invoiceId): array
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $invoice = $this->repo->invoice->findByPublicId($invoiceId);
+
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
+
+        $invoice->getValidator()->validateInvoiceViewable();
+
+        // Get razorx treatment
+        $variant = $this->app->razorx->getTreatment(
+            $invoice->merchant->getId(),
+            Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
+            $mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+        }
+        else
+        {
+            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
         }
     }
 

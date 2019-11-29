@@ -522,5 +522,31 @@ return [
             'content' => [],
         ],
     ],
+
+    'testResendAuthLinkViaSms' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify_by/sms',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => TRUE,
+            ],
+        ],
+    ],
+
+    'testResendAuthLinkViaEmail' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify_by/email',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => TRUE,
+            ],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

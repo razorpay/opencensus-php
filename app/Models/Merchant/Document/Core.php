@@ -213,7 +213,7 @@ class Core extends Base\Core
 
         $ocrMatchingPercentage = 0;
 
-        if ((isset($ocrDetails[Constants::NAME]) === true) and
+        if ((empty($ocrDetails[Constants::NAME]) === false) and
             empty($promoterPanName) === false)
         {
             $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);
