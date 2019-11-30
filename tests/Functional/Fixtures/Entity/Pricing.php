@@ -148,6 +148,19 @@ class Pricing extends Base
                 'org_id'              => '100000razorpay',
             ],
             [
+                'id'                  => '1zD0BXpeOJaqPP',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'nach',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
                 'id'                  => '1zD0BXpeOJaqpD',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -1056,5 +1069,29 @@ class Pricing extends Base
         {
             $this->edit($row['id'], array_merge($attributes, $row));
         }
+    }
+
+    public function createUpiTransferPricingPlan()
+    {
+        $pricingPlanId = 'upiTrnsfrPrcng';
+
+        $rows = [
+            [
+                'id'             => '1zE31zbybacaaa',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'Upi Transfer pricing',
+                'feature'        => 'payment',
+                'payment_method' => 'upi',
+                'percent_rate'   => 100,
+                'fixed_rate'     => 0,
+                'max_fee'        => 5000,
+                'receiver_type'  => 'vpa',
+                'org_id'         => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
     }
 }

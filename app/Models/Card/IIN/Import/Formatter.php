@@ -111,7 +111,9 @@ class Formatter
 
         for ($i = $min; $i <= $max; $i++)
         {
-            $input[IIN::IIN] = $i;
+            $iin = str_pad($i, 6, '0', STR_PAD_LEFT);
+
+            $input[IIN::IIN] = $iin;
 
             $iins[$i] = $input;
         }

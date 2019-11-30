@@ -17,7 +17,6 @@ use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Admin\Org\Preferences;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
@@ -348,7 +347,6 @@ class Core extends Base\Core
                 'is_correction'         => $isCorrection,
                 'merchant_ids'          => $merchantIds,
                 'merchant_ids_excluded' => $merchantIdsExcluded,
-                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
                 'mode'                  => $mode
             ]);
 

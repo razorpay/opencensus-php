@@ -746,6 +746,19 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
     }
 
+    public function testPreferencesForOrderWithAuthType()
+    {
+        $this->testEmandateRegistrationOrderWithZeroRupeeAndTokenWithFirstAmount();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $this->startTest($testData);
+    }
+
     public function testPaymentWithIncorrectBankFromOrderBank()
     {
         $this->testCreateOrderWithBank();

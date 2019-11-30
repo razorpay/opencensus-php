@@ -542,4 +542,14 @@ return [
             ],
         ],
     ],
+    'testFixTransactionSettledAt' => [
+        'request' => [
+            'url'     => '/transactions/fund_account_validation/settled/fix',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

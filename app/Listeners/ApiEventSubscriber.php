@@ -817,6 +817,15 @@ class ApiEventSubscriber extends Base\Core
             ];
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            $upiTransfer = $payment->upiTransfer;
+
+            $partialPayload[$upiTransfer->getEntity()] = [
+                'entity' => $upiTransfer->toArrayPublic(),
+            ];
+        }
+
         return $partialPayload;
     }
 

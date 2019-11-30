@@ -24,6 +24,14 @@ class TransactionTrackerMessages
 
     const PRIMARY_REFUND_INITIATED_SLA_NOT_DONE = 'Your Refund has been Delayed';
 
+    const PRIMARY_REFUND_PROCESSED_SLA_DONE_VOID_REFUND     = 'Your Refund has been Processed';
+
+    const PRIMARY_REFUND_PROCESSED_SLA_NOT_DONE_VOID_REFUND = 'Your Refund has been Processed';
+
+    const PRIMARY_REFUND_INITIATED_SLA_DONE_VOID_REFUND     = 'Your Refund has been Delayed';
+
+    const PRIMARY_REFUND_INITIATED_SLA_NOT_DONE_VOID_REFUND = 'Your Refund has been Delayed';
+
     const SECONDARY_REFUND_PROCESSED_SLA_DONE = 'The refund for your payment done on ' . self::MESSAGE_MERCHANT_NAME .
     ' for '.self::MESSAGE_AMOUNT.' has been initiated by Razorpay.';
 
@@ -36,6 +44,20 @@ class TransactionTrackerMessages
     ' is being processed and is taking longer than usual due to a technical issue at the bank\'s side.';
 
     const SECONDARY_REFUND_INITIATED_SLA_DONE = 'The refund for the transaction of ' .
+    self::MESSAGE_AMOUNT . ' has been initiated';
+
+    const SECONDARY_REFUND_PROCESSED_SLA_DONE_VOID_REFUND = 'Your refund for ' . self::MESSAGE_AMOUNT .
+    ' has been processed. If you have not received the refund credit yet, please contact our team by raising a request';
+
+    const SECONDARY_REFUND_PROCESSED_SLA_NOT_DONE_VOID_REFUND = 'Your refund for ' . self::MESSAGE_AMOUNT .
+    ' has been processed by '.self::MESSAGE_MERCHANT_NAME.'. The amount will be deposited in your bank account by '
+    . self::MESSAGE_EXPECTED_DATE;
+
+    const SECONDARY_REFUND_INITIATED_SLA_NOT_DONE_VOID_REFUND = 'The refund for ' . self::MESSAGE_AMOUNT .
+    ' done on ' . self::MESSAGE_MERCHANT_NAME .
+    ' is being processed and is taking longer than usual due to a technical issue at the bank\'s side.';
+
+    const SECONDARY_REFUND_INITIATED_SLA_DONE_VOID_REFUND = 'The refund for the transaction of ' .
     self::MESSAGE_AMOUNT . ' has been initiated';
 
     const PRIMARY_PAYMENT_CAPTURED = 'Payment was successfully settled to the Merchant';
@@ -80,7 +102,7 @@ class TransactionTrackerMessages
     'retrieval of the funds. You may submit your bank statement as proof for the debit, stating '.
     '"Money has been debited from my account and I have not received services/product and not got a refund".';
 
-    public function getMessage($entity, $status, $messageType, $slaDone = null, $lateAuth = null)
+    public function getMessage($entity, $status, $messageType, $slaDone = null, $lateAuth = null, $voidRefund = null)
     {
         $constant = 'self::' . strtoupper($messageType) . '_' . strtoupper($entity) . '_' . strtoupper($status);
 
@@ -92,6 +114,11 @@ class TransactionTrackerMessages
         if (is_bool($lateAuth) === true)
         {
             $constant .= ($lateAuth === true) ? '_LATE_AUTH' : '';
+        }
+
+        if (is_bool($voidRefund) === true)
+        {
+            $constant .= ($voidRefund === true) ? '_VOID_REFUND' : '';
         }
 
         if (defined($constant))

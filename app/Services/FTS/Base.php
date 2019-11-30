@@ -45,6 +45,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
     const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
 
     const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
@@ -58,6 +60,8 @@ class Base
     const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/admin/transfers/status';
 
     const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
+
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/admin/attempts/verify';
 
     // Headers
     const ACCEPT        = 'Accept';

@@ -55,4 +55,15 @@ class DeviceController extends Controller
 
         return $this->response($response);
     }
+
+    public function updateWithAction()
+    {
+        $input['id'] = $this->request()->route('device_id');
+        $input['action'] = $this->request()->route('action');
+        $input['data'] = $this->request()->all();
+
+        $response = $this->service->updateWithAction($input);
+
+        return $this->response($response);
+    }
 }

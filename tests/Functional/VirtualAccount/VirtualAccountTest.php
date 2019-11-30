@@ -67,6 +67,10 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->on('test');
 
+        $this->fixtures->create('terminal:vpa_terminal');
+
+        $this->fixtures->create('terminal:vpa_shared_terminal');
+
         $this->setupMockDns();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
@@ -1003,7 +1007,7 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForOrderPartialPaymentPartialAmount()
     {
-        foreach ([FeeBearer::PLATFORM] as $merchantFeeBearer)
+        foreach ([FeeBearer::PLATFORM, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $this->fixtures->merchant->edit('10000000000000', ['fee_bearer' => $merchantFeeBearer]);
 
@@ -1035,7 +1039,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
 
-        foreach ([FeeBearer::PLATFORM] as $merchantFeeBearer)
+        foreach ([FeeBearer::PLATFORM, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $this->fixtures->merchant->edit('10000000000000', ['fee_bearer' => $merchantFeeBearer]);
 
@@ -1080,7 +1084,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order');
 
@@ -1110,7 +1114,7 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
 
@@ -1143,7 +1147,7 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
 
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
@@ -1173,7 +1177,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
 
-        foreach ([FeeBearer::CUSTOMER] as $merchantFeeBearer)
+        foreach ([FeeBearer::CUSTOMER, FeeBearer::DYNAMIC] as $merchantFeeBearer)
         {
             $order = $this->fixtures->create('order', ['partial_payment' => true]);
 
@@ -1619,5 +1623,62 @@ class VirtualAccountTest extends TestCase
         }
 
         return $tlvArray;
+    }
+
+    public function testCreateVirtualAccountWithVpa()
+    {
+        $response = $this->createVirtualAccount([], false, null, null, true,'testvpa');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testAddVpaToExistingVirtualAccount()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $response = $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testAddVpaToExistingVAWithVpa()
+    {
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($expectedResponse, function() {
+
+            $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'testvpa');
+
+            $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+        });
+    }
+
+    public function testWebhookVirtualAccountCreatedForVpa()
+    {
+        $this->createWebhook(
+            [
+                'events' => [
+                    'virtual_account.created' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('virtual_account.created', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->createVirtualAccount([], false, null, null, true,'testvpa');
     }
 }

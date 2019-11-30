@@ -5,8 +5,9 @@ namespace RZP\Models\SubscriptionRegistration;
 use Queue;
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Jobs\Job;
 use RZP\Models\Base;
+use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
@@ -224,6 +225,66 @@ class Service extends Base\Service
         return $this->core->paperMandateAuthenticate($subscriptionRegistration, $input);
     }
 
+    public function paperMandateAuthenticateProxy(array $input): array
+    {
+        $data = $this->paperMandateAuthenticate($input);
+
+        if ($data[SubscriptionRegistrationConstants::SUCCESS] === true)
+        {
+            $data[SubscriptionRegistrationConstants::PAYMENT_RESPONSE] = $this->createPaymentForPaperMandate($input);
+        }
+
+        return $data;
+    }
+
+    protected function createPaymentForPaperMandate(array $input)
+    {
+        $paymentInput = [];
+
+        $orderId = null;
+
+        if (empty($input[Entity::ORDER_ID]) === false)
+        {
+            $orderId = $input[Entity::ORDER_ID];
+        }
+        else
+        {
+            $invoiceId = $input[Entity::AUTH_LINK_ID];
+
+            $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
+
+            $orderId = Order\Entity::getSignedId($invoice->getOrderId());
+        }
+
+        $subscriptionRegistration = $this->getSubscriptionRegistrationForOrder($orderId);
+
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        $customer = $paperMandate->customer;
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        $paymentInput[Payment\Entity::AMOUNT]      = $order->getAmount();
+
+        $paymentInput[Payment\Entity::CURRENCY]    = $order->getCurrency();
+
+        $paymentInput[Payment\Entity::METHOD]      = $order->getMethod();
+
+        $paymentInput[Payment\Entity::RECURRING]   = true;
+
+        $paymentInput[Payment\Entity::ORDER_ID]    = $orderId;
+
+        $paymentInput[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        $paymentInput[Payment\Entity::CONTACT]     = $customer->getContact();
+
+        $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
+
+        $paymentService = new Payment\Service();
+
+        return $paymentService->process($paymentInput);
+    }
+
     public function paperMandateValidate(array $input): array
     {
         $validator = new Validator;
@@ -272,8 +333,70 @@ class Service extends Base\Service
         $paperMandate = $subscriptionRegistration->paperMandate;
 
         return [
-            'url' => $paperMandate->getUploadedFormUrl()
+            SubscriptionRegistrationConstants::URL => $paperMandate->getUploadedFormUrl()
         ];
+    }
+
+    public function retryPaperMandateToken($tokenId)
+    {
+        $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $this->merchant);
+
+        $subscriptionRegistration = $this->getSubscriptionRegistrationForToken($tokenId);
+
+        $subscriptionRegistration->getValidator()->validateTokenToRetry($token);
+
+        $payments = $token->nachPayments;
+
+        if (count($payments) !== 1)
+        {
+            throw new Exception\LogicException(
+                'exactly one payment should have been created for the given token',
+                null,
+                [
+                    'token_id'       => $token->getId(),
+                    'payments_count' => count($payments),
+                ]
+            );
+        }
+
+        $payment = $payments->get(0);
+
+        $order = $payment->order;
+
+        if ($order === null)
+        {
+            throw new Exception\LogicException(
+                'order can\'t be null for nach method for payment',
+                null,
+                [
+                    'token_id'       => $token->getId(),
+                    'payment_id'     => $payment->getId(),
+                ]
+            );
+        }
+
+        return $this->createPaymentForPaperMandate([Entity::ORDER_ID => $order->getPublicId()]);
+    }
+
+    public function nachRegisterTestPaymentAuthorizeOrFail(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $subscriptionRegistration = $invoice->entity;
+
+        if (($subscriptionRegistration === null) or
+            ($invoice->getEntityType() !== Constants\Entity::SUBSCRIPTION_REGISTRATION))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'id provided does not exist'
+            );
+        }
+
+        $subscriptionRegistration->getValidator()->validateNachRegisterTestPaymentAuthorizeOrFail();
+
+        (new Validator)->validateInput('nach_register_test_payment', $input);
+
+        return $this->core->nachRegisterTestPaymentAuthorizeOrFail($subscriptionRegistration, $input);
     }
 
     protected function getSubscriptionRegistrationForToken(string $tokenId)

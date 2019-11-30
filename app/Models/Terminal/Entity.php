@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 25;
+    const MAX_TERMINALS_COUNT           = 200;
     const DEFAULT_CURRENCY              = 'INR';
 
     /**
@@ -143,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -209,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -312,7 +314,7 @@ class Entity extends Base\PublicEntity
         self::VPA                        => null,
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
-        self::RUPAY_MPAN                 => null,        
+        self::RUPAY_MPAN                 => null,
     ];
 
     protected $casts = [
@@ -325,6 +327,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
+        self::NACH                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
@@ -370,6 +373,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    public function getGatewayAccessCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ACCESS_CODE);
     }
 
     public function getGatewayMerchantId2()
@@ -579,6 +587,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isNachEnabled()
+    {
+        return $this->getAttribute(self::NACH);
     }
 
     public function isCardlessEmiEnabled()
@@ -1303,6 +1316,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
+    public function isUpiTransfer()
+    {
+        return ($this->isTypeApplicable(Type::UPI_TRANSFER) === true);
+    }
+
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
@@ -1342,6 +1360,15 @@ class Entity extends Base\PublicEntity
     public function isDomestic()
     {
         return ($this->isCardEnabled() === true);
+    }
+
+    public  function isValidVirtualVpaForTerminal(string $virtualVpa)
+    {
+        $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+
+        $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
+
+        return (substr($virtualVpa, 0, strlen($prefix)) === $prefix) && (substr($virtualVpa, -strlen($handle), strlen($virtualVpa)) === $handle);
     }
 
     /**

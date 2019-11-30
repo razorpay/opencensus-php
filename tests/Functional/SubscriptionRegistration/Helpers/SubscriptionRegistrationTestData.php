@@ -511,5 +511,42 @@ return [
             ],
         ],
     ],
+
+    'testCancelAuthLinksViaBatch' => [
+        'request' => [
+            'url' => '/subscription_registration/auth_links/batch/batch_100000000batch/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testResendAuthLinkViaSms' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify_by/sms',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => TRUE,
+            ],
+        ],
+    ],
+
+    'testResendAuthLinkViaEmail' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify_by/email',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => TRUE,
+            ],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

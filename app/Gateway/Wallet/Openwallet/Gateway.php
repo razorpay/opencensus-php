@@ -55,9 +55,24 @@ class Gateway extends Base\Gateway
      */
     public function verifyRefund(array $input)
     {
-        return (new ScroogeResponse)->setSuccess(false)
-                                    ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
-                                    ->toArray();
+        $scroogeResponse = new ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
     }
 
     /**

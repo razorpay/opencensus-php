@@ -45,6 +45,17 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
+        //
+        // In recent Axis files, we are getting refund IDs in the
+        // column 'merchant_trans_ref', for MIGS and cybersource both.
+        //
+        $refundId = $this->getColumnPaymentId($row);
+
+        if (UniqueIdEntity::verifyUniqueId($refundId, false) === true)
+        {
+            return $refundId;
+        }
+
         if ($this->isCybersource($row) === true)
         {
             $refundId = $this->getRefundIdForCybersource($row);
@@ -183,6 +194,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $paymentId;
     }
 
+    /**
+     * We get payment/refund ID under same column,
+     * as it is combined file.
+     *
+     * @param array $row
+     * @return mixed|null
+     */
     protected function getColumnPaymentId(array $row)
     {
         foreach (self::COLUMN_PAYMENT_ID as $cpi)

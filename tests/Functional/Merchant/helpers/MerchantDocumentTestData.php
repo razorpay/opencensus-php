@@ -31,8 +31,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "id"      => '%s',
-                "deleted" => true
+                'verification' => [
+                    'required_fields' => [
+                        'address_proof_url',
+                    ]
+                ],
             ]
         ]
     ],
