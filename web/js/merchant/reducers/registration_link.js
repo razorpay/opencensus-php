@@ -5,6 +5,7 @@ import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const REGISTRATION_LINK_FETCH = 'REGISTRATION_LINK_FETCH';
 const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
+const REGISTRATION_LINK_CANCEL = 'REGISTRATION_LINK_CANCEL';
 
 export const fetchRegistrationLink = id => ({
   type: REGISTRATION_LINK_FETCH,
@@ -17,6 +18,15 @@ export const createRegistrationLink = params => ({
   type: REGISTRATION_LINK_CREATE,
   payload: new RegistrationLink().save(params),
 });
+
+export const cancelRegistrationLink = params => {
+  let registrationLink = new RegistrationLink(params);
+
+  return {
+    type: REGISTRATION_LINK_CANCEL,
+    payload: registrationLink.cancel(),
+  };
+};
 
 export const validateNachFile = (file, id) => {
   let formData = new FormData();
