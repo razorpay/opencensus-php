@@ -487,6 +487,6 @@ class Service extends Base\Service
 
         $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
-        return $invoice->toArrayPublic();
+        return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 }
