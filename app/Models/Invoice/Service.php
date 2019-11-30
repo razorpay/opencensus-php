@@ -10,7 +10,6 @@ use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
@@ -214,18 +213,6 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        if ((new Batch\Service())->failBatchProcessIfRequired($batchId) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
-                null,
-                [
-                    'batch_id' => $batchId,
-                ],
-                'Batch process ongoing, unable to cancel'
-            );
-        }
-
         $batch = (new Batch\Service())->fetchBatchById($batchId);
 
         return $this->core->cancelInvoicesOfBatch($batch);

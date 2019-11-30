@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
@@ -933,9 +934,26 @@ class Core extends Base\Core
      */
     public function cancelInvoicesOfBatch(array $batch)
     {
-        (new Validator)->validateCancelInvoicesOfBatch($batch);
-
         $batchId = $batch[Batch\Entity::ID];
+
+        if ($this->isFailBatchEnabled() === true)
+        {
+            if ((new Batch\Service())->failBatchProcessIfRequired($batchId) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
+                    null,
+                    [
+                        'batch_id' => $batchId,
+                    ],
+                    'Batch process ongoing, unable to cancel'
+                );
+            }
+        }
+        else
+        {
+            (new Validator)->validateCancelInvoicesOfBatch($batch);
+        }
 
         Batch\Entity::verifyIdAndStripSign($batchId);
 
@@ -1193,5 +1211,16 @@ class Core extends Base\Core
             $input[Entity::CUSTOMER][Customer\Entity::EMAIL] = null;
             $input[Entity::CUSTOMER][Customer\Entity::CONTACT] = null;
         }
+    }
+
+    protected function isFailBatchEnabled()
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::FAIL_BATCH_BEFORE_CANCEL,
+            $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }

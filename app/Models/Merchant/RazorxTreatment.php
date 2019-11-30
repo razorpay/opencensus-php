@@ -49,4 +49,6 @@ final class RazorxTreatment
 
     // Decides if Instant Refunds Mode decisioning call should go to scrooge during refund creation flow
     const INSTANT_REFUND_MODES = 'instant_refunds_modes';
+
+    const FAIL_BATCH_BEFORE_CANCEL = 'fail_batch_before_cancel';
 }

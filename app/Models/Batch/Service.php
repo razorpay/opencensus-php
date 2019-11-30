@@ -256,6 +256,7 @@ class Service extends Base\Service
     {
         $batch = $this->fetchBatchById($id);
 
+        // There is confusion here, needs to be clarified.
         if ($batch[Entity::STATUS] === Status::PROCESSED or
             $batch[Entity::STATUS] === Status::FAILED)
         {
