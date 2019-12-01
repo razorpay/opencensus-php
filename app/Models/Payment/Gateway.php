@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
@@ -133,6 +134,8 @@ class Gateway
     const BAJAJFINSERV       = 'bajajfinserv';
     const GOOGLE_PAY         = 'google_pay';
 
+    const DEBIT_EMI          = 'debit_emi';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -175,7 +178,7 @@ class Gateway
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
-        self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
+        self::DEBIT_EMI    => [self::ACQUIRER_HDFC],
     ];
 
     const POWER_WALLETS = [
@@ -219,6 +222,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
+        self::DEBIT_EMI,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -837,6 +841,7 @@ class Gateway
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
+            self::DEBIT_EMI,
         ],
 
         Method::UPI => [
@@ -1208,6 +1213,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
+        self::DEBIT_EMI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1658,9 +1664,14 @@ class Gateway
         IFSC::BARB,
     ];
 
-    public static $emiBankToGatewayMap = [
-        IFSC::HDFC => Gateway::HDFC,
-        IFSC::HSBC => Gateway::FIRST_DATA,
+    protected static $emiBankToGatewayMap = [
+        IFSC::HDFC => [
+            Emi\Type::CREDIT => Gateway::HDFC,
+            Emi\Type::DEBIT  => Gateway::DEBIT_EMI,
+        ],
+        IFSC::HSBC => [
+            Emi\Type::CREDIT => Gateway::FIRST_DATA
+        ],
     ];
 
     /**
