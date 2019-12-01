@@ -25,12 +25,22 @@ class Service extends Base\Service
         $rules = $input['rules'];
         $merchantId = $this->merchant->getId();
 
-        // Check if workflow belongs to merchant in context
+        // Check if workflow exists and belongs to merchant in context
         foreach ($rules as $rule)
         {
-            $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID])->toArray();
+            $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID]);
 
-            if($merchantId != $workflow[Entity::MERCHANT_ID])
+            $permissionNames = (array_column($workflow->permissions->toArrayPublic()['items'], 'name'));
+
+            if (in_array('create_payout', $permissionNames, true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
+                    null,
+                    ['id' => $rule[Entity::WORKFLOW_ID]]);
+            }
+
+            if($merchantId != $workflow->toArray()[Entity::MERCHANT_ID])
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
@@ -52,7 +62,7 @@ class Service extends Base\Service
 
         (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
 
-        $result = $this->core()->createWorkflowPayoutAmountRules($rules);
+        $result = $this->core()->create($rules);
         return $result;
     }
 }

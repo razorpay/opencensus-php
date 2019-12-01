@@ -32,6 +32,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')->value('id');
+
         // Creating five workflows other than default workflow and storing its ids in $this->workflowIds
         for ($index = 0; $index < 5; $index++) {
             $workflow = $this->fixtures->create('workflow',
@@ -40,7 +42,15 @@ class WorkflowPayoutAmountRulesTest extends TestCase
                     'name'   => 'Test Workflow '.$index
                 ]
             );
+
             $this->workflowIds[$index] = $workflow->getId();
+
+            DB::table('workflow_permissions')->insert(
+                [
+                    'workflow_id'      => $this->workflowIds[$index],
+                    'permission_id'    => $permissionId
+                ]
+            );
         }
 
         DB::table('admins')->update(['allow_all_merchants' => 1]);
@@ -75,7 +85,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function testDuplicateWorkflowIds()
+    public function testCreateRulesWithDuplicateWorkflowIds()
     {
         $this->ba->adminProxyAuth();
 
@@ -103,10 +113,13 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->ba->adminProxyAuth();
 
         $this->fixtures->create('workflow_payout_amount_rules',[
-            'workflow_id' => 'workflowId1000',
+            'workflow_id' => $this->workflowIds[0],
             'min_amount'  => 0,
             'max_amount'  => null
         ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = $this->workflowIds[0];
+
         $this->startTest();
     }
 
@@ -187,6 +200,31 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             $entry['workflow_id'] = $this->workflowIds[$index++];
             $this->fixtures->create('workflow_payout_amount_rules', $entry);
         }
+        $this->startTest();
+    }
+
+    public function testCreateWorkflowRulesWithWrongPermission()
+    {
+        $this->ba->adminProxyAuth();
+
+        $permissionId = DB::table('permissions')->where('name','=','edit_admin')->value('id');
+
+        $workflow = $this->fixtures->create('workflow',
+            [
+                'org_id'        => $this->org->getId(),
+                'name'          => 'Test Workflow Z'
+            ]
+        );
+
+        DB::table('workflow_permissions')->insert(
+            [
+                'workflow_id'      => $workflow->getId(),
+                'permission_id'    => $permissionId
+            ]
+        );
+
+        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = $workflow->getId();
+
         $this->startTest();
     }
 }
