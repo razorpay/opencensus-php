@@ -817,6 +817,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET';
     const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                     = 'BAD_REQUEST_MERCHANT_INVALID_MCC_CODE';
     const BAD_REQUEST_MERCHANT_ID_NOT_PASSED                                        = 'BAD_REQUEST_MERCHANT_ID_NOT_PASSED';
+    const BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT                                   = 'BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT';
 
     // Features
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';

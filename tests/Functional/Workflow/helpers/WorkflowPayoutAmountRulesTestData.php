@@ -167,7 +167,7 @@ return [
         ],
     ],
 
-    'testDuplicateWorkflowIds' => [
+    'testCreateRulesWithDuplicateWorkflowIds' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/workflows/rules/payout_amount',
@@ -211,7 +211,6 @@ return [
             'content' => [
                 'rules' => [
                     [
-                        'workflow_id'	=>	'workflowId1000',
                         'min_amount'	=>	0,
                         'max_amount'	=>	100000
                     ]
@@ -308,4 +307,31 @@ return [
         ]
     ],
 
+    'testCreateWorkflowRulesWithWrongPermission' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	null
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'=> 'Workflow does not have create_payout permission'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
+        ],
+    ],
 ];

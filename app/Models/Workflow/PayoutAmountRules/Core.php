@@ -57,7 +57,7 @@ class Core extends Base\Core
         return $evaluatedRule;
     }
 
-    public function createWorkflowPayoutAmountRules($rules): array
+    public function create($rules): array
     {
         $merchantId = $this->merchant->getId();
 
