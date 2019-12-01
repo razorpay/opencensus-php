@@ -878,8 +878,7 @@ class Service extends Base\Service
             'paymentpages_mli',
             'show_commission_balance',
             'custom_notes',
-            'sellerapp_PL_batch_upload',
-            'pl-expiry-in-hrs-72'
+            'sellerapp_PL_batch_upload'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
