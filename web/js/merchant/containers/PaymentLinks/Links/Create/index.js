@@ -232,7 +232,7 @@ export default class CreateNewContainer extends React.Component {
 
     trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
 
-    const defaultPLExpiryByTime = window.pl_expiry_in_hrs;
+    const defaultPLExpiryByTime = this.props.user.plDefaultExpiryTime;
 
     if (defaultPLExpiryByTime) {
       const nextDate = moment(new Date()).add(defaultPLExpiryByTime, 'hours');
@@ -281,7 +281,7 @@ export default class CreateNewContainer extends React.Component {
           },
         };
 
-        const defaultPLExpiryByTime = window.pl_expiry_in_hrs;
+        const defaultPLExpiryByTime = this.props.user.plDefaultExpiryTime;
 
         if (defaultPLExpiryByTime) {
           const nextDate = moment(new Date()).add(
