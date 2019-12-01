@@ -18,7 +18,22 @@ class Core extends Base\Core
 
         $orgId       = $input[Entity::ORG_ID];
         $permissions = $input[Entity::PERMISSIONS];
-        $merchantId  = $input[Entity::MERCHANT_ID];
+
+        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
+        if ($this->requestHasCreatePayoutPermission($permissions, $orgId) == true)
+        {
+            if(!isset($input[Entity::MERCHANT_ID]))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
+            }
+            else
+            {
+                $merchantId = $input[Entity::MERCHANT_ID];
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                $workflow->merchant()->associate($merchant);
+            }
+        }
 
         // Check if the permissions given are enabled to have workflows
         $workflow->getValidator()->validatePermissionsForOrg($orgId, $permissions);
@@ -34,11 +49,7 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($orgId);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
         $workflow->org()->associate($org);
-
-        $workflow->merchant()->associate($merchant);
 
         $workflow->build($input);
 

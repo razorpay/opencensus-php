@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\Checker;
@@ -17,6 +18,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
         Entity::LEVELS      => 'required|array',
+        Entity::MERCHANT_ID => 'sometimes|string|size:14',
     ];
 
     protected static $editRules = [

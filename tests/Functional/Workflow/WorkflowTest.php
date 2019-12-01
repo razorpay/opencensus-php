@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
+use Illuminate\Support\Facades\DB;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
@@ -20,7 +21,6 @@ class WorkflowTest extends TestCase
     protected $input = [];
     protected $authToken = null;
     protected $org = null;
-    protected $merchant = null;
     protected $workflowPermissionIds = [];
 
     public function setUp()
@@ -32,8 +32,6 @@ class WorkflowTest extends TestCase
         // are set already in org setup.
 
         $this->org = $this->fixtures->create('org');
-
-        $this->merchant = $this->fixtures->create('merchant');
 
         $permissions = (new PermissionEntity)->getAllPermissions();
 
@@ -62,8 +60,6 @@ class WorkflowTest extends TestCase
         $attributes = array_merge($defaultAttributes, $this->input);
 
         $attributes['org_id'] = $this->org->getPublicId();
-
-        $attributes['merchant_id'] = $this->merchant->getPublicId();
 
         $attributes['permissions'] = array_slice($this->workflowPermissionIds, 0, 2);
 
@@ -120,8 +116,6 @@ class WorkflowTest extends TestCase
         $attributes = array_merge($defaultAttributes, $this->input);
 
         $attributes['org_id'] = $this->org->getPublicId();
-
-        $attributes['merchant_id'] = $this->merchant->getPublicId();
 
         $attributes['permissions'] = $permissionIds;
 
@@ -223,6 +217,24 @@ class WorkflowTest extends TestCase
     public function testWorkflowGetMultiple()
     {
         $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testCreateWorkflowWithCreatePayoutPermissionWithoutMerchantId()
+    {
+        $defaultAttributes = $this->getDefaultWorkflowArray();
+
+        $attributes = array_merge($defaultAttributes, $this->input);
+
+        $attributes['org_id'] = $this->org->getPublicId();
+
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')->value('id');
+        $attributes['permissions'] = [
+            'perm_'.$permissionId
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content'] = $attributes;
 
         $this->startTest();
     }
