@@ -101,8 +101,7 @@ export default class SettlementsListContainer extends ListContainer {
                 href="http://razorpay.com/settlement"
                 target="_blank"
               >
-                How settlements work?&nbsp;
-                <span class="icon i-external-link" />
+                How settlements work?&nbsp;<span class="icon i-external-link" />
               </a>
               {this.props.balanceData.loading ? (
                 <PlaceholderLoader style={{ width: 150 }} />

@@ -381,29 +381,30 @@ export default class Details extends Component {
             </div>
           </div>
         )}
-        {!isLoading && showActivationForm && (
-          <ModalMask
-            maskClosable={true}
-            onClose={this.showActivationForm}
-            class={'Account-Activation'}
-          >
-            <ActivationForm
+        {!isLoading &&
+          showActivationForm && (
+            <ModalMask
+              maskClosable={true}
               onClose={this.showActivationForm}
-              accountId={id}
-              callback={() => {
-                this.props.showNotification({
-                  type: 'success',
-                  message: 'The account has been activated',
-                });
+              class={'Account-Activation'}
+            >
+              <ActivationForm
+                onClose={this.showActivationForm}
+                accountId={id}
+                callback={() => {
+                  this.props.showNotification({
+                    type: 'success',
+                    message: 'The account has been activated',
+                  });
 
-                this.fetchData(id);
-              }}
-              defaultMsg={
-                <HelpText msg="Complete the details to Activate this account." />
-              }
-            />
-          </ModalMask>
-        )}
+                  this.fetchData(id);
+                }}
+                defaultMsg={
+                  <HelpText msg="Complete the details to Activate this account." />
+                }
+              />
+            </ModalMask>
+          )}
       </div>
     );
   }

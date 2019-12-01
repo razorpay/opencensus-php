@@ -56,9 +56,7 @@ class WrapperElement extends Component {
 
     return (stepNum === 2
       ? trackGoToDocumentation
-      : stepNum === 1
-      ? trackGoToKeyGen
-      : trackGoToPayments)(stepNum, mode);
+      : stepNum === 1 ? trackGoToKeyGen : trackGoToPayments)(stepNum, mode);
   }
 
   render() {

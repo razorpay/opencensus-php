@@ -19,7 +19,7 @@ import {
 } from 'merchant/reducers/registration_link';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 
 import {
   trackOpenAuthLink,
@@ -139,7 +139,11 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                             entity.is_nach_form_uploaded &&
                             this.downloadSignedNACHFile
                           }
-                          preFilledNachFileURL={entity.nach_form_url}
+                          preFilledNachFileURL={
+                            entity.token &&
+                            entity.token.nach &&
+                            entity.token.nach.prefilled_form
+                          }
                           trackClickUploadNACHForm={trackClickUploadNACHForm}
                           trackClickDownloadNACHForm={
                             trackClickDownloadNACHForm

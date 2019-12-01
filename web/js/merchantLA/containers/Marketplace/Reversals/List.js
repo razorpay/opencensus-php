@@ -27,10 +27,7 @@ export default class ReversalsListContainer extends Component {
   }
 
   render() {
-    const {
-        balanceData: { loading, data: balanceData },
-        user,
-      } = this.props,
+    const { balanceData: { loading, data: balanceData }, user } = this.props,
       merchant = user.merchants[user.current] || {},
       isBalanceSource = merchant.refund_source === 'balance',
       balance = isBalanceSource

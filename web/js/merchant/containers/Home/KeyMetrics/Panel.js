@@ -259,9 +259,7 @@ class Panel extends Component {
       trendText +=
         ' (' +
         (trend.currentCount === 0
-          ? trend.previousCount !== 0
-            ? 100
-            : 0
+          ? trend.previousCount !== 0 ? 100 : 0
           : getPercentage(currentCount, trendAbsValue)) +
         '%)';
     }
@@ -296,42 +294,47 @@ class Panel extends Component {
         error={data.error}
       >
         <PanelTopbar className="clearfix">
-          {data.trend.show && !data.trend.error && (
-            <div
-              className={`pull-left ${
-                data.trend.loading ? ' trend-loading' : ''
-              }`}
-            >
-              <div>
-                <Change value={trendValue}>
-                  {trend.loading ? (
-                    <PlaceholderLoader />
-                  ) : (
-                    <span>
-                      {trendText}
-                      <Tooltip value={trendAbsValue} isCurrency={isCurrency} />
-                    </span>
-                  )}
-                </Change>
-                <Definition>
-                  <span className="text-fade">
+          {data.trend.show &&
+            !data.trend.error && (
+              <div
+                className={`pull-left ${
+                  data.trend.loading ? ' trend-loading' : ''
+                }`}
+              >
+                <div>
+                  <Change value={trendValue}>
                     {trend.loading ? (
                       <PlaceholderLoader />
                     ) : (
                       <span>
-                        Compared to:
-                        <span>
-                          {<span>&nbsp;&nbsp;</span>}
-                          {trend.startDate.format(dateFormat)}{' '}
-                        </span>
-                        -<span> {trend.endDate.format(dateFormat)} </span>
+                        {trendText}
+                        <Tooltip
+                          value={trendAbsValue}
+                          isCurrency={isCurrency}
+                        />
                       </span>
                     )}
-                  </span>
-                </Definition>
+                  </Change>
+                  <Definition>
+                    <span className="text-fade">
+                      {trend.loading ? (
+                        <PlaceholderLoader />
+                      ) : (
+                        <span>
+                          Compared to:
+                          <span>
+                            {<span>&nbsp;&nbsp;</span>}
+                            {trend.startDate.format(dateFormat)}{' '}
+                          </span>
+                          -
+                          <span> {trend.endDate.format(dateFormat)} </span>
+                        </span>
+                      )}
+                    </span>
+                  </Definition>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           <div className="panel-actions pull-right">
             <BtnGroup
               className="panel-action-item time-breakdown"
@@ -389,15 +392,16 @@ class Panel extends Component {
                 />
               </div>
             )}
-            {filters && filters.length > 0 && (
-              <div className="panel-action-item">
-                <FilteringDropdown
-                  onFilterChange={this.handleFilterChange}
-                  filters={filters}
-                  selectedFilters={selectedFilters}
-                />
-              </div>
-            )}
+            {filters &&
+              filters.length > 0 && (
+                <div className="panel-action-item">
+                  <FilteringDropdown
+                    onFilterChange={this.handleFilterChange}
+                    filters={filters}
+                    selectedFilters={selectedFilters}
+                  />
+                </div>
+              )}
             <div id="keymetrics-download" className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
@@ -416,19 +420,23 @@ class Panel extends Component {
             ref={node => (this.panelBody = node)}
           >
             <div className="chart-container">
-              {!data.loading && data.histogram && !this.state.hideGraph && (
-                <Line
-                  options={chartOptions}
-                  data={getChartData}
-                  ref={node => (this.chartInstance = node)}
-                />
-              )}
+              {!data.loading &&
+                data.histogram &&
+                !this.state.hideGraph && (
+                  <Line
+                    options={chartOptions}
+                    data={getChartData}
+                    ref={node => (this.chartInstance = node)}
+                  />
+                )}
             </div>
-            {!noGrouping && !data.loading && data.legendData && (
-              <div>
-                <Legend data={data.legendData} isCurrency={isCurrency} />
-              </div>
-            )}
+            {!noGrouping &&
+              !data.loading &&
+              data.legendData && (
+                <div>
+                  <Legend data={data.legendData} isCurrency={isCurrency} />
+                </div>
+              )}
           </div>
         </PanelBody>
 

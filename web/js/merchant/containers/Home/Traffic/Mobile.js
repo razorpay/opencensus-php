@@ -45,15 +45,16 @@ class MobileTraffic extends Component {
           />
         </PanelTopbar>
         <PanelBody>
-          {!isLoading && !!data && (
-            <StackedBars
-              data={data}
-              textKey={'label'}
-              formatValue={
-                (isCurrency && getFormattedAmountNew) || getFormattedNumber
-              }
-            />
-          )}
+          {!isLoading &&
+            !!data && (
+              <StackedBars
+                data={data}
+                textKey={'label'}
+                formatValue={
+                  (isCurrency && getFormattedAmountNew) || getFormattedNumber
+                }
+              />
+            )}
         </PanelBody>
       </GenericPanel>
     );

@@ -731,43 +731,44 @@ export default class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         {/* Show Diwali Promotional Banner */}
-        {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
-          <div
-            className={`diwali-promotion-banner v2-tour-banner${
-              dismissDiwaliPromotion ? ' dismiss' : ''
-            }`}
-          >
-            <div className="banner-content">
-              <Banner cta="View T&Cs">
-                <span class="badge m-r">SPECIAL OFFER</span>
-                <span>
-                  {this.props.user.transaction_value
-                    ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
-                    : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
-                </span>
-                <span class="m-l btn-link">
-                  <ShowWhen
-                    additionalCondition={user =>
-                      user.isOrgAllowedFunctionality('external_links')
-                    }
-                  >
-                    <a href="https://razorpay.com/pricing" target="_blank">
-                      <b>View T&Cs</b>
-                    </a>
-                  </ShowWhen>
-                </span>
-              </Banner>
+        {this.props.user.isDiwaliPromoEnabled &&
+          !hideDiwaliPromotion && (
+            <div
+              className={`diwali-promotion-banner v2-tour-banner${
+                dismissDiwaliPromotion ? ' dismiss' : ''
+              }`}
+            >
+              <div className="banner-content">
+                <Banner cta="View T&Cs">
+                  <span class="badge m-r">SPECIAL OFFER</span>
+                  <span>
+                    {this.props.user.transaction_value
+                      ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
+                      : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
+                  </span>
+                  <span class="m-l btn-link">
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <a href="https://razorpay.com/pricing" target="_blank">
+                        <b>View T&Cs</b>
+                      </a>
+                    </ShowWhen>
+                  </span>
+                </Banner>
+              </div>
+              <div className="banner-close">
+                <a
+                  className="banner-close-icon"
+                  onClick={this.onHideDiwaliPromotion}
+                >
+                  <i className="i i-close" />
+                </a>
+              </div>
             </div>
-            <div className="banner-close">
-              <a
-                className="banner-close-icon"
-                onClick={this.onHideDiwaliPromotion}
-              >
-                <i className="i i-close" />
-              </a>
-            </div>
-          </div>
-        )}
+          )}
 
         {user.showInstantActivation &&
           !user.instantActivation.isL1Submitted &&

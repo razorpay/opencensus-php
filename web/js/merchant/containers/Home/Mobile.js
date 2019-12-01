@@ -13,7 +13,7 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
 import Button from 'common/new-ui/Button';
-import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
@@ -195,9 +195,7 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360
-                      ? 40
-                      : 57
+                      : windowWidth > 360 ? 40 : 57
                     : 0
                 }
               />

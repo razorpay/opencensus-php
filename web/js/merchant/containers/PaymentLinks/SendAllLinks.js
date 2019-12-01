@@ -96,8 +96,8 @@ export default class SendAllLinksModal extends Component {
             </div>
             {mode === 'test' && (
               <div class="alert alert-sm alert-warning">
-                Payment links were created in <b>Test Mode</b>. So, only test
-                payments can be made.
+                Payment links were created in <b>Test Mode</b>
+                . So, only test payments can be made.
                 {/* Also, SMS will not be sent in test mode. */}
               </div>
             )}

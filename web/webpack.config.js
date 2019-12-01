@@ -6,22 +6,7 @@ const babelPlugins = [
   '@babel/plugin-transform-react-display-name',
   '@babel/plugin-transform-react-jsx',
   ['@babel/plugin-proposal-decorators', { legacy: true }],
-  [
-    '@babel/plugin-proposal-class-properties',
-    {
-      loose: true,
-    },
-  ],
   './babel-plugin-react-html-attrs',
-  '@babel/plugin-syntax-dynamic-import',
-  '@babel/plugin-proposal-json-strings',
-  '@babel/plugin-proposal-function-sent',
-  '@babel/plugin-proposal-export-namespace-from',
-  '@babel/plugin-proposal-throw-expressions',
-  '@babel/plugin-proposal-export-default-from',
-  '@babel/plugin-proposal-optional-chaining',
-  '@babel/plugin-proposal-do-expressions',
-  '@babel/plugin-proposal-function-bind',
 ];
 
 if (!isProd) {
@@ -82,7 +67,13 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             babelrc: false,
-            presets: [['@babel/preset-env', { loose: true }]],
+            presets: [
+              ['@babel/preset-env', { loose: true }],
+              [
+                '@babel/preset-stage-0',
+                { loose: true, decoratorsLegacy: true },
+              ],
+            ],
             plugins: babelPlugins,
           },
         },

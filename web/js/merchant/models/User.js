@@ -159,6 +159,7 @@ export default class User {
       activation_flow: this.activation_flow,
       business_type: this.business_type,
       activated: this.activated,
+      isUnregisteredBusiness: this.isUnregisteredBusiness,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -178,7 +179,7 @@ export default class User {
 
       get isL1Submitted() {
         return (
-          (this.business_type != 11 && !!this.activation_flow) ||
+          (!this.isUnregisteredBusiness && !!this.activation_flow) ||
           this.isUnregBizActivated
         );
       },

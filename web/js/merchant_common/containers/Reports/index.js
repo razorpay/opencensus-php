@@ -459,7 +459,8 @@ export default function Reports(store, opts) {
           }
 
           const { user } = this.props,
-            selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
+            selectedAccountId = (!isPartnerReport &&
+            selectedConfig.type in marketplaceConfigTypes
               ? selectedAccount.id
               : this.defaultAccount.id
             ).replace('acc_', ''),
@@ -942,7 +943,8 @@ export default function Reports(store, opts) {
                     </div>
                   )}
 
-                  {this.isMarketplaceEnabled &&
+                  {!isPartnerReport &&
+                  this.isMarketplaceEnabled &&
                   selectedConfig.type in marketplaceConfigTypes ? (
                     <div class="form-element">
                       <div class="title">SELECT ACCOUNT</div>
@@ -972,13 +974,7 @@ export default function Reports(store, opts) {
                       {entity === 'monthlyInvoice' || (
                         <div class="col-sm-4 col-xs-12">
                           <div class="title">PERIOD</div>
-                          <div
-                            class="form-group form-control"
-                            disabled={
-                              isPartnerReport &&
-                              selectedConfig.referred_accounts === 'all'
-                            }
-                          >
+                          <div class="form-group form-control">
                             <Field
                               name="type"
                               class="fix-select"
@@ -986,14 +982,27 @@ export default function Reports(store, opts) {
                               onChange={this.enableDownloadButton}
                             >
                               <option value="yesterday">Yesterday</option>
-                              <option value="last_7_days">Last 7 days</option>
-                              <option value="last_month">Last Month</option>
+                              {!(
+                                isPartnerReport &&
+                                selectedConfig.referred_accounts === 'all'
+                              ) && (
+                                <>
+                                  <option value="last_7_days">
+                                    Last 7 days
+                                  </option>
+                                  <option value="last_month">Last Month</option>
+                                </>
+                              )}
                               <option value="daily">Daily</option>
                               {!(
                                 isPartnerReport &&
                                 selectedConfig.referred_accounts === 'all'
-                              ) && <option value="monthly">Monthly</option>}
-                              <option value="dateRange">Custom</option>
+                              ) && (
+                                <>
+                                  <option value="monthly">Monthly</option>
+                                  <option value="dateRange">Custom</option>
+                                </>
+                              )}
                             </Field>
                           </div>
                         </div>
@@ -1009,9 +1018,10 @@ export default function Reports(store, opts) {
 
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
-                        {type === 'dateRange' && dateRangeError && (
-                          <small class="text-danger">{dateRangeError}</small>
-                        )}
+                        {type === 'dateRange' &&
+                          dateRangeError && (
+                            <small class="text-danger">{dateRangeError}</small>
+                          )}
                       </div>
                     </div>
                   </div>

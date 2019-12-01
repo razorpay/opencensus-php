@@ -32,11 +32,6 @@
   }
 </script>
 
-<!-- Hotjar Tracking Code for dashboard.razorpay.com -->
-@if(env('APP_ENV') === 'production')
-  @include('partials/hotjar')
-@endif
-
 @if ($isConfirmed and $isPreSignupComplete)
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
@@ -44,6 +39,7 @@
     window.notifications = {!! $notifications !!};
     window.api_host = "{!! $api_host !!}"
     window.custom_notes = {!! $custom_notes !!};
+    window.pl_expiry_in_hrs = {!! $pl_expiry_in_hrs !!};
   </script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')

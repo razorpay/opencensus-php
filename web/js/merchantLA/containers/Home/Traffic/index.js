@@ -176,7 +176,9 @@ class Traffic extends Component {
 
         if (data.error) {
           trackError(
-            `Error while fetching data for traffic section - ${selectedGrouping.value}`
+            `Error while fetching data for traffic section - ${
+              selectedGrouping.value
+            }`
           );
 
           this.props.showNotification({
@@ -345,25 +347,28 @@ class Traffic extends Component {
                 className="chart-content"
                 ref={node => (this.chartContent = node)}
               >
-                {!groupState.loading && chartData && !this.state.hideChart && (
-                  <Doughnut
-                    ref={node => (this.chartInstance = node)}
-                    options={chartOptions}
-                    data={chartData}
-                    windowWidth={this.state.windowWidth}
-                  />
-                )}
+                {!groupState.loading &&
+                  chartData &&
+                  !this.state.hideChart && (
+                    <Doughnut
+                      ref={node => (this.chartInstance = node)}
+                      options={chartOptions}
+                      data={chartData}
+                      windowWidth={this.state.windowWidth}
+                    />
+                  )}
               </div>
             </div>
             <div className="column">
-              {!groupState.loading && legendData && (
-                <Legend
-                  data={groupState.legendData}
-                  alignment="vertical"
-                  isCurrency={isCurrency}
-                  tooltipAlign="right"
-                />
-              )}
+              {!groupState.loading &&
+                legendData && (
+                  <Legend
+                    data={groupState.legendData}
+                    alignment="vertical"
+                    isCurrency={isCurrency}
+                    tooltipAlign="right"
+                  />
+                )}
             </div>
           </div>
         </PanelBody>
