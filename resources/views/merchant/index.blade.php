@@ -40,6 +40,7 @@
     window.api_host = "{!! $api_host !!}"
     window.custom_notes = {!! $custom_notes !!};
     window.pl_expiry_in_hrs = {!! $pl_expiry_in_hrs !!};
+    window.pl_custom_labels = {!! $pl_custom_labels !!};
   </script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
