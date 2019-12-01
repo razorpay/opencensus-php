@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME        => 'required|string|max:150',
         Entity::ORG_ID      => 'required|string|size:14',
+        Entity::MERCHANT_ID => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
         Entity::LEVELS      => 'required|array',
     ];
