@@ -12,7 +12,7 @@ class Constants
         self::TEST_MID => 72
     ];
 
-    const CUSTOMIZED_FIELDS_FALLBACK = [
+    const DEFAULT_CUSTOMIZED_FIELDS = [
         'receipt' => [
             'label' => 'Receipt No.',
             'placeholder' => ''
@@ -53,6 +53,6 @@ class Constants
 
     public static function getCustomizedFormFieldsByMID($mid)
     {
-        return self::CUSTOMIZED_FIELDS[$mid] ?? self::CUSTOMIZED_FIELDS_FALLBACK;
+        return self::CUSTOMIZED_FIELDS[$mid] ?? self::DEFAULT_CUSTOMIZED_FIELDS;
     }
 }
