@@ -617,7 +617,7 @@ class WebhookTest extends TestCase
         $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
 
             return [
-                'body'      => $translatedWebhookBody,
+                'content'   => $translatedWebhookBody,
                 'headers'   => ['request-id' => ['12345678']],
             ];
         });
