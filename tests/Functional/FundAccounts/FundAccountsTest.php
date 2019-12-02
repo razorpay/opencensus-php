@@ -386,4 +386,33 @@ class FundAccountsTest extends TestCase
 
         $this->assertNotEquals($contact['id'], $response['id']);
     }
+
+    public function testFundAccountDuplicatesForDifferentContacts()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount1 = $this->getLastEntity('fund_account');
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $request  = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                    ],
+                ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fundAccount2 = $this->getLastEntity('fund_account');
+
+        $this->assertNotEquals($fundAccount1['id'], $fundAccount2['id']);
+    }
 }

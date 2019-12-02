@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
 use RZP\Models\FundAccount;
@@ -32,17 +33,14 @@ class FundAccountController extends Controller
         // fund account can be created for different sources like
         // contact and customer. The API response for fund account
         // creation of contact will be different. The response code
-        // will be passed by the service and since the behaviour
-        // for other sources remain the same, we are keeping an isset
-        // check.
-        if (isset($data[FundAccount\Entity::RESPONSE_CODE]) === true)
-        {
-            $responseCode = $data[FundAccount\Entity::RESPONSE_CODE];
+        // will be passed by the service and controller will just
+        // forward that. Since for other sources the behaviour
+        // remain the same, so we are keeping an isset check
+        $responseCode = isset($data[FundAccount\Entity::RESPONSE_CODE]) ?
+                        $data[FundAccount\Entity::RESPONSE_CODE] :
+                        Response::HTTP_OK;
 
-            return ApiResponse::json($entity, $responseCode);
-        }
-
-        return ApiResponse::json($entity);
+        return ApiResponse::json($entity, $responseCode);
     }
 
     public function get(string $id)

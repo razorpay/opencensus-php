@@ -237,9 +237,9 @@ class Service extends Base\Service
     }
 
     // The fund account creation method will take the parameter
-    // allowDuplicate during fund account creation. The value
+    // createDuplicate during fund account creation. The value
     // for this parameter is decided on the basis of origin of
-    // the request. Request coming from API will now allow
+    // the request. Request coming from API will not allow
     // duplicate creation(meaning,even if all attributes are same,
     // create another entity)  by default, if some merchant wants
     // duplicate creation, he will inform RZP and we will put him
