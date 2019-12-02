@@ -466,11 +466,6 @@ export default class User {
     return UNREGISTERED_BUSINESS_TYPES.indexOf(userBusinessType) !== -1;
   }
 
-  // pl-expiry-in-hrs-72 => Default expiry for Payment Link is 72 hours
-  isDefaultPLExpireBySetFromRazorX(hours) {
-    return this.getExpStatus(`pl-expiry-in-hrs-${hours}`);
-  }
-
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)
