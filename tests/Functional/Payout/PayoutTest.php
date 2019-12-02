@@ -1576,8 +1576,6 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByFundAccountId()
     {
-        $this->markTestSkipped();
-
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(

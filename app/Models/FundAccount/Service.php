@@ -143,14 +143,14 @@ class Service extends Base\Service
                             $fundAccount = $this->checkFundAccountExistence($fundAccountId);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
-                                [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                                                    [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
                         }
                         else
                         {
                             $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
-                                [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                                                    [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
                         }
                     }
                 });
@@ -183,7 +183,7 @@ class Service extends Base\Service
                 $exceptionData = [
                     Entity::BATCH_ID        => $batchId,
                     Entity::IDEMPOTENCY_KEY => $idempotencyKey,
-                    Error::HTTP_STATUS_CODE => 500,
+                    Error::HTTP_STATUS_CODE => Response::HTTP_INTERNAL_SERVER_ERROR,
                     'error'                 => [
                         Error::DESCRIPTION       => $throwable->getMessage(),
                         Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
@@ -223,16 +223,13 @@ class Service extends Base\Service
     {
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
-        if (empty($fundAccount) === false)
-        {
-            $this->trace->info(
-                TraceCode::FUND_ACCOUNT_EXIST,
-                [
-                    Entity::ID           => $fundAccountId,
-                ]);
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_EXIST,
+            [
+                Entity::ID           => $fundAccountId,
+            ]);
 
-            return $fundAccount;
-        }
+        return $fundAccount;
     }
 
     protected function handleFundAccountCreationForContact(array $input)
@@ -247,6 +244,13 @@ class Service extends Base\Service
 
         /** @var Contact\Entity $source */
         $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+
+
+        if ($source->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+        }
 
         if ($this->auth->isStrictPrivateAuth() === true)
         {
@@ -269,6 +273,12 @@ class Service extends Base\Service
     {
         /** @var Customer\Entity $source */
         $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+
+        if ($source->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+        }
 
         $entity = $this->core->create($input, $this->merchant, $source);
 
