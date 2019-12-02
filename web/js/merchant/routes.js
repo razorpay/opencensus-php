@@ -10,7 +10,7 @@ import Entity from 'merchant/containers/Offers/Entity';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
 import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
-import OffersNew from 'merchant/containers/Offers/New';
+import OffersNew from 'merchant/containers/Offers/New/index';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/Create/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';

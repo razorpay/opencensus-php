@@ -29,7 +29,7 @@ export default class OfferIndex extends Component {
                         user.isAllowedEdit('offers')
                       }
                     >
-                      <NavLink class="btn btn-primary" exact to="/offers/new">
+                      <NavLink class="btn btn-primary" exact to="/offers/New">
                         <i className="i i-plus" />
                         <span
                           onClick={() => {
