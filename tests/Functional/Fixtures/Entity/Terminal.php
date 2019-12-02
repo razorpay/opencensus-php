@@ -3411,45 +3411,25 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
-    public function createUpiJuspayTerminal(array $attributes = [])
+    public function createHdfcDebitEmi(array $attributes = [])
     {
         $defaultValues = [
-            'id'                         => Shared::UPI_JUSPAY_TERMINAL,
-            'merchant_id'                => '10000000000000',
-            'gateway'                    => Gateway::UPI_JUSPAY,
-            'gateway_merchant_id'        => 'MERCHANTid',
-            'gateway_merchant_id2'       => 'merchantid2',
-            'gateway_secure_secret'      => 'NotUsedAsOfNow',
-            'vpa'                        => 'some@abfspay',
-            'upi'                        =>  1
+            'id'                   => 'HdfcDebitEmiTl',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'debit_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 0,
+            'emi'                  => 1,
+            'emi_duration'         => 3,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'hdfc',
+            'mode'                 => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return $this->create($attributes);
-    }
-
-    public function createUpiJuspayIntentTerminal(array $attributes = [])
-    {
-        $defaultValues  = [
-            'id'                            => Shared::UPI_JUSPAY_TERMINAL,
-            'gateway'                       => Gateway::UPI_JUSPAY,
-            'merchant_id'                   => '10000000000000',
-            'gateway_acquirer'              => 'axis',
-            'category'                      => '1234',
-            'gateway_merchant_id'           => 'MER0000000000111',
-            'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
-            'gateway_secure_secret'         => 'NotUsedAsOfNow',
-            'upi'                           => 1,
-            'vpa'                           => 'abcd@some',
-            'type'                          => [
-                Type::NON_RECURRING    => '1',
-                Type::PAY              => '1'
-            ]
-        ];
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->create($attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

@@ -42,6 +42,8 @@ class DebitEmiTest extends TestCase
                 'network' => 'Visa',
             ]);
 
+        $this->fixtures->create('terminal:hdfc_debit_emi');
+
         $res = $this->doAuthPayment($this->payment);
 
     }
