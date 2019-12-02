@@ -397,8 +397,16 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get getPaymentLinkCustomizedFormFields() {
+    return window.pl_customized_form_fields;
+  }
+
   get getCurrencyList() {
     return window.currencyList;
+  }
+
+  get plDefaultExpiryTime() {
+    return window.pl_expiry_in_hrs;
   }
 
   get toShowExtraFieldsInPP() {
@@ -443,6 +451,10 @@ export default class User {
 
   get isCustomNotesDropdownEnabled() {
     return window.custom_notes && this.getExpStatus('custom_notes');
+  }
+
+  get isPaymentLinkCustomerNameFieldEnabled() {
+    return window.is_pl_customer_name_field_enabled;
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
