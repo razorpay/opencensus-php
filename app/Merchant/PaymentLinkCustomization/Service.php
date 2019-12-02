@@ -28,8 +28,8 @@ class Service extends Base\Service
      */
     public function getIsCustomerNameFieldEnabledForPaymentLinksForMerchant(string $currentMerchantId)
     {
-        $defaultExpiryTime = Constants::getIsCustomerNameFieldEnabledForPaymentLinksByMID($currentMerchantId);
+        $isCustomerNameFieldEnabled = Constants::getIsCustomerNameFieldEnabledForPaymentLinksByMID($currentMerchantId);
 
-        return $defaultExpiryTime;
+        return $isCustomerNameFieldEnabled;
     }
 }
