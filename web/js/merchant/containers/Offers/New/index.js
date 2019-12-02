@@ -149,6 +149,7 @@ export default class NewSubscriptionLink extends Component {
               name="name"
               placeholder="Offer Short name"
               autoFocus={true}
+              defaultValue={this.state.name}
               required
               validator={val => {
                 if (!val || val.length < 4) {
@@ -164,6 +165,7 @@ export default class NewSubscriptionLink extends Component {
               name="display_text"
               placeholder="Display text for offer"
               required
+              defaultValue={this.state.display_text}
               validator={val => {
                 if (!val || val.length < 4) {
                   return 'Short name should be at least of 4 characters';
@@ -176,7 +178,8 @@ export default class NewSubscriptionLink extends Component {
           </React.Fragment>
         );
       case 1:
-        return <div />;
+        return <div>{/* <Input.Radio>
+          </Input.Radio> */}</div>;
       case 2:
         return <div />;
       case 3:
