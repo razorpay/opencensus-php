@@ -616,11 +616,4 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
-
-    public function testFundAccValidationBankingAccountTypeDirectFailed()
-    {
-        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
-
-        $this->startTest();
-    }
 }
