@@ -405,6 +405,10 @@ export default class User {
     return window.currencyList;
   }
 
+  get plDefaultExpiryTime() {
+    return window.pl_expiry_in_hrs;
+  }
+
   get toShowExtraFieldsInPP() {
     return this.getExpStatus('show_extra_fields_in_pp');
   }
