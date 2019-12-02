@@ -49,5 +49,5 @@ final class RazorxTreatment
     const INSTANT_REFUND_MODES = 'instant_refunds_modes';
 
     // Decides if fund account and contact creation should have duplicate checks
-    const X_CONTACT_FUND_ACCOUNT_CREATION = 'x_contact_fund_account_creation';
+    const X_CONTACT_AND_FUND_ACCOUNT_CREATION = 'x_contact_and_fund_account_creation';
 }
