@@ -74,7 +74,7 @@ class Stork
         {
             $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload);
 
-            $payload  = $response['body'];
+            $payload  = $response['content'];
         }
 
         $this->service->request(
