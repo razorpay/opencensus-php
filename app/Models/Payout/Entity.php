@@ -374,6 +374,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function payoutLink()
+    {
+        return $this->belongsTo(PayoutLink\Entity::class);
+    }
+
     public function destination()
     {
         return $this->morphTo();

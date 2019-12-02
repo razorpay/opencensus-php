@@ -174,7 +174,7 @@ class Entity extends Base\PublicEntity
 
     public function payouts()
     {
-        return $this->belongsToMany(Payout\Entity::class);
+        return $this->hasmany(Payout\Entity::class);
     }
 
     // -------------------------------------- End Relations ---------------------------
