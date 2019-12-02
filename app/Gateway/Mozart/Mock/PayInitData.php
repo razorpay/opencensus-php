@@ -8,6 +8,40 @@ class PayInitData extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    public function debit_emi($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'Status'              => 'Success',
+                    'BankReferncNo'       => 'abc123456',
+                    'MerchantReferenceNo' => $entities['payment']['id'],
+                    'ErrorCode'           => '0000',
+                    'EligibilityStatus'   => 'Yes',
+                    '_raw'                => '',
+                ],
+            'next' => [
+                'redirect' => [
+                    'content' => [
+                        'type' => 'otp',
+                        'bank' => '',
+                        'next' => [
+                            'submit_otp',
+                        ]
+                    ],
+                    'method' => 'post',
+                    'url' => 'www.test.com',
+                ]
+            ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
     public function bajajfinserv($entities)
     {
         $response = [
