@@ -194,6 +194,13 @@ export default [
     ],
   },
   {
+    name: 'customer_name',
+    type: 'text',
+    placeholder: 'Customer Name',
+    label: 'Customer Name',
+    _when: form => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
+  },
+  {
     name: 'receipt',
     label: 'Receipt No.',
     validator: maxLength(40),
