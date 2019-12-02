@@ -2173,7 +2173,7 @@ class Gateway
      *
      * @return bool
      */
-    public static function isCardNetworkSupported(string $network, string $gateway, string $issuer, bool $recurring = false)
+    public static function isCardNetworkSupported(string $network, string $gateway, $issuer, bool $recurring = false)
     {
         if ((isset(Gateway::$ignoreCardNetworkSupport[$issuer]) === true) AND
             (in_array($gateway, Gateway::$ignoreCardNetworkSupport[$issuer]) === true))
