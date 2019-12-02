@@ -637,6 +637,11 @@ export default class CreateNewContainer extends React.Component {
         f.label = f.label(this);
       }
 
+      let placeholder = f.placeholder;
+      if (typeof placeholder === 'function') {
+        f.placeholder = f.placeholder(this);
+      }
+
       return WizardFields.call(this, f);
     });
   }

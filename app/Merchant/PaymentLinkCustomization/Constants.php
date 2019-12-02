@@ -12,14 +12,37 @@ class Constants
         self::TEST_MID => 72
     ];
 
-    const CUSTOM_LABEL_NAMES = [
+    const CUSTOM_FIELDS_FALLBACK = [
+        'receipt' => [
+            'label' => 'Receipt No.',
+            'placeholder' => ''
+        ],
+        'description' => [
+            'label' => 'Payment For',
+            'placeholder' =>  'Payment Description'
+        ]
+    ];
+
+    const CUSTOM_FIELDS = [
         self::BHARTI_AXA => [
-            'receipt' => 'Reference Number',
-            'description' => 'Policy/Vehicle Registration  Number'
+            'receipt' => [
+                'label' => 'Reference Number',
+                'placeholder' => ''
+            ],
+            'description' => [
+                'label' => 'Policy/Vehicle Registration  Number',
+                'placeholder' => ''
+            ]
         ],
         self::TEST_MID => [
-            'receipt' => 'Reference Number',
-            'description' => 'Policy/Vehicle Registration  Number'
+            'receipt' => [
+                'label' => 'Reference Number',
+                'placeholder' => ''
+            ],
+            'description' => [
+                'label' => 'Policy/Vehicle Registration  Number',
+                'placeholder' => ''
+            ]
         ]
     ];
 
@@ -28,8 +51,8 @@ class Constants
         return self::DEFAULT_EXPIRY[$mid] ?? null;
     }
 
-    public static function getCustomFormLabelsForPaymentLinksByMID($mid)
+    public static function getCustomFormFieldsForPaymentLinksByMID($mid)
     {
-        return self::CUSTOM_LABEL_NAMES[$mid] ?? null;
+        return self::CUSTOM_FIELDS[$mid] ?? self::CUSTOM_FIELDS_FALLBACK;
     }
 }

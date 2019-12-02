@@ -26,10 +26,10 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getCustomFormLabelsForPaymentLinksForMerchant(string $currentMerchantId)
+    public function getCustomFormFieldsForPaymentLinksForMerchant(string $currentMerchantId)
     {
-        $labels = Constants::getCustomFormLabelsForPaymentLinksByMID($currentMerchantId);
+        $fields = Constants::getCustomFormFieldsForPaymentLinksByMID($currentMerchantId);
 
-        return $labels;
+        return $fields;
     }
 }
