@@ -2265,6 +2265,19 @@ class Core extends Base\Core
         return (int) $amount;
     }
 
+    public function getPaymentTimeoutWindow(Entity $merchant)
+    {
+        $accessor = Accessor::for($merchant, Settings\Module::MERCHANT);
+
+        if ($accessor->exists(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW) === false)
+        {
+            return null;
+        }
+
+        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+    }
+
+
     /**
      * Enable international and set convert currency as false, if applicable
      *
