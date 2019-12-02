@@ -13,14 +13,12 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import {
-  fireAnalyticsEvents,
-  trackTaboola,
-} from 'common/utils/googleAnalytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  getBusinessTypeOptions,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -44,6 +42,7 @@ import {
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { validatePANCardUnregBiz } from 'common/utils/validators';
 
 import {
   L1FormSuccess,
@@ -221,6 +220,9 @@ export default class ActivationWizard extends React.Component {
           label: props.categories[c].description,
         }))
       );
+
+      // Set Biz type options dynamically based on current activation stage
+      FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
     }
 
     DOCUMENT_UPLOAD_STEP &&
@@ -702,6 +704,17 @@ export default class ActivationWizard extends React.Component {
     return businessType == 2 || businessType == 11;
   }
 
+  get canSubmitL1Form() {
+    const promoterPan =
+      this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
+    return (
+      !hasSelectedBlacklistedCategory(this) &&
+      (this.isUnregBiz
+        ? promoterPan && !validatePANCardUnregBiz(promoterPan)
+        : true)
+    );
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -975,8 +988,6 @@ export default class ActivationWizard extends React.Component {
             twiData: txnId,
           });
         }
-
-        trackTaboola('l2_submission');
 
         updateHubSpotContactsProperties(
           {
@@ -1511,8 +1522,7 @@ export default class ActivationWizard extends React.Component {
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
                       disabled={
-                        this.state.callingL1Api ||
-                        hasSelectedBlacklistedCategory(this)
+                        !this.canSubmitL1Form || this.state.callingL1Api
                       }
                       onClick={this.submitL1}
                       pendingState={'Verifying'}

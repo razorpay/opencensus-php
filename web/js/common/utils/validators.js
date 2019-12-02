@@ -99,6 +99,14 @@ export function validatePANCard(value) {
   }
 }
 
+export function validatePANCardUnregBiz(value) {
+  if (validatePANCard(value)) {
+    return validatePANCard(value);
+  } else if (value && (value[3] !== 'P' && value[3] !== 'p')) {
+    return "The PAN entered is a business PAN. If you are a registered business, please change your business type in the 'Business Overview' tab.";
+  }
+}
+
 // TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateCIN(value) {

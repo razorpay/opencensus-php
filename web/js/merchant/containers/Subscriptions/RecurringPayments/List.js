@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
 
-import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
-import PaymentListFilter from 'merchant/components/Payments/PaymentsListFilter';
+import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
+import PaymentListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 

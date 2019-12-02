@@ -210,11 +210,18 @@ export default class CreateNewContainer extends React.Component {
     defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
-      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      dirty: {
+        reminder_enable:
+          props.user.isRemindersEnabled &&
+          props.paymentLinksRemindersSettings.isEnabled
+            ? '1'
+            : '0', // 1 => selected
+      }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
         hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
+      isLoading: true,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -227,10 +234,6 @@ export default class CreateNewContainer extends React.Component {
   }
 
   fetchIfIntentDuplicate(invoiceId) {
-    this.setState({
-      fetchingInvoice: true,
-    });
-
     this.props
       .fetchInvoice(invoiceId)
       .then(data => {
@@ -248,7 +251,6 @@ export default class CreateNewContainer extends React.Component {
         }));
 
         this.setState({
-          fetchingInvoice: false,
           dirty: {
             currency: data.currency,
             description: data.description,
@@ -281,24 +283,54 @@ export default class CreateNewContainer extends React.Component {
   }
 
   componentDidMount() {
-    const searchQuery = getURLQueryParams(this.props.location.search);
-    if (searchQuery.duplicate_id) {
-      this.fetchIfIntentDuplicate(searchQuery.duplicate_id);
-    }
-
     this.toggleDisableState();
 
-    if (!this.props.reminders.reminders.items.length) {
-      this.props.fetchReminders();
-    }
-
-    if (!this.props.reminders.merchant_config.items.length) {
-      this.props.fetchRemindersMerchantConfigs();
-    }
+    this.prepareDataForPaymentLinkCreation()
+      .then(() => {
+        this.setState({
+          isLoading: false,
+          dirty: {
+            ...this.state.dirty,
+            reminder_enable:
+              this.props.user.isRemindersEnabled &&
+              this.props.paymentLinksRemindersSettings.isEnabled
+                ? '1'
+                : '0', // 1 => selected
+          },
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isLoading: false,
+        });
+      });
   }
 
   componentDidUpdate() {
     this.toggleDisableState();
+  }
+
+  prepareDataForPaymentLinkCreation() {
+    const promiseList = [];
+
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
+    }
+
+    if (!this.props.user.isRemindersEnabled) {
+      return Promise.all(promiseList);
+    }
+
+    if (!this.props.reminders.reminders.items.length) {
+      promiseList.push(this.props.fetchReminders());
+    }
+
+    if (!this.props.reminders.merchant_config.items.length) {
+      promiseList.push(this.props.fetchRemindersMerchantConfigs());
+    }
+
+    return Promise.all(promiseList);
   }
 
   toggleDisableState() {
@@ -667,7 +699,7 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
-        fetchingInvoice={this.state.fetchingInvoice}
+        isLoading={this.state.isLoading}
       />
     );
 
@@ -693,7 +725,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { disableSubmit, mode, fetchingInvoice } = this.props;
+    const { disableSubmit, mode, isLoading } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -708,7 +740,7 @@ class CreateWizard extends React.Component {
             </Alert.Warning>
           )}
 
-          {fetchingInvoice ? (
+          {isLoading ? (
             <div className="page-center">
               <Spinner />
             </div>
@@ -725,7 +757,7 @@ class CreateWizard extends React.Component {
           )}
         </main>
 
-        {!fetchingInvoice && (
+        {!isLoading && (
           /* FORM FOOTER */
           <footer>
             {/* Action Button 1 */}
