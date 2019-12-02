@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import LogList from './Logs/List';
+import GenerateReportPanel from './GenerateReportPanel';
 
 export default class ReportHome extends React.PureComponent {
   static defaultProps = {
@@ -16,11 +17,11 @@ export default class ReportHome extends React.PureComponent {
   };
 
   componentDidMount() {
-    this.props.fetchLogs();
+    this.props.fetchConfigs();
   }
 
   render() {
-    const { logs, config, user } = this.props;
+    const { logs, config, user, configs } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -30,6 +31,7 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div class="content-wrapper">
+              <GenerateReportPanel configs={this.props.configs} />
               <LogList
                 currentMerchantId={user.current}
                 {...logs}
