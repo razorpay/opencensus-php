@@ -50,6 +50,8 @@ class Entity extends Base\Entity
         self::MAX_AMOUNT,
         self::WORKFLOW_ID,
         self::WORKFLOW,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [

@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 
 class Service extends Base\Service
 {
@@ -17,7 +18,11 @@ class Service extends Base\Service
     // Gets workflow rules for all merchants
     public function getAllWorkflowRules($limit, $offset)
     {
-        return $this->core()->getAllWorkflowRulesWithPaginationLinks($limit, $offset);
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        return $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $orgId);
     }
 
     public function createWorkflowPayoutAmountRules($input): array

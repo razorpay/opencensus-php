@@ -15,17 +15,20 @@ class Repository extends Base\Repository
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->get();
+            ->merchantId($merchantId)
+            ->get();
     }
 
-    public function fetchAllWorkflowRules($limit, $offset)
+    public function fetchAllWorkflowRulesForOrg($limit, $offset, $orgId)
     {
         return $this->newQuery()
-            ->orderBy(Entity::MERCHANT_ID)
-            ->take($limit)
-            ->skip($offset)
-            ->get();
+            ->whereHas('workflow', function($q) use($orgId)
+            {
+                $q->where(Entity::ORG_ID, '=', $orgId);
+            })
+            ->get()
+            ->groupBy(Entity::MERCHANT_ID)
+            ->slice($offset,$limit);
     }
 
     public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)
@@ -50,11 +53,5 @@ class Repository extends Base\Repository
               ->whereNull(Entity::DELETED_AT);
 
         return $query->get();
-    }
-
-    public function fetchTotalNumberOfElements()
-    {
-        return $this->newQuery()
-            ->count();
     }
 }
