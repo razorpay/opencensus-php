@@ -21,7 +21,7 @@ class Service extends Base\Service
     }
 
     /**
-     * To get the list of notifications to be shown to a user.
+     * To get the is customer name field to be shown to a user or not.
      *
      * @param string $currentMerchantId Current selected merchant id
      *
