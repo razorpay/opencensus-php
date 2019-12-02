@@ -107,62 +107,11 @@ class Core extends Base\Core
         }
     }
 
-    public function getAllWorkflowRules($limit, $offset)
+    public function getAllWorkflowRulesForOrg($limit, $offset, $orgId)
     {
         return $this->repo
             ->workflow_payout_amount_rules
-            ->fetchAllWorkflowRules($limit, $offset)
-            ->toArray();
-    }
-
-    public function getAllWorkflowRulesWithPaginationLinks($limit, $offset)
-    {
-        $items = $this->getAllWorkflowRules($limit, $offset);
-        $links = [];
-        $total = $this->repo->workflow_payout_amount_rules->fetchTotalNumberOfElements();
-
-        // Link to current page
-        $links[] = [
-            "rel"   => "self",
-            "href"  => url()->full()
-        ];
-
-        // Link to first page
-        $links[] = [
-            "rel"   => "first",
-            "href"  => url()->current()."?count=".$limit."&skip=0"
-        ];
-
-        // Link to prev page
-        if($offset >= $limit)
-        {
-            $links[] = [
-                "rel"   => "prev",
-                "href"  => url()->current()."?count=".$limit."&skip=".($offset-$limit)
-            ];
-        }
-
-        // Link to next page
-        if($offset+$limit < $total)
-        {
-            $links[] = [
-                "rel"   => "next",
-                "href"  => url()->current()."?count=".$limit."&skip=".($offset+$limit)
-            ];
-        }
-
-        // Link to last page
-        $links[] = [
-            "rel"   => "last",
-            "href"  => url()->current()."?count=".$limit."&skip=".($total - (($total%$limit)?($total%$limit):$limit))
-        ];
-
-        // Join data items and links and send in response
-        $data = [
-            "items" => $items,
-            "links" => $links
-        ];
-
-        return $data;
+            ->fetchAllWorkflowRulesForOrg($limit, $offset, $orgId)
+            ->toArrayWithItems();
     }
 }
