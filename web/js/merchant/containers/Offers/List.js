@@ -9,6 +9,7 @@ import * as OffersListActions from 'merchant/reducers/offers/offersList';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import { NavLink } from 'react-router-dom';
+import { OfferStatusLabel } from 'merchant/components/StatusLabel';
 
 const OfferListItem = ({ offer }) => {
   return (
@@ -21,6 +22,10 @@ const OfferListItem = ({ offer }) => {
       <td>{offer.name}</td>
 
       <td>{offer.payment_method}</td>
+      <td>
+        {' '}
+        <OfferStatusLabel status={offer.active ? 'Active' : 'Inactive'} />
+      </td>
       <td>
         <Time value={offer.starts_at} format="DD MMM YYYY, hh:mm a" />
       </td>
@@ -40,6 +45,7 @@ const OfferListTable = ({ offers, isLoading, onDelete }) => {
             <th>Offer Id</th>
             <th>Offer Title</th>
             <th>Payment Method</th>
+            <th>Status</th>
             <th>Start On</th>
             <th>Ends On</th>
           </tr>

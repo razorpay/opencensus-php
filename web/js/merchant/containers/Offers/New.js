@@ -14,6 +14,7 @@ import Offer from 'merchant/models/Offer';
 import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
 
 const SUCCESS_NOTIFICATION = 'New offer created';
+const MAX_INT = 21474836;
 
 class NewOfferForm extends React.Component {
   constructor(props) {
@@ -109,6 +110,15 @@ class NewOfferForm extends React.Component {
           () => this.toggleDisableState()
         );
       },
+      floatFromEvent: syntheticEvent => {
+        this.setState(
+          makeState(
+            syntheticEvent.target.name,
+            parseFloat(syntheticEvent.target.value)
+          ),
+          () => this.toggleDisableState()
+        );
+      },
       datetime: momentObj => {
         this.setState(makeState(options[0], momentObj.unix()), () =>
           this.toggleDisableState()
@@ -177,6 +187,7 @@ class NewOfferForm extends React.Component {
           name="payment_method"
           options={paymentMethods}
           placeholder="Payment Method"
+          onChange={this.getFormOnChangeHandler()}
         />
 
         {(this.isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
@@ -185,6 +196,7 @@ class NewOfferForm extends React.Component {
             name="issuer"
             placeholder="Payment Instrument Issuer/Bank Name"
             options={paymentIssuers}
+            onChange={this.getFormOnChangeHandler()}
           />
         )) ||
           null}
@@ -195,6 +207,7 @@ class NewOfferForm extends React.Component {
               label="Maximum Usage Per Card"
               name="max_payment_count"
               type="number"
+              onChange={this.getFormOnChangeHandler()}
               placeholder="Maximum usage of a card to avail this offer"
             />
             <Input.Select
@@ -216,6 +229,7 @@ class NewOfferForm extends React.Component {
               label="Payment Method Network"
               name="payment_network"
               placeholder="Payment Method Type"
+              onChange={this.getFormOnChangeHandler()}
               options={paymentNetworks}
             />
             <Input
@@ -312,6 +326,12 @@ class NewOfferForm extends React.Component {
           description="Discount worth in cash"
           pattern="[0-9]+(\.[0-9][0-9]?)?"
           patternError="Please enter number upto 2 decimal points"
+          validator={val => {
+            if (val > MAX_INT) {
+              return `Maximum value allowed is ${MAX_INT}`;
+            }
+          }}
+          onChange={this.getFormOnChangeHandler('floatFromEvent')}
           required
         />
       );
@@ -325,6 +345,7 @@ class NewOfferForm extends React.Component {
             class="Input--half"
             description="Discount worth in Percent"
             addonBefore={<span>%</span>}
+            onChange={this.getFormOnChangeHandler('floatFromEvent')}
             required
             pattern="[0-9]+(\.[0-9][0-9]?)?"
             patternError="Please enter number upto 2 decimal points"
@@ -341,11 +362,16 @@ class NewOfferForm extends React.Component {
             label="Maximum Cashback"
             name="max_cashback"
             class="Input--half"
-            onChange={this.getFormOnChangeHandler()}
+            onChange={this.getFormOnChangeHandler('floatFromEvent')}
             description="Maximum cashback for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
             pattern="[0-9]+(\.[0-9][0-9]?)?"
             patternError="Please enter number upto 2 decimal points"
+            validator={val => {
+              if (val > MAX_INT) {
+                return `Maximum value allowed is ${MAX_INT}`;
+              }
+            }}
             required
           />
         </React.Fragment>
@@ -358,11 +384,7 @@ class NewOfferForm extends React.Component {
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
           <main-title class="main-title">Create New Offer</main-title>
-          <Form
-            autoComplete="off"
-            layout="tabular"
-            onChange={this.getFormOnChangeHandler()}
-          >
+          <Form autoComplete="off" layout="tabular">
             {/* ALERTS */}
             {this.props.mode === 'test' && (
               <Alert type="warning">
@@ -378,6 +400,7 @@ class NewOfferForm extends React.Component {
               placeholder="Offer Short name"
               autoFocus={true}
               required
+              onChange={this.getFormOnChangeHandler()}
               validator={val => {
                 if (!val || val.length < 4) {
                   return 'Short name should be at least of 4 characters';
@@ -391,6 +414,7 @@ class NewOfferForm extends React.Component {
               label="Display Text"
               name="display_text"
               placeholder="Display text for offer"
+              onChange={this.getFormOnChangeHandler()}
               required
               validator={val => {
                 if (!val || val.length < 4) {
@@ -405,6 +429,7 @@ class NewOfferForm extends React.Component {
               label="Terms"
               name="terms"
               placeholder="Terms and conditions for offer"
+              onChange={this.getFormOnChangeHandler()}
               required
             />
             <hr />
@@ -429,15 +454,19 @@ class NewOfferForm extends React.Component {
               name="min_amount"
               class="Input--half"
               addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
-              onChange={this.getFormOnChangeHandler()}
+              onChange={this.getFormOnChangeHandler('floatFromEvent')}
               description="Minimum bill amount on for this offer"
               pattern="[0-9]+(\.[0-9][0-9]?)?"
               patternError="Please enter number upto 2 decimal points"
               validator={val => {
+                val = parseFloat(val);
                 if (this.state.discount_type === 'flat') {
                   if (val < this.state.flat_cashback) {
                     return 'Minimum payment is less than discount value';
                   }
+                }
+                if (val > MAX_INT) {
+                  return `Maximum value allowed is ${MAX_INT}`;
                 }
               }}
               {...{ required: this.state.discount_type === 'flat' }}
@@ -446,6 +475,7 @@ class NewOfferForm extends React.Component {
               label="On Offer Failure"
               name="block"
               description="Block/Allow payment on failure of offer validation"
+              onChange={this.getFormOnChangeHandler()}
               required
               options={[
                 { label: 'Select Type', name: '' }, // empty string is treated as null and throws required error
@@ -458,6 +488,12 @@ class NewOfferForm extends React.Component {
               label="Maximum Usage"
               name="max_offer_usage"
               placeholder="Maximum usage for this offer"
+              onChange={this.getFormOnChangeHandler()}
+              validator={val => {
+                if (val > MAX_INT) {
+                  return `Maximum value allowed is ${MAX_INT}`;
+                }
+              }}
             />
 
             <hr />

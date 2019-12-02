@@ -189,7 +189,6 @@ export default class Entity extends Component {
   toggleActivation = () => {
     let offer = this.props.offer;
     const actionName = offer.active ? 'Disable' : 'Enable';
-    offer.active = offer.active ? 0 : 1; //for false send 1 as new value to toggle it
     let header = `${actionName} Offer`;
     this.context.confirm({
       header,
@@ -202,6 +201,7 @@ export default class Entity extends Component {
       affirmativePendingLabel: 'Requesting...',
       abortLabel: "No, don't!",
       action: () => {
+        offer.active = offer.active ? 0 : 1; //for false send 1 as new value to toggle it
         return offer
           .save()
           .then(offer => {
