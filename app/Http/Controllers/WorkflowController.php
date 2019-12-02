@@ -91,12 +91,15 @@ class WorkflowController extends Controller
     public function getWorkflowMultiple()
     {
         $input = Request::all();
+        $permission = Request::get('permission');
+        $limit = Request::get('count');
+        $offset = Request::get('skip');
 
         $orgId = $this->ba
                       ->getAdmin()
                       ->getPublicOrgId();
 
-        $data = $this->service()->fetchMultiple($orgId, $input);
+        $data = $this->service()->fetchMultiple($orgId, $input, $permission ?? null, $limit ?? 10, $offset ?? 0);
 
         return ApiResponse::json($data);
     }

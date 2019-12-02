@@ -15,11 +15,28 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
-    public function findByOrgId(string $orgId)
+    public function findByOrgId(string $orgId, $permission = null, $limit = 10, $offset = 0)
     {
-        return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->get();
+        if($permission)
+        {
+            $query =  $this->newQuery()
+                ->orderBy(Entity::MERCHANT_ID)
+                ->take($limit)
+                ->skip($offset)
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->whereHas('permissions', function($q) use($permission)
+                {
+                    $q->where('name', '=', $permission);
+                })->get();
+        }
+        else
+        {
+            $query =  $this->newQuery()
+                ->where(Entity::ORG_ID, '=', $orgId)
+                ->get();
+        }
+
+        return $query;
     }
 
     public function fetchWorkflowsByPermissionsOrgAndMerchant(
