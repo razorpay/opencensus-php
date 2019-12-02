@@ -6,9 +6,7 @@ use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
 
 
 class Validator extends Base\Validator
