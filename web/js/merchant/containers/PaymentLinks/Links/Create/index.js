@@ -260,6 +260,7 @@ export default class CreateNewContainer extends React.Component {
             email_notify: data.email_notify | 0,
             email: data.customer_details.email,
             contact: data.customer_details.contact,
+            customer_name: data.customer_details.name,
             expire_by,
             notes: defaultValueNotes,
             reminder_enable:

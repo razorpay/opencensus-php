@@ -441,6 +441,10 @@ export default class User {
     return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
+  get isPaymentLinkCustomerNameFieldEnabled() {
+    return window.pl_customer_name_enabled;
+  }
+
   get isPaymentLinkBatchEnabledForSellerAppRole() {
     return this.getExpStatus('sellerapp_PL_batch_upload');
   }
