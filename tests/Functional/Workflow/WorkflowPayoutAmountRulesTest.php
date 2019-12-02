@@ -123,7 +123,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetAllPayoutAmountRulesWithPaginationLinks()
+    public function testGetAllPayoutAmountRules()
     {
         $this->ba->adminAuth();
 
@@ -136,28 +136,13 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             [
                 'id'          => 2,
                 'min_amount'  => 101,
-                'max_amount'  => 1000
-            ],
-            [
-                'id'          => 3,
-                'min_amount'  => 1001,
-                'max_amount'  => null
-            ],
-            [
-                'id'          => 4,
-                'min_amount'  => 0,
-                'max_amount'  => 100
-            ],
-            [
-                'id'          => 5,
-                'min_amount'  => 101,
                 'max_amount'  => null
             ]
         ];
-        $skip = 2;
-        $count = 2;
-        for ($index = 0; $index < $count; $index++) {
-            $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index+$skip];
+
+        for ($index = 0; $index < 2; $index++) {
+            $this->testData[__FUNCTION__]['response']['content']['items']['10000000000000'][$index]['workflow_id']
+                = $this->workflowIds[$index];
         }
 
         $index = 0;
@@ -168,11 +153,6 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         }
 
         $responseContent = $this->startTest();
-        $this->assertEquals($responseContent['links'][0]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=2');
-        $this->assertEquals($responseContent['links'][1]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=0');
-        $this->assertEquals($responseContent['links'][2]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=0');
-        $this->assertEquals($responseContent['links'][3]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=4');
-        $this->assertEquals($responseContent['links'][4]['href'],getenv('APP_URL').'/v1/workflows/rules/payout_amount/all?count=2&skip=4');
     }
 
     public function testGetMerchantWorkflowPayoutAmountRules()

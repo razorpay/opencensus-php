@@ -22,10 +22,10 @@ class Repository extends Base\Repository
     public function fetchAllWorkflowRulesForOrg($limit, $offset, $orgId)
     {
         return $this->newQuery()
-            ->whereHas('workflow', function($q) use($orgId)
-            {
-                $q->where(Entity::ORG_ID, '=', $orgId);
-            })
+//            ->whereHas('workflow', function($q) use($orgId)
+//            {
+//                $q->where(Entity::ORG_ID, $orgId);
+//            })
             ->get()
             ->groupBy(Entity::MERCHANT_ID)
             ->slice($offset,$limit);
