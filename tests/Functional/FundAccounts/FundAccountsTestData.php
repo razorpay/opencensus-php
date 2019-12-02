@@ -844,7 +844,7 @@ return [
             ],
         ],
     ],
-    'testBulkFundAccountWithSameFundAccountId' => [
+    'testBulkFundAccountWithSameContact' => [
         'request'   => [
             'url'     => '/contacts/bulk',
             'method'  => 'POST',
@@ -858,7 +858,6 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'id'                => 'cont_1000001contact',
                         'type'              => 'vendor',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
@@ -871,7 +870,137 @@ return [
                         'state'             => 'Karnataka'
                     ],
                     'idempotency_key'       => 'batch_abc123',
-                    'contact_id'            => 'cont_1000001contact'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'vpa',
+                        'account_name'      => 'Sample rzp2',
+                        'account_IFSC'      => '',
+                        'account_number'    => '',
+                        'account_vpa'       => '123@ybl'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp2',
+                        'email'             => '',
+                        'mobile'            => '',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => '',
+                        'place'             => '',
+                        'state'             => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc124'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp2',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc125'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 3,
+                'items'  => [
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'details' => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'bank_account'          => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'vpa',
+                        'details'               => [
+                            'address'           => '123@ybl',
+                        ],
+                        'vpa'                   => [
+                            'address'           => '123@ybl',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc124'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'details' => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp2',
+                            'account_number'    => '1234567890',
+                        ],
+                        'bank_account'          => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp2',
+                            'account_number'    => '1234567890',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc125'
+                    ]
+                ]
+            ],
+        ],
+    ],
+    'testBulkFundAccountWithSameFundAccount' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'abc123',
+                        'place'             => 'Bangalore',
+                        'state'             => 'Karnataka'
+                    ],
+                    'idempotency_key'       => 'batch_abc123',
                 ],
                 [
                     'fund'  => [
@@ -905,9 +1034,8 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp3',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
                         'reference_id'      => ''
@@ -972,7 +1100,7 @@ return [
                             'account_number'    => '1234567890',
                         ],
                         'active'                => true,
-                        'idempotency_key'       => 'batch_abc125'
+                        'idempotency_key'       => 'batch_abc123'
                     ]
                 ]
             ],
