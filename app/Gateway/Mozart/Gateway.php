@@ -931,11 +931,17 @@ class Gateway extends Base\Gateway
     protected function getPreviousStepName($gateway)
     {
         $previousActionForStep = [
-            Payment\Gateway::BAJAJFINSERV => [
+            Payment\Gateway::DEBIT_EMI => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
                 Action::REFUND => Action::PAY_VERIFY,
+            ],
+            Payment\Gateway::BAJAJFINSERV => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => Action::PAY_INIT,
+                Action::VERIFY        => Action::PAY_VERIFY,
+                Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_UBI => [
@@ -1044,6 +1050,13 @@ class Gateway extends Base\Gateway
     protected function getPreviousStepForDB($gateway)
     {
         $previousActionForData = [
+            Payment\Gateway::DEBIT_EMI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+                Action::REFUND     => Action::AUTHORIZE,
+            ],
+
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
