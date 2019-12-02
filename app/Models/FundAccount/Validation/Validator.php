@@ -3,9 +3,11 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 
@@ -30,7 +32,7 @@ class Validator extends Base\Validator
      *
      * @param array  $input
      *
-     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
      */
     public function validateAmount(Entity $validation, array $input)
     {
@@ -38,8 +40,7 @@ class Validator extends Base\Validator
         {
             if (isset($input['amount']))
             {
-                throw new BadRequestValidationFailureException(
-                    'Invalid amount field for fund account of type vpa.');
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_AMOUNT);
             }
         }
     }
@@ -49,7 +50,7 @@ class Validator extends Base\Validator
      *
      * @param array  $input
      *
-     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
      */
     public function validateCurrency(Entity $validation, array $input)
     {
@@ -57,8 +58,7 @@ class Validator extends Base\Validator
         {
             if (isset($input['currency']))
             {
-                throw new BadRequestValidationFailureException(
-                    'Invalid currency field for fund account of type vpa.');
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_CURRENCY);
             }
         }
     }
@@ -70,8 +70,8 @@ class Validator extends Base\Validator
      */
     public function validateBalanceId(Entity $validation)
     {
-        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING)
-            && ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
+        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING) and
+            ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
         {
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
@@ -87,18 +87,15 @@ class Validator extends Base\Validator
      * @param $validation
      * @param $input
      *
-     * @throws \RZP\Exception\AssertionException
-     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
      */
     public function validateFundAccount($validation, $input)
     {
-        assertTrue(isset($input['fund_account']) === true);
-
-        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING)
-            && (empty($input['fund_account']['id']) === true))
+        if (($validation->balance->getType() === Merchant\Balance\Type::BANKING) and
+            (empty($input['fund_account']['id']) === true))
         {
-            throw new BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING,
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING,
                 Entity::FUND_ACCOUNT,
                 [
                     Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),

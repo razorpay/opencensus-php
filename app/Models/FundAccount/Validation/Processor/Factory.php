@@ -18,10 +18,14 @@ class Factory
     {
         $type = $fundAccountValidation->fundAccount->account->getEntityName();
 
-        if (in_array($type, [Entity::BANK_ACCOUNT, Entity::VPA]) === false)
+        if (in_array($type, [Entity::BANK_ACCOUNT, Entity::VPA], true) === false)
         {
             throw new BadRequestValidationFailureException(
-                "Invalid fund account type: " . $type
+                "Invalid fund account type: " . $type,
+                FundAccountValidation\Entity::FUND_ACCOUNT,
+                [
+                    FundAccountValidation\Entity::FUND_ACCOUNT_ID => $fundAccountValidation->fundAccount->getId(),
+                ]
             );
         }
 
