@@ -1876,6 +1876,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($txn);
 
+        (new Transaction\Core)->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
+
         //
         // If the payment has a transfer, update the
         // on_hold flag for the transfer as well
