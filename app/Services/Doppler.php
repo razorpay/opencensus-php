@@ -137,7 +137,7 @@ class Doppler
 
         if($payment->isUPI() === true)
         {
-            $vpaHandle = $payment->getPspFromVpa();
+            $vpaHandle = $payment->getVpaHandleFromVpa();
             if (strlen($vpaHandle) == 0)
             {
                 $vpaHandle = null;
