@@ -67,7 +67,6 @@ class Entity extends Base\Entity
     protected $publicSetters = [
         self::ID,
         self::ORG_ID,
-        self::MERCHANT_ID,
     ];
 
     public function getName()

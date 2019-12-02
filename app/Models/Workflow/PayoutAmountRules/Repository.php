@@ -21,13 +21,7 @@ class Repository extends Base\Repository
 
     public function fetchAllWorkflowRules($limit, $offset)
     {
-        $orgId = $this->app['basicauth']->getAdminOrgId();
-
         return $this->newQuery()
-            ->whereHas('workflow', function($q) use ($orgId)
-            {
-                $q->where(Entity::ORG_ID, '=', $orgId);
-            })
             ->orderBy(Entity::MERCHANT_ID)
             ->take($limit)
             ->skip($offset)
