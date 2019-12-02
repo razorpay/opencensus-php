@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
+use RZP\Models\PayoutLink;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
