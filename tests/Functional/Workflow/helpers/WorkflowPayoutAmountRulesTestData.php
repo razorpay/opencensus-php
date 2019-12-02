@@ -234,43 +234,28 @@ return [
         ],
     ],
 
-    'testGetAllPayoutAmountRulesWithPaginationLinks' => [
+    'testGetAllPayoutAmountRules' => [
         'request' => [
             'method'  => 'get',
-            'url'     => '/workflows/rules/payout_amount/all?count=2&skip=2',
+            'url'     => '/workflows/rules/payout_amount/all?count=1&skip=0',
             'content' => [],
         ],
         'response' => [
             'content' => [
                 'items' => [
-                    [
-                        'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
-                        'min_amount'    =>  1001,
-                        'max_amount'    =>  null,
-                    ],
-                    [
-                        'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
-                        'min_amount'    =>  0,
-                        'max_amount'    =>  100,
-                    ]
-                ],
-                'links' => [
-                    [
-                        'rel'  =>   'self',
-                    ],
-                    [
-                        'rel'  =>   'first',
-                    ],
-                    [
-                        'rel'  =>   'prev',
-                    ],
-                    [
-                        'rel'  =>   'next',
-                    ],
-                    [
-                        'rel'  =>   'last',
+                    '10000000000000'    =>  [
+                        [
+                            'merchant_id'   =>  '10000000000000',
+                            'condition'     =>  null,
+                            'min_amount'    =>  0,
+                            'max_amount'    =>  100,
+                        ],
+                        [
+                            'merchant_id'   =>  '10000000000000',
+                            'condition'     =>  null,
+                            'min_amount'    =>  101,
+                            'max_amount'    =>  null,
+                        ]
                     ]
                 ]
             ]
