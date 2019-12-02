@@ -5,6 +5,8 @@ import { fetchGST } from 'merchant/reducers/profile';
 import { openModal } from 'merchant_common/reducers/modals';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Group, { GroupItem } from 'common/ui/Group';
 
 @connect(state => ({ ...state.profile, user: state.session.user }), {
   fetchGST,
@@ -45,11 +47,27 @@ export default class SettlementDetails extends Component {
           </div>
 
           <div class="list-group-item">
-            <span>
+            <div>
               Next Settlement
               <i class="i i-info-circle" />
-            </span>
-            <span>₹7,12,618.36 </span>
+              <Popover theme="dark">
+                <PopoverBody>
+                  This is a tentative amount, it might vary by refund and
+                  others.
+                </PopoverBody>
+              </Popover>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                width: '40%',
+                justifyContent: 'space-evenly',
+              }}
+            >
+              <div>₹7,12,618.36</div>
+              <div>01 Dec, 5PM</div>
+              <div class="btn-link">Know More</div>
+            </div>
           </div>
         </div>
       </div>
