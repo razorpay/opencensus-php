@@ -64,6 +64,7 @@ export default class NewSubscriptionLink extends Component {
       addons: [],
     },
     internals: {},
+    allPaymentMethodsAllowed: false,
   };
 
   handleTabChange = ({ target }) => {
@@ -139,6 +140,119 @@ export default class NewSubscriptionLink extends Component {
     this.setState({ currentTab, validTabs });
   };
 
+  isSelectedPaymentMethod = (...methods) => {
+    console.log(
+      methods,
+      this.state.payment_method &&
+        methods.indexOf(this.state.payment_method) > -1
+    );
+    return (
+      this.state.payment_method &&
+      methods.indexOf(this.state.payment_method) > -1
+    );
+  };
+
+  renderPaymentMethods() {
+    const { allPaymentMethodsAllowed } = this.state;
+
+    let paymentMethods = [
+      { label: 'Select Payment method', name: '' },
+      { label: 'Card', name: 'card' },
+      { label: 'Net Banking', name: 'netbanking' },
+      { label: 'Wallet', name: 'wallet' },
+      { label: 'UPI', name: 'upi' },
+      { label: 'EMI', name: 'emi' },
+      { label: 'Cardless EMI', name: 'cardless_emi' },
+      { label: 'Pay Later', name: 'paylater' },
+    ];
+    let paymentIssuers = [
+      { label: 'Select Issuers', name: '' },
+      { label: 'HDFC Bank', name: 'HDFC' },
+      { label: 'HSBC Bank', name: 'HSBC' },
+      { label: 'ICICI Bank', name: 'ICIC' },
+      { label: 'INDUSIND Bank', name: 'INDB' },
+      { label: 'Kotak Mahindra Bank', name: 'KKBK' },
+      { label: 'Ratnakar Bank Bank', name: 'RATN' },
+      { label: 'Standard Chartered Bank', name: 'SCBL' },
+      { label: 'Axis Bank', name: 'UTIB' },
+      { label: 'Yes Bank', name: 'YESB' },
+      { label: 'Citi Bank', name: 'CITI' },
+      { label: 'State Bank of India', name: 'SBIN' },
+      { label: 'Bank of Baroda Bank', name: 'BARB' },
+    ];
+
+    let paymentNetworks = [
+      { label: 'Select Network', name: '' },
+      { label: 'Visa', name: 'VISA' },
+      { label: 'RuPay', name: 'RUPAY' },
+      { label: 'MasterCard', name: 'MC' },
+      { label: 'Diners Club', name: 'DICL' },
+      { label: 'Maestro', name: 'MAES' },
+      { label: 'American Express', name: 'AMEX' },
+    ];
+    return (
+      <React.Fragment>
+        {!allPaymentMethodsAllowed && (
+          <Input.Select
+            label="Payment Method"
+            name="payment_method"
+            options={paymentMethods}
+            placeholder="Payment Method"
+            onChange={this.getFormOnChangeHandler()}
+          />
+        )}
+
+        {(this.isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
+          <Input.Select
+            label="Issuer"
+            name="issuer"
+            placeholder="Payment Instrument Issuer/Bank Name"
+            options={paymentIssuers}
+          />
+        )) ||
+          null}
+        {(this.isSelectedPaymentMethod('card', 'emi') && (
+          <React.Fragment>
+            <Input
+              label="Maximum Usage Per Card"
+              name="max_payment_count"
+              type="number"
+              placeholder="Maximum usage of a card to avail this offer"
+            />
+            <Input.Select
+              label="Card Type"
+              name="payment_method_type"
+              description="Card Type"
+              onChange={this.getFormOnChangeHandler()}
+              options={(() => {
+                return this.isSelectedPaymentMethod('emi')
+                  ? [{ label: 'Credit Card', name: 'credit' }]
+                  : [
+                      { label: 'Credit Card', name: 'credit' },
+                      { label: 'Debit Card', name: 'debit' },
+                    ];
+              })()}
+              required
+            />
+            <Input.Select
+              label="Payment Method Network"
+              name="payment_network"
+              placeholder="Payment Method Type"
+              options={paymentNetworks}
+            />
+            <Input
+              label="IINs"
+              onChange={this.getFormOnChangeHandler('iins')}
+              placeholder="6 digit IINs for cards. Separated by comma if more than one"
+              description={this.state.iins && this.state.iins.join(', ')}
+            />
+          </React.Fragment>
+        )) ||
+          null}
+      </React.Fragment>
+    );
+  }
+
   renderForm() {
     switch (this.state.currentTab) {
       case 0:
@@ -178,8 +292,47 @@ export default class NewSubscriptionLink extends Component {
           </React.Fragment>
         );
       case 1:
-        return <div>{/* <Input.Radio>
-          </Input.Radio> */}</div>;
+        return (
+          <div>
+            {/*             
+            <Input.Radio
+              class="Input--isStockSet Input--vTop"
+              onChange={() => {
+                this.setState({
+                  allPaymentMethodsAllowed: !this.state.allPaymentMethodsAllowed
+                });
+              }}
+              options={[
+                {
+                  label: (
+                    <div>
+                      <strong> Apply on all payment methods </strong>
+                      <p>
+                        {" "}
+                        The offer get automatically applied to all payment
+                        methods{" "}
+                      </p>
+                    </div>
+                  )
+                },
+                {
+                  label: (
+                    <div class="Input--stock">
+                      <strong>Filter by payment method</strong>
+                      <p>
+                        You can add filters depanding on the method. Eg, Network
+                        (for cards) or duration (for EMI)
+                      </p>
+                    </div>
+                  )
+                }
+              ]}
+              defaultValue={!this.state.allPaymentMethodsAllowed}
+            /> */}
+
+            {this.renderPaymentMethods()}
+          </div>
+        );
       case 2:
         return <div />;
       case 3:
