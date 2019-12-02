@@ -34,6 +34,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\AuthType;
 use RZP\Constants\Entity as E;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
@@ -65,6 +66,7 @@ class Processor
     use Vpa;
     use AuthorizePush;
     use CardCacheTrait;
+    use CardPaymentService;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -143,8 +145,13 @@ class Processor
     /**
      * Core payment service feature flag
      */
-    const CPS_FEATURE_FLAG_PREFIX = 'cps_gateway_routing';
-    const CARD_PAYMENTS_PREFIX    = 'card_payments_gateway_routing';
+    const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
+    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
+    const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
+    /**
+     * 3D Secure international feature flag
+     */
+    const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
 
     /**
      * @var Merchant\Entity
@@ -1066,12 +1073,8 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
-        // Adding cybersource check until cybersource emi payments are fixed
-        if (((empty($gatewayInput['authenticate']['gateway']) === false) and
-             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway())) or
-            (($payment->getGateway() === E::CYBERSOURCE) and
-             ($payment->isMethod(Payment\Method::CARD) === false)))
+        // Check if payment is card
+        if ($payment->isMethod(Payment\Method::CARD) === false)
         {
             $payment->disableCpsRoute();
 
@@ -1115,7 +1118,7 @@ class Processor
      */
     protected function handleCardPaymentServiceGateways(Payment\Entity $payment, $gatewayInput)
     {
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+        if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
 
@@ -1123,16 +1126,30 @@ class Processor
         }
     }
 
+    protected function isCardPaymentServiceConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false);
+    }
+
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
     {
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
+        if (empty($payment->getAuthenticationGateway()) === false)
+        {
+            $featureFlag .= '_' .$payment->getAuthenticationGateway();
+        }
+
         $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
-            'payment_id'     => $payment->getId(),
-            'merchant_id'    => $payment->getMerchantId(),
-            'razorx_variant' => $variant,
+            'payment_id'             => $payment->getId(),
+            'merchant_id'            => $payment->getMerchantId(),
+            'gateway'                => $payment->getGateway(),
+            'authentication_gateway' => $payment->getAuthenticationGateway(),
+            'auth_type'              => $payment->getAuthType() ?? AuthType::_3DS,
+            'feature_flag'           => $featureFlag,
+            'razorx_variant'         => $variant,
         ]);
 
         return $variant;
@@ -1178,6 +1195,10 @@ class Processor
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
+
+            //setting original order amount to input array to set back the original amount as payment
+            //amount in case of offer validation fails.
+            $input['order_amount'] = $orderAmount;
         }
     }
 
@@ -1724,23 +1745,31 @@ class Processor
             $notifier->trigger(Payment\Event::FAILED);
         }
 
+        if($traceCode !== TraceCode::PAYMENT_TIMED_OUT)
+        {
+            $offer = new Offer\Core();
+
+            $offer->lockDecrementCurrentOfferUsage($payment);
+        }
+
+
         //TODO: Remove this later
-        try
-        {
-            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-                [
-                    'payment'             => $this->payment->toArray(),
-                    'code'                => $code,
-                    'internal_code'       => $internalCode,
-                    'error'               => $e->getMessage()
-                ]
-            );
-        }
+//        try
+//        {
+//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+//        }
+//        catch (\Throwable $e)
+//        {
+//            $this->trace->info(
+//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+//                [
+//                    'payment'             => $this->payment->toArray(),
+//                    'code'                => $code,
+//                    'internal_code'       => $internalCode,
+//                    'error'               => $e->getMessage()
+//                ]
+//            );
+//        }
     }
 
     /**
@@ -1925,7 +1954,7 @@ class Processor
         }
         else if ($this->isRoutedThroughCardPayments($action, $gatewayData) === true)
         {
-            if ((bool) ConfigKey::get(ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+            if ($this->isCardPaymentServiceConfigEnabled() === true)
             {
                 $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::CARD_PAYMENT_SERVICE;
                 // Persist card details only when payment method is card or emi
@@ -1965,7 +1994,7 @@ class Processor
                         return $this->app['cps']->action($gateway, $action, $gatewayData);
 
                     case Payment\Entity::CARD_PAYMENT_SERVICE:
-                        return $this->app['card.payments']->action($gateway, $action, $gatewayData);
+                        return $this->callCpsAction($this->payment, $gateway, $action, $gatewayData);
 
                 }
             }
@@ -2322,7 +2351,8 @@ class Processor
                             ($this->merchant->isTPVRequired() === true));
 
             if (($tpvRequired === true) or
-                ($payment->isEmandate() === true))
+                ($payment->isEmandate() === true) or
+                ($payment->isNach() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -2353,6 +2383,11 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        if ($payment->isNach() === true)
+        {
+            $payment->setBank($this->order->getBankForNachMethod());
+        }
 
         //
         // FIXME: Hack for reliance AMC, moving order receipt to payment
@@ -2997,6 +3032,11 @@ class Processor
             return false;
         }
 
+        if ($payment->isNach() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -3189,6 +3229,8 @@ class Processor
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
+
+                $this->setAnalyticsLog($payment);
 
                 $payment->setAuthType(Payment\AuthType::_3DS);
 

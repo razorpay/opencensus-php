@@ -106,6 +106,8 @@ class ResponseFields
         self::REFERENCE_4,
         self::REFERENCE_5,
         self::BANK_REFERENCE,
+        self::REFERENCE_6,
+        self::REFERENCE_7,
     ];
 
     const VALIDATE_VPA  = [
@@ -121,6 +123,10 @@ class ResponseFields
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::PHONE_NUMBER,
+    ];
+
+    const PAYEE_VA_DETAILS = [
+        self::PAYEE_VA,
     ];
 
     const INTENT_TPV = [

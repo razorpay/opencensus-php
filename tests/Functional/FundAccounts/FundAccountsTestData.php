@@ -358,14 +358,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Address: amitm',
+                    'description' => 'Invalid VPA. Please enter a valid Virtual Payment Address',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         ],
     ],
 
@@ -588,6 +588,7 @@ return [
             ],
         ],
     ],
+
     'testBulkFundAccountWithInvalidContactId' => [
         'request'   => [
             'url'     => '/contacts/bulk',
@@ -710,6 +711,7 @@ return [
             ],
         ],
     ],
+
     'testBulkFundAccountWithValidContactId' => [
         'request'   => [
             'url'     => '/contacts/bulk',
@@ -844,6 +846,7 @@ return [
             ],
         ],
     ],
+
     'testBulkFundAccountWithSameContact' => [
         'request'   => [
             'url'     => '/contacts/bulk',
@@ -1249,7 +1252,7 @@ return [
                     'ifsc'           => 'SBIN0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111',
-                ],
+                     ],
             ],
             'url'     => '/fund_accounts',
             'method'  => 'POST'
@@ -1269,13 +1272,50 @@ return [
         ],
     ],
 
-    'testDuplicateFundAccountCreationOnApiForVpa' => [
+    'testCreateSingleCharacterHandleOfVpa' => [
         'request'  => [
             'content' => [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
                     'address' => 'amitm@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationOnApiForVpa' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+        ],
+
+    ],
+
+    'testCreateVpaWithDot' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a.mitm@upi',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -1350,4 +1390,5 @@ return [
             'status_code' => 201
         ],
     ]
+
 ];

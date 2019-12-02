@@ -19,9 +19,9 @@ class EsEnabledNotify extends Mailable
 
     protected function addRecipients()
     {
-        $toEmail = ['ayush.bansal@razorpay.com', 'abhirup.bhabani@razorpay.com', 'anubhav.jain@razorpay.com'];
+        $toEmail = ['ayush.bansal@razorpay.com', 'abhirup.bhabani@razorpay.com', 'anubhav.jain@razorpay.com', 'kamteam@razorpay.com'];
 
-        $toName = ['Ayush Bansal', 'Abhirup Bhabhani', 'Anubhav Jain'];
+        $toName = ['Ayush Bansal', 'Abhirup Bhabhani', 'Anubhav Jain', 'KAM team'];
 
         $this->to($toEmail, $toName);
 

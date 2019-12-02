@@ -80,6 +80,8 @@ class Core extends Base\Core
         $this->validatePricingPlans($input);
 
         (new Validator)->validateSettleToPartner($partner, $input, $subMerchant);
+
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
     }
 
     /**
@@ -143,6 +145,8 @@ class Core extends Base\Core
         $partner = (new Merchant\Core)->getPartnerFromApp($application);
 
         (new Validator)->validateSettleToPartner($partner, $input, $submerchant);
+
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
 

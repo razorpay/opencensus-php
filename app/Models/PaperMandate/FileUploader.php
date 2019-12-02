@@ -10,6 +10,18 @@ use RZP\Models\Base\UniqueIdEntity;
 
 class FileUploader extends Base\Core
 {
+    /**
+     * Elfin: Url shortening service
+     */
+    protected $elfin;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->elfin           = $this->app['elfin'];
+    }
+
     const JPG_EXTENSION  = '.jpg';
     const JPEG_EXTENSION = '.jpeg';
     const PDF_EXTENSION  = '.pdf';
@@ -77,6 +89,13 @@ class FileUploader extends Base\Core
         return $file['signed_url'];
     }
 
+    public function getSignedShortUrl($fileId)
+    {
+        $signedUrl = $this->getSignedUrl($fileId);
+
+        return $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
+    }
+
     protected function createUploadedFile(string $url, $fileName, $mime): UploadedFile
     {
         return new UploadedFile(
@@ -89,7 +108,7 @@ class FileUploader extends Base\Core
         );
     }
 
-    function storeFileInStorage($base64String, $output_file)
+    protected function storeFileInStorage($base64String, $output_file)
     {
         Storage::put($output_file, base64_decode($base64String));
 

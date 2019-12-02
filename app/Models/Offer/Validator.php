@@ -48,6 +48,9 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
+        Entity::BLOCK               => 'required|boolean',
+        Entity::ACTIVE              => 'filled|boolean',
     ];
 
     protected static $createBulkRules = [
@@ -60,7 +63,7 @@ class Validator extends Base\Validator
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'required|in:emi',
         Entity::ISSUER              => 'required_without:payment_network|filled',
-        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX|filled',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX,BAJAJ|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
         Entity::EMI_DURATIONS       => 'sometimes|array|custom',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
@@ -71,6 +74,8 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::BLOCK               => 'required|boolean',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
     ];
 
     protected static $editRules = [
@@ -78,7 +83,7 @@ class Validator extends Base\Validator
         Entity::IINS               => 'filled|array',
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
-        Entity::ACTIVE             => 'filled|in:0',
+        Entity::ACTIVE             => 'filled',
         Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',

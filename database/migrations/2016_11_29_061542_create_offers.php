@@ -79,6 +79,12 @@ class CreateOffers extends Migration
             $table->integer(Offer::MAX_PAYMENT_COUNT)
                   ->nullable();
 
+            $table->integer(Offer::MAX_OFFER_USAGE)
+                  ->nullable();
+
+            $table->integer(Offer::CURRENT_OFFER_USAGE)
+                  ->nullable();
+
             $table->text(Offer::LINKED_OFFER_IDS)
                   ->nullable();
 

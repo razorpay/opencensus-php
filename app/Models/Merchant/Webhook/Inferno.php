@@ -6,11 +6,12 @@ use App;
 use Mail;
 
 use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
+use RZP\Models\Merchant\Account;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Feature\Constants;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 use Http\Client\Common\PluginClient;
@@ -475,9 +476,18 @@ class Inferno
 
         $headers = [];
 
-        if ($webhook->merchant->isFeatureEnabled(Constants::TRANSLATE_WEBHOOK) === true)
+        $eventArray = json_decode($event, true);
+
+        if (empty($eventArray[Event\Entity::ACCOUNT_ID]) === false)
         {
-            list($headers, $event) = $this->app['express']->translateWebhook($event);
+            $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($eventArray[Event\Entity::ACCOUNT_ID]);
+
+            $merchant = $this->app['repo']->merchant->findOrFailPublic($merchantId);
+
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $event);
+
+            $headers = $response['headers'];
+            $event   = $response['content'];
         }
 
         $hmac = static::generateHMAC($event, $secret);

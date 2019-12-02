@@ -20,6 +20,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Partner\Config as PartnerConfig;
 
 class Core extends Base\Core
 {
@@ -169,6 +170,7 @@ class Core extends Base\Core
         $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
         $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
+        $data[Entity::NACH]          = $methods->isNachEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
         $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
@@ -218,6 +220,8 @@ class Core extends Base\Core
             $this->addRecurringCardsToMethods($merchant, $methods, $data['recurring']);
 
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
+
+            $data['recurring'][Entity::NACH] = $methods->isNachEnabled();
         }
 
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
@@ -321,7 +325,7 @@ class Core extends Base\Core
         }
     }
 
-    public function setDefaultMethods($merchant)
+    public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
     {
         $methods = (new Methods\Entity)->build();
 
@@ -330,22 +334,27 @@ class Core extends Base\Core
         // No default methods are enabled for linked accounts
         if ($merchant->isLinkedAccount() === false)
         {
-            $methods->setCreditCard(true);
-            $methods->setDebitCard(true);
-            $methods->setPrepaidCard(true);
-            $methods->setMobikwik(false);
-            $methods->setPayzapp(true);
-            $methods->setPayumoney(true);
-            // OlaMoney is facing fraud issues, not going to
-            // enable by default for new merchants anymore.
-            // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
-            // $methods->setOlamoney(false);
-            $methods->setFreecharge(true);
-            $methods->setAirtelmoney(false);
-            $methods->setAmazonpay(false);
-            $methods->setBankTransfer(true);
-            // Initializing Disabled bank with empty array
-            $methods->setDisabledBanks([]);
+            $methodsEnabled = $this->setDefaultMethodsFromPartnerConfigsIfApplicable($methods, $aggregatorMerchant);
+
+            if ($methodsEnabled === false)
+            {
+                $methods->setCreditCard(true);
+                $methods->setDebitCard(true);
+                $methods->setPrepaidCard(true);
+                $methods->setMobikwik(false);
+                $methods->setPayzapp(true);
+                $methods->setPayumoney(true);
+                // OlaMoney is facing fraud issues, not going to
+                // enable by default for new merchants anymore.
+                // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
+                // $methods->setOlamoney(false);
+                $methods->setFreecharge(true);
+                $methods->setAirtelmoney(false);
+                $methods->setAmazonpay(false);
+                $methods->setBankTransfer(true);
+                // Initializing Disabled bank with empty array
+                $methods->setDisabledBanks([]);
+            }
         }
         else
         {
@@ -363,6 +372,59 @@ class Core extends Base\Core
         $this->repo->saveOrFail($methods);
 
         return $methods;
+    }
+
+    /**
+     * Check if partner have Default Payment methods set for submerchant.
+     * If it exists then override payment methods over default.
+     *
+     * @param Entity               $methods
+     * @param Merchant\Entity|null $aggregatorMerchant
+     *
+     * @return bool
+     */
+    private function setDefaultMethodsFromPartnerConfigsIfApplicable(Entity $methods, Merchant\Entity $aggregatorMerchant = null)
+    {
+        if ($aggregatorMerchant === null)
+        {
+            return false;
+        }
+
+        if (($aggregatorMerchant->isAggregatorPartner() === false) and ($aggregatorMerchant->isFullyManagedPartner() === false))
+        {
+            return false;
+        }
+
+        $defaultPartnerConfig = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($aggregatorMerchant);
+
+        if (($defaultPartnerConfig === null) or (count($defaultPartnerConfig) === 0))
+        {
+            return false;
+        }
+
+        $defaultPaymentMethods = $defaultPartnerConfig->first()->getDefaultPaymentMethods();
+
+        if (empty($defaultPaymentMethods) === true)
+        {
+            return false;
+        }
+
+        $methods->setMethods(Entity::$defaultPaymentMethodsForSubmerchantByPartner);
+
+        foreach ($defaultPaymentMethods as $key => $value)
+        {
+            $methods->setAttribute($key, $value);
+        }
+
+        $this->trace->info(
+            TraceCode::PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT,
+            [
+                'submerchant_id'          => $methods->getMerchantId(),
+                'partner_id'              => $aggregatorMerchant->getId(),
+                'default_payment_methods' => $defaultPaymentMethods,
+            ]);
+
+        return true;
     }
 
     public function setPaymentBanksForMerchant($merchant, $input)

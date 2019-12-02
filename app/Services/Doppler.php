@@ -51,9 +51,10 @@ class Doppler
             return;
         }
 
-        // publishing event to doppler's topic if payment method is card/upi
+        // publishing event to doppler's topic if payment method is card/upi/netbanking
         if (($payment->getMethod() === Method::CARD) or
-            ($payment->getMethod() === Method::UPI))
+            ($payment->getMethod() === Method::UPI)  or
+            ($payment->getMethod() === Method::NETBANKING))
         {
 
             $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode);
@@ -85,6 +86,8 @@ class Doppler
         $card = [];
 
         $upi = [];
+
+        $netbanking = [];
 
         $terminalType = null;
 
@@ -127,26 +130,48 @@ class Doppler
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
+            $netbanking['bank'] = null;
         }
 
         if($payment->isUPI() === true)
         {
+            $psp = $payment->getPspFromVpa();
+            if (strlen($psp) == 0)
+            {
+                $psp = null;
+            }
             $card['card_iin'] = null;
             $card['card_network'] = null;
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = $payment->getVpa();
-            $upi['psp'] = $payment->getPspFromVpa();
+            $upi['psp'] = $psp;
             $upi['bank'] = $payment->getBankName();
             $upi['type'] = $payment->getMetadata('flow');
+            $netbanking['bank'] = null;
+        }
+
+        if($payment->isNetbanking() === true)
+        {
+            $card['card_iin'] = null;
+            $card['card_network'] = null;
+            $card['card_type'] = null;
+            $card['card_issuer'] = null;
+            $upi['vpa'] = null;
+            $upi['psp'] = null;
+            $upi['bank'] = null;
+            $upi['type'] = null;
+            $netbanking['bank'] = $payment->getBankName();
         }
 
         $reqObj = [
             'payment_id'            => $payment->getId(),
             'method'                => $payment->getMethod(),
+            'merchant_id'           => $payment->getMerchantId(),
             'authorized'            => $authorizeStatus,
             'card'                  => $card,
             'upi'                   => $upi,
+            'netbanking'            => $netbanking,
             'terminal'              => $payment->getTerminalId(),
             'gateway'               => $gateway,
             'terminalType'          => $terminalType,

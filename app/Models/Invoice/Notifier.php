@@ -5,18 +5,17 @@ namespace RZP\Models\Invoice;
 use Mail;
 use Config;
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
-use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Services\Reminders;
 use RZP\Constants\Timezone;
+use RZP\Services\Reminders;
 use RZP\Models\Invoice\Reminder;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
 {
@@ -108,7 +107,22 @@ class Notifier extends Base\Core
         {
             $request = $this->getRemindersCreateReminderInput();
 
-            $response = $this->reminders->createReminder($request, $merchantId);
+            $response = [];
+
+            try {
+                $response = $this->reminders->createReminder($request, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
 
             $this->setReminderResponse($response, $reminderEntity);
         }
@@ -120,7 +134,22 @@ class Notifier extends Base\Core
 
             $request = $this->getRemindersUpdateReminderInput();
 
-            $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
+            $response = [];
+
+            try {
+                $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
 
             if(empty($response['id']) === true)
             {
@@ -630,6 +659,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_INDIABULLS_FINANCE:
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabull_custom';
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
@@ -742,6 +772,17 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $template = 'sms.custom_invoice.rbl_agri_loan';
+                $sender   = 'RBLBNK';
+                $params = [
+                    'receipt'       => $receipt,
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -787,6 +828,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_INDIABULLS_FINANCE:
 
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabulls_finance';
                 $params   = [
                     'receipt'      => $receipt,
