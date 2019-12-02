@@ -27,8 +27,8 @@ export const fetchItem = id => {
           'card',
           'emi_plan',
           'disputes',
-          // 'transaction',
-          // 'transaction.settlement',
+          'transaction',
+          'transaction.settlement',
         ],
         dashboard_flag: ['instant_refund_support'],
       }

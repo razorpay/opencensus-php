@@ -192,12 +192,24 @@ export default props => {
                     : '--'}
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Settlement Details">
-                  <ContentToggler>
-                    <span>Settled on 29 June 2019</span>
-                    <SettlementOverview />
-                  </ContentToggler>
-                </EntityDetailRow>
+                {payment.transaction && (
+                  <EntityDetailRow label="Settlement Details">
+                    {payment.transaction.settlement ? (
+                      <ContentToggler>
+                        <span>
+                          Settled on{' '}
+                          <Time
+                            value={payment.transaction.settled_at}
+                            format="DD MMM YYYY"
+                          />
+                        </span>
+                        <SettlementOverview payment={payment} />
+                      </ContentToggler>
+                    ) : (
+                      '--'
+                    )}
+                  </EntityDetailRow>
+                )}
               </div>
             </div>
           </div>
