@@ -19,4 +19,17 @@ class Service extends Base\Service
 
         return $defaultExpiryTime;
     }
+
+        /**
+     * To get the list of notifications to be shown to a user.
+     *
+     * @param string $currentMerchantId Current selected merchant id
+     *
+     */
+    public function getExtraFormFieldsForPaymentLinksForMerchant(string $currentMerchantId)
+    {
+        $extraFields = Constants::getExtraFormFieldsForPaymentLinksByMID($currentMerchantId);
+
+        return $extraFields;
+    }
 }

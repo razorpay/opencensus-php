@@ -431,6 +431,10 @@ export default class User {
     return this.getExpStatus('hide_registration_link_first_amount');
   }
 
+  get getPaymentLinkCreationFormExtraFields() {
+    return window.pl_extra_fields;
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')

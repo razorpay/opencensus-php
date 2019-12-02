@@ -87,10 +87,12 @@ class UserController extends Controller
             {
                 $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
                 $data['pl_expiry_in_hrs'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
+                $data['pl_extra_fields'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getExtraFormFieldsForPaymentLinksForMerchant($currentMerchantId));
             }
             else {
                 $data['custom_notes'] = null;
                 $data['pl_expiry_in_hrs'] = null;
+                $data['pl_extra_fields'] = null;
             }
 
             return view('merchant.index', $data);
