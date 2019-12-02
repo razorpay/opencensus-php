@@ -45,6 +45,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
     const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
 
     const FUND_TRANSFER_FETCH_URI = '/admin/transfer';

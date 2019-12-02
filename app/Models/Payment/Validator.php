@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -445,11 +446,11 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+
         $vpaParts = explode('@', $vpa);
 
-        if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false) or
-            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
+        if (ProviderCode::validate($vpaParts[1]) === false)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(

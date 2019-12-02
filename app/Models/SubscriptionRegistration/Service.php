@@ -262,11 +262,13 @@ class Service extends Base\Service
 
         $customer = $paperMandate->customer;
 
-        $paymentInput[Payment\Entity::AMOUNT]      = $subscriptionRegistration->getAmount();
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
-        $paymentInput[Payment\Entity::CURRENCY]    = $subscriptionRegistration->getCurrency();
+        $paymentInput[Payment\Entity::AMOUNT]      = $order->getAmount();
 
-        $paymentInput[Payment\Entity::METHOD]      = $subscriptionRegistration->getMethod();
+        $paymentInput[Payment\Entity::CURRENCY]    = $order->getCurrency();
+
+        $paymentInput[Payment\Entity::METHOD]      = $order->getMethod();
 
         $paymentInput[Payment\Entity::RECURRING]   = true;
 

@@ -32,6 +32,9 @@ class Activate extends Base\Core
      */
     public function activate(Entity $merchant): Detail\Entity
     {
+        //To be removed, added for trace purpose
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArray());
+
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {

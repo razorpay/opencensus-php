@@ -1805,6 +1805,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
 
         $this->fixtures->on('live')->create('terminal', [

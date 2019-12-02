@@ -76,6 +76,8 @@ class BankTransferTest extends TestCase
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $this->fixtures->on('test');
     }
 

@@ -26,7 +26,7 @@ class Constants
 
     const YESBANK_ENACH_NB_JOB_NAME    = 'yesbank_enach_nb';
 
-    const CITIBANK_NACH_FILE_JOB_NAME  = 'citibank_nach_file';
+    const CITIBANK_NACH_FILE_JOB_NAME  = 'citibank_nach';
 
     const FIRST_DATA_PARES_FILE_JOB_NAME = 'firstdata_pares_data_push';
 }

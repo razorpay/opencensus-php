@@ -750,6 +750,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|alpha_num|max:18',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string|max:40',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string|alpha_num|max:11',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
@@ -761,6 +762,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:40',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
     ];
 
     protected static $netbankingSibTerminalRules = [
