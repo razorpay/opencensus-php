@@ -19,7 +19,7 @@ import { fetchUser } from 'merchant/reducers/session';
 import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
 import DisplayNameForm from 'merchant/views/Account/Profile/components/DisplayNameForm';
 import UpgradeMerchantForm from 'merchant/views/Account/Profile/components/UpgradeMerchantForm';
-
+import SettlementDetails from 'merchant/views/Account/Profile/components/SettlementDetails';
 import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -328,6 +328,7 @@ export default class Profile extends Component {
           ) : null}
 
           {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
+          <SettlementDetails />
         </div>
       </div>
     );
