@@ -26,10 +26,10 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getIsCustomerNameFieldEnabledForPaymentLinksForMerchant(string $currentMerchantId)
+    public function getIsCustomerNameFieldEnabledByMID(string $currentMerchantId)
     {
-        $isCustomerNameFieldEnabled = Constants::getIsCustomerNameFieldEnabledForPaymentLinksByMID($currentMerchantId);
+        $isEnabled = Constants::getIsCustomerNameFieldEnabledByMID($currentMerchantId);
 
-        return $isCustomerNameFieldEnabled;
+        return $isEnabled;
     }
 }

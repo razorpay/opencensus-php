@@ -22,7 +22,7 @@ class Constants
         return self::DEFAULT_EXPIRY[$mid] ?? null;
     }
 
-    public static function getIsCustomerNameFieldEnabledForPaymentLinksByMID($mid)
+    public static function getIsCustomerNameFieldEnabledByMID($mid)
     {
         return self::ENABLE_CUSTOMER_NAME_FIELD[$mid] ?? null;
     }

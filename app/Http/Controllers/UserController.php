@@ -87,7 +87,7 @@ class UserController extends Controller
             {
                 $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
                 $data['pl_expiry_in_hrs'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
-                $data['is_pl_customer_name_field_enabled'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getIsCustomerNameFieldEnabledForPaymentLinksForMerchant($currentMerchantId));
+                $data['is_pl_customer_name_field_enabled'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getIsCustomerNameFieldEnabledByMID($currentMerchantId));
             }
             else {
                 $data['custom_notes'] = null;
