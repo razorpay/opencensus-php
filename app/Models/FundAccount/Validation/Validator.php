@@ -36,7 +36,7 @@ class Validator extends Base\Validator
     {
         if ($validation->fundAccount->getAccountType() === FundAccount\Type::VPA)
         {
-            if (isset($input['amount']))
+            if (isset($input[Entity::AMOUNT]))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_AMOUNT);
             }
@@ -54,7 +54,7 @@ class Validator extends Base\Validator
     {
         if ($validation->fundAccount->getAccountType() === FundAccount\Type::VPA)
         {
-            if (isset($input['currency']))
+            if (isset($input[Entity::CURRENCY]))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_CURRENCY);
             }
@@ -90,7 +90,7 @@ class Validator extends Base\Validator
     public function validateFundAccount($validation, $input)
     {
         if (($validation->balance->getType() === Merchant\Balance\Type::BANKING) and
-            (empty($input['fund_account']['id']) === true))
+            (empty($input[Entity::FUND_ACCOUNT][Entity::ID]) === true))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FUND_ACCOUNT_ID_MISSING,
