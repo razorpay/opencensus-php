@@ -397,6 +397,10 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get getPaymentLinkCustomizedFormFields() {
+    return window.pl_customized_form_fields;
+  }
+
   get getCurrencyList() {
     return window.currencyList;
   }

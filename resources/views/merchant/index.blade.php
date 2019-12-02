@@ -40,6 +40,7 @@
     window.api_host = "{!! $api_host !!}"
     window.custom_notes = {!! $custom_notes !!};
     window.pl_expiry_in_hrs = {!! $pl_expiry_in_hrs !!};
+    window.pl_customized_form_fields = {!! $pl_customized_form_fields !!};
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
   </script>
   <!-- Raven Code -->

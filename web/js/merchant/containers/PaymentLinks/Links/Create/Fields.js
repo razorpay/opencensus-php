@@ -130,8 +130,9 @@ export default [
   ],
   {
     name: 'description',
-    label: 'Payment For',
-    placeholder: 'Payment Description',
+    label: form => getPaymentLinkFormLabel('description', form.props.user),
+    placeholder: form =>
+      getPaymentLinkFormPlaceholder('description', form.props.user),
     required: true,
     description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
@@ -202,7 +203,7 @@ export default [
   },
   {
     name: 'receipt',
-    label: 'Receipt No.',
+    label: form => getPaymentLinkFormLabel('receipt', form.props.user),
     validator: maxLength(40),
     size: 'half_big',
   },
@@ -373,4 +374,12 @@ export function getCustomNotesOptions() {
     type,
     options: [{ label: 'Select A Value', value: '' }, ...options],
   };
+}
+
+function getPaymentLinkFormLabel(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].label;
+}
+
+function getPaymentLinkFormPlaceholder(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].placeholder;
 }
