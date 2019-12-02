@@ -21,7 +21,7 @@ class Service extends Base\Service
     }
 
     /**
-     * To get the list of notifications to be shown to a user.
+     * To get the custom form fields to be shown to a user.
      *
      * @param string $currentMerchantId Current selected merchant id
      *
