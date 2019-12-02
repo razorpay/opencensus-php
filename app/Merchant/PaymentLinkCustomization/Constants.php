@@ -12,7 +12,7 @@ class Constants
         self::TEST_MID => 72
     ];
 
-    const CUSTOM_FIELDS_FALLBACK = [
+    const CUSTOMIZED_FIELDS_FALLBACK = [
         'receipt' => [
             'label' => 'Receipt No.',
             'placeholder' => ''
@@ -23,7 +23,7 @@ class Constants
         ]
     ];
 
-    const CUSTOM_FIELDS = [
+    const CUSTOMIZED_FIELDS = [
         self::BHARTI_AXA => [
             'receipt' => [
                 'label' => 'Reference Number',
@@ -51,8 +51,8 @@ class Constants
         return self::DEFAULT_EXPIRY[$mid] ?? null;
     }
 
-    public static function getCustomFormFieldsForPaymentLinksByMID($mid)
+    public static function getCustomizedFormFieldsByMID($mid)
     {
-        return self::CUSTOM_FIELDS[$mid] ?? self::CUSTOM_FIELDS_FALLBACK;
+        return self::CUSTOMIZED_FIELDS[$mid] ?? self::CUSTOMIZED_FIELDS_FALLBACK;
     }
 }

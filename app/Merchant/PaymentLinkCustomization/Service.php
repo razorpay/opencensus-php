@@ -26,9 +26,9 @@ class Service extends Base\Service
      * @param string $currentMerchantId Current selected merchant id
      *
      */
-    public function getCustomFormFieldsForPaymentLinksForMerchant(string $currentMerchantId)
+    public function getCustomizedFormFieldsByMID(string $currentMerchantId)
     {
-        $fields = Constants::getCustomFormFieldsForPaymentLinksByMID($currentMerchantId);
+        $fields = Constants::getCustomizedFormFieldsByMID($currentMerchantId);
 
         return $fields;
     }

@@ -370,9 +370,9 @@ export function getCustomNotesOptions() {
 }
 
 function getPaymentLinkFormLabel(fieldName, user) {
-  return user.getPaymentLinkCustomFormFields[fieldName].label;
+  return user.getPaymentLinkCustomizedFormFields[fieldName].label;
 }
 
 function getPaymentLinkFormPlaceholder(fieldName, user) {
-  return user.getPaymentLinkCustomFormFields[fieldName].placeholder;
+  return user.getPaymentLinkCustomizedFormFields[fieldName].placeholder;
 }
