@@ -66,6 +66,7 @@ class Processor
     use Vpa;
     use AuthorizePush;
     use CardCacheTrait;
+    use CardPaymentService;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -144,9 +145,9 @@ class Processor
     /**
      * Core payment service feature flag
      */
-    const CPS_FEATURE_FLAG_PREFIX = 'cps_gateway_routing';
-    const CARD_PAYMENTS_PREFIX    = 'card_payments_gateway_routing';
-
+    const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
+    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
+    const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
     /**
      * 3D Secure international feature flag
      */
@@ -1117,12 +1118,17 @@ class Processor
      */
     protected function handleCardPaymentServiceGateways(Payment\Entity $payment, $gatewayInput)
     {
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+        if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
 
             $this->setPaymentService($payment, $variant);
         }
+    }
+
+    protected function isCardPaymentServiceConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false);
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
@@ -1948,7 +1954,7 @@ class Processor
         }
         else if ($this->isRoutedThroughCardPayments($action, $gatewayData) === true)
         {
-            if ((bool) ConfigKey::get(ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) === true)
+            if ($this->isCardPaymentServiceConfigEnabled() === true)
             {
                 $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::CARD_PAYMENT_SERVICE;
                 // Persist card details only when payment method is card or emi
@@ -1988,7 +1994,7 @@ class Processor
                         return $this->app['cps']->action($gateway, $action, $gatewayData);
 
                     case Payment\Entity::CARD_PAYMENT_SERVICE:
-                        return $this->app['card.payments']->action($gateway, $action, $gatewayData);
+                        return $this->callCpsAction($this->payment, $gateway, $action, $gatewayData);
 
                 }
             }
