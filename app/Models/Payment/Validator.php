@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -20,6 +21,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -69,9 +71,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
-        'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled|custom',
+        'receiver.type'                 => 'required_with:receiver|filled|string',
+        'receiver.id'                   => 'required_with:receiver|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
@@ -109,6 +111,11 @@ class Validator extends Base\Validator
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
+    ];
+
+    protected static $editCpsResponseRules = [
+        Entity::AUTH_TYPE               => 'sometimes|nullable|string',
+        Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
@@ -399,6 +406,28 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateReceiver($attribute, $receiver)
+    {
+        if (Receiver::areTypesValid([$receiver['type']]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid receiver type: ' . $receiver['type']);
+        }
+
+        $requiredLength = 17;
+
+        if ($receiver['type'] === Receiver::VPA)
+        {
+            $requiredLength = 18;
+        }
+
+        if (strlen($receiver['id']) !== $requiredLength)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The receiver.id must be ' . $requiredLength . ' characters for receiver.type.' . $receiver['type']);
+        }
+    }
+
     protected function validateTestSuccess(array $input)
     {
         $app = App::getFacadeRoot();
@@ -422,11 +451,11 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+
         $vpaParts = explode('@', $vpa);
 
-        if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false) or
-            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
+        if (ProviderCode::validate($vpaParts[1]) === false)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(

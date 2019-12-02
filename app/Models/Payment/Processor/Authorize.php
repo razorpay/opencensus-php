@@ -53,6 +53,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\CardPaymentService;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
@@ -132,7 +133,7 @@ trait Authorize
                 $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
             }
             else if (($payment->isPushPaymentMethod() === true) and
-                ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+                    ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
             {
                 $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
             }
@@ -209,7 +210,14 @@ trait Authorize
             return null;
         }
 
-        $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+        if ($this->canAuthorizeViaCps($payment) === true)
+        {
+            $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+        }
+        else
+        {
+            $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+        }
 
         if (($request !== null) and
             (empty($request['redirect']) === false))
@@ -532,7 +540,8 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($payment->isRecurringTypeInitial() === true)
+        if (($payment->isRecurringTypeInitial() === true) and
+            ($token->getRecurringStatus() === null))
         {
             $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
@@ -1202,6 +1211,10 @@ trait Authorize
             return;
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            return;
+        }
         //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.
@@ -1689,7 +1702,7 @@ trait Authorize
 
         if ($offer !== null)
         {
-            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment, $input);
         }
     }
 
@@ -2099,7 +2112,7 @@ trait Authorize
 
                 try
                 {
-                    $this->validateFraudDetectionV2($payment);
+                    $this->validateFraudDetectionV2($payment, $this->merchant);
                 }
                 catch (Exception\IntegrationException $exception)
                 {
@@ -4794,6 +4807,7 @@ trait Authorize
         return $response;
     }
 
+
     /**
      * Do we support the OTP flow for a given payment
      * and input combination
@@ -5649,10 +5663,11 @@ trait Authorize
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
         //
-        // No gateway for bank transfer or Bharat Qr, everything is internal
+        // No gateway for bank transfer or Bharat Qr or UPI Transfer, everything is internal
         //
         if (($payment->isBankTransfer() === true) or
-            ($payment->isBharatQr() === true))
+            ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true))
         {
             return false;
         }
@@ -5949,6 +5964,7 @@ trait Authorize
          * 4. Payment is method is banktransfer, upi
          * 5. auth type is OTP or preferred auth contains OTP
          * 6. BharathQR payment
+         * 7. Payment receiver is VPA
          */
         if (($this->app['basicauth']->isPrivateAuth() === false) or
             ($this->app['api.route']->isS2SJsonRoute($routeName) === false) or
@@ -5956,6 +5972,7 @@ trait Authorize
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
             ($payment->isBharatQr() === true) or
+            ($payment->isUpiTransfer() === true) or
             ($payment->isNach() === true))
         {
             return false;
@@ -6105,6 +6122,8 @@ trait Authorize
                 $inputDetails = $this->getInputDetails($payment, $key);
 
                 $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setAnalyticsLog($payment);
 
                 /*
                  * In double redirect scenario terminal will be set

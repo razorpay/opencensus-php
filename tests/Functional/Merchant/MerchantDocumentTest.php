@@ -162,6 +162,7 @@ class MerchantDocumentTest Extends TestCase
             Constants::PASSPORT_FRONT,
             Constants::AADHAR_FRONT,
             Constants::VOTER_ID_FRONT,
+            Constants::AADHAAR_FRONT_COMPLETE
         ];
 
         $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');

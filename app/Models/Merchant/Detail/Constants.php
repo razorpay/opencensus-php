@@ -18,10 +18,11 @@ class Constants
     const SUCCESS           = 'success';
     const FAILURE           = 'failure';
 
-    const SIGNED_URL        = 'signed_url';
-    const PASSPORT_FRONT    = 'passport_front';
-    const AADHAR_FRONT      = 'aadhar_front';
-    const VOTER_ID_FRONT    = 'voter_id_front';
+    const SIGNED_URL             = 'signed_url';
+    const PASSPORT_FRONT         = 'passport_front';
+    const AADHAR_FRONT           = 'aadhar_front';
+    const VOTER_ID_FRONT         = 'voter_id_front';
+    const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
 
     // penny testing constants
     const MERCHANT_ID     = 'merchant_id';

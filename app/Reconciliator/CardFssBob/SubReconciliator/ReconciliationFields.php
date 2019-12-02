@@ -58,7 +58,7 @@ class ReconciliationFields
 
     const TRANSACTION_TYPE           = ['transaction_type', 'transactiontype'];
 
-    const TRANSACTION_CURRENCY_CODE  = ['transaction_currency_code', 'transactioncurrencycode'];
+    const TRANSACTION_CURRENCY_CODE  = ['transaction_currency_code', 'transactioncurrencycode', 'transaction_currency'];
 
     const TRANSACTION_AMOUNT         = ['transaction_amount', 'transactionamount'];
 
