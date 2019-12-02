@@ -530,7 +530,7 @@ class Selector extends Base\Core
 
             if ($payment->hasCard() === true)
             {
-                $card = $this->repo->card->findOrFail($payment->getCardId());
+                $card = $payment->card;
 
                 $paymentData['card'] = $card->toArray();
 
