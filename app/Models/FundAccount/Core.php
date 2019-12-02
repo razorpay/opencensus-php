@@ -56,12 +56,6 @@ class Core extends Base\Core
             }
         }
 
-        if (optional($source)->isActive() === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
-        }
-
         $this->modifyRequestForBackwardCompatibility($input);
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);

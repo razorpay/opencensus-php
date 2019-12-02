@@ -1576,8 +1576,6 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByFundAccountId()
     {
-        $this->markTestSkipped();
-
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -1634,6 +1632,38 @@ class PayoutTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $this->startTest();
+    }
+
+    public function testBulkPayoutWithSameContact()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['contact_id'], $response['items'][1]['fund_account']['contact_id']);
+    }
+
+    public function testBulkPayoutWithSameFundAccount()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['id'], $response['items'][1]['fund_account']['id']);
     }
 
     public function testBulkPayoutWithSameIdempotencyandBatchId()

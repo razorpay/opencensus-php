@@ -457,23 +457,12 @@ class Service extends Base\Service
                         {
                             $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
                         }
-
-                        // If fund_account is null then, it is not created before
-                        if ($fundAccount === null)
-                        {
-                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                                                                         $contact,
-                                                                                         $batchId,
-                                                                                         $createDuplicate);
-                        }
                         else
                         {
-                            $this->trace->info(
-                                TraceCode::FUND_ACCOUNT_EXIST,
-                                [
-                                    Entity::FUND_ACCOUNT_ID          => $fundAccountId,
-                                    Entity::BATCH_ID                 => $batchId
-                                ]);
+                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                                $contact,
+                                $batchId,
+                                $createDuplicate);
                         }
 
                         $payout = $this->processEntryForPayoutForFundAccount($item,
