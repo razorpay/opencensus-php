@@ -276,9 +276,29 @@ class ProviderCode
         self::YESB               => IFSC::YESB,
     ];
 
+    /**
+     * PSP handle to app mapping
+     */
+
+    protected static $appName = [
+        self::OKAXIS        => 'google_pay',
+        self::OKHDFCBANK    => 'google_pay',
+        self::OKICICI       => 'google_pay',
+        self::OKSBI         => 'google_pay',
+        self::UPI           => 'bhim',
+        self::ICICI         => 'whatsapp',
+        self::PAYTM         => 'paytm',
+        self::YBL           => 'phonepe',
+    ];
+
     public static function getBankCode($provider)
     {
         return self::$bankCodes[$provider] ?? null;
+    }
+
+    public static function getAppName($vpaHandle)
+    {
+        return self::$appName[$vpaHandle] ?? null;
     }
 
     public static function validate(string $provider)
