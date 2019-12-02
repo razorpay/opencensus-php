@@ -932,10 +932,10 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      */
-    public function cancelInvoicesOfBatch(array $batch)
+    public function cancelInvoicesOfBatch(array $batch, Merchant\Entity $merchant)
     {
         if ($batch[Batch\Entity::STATUS] !== Batch\Status::FAILED and
-            $this->isFailBatchEnabled() === true)
+            $this->isFailBatchEnabled($merchant) === true)
         {
             if ((new Batch\Service())->failBatchProcessIfRequired($batch) === false)
             {
@@ -1214,10 +1214,10 @@ class Core extends Base\Core
         }
     }
 
-    protected function isFailBatchEnabled()
+    protected function isFailBatchEnabled(Merchant\Entity $merchant)
     {
         $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
+            $merchant->getId(),
             Merchant\RazorxTreatment::FAIL_BATCH_BEFORE_CANCEL,
             $this->mode
         );

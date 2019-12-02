@@ -215,7 +215,7 @@ class Service extends Base\Service
     {
         $batch = (new Batch\Service())->fetchBatchById($batchId);
 
-        return $this->core->cancelInvoicesOfBatch($batch);
+        return $this->core->cancelInvoicesOfBatch($batch, $this->merchant);
     }
 
     public function delete(string $id): array
