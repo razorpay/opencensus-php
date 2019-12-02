@@ -38,6 +38,7 @@ class Defaults
             * on netbanking, but it doesn't support that in test mode.
             */
             Mode::TEST => [
+                Gateway::DEBIT_EMI,
                 Gateway::AXIS_GENIUS,
                 Gateway::PAYTM,
                 Gateway::ATOM,

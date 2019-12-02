@@ -125,7 +125,9 @@ class TransactionFilter extends Terminal\Filter
             }
             else
             {
-                $supported = Gateway::isCardNetworkSupported($network, $gateway, $payment->isRecurring());
+                $issuer = $payment->card->getIssuer();
+
+                $supported = Gateway::isCardNetworkSupported($network, $gateway, $issuer, $payment->isRecurring());
             }
 
             return $supported;

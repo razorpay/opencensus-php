@@ -4,15 +4,15 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
+
 use RZP\Models\Emi;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
-use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
-use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
@@ -1019,6 +1019,16 @@ class Gateway
         self::PAYSECURE => [
             Network::RUPAY,
         ]
+    ];
+
+    // Some gateways are not dependent on the network and only
+    // depends on the issuer. For example: HDFC Debit EMI
+    // Here, whichever the network the card is, if the issuer is HDFC
+    // and the method is EMI, the gateway is supported
+    public static $ignoreCardNetworkSupport = [
+        Issuer::HDFC => [
+            self::DEBIT_EMI,
+        ],
     ];
 
     /**
@@ -2163,8 +2173,14 @@ class Gateway
      *
      * @return bool
      */
-    public static function isCardNetworkSupported(string $network, string $gateway, bool $recurring = false)
+    public static function isCardNetworkSupported(string $network, string $gateway, string $issuer, bool $recurring = false)
     {
+        if ((isset(Gateway::$ignoreCardNetworkSupport[$issuer]) === true) AND
+            (in_array($gateway, Gateway::$ignoreCardNetworkSupport[$issuer]) === true))
+        {
+            return true;
+        }
+
         $supported = ((array_key_exists($gateway, self::$cardNetworkMap) === true) and
                       (in_array($network, self::$cardNetworkMap[$gateway], true) === true));
 
