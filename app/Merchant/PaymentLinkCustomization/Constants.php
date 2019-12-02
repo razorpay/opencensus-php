@@ -12,7 +12,7 @@ class Constants
         self::TEST_MID => 72
     ];
 
-    const ENABLE_CUSTOMER_NAME = [
+    const ENABLE_CUSTOMER_NAME_FIELD = [
         self::BHARTI_AXA => true,
         self::TEST_MID => true
     ];
@@ -24,6 +24,6 @@ class Constants
 
     public static function getIsCustomerNameFieldEnabledForPaymentLinksByMID($mid)
     {
-        return self::ENABLE_CUSTOMER_NAME[$mid] ?? null;
+        return self::ENABLE_CUSTOMER_NAME_FIELD[$mid] ?? null;
     }
 }

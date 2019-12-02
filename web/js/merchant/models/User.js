@@ -442,7 +442,7 @@ export default class User {
   }
 
   get isPaymentLinkCustomerNameFieldEnabled() {
-    return window.pl_customer_name_enabled;
+    return window.is_pl_customer_name_field_enabled;
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {
