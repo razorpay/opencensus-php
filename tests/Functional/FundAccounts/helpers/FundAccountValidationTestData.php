@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use \RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -552,7 +553,7 @@ return [
             ],
         ],
     ],
-    'testFundAccValidationFailedAccountTypeDirect' => [
+    'testFundAccValidationBankingFailedAccountTypeDirect' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
             'method'  => 'post',
@@ -576,8 +577,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
         ],
     ],
     'testFundAccValidationBankingFailedAmountVpa' => [

@@ -7,6 +7,7 @@ use \RZP\Constants;
 use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -553,15 +554,11 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(false, $txn['settled']);
     }
 
-    public function testFundAccValidationFailedAccountTypeDirect()
+    public function testFundAccValidationBankingFailedAccountTypeDirect()
     {
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
+        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
 
         $this->createFAVBankingPricingPlan();
-
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
-
-        $this->fixtures->merchant->editEntity('balance', $this->bankingBalance->getId(), ['account_type' => 'direct']);
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
@@ -616,6 +613,13 @@ class FundAccountValidationTest extends TestCase
         $fundAccountResponse = $this->createFundAccountCard();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingAccountTypeDirectFailed()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
 
         $this->startTest();
     }
