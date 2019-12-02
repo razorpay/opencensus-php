@@ -53,6 +53,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\CardPaymentService;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
@@ -132,7 +133,7 @@ trait Authorize
                 $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
             }
             else if (($payment->isPushPaymentMethod() === true) and
-                ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+                    ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
             {
                 $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
             }
@@ -209,7 +210,14 @@ trait Authorize
             return null;
         }
 
-        $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+        if ($this->canAuthorizeViaCps($payment) === true)
+        {
+            $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+        }
+        else
+        {
+            $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+        }
 
         if (($request !== null) and
             (empty($request['redirect']) === false))
@@ -4807,6 +4815,7 @@ trait Authorize
 
         return $response;
     }
+
 
     /**
      * Do we support the OTP flow for a given payment

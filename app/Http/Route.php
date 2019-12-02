@@ -1167,7 +1167,7 @@ final class Route
         'subscription_registration_list_links'          => ['get',      'subscription_registration/auth_links',                'SubscriptionRegistrationController@listAuthLinks'                  ],
         'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
-        'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',    'SubscriptionRegistrationController@sendNotification'      ],
+        'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify_by/{medium}', 'SubscriptionRegistrationController@sendNotification'      ],
         'subscription_registration_resend_links_batch'  => ['put',      'subscription_registration/auth_links/batch/{batchId}/notify',  'SubscriptionRegistrationController@notifyAuthLinksOfBatch'],
         'subscription_registration_cancel_link'         => ['post',     'subscription_registration/auth_links/{id}/cancel',             'SubscriptionRegistrationController@cancelAuthLink'        ],
         'subscription_registration_cancel_links_batch'  => ['post',     'subscription_registration/auth_links/batch/{batch_id}/cancel', 'SubscriptionRegistrationController@cancelAuthLinksOfBatch'],

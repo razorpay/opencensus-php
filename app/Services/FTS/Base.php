@@ -150,6 +150,8 @@ class Base
 
     /**
      * Generates request using the given params
+     * Issue with DELETE method: https://github.com/rmccue/Requests/issues/91
+     * Fix for DELETE method: https://github.com/rmccue/Requests/pull/188
      *
      * @param string $endpoint
      * @param string $method
@@ -162,7 +164,7 @@ class Base
         $url = $this->baseUrl . $endpoint;
 
         // json encode if data is must, else ignore.
-        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT, Requests::DELETE], true) === true)
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
@@ -174,6 +176,11 @@ class Base
                 $this->secret,
             ],
         ];
+
+        if ($method === Requests::DELETE)
+        {
+            $options += [ 'data_format' => 'body' ];
+        }
 
         return [
             'url'       => $url,

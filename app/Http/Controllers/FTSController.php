@@ -45,6 +45,6 @@ class FTSController extends Controller
     {
         $response = $this->app['fts_create_account']->deleteSourceAccount($this->input);
 
-        return ApiResponse::json($response);
+        return ApiResponse::json($response['body'], $response['code']);
     }
 }

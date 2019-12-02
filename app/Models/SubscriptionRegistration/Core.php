@@ -219,6 +219,13 @@ class Core extends Base\Core
         }
 
         $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT] = array_pull($subrInput, Entity::BANK_ACCOUNT);
+
+        if (array_key_exists(BankAccount\Entity::BANK_NAME, $paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT]))
+        {
+            $bankName = array_pull($paperMandateInput[PaperMandate\Entity::BANK_ACCOUNT], BankAccount\Entity::BANK_NAME);
+
+            $subrInput[Entity::BANK_ACCOUNT][BankAccount\Entity::BANK_NAME] = $bankName;
+        }
     }
 
     public function createCustomer(array & $input, Merchant\Entity $merchant): Customer\Entity
