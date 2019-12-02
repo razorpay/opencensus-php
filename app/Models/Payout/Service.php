@@ -13,6 +13,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
@@ -401,6 +402,10 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
+        // if any merchant wants to skip duplicate check
+        // and unique create contact and fund account everytime
+        $createDuplicate = $this->shouldCreateDuplicateForFundAccountAndContact();
+
         foreach ($input as $item)
         {
             try
@@ -412,7 +417,8 @@ class Service extends Base\Service
                         'input'          => $item
                     ]);
 
-                $this->repo->transaction(function() use (& $item,
+                $this->repo->transaction(function() use ($createDuplicate,
+                                                         & $item,
                                                          & $payoutBatch,
                                                          & $batchId,
                                                          & $idempotencyKey,
@@ -437,7 +443,7 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $contact = $this->contactCore->processEntryForContact($item, $batchId);
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
                         $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
@@ -455,7 +461,10 @@ class Service extends Base\Service
                         // If fund_account is null then, it is not created before
                         if ($fundAccount === null)
                         {
-                            $fundAccount = $this->fundAccountService->createFundAcccount($item, $contact, $batchId);
+                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                                                                                         $contact,
+                                                                                         $batchId,
+                                                                                         $createDuplicate);
                         }
                         else
                         {
@@ -649,5 +658,19 @@ class Service extends Base\Service
         $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
         return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
+    }
+
+
+    protected function shouldCreateDuplicateForFundAccountAndContact()
+    {
+        $merchant = $this->merchant;
+
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
+
+        $flag = $variant === 'create_duplicate' ? true : false;
+
+        return $flag;
     }
 }

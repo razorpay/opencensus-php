@@ -112,7 +112,8 @@ class Core extends Base\Core
 
     public function processEntryForContact(
         array $entry,
-        string $batchId)
+        string $batchId,
+        bool $createDuplicate)
     {
         $contact = $entry[ContactBatchHelper::CONTACT];
 
@@ -125,7 +126,7 @@ class Core extends Base\Core
 
         $input = ContactBatchHelper::getContactInput($entry);
 
-        $contact = $this->create($input, $this->merchant, true, $batchId);
+        $contact = $this->create($input, $this->merchant, $createDuplicate, $batchId);
 
         return $contact;
     }

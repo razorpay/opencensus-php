@@ -243,6 +243,37 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkFundAccountForMerchantBehindRazorx()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                  ->willReturn('create_duplicate');
+
+        $this->startTest();
+
+        $contacts = $this->getEntities('contact');
+
+        $fundAccounts = $this->getEntities('fund_account');
+
+        $this->assertEquals(3, count($contacts['items']));
+
+        $this->assertEquals(3, count($fundAccounts['items']));
+    }
+
     public function testBulkFundAccountWithInvalidContactId()
     {
         $this->ba->batchAuth();

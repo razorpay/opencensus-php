@@ -98,6 +98,10 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
+        // if any merchant wants to skip duplicate check
+        // and unique create contact everytime
+        $createDuplicate = $this->shouldCreateDuplicate();
+
         foreach ($input as $item)
         {
             try
@@ -110,6 +114,7 @@ class Service extends Base\Service
                     ]);
 
                 $this->repo->transaction(function() use (
+                    $createDuplicate,
                     & $item,
                     & $fundAccountBatch,
                     & $batchId,
@@ -135,7 +140,7 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $contact = $this->contactCore->processEntryForContact($item, $batchId);
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
                         $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
@@ -148,7 +153,7 @@ class Service extends Base\Service
                         }
                         else
                         {
-                            $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
+                            $fundAccount = $this->createFundAcccount($item, $contact, $batchId, $createDuplicate);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
                                 [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
@@ -204,13 +209,13 @@ class Service extends Base\Service
      * @return Entity           $fundAccount
      * @throws BadRequestValidationFailureException
      */
-    public function createFundAcccount(array $item, Contact\Entity $contact, string $batchId)
+    public function createFundAcccount(array $item, Contact\Entity $contact, string $batchId, bool $createDuplicate)
     {
         $input = FundAccountHelper::getFundAccountInput($item, $contact);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        $fundAccount = $this->core->create($input, $this->merchant, $contact, true, $batchId);
+        $fundAccount = $this->core->create($input, $this->merchant, $contact, $createDuplicate, $batchId);
 
         return $fundAccount;
     }
@@ -255,7 +260,7 @@ class Service extends Base\Service
         $createDuplicate = true;
 
         if (($this->auth->isStrictPrivateAuth() === true) and
-            ($this->shouldCreateDuplicateFundAccounts() === false))
+            ($this->shouldCreateDuplicate() === false))
         {
             $createDuplicate = false;
         }
@@ -282,7 +287,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function shouldCreateDuplicateFundAccounts()
+    protected function shouldCreateDuplicate()
     {
         $merchant = $this->merchant;
 
