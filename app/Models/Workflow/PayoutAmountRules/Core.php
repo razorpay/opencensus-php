@@ -107,11 +107,11 @@ class Core extends Base\Core
         }
     }
 
-    public function getAllWorkflowRulesForOrg($limit, $offset, $orgId)
+    public function getAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId)
     {
         return $this->repo
             ->workflow_payout_amount_rules
-            ->fetchAllWorkflowRulesForOrg($limit, $offset, $orgId)
+            ->fetchAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId)
             ->toArrayWithItems();
     }
 }

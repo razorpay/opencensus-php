@@ -19,8 +19,13 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function fetchAllWorkflowRulesForOrg($limit, $offset, $orgId)
+    public function fetchAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId)
     {
+        // If merchant id passed as query paramter
+        if($merchantId)
+        {
+            return $this->fetchWorkflowRulesForMerchant($merchantId)->groupBy(Entity::MERCHANT_ID);
+        }
         return $this->newQuery()
 //            ->whereHas('workflow', function($q) use($orgId)
 //            {

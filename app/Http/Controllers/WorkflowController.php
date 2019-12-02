@@ -91,15 +91,15 @@ class WorkflowController extends Controller
     public function getWorkflowMultiple()
     {
         $input = Request::all();
-        $permission = Request::get('permission');
-        $limit = Request::get('count');
-        $offset = Request::get('skip');
+        $permission = Request::get('permission') ?? null;
+        $limit = Request::get('count') ?? 10;
+        $offset = Request::get('skip') ?? 0;
 
         $orgId = $this->ba
                       ->getAdmin()
                       ->getPublicOrgId();
 
-        $data = $this->service()->fetchMultiple($orgId, $input, $permission ?? null, $limit ?? 10, $offset ?? 0);
+        $data = $this->service()->fetchMultiple($orgId, $input, $permission, $limit, $offset);
 
         return ApiResponse::json($data);
     }
@@ -138,10 +138,11 @@ class WorkflowController extends Controller
 
     public function getAllWorkflowPayoutAmountRules()
     {
-        $limit = Request::get('count');
-        $offset = Request::get('skip');
+        $limit = Request::get('count') ?? 10;
+        $offset = Request::get('skip') ?? 0;
+        $merchantId = Request::get('merchant_id') ?? null;
 
-        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit ?? 10, $offset ?? 0);
+        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit, $offset, $merchantId);
 
         return ApiResponse::json($data);
     }

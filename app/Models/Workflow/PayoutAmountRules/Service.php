@@ -16,13 +16,13 @@ class Service extends Base\Service
     }
 
     // Gets workflow rules for all merchants
-    public function getAllWorkflowRules($limit, $offset)
+    public function getAllWorkflowRules($limit, $offset, $merchantId)
     {
         $orgId = $this->auth->getOrgId();
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        return $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $orgId);
+        return $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId);
     }
 
     public function createWorkflowPayoutAmountRules($input): array
