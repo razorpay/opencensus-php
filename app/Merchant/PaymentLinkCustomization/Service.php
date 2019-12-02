@@ -32,4 +32,17 @@ class Service extends Base\Service
 
         return $fields;
     }
+
+    /**
+     * To get the is customer name field to be shown to a user or not.
+     *
+     * @param string $currentMerchantId Current selected merchant id
+     *
+     */
+    public function getIsCustomerNameFieldEnabledByMID(string $currentMerchantId)
+    {
+        $isEnabled = Constants::getIsCustomerNameFieldEnabledByMID($currentMerchantId);
+
+        return $isEnabled;
+    }
 }
