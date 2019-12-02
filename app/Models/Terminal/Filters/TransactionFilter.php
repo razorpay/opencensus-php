@@ -505,7 +505,9 @@ class TransactionFilter extends Terminal\Filter
         }
         else
         {
-            $gateway = Gateway::$emiBankToGatewayMap[$bank];
+            $cardType = $payment->card->getType();
+
+            $gateway = Gateway::$emiBankToGatewayMap[$bank][$cardType];
         }
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();

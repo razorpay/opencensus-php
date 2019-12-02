@@ -1664,7 +1664,7 @@ class Gateway
         IFSC::BARB,
     ];
 
-    protected static $emiBankToGatewayMap = [
+    public static $emiBankToGatewayMap = [
         IFSC::HDFC => [
             Emi\Type::CREDIT => Gateway::HDFC,
             Emi\Type::DEBIT  => Gateway::DEBIT_EMI,
