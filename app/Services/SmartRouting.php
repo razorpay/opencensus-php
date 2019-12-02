@@ -8,15 +8,16 @@ use RZP\Trace\TraceCode;
 
 class SmartRouting
 {
-    const X_RAZORPAY_TASKID  = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
 
-    const REQUEST_TIMEOUT    = 1;
+    const REQUEST_TIMEOUT           = 1;
+    const REQUEST_TIMEOUT_ASYNC     = 0.1;
 
-    const MAX_RETRY_COUNT    = 1;
+    const MAX_RETRY_COUNT           = 1;
 
-    const SUCCESS            = 'success';
+    const SUCCESS                   = 'success';
 
-    const ERROR              = 'error';
+    const ERROR                     = 'error';
 
     protected $config;
 
@@ -63,17 +64,17 @@ class SmartRouting
 
     public function sendPaymentData($data)
     {
-        return $this->sendRequest(self::SEND_PAYMENT_DATA, $data);
+        return $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
     public function createGatewayRule($data)
     {
-        return $this->sendRequest(self::CREATE_GATEWAY_RULE, $data);
+        return $this->sendRequest(self::CREATE_GATEWAY_RULE, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
     public function updateGatewayRule($data)
     {
-        return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data);
+        return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
     public function deleteGatewayRule($id, $group)
@@ -85,12 +86,17 @@ class SmartRouting
             $params = ['group' => $group];
         }
 
-        return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id, $params);
+        return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id, $params, self::REQUEST_TIMEOUT);
     }
 
-    protected function sendNonBlockingRequest($action, $data = null, $id = null)
+    public function sendNonBlockingPaymentData($data, $params)
     {
-        $url = $this->getUrl($action, $id);
+        $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, $params, self::REQUEST_TIMEOUT_ASYNC);
+    }
+
+    protected function sendNonBlockingRequest($action, $data = null, $id = null, $params)
+    {
+        $url = $this->getUrl($action, $id, $params);
 
         if ($data === null)
         {
@@ -111,7 +117,7 @@ class SmartRouting
     }
 
 
-    protected function sendRequest($action, $data = null, $id = null, $params = null)
+    protected function sendRequest($action, $data = null, $id = null, $params = null, $timeout = null)
     {
         try
         {
@@ -134,7 +140,7 @@ class SmartRouting
             ];
 
             $options = [
-                'timeout' => self::REQUEST_TIMEOUT,
+                'timeout' => $timeout,
                 'auth'    => $authentication
 
             ];

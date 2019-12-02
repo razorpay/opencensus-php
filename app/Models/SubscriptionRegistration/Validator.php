@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::AUTH_LINK_ID               => 'required_without:order_id|public_id',
         PaperMandate\Entity::FORM_UPLOADED => 'required|image|max:5120',
         'key_id'                           => 'sometimes|string',
+        'x_entity_id'                      => 'sometimes|string',
     ];
 
     protected static $getUploadedPaperMandateFormRules = [

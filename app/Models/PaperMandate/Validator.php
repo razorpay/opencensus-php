@@ -170,7 +170,7 @@ class Validator extends Base\Validator
         if ($this->entity->getStatus() !== Status::CREATED)
         {
             throw new BadRequestValidationFailureException(
-                'form has been already uploaded successfully'
+                'form has already been uploaded successfully'
             );
         }
     }

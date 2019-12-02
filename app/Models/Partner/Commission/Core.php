@@ -162,6 +162,11 @@ class Core extends Base\Core
     {
         $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
 
+        if ($configs->isEmpty() === true)
+        {
+            return 0;
+        }
+
         $tdsPercentage = $configs->first()->getTdsPercentage();
 
         return ((int) round(($tdsPercentage * $totalCommission) / 10000));

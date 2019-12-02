@@ -31,6 +31,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
+use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
@@ -50,6 +51,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property UpiTransfer\Entity     $upiTransfer
  * @property PaymentLink\Entity     $paymentLink
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
@@ -1828,7 +1830,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isUpiTransfer()
     {
         return (($this->isUpi() === true) and
-               ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
+                ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
     public function isGateway($gateway)
@@ -2930,6 +2932,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hasOne('RZP\Models\BharatQr\Entity');
     }
 
+    public function upiTransfer()
+    {
+        return $this->hasOne('RZP\Models\UpiTransfer\Entity');
+    }
+
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity');
@@ -3522,11 +3529,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, Carbon $expectedDate, $messageType): string
     {
         $messageSlaDone = null;
+        $messageVoidRefund = null;
         $messageEntity = Refund\Constants::PAYMENT;
         $messageStatus = $this->getStatus();
         $messageLateAuth = ($this->isLateAuthorized() === true);
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }

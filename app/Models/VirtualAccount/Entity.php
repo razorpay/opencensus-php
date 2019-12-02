@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -14,6 +15,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * @property Vpa\Entity          $vpa
  * @property Merchant\Entity     $merchant
  * @property Customer\Entity     $customer
  * @property BankAccount\Entity  $bankAccount
@@ -381,4 +383,19 @@ class Entity extends Base\PublicEntity
             return true;
         }
     }
+
+    public function isReceiverPresent(string $receiverType)
+    {
+        $assoc = studly_case($receiverType);
+
+        $func  = 'has' . $assoc;
+
+        return $this->$func();
+    }
+
+    public function isClosed()
+    {
+        return $this->getStatus() === Status::CLOSED;
+    }
+
 }
