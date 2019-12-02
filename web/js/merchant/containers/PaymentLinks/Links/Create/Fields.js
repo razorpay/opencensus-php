@@ -198,7 +198,6 @@ export default [
     type: 'text',
     placeholder: 'Customer Name',
     label: 'Customer Name',
-    size: 'half_big',
     _when: form => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
   },
   {
