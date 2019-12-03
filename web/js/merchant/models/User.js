@@ -439,7 +439,7 @@ export default class User {
     return this.getExpStatus('hide_registration_link_first_amount');
   }
 
-  get getPaymentLinkCreationFormExtraFields() {
+  get paymentLinkCreationFormExtraFields() {
     return window.pl_extra_fields;
   }
 

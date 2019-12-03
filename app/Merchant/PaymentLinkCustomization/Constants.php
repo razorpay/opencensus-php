@@ -14,26 +14,64 @@ class Constants
 
     const EXTRA_FORM_FIELDS = [
         self::BHARTI_AXA => [
-            'name' => 'Product',
-            'type' => 'select',
-            'required' => true,
-            'options' => [
-                'Car',
-                'Health',
-                'Travel'
-            ],
-            'addAt' => 'description'
+            [
+                'name' => 'extra_field_1', // Should be unique
+                'label' => 'Product',
+                'fieldType' => 'Select',
+                'required' => true,
+                'options' => [
+                    [
+                        'label' => '--Select--',
+                        'value' => ''
+                    ],
+                    [
+                        'label' => 'Car',
+                        'value' => 'Car'
+                    ],
+                    [
+                        'label' => 'Health',
+                        'value' => 'Health'
+                    ],
+                    [
+                        'label' => 'Travel',
+                        'value' => 'Travel'
+                    ]
+                ],
+                'addAt' => [
+                    'fieldName' => 'description',
+                    'as' => 'prefix'
+                ]
+            ]
         ],
         self::TEST_MID => [
-            'name' => 'Product',
-            'type' => 'select',
-            'required' => true,
-            'options' => [
-                'Car',
-                'Health',
-                'Travel'
-            ],
-            'addAt' => 'description'
+            [
+                'name' => 'extra_field_1',
+                'label' => 'Product',
+                'fieldType' => 'Select',
+                'required' => true,
+                'options' => [
+                    [
+                        'label' => '--Select--',
+                        'value' => ''
+                    ],
+                    [
+                        'label' => 'Car',
+                        'value' => 'Car'
+                    ],
+                    [
+                        'label' => 'Health',
+                        'value' => 'Health'
+                    ],
+                    [
+                        'label' => 'Travel',
+                        'value' => 'Travel'
+                    ]
+                ],
+                'addAt' => [
+                    'fieldName' => 'description',
+                    'as' => 'prefix'
+                ]
+            ]
         ]
     ];
 

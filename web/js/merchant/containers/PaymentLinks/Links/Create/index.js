@@ -41,6 +41,7 @@ import {
   closePaymentLinkForm,
   trackSaveDuplicatePaymentLink,
 } from '../ga';
+import { generateField } from './Utils';
 
 import Spinner from 'common/ui/Spinner';
 
@@ -539,6 +540,18 @@ export default class CreateNewContainer extends React.Component {
       };
     }
 
+    const extraFields = this.props.user.paymentLinkCreationFormExtraFields;
+
+    extraFields.forEach(field => {
+      if (field.addAt.as === 'prefix') {
+        reqPayload[field.addAt.fieldName] = `${reqPayload[field.name]} : ${
+          reqPayload[field.addAt.fieldName]
+        }`;
+
+        delete reqPayload[field.name];
+      }
+    });
+
     return FORM_FIELDS.onCreate(reqPayload)
       .then(resp => {
         this.setState({
@@ -609,10 +622,8 @@ export default class CreateNewContainer extends React.Component {
       });
   };
 
-  getFormFields() {
-    const fields = FORM_FIELDS.content;
-
-    return fields.map((f, i) => {
+  getFormFields(fields = FORM_FIELDS.content) {
+    const formFields = fields.map((f, i) => {
       if (Array.isArray(f)) {
         return (
           <Input.Group key={i} disabled={this.state.parentFormLock}>
@@ -670,6 +681,20 @@ export default class CreateNewContainer extends React.Component {
 
       return WizardFields.call(this, f);
     });
+
+    if (this.props.user.paymentLinkCreationFormExtraFields.length) {
+      const extraFields = this.props.user.paymentLinkCreationFormExtraFields.map(
+        meta => {
+          const newField = generateField(meta);
+
+          return WizardFields.call(this, newField);
+        }
+      );
+
+      formFields.push(extraFields);
+    }
+
+    return formFields;
   }
 
   onFormAbruptClose = e => {
