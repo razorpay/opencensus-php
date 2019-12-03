@@ -48,6 +48,7 @@ $view_preferences               = $data['view_preferences'];
     @endif
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     @include('invoice.payment_link_stylesheet')
+    @include('invoice.payment_link_analytics')
 
     <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
 
@@ -89,11 +90,11 @@ $view_preferences               = $data['view_preferences'];
                 'paymentLink':[
                     {
                         propertyName:'event_type',
-                        value:'paymentlink-hostedpage-events'
+                        value:'paymentlinks'
                     },
                     {
                         propertyName:'event_group',
-                        value:'paymentlinks'
+                        value:'paymentlink-hostedpage-events'
                     }
                 ],
             });
@@ -805,7 +806,6 @@ $view_preferences               = $data['view_preferences'];
                     pushToRzpQ('pl.payment.proceed');
                 });
             }
-
         }(window.RZP_DATA = window.RZP_DATA || {}));
     </script>
 @endif
@@ -822,74 +822,6 @@ $view_preferences               = $data['view_preferences'];
             );
         }
     }(window.RZP_DATA = window.RZP_DATA || {}));
-</script>
-<script>
-    // Lamberjack analytics events
-
-    function pushToRzpQ(event, event_options) {
-        window.rzpQ.push(
-            window.rzpQ
-            .now()
-            .paymentLink()
-            .success(event, event_options)
-        );
-    }
-
-    function handlePaymentLinkDocURL() {
-        window.open('https://www.razorpay.com/payment-links', '_blank');
-
-        pushToRzpQ('pl.payment.redirect');
-    }
-
-    function trackClickProceedToPay() {
-        pushToRzpQ('pl.payment.proceed');
-    }
-
-    function trackClickPayInFull() {
-        pushToRzpQ('pl.payment.full');
-    }
-
-    function trackClickPayInFull() {
-        pushToRzpQ('pl.payment.full');
-    }
-
-    function trackClickPayInPartial() {
-        pushToRzpQ('pl.payment.partial');
-    }
-
-    function trackChangeInAmount() {
-        pushToRzpQ('pl.payment.amount');
-    }
-
-    function trackChangeInAmount() {
-        pushToRzpQ('pl.partial.minamount');
-    }
-
-    function trackClickOnPay() {
-        pushToRzpQ('pl.payment.pay');
-    }
-
-    function trackClickOnPay() {
-        pushToRzpQ('pl.payment.pay');
-    }
-
-    function trackChooseMethod() {
-        pushToRzpQ('pl.payment.method');
-    }
-
-    function trackClickBackBtn() {
-        pushToRzpQ('pl.payment.topbarback');
-    }
-
-    function trackOnUserDroped() {
-        pushToRzpQ('pl.payment.dropped');
-    }
-</script>
-
-<script>
-    window.addEventListener("load", function() {
-        pushToRzpQ('pl.payment.opened');
-    });
 </script>
 </body>
 </html>
