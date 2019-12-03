@@ -149,7 +149,7 @@ class Doppler
             $upi['vpa'] = $payment->getVpa();
             $upi['vpa_handle'] = $vpaHandle;
             $upi['psp'] = ProviderCode::getPsp($vpaHandle) ?? null;
-            $upi['bank'] = ProviderCode::getBankCode($vpaHandle) ?? null;
+            $upi['bank'] = $payment->getBankName() ?? null;
             $upi['type'] = $payment->getMetadata('flow');
             $netbanking['bank'] = null;
         }
