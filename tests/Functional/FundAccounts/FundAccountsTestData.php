@@ -1293,6 +1293,7 @@ return [
                     'address' => 'a@upi',
                 ],
             ],
+            'status_code' => 201
         ],
     ],
 
@@ -1302,11 +1303,23 @@ return [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'address' => 'a@upi',
+                    'address' => 'amitm@upi',
                 ],
             ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
         ],
-
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'status_code' => 200
+        ],
     ],
 
     'testCreateVpaWithDot' => [
@@ -1330,6 +1343,7 @@ return [
                     'address' => 'amitm@upi',
                 ],
             ],
+            'status_code' => 201
         ]
     ],
 
