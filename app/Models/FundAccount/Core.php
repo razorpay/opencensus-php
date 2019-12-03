@@ -56,6 +56,11 @@ class Core extends Base\Core
             }
         }
 
+        if (($merchant->getId() === Merchant\Account::MEDLIFE) or
+            ($merchant->getId() === Merchant\Account::OKCREDIT))
+        {
+            $this->modifyRequestForBackwardCompatibility($input);
+        }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
