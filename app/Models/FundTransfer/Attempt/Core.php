@@ -816,7 +816,7 @@ class Core extends Base\Core
             'ramp_status' => $rampOnFts,
         ]);
 
-        if (strtolower($rampOnFts) === 'on')
+        if ((strtolower($rampOnFts) === 'on') and ($source->isBalanceTypeBanking() === true))
         {
             return [true, $source->getChannel()];
         }

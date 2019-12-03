@@ -1812,4 +1812,59 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_REQUIRED,
         ],
     ],
+
+    'testCreateMerchantPayoutOnDemandWithFtsRampFailure' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
+    'testCreateMerchantPayoutOnDemandWithFtsRampSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 ];
