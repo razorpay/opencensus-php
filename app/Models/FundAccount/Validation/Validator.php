@@ -5,7 +5,6 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\FundAccount;
 use RZP\Exception\BadRequestException;
 
 
@@ -20,7 +19,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID   => 'sometimes|unsigned_id',
     ];
 
-    protected static $balanceTypeBankingRules = [
+    protected static $bankingBankAccountRules = [
         Entity::AMOUNT                          => 'sometimes|integer|min:100|max:200',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CURRENCY                        => 'filled|string|in:INR',
@@ -29,11 +28,11 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 
-    protected static $fundAccountTypeVpaRules = [
-        Entity::FUND_ACCOUNT                    => 'required|associative_array',
+    protected static $bankingVpaRules = [
         Entity::NOTES                           => 'sometimes|notes',
-        Entity::RECEIPT                         => 'sometimes|string|min:1|max:40',
         Entity::BALANCE_ID                      => 'required|custom',
+        Entity::FUND_ACCOUNT                    => 'required|associative_array',
+        Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 
     protected static $retryRules = [

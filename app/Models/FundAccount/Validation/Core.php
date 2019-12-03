@@ -3,16 +3,19 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundAccount\Validation\Processor\Type;
 
 class Core extends Base\Core
 {
@@ -197,15 +200,13 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        $this->validateIfBalanceTypeBanking($validation, $input);
-
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
             $validation->associateFundAccount($fundAccount);
 
-            $this->validateIfFundAccountTypeVpa($validation, $input);
+            $this->validateInput($validation, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -231,20 +232,28 @@ class Core extends Base\Core
         return $validation;
     }
 
-    protected function validateIfBalanceTypeBanking(Entity $validation, array $input)
+    /**
+     * @param Entity $validation
+     * @param array  $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateInput(Entity $validation, array $input)
     {
-        if ($validation->balance->getType() === Merchant\Balance\Type::BANKING)
-        {
-            (new Validator($validation))->validateInput('balance_type_banking', $input);
-        }
-    }
+        $type = $validation->fundAccount->account->getEntityName();
 
-    protected function validateIfFundAccountTypeVpa(Entity $validation, array $input)
-    {
-        if ($validation->fundAccount->getAccountType() === FundAccount\Type::VPA)
+        Type::validate($type);
+
+        if ($validation->balance->isTypeBanking() === false)
         {
-            (new Validator($validation))->validateInput('fund_account_type_vpa', $input);
+            return;
         }
+
+        $accountType = $validation->fundAccount->getAccountType();
+
+        $validationRuleName = Product::BANKING . '_' . $accountType;
+
+        (new Validator($validation))->validateInput($validationRuleName, $input);
     }
 
     /**
