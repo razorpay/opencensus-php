@@ -269,7 +269,7 @@ class Base
             $code = $response->status_code;
         }
 
-        if (in_array($code, [200, 201, 204], true) === false)
+        if (in_array($code, [200, 201, 204, 400], true) === false)
         {
             throw new Exception\RuntimeException(
                 'Unexpected response code received from FTS.',

@@ -216,7 +216,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $paymentCardMigrateRules = [
-        'limit' => 'sometimes|integer',
+        'limit'                             => 'sometimes|integer',
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
     ];
 
     protected static $createValidators = [

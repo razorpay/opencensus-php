@@ -112,7 +112,21 @@ class Core extends Base\Core
     {
         $input[Invoice\Entity::TYPE] = Invoice\Type::LINK;
 
-        $input[Invoice\Entity::DESCRIPTION] = "Created by order";
+        if (($order->getMethod() === Payment\Method::NACH) and
+            (empty($input[E::SUBSCRIPTION_REGISTRATION]) === false) and
+            (empty($input[E::SUBSCRIPTION_REGISTRATION][Entity::NACH]) === false) and
+            (array_key_exists(Invoice\Entity::DESCRIPTION, $input[E::SUBSCRIPTION_REGISTRATION][Entity::NACH]) === true))
+        {
+            $input[Invoice\Entity::DESCRIPTION] = array_pull(
+                $input[E::SUBSCRIPTION_REGISTRATION][Entity::NACH],
+                Invoice\Entity::DESCRIPTION,
+                null
+            );
+        }
+        else
+        {
+            $input[Invoice\Entity::DESCRIPTION] = "Created by order";
+        }
 
         $input[Invoice\Entity::CURRENCY] = $order->getCurrency();
 

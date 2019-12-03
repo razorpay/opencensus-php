@@ -1901,4 +1901,46 @@ class PayoutTest extends TestCase
 //
 //        return $payout;
 //    }
+
+    public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt',true);
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals(398, $txn['amount']);
+
+        $this->assertEquals(602, $txn['fee']);
+
+        $this->assertEquals(1000, $txn['debit']);
+
+        $this->assertEquals(0, $fta['is_fts']);
+    }
+
+    public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt',true);
+
+        $this->assertEquals(1, $fta['is_fts']);
+    }
 }
