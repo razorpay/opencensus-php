@@ -7,6 +7,7 @@ const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS';
 const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS';
 const PAYMENT_FETCH_TRANSFERS = 'PAYMENT_FETCH_TRANSFERS';
 const PAYMENT_FETCH_BANK_TRANSFER = 'PAYMENT_FETCH_BANK_TRANSFER';
+const PAYMENT_FETCH_UPI_TRANSFER = 'PAYMENT_FETCH_UPI_TRANSFER';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
@@ -62,6 +63,13 @@ export const fetchBankTransfer = payment => {
   return {
     type: PAYMENT_FETCH_BANK_TRANSFER,
     payload: payment.fetchBankTransfer(),
+  };
+};
+
+export const fetchUPITransfer = payment => {
+  return {
+    type: PAYMENT_FETCH_UPI_TRANSFER,
+    payload: payment.fetchUPITransfer(),
   };
 };
 
@@ -133,6 +141,11 @@ let initialState = {
     details: {},
     error: null,
   },
+  upiTransfer: {
+    loading: false,
+    details: {},
+    error: null,
+  },
   error: null,
 };
 
@@ -195,7 +208,28 @@ export default function(state = initialState, action) {
       });
 
     case `${PAYMENT_FETCH_BANK_TRANSFER}::ERROR`:
-      return set(state, 'bankTransfer', {
+      return set(state, 'upiTransfer', {
+        loading: false,
+        details: {},
+        error: action.payload.errors,
+      });
+
+    case `${PAYMENT_FETCH_UPI_TRANSFER}::PENDING`:
+      return set(state, 'upiTransfer', {
+        loading: true,
+        details: {},
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_UPI_TRANSFER}::SUCCESS`:
+      return set(state, 'upiTransfer', {
+        loading: false,
+        details: action.payload.data,
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_UPI_TRANSFER}::ERROR`:
+      return set(state, 'upiTransfer', {
         loading: false,
         details: {},
         error: action.payload.errors,

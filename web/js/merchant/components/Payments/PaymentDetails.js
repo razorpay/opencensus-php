@@ -20,6 +20,7 @@ export default props => {
     payment,
     card,
     bankTransfer, //virtual account details
+    upiTransfer, //virtual account details
     refunds,
     transfers,
     isLoading,
@@ -116,6 +117,7 @@ export default props => {
                     payment={payment}
                     card={card}
                     bankTransfer={bankTransfer}
+                    upiTransfer={upiTransfer}
                   />
                 </EntityDetailRow>
 
