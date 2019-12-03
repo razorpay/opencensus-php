@@ -48,11 +48,12 @@ class Validator extends Base\Validator
      */
     public function validateBalanceId($attribute, $value)
     {
+        /** @var Entity $validation */
         $validation = $this->entity;
 
-        if (empty($validation->balance) OR
-            (($validation->balance->getType() === Merchant\Balance\Type::BANKING) and
-            ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED)))
+        if ((empty(optional($validation)->balance) === true) or
+            (($validation->balance->isTypeBanking() === true) and
+             ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED)))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
