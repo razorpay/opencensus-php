@@ -119,7 +119,7 @@ class Constants
         return self::DEFAULT_EXPIRY[$mid] ?? null;
     }
 
-    public static function getExtraFormFieldsForPaymentLinksByMID($mid)
+    public static function getExtraFormFieldsByMID($mid)
     {
         return self::EXTRA_FORM_FIELDS[$mid] ?? [];
     }
