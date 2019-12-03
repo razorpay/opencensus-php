@@ -1942,6 +1942,7 @@ return [
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
+                'mode'            => 'NEFT',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -1957,6 +1958,7 @@ return [
                 'narration'       => 'Batman',
                 'purpose'         => 'refund',
                 'status'          => 'processing',
+                'mode'            => 'NEFT',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
