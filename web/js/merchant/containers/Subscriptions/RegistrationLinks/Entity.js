@@ -84,10 +84,10 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   onResendLinkSubmit = notifyProps => {
     let promises = [];
 
-    if (notifyProps.email === '1') {
+    if (notifyProps.email) {
       promises.push(notifyCustomer(this.props.id, 'email'));
     }
-    if (notifyProps.sms === '1') {
+    if (notifyProps.sms) {
       promises.push(notifyCustomer(this.props.id, 'sms'));
     }
 
