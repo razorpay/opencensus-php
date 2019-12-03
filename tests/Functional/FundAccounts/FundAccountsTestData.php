@@ -1278,7 +1278,7 @@ return [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'address' => 'amitm@upi',
+                    'address' => 'a@upi',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -1340,7 +1340,7 @@ return [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'address' => 'amitm@upi',
+                    'address' => 'a.mitm@upi',
                 ],
             ],
             'status_code' => 201
