@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use DB;
 use Config;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
@@ -107,6 +110,47 @@ class ActivationTest extends TestCase
         $this->assertEquals($legalEntity->getMcc(), 5691);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+    }
+
+
+    public function testPostInstantActivationWithBalanceCreation()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $balanceId = '12212121';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $timeStamp = Carbon::now()->getTimestamp();
+
+        DB::connection('live')->table('balance')
+          ->insert([
+                       'id' => $balanceId,
+                       'merchant_id' => $merchantId,
+                       'type' => \RZP\Models\Merchant\Balance\Type::PRIMARY,
+                       'currency' => Currency::INR,
+                       'name' => 'test',
+                       'balance' => 0,
+                       'created_at' => $timeStamp,
+                       'updated_at' => $timeStamp,
+                   ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->mockHubSpotClient('trackL1ContactProperties');
+
+        $this->startTest();
+
+        $merchantBalance = $this->getDbEntity('balance', [
+            'merchant_id' => $merchantId,
+        ], 'live');
+
+        $this->assertEquals($merchantBalance->getId(), $balanceId);
+
     }
 
     public function testPostInstantActivationForUnregisteredRazorxOff()
@@ -712,6 +756,7 @@ class ActivationTest extends TestCase
             'promoter_address_url'             => '124',
             'business_type'                    => 2,
             'poa_verification_status'          => $poaVerificationStatus,
+            'poi_verification_status'          => 'verified',
             'bank_details_verification_status' => $bankDetailsVerificationStatus,
         ];
         $data = array_merge($data, $otherMerchantDetailAttributes);

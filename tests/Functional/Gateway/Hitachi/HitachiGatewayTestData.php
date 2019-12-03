@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Hitachi;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -62,6 +63,7 @@ return [
         'entity' => 'hitachi',
         'admin' => true,
     ],
+
     'testNotEnrolledCard' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -88,6 +90,34 @@ return [
         'tax'               => 0,
         'entity'            => 'payment',
     ],
+
+    'testInternationalRiskyPaymentSuccess' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth' => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hitachi',
+        'terminal_id'       => '100HitachiTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+
      'testInternationalVisa' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -294,6 +324,36 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testNotEnrolledInternationalCard' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+        ],
+    ],
+
+    'testPaymentFailureShieldBlock' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                    => 'RZP\Exception\BadRequestException',
+            'internal_error_code'      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
         ],
     ],
 

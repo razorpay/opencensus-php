@@ -454,16 +454,16 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
-        $request  = [
+        $request = [
             'content' => [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000001contact',
-                'bank_account'      => [
+                'bank_account' => [
                     'ifsc'           => 'SBIN0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111',
-                    ],
                 ],
+            ],
             'url'     => '/fund_accounts',
             'method'  => 'POST'
         ];
@@ -473,5 +473,47 @@ class FundAccountsTest extends TestCase
         $fundAccount2 = $this->getLastEntity('fund_account');
 
         $this->assertNotEquals($fundAccount1['id'], $fundAccount2['id']);
+    }
+
+    public function testCreateSingleCharacterHandleOfVpa()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $expectedVpaAttrs = [
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+            'username'    => 'a',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+    }
+
+    public function testCreateVpaWithDot()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $expectedVpaAttrs = [
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+            'username'    => 'a.mitm',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 }

@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Webhook;
 use Carbon\Carbon;
 
 use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Timezone;
 
@@ -65,6 +66,17 @@ class Stork
     {
         $this->service->init($mode);
 
+        $merchant = $event->merchant;
+
+        $payload = json_encode($event->toArrayPublic());
+
+        if (empty($merchant) === false)
+        {
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload);
+
+            $payload  = $response['content'];
+        }
+
         $this->service->request(
             '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent',
             [
@@ -74,9 +86,35 @@ class Stork
                     'owner_type' => E::MERCHANT,
                     'context'    => '{}',
                     'name'       => $event->event,
-                    'payload'    => json_encode($event->toArrayPublic()),
+                    'payload'    => $payload,
                 ],
             ]);
+    }
+
+    public function invalidateCacheForBothModeWithoutFail(string $merchantId = null)
+    {
+        if ($merchantId !== null)
+        {
+            (new self)->invalidateCacheWithoutFail($merchantId, 'live');
+            (new self)->invalidateCacheWithoutFail($merchantId, 'test');
+        }
+    }
+
+    public function invalidateCacheWithoutFail(string $merchantId, string $mode)
+    {
+        $maxAttempts = 2;
+        while ($maxAttempts--)
+        {
+            try
+            {
+                $this->invalidateCache($merchantId, $mode);
+                return;
+            }
+            catch (\Throwable $e)
+            {
+                app()->trace->traceException($e);
+            }
+        }
     }
 
     public function invalidateCache(string $merchantId, string $mode)

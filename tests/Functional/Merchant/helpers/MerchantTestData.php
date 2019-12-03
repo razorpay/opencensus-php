@@ -3314,10 +3314,50 @@ return [
         ],
         'response' => [
             'content' => [
-                'percent_rate' => 20,
+                'percent_rate' => 240,
                 'fixed_rate' => 0,
             ]
         ]
+    ],
+
+    'testFetchEsScheduledPricingZeroPercent' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'Invalid ES pricing was assigned to this merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ES_PRICING,
+        ],
+    ],
+
+    'testFetchEsScheduledPricingInternationalPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
+        ],
     ],
 
     'testEnableEsScheduledSuccess' => [

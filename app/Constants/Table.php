@@ -85,6 +85,7 @@ class Table
     const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
+    const UPI_TRANSFER               = 'upi_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
     const SCHEDULE_TASK              = 'schedule_tasks';
     const PARTNER_CONFIG             = 'partner_configs';
@@ -113,6 +114,8 @@ class Table
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
+    const REFERRALS                  = 'referrals';
+
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
 
@@ -234,6 +237,8 @@ class Table
     const INVOICE_REMINDER   = 'invoice_reminders';
 
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
+
+    const OPTIONS              = 'options';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

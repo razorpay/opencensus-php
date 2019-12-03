@@ -2409,8 +2409,6 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentCreateMerchantDynamicBearerPricingCustomerBearer()
     {
-        $this->markTestSkipped('test skipped temporarily to avoid canary-master issue. will be reverted. ref: https://razorpay.slack.com/archives/CNV2GTFEG/p1571946884026200');
-
         $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
             FeeBearer::DYNAMIC,
             FeeBearer::CUSTOMER);

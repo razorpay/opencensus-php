@@ -71,6 +71,7 @@ class Base
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,
         'cardless_emi'      => \RZP\Gateway\CardlessEmi\Entity::class,
+        'options'           => \RZP\Models\Options\Entity::class,
     ];
 
     protected static $liveAndTest = [

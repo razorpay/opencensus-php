@@ -105,6 +105,7 @@ class Validator extends Base\Validator
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
         Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
+        Entity::OPTIONS_KEY              => 'sometimes|array',
         Entity::REMINDER_ENABLE          => 'sometimes|boolean'
     ];
 
@@ -171,6 +172,7 @@ class Validator extends Base\Validator
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
         Entity::IDEMPOTENCY_KEY          => 'sometimes|string',
+        Entity::OPTIONS_KEY              => 'sometimes|array',
         Entity::REMINDER_ENABLE          => 'sometimes|bool'
     ];
 
