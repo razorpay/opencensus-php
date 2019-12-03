@@ -89,7 +89,7 @@ class Job extends BaseJob
 
             $handler = $this->getHandlerForJobEvent();
 
-            $this->invoice = $this->repoManager->invoice->findOrFail($this->id);
+            $this->invoice = $this->repoManager->invoice->findOrFailPublicWithRelations($this->id, ['entity']);
 
             $handlerResult = $this->{$handler}();
 

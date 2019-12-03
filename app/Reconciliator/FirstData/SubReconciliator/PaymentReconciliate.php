@@ -301,15 +301,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $row[self::COLUMN_CURRENCY] ?? null;
 
-        if (strtoupper($expectedCurrency) !== strtoupper($reconCurrency))
+        if ((strtoupper($expectedCurrency) !== strtoupper($reconCurrency)) and (empty($reconCurrency) !== true))
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

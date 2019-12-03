@@ -11,6 +11,7 @@ class Repository extends Base\Repository
 
     protected $expands = [
         Entity::BANKING_ACCOUNT_DETAILS,
+        Entity::MERCHANT
     ];
 
     public function getFromBalanceId(string $balanceId)

@@ -954,7 +954,28 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
+        $this->getOfferIdsForPayments($payments);
+
         return $payments->toArrayPublic();
+    }
+
+    protected function getOfferIdsForPayments($payments)
+    {
+        $paymentIds = $payments->pluck('id');
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds);
+
+        $plucked = $entityOffer->pluck('offer_id', 'entity_id');
+
+        foreach($payments as $payment)
+        {
+            if($plucked->has($payment->getId()))
+            {
+                $payment->setOfferId($plucked->get($payment->getId()));
+            }
+        }
     }
 
     public function fetch(string $id, array $input = []): array
@@ -975,7 +996,19 @@ class Service extends Base\Service
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
 
-        $entity = $payment->toArrayPublic();
+        $paymentIds = explode(', ', $payment->getId());
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds)
+                            ->first();
+
+        if($entityOffer !== null)
+        {
+            $payment->setOfferId($entityOffer->getOfferId());
+        }
+
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
@@ -1843,6 +1876,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($txn);
 
+        (new Transaction\Core)->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
+
         //
         // If the payment has a transfer, update the
         // on_hold flag for the transfer as well
@@ -1980,11 +2015,11 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId = null)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null, bool $bulkUpdate = false)
     {
         $updated = null;
 
-        (new Card\Service)->migtateCardVaultToken($cardId);
+        (new Card\Service)->migtateCardVaultToken($cardId, $bulkUpdate);
 
         if ($paymentId !== null)
         {
@@ -2082,22 +2117,33 @@ class Service extends Base\Service
 
         $limit = $input['limit'] ?? 1000;
 
-        $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+        $migrateMissingFingerprintCards = $input['migrate_missing_fingerprint_cards'] ?? false;
 
-        $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+        $payments = $cards = $cardsWithoutFingerprint = [];
 
-        $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        if($migrateMissingFingerprintCards)
+        {
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+        }
+        else
+        {
+            $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+
+            $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+
+            $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        }
 
         $this->trace->info(
             TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST,
             [
                 'payments_count' => count($payments),
-                'cards_count'    => count($cards),
+                'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             ]);
 
         $result = [
             'payments_count' => count($payments),
-            'cards_count'    => count($cards),
+            'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             'payment_failed' => [],
             'card_failed'    => [],
         ];
@@ -2126,19 +2172,32 @@ class Service extends Base\Service
             }
         }
 
+        foreach ($cardsWithoutFingerprint as $card)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable(null, $card, true);
+            }
+            catch (\Throwable $e)
+            {
+                $result['card_failed'][] = $card->getId();
+            }
+        }
+
         return $result;
     }
 
-    public function migrateCardDataIfApplicable($payment, $card)
+    public function migrateCardDataIfApplicable($payment, $card, $bulkUpdate=false)
     {
         $payload = [];
 
         try
         {
             $payload = [
-                'card_id'    => $card->getId(),
-                'token'      => $card->getVaultToken(),
-                'mode'       => $this->mode,
+                'card_id'     => $card->getId(),
+                'token'       => $card->getVaultToken(),
+                'mode'        => $this->mode,
+                'bulk_update' => $bulkUpdate,
             ];
 
             if ($payment !== null)

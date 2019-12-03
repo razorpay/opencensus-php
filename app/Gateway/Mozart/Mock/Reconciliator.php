@@ -299,6 +299,51 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $formattedData;
     }
 
+    protected function bajajfinserv($input)
+    {
+        $dt = Carbon::now()->format('dM_Y');
+
+        $this->fileToWriteName = 'Payment_MIS_Razorpay_' . $dt;
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('j-M-y');
+
+            $gatewayData = json_decode($row['mozart']['raw'], true);
+
+            $col = [
+                'Dealer ID'                           => $row['payment']['id'],
+                'Type of Txn'                         => 'Sale',
+                'RRN'                                 => $gatewayData['DealID'],
+                'Transaction Date'                    => $date,
+                'Disbursement Date'                   => $date,
+                'Amount Financed (Rs) '               => (string)$row['payment']['amount'] / 100,
+                'Scheme Desc'                         => '123445',
+                'Interest Subsidy including GST (Rs)' => 2233,
+                'Interest Subsidy (%)+GST'            => '6.00%',
+                'Net Disb. Amount (Rs)'               => 2233,
+                'UTR No'                              => '911082787695',
+                'Asset Serial Number/IMEI'            => $row['payment']['id'],
+            ];
+
+            $this->content($col, 'col_payment_bfl_recon');
+
+            if (empty($col) === true)
+            {
+                continue;
+            }
+
+            $data[] = $col;
+        }
+
+        return $data;
+    }
+
     protected function wallet_phonepe($input)
     {
         $this->fileExtension = FileStore\Format::CSV;

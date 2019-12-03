@@ -92,14 +92,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The vpa may not be greater than 100 characters.'
+                    'description' => 'Invalid VPA. Please enter a valid Virtual Payment Address'
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         ],
     ],
 

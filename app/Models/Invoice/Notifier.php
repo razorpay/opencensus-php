@@ -659,6 +659,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_INDIABULLS_FINANCE:
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabull_custom';
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
@@ -827,6 +828,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_INDIABULLS_FINANCE:
 
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabulls_finance';
                 $params   = [
                     'receipt'      => $receipt,

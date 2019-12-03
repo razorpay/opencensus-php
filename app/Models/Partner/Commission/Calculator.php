@@ -810,14 +810,14 @@ class Calculator extends Base\Core
 
     protected function addImplicitCommission(int $commissionFee, $commissionTax)
     {
-        list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
-
         $isCommissionFeeValid = $this->isImplicitCommissionValid($commissionFee, $commissionTax);
 
         if ($isCommissionFeeValid === false)
         {
             return;
         }
+
+        list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
 
         list($commissionFee, $commissionTax) = $this->getCommissionComponents($commissionFee, $commissionTax);
 
@@ -858,6 +858,7 @@ class Calculator extends Base\Core
         $tracePayLoad = [
             'commission_fees' => $commissionFee,
             'commission_tax'  => $commissionTax,
+            'context'         => $this->getTraceData(),
         ];
 
         if ($type === Type::IMPLICIT)

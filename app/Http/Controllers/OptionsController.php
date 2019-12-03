@@ -34,6 +34,13 @@ class OptionsController extends Controller
         return ApiResponse::json($option);
     }
 
+    public function getOptionsAdmin(string $namespace, string $service, string $merchantId)
+    {
+        $option = $this->service()->findAdmin($namespace, $service, $merchantId);
+
+        return ApiResponse::json($option);
+    }
+
     public function getOptionsByReferenceId(string $namespace, string $service, string $id)
     {
         $option = $this->service()->find($namespace, $service, $id);
@@ -62,6 +69,22 @@ class OptionsController extends Controller
     public function deleteOption(string $id)
     {
         $option = $this->service()->delete($id);
+
+        return ApiResponse::json($option);
+    }
+
+    public function updateOptionsAdmin(string $namespace, string $service, string $merchantId)
+    {
+        $input = Request::all();
+
+        $option = $this->service()->updateOptionsAdmin($input, $namespace, $service, $merchantId);
+
+        return ApiResponse::json($option);
+    }
+
+    public function deleteOptionAdmin(string $namespace, string $service, string $merchantId)
+    {
+        $option = $this->service()->deleteOptionsAdmin($namespace, $service, $merchantId);
 
         return ApiResponse::json($option);
     }

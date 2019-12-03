@@ -261,6 +261,7 @@ class AnalyticsTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
         $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal');
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->ba->appAuth();

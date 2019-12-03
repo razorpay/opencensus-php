@@ -61,8 +61,12 @@ class Entity extends Base\PublicEntity
     const AUTH_LINK_ID = 'auth_link_id';
 
     const CREATE_FORM     = 'create_form';
-    const NACH_FORM_URL   = 'nach_form_url';
+    const FORM_REFERENCE1 = 'form_reference1';
+    const FORM_REFERENCE2 = 'form_reference2';
+    const PREFILLED_FORM  = 'prefilled_form';
     const UPLOAD_FORM_URL = 'upload_form_url';
+    const NACH            = 'nach';
+    const SUCCEED         = 'succeed';
 
     protected static $sign = 'subr';
 
@@ -80,6 +84,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::MERCHANT_ID,
         self::METHOD,
         self::RECURRING_STATUS,
@@ -174,17 +180,21 @@ class Entity extends Base\PublicEntity
 
             unset($publicArrayBankAccount['entity']);
 
-            $tokenArray[Entity::CREATE_FORM] = empty($paperMandate->getGeneratedFileID()) === true ? false : true;
+            $nachArray[Entity::CREATE_FORM] = empty($paperMandate->getGeneratedFileID()) === true ? false : true;
 
-            $tokenArray[PaperMandate\Entity::REFERENCE_1] = $paperMandate->getReference1();
+            $nachArray[Entity::FORM_REFERENCE1] = $paperMandate->getReference1();
 
-            $tokenArray[PaperMandate\Entity::REFERENCE_2] = $paperMandate->getReference2();
+            $nachArray[Entity::FORM_REFERENCE2] = $paperMandate->getReference2();
 
-            $tokenArray[Entity::NACH_FORM_URL] = $paperMandate->getGeneratedFormUrl();
+            $nachArray[Entity::PREFILLED_FORM] = $paperMandate->getGeneratedFormUrl();
 
             $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
 
-            $tokenArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
+            $nachArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
+
+            $nachArray[Invoice\Entity::DESCRIPTION] = $invoice->getDescription();
+
+            $tokenArray[Entity::NACH] = $nachArray;
 
             $tokenArray[self::BANK_ACCOUNT] = $publicArrayBankAccount;
         }

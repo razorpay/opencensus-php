@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHORIZE);
 
         return $this->authenticate($input);
     }

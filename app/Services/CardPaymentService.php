@@ -14,6 +14,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\Base\InfoCode;
 
 class CardPaymentService
 {
@@ -34,6 +35,7 @@ class CardPaymentService
     const INPUT     = 'input';
     const DATA      = 'data';
     const ERROR     = 'error';
+    const AUTHORIZE = 'authorize';
 
     // admin path
     const ADMIN_PATH = 'admin/entities/';
@@ -46,6 +48,7 @@ class CardPaymentService
     protected $action;
     protected $gateway;
     protected $input;
+    protected $app;
 
     public function __construct()
     {
@@ -76,6 +79,23 @@ class CardPaymentService
         $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
 
         return $request;
+    }
+
+    public function fetchAuthorizationData(array $input)
+    {
+        $request = [
+            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'method'  => 'POST',
+            'content' => $input,
+            'headers' => [
+                'task_id'       => $this->app['request']->getTaskId(),
+                'request_id'    => $this->app['request']->getId(),
+            ],
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        return $this->jsonToArray($response->body);
     }
 
     protected function getBaseUrl(): string
@@ -138,6 +158,38 @@ class CardPaymentService
         ];
 
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
+
+        return $response;
+    }
+
+
+    public function authorizeAcrossTerminals(Payment\Entity $payment, array $gatewayInput, array $terminals)
+    {
+        $input = [];
+
+        $input = $gatewayInput;
+
+        $input['terminals'] = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $terminalInput = [];
+
+            $terminalInput = $terminal->toArrayWithPassword();
+
+
+            if ((empty($input['authentication_terminals']) === false) and
+                (empty($input['authentication_terminals'][$terminal->getId()]) === false))
+            {
+                $terminalInput['auth'] = $input['authentication_terminals'][$terminal->getId()];
+            }
+
+            $input['terminals'][] = $terminalInput;
+        }
+
+        unset($input['authentication_terminals']);
+
+        $response = $this->sendRequest('POST', self::AUTHORIZE , $input);
 
         return $response;
     }
@@ -253,18 +305,9 @@ class CardPaymentService
             {
                 return $this->processVerifyResponse($responseBody);
             }
-
-            if ($method === 'POST')
-            {
-                return $responseBody[self::DATA];
-            }
-
-            return $responseBody;
         }
-        else
-        {
-            $this->checkForErrors($responseBody);
-        }
+
+        return $responseBody;
     }
 
     protected function traceResponse($response)
@@ -394,8 +437,13 @@ class CardPaymentService
 
     // ----------------------- Error ---------------------------------------------
 
-    protected function checkForErrors($response)
+    public function checkForErrors($response)
     {
+        if (empty($response[self::ERROR]) === true)
+        {
+            return;
+        }
+
         $errorCode = $response[self::ERROR]['internal_error_code'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
