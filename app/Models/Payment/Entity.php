@@ -3241,7 +3241,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $gateway = $this->getGateway();
 
         // default is 9 mins
-        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+        $timeWindow = (new Merchant\Core)->getPaymentTimeoutWindow($this->merchant) ?? self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
         {

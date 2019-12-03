@@ -2852,6 +2852,80 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchEsScheduledPricingZeroPercent()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '10ZeroPricingP']);
+
+        $esZeroRules = [
+            [
+            'id'             => '1ZeroPricingR9',
+            'plan_id'        => '10ZeroPricingP',
+            'plan_name'      => 'ZeroPricingPlan',
+            'feature'        => 'esautomatic',
+            'payment_method' => 'card',
+            'percent_rate'   => 0,
+            'fixed_rate'     => 0,
+            'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ZeroPricing10',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'upi',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ]
+        ];
+
+        $this->fixtures->pricing->addPricingRulesToDb($esZeroRules);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricingInternationalPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1nvp2XPMmaRLxb']);
+
+        $esInternationalRules = [
+            [
+                'id'             => 'EsInterPrice01',
+                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'card',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'international'  => 1,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => 'EsInterPrice02',
+                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'upi',
+                'percent_rate'   => 20,
+                'fixed_rate'     => 0,
+                'international'  => 1,
+                'org_id'         => '100000razorpay',
+            ]
+        ];
+
+        $this->fixtures->pricing->addPricingRulesToDb($esInternationalRules);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
     public function testEnableEsScheduledSuccess()
     {
         $this->fixtures->create('pricing:standard_plan');

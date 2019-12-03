@@ -13,6 +13,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                                       = 'PAYMENT_CREATED';
+    const PAYMENT_UPDATED_WITH_CPS_RESPONSE                     = 'PAYMENT_UPDATED_WITH_CPS_RESPONSE';
     const PAYMENT_CREATED_RESPONSE                              = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                                 = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                                  = 'PAYMENT_AUTH_SUCCESS';
@@ -1287,6 +1288,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_BULK_UPDATE_RESPONSE                     = 'TRANSACTIONS_BULK_UPDATE_RESPONSE';
     const PRICING_RULE_MISTMATCH                                = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                          = 'PRICING_RULE_DOES_NOT_EXISTS';
+    const ES_PRICING_SHOWN_TO_MERCHANT                          = 'ES_PRICING_SHOWN_TO_MERCHANT';
 
     const BATCH_CREATE_REQUEST                                  = 'BATCH_CREATE_REQUEST';
     const BATCH_FILE_VALIDATE_REQUEST                           = 'BATCH_FILE_VALIDATE_REQUEST';
@@ -2069,6 +2071,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED              = 'FTS_VERIFIED_BENEFICIARY_DISPATCH_FAILED';
     const FTS_TRANSFER_RETRY_ACTION_INIT                        = 'FTS_TRANSFER_RETRY_ACTION_INIT';
     const FTS_TRANSFER_RETRY_ACTION_COMPLETE                    = 'FTS_TRANSFER_RETRY_ACTION_COMPLETE';
+    const FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION         = 'FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
@@ -2081,7 +2084,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SORTER_RULES                                     = 'AUTH_SORTER_RULES';
     const AUTH_SELECTION_AFTER_FILTER_RULE                      = 'AUTH_SELECTION_AFTER_FILTER_RULE';
     const AUTH_SELECTION_VIA_GATEWAY_RULES                      = 'AUTH_SELECTION_VIA_GATEWAY_RULES';
+    const AUTH_SELECTION_VIA_GATEWAY_RULES_V2                   = 'AUTH_SELECTION_VIA_GATEWAY_RULES_V2';
+    const AUTH_SELECTION_FOR_TERMINALS                          = 'AUTH_SELECTION_FOR_TERMINALS';
+    const AUTH_SELECTION_FOR_TERMINALS_V2                       = 'AUTH_SELECTION_FOR_TERMINALS_V2';
     const AUTH_SELECTION_FAILURE                                = 'AUTH_SELECTION_FAILURE';
+    const AUTH_SELECTION_FAILURE_V2                             = 'AUTH_SELECTION_FAILURE';
     const AUTH_SELECTION_FINAL_TERMINAL                         = 'AUTH_SELECTION_FINAL_TERMINAL';
     const AUTH_SELECTION_VALID_AUTHS                            = 'AUTH_SELECTION_VALID_AUTHS';
     const AUTH_SELECTION_GATEWAY_RULES                          = 'AUTH_SELECTION_GATEWAY_RULES';
@@ -2140,6 +2147,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_PAYMENT_SERVICE_REQUEST                          = 'CARD_PAYMENT_SERVICE_REQUEST';
     const CARD_PAYMENT_SERVICE_RESPONSE                         = 'CARD_PAYMENT_SERVICE_RESPONSE';
     const CARD_PAYMENT_SERVICE_RETRY                            = 'CARD_PAYMENT_SERVICE_RETRY';
+    const CARD_PAYMENT_SERVICE_DISABLING                        = 'CARD_PAYMENT_SERVICE_DISABLING';
     const CARD_PAYMENT_SERVICE_ERROR                            = 'CARD_PAYMENT_SERVICE_ERROR';
 
     // Batch Micro Service
@@ -2348,6 +2356,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
 
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
+
+    const GATEWAY_PROCESSING_CPS_FAILURE                        = 'GATEWAY_PROCESSING_CPS_FAILURE';
+  
+    // Trace Code for Merchant status
+    const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
+    const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

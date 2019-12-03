@@ -17,7 +17,6 @@ class CreateQuboleCardsView extends Migration
         $columns = [
             Card::ID,
             Card::MERCHANT_ID,
-            Card::NAME,
             Card::IIN,
             Card::LENGTH,
             Card::NETWORK,

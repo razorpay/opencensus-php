@@ -1500,4 +1500,20 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertSame('icici', $upi->provider);
         $this->assertSame('ICIC', $upi->bank);
     }
+
+    public function testPaymentForSingleCharacterVpaHandle()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'a@icici';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+    }
 }

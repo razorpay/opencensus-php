@@ -23,6 +23,7 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -59,6 +60,8 @@ class Service extends Base\Service
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
+
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 500;
 
     /**
      * Creates a merchant and saves in database
@@ -1721,16 +1724,48 @@ class Service extends Base\Service
     {
         $pricingPlanId = $this->merchant->getPricingPlanId();
 
-        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+        $scheduledPricings = $this->repo->pricing
+                                  ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId(
+                                   $pricingPlanId,
+                                   PricingFeature::ESAUTOMATIC,
+                                   false);
 
-        if ($scheduledPricing === null)
+        if ($scheduledPricings->isEmpty() === true)
         {
             throw new Exception\LogicException(
                 'ES scheduled Pricing has not been assigned to the merchant.',
                 ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
         }
 
-        return $scheduledPricing->toArrayPublic();
+        $finalSchedulePricing = new Pricing\Entity();
+
+        foreach ($scheduledPricings as $scheduledPricing)
+        {
+            if($scheduledPricing->getPercentRate() >= $finalSchedulePricing->getPercentRate())
+            {
+                $finalSchedulePricing = $scheduledPricing;
+            }
+        }
+
+        if ($finalSchedulePricing->getPercentRate() === 0)
+        {
+            throw new Exception\LogicException(
+                'Invalid ES pricing was assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_INVALID_ES_PRICING,
+                [
+                    'plan_id' => $scheduledPricings->getId()
+                ]);
+        }
+
+        $this->trace->info(
+            TraceCode::ES_PRICING_SHOWN_TO_MERCHANT,
+            [
+                'id' => $finalSchedulePricing->getId(),
+                'percent_rate' => $finalSchedulePricing->getPercentRate()
+            ]
+        );
+
+        return $finalSchedulePricing->toArrayPublic();
     }
 
     public function enableScheduledEs(): array
@@ -2953,6 +2988,10 @@ class Service extends Base\Service
         $partner = $this->fetchPartner();
 
         (new Validator)->validateInput('list_submerchants', $input);
+
+        // add default params
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 

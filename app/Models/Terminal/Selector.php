@@ -530,7 +530,7 @@ class Selector extends Base\Core
 
             if ($payment->hasCard() === true)
             {
-                $card = $this->repo->card->findOrFail($payment->getCardId());
+                $card = $payment->card;
 
                 $paymentData['card'] = $card->toArray();
 
@@ -752,19 +752,6 @@ class Selector extends Base\Core
         $merchantData['features']          = $merchant->getEnabledFeatures();
         $merchantData['fee_bearer']        = $merchant->getFeeBearer();
         $merchantData['org_id']            = $merchant->getOrgId();
-
-        $subMerchantIds = [];
-
-        if ($merchant->isPartner() === true)
-        {
-            $subMerchants = (new MerchantCore())->listSubmerchants($merchant, []);
-
-            foreach ($subMerchants as $subMerchant)
-            {
-                $subMerchantIds[] = $subMerchant->getId();
-            }
-        }
-        $merchantData['sub_merchants_ids']  = $subMerchantIds;
 
         return $merchantData;
     }
