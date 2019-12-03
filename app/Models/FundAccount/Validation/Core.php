@@ -173,6 +173,8 @@ class Core extends Base\Core
     {
         assertTrue(isset($input['fund_account']) === true);
 
+        $this->fundAccountCore->modifyRequestForBackwardCompatibility($input['fund_account']);
+
         try
         {
             if (empty($input['fund_account']['id']) === false)

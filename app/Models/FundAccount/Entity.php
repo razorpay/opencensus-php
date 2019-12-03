@@ -73,7 +73,6 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::CUSTOMER,
         self::ACCOUNT_TYPE,
-        self::DETAILS,
         self::BANK_ACCOUNT,
         self::CARD,
         self::BATCH_ID,
@@ -88,7 +87,9 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE,
         self::BATCH_ID,
-        self::DETAILS,
+        self::BANK_ACCOUNT,
+        self::VPA,
+        self::CARD,
     ];
 
     protected $publicAuth = [
@@ -235,15 +236,34 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicDetailsAttribute(array & $array)
+    public function setPublicBankAccountAttribute(array & $array)
     {
-        $accountType = array_get($array, self::ACCOUNT_TYPE);
+        if (array_get($array, self::ACCOUNT_TYPE) === self::BANK_ACCOUNT)
+        {
+            $accountAttributes = $this->getAccountDetails(self::BANK_ACCOUNT);
 
-        $accountAttributes = $this->getAccountDetails($accountType);
+            $array[self::BANK_ACCOUNT] = $accountAttributes;
+        }
+    }
 
-        $array[self::DETAILS] = $accountAttributes;
+    public function setPublicVpaAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::VPA)
+        {
+            $accountAttributes = $this->getAccountDetails(self::VPA);
 
-        $array[$accountType] = $accountAttributes;
+            $array[self::VPA] = $accountAttributes;
+        }
+    }
+
+    public function setPublicCardAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::CARD)
+        {
+            $accountAttributes = $this->getAccountDetails(self::CARD);
+
+            $array[self::CARD] = $accountAttributes;
+        }
     }
 
     public function setPublicBatchIdAttribute(array & $attributes)

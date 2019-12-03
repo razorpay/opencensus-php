@@ -32,7 +32,7 @@ class BatchHelper
         switch ($fundAccountType)
         {
             case Type::BANK_ACCOUNT:
-                $input[Type::BANK_ACCOUNT] = [
+                $input[Entity::BANK_ACCOUNT] = [
                     BankAccount\Entity::IFSC           => $entry[self::FUND_ACCOUNT][self::IFSC],
                     BankAccount\Entity::ACCOUNT_NUMBER => $entry[self::FUND_ACCOUNT][self::NUMBER],
                     BankAccount\Entity::NAME           => $entry[self::FUND_ACCOUNT][self::NAME],
@@ -40,7 +40,7 @@ class BatchHelper
                 break;
 
             case Type::VPA:
-                $input[Type::VPA] = [
+                $input[Entity::VPA] = [
                     Vpa\Entity::ADDRESS => $entry[self::FUND_ACCOUNT][self::VPA],
                 ];
                 break;

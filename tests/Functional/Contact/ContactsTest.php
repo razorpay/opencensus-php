@@ -189,6 +189,8 @@ class ContactsTest extends TestCase
             'method'  => 'POST'
         ];
 
+        $this->ba->privateAuth();
+
         $this->makeRequestAndGetContent($request);
 
         $contact = $this->getLastEntity('contact', true);
@@ -197,7 +199,7 @@ class ContactsTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals($response['id'], $contact['id']);
+        $this->assertNotEquals($response['id'], $contact['id']);
     }
 
     public function testDuplicateContactCreationWithSameNameAndEmptyAttributes()
@@ -210,11 +212,11 @@ class ContactsTest extends TestCase
             'method'  => 'POST'
         ];
 
+        $this->ba->privateAuth();
+
         $this->makeRequestAndGetContent($request);
 
         $contact = $this->getLastEntity('contact', true);
-
-        $this->ba->privateAuth();
 
         $response = $this->startTest();
 
@@ -294,9 +296,9 @@ class ContactsTest extends TestCase
 
     public function testCreateContactWithoutType()
     {
-        $this->startTest();
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
 
-        $contact = $this->getLastEntity('contact');sd($contact);
+        $this->startTest();
     }
 
     protected function createFundAccount($contactId)
@@ -308,7 +310,7 @@ class ContactsTest extends TestCase
                 'content' => [
                     'account_type' => "bank_account",
                     'contact_id'   => $contactId,
-                    'details'      => [
+                    'bank_account'      => [
                         'name'           => "test",
                         'ifsc'           => 'SBIN0007105',
                         'account_number' => '111000',

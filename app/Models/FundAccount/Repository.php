@@ -38,7 +38,7 @@ class Repository extends Base\Repository
         switch ($input[Entity::ACCOUNT_TYPE])
         {
             case Type::BANK_ACCOUNT:
-                $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
+               $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
 
                 break;
 

@@ -481,6 +481,7 @@ return [
             'url'     => '/contacts',
             'method'  => 'POST'
         ],
+
         'response' => [
             'content' => [
                 'entity'       => 'contact',
@@ -553,11 +554,12 @@ return [
             'url'     => '/contacts',
             'method'  => 'POST'
         ],
+
         'response' => [
             'content' => [
                 'entity'       => 'contact',
                 'name'         => 'Test / Contact',
-            ],
+           ],
             'status_code' => '200'
         ],
     ],
@@ -571,10 +573,12 @@ return [
             'url'     => '/contacts',
             'method'  => 'POST'
         ],
+
         'response' => [
             'content' => [
                 'entity'       => 'contact',
                 'name'         => 'Test / Contact',
+
             ],
             'status_code' => '201'
         ],
