@@ -20,7 +20,7 @@ import {
   fetchRegistrationLink,
   downloadSignedNACHFile,
 } from 'merchant/reducers/registration_link';
-import { openModal } from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import CopyLink from 'merchant/components/CopyLink';
@@ -41,6 +41,7 @@ import {
     fetchRegistrationLink,
     showNotification,
     openModal,
+    closeModal,
   }
 )
 export default class RegistrationLinkEntityContainer extends React.Component {
@@ -96,6 +97,8 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           type: 'success',
           message: 'Link sent successfully!',
         });
+
+        this.props.closeModal();
       })
       .catch(error => {
         this.setState({
