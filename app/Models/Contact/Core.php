@@ -17,8 +17,8 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        bool $checkForDuplicate = false,
-        string $batchId = null): Entity
+        string $batchId = null,
+        bool $createDuplicate = false): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
@@ -40,7 +40,7 @@ class Core extends Base\Core
             }
         }
 
-        if ($checkForDuplicate === true)
+        if ($createDuplicate === false)
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
 
@@ -112,7 +112,8 @@ class Core extends Base\Core
 
     public function processEntryForContact(
         array $entry,
-        string $batchId)
+        string $batchId,
+        bool $createDuplicate)
     {
         $contact = $entry[ContactBatchHelper::CONTACT];
 
@@ -125,7 +126,7 @@ class Core extends Base\Core
 
         $input = ContactBatchHelper::getContactInput($entry);
 
-        $contact = $this->create($input, $this->merchant, true, $batchId);
+        $contact = $this->create($input, $this->merchant, $batchId, $createDuplicate);
 
         return $contact;
     }

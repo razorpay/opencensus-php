@@ -8,6 +8,7 @@ use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -97,6 +98,10 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
+        // if any merchant wants to skip duplicate check
+        // and unique create contact everytime
+        $createDuplicate = $this->shouldCreateDuplicate();
+
         foreach ($input as $item)
         {
             try
@@ -109,6 +114,7 @@ class Service extends Base\Service
                     ]);
 
                 $this->repo->transaction(function() use (
+                    $createDuplicate,
                     & $item,
                     & $fundAccountBatch,
                     & $batchId,
@@ -134,7 +140,7 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $contact = $this->contactCore->processEntryForContact($item, $batchId);
+                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
                         $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
@@ -147,7 +153,7 @@ class Service extends Base\Service
                         }
                         else
                         {
-                            $fundAccount = $this->createFundAcccount($item, $contact, $batchId);
+                            $fundAccount = $this->createFundAcccount($item, $contact, $batchId, $createDuplicate);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
                                                     [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
@@ -203,13 +209,13 @@ class Service extends Base\Service
      * @return Entity           $fundAccount
      * @throws BadRequestValidationFailureException
      */
-    public function createFundAcccount(array $item, Contact\Entity $contact, string $batchId)
+    public function createFundAcccount(array $item, Contact\Entity $contact, string $batchId, bool $createDuplicate)
     {
         $input = FundAccountHelper::getFundAccountInput($item, $contact);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        $fundAccount = $this->core->create($input, $this->merchant, $contact, true, $batchId);
+        $fundAccount = $this->core->create($input, $this->merchant, $contact, $createDuplicate, $batchId);
 
         return $fundAccount;
     }
@@ -219,7 +225,7 @@ class Service extends Base\Service
      * @return Entity           $fundAccount
      */
 
-    public function checkFundAccountExistence(string $fundAccountId)
+    public function checkFundAccountExistence(string $fundAccountId): Entity
     {
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
@@ -232,19 +238,28 @@ class Service extends Base\Service
         return $fundAccount;
     }
 
+    /**
+     * The fund account creation method will take the parameter
+     * createDuplicate during fund account creation. The value
+     * for this parameter is decided on the basis of origin of
+     * the request. Request coming from API will not allow
+     * duplicate creation(meaning,even if all attributes are same,
+     * create another entity)  by default, if some merchant wants
+     * duplicate creation, he will inform RZP and we will put him
+     * behind razorx feature. Also for requests coming from dashboard
+     * we will not be checking for duplicates by default. This is
+     * because we do not want to change the behaviour on dashboard
+     * till we have proper designs and process in mind.
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestValidationFailureException
+     */
     protected function handleFundAccountCreationForContact(array $input)
     {
-        // The fund account creation method will take the parameter
-        // allowDuplicate during fund account creation. The value
-        // for this parameter is decided on the basis of origin of
-        // the request. The dashboard behaviour is yet to be finalised
-        // so for now we are going ahead with duplication checks
-        // only in API flow.
-        $responseCode  = Response::HTTP_OK;
-
         /** @var Contact\Entity $source */
         $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
-
 
         if ($source->isActive() === false)
         {
@@ -252,16 +267,18 @@ class Service extends Base\Service
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
 
-        if ($this->auth->isStrictPrivateAuth() === true)
+        $createDuplicate = true;
+
+        if ((($this->auth->isStrictPrivateAuth() === true) or
+             ($this->auth->isPublicAuth() === true)) and
+            ($this->shouldCreateDuplicate() === false))
         {
-            $entity = $this->core->create($input, $this->merchant, $source, true);
-        }
-        else
-        {
-            $entity = $this->core->create($input, $this->merchant, $source);
+            $createDuplicate = false;
         }
 
-        $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : $responseCode;
+        $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
+
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;;
 
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,
@@ -285,5 +302,19 @@ class Service extends Base\Service
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,
         ];
+    }
+
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
+    protected function shouldCreateDuplicate()
+    {
+        $merchant = $this->merchant;
+
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
+
+        $flag = ($variant === 'create_duplicate') ? true : false;
+
+        return $flag;
     }
 }

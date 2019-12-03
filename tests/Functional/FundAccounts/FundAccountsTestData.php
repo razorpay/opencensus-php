@@ -1403,6 +1403,161 @@ return [
             ],
             'status_code' => 201
         ],
-    ]
+    ],
 
+    'testFundAccountDuplicatesForDifferentContacts' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+    ],
+
+    'testBulkFundAccountForMerchantBehindRazorx' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'abc123',
+                        'place'             => 'Bangalore',
+                        'state'             => 'Karnataka'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => '',
+                        'place'             => '',
+                        'state'             => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc124'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp3',
+                        'account_IFSC'      => 'HDFC0003780',
+                        'account_number'    => '1234567891',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc125'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 3,
+                'items'  => [
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'details' => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'bank_account'          => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'details' => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'bank_account'          => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc124'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'details'               => [
+                            'ifsc'              => 'HDFC0003780',
+                            'bank_name'         => 'HDFC Bank',
+                            'name'              => 'Sample rzp3',
+                            'account_number'    => '1234567891',
+                        ],
+                        'bank_account'          => [
+                            'ifsc'              => 'HDFC0003780',
+                            'bank_name'         => 'HDFC Bank',
+                            'name'              => 'Sample rzp3',
+                            'account_number'    => '1234567891',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc125'
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -199,6 +200,27 @@ class ContactsTest extends TestCase
         $this->assertEquals($response['id'], $contact['id']);
     }
 
+    public function testDuplicateContactCreationWithSameNameAndEmptyAttributes()
+    {
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['id'], $contact['id']);
+    }
+
     public function testDuplicateContactWithEmptyValuesOfSomeAttributes()
     {
         $request  = [
@@ -230,6 +252,51 @@ class ContactsTest extends TestCase
         $contact2 = $this->getLastEntity('contact', true);
 
         $this->assertEquals($contact1['id'], $contact2['id']);
+    }
+
+    public function testDoNotAllowDuplicateChecksInContactCreation()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getTreatment'])
+                            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('create_duplicate');
+
+        $this->ba->privateAuth();
+
+        $request =  [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($contact['id'], $response['id']);
+    }
+
+    public function testCreateContactWithoutType()
+    {
+        $this->startTest();
+
+        $contact = $this->getLastEntity('contact');sd($contact);
     }
 
     protected function createFundAccount($contactId)

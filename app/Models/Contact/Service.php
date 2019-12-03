@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\FundAccount\Service as FundAccountService;
 
 /**
@@ -43,29 +44,37 @@ class Service extends Base\Service
         $this->fundAccountService = new FundAccountService;
     }
 
+    /**
+     * The contact creation logic checks if there is a duplicate present and whether to
+     * return the duplicate contact or create a new one. This decision will be based
+     * on where the request is coming from. If the request comes from the dashboard
+     * every time a new contact will be created and if from API then a duplicate will be
+     * returned if found. The choice is made as we want the contact creation flow to be
+     * same for now on dashboard. Eventually once the designs will be ready, contact
+     * creation flow will be different for the dashboard. Also to ensure backward
+     * compatibility of contact creation, we will maintain a list of merchants
+     * who want to allow duplicates in contact creation and refer that as well
+     * during contact creation.
+     *
+     * ToDo https://razorpay.atlassian.net/browse/RX-848
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function create(array $input): array
     {
-        // The contact creation logic checks if there is a duplicate present and whether to
-        // return the duplicate contact or create a new one. This decision will be based
-        // on where the request is coming from. If the request comes from the dashboard
-        // every time a new contact will be created and if from API then a duplicate will be
-        // returned if found. The choice is made as we want the contact creation flow to be
-        // same for now on dashboard. Eventually once the designs will be ready, contact
-        // creation flow will be different for the dashboard
+        $createDuplicate = true;
 
-        $responseCode  = Response::HTTP_OK;
-
-        // request comes from API
-        if ($this->auth->isStrictPrivateAuth() === true)
+        if (($this->auth->isStrictPrivateAuth() === true) and
+            ($this->shouldCreateDuplicateContacts() === false))
         {
-            $entity = $this->core->create($input, $this->merchant, true);
+            $createDuplicate = false;
+        }
 
-            $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : $responseCode;
-        }
-        else
-        {
-            $entity = $this->core->create($input, $this->merchant);
-        }
+        $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
+
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
         return [
             Constants\Entity::CONTACT => $entity->toArrayPublic(),
@@ -96,5 +105,19 @@ class Service extends Base\Service
         $typeObj->addNewCustom($input[Entity::TYPE], $this->merchant);
 
         return $typeObj->getAll($this->merchant);
+    }
+
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
+    protected function shouldCreateDuplicateContacts()
+    {
+        $merchant = $this->merchant;
+
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
+
+        $flag = ($variant === 'create_duplicate') ? true : false;
+
+        return $flag;
     }
 }

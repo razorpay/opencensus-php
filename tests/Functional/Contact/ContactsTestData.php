@@ -94,6 +94,23 @@ return [
         ],
     ],
 
+    'testCreateContactWithoutType' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
     'testCreateContactWithoutName' => [
         'request'   => [
             'content' => [
@@ -507,7 +524,7 @@ return [
                     'test1' => 'One',
                 ],
             ],
-            'status_code' => '200'
+            'status_code' => '201'
         ],
     ],
 
@@ -543,5 +560,23 @@ return [
             ],
             'status_code' => '200'
         ],
-    ]
+    ],
+
+    'testDuplicateContactCreationWithSameNameAndEmptyAttributes' =>  [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => ""
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '201'
+        ],
+    ],
 ];
