@@ -960,7 +960,6 @@ class ApiEventSubscriber extends Base\Core
                 'entity' => $payout->toArrayWebhook(),
             ],
         ];
-
     }
 
     protected function getPaymentPayloadWithDispute($payment)

@@ -170,7 +170,7 @@ class Base extends BaseCore
                         return $payout;
                     });
 
-        $this->app->events->fire('api.payout.initiated', [$payout]);
+        $this->fireEventForPayoutStatus($payout);
 
         //
         // This needs to be done only for fund_account type and not for others.
@@ -507,20 +507,7 @@ class Base extends BaseCore
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)
     {
-        if ($payout->isStatusQueued() === true)
-        {
-            $this->app->events->fire('api.payout.queued', [$payout]);
-        }
-        else if ($payout->isStatusPending() === true)
-        {
-            // TODO:: Add pending webhook trigger here
-        }
-        else
-        {
-            // api.payout.created to be removed after merchants have migrated.
-            $this->app->events->fire('api.payout.created', [$payout]);
-            $this->app->events->fire('api.payout.initiated', [$payout]);
-        }
+        return;
     }
 
     /**
