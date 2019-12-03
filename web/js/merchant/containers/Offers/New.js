@@ -263,11 +263,7 @@ class NewOfferForm extends React.Component {
           });
 
           //@todo analytics event tracking
-          // this.props.tracking.trackEvent(
-          //   window.rzpQ.onbr().success('dash.pl_action', {
-          //     action: 'PL_Creation_Successful',
-          //   })
-          // );
+          this.props.tracking.trackEvent(window.rzpQ.success('Offer_create'));
 
           const entityId = savedOffer.id;
 

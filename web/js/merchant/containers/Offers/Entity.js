@@ -9,6 +9,7 @@ import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
+import RTracking from 'react-tracking';
 
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
@@ -20,6 +21,21 @@ const OfferDetails = props => {
     ) : (
       <Amount value={offer.flat_cashback} cureency={'INR'} />
     );
+
+  const ISSUERS = {
+    HDFC: 'HDFC Bank',
+    HSBC: 'HSBC Bank',
+    ICIC: 'ICICI Bank',
+    INDB: 'INDUSIND Bank',
+    KKBK: 'Kotak Mahindra Bank',
+    RATN: 'Ratnakar Bank Bank',
+    SCBL: 'Standard Chartered Bank',
+    UTIB: 'Axis Bank',
+    YESB: 'Yes Bank',
+    CITI: 'Citi Bank',
+    SBIN: 'State Bank of India',
+    BARB: 'Bank of Baroda Bank',
+  };
 
   const renderPaymentDetails = () => {
     let paymentMethod = offer.payment_method || '--';
@@ -43,7 +59,10 @@ const OfferDetails = props => {
             />
           </React.Fragment>
         ) : null}
-        <EntityDetailRow label="Bank Name" value={offer.issuer || '--'} />
+        <EntityDetailRow
+          label="Bank Name"
+          value={ISSUERS[offer.issuer] || '--'}
+        />
       </React.Fragment>
     );
   };
@@ -148,7 +167,6 @@ const OfferDetails = props => {
                   label="Maximum Usage"
                   value={offer.max_offer_usage || '--'}
                 />
-
                 {renderPaymentDetails()}
               </div>
             </div>
@@ -164,6 +182,7 @@ const OfferDetails = props => {
   ...ModalActions,
   ...NotificationsActions,
 })
+@RTracking(() => window.rzpQ.component('Entity'))
 export default class Entity extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -190,6 +209,13 @@ export default class Entity extends Component {
     let offer = this.props.offer;
     const actionName = offer.active ? 'Disable' : 'Enable';
     let header = `${actionName} Offer`;
+    const tracking = this.props.tracking;
+    //analytics
+    tracking.trackEvent(
+      window.rzpQ.initiated('Offer_edit', {
+        edited_field: ['active'],
+      })
+    );
     this.context.confirm({
       header,
       message: () => (
@@ -201,12 +227,19 @@ export default class Entity extends Component {
       affirmativePendingLabel: 'Requesting...',
       abortLabel: "No, don't!",
       action: () => {
-        offer.active = offer.active ? 0 : 1; //for false send 1 as new value to toggle it
+        let activationValue = offer.active ? 0 : 1;
+        offer.active = activationValue;
         return offer
           .save()
           .then(offer => {
             this.props.fetchOffer(offer.id);
             //analytics code here
+            tracking.trackEvent(
+              window.rzpQ.success('Offer_edit', {
+                edited_field: ['active'],
+                field_value: [activationValue],
+              })
+            );
             this.props.showNotification({
               type: 'success',
               message: `Offer ${actionName}d!`,
