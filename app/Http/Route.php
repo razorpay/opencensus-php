@@ -1470,6 +1470,9 @@ final class Route
     ];
 
     public static $private = [
+        'payout_links_fetch_multiple',
+        'payout_links_fetch_by_id',
+        'payout_links_create',
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',

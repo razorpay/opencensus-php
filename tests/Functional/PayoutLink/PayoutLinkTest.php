@@ -20,7 +20,7 @@ class PayoutLinkTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/TestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/PayoutLinkTestData.php';
 
         parent::setUp();
 
@@ -34,83 +34,80 @@ class PayoutLinkTest extends TestCase
     /**
      * This is to Test the BUILD on Payout Link Entity
      */
-    public function testPayoutLinkCreation()
-    {
-        $input = [
-            PayoutLink::CONTACT_ID => $this->contact->getId(),
-            PayoutLink::AMOUNT     => 1000,
-            PayoutLink::CURRENCY   => Currency::INR,
-            PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
-        ];
-
-        $payout_link = (new PayoutLink)->build($input);
-
-        $payout_link->merchant()->associate($this->contact->merchant);
-
-        $payout_link->saveOrFail();
-    }
-
-    /**
-     * This is to test the many-to-many mapping between payout links and payouts
-     */
-    public function _testPayoutCreationAndLinkingToPayoutLinks()
-    {
-        #Todo: pl, figure out how to create payouts, then associate it with payout-links,
-        # and test if the relationships hasMany and belongs to are fetching the right entities
-    }
+//    public function testPayoutLinkCreation()
+//    {
+//        $input = [
+//            PayoutLink::CONTACT_ID => $this->contact->getId(),
+//            PayoutLink::AMOUNT     => 1000,
+//            PayoutLink::CURRENCY   => Currency::INR,
+//            PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
+//        ];
+//
+//        $payout_link = (new PayoutLink)->build($input);
+//
+//        $payout_link->merchant()->associate($this->contact->merchant);
+//
+//        $payout_link->saveOrFail();
+//    }
 
     public function testPostRequestForCreatingPayoutLink()
     {
+        $this->ba->privateAuth();
 
+        $this->startTest();
     }
 
-    public function testPostRequestForCreatingPayoutLinkWithContactId()
-    {
+//    public function testPostRequestForCreatingPayoutLinkWithContactId()
+//    {
+//
+//    }
+//
+//    public function testGetPayoutLinkById()
+//    {
+//
+//    }
+//
+//    public function testListPayoutLink()
+//    {
+//
+//    }
+//
+//    public function testListPayoutLinkwithSearchParameter()
+//    {
+//
+//    }
+//
+//    public function testShortUrlGenerationSuccessful()
+//    {
+//
+//    }
+//
+//    public function testShortUrlGenerationExceptionThrown()
+//    {
+//
+//    }
+//
+//    public function testNewContactCreationPayoutLinkCreateFlow()
+//    {
+//
+//    }
+//
+//    public function testPayoutLinkCreateWithContactIdParam()
+//    {
+//
+//    }
+//
+//    public function testPayoutLinkFailedDueToContactCreationFailure()
+//    {
+//
+//    }
+//
+//    public function testTargetUrlOfShortUrlForPayoutLink()
+//    {
+//
+//    }
 
-    }
+    //     #todo: pl
+    //     A test case which creates a payout, links to payoutlink and then also checks for all the hasMany and belongsTo relationships
 
-    public function testGetPayoutLinkById()
-    {
-
-    }
-
-    public function testListPayoutLink()
-    {
-
-    }
-
-    public function testListPayoutLinkwithSearchParameter()
-    {
-
-    }
-
-    public function testShortUrlGenerationSuccessful()
-    {
-
-    }
-
-    public function testShortUrlGenerationExceptionThrown()
-    {
-
-    }
-
-    public function testNewContactCreationPayoutLinkCreateFlow()
-    {
-
-    }
-
-    public function testPayoutLinkCreateWithContactIdParam()
-    {
-
-    }
-
-    public function testPayoutLinkFailedDueToContactCreationFailure()
-    {
-
-    }
-
-    public function testTargetUrlOfShortUrlForPayoutLink()
-    {
-
-    }
 }
