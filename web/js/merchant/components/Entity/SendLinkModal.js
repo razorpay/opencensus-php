@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 import ModalHeader from 'common/ui/ModalHeader';
-import { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Alert from 'common/ui/Forms/Alert';
@@ -18,40 +18,45 @@ import Alert from 'common/ui/Forms/Alert';
 )
 export default class extends React.PureComponent {
   constructor(props) {
-    super(props);
+    super();
 
     this.state = {
-      _dirty: {
-        email: '1',
-        sms: '1',
-      },
+      disableSendLink: false,
     };
   }
 
-  onChange = e => {
-    this.setState({
-      _dirty: {
-        [e.target.name]: e.target.value,
-      },
-    });
-  };
+  onSubmit = body => {
+    this.setState({ disableSendLink: true });
 
-  onSubmit = () => {
     return this.props
-      .onSubmit(this.state._dirty)
-      .then(() => this.props.closeModal());
+      .onSubmit(body)
+      .then(resp => {
+        this.setState({
+          disableSendLink: false,
+        });
+
+        return resp;
+      })
+      .catch(resp => {
+        this.setState({
+          disableSendLink: false,
+        });
+
+        return resp;
+      });
   };
 
   render() {
     const {
-      isTestMode,
-      email,
-      sms,
-      description,
-      children,
-      testModeMessage,
-      closeModal,
-    } = this.props;
+        isTestMode,
+        email,
+        sms,
+        description,
+        children,
+        testModeMessage,
+        closeModal,
+      } = this.props,
+      { disableSendLink } = this.state;
 
     return (
       <div class="SendLink--Modal">
@@ -60,21 +65,13 @@ export default class extends React.PureComponent {
         <div class="modal-body">
           {description && <p>{description}</p>}
 
-          <Form class="full-span" onChange={this.onChange}>
+          <Form class="full-span" onSubmit={this.onSubmit}>
             {email && (
-              <Input.Check
-                name="email"
-                defaultValue={this.state._dirty.email}
-                fieldLabel={email}
-              />
+              <Input.Check name="email" defaultValue={'1'} fieldLabel={email} />
             )}
 
             {sms && (
-              <Input.Check
-                name="sms"
-                defaultValue={this.state._dirty.sms}
-                fieldLabel={sms}
-              />
+              <Input.Check name="sms" defaultValue={'1'} fieldLabel={sms} />
             )}
 
             {children}
@@ -88,14 +85,13 @@ export default class extends React.PureComponent {
               />
             )}
 
-            <AsyncBtn.Primary
+            <Button.Primary
               type="submit"
-              pendingState="Sending..."
               class="btn-block"
-              onClick={this.onSubmit}
+              disabled={disableSendLink}
             >
               Send Link
-            </AsyncBtn.Primary>
+            </Button.Primary>
           </Form>
         </div>
       </div>
