@@ -41,6 +41,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
@@ -3333,6 +3334,9 @@ class Processor
         $refund->setProcessedAt(null);
 
         $refund->setGatewayRefunded(null);
+
+        // Since we are filling this by default if refund is not being tried instantly
+        $refund->setSpeedProcessed(Speed::NORMAL);
     }
 
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)

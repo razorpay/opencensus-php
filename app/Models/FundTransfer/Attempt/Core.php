@@ -23,6 +23,7 @@ use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
@@ -458,16 +459,21 @@ class Core extends Base\Core
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 
-    public function updateTransactionEntity($source, $reconciledType = ReconciledType::MIS)
+    public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)
     {
         // Source entity might update the transaction but because we would have already fetched
         // the transaction from source earlier. Then if we try to access $this->source->transaction now,
         // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
         $source->load(EntityConstant::TRANSACTION);
 
-        $currentTime = Carbon::now(Timezone::IST)->timestamp;
+        $reconciledTime = Carbon::now(Timezone::IST)->timestamp;
 
-        $source->transaction->setReconciledAt($currentTime);
+        if ($reset === true)
+        {
+            $reconciledTime = $reconciledType = null;
+        }
+
+        $source->transaction->setReconciledAt($reconciledTime);
 
         $source->transaction->setReconciledType($reconciledType);
 
@@ -518,6 +524,11 @@ class Core extends Base\Core
 
         if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
         {
+            if ($fta->source->getStatus() === RefundStatus::PROCESSED)
+            {
+                $this->updateTransactionEntity($fta->source, true);
+            }
+
             //
             // For refund fta, not updating transaction entity if fta is not processed.
             // Do not want to set recon details of transaction entity for non-processed refunds
