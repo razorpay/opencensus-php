@@ -65,8 +65,8 @@ $view_preferences               = $data['view_preferences'];
             failed: noop, // A failure occured
             push: noop, // Explicitly push as custom event to the queue
             setUser:noop, // Set a user one time
-            defineEventModifiers:noop,// Extends to set custom event properties
-            //Any modifiers
+            defineEventModifiers: noop, // Extends to set custom event properties
+            // Any modifiers
             paymentLink: function() {
                 return window.rzpQ;
             }
@@ -81,8 +81,7 @@ $view_preferences               = $data['view_preferences'];
                 window.hj('tagRecording', ['pl_hosted']);
             }
 
-                     // Init old key as well
-            if(analytics.createQ){
+            if (analytics.createQ) {
                 window.rzpQ = analytics.createQ({ pollFreq:500 });
             }
 
