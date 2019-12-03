@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class DebitEmiTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -19,10 +21,41 @@ class DebitEmiTest extends TestCase
 
         $this->payment = $this->getDefaultEmiPaymentArray();
 
+        $this->createDependentEntities();
+
         $this->ba->publicAuth();
     }
 
     public function testHdfcDebitEmiPaymentCreate()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment= $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'created',
+                'amount'  => 300000,
+                'method'  => 'emi',
+                'gateway' => 'debit_emi',
+
+            ],
+            $payment
+        );
+
+        $card = $this->getDbLastEntityToArray('card');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'id'     => $payment['card_id'],
+                'iin'    => '485446',
+                'issuer' => 'HDFC',
+            ],
+            $card
+        );
+    }
+
+    protected function createDependentEntities()
     {
         $this->fixtures->emiPlan->create(
             [
@@ -43,9 +76,6 @@ class DebitEmiTest extends TestCase
             ]);
 
         $this->fixtures->create('terminal:hdfc_debit_emi');
-
-        $res = $this->doAuthPayment($this->payment);
-
     }
 
     protected function getDefaultEmiPaymentArray()
