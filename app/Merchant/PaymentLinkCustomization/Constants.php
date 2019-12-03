@@ -4,7 +4,7 @@ namespace App\Merchant\PaymentLinkCustomization;
 
 class Constants
 {
-    const   TEST_MID = '10000000000000',
+    const   TEST_MID = 'C0uw3CXseZPwmJ',
             BHARTI_AXA = 'D2BsrUJVg04abr';
 
     const DEFAULT_EXPIRY = [
