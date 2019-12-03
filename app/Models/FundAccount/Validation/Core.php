@@ -15,7 +15,6 @@ use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundAccount\Validation\Processor\Type;
 
 class Core extends Base\Core
 {
@@ -206,7 +205,7 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            $this->validateInput($validation, $input);
+            $this->runInputValidations($validation, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -238,11 +237,11 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateInput(Entity $validation, array $input)
+    protected function runInputValidations(Entity $validation, array $input)
     {
         $type = $validation->fundAccount->account->getEntityName();
 
-        Type::validate($type);
+        Processor\Factory::validate($type);
 
         if ($validation->balance->isTypeBanking() === false)
         {
