@@ -11,8 +11,8 @@ use RZP\Models\Gateway\Downtime\ReasonCode;
 
 class DopplerProcessor implements ProcessorInterface
 {
-    const STATUS_UP = '';
-    const STATUS_DOWN = '';
+    const STATUS_UP = 'up';
+    const STATUS_DOWN = 'down';
 
     protected $app;
 
@@ -90,17 +90,19 @@ class DopplerProcessor implements ProcessorInterface
     {
         try
         {
-            $this->validateStatus($input['Status']);
+            $status = $input['status'];
+
+            $this->validateStatus($status);
 
             $this->validateRequiredKeys($input);
 
             $data = $this->buildInput($input);
 
-            if (strtoupper($input['Status']) === self::STATUS_DOWN)
+            if ($status === self::STATUS_DOWN)
             {
                 return $this->createDowntime($data);
             }
-            elseif (strtoupper($input['Status']) === self::STATUS_UP)
+            elseif ($status === self::STATUS_UP)
             {
                 return $this->resolveDowntime($data);
             }
@@ -122,15 +124,15 @@ class DopplerProcessor implements ProcessorInterface
             Entity::METHOD          => $input[Entity::METHOD],
             Entity::REASON_CODE     => $input[Entity::REASON_CODE],
             Entity::GATEWAY         => $input[Entity::GATEWAY] ?? Entity::ALL,
-            Entity::COMMENT         => $input[Entity::COMMENT] ?? null,
+            Entity::COMMENT         => $input[Entity::COMMENT] ?? "",
             Entity::ISSUER          => $input[Entity::ISSUER] ?? null,
-            Entity::ACQUIRER        => $input[Entity::ACQUIRER] ?? null,
+            Entity::ACQUIRER        => $input[Entity::ACQUIRER] ?? Entity::UNKNOWN,
             Entity::CARD_TYPE       => $input[Entity::CARD_TYPE] ?? null,
             Entity::NETWORK         => $input[Entity::NETWORK] ?? null,
-            Entity::PSP             => $input[Entity::PSP] ?? null,
+            //Entity::PSP             => $input[Entity::PSP] ?? null,
         ];
 
-        $status = $input['Status'];
+        $status = $input['status'];
 
         if($status === self::STATUS_DOWN)
         {

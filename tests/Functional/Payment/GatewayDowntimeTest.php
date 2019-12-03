@@ -1339,6 +1339,47 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
+    public function testDoppler()
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'down'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $id = $response['id'];
+
+        $this->assertNull($response['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'up'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['end']);
+
+        $this->assertEquals($id, $response['id']);
+    }
+
     protected function getDowntimeCreationRequest(): array
     {
         return [
