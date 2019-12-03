@@ -378,7 +378,7 @@ class Repository extends Transaction\Repository
             return;
         }
 
-        $query->join(
+        $query->leftjoin(
             $payoutTable,
             function(JoinClause $join)
             {
@@ -403,7 +403,7 @@ class Repository extends Transaction\Repository
         // Must join payout for joining fund_account.
         $this->joinQueryPayout($query);
 
-        $query->join(
+        $query->leftjoin(
             $faTable,
             function(JoinClause $join)
             {
@@ -426,7 +426,7 @@ class Repository extends Transaction\Repository
         // Must join fund_account for joining contact
         $this->joinQueryFundAccount($query);
 
-        $query->join(
+        $query->leftjoin(
             $contactTable,
             function(JoinClause $join)
             {
