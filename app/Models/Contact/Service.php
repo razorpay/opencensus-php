@@ -2,17 +2,12 @@
 
 namespace RZP\Models\Contact;
 
-use RZP\Exception;
-use RZP\Error\Error;
+use Symfony\Component\HttpFoundation\Response;
+
+use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use RZP\Http\RequestHeader;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\FundAccount\Entity as FundAccountEntity;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant;
 use RZP\Models\FundAccount\Service as FundAccountService;
-use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
-use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 /**
  * Class Service
@@ -49,6 +44,44 @@ class Service extends Base\Service
         $this->fundAccountService = new FundAccountService;
     }
 
+    /**
+     * The contact creation logic checks if there is a duplicate present and whether to
+     * return the duplicate contact or create a new one. This decision will be based
+     * on where the request is coming from. If the request comes from the dashboard
+     * every time a new contact will be created and if from API then a duplicate will be
+     * returned if found. The choice is made as we want the contact creation flow to be
+     * same for now on dashboard. Eventually once the designs will be ready, contact
+     * creation flow will be different for the dashboard. Also to ensure backward
+     * compatibility of contact creation, we will maintain a list of merchants
+     * who want to allow duplicates in contact creation and refer that as well
+     * during contact creation.
+     *
+     * ToDo https://razorpay.atlassian.net/browse/RX-848
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function create(array $input): array
+    {
+        $createDuplicate = true;
+
+        if (($this->auth->isStrictPrivateAuth() === true) and
+            ($this->shouldCreateDuplicateContacts() === false))
+        {
+            $createDuplicate = false;
+        }
+
+        $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
+
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
+
+        return [
+            Constants\Entity::CONTACT => $entity->toArrayPublic(),
+            Entity::RESPONSE_CODE     => $responseCode,
+        ];
+    }
+
     public function fetch(string $id, array $input): array
     {
         $merchant = $this->merchant;
@@ -74,155 +107,17 @@ class Service extends Base\Service
         return $typeObj->getAll($this->merchant);
     }
 
-    /**
-     * @param array $input
-     *
-     * @return array
-     * @throws BadRequestValidationFailureException
-     */
-    public function createBulkContact(array $input)
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
+    protected function shouldCreateDuplicateContacts()
     {
-        $contactBatch = new Base\PublicCollection;
+        $merchant = $this->merchant;
 
-        $validator = new Validator;
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
 
-        $validator->validateBulkContactCount($input);
+        $flag = ($variant === 'create_duplicate') ? true : false;
 
-        $idempotencyKey = null;
-
-        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
-
-        $validator->validateBatchId($batchId);
-
-        foreach ($input as $item)
-        {
-            try
-            {
-                $this->trace->info(
-                    TraceCode::BATCH_SERVICE_CONTACT_BULK_REQUEST,
-                    [
-                        Entity::BATCH_ID => $batchId,
-                        'input'          => $item
-                    ]);
-
-                $this->repo->transaction(function() use (& $item,
-                                                         & $contactBatch,
-                                                         & $batchId,
-                                                         & $idempotencyKey,
-                                                         $validator)
-                {
-                    $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
-
-                    $validator->validateIdempotencyKey($idempotencyKey, $batchId);
-
-                    $contact = $this->processEntryForContact($item, $idempotencyKey, $batchId);
-
-                    $fundAccount = $this->processEntryForContactsFundAccount($item,
-                                                                             $contact,
-                                                                             $idempotencyKey,
-                                                                             $batchId);
-
-                    $contactBatch->push($fundAccount);
-                });
-
-            }
-            catch (Exception\BaseException $exception)
-            {
-                $this->trace->traceException(
-                    $exception,
-                    Trace::INFO,
-                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
-
-                $exceptionData = [
-                    Entity::BATCH_ID        => $batchId,
-                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
-                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
-                    'error'                 => [
-                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
-                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
-                    ],
-                ];
-
-                $contactBatch->push($exceptionData);
-            }
-            catch (\Throwable $throwable)
-            {
-                $this->trace->traceException($throwable,
-                                             Trace::CRITICAL,
-                                             TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
-
-                $exceptionData = [
-                    Entity::BATCH_ID        => $batchId,
-                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
-                    Error::HTTP_STATUS_CODE => 500,
-                    'error'                 => [
-                        Error::DESCRIPTION       => $throwable->getMessage(),
-                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
-                    ],
-                ];
-
-                $contactBatch->push($exceptionData);
-            }
-        }
-
-        return $contactBatch->toArrayWithItems();
-    }
-
-    public function processEntryForContact(
-        array $entry,
-        string $idempotencyKey,
-        string $batchId)
-    {
-        $contactId = (isset($entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID]) === true) ?
-                     $entry[ContactBatchHelper::CONTACT][ContactBatchHelper::ID] :
-                     null;
-
-        if (empty($contactId) === false)
-        {
-            return $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
-        }
-
-        $input = ContactBatchHelper::getContactInput($entry);
-
-        $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
-
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
-
-        return $contact ?: $this->core->create($input, $this->merchant, null, $batchId);
-    }
-
-    public function processEntryForContactsFundAccount(
-        array $entry,
-        Entity $contact,
-        string $idempotencyKey,
-        string $batchId): array
-    {
-        $fundAccountId = $entry[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
-
-        if (empty($fundAccountId) === false)
-        {
-            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
-
-            return $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-        }
-
-        $input = FundAccountHelper::getFundAccountInput($entry, $contact);
-
-        $input[FundAccountEntity::IDEMPOTENCY_KEY] = $idempotencyKey;
-
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
-            $input,
-            $this->merchant,
-            $contact);
-
-        if (empty($fundAccount) === false)
-        {
-            $fundAccountArr = $fundAccount->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-
-            return $fundAccountArr;
-        }
-
-        return $this->fundAccountService->create($input, $batchId, $idempotencyKey) +
-                [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+        return $flag;
     }
 }

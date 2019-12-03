@@ -2,20 +2,20 @@
 
 namespace RZP\Models\FundAccount;
 
-use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Batch;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Exception\LogicException;
 use RZP\Services\FTS\Constants;
+use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Core
@@ -25,29 +25,58 @@ use RZP\Services\FTS\CreateAccount;
 class Core extends Base\Core
 {
     /**
-     * Here, source is null for entity of type fund account validation
-     * @param array                  $input
-     * @param Merchant\Entity        $merchant
+     * @param array $input
+     * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
-     * @param Batch\Entity|null      $batch
+     * @param string $batchId
+     * @param bool $createDuplicate
      *
      * @return Entity
+     * @throws BadRequestValidationFailureException
      */
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
-                           Batch\Entity $batch = null,
+                           bool $createDuplicate = false,
                            string $batchId = null): Entity
     {
+        $traceRequest = $this->unsetSensitiveCardDetails($input);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
+
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                      $merchant->getId(),
-                                                                      $batchId);
+                $merchant->getId(),
+                $batchId);
 
             if ($result !== null)
             {
                 return $result;
+            }
+        }
+
+
+        (new Validator)->setStrictFalse()->validateInput('create', $input);
+
+        if (($source instanceof Contact\Entity) and
+            ($createDuplicate === false))
+        {
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,
+                                                                                       $this->merchant,
+                                                                                       $source);
+
+            if (empty($fundAccount) === false)
+            {
+
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
+                    [
+                        Entity::ID           => $fundAccount->getId(),
+                        Entity::BATCH_ID     => $batchId,
+                    ]);
+
+                return $fundAccount;
             }
         }
 
@@ -60,7 +89,7 @@ class Core extends Base\Core
         $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
-            function() use ($input, $merchant, $source, $fundAccount, $batch, $batchId)
+            function() use ($input, $merchant, $source, $fundAccount, $batchId)
             {
                 $account = $this->createAccount($input, $merchant, $source);
 
@@ -68,30 +97,15 @@ class Core extends Base\Core
 
                 $fundAccount->account()->associate($account);
 
-                $batchId ? ($fundAccount->setBatchId($batchId)) : ($fundAccount->batch()->associate($batch));
+                if (empty($batchId) === false)
+                {
+                    $fundAccount->setBatchId($batchId);
+                }
 
                 $this->repo->saveOrFail($fundAccount);
             });
 
-        try
-        {
-            if ($source !== null)
-            {
-                $account = $fundAccount->account;
-
-                (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
-            }
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::CRITICAL,
-                TraceCode::FTS_CREATE_ACCOUNT_FAILED,
-                [
-                    'data' => $input,
-                ]);
-        }
+        $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
 
         return $fundAccount;
     }
@@ -219,5 +233,54 @@ class Core extends Base\Core
     public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant): Entity
     {
         return $this->repo->fund_account->findByPublicIdAndMerchant($id, $merchant);
+    }
+
+    /**
+     * Unset sensitive card details
+     *
+     * @param array $input
+     * @return array
+     */
+    public function unsetSensitiveCardDetails(array $input)
+    {
+        if ((isset($input[Entity::CARD]) === true) and
+            (is_array($input[Entity::CARD]) === true))
+        {
+            if (empty($input[Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $input[Entity::CARD][Card\Entity::IIN] = substr($input[Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($input[Entity::CARD][Card\Entity::CVV]);
+            unset($input[Entity::CARD][Card\Entity::NUMBER]);
+        }
+
+        return $input;
+    }
+
+    protected function createFTSAccountForFundAccount(array $input,
+                                                      Entity $fundAccount,
+                                                      Base\PublicEntity $source = null)
+    {
+        try
+        {
+            if ($source !== null)
+            {
+                $account = $fundAccount->account;
+
+                (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_CREATE_ACCOUNT_FAILED,
+                [
+                    'data' => $input,
+                ]);
+        }
+
     }
 }

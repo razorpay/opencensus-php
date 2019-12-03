@@ -787,6 +787,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
     }
 
+    public function getIdempotencyKey()
+    {
+        return $this->getAttribute(self::IDEMPOTENCY_KEY);
+    }
+
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;

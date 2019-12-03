@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -139,63 +140,141 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    public function testBulkContact()
+    public function testDuplicateContactCreationOnApi()
     {
-        // $this->markTestSkipped();
+        $this->testCreateContact();
 
-        $this->ba->batchAuth();
+        $contact = $this->getLastEntity('contact', true);
 
-        $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
-        ];
+        $this->ba->privateAuth();
 
-        // append headers
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $response = $this->startTest();
 
-        $this->startTest();
+        $this->assertEquals($response['id'], $contact['id']);
     }
 
-    public function testBulkContactWithInvalidContactId()
+    public function testDuplicateContactCreationOnDashboard()
     {
-        $this->ba->batchAuth();
+        $this->testCreateContact();
 
-        $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
-        ];
+        $contact = $this->getLastEntity('contact', true);
 
-        // append headers
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->ba->proxyAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['id'], $contact['id']);
     }
 
-    public function testBulkContactWithValidContactId()
+    public function testDuplicateContactCreationWithSameName()
     {
-        $this->ba->batchAuth();
+        $this->testCreateContact();
 
-        $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
-        ];
+        $contact = $this->getLastEntity('contact', true);
 
-        // append headers
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->ba->privateAuth();
 
-        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+        $response = $this->startTest();
 
-        $this->startTest();
+        $this->assertNotEquals($response['id'], $contact['id']);
     }
 
-    public function testBulkContactWithSameIdempotencyKey()
+    public function testDuplicateContactCreationWithSameNameAndEmptyAttributes()
     {
-        $this->ba->batchAuth();
-
-        $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
         ];
 
-        // append headers
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->ba->privateAuth();
 
+        $this->makeRequestAndGetContent($request);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['id'], $contact['id']);
+    }
+
+    public function testDuplicateContactWithEmptyValuesOfSomeAttributes()
+    {
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => null
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact1 = $this->getLastEntity('contact', true);
+
+        $request  = [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => ''
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $contact2 = $this->getLastEntity('contact', true);
+
+        $this->assertEquals($contact1['id'], $contact2['id']);
+    }
+
+    public function testDoNotAllowDuplicateChecksInContactCreation()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getTreatment'])
+                            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('create_duplicate');
+
+        $this->ba->privateAuth();
+
+        $request =  [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($contact['id'], $response['id']);
+    }
+
+    public function testCreateContactWithoutType()
+    {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
 
         $this->startTest();
@@ -220,6 +299,7 @@ class ContactsTest extends TestCase
             'response' => [
                 'content' => [
                 ],
+                'status_code' =>201
             ],
         ];
 

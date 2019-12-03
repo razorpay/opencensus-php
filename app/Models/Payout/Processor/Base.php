@@ -264,17 +264,9 @@ class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch($batchIdOrBatch): self
+    public function setBatch($batchId): self
     {
-        // TODO: remove batch entity handling once ramped to 100%
-        if (($batchIdOrBatch instanceof Batch\Entity) === true)
-        {
-            $this->batch = $batchIdOrBatch;
-        }
-        else if (is_string($batchIdOrBatch) === true)
-        {
-            $this->batchId = $batchIdOrBatch;
-        }
+        $this->batchId = $batchId;
 
         return $this;
     }

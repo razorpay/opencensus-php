@@ -1196,7 +1196,8 @@ final class Route
         'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
-        'bulk_contact_create'                      => ['post',     'contacts/bulk',                                  'ContactController@createContactBulk'                               ],
+        //TODO: This is a hack, till batch changes with new endpoint are deployed in production - https://razorpay.atlassian.net/browse/RX-798
+        'bulk_contact_create'                      => ['post',     'contacts/bulk',                                  'FundAccountController@createFundAccountBulk'                       ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
@@ -1215,6 +1216,7 @@ final class Route
         'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
+        'fund_account_bulk_create'                 => ['post',     'fund_accounts/bulk',                             'FundAccountController@createFundAccountBulk'                       ],
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
@@ -2111,8 +2113,9 @@ final class Route
         'commissions_analytics',
         'invoice_update_billing_period',
         'bulk_invoice_create',
-        'bulk_contact_create',
         'payout_bulk_create',
+        'fund_account_bulk_create',
+        'bulk_contact_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
@@ -3537,6 +3540,8 @@ final class Route
             'bulk_contact_create',
             'bulk_submerchant_assign',
             'payout_bulk_create',
+            'fund_account_bulk_create',
+            'bulk_contact_create',
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',

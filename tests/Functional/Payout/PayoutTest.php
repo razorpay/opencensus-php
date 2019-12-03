@@ -1528,6 +1528,46 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayoutWithSameContact()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['contact_id'], $response['items'][1]['fund_account']['contact_id']);
+
+        $contacts = $this->getEntities('contact');
+
+        $this->assertEquals(2, count($contacts['items']));
+    }
+
+    public function testBulkPayoutWithSameFundAccount()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['id'], $response['items'][1]['fund_account']['id']);
+
+        $contacts = $this->getEntities('fund_account');
+
+        $this->assertEquals(2, count($contacts['items']));
+    }
+
     public function testBulkPayoutWithSameIdempotencyandBatchId()
     {
         $this->ba->batchAuth();

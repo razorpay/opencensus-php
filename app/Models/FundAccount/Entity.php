@@ -56,6 +56,8 @@ class Entity extends Base\PublicEntity
     // input key
     const ACCOUNT_NUMBER = 'account_number';
 
+    const RESPONSE_CODE   = 'response_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -142,6 +144,11 @@ class Entity extends Base\PublicEntity
     public function getBatchId()
     {
         return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function getIdempotencyKey()
+    {
+        return $this->getAttribute(self::IDEMPOTENCY_KEY);
     }
 
     public function getActive(): bool

@@ -18,33 +18,15 @@ class BatchHelper
     const VPA            = 'account_vpa';
     const FUND_ACCOUNT   = 'fund';
 
-    public static function getFundAccountInput(array $entry, Contact\Entity $contact = null): array
+    public static function getFundAccountInput(array $entry, Contact\Entity $contact): array
     {
         $fundAccountType = $entry[self::FUND_ACCOUNT][self::TYPE];
-
-        // TODO: This is a temporary fix for prod issue
-        if (($fundAccountType === Entity::VPA) and
-            (empty($entry[self::FUND_ACCOUNT][self::VPA]) === false))
-        {
-            $vpaParts = explode('@', $entry[self::FUND_ACCOUNT][self::VPA]);
-
-            if (count($vpaParts) !== 2)
-            {
-                throw new BadRequestValidationFailureException(
-                    "Invalid value for fund account type - $fundAccountType",
-                    null,
-                    $entry);
-            }
-        }
 
         $input = [
             Entity::ACCOUNT_TYPE => $fundAccountType,
         ];
 
-        if ($contact !== null)
-        {
-            $input[FundAccount\Entity::CONTACT_ID] = $contact->getPublicId();
-        }
+        $input[FundAccount\Entity::CONTACT_ID] = $contact->getPublicId();
 
         // Per fund account type, prepares details key input for fund account's core.
         switch ($fundAccountType)
@@ -69,6 +51,8 @@ class BatchHelper
                     self::TYPE,
                     $input);
         }
+
+        $input[Entity::IDEMPOTENCY_KEY] = $entry[Entity::IDEMPOTENCY_KEY];
 
         return $input;
     }
