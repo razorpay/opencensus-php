@@ -8,16 +8,11 @@ import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Alert from 'common/ui/Forms/Alert';
 
-@connect(
-  state => ({
-    isTestMode: state.session.mode === 'test',
-  }),
-  {
-    closeModal,
-  }
-)
+@connect(state => ({
+  isTestMode: state.session.mode === 'test',
+}))
 export default class extends React.PureComponent {
-  _isMounted = false;
+  _isMounted = true;
 
   constructor(props) {
     super();
