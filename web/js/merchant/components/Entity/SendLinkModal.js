@@ -1,7 +1,5 @@
 import { connect } from 'react-redux';
 
-import { closeModal } from 'merchant_common/reducers/modals';
-
 import ModalHeader from 'common/ui/ModalHeader';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
