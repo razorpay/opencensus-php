@@ -69,6 +69,7 @@ class Core extends Base\Core
 
             if (empty($fundAccount) === false)
             {
+
                 $this->trace->info(
                     TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
                     [
