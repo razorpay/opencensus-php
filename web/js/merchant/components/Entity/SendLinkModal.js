@@ -17,6 +17,8 @@ import Alert from 'common/ui/Forms/Alert';
   }
 )
 export default class extends React.PureComponent {
+  _isMounted = false;
+
   constructor(props) {
     super();
 
@@ -31,20 +33,28 @@ export default class extends React.PureComponent {
     return this.props
       .onSubmit(body)
       .then(resp => {
-        this.setState({
-          disableSendLink: false,
-        });
+        if (this._isMounted) {
+          this.setState({
+            disableSendLink: false,
+          });
+        }
 
         return resp;
       })
       .catch(resp => {
-        this.setState({
-          disableSendLink: false,
-        });
+        if (this._isMounted) {
+          this.setState({
+            disableSendLink: false,
+          });
+        }
 
         return resp;
       });
   };
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
   render() {
     const {
