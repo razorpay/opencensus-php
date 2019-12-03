@@ -13,7 +13,6 @@ use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -198,21 +197,15 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
+        $this->validateIfBalanceTypeBanking($validation, $input);
+
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
-            $inputValidator = $validation->getValidator();
-
-            $inputValidator->validateBalanceId($validation);
-
-            $inputValidator->validateFundAccount($validation, $input);
-
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
             $validation->associateFundAccount($fundAccount);
 
-            $inputValidator->validateAmount($validation, $input);
-
-            $inputValidator->validateCurrency($validation, $input);
+            $this->validateIfFundAccountTypeVpa($validation, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -236,6 +229,22 @@ class Core extends Base\Core
         });
 
         return $validation;
+    }
+
+    protected function validateIfBalanceTypeBanking(Entity $validation, array $input)
+    {
+        if ($validation->balance->getType() === Merchant\Balance\Type::BANKING)
+        {
+            (new Validator($validation))->validateInput('balance_type_banking', $input);
+        }
+    }
+
+    protected function validateIfFundAccountTypeVpa(Entity $validation, array $input)
+    {
+        if ($validation->fundAccount->getAccountType() === FundAccount\Type::VPA)
+        {
+            (new Validator($validation))->validateInput('fund_account_type_vpa', $input);
+        }
     }
 
     /**
