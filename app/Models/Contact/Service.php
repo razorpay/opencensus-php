@@ -56,7 +56,7 @@ class Service extends Base\Service
      * who want to allow duplicates in contact creation and refer that as well
      * during contact creation.
      *
-     * TODO: Add a JIRA Task for this and link it here.
+     * ToDo https://razorpay.atlassian.net/browse/RX-848
      *
      * @param array $input
      *
@@ -72,7 +72,7 @@ class Service extends Base\Service
             $createDuplicate = false;
         }
 
-        $entity = $this->core->create($input, $this->merchant, $createDuplicate);
+        $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
@@ -107,6 +107,7 @@ class Service extends Base\Service
         return $typeObj->getAll($this->merchant);
     }
 
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
     protected function shouldCreateDuplicateContacts()
     {
         $merchant = $this->merchant;
