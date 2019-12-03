@@ -377,14 +377,6 @@ class FundAccountsTest extends TestCase
         $this->assertNotEquals($fundAccount['id'], $response['id']);
     }
 
-    // duplicate checks for same fund account details but different contacts
-    public function testDuplicateFundAccountCreationOnApiForVpaForDifferentContacts()
-    {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->fixtures->create('contact', ['id' => '1000001contact']);
-    }
-
     public function testCreateSingleCharacterHandleOfVpa()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

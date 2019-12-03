@@ -1477,8 +1477,6 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactName()
     {
-        $this->markTestSkipped();
-
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test']);
 
         $this->fixtures->edit(
@@ -1542,8 +1540,6 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactEmail()
     {
-        $this->markTestSkipped();
-
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -1648,6 +1644,10 @@ class PayoutTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals($response['items'][0]['fund_account']['contact_id'], $response['items'][1]['fund_account']['contact_id']);
+
+        $contacts = $this->getEntities('contact');
+
+        $this->assertEquals(2, count($contacts['items']));
     }
 
     public function testBulkPayoutWithSameFundAccount()
@@ -1664,6 +1664,10 @@ class PayoutTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals($response['items'][0]['fund_account']['id'], $response['items'][1]['fund_account']['id']);
+
+        $contacts = $this->getEntities('fund_account');
+
+        $this->assertEquals(2, count($contacts['items']));
     }
 
     public function testBulkPayoutWithSameIdempotencyandBatchId()
