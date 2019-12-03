@@ -443,8 +443,6 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
-
                         $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
                         $fundAccount = null;
@@ -459,10 +457,12 @@ class Service extends Base\Service
                         }
                         else
                         {
+                            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
+
                             $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                                                                         $contact,
-                                                                                         $batchId,
-                                                                                         $createDuplicate);
+                                $contact,
+                                $batchId,
+                                $createDuplicate);
                         }
 
                         $payout = $this->processEntryForPayoutForFundAccount($item,

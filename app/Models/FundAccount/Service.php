@@ -140,8 +140,6 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
-
                         $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
 
                         if (empty($fundAccountId) === false)
@@ -153,6 +151,8 @@ class Service extends Base\Service
                         }
                         else
                         {
+                            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
+
                             $fundAccount = $this->createFundAcccount($item, $contact, $batchId, $createDuplicate);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
