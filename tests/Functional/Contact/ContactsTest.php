@@ -151,7 +151,7 @@ class ContactsTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -165,7 +165,7 @@ class ContactsTest extends TestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
@@ -181,7 +181,7 @@ class ContactsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
-        
+
         $this->startTest();
     }
 
@@ -197,7 +197,7 @@ class ContactsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
-        
+
         $this->startTest();
     }
 
@@ -210,7 +210,7 @@ class ContactsTest extends TestCase
                 'content' => [
                     'account_type' => "bank_account",
                     'contact_id'   => $contactId,
-                    'details'      => [
+                    'bank_account'      => [
                         'name'           => "test",
                         'ifsc'           => 'SBIN0007105',
                         'account_number' => '111000',

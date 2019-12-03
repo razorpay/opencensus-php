@@ -552,12 +552,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'SBIN0007106',
                             'bank_name'         => 'State Bank of India',
@@ -569,9 +563,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
                         'vpa'                   => [
                             'address'           => '123@ybl',
                         ],
@@ -580,12 +571,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'HDFC0003780',
                             'bank_name'         => 'HDFC Bank',
@@ -690,9 +675,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
                         'vpa'                   => [
                             'address'           => '123@ybl',
                         ],
@@ -701,12 +683,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'HDFC0003780',
                             'bank_name'         => 'HDFC Bank',
@@ -805,12 +781,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'SBIN0007106',
                             'bank_name'         => 'State Bank of India',
@@ -822,9 +792,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
                         'vpa'                   => [
                             'address'           => '123@ybl',
                         ],
@@ -833,12 +800,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'HDFC0003780',
                             'bank_name'         => 'HDFC Bank',
@@ -936,12 +897,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'SBIN0007106',
                             'bank_name'         => 'State Bank of India',
@@ -953,9 +908,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
                         'vpa'                   => [
                             'address'           => '123@ybl',
                         ],
@@ -964,12 +916,6 @@ return [
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'SBIN0007106',
                             'bank_name'         => 'State Bank of India',

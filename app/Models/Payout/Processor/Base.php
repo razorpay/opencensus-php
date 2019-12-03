@@ -483,7 +483,7 @@ class Base extends BaseCore
 
         $validator = $payout->getValidator();
 
-        $validator->validateInput(camel_case($validatorOperation), $input);
+        $validator->validateInput($validatorOperation, $input);
     }
 
     protected function getPayoutType()

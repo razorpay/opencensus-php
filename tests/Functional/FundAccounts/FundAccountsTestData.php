@@ -35,7 +35,7 @@ return [
                         'entity'       => 'fund_account',
                         'active'       => true,
                         'account_type' => 'vpa',
-                        'details'      => [
+                        'vpa'      => [
                         ],
                     ],
                     [
@@ -43,7 +43,7 @@ return [
                         'entity'       => 'fund_account',
                         'active'       => true,
                         'account_type' => 'bank_account',
-                        'details'      => [
+                        'bank_account'      => [
                             'ifsc'           => 'RZPB0000000',
                             'account_number' => '10010101011',
                         ],
@@ -53,7 +53,7 @@ return [
                         'entity'       => 'fund_account',
                         'active'       => true,
                         'account_type' => 'bank_account',
-                        'details'      => [
+                        'bank_account'      => [
                             'ifsc'           => 'RZPB0000000',
                             'account_number' => '10010101011',
                         ],
@@ -111,7 +111,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111'
@@ -139,7 +139,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111'
@@ -167,7 +167,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_invalidcontact',
-                'details'      => [
+                'bank_account'      => [
                     'ifsc'           => 'SBIN0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111'
@@ -181,7 +181,7 @@ return [
             'content' => [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'amitm@upi',
                 ],
             ],
@@ -193,7 +193,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'amitm@upi',
                 ],
             ],
@@ -220,7 +220,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'card',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'card'      => [
                 ],
             ],
         ],
@@ -246,7 +246,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'card',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'card'      => [
                 ],
             ],
         ],
@@ -272,7 +272,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'card',
                 'contact_id'   => 'cont_invalidcontact',
-                'details'      => [
+                'card'      => [
                 ],
             ],
         ],
@@ -341,7 +341,7 @@ return [
             'content' => [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'amitm',
                 ],
             ],
@@ -368,7 +368,7 @@ return [
             'content' => [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'bank_account'      => [
                     'ifsc'           => 'SBIQ0007105',
                     'name'           => 'Amit M',
                     'account_number' => '111000111'
@@ -397,7 +397,7 @@ return [
             'content' => [
                 'account_type' => 'vpa',
                 'customer_id'  => 'cust_1000facustomer',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'amitm@upi',
                 ],
             ],
@@ -409,7 +409,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'vpa',
                 'customer_id'  => 'cust_1000facustomer',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'amitm@upi',
                 ],
             ],
@@ -454,7 +454,7 @@ return [
             'content' => [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'a@upi',
                 ],
             ],
@@ -466,7 +466,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'a@upi',
                 ],
             ],
@@ -478,7 +478,7 @@ return [
             'content' => [
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'a.mitm@upi',
                 ],
             ],
@@ -490,7 +490,7 @@ return [
                 'entity'       => 'fund_account',
                 'account_type' => 'vpa',
                 'contact_id'   => 'cont_1000000contact',
-                'details'      => [
+                'vpa'      => [
                     'address' => 'a.mitm@upi',
                 ],
             ],

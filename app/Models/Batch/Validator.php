@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact as ContactModel;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
@@ -365,7 +366,7 @@ class Validator extends Base\Validator
 
     protected function validatePayoutMode($attribute, $value)
     {
-        FundTransfer\Mode::validateMode($value);
+        PayoutMode::validateMode($value);
     }
 
     /**
