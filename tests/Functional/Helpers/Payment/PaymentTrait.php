@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentBladeTrait;
     use EntityActionTrait;
     use PaymentHitachiTrait;
+    use PaymentDebitEmiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
