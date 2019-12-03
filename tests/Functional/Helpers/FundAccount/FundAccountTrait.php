@@ -89,7 +89,7 @@ trait FundAccountTrait
 
         $expectedFundAccount = $this->getDefaultFundAccountCardArray();
 
-        $expectedFundAccount['details'] = [];
+        $expectedFundAccount['card'] = [];
 
         $this->assertArraySelectiveEquals($expectedFundAccount, $content);
 
@@ -112,7 +112,7 @@ trait FundAccountTrait
         return [
             'account_type' => 'card',
             'contact_id'   => 'cont_1000000contact',
-            'details' => [
+            'card' => [
                 'name' => 'jp',
                 'number' => '4111111111111111',
                 'expiry_month' => 4,
