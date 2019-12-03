@@ -121,7 +121,7 @@ class Constants
 
     public static function getExtraFormFieldsForPaymentLinksByMID($mid)
     {
-        return self::EXTRA_FORM_FIELDS[$mid] ?? null;
+        return self::EXTRA_FORM_FIELDS[$mid] ?? [];
     }
 
     public static function getCustomizedFormFieldsByMID($mid)
