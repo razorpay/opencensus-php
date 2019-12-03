@@ -280,7 +280,7 @@ class ProviderCode
      * PSP handle to app mapping
      */
 
-    protected static $appName = [
+    protected static $psp = [
         self::OKAXIS        => 'google_pay',
         self::OKHDFCBANK    => 'google_pay',
         self::OKICICI       => 'google_pay',
@@ -296,9 +296,9 @@ class ProviderCode
         return self::$bankCodes[$provider] ?? null;
     }
 
-    public static function getAppName($vpaHandle)
+    public static function getPsp($vpaHandle)
     {
-        return self::$appName[$vpaHandle] ?? null;
+        return self::$psp[$vpaHandle] ?? null;
     }
 
     public static function validate(string $provider)
