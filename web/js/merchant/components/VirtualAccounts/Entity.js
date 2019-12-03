@@ -19,7 +19,7 @@ import { paymentId, amount } from 'rzp/ui/item/pair';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { updateVirtualAccountDetails } from 'merchant/modules/virtualaccounts';
 
-@connect(state => ({}), {
+@connect(state => ({ user: state.session.user }), {
   openModal,
   closeModal,
   updateVirtualAccountDetails,
@@ -86,6 +86,7 @@ export default class extends React.Component {
       onClose,
       onMakeTestPaymentClick,
       onCopy = () => {},
+      user,
     } = this.props;
 
     const isClosed = virtualaccount.status === 'closed';
@@ -145,16 +146,19 @@ export default class extends React.Component {
                     </button>
                   )}
 
-                <br />
-
                 {!isClosed &&
-                  !upiAddress && (
-                    <button
-                      class="btn btn-default"
-                      onClick={this.openEnableTransferModeModal}
-                    >
-                      Enable UPI Transfer
-                    </button>
+                  !upiAddress &&
+                  user.isVPAFeatureEnabled && (
+                    <>
+                      <br />
+
+                      <button
+                        class="btn btn-default"
+                        onClick={this.openEnableTransferModeModal}
+                      >
+                        Enable UPI Transfer
+                      </button>
+                    </>
                   )}
 
                 <div style={{ margin: '24px 0' }}>

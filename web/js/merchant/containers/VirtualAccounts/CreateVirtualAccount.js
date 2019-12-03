@@ -48,6 +48,7 @@ const CustomCustomerOption = ({ option }) => {
       customers,
       customersLoading: state.customers.loading,
       ...state.config.config,
+      user: state.session.user,
     };
   },
   {
@@ -231,6 +232,7 @@ export default class CreateVirtualAccount extends Component {
       customers = [],
       customersLoading,
       onClose,
+      user,
     } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
@@ -258,7 +260,7 @@ export default class CreateVirtualAccount extends Component {
           ref={this.setRefForm}
         >
           <main>
-            <div className="form-title">Create Virtual Account</div>
+            <div class="form-title">Create Virtual Account</div>
             <div class="form-group">
               <Input.Group class="Input--vTop" label="Accept Payment Via">
                 <div>
@@ -266,6 +268,7 @@ export default class CreateVirtualAccount extends Component {
                     _name="hasBankAccount"
                     fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
                     defaultValue={_internals.hasBankAccount}
+                    disabled={!user.isVPAFeatureEnabled}
                     onChange={e =>
                       this.setState({
                         _internals: {
@@ -292,36 +295,40 @@ export default class CreateVirtualAccount extends Component {
                   />
                 </div>
 
-                <br />
+                {!!user.isVPAFeatureEnabled && (
+                  <>
+                    <br />
 
-                <div>
-                  <Input.Check
-                    _name="hasVPA"
-                    fieldLabel="UPI Transfer"
-                    defaultValue={_internals.hasVPA}
-                    onChange={e =>
-                      this.setState({
-                        _internals: {
-                          ...this.state._internals,
-                          hasVPA: e.target.checked,
-                        },
-                      })
-                    }
-                  />
-                  <Input
-                    name="descriptorVPA"
-                    label={() => (
-                      <span style={{ fontWeight: 'normal' }}>UPI ID</span>
-                    )}
-                    size="half_big"
-                    description={
-                      _internals.hasVPA
-                        ? 'If left blank, a UPI ID will be auto generated'
-                        : null
-                    }
-                    disabled={!_internals.hasVPA}
-                  />
-                </div>
+                    <div>
+                      <Input.Check
+                        _name="hasVPA"
+                        fieldLabel="UPI Transfer"
+                        defaultValue={_internals.hasVPA}
+                        onChange={e =>
+                          this.setState({
+                            _internals: {
+                              ...this.state._internals,
+                              hasVPA: e.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      <Input
+                        name="descriptorVPA"
+                        label={() => (
+                          <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                        )}
+                        size="half_big"
+                        description={
+                          _internals.hasVPA
+                            ? 'If left blank, a UPI ID will be auto generated'
+                            : null
+                        }
+                        disabled={!_internals.hasVPA}
+                      />
+                    </div>
+                  </>
+                )}
               </Input.Group>
 
               <div class="Input">
