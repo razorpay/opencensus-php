@@ -23,6 +23,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
     protected $org = null;
     protected $input = null;
     protected $workflowIds = [];
+    protected $customMid = null;
 
     public function setUp()
     {
@@ -32,14 +33,36 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
+        $customMerchant = $this->fixtures->create('merchant');
+        $this->customMid = $customMerchant->getId();
+
         $permissionId = DB::table('permissions')->where('name','=','create_payout')->value('id');
 
         // Creating five workflows other than default workflow and storing its ids in $this->workflowIds
-        for ($index = 0; $index < 5; $index++) {
+        for ($index = 0; $index < 3; $index++) {
             $workflow = $this->fixtures->create('workflow',
                 [
                     'org_id' => $this->org->getId(),
                     'name'   => 'Test Workflow '.$index
+                ]
+            );
+
+            $this->workflowIds[$index] = $workflow->getId();
+
+            DB::table('workflow_permissions')->insert(
+                [
+                    'workflow_id'      => $this->workflowIds[$index],
+                    'permission_id'    => $permissionId
+                ]
+            );
+        }
+
+        for ($index = 4; $index < 5; $index++) {
+            $workflow = $this->fixtures->create('workflow',
+                [
+                    'org_id' => $this->org->getId(),
+                    'name'   => 'Test Workflow '.$index,
+                    'merchant_id' => $this->customMid
                 ]
             );
 
@@ -125,7 +148,11 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testGetAllPayoutAmountRules()
     {
-        $this->ba->adminAuth();
+        s(DB::table('workflows')->get()->toArray());
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $entries = [
             [
@@ -137,6 +164,12 @@ class WorkflowPayoutAmountRulesTest extends TestCase
                 'id'          => 2,
                 'min_amount'  => 101,
                 'max_amount'  => null
+            ],
+            [
+                'id'          => 3,
+                'min_amount'  => 0,
+                'max_amount'  => null,
+                'merchant_id' => $this->customMid
             ]
         ];
 
@@ -144,6 +177,15 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             $this->testData[__FUNCTION__]['response']['content']['items']['10000000000000'][$index]['workflow_id']
                 = $this->workflowIds[$index];
         }
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][$this->customMid] = [
+            [
+                'min_amount'  => 0,
+                'max_amount'  => null,
+                'merchant_id' => $this->customMid,
+                'workflow_id' => $this->workflowIds[$index]
+            ]
+        ];
 
         $index = 0;
         foreach($entries as $entry)

@@ -237,7 +237,7 @@ return [
     'testGetAllPayoutAmountRules' => [
         'request' => [
             'method'  => 'get',
-            'url'     => '/workflows/rules/payout_amount/all?count=1&skip=0',
+            'url'     => '/workflows/rules/payout_amount/all?count=2&skip=0',
             'content' => [],
         ],
         'response' => [
