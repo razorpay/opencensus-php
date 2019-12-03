@@ -73,9 +73,19 @@ class Repository extends Base\Repository
     {
         $bankAccount = $input[Type::BANK_ACCOUNT];
 
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+
         $bankAccountTable = $this->repo->bank_account->getTableName();
 
         $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
+        $bankAccountBeneficiaryName = $this->repo->bank_account->dbColumn(BankAccount\Entity::BENEFICIARY_NAME);
 
         $bankAccountIfscCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
 
@@ -86,13 +96,13 @@ class Repository extends Base\Repository
         $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
 
         return $this->newQuery()
-                    ->select($this->getTableName(). '.*')
-                    ->join($bankAccountTable, Entity::ACCOUNT_ID, '=', $bankAccountIdColumn)
-                    ->where(Entity::SOURCE_ID, '=', $contact->getId())
+                    ->select($allFundAccountAttributes)
+                    ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                    ->where($faSourceIdColumn, '=', $contact->getId())
                     ->where($bankAccountTypeColumn, '=', E::CONTACT)
-                    ->where(BankAccount\Entity::ACCOUNT_NUMBER, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+                    ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
                     ->where($bankAccountIfscCodeColumn, '=', $bankAccount[BankAccount\Entity::IFSC])
-                    ->where(BankAccount\Entity::BENEFICIARY_NAME, '=', $bankAccount[BankAccount\Entity::NAME])
+                    ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                     ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
                     ->latest($bankAccountCreatedAtColumn)
                     ->first();
@@ -103,6 +113,12 @@ class Repository extends Base\Repository
                                                         array $input)
     {
         $vpa = $input[Type::VPA];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
 
         $vpaTable = $this->repo->vpa->getTableName();
 
@@ -121,9 +137,9 @@ class Repository extends Base\Repository
         list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpa[Vpa\Entity::ADDRESS]);
 
         return $this->newQuery()
-                    ->select($this->getTableName(). '.*')
-                    ->join($vpaTable, Entity::ACCOUNT_ID, '=', $vpaIdColumn)
-                    ->where(Entity::SOURCE_ID, '=', $contact->getId())
+                    ->select($allFundAccountAttributes)
+                    ->join($vpaTable, $faAccountIdColumn, '=', $vpaIdColumn)
+                    ->where($faSourceIdColumn, '=', $contact->getId())
                     ->where($vpaTypeColumn, '=', E::CONTACT)
                     ->where($vpaUsernameColumn, $username)
                     ->where($vpaHandleColumn, $handle)
