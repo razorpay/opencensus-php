@@ -5046,7 +5046,7 @@ trait Authorize
                     }
                 }
 
-                if (($payment->getGateway() === Payment\Gateway::BAJAJ) and
+                if ((($payment->getGateway() === Payment\Gateway::BAJAJ) OR ($payment->getGateway() === Payment\Gateway::DEBIT_EMI)) and
                     ($payment->isEmi() === true))
                 {
                     return true;
