@@ -190,6 +190,8 @@ class Entity extends Base\PublicEntity
 
             $nachArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
 
+            $nachArray[Invoice\Entity::DESCRIPTION] = $invoice->getDescription();
+
             $tokenArray[Entity::NACH] = $nachArray;
 
             $tokenArray[self::BANK_ACCOUNT] = $publicArrayBankAccount;
