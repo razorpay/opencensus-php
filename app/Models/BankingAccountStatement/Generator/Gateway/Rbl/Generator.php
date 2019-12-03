@@ -147,12 +147,10 @@ abstract class Generator extends Base
         $formattedTransactionDate = Carbon::createFromTimestamp($transaction->getCreatedAt(), Timezone::IST)
                                           ->format(TransactionLineItem::ITEM_DATE_FORMAT);
 
-        $description = $this->extractDescription($transaction);
-
         $lineItem = [
             TransactionLineItem::TRANSACTION_DATE    => $formattedTransactionDate,
 
-            TransactionLineItem::TRANSACTION_DETAILS => $description,
+            TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
 
             TransactionLineItem::CHEQUE_ID           => '',
 
@@ -177,19 +175,6 @@ abstract class Generator extends Base
         }
 
         return $lineItem;
-    }
-
-    protected function extractDescription(TransactionEntity $transaction)
-    {
-        $source = $transaction->source;
-
-        if ((empty($source) === false) and
-            (method_exists($source, 'getDescription') === true))
-        {
-            return $source->getDescription();
-        }
-
-        return null;
     }
 
     /**

@@ -13,7 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
-
+use RZP\Models\BankingAccountStatement\Entity as BankingAccountStatementEntity;
 
 /**
  * Class Repository
@@ -100,21 +100,29 @@ class Repository extends Transaction\Repository
 
     /**
      * TODO : https://razorpay.atlassian.net/browse/RX-536
-
      * @param $merchantId
-     * @param $accountNumber
+     * @param $balanceId
      * @param $fromDate
      * @param $toDate
      * @return mixed
      */
     public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
     {
+        $basTable = $this->repo->banking_account_statement;
+
+        $basTableTransactionColumns = $basTable->dbColumn(BankingAccountStatementEntity::TRANSACTION_ID);
+
+        $createdAt = $this->getTableName() . '.' . Entity::CREATED_AT;
+
+        $id = $this->getTableName() . '.' . Entity::ID;
+
         return $this->newQuery()
                     ->merchantId($merchantId)
+                    ->join($basTable->getTableName(), $basTableTransactionColumns, '=', $id)
                     ->where(Entity::BALANCE_ID, $balanceId)
-                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->orderBy(Entity::ID, 'desc')
+                    ->whereBetween($createdAt, [$fromDate, $toDate])
+                    ->orderBy($createdAt, 'desc')
+                    ->orderBy($id, 'desc')
                     ->get();
     }
 
