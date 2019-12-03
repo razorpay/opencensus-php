@@ -12,10 +12,12 @@ import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Offer from 'merchant/models/Offer';
 import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
+import RTracking from 'react-tracking';
 
 const SUCCESS_NOTIFICATION = 'New offer created';
 const MAX_INT = 21474836;
 
+@RTracking(() => window.rzpQ.component('NewOfferForm'))
 class NewOfferForm extends React.Component {
   constructor(props) {
     super(props);
@@ -151,7 +153,6 @@ class NewOfferForm extends React.Component {
       { label: 'Wallet', name: 'wallet' },
       { label: 'UPI', name: 'upi' },
       { label: 'EMI', name: 'emi' },
-      { label: 'Cardless EMI', name: 'cardless_emi' },
       { label: 'Pay Later', name: 'paylater' },
     ];
     let paymentIssuers = [
@@ -262,7 +263,7 @@ class NewOfferForm extends React.Component {
           });
 
           //@todo analytics event tracking
-          // tracking.trackEvent(
+          // this.props.tracking.trackEvent(
           //   window.rzpQ.onbr().success('dash.pl_action', {
           //     action: 'PL_Creation_Successful',
           //   })
