@@ -598,14 +598,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid amount field for fund account of type vpa.',
+                    'description' => 'amount is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_AMOUNT,
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
     'testFundAccValidationBankingFailedCurrencyVpa' => [
@@ -625,14 +625,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid currency field for fund account of type vpa.',
+                    'description' => 'currency is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INVALID_CURRENCY,
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
     'testFundAccValidationBankingFailedMissingFundAccountId' => [
