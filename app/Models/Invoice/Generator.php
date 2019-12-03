@@ -183,6 +183,8 @@ class Generator extends Base\Core
     {
         $this->generateInvoiceSkeleton($input);
 
+        $this->autoEnableRemindersIfApplicable($input);
+
         $this->checkDuplicateInternalRef($input);
 
         $this->copyOptions($input);
@@ -729,5 +731,50 @@ class Generator extends Base\Core
         {
             $this->options = $input[Options\Entity::OPTIONS];
         }
+    }
+
+    /**
+     * Sets Reminder enable to true in input paramters when reminder settings
+     * are enabled for the particular entity.
+     *
+     * @param array $input
+     */
+    private function autoEnableRemindersIfApplicable(array &$input)
+    {
+        // Now enabling for only payment links which comes via API.
+        // The type should be link and external entity (used by auth links) should be empty.
+        // This below thing will be cleanedup while enabling for authlinks.
+        if ((array_key_exists(Entity::REMINDER_ENABLE, $input) === false) and
+            (empty($input[Entity::TYPE]) === false) and
+            ($input[Entity::TYPE] === 'link') and
+            (empty($this->externalEntity) === true) and
+            (empty($this->invoice->user) === true))
+        {
+            $reminderSettingsInput = $this->fetchReminderSettingsInput($input);
+
+            $reminderSettings = (new Reminder\Core)->fetchReminderSettings($reminderSettingsInput);
+
+            if (empty($reminderSettings['items']) === false)
+            {
+                $input[Entity::REMINDER_ENABLE] = 1;
+            }
+        }
+    }
+
+    /**
+     * Refactor this later to accomdate for auth links invoices etc.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    private function fetchReminderSettingsInput(array $input)
+    {
+        $reminderSettingsInput = [
+            'namespace' => 'payment_link',
+            'active'    => 'true',
+        ];
+
+        return $reminderSettingsInput;
     }
 }
