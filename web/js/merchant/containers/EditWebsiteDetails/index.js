@@ -6,6 +6,8 @@ import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
 import ModalHeader from 'common/ui/ModalHeader';
 
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
+
 import EditWebsite, {
   SuccessModalContent,
 } from 'merchant/components/EditWebsiteDetails/EditWebsite';
@@ -27,7 +29,7 @@ class EditWebsiteDetails extends Component {
       url: 'merchant/activation/update_website_details',
       mode: this.props.mode,
       method: 'put',
-      data: { business_website: form.business_website },
+      data: { business_website: autoPrefixUrls(form.business_website) },
     }).then(response => {
       if (response.success) {
         //update user session details
@@ -41,6 +43,8 @@ class EditWebsiteDetails extends Component {
           user: newUser,
           mode: this.props.mode,
         });
+
+        this.props.onWebsiteAdd && this.props.onWebsiteAdd();
 
         this.props.onClose();
       }

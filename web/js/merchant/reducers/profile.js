@@ -7,6 +7,7 @@ const GST_FETCH = 'GST_FETCH';
 const GST_SAVE = 'GST_SAVE';
 const BANK_ACCOUNT_CHANGE_STATUS_FETCH = 'BANK_ACCOUNT_CHANGE_STATUS_FETCH';
 const BANK_ACCOUNT_CHANGES_SAVE = 'BANK_ACCOUNT_CHANGES_SAVE';
+const ADD_WEBSITE_WORKFLOW_STATUS = 'ADD_WEBSITE_WORKFLOW_STATUS';
 
 export const fetchBankAccount = () => {
   return {
@@ -102,6 +103,16 @@ export const fetchBankAccountChangeStatus = merchantId => {
     type: BANK_ACCOUNT_CHANGE_STATUS_FETCH,
     payload: merchantFetch({
       url: `merchants/${merchantId}/bank_account_change/status`,
+      mode: 'live',
+    }),
+  };
+};
+
+export const fetchAddWebsiteWorkflowStatus = merchantId => {
+  return {
+    type: ADD_WEBSITE_WORKFLOW_STATUS,
+    payload: merchantFetch({
+      url: `merchant/activation/${merchantId}/update_website/status`,
       mode: 'live',
     }),
   };

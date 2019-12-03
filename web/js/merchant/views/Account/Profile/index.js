@@ -46,6 +46,7 @@ export default class Profile extends Component {
     loggedInUser: {},
     //by default this feature is not available
     isBankAccountChangeAllowed: null,
+    isWebsiteInWorkflow: null,
   };
 
   componentWillMount() {
@@ -76,6 +77,15 @@ export default class Profile extends Component {
           console.log('ERROR: Failed to fetch bank account change status');
         });
     }
+
+    this.props
+      .fetchAddWebsiteWorkflowStatus(this.props.user.id)
+      .then(({ data }) => {
+        this.setState({
+          isWebsiteInWorkflow: data,
+        });
+      })
+      .catch(err => {});
   }
 
   isAdminOrOwner() {
@@ -260,6 +270,12 @@ export default class Profile extends Component {
       });
   };
 
+  onWebsiteAdd = () => {
+    this.setState({
+      isWebsiteInWorkflow: true,
+    });
+  };
+
   render() {
     let { user, profile } = this.props;
     let { bankAccount } = profile;
@@ -293,6 +309,8 @@ export default class Profile extends Component {
                 changeDisplayName={
                   !!this.isAdminOrOwner() && this.openChangeDisplayName
                 }
+                isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                onWebsiteAdd={this.onWebsiteAdd}
               />
             ) : null}
           </div>

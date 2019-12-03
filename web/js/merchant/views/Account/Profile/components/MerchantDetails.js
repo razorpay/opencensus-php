@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Time from 'common/ui/Time';
-import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
@@ -14,12 +13,49 @@ import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
+function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
+  let businessWebsite = user.business_website ? (
+    <a class="link--block" href={user.businessWebsite} rel="noopener">
+      {user.business_website}
+    </a>
+  ) : null;
+  if (!user.has_key_access) {
+    if (!user.business_website && !isWebsiteInWorkflow) {
+      businessWebsite = (
+        <span>
+          <a onClick={handleEditWebsite}>Add Website/App URL for Full Access</a>
+        </span>
+      );
+    } else
+      businessWebsite =
+        !isWebsiteInWorkflow && user.business_website ? (
+          <a class="link--block" href={user.business_website} rel="noopener">
+            {user.business_website}
+          </a>
+        ) : (
+          <span class="status-label label label-info">Under Review</span>
+        );
+  }
+  return (
+    <div>
+      {businessWebsite}
+      {user.additional_websites.map(website => (
+        <a class="link--block" href={website} target="_blank" rel="noopener">
+          {website}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 const MerchantDetails = ({
   user,
   openModal,
   closeModal,
   changeDisplayName,
   tracking,
+  isWebsiteInWorkflow,
+  ...props
 }) => {
   const activationName =
     !user.showInstantActivation || !user.instantActivation.isL1Submitted
@@ -39,7 +75,12 @@ const MerchantDetails = ({
     );
     openModal({
       size: 'small',
-      component: <EditWebsiteDetails onClose={closeModal} />,
+      component: (
+        <EditWebsiteDetails
+          onWebsiteAdd={props.onWebsiteAdd}
+          onClose={closeModal}
+        />
+      ),
     });
   };
 
@@ -197,23 +238,7 @@ const MerchantDetails = ({
               </div>
             )}
             value={() =>
-              !user.has_key_access ? (
-                !user.business_website ? (
-                  <span>
-                    <a onClick={handleEditWebsite}>
-                      Add Website/App URL for Full Access
-                    </a>
-                  </span>
-                ) : (
-                  <span class="status-label label label-info">
-                    Under Review
-                  </span>
-                )
-              ) : (
-                <a href={user.business_website} target="_blank" rel="noopener">
-                  {user.business_website}
-                </a>
-              )
+              renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)
             }
           />
         </React.Fragment>
