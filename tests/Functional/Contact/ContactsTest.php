@@ -195,6 +195,8 @@ class ContactsTest extends TestCase
 
         $contact = $this->getLastEntity('contact', true);
 
+        $this->ba->privateAuth();
+
         $response = $this->startTest();
 
         $this->assertNotEquals($response['id'], $contact['id']);

@@ -1263,12 +1263,6 @@ return [
                         'fund_account'              => [
                             'entity'                => 'fund_account',
                             'account_type'          => 'bank_account',
-                            'details'               => [
-                                'ifsc'              => 'HDFC0003780',
-                                'bank_name'         => 'HDFC Bank',
-                                'name'              => 'Vivek Karna',
-                                'account_number'    => '50100244702362',
-                            ],
                             'bank_account'          => [
                                 'ifsc'              => 'HDFC0003780',
                                 'bank_name'         => 'HDFC Bank',
@@ -1304,9 +1298,6 @@ return [
                         'fund_account'              => [
                             'entity'                => 'fund_account',
                             'account_type'          => 'vpa',
-                            'details'               => [
-                                'address'           => '8861655100@ybl'
-                            ],
                             'vpa'                   => [
                                 'address'           => '8861655100@ybl'
                             ],
@@ -1408,12 +1399,6 @@ return [
                         'fund_account'              => [
                             'entity'                => 'fund_account',
                             'account_type'          => 'bank_account',
-                            'details'               => [
-                                'ifsc'              => 'HDFC0003780',
-                                'bank_name'         => 'HDFC Bank',
-                                'name'              => 'Vivek Karna',
-                                'account_number'    => '50100244702362',
-                            ],
                             'bank_account'          => [
                                 'ifsc'              => 'HDFC0003780',
                                 'bank_name'         => 'HDFC Bank',
@@ -1449,12 +1434,6 @@ return [
                         'fund_account'              => [
                             'entity'                => 'fund_account',
                             'account_type'          => 'bank_account',
-                            'details'               => [
-                                'ifsc'              => 'HDFC0003780',
-                                'bank_name'         => 'HDFC Bank',
-                                'name'              => 'Vivek Karna',
-                                'account_number'    => '50100244702362',
-                            ],
                             'bank_account'          => [
                                 'ifsc'              => 'HDFC0003780',
                                 'bank_name'         => 'HDFC Bank',
