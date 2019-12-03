@@ -118,6 +118,7 @@ class Shared
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
     const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
+    const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -234,6 +235,7 @@ class Shared
         self::UPI_AXIS_RAZORPAY_TERMINAL         => Gateway::UPI_AXIS,
         self::UPI_AXIS_TPV_RAZORPAY_TERMINAL     => Gateway::UPI_AXIS,
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
+        self::UPI_JUSPAY_TERMINAL                => Gateway::UPI_JUSPAY,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
         self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,

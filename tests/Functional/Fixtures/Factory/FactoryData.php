@@ -65,7 +65,7 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Referral\Entity::class, [
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',
-            'ref_code'           => $faker->uniqueid,
+            'ref_code'           => 'teslacomikejzc',
             'url'                => $faker->url,
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
@@ -206,7 +206,7 @@ final class FactoryData
             'email' => $faker->email,
             'auto_captured' => 0,
             'captured_at' => null,
-            'reference1' => $faker->uniqueid,
+            'reference1' => null,
             'transaction_id' => null,
             'on_hold' => 0,
             'verify_at'  => $faker->timestamp,
@@ -1114,7 +1114,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Gateway\Mozart\Entity::class, [
-            'id'                => 12345,
+            'id'                => '0',
             'payment_id'        => 'factory:RZP\Models\Payment\Entity',
             'gateway'           => 'Bajaj',
             'created_at'        => $faker->timestamp,

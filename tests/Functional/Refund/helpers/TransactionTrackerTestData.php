@@ -465,6 +465,50 @@ return [
         ]
     ],
 
+    'testVoidRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCase' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [
+                            [
+                                'amount'            => 50000,
+                                'status'            => 'initiated',
+                                'acquirer_data'     => [
+                                    'arn' => NULL,
+                                ],
+                                'merchant_name'     => 'Test Merchant',
+                                'primary_message'   => 'Your Refund has been Delayed',
+                                'secondary_message' => 'The refund for ₹ 500 done on Test Merchant is being processed and is '.
+                                    'taking longer than usual due to a technical issue at the bank\'s side.',
+                                'tertiary_message'  => '',
+                                'currency'          => 'INR',
+                            ]
+                        ],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'refunded',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => '',
+                            'secondary_message' => '',
+                            'tertiary_message'  => '',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                        ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCaseForUSDPayment' => [
         'request' => [
             'method'  => 'GET',
@@ -510,6 +554,48 @@ return [
     ],
 
     'testRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCaseTimePassed' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [
+                            [
+                                'amount'            => 50000,
+                                'status'            => 'initiated',
+                                'acquirer_data'     => [
+                                    'arn' => NULL,
+                                ],
+                                'merchant_name'     => 'Test Merchant',
+                                'primary_message'   => 'Your Refund has been Delayed',
+                                'tertiary_message'  => '',
+                                'currency'          => 'INR',
+                            ]
+                        ],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'refunded',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => '',
+                            'secondary_message' => '',
+                            'tertiary_message'  => '',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                        ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testVoidRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCaseTimePassed' => [
         'request' => [
             'method'  => 'GET',
             'url'     => '/customer/refunds',
@@ -678,6 +764,49 @@ return [
         ]
     ],
 
+    'testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCase' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'payment_id' => 'dummy',
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [
+                            [
+                                'amount'            => 50000,
+                                'status'            => 'processed',
+                                'acquirer_data'     => [
+                                    'arn' => null,
+                                ],
+                                'merchant_name'     => 'Test Merchant',
+                                'primary_message'   => 'Your Refund has been Processed',
+                                'tertiary_message'  => '',
+                                'currency'          => 'INR',
+                            ]
+                        ],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'refunded',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => '',
+                            'secondary_message' => '',
+                            'tertiary_message'  => '',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                        ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCaseTimePassed' => [
         'request' => [
             'method'  => 'GET',
@@ -701,6 +830,49 @@ return [
                                 ],
                                 'merchant_name'     => 'Test Merchant',
                                 'primary_message'   => 'Your Refund has been Processed by Razorpay',
+                                'tertiary_message'  => '',
+                                'currency'          => 'INR',
+                            ]
+                        ],
+                        'payment' => [
+                            'amount'            => 50000,
+                            'status'            => 'refunded',
+                            'merchant_name'     => 'Test Merchant',
+                            'primary_message'   => '',
+                            'secondary_message' => '',
+                            'tertiary_message'  => '',
+                            'late_auth'         => false,
+                            'currency'          => 'INR',
+                        ],
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCaseTimePassed' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/customer/refunds',
+            'content' => [
+                'payment_id' => 'dummy',
+                'captcha'    => 'dummy',
+                'mode'       => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => ['payments' =>
+                [
+                    [
+                        'refunds' => [
+                            [
+                                'amount'            => 50000,
+                                'status'            => 'processed',
+                                'acquirer_data'     => [
+                                    'arn' => null,
+                                ],
+                                'merchant_name'     => 'Test Merchant',
+                                'primary_message'   => 'Your Refund has been Processed',
                                 'tertiary_message'  => '',
                                 'currency'          => 'INR',
                             ]

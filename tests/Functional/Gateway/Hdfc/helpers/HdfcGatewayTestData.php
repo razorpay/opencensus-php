@@ -58,6 +58,47 @@ return [
         'entity' => 'payment',
     ],
 
+    'testPaymentForAuthorizationTerminalWithShieldRiskMock' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth' => TwoFactorAuth::PASSED,
+        'captured' => true,
+        'amount_authorized' => 50000,
+        'amount_refunded' => 0,
+        'refund_status' => null,
+        'currency' => 'INR',
+        'description' => 'random description',
+        'bank' => null,
+        'error_code' => null,
+        'error_description' => null,
+        'email' => 'a@b.com',
+        'contact' => '+919918899029',
+        'notes' => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway' => 'hdfc',
+        'signed' => false,
+        'verified' => null,
+        'entity' => 'payment',
+    ],
+
+    'testInternationalPaymentFailureForRisk' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+        ],
+    ],
+
     'testPaymentForAuthorizationTerminalRupay' => [
         'response' => [
             'content' => [

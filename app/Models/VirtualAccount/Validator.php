@@ -41,6 +41,10 @@ class Validator extends Base\Validator
         Entity::NAME       => 'filled|string|max:40',
     ];
 
+    protected static $vpaReceiverOptionRules = [
+        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:30',
+    ];
+
     protected function validateReceivers(string $key, array $value, array $data)
     {
         if ((isset($value[Entity::TYPES]) === true) and

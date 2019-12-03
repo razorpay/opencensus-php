@@ -276,8 +276,28 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected static $modifiers = [
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::NOTES,
+        self::FEES,
+        self::TAX,
+        self::STATUS,
+        self::PURPOSE,
+        self::UTR,
         self::MODE,
+        self::REFERENCE_ID,
+        self::NARRATION,
+        self::BATCH_ID,
+        self::FAILURE_REASON,
+        self::CREATED_AT,
+    ];
+
+    protected static $modifiers = [
         self::NARRATION,
     ];
 
@@ -1345,43 +1365,6 @@ class Entity extends Base\PublicEntity
         $bankingAccount = $this->balance->bankingAccount;
 
         return optional($bankingAccount)->getFtsFundAccountId();
-    }
-
-    protected function modifyMode(& $input)
-    {
-        $fundAccount = $this->fundAccount;
-
-        //
-        // In case of merchant payouts, we don't use fund account entity.
-        // We use destination directly. We have to move them to FA soon.
-        //
-        if (empty($fundAccount) === true)
-        {
-            return;
-        }
-
-        $accountType = $fundAccount->getAccountType();
-
-        if ($accountType === FundAccount\Type::VPA)
-        {
-            $input[self::MODE] = Mode::UPI;
-        }
-        // For now, we will not modify the mode to "IFT" in Payout. Whatever the merchant
-        // sends, we use that mode only. FTS would send IFT to the bank still though.
-        // else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
-        // {
-        //     /** @var BankAccount\Entity $ba */
-        //     $ba = $fundAccount->account;
-        //
-        //     $ifsc = $ba->getIfscCode();
-        //
-        //     $ifscFirstFour = substr($ifsc, 0, 4);
-        //
-        //     if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
-        //     {
-        //         $input[self::MODE] = Mode::IFT;
-        //     }
-        // }
     }
 
     protected function modifyNarration(& $input)

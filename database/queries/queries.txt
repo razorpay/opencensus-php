@@ -5414,6 +5414,10 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
+ALTER TABLE offers
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
 # adds fee_bearer column for payments (renaming the existing column 'reference12')
 ALTER TABLE payments
     CHANGE COLUMN reference12 fee_bearer BIGINT;

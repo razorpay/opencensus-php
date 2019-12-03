@@ -18,4 +18,9 @@ class Entity extends Pivot
     const UPDATED_AT  = 'updated_at';
 
     protected $table = Table::ENTITY_OFFER;
+
+    public function getOfferId()
+    {
+        return $this->getAttribute(self::OFFER_ID);
+    }
 }

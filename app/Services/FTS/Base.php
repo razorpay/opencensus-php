@@ -45,6 +45,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
     const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
 
     const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
@@ -148,6 +150,8 @@ class Base
 
     /**
      * Generates request using the given params
+     * Issue with DELETE method: https://github.com/rmccue/Requests/issues/91
+     * Fix for DELETE method: https://github.com/rmccue/Requests/pull/188
      *
      * @param string $endpoint
      * @param string $method
@@ -160,7 +164,7 @@ class Base
         $url = $this->baseUrl . $endpoint;
 
         // json encode if data is must, else ignore.
-        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT, Requests::DELETE], true) === true)
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
@@ -172,6 +176,11 @@ class Base
                 $this->secret,
             ],
         ];
+
+        if ($method === Requests::DELETE)
+        {
+            $options += [ 'data_format' => 'body' ];
+        }
 
         return [
             'url'       => $url,
@@ -260,7 +269,7 @@ class Base
             $code = $response->status_code;
         }
 
-        if (in_array($code, [200, 201, 204], true) === false)
+        if (in_array($code, [200, 201, 204, 400], true) === false)
         {
             throw new Exception\RuntimeException(
                 'Unexpected response code received from FTS.',

@@ -23,6 +23,10 @@ class Repository extends Base\Repository
         {
             $query->whereNotNull(Entity::QR_CODE_ID);
         }
+        else if ($params[Entity::RECEIVER_TYPE] === Receiver::VPA)
+        {
+            $query->whereNotNull(Entity::VPA_ID);
+        }
     }
 
     public function getActiveVirtualAccountFromBalanceId(string $balanceId)
@@ -110,4 +114,13 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function getActiveVirtualAccountFromVpaId(string $vpaId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::VPA_ID, '=', $vpaId)
+                    ->first();
+    }
+
 }

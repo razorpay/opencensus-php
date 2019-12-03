@@ -29,9 +29,7 @@ class Gateway extends Base\Gateway
 
     const BANK          = 'axis';
 
-    const TIMEOUT       = 15;
-
-    const CONNECT_TIMEOUT = 1;
+    const TIMEOUT       = 20;
 
     const MAX_RETRY_COUNT = 5;
 

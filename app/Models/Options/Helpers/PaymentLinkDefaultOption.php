@@ -114,14 +114,14 @@ class PaymentLinkDefaultOption implements DefaultOption
                         ),
                     'label' =>
                         array (
-                            'receipt' 				 => 'Receipt',
-                            'description' 		     => 'Payment For',
-                            'amount_payable' 		 => 'Amount Payable',
-                            'amount_paid'    		 => 'Amount Paid',
-                            'partial_amount_due'     => 'Due',
-                            'partial_amount_paid'    => 'Paid',
-                            'expire_by'  		     => 'Expire By',
-                            'expired_on'             => 'Expired On'
+                            'receipt' 				 => 'RECEIPT',
+                            'description' 		     => 'PAYMENT FOR',
+                            'amount_payable' 		 => 'AMOUNT PAYABLE',
+                            'amount_paid'    		 => 'AMOUNT PAID',
+                            'partial_amount_due'     => 'DUE',
+                            'partial_amount_paid'    => 'PAID',
+                            'expire_by'  		     => 'EXPIRE BY',
+                            'expired_on'             => 'EXPIRED ON'
                         ),
                     'show_preferences' =>
                         array (

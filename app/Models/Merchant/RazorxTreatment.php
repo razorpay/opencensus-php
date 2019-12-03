@@ -49,4 +49,7 @@ final class RazorxTreatment
 
     // Decides if Instant Refunds Mode decisioning call should go to scrooge during refund creation flow
     const INSTANT_REFUND_MODES = 'instant_refunds_modes';
+
+    // Decides what payload to return in the payouts webhook
+    const PAYOUTS_WEBHOOK_FILTER = 'payouts_webhook_filter';
 }

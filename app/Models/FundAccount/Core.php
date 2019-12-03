@@ -51,8 +51,6 @@ class Core extends Base\Core
             }
         }
 
-        $this->modifyRequestForBackwardCompatibility($input);
-
         $fundAccount = (new Entity);
 
         // This needs to be done before the build since validator
@@ -104,11 +102,15 @@ class Core extends Base\Core
      *
      * This function handles this backward compatibilty modification of the request.
      *
-     * Consumers can send the details in either `bank_account`|`vpa` or `details`.
+     * UPDATE : We are deprecating `details` in all fund_account API requests. This function
+     * is now used by fund_account_validation so that there is no change in the fund_account_validation APIs
+     *
+     * Consumers can send the details in only `bank_account`|`vpa`
+     * Internally, the fund_account_validation API can still send details in `bank_account`|`vpa`|`details`
      *
      * @param array $input
      */
-    protected function modifyRequestForBackwardCompatibility(array & $input)
+    public function modifyRequestForBackwardCompatibility(array & $input)
     {
         //
         // If the `details` key is unset, we assume the details are present in the new structure

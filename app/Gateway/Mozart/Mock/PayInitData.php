@@ -43,6 +43,34 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'customerVpa' => '8123715658@upi',
+                    'gatewayResponseCode' => '00',
+                    'gatewayResponseMessage' => 'Accepted Collect Request',
+                    'gatewayTransactionId' => 'BJJ3d0c077f39c454a...',
+                    'merchantChannelId' => 'MERCHANT',
+                    'merchantId' => 'MERCHANT',
+                    'merchantRequestId' => $entities['payment']['id'],
+                    'responseCode' => 'SUCCESS',
+                    'responseMessage' => 'SUCCESS',
+                    'transactionTimestamp' => '2017-06-30T17:43:40+05:30',
+                    'udfParameters' => '{}',
+                    '_raw' => '{"responseCode":"SUCCESS","responseMessage":"SUCCESS","payload":{"merchantId":"MERCHANT","merchantChannelId":"MERCHANTAPP","merchantRequestId":"HEYYOU45","customerVpa":"8123715658@upi","transactionTimestamp":"2017-06-30T17:43:40+05:30","gatewayTransactionId":"BJJ3d0c077f39c454a...","gatewayResponseCode":"00","gatewayResponseMessage":"Accepted Collect Request"},"udfParameters":"{}"}',
+                    'status' => 'collect_inititated',
+                ],
+            'error' => NULL,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+        ];
+        return $response;
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];

@@ -2502,7 +2502,7 @@ return [
             'status_code'  => 200,
         ]
     ],
-    
+
     'testTerminalOnboardingVerificationCronCase3'    => [
         'request' => [
             'url'     => '/terminals/onboard/verification',
@@ -2538,6 +2538,107 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'MER0000000001202',
                 'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'                     => 'upi_mindgate',
+                'gateway_acquirer'            => 'hdfc',
+                'gateway_merchant_id'         => '12345',
+                'gateway_merchant_id2'        => '12345678',
+                'gateway_terminal_password'   => 'password',
+                'upi'                         => 1,
+                'type'                        => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+                'virtual_upi_root'            => 'rzp.',
+                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_handle'          => 'hdfcbank',
+            ],
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminalWithoutConfig' => [
+        'request'   => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'password',
+                'upi'                       => 1,
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateJuspayTerminal'                => [
+        'request' => [
+            'content' => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_terminal_password'     => env('UPI_JUSPAY_MERCHANT_PRIVATE_KEY'),
+                'gateway_terminal_password2'    => env('UPI_JUSPAY_BANK_PUBLIC_KEY'),
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testEditJuspayTerminal'                  => [
+        'request' => [
+            'content' => [
+                'category'                      => '1234',
+                'gateway_terminal_password'     => 'somekey',
+                'gateway_terminal_password2'    => 'somepublic',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+
+            ],
+            'method' =>  'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'gateway_terminal_password'    => 'new_password',
+                'enabled'                      => true
             ]
         ]
     ],

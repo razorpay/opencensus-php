@@ -5,11 +5,12 @@ namespace RZP\Models\Risk;
 class Source
 {
     // Data Sources
-    const MAXMIND  = 'maxmind';
-    const BANK     = 'bank';
-    const GATEWAY  = 'gateway';
-    const INTERNAL = 'internal';
-    const SHIELD   = 'shield';
+    const MAXMIND        = 'maxmind';
+    const BANK           = 'bank';
+    const GATEWAY        = 'gateway';
+    const INTERNAL       = 'internal';
+    const SHIELD         = 'shield';
+    const RISK_GATEWAY   = 'risk_gateway';
 
     // internal rzp employees
     const MANUAL   = 'manual';
