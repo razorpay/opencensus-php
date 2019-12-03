@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Models\P2p\Entity;
+use RZP\Models\Currency\Currency;
 use \RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -36,15 +37,15 @@ class PayoutLinkTest extends TestCase
     public function testPayoutLinkCreation()
     {
         $input = [
-            PayoutLink::CONTACT_ID      => $this->contact->getId(),
-            PayoutLink::FUND_ACCOUNT_ID => $this->fundAccount->getId(),
-            PayoutLink::SHORT_URL       => 'http://rzp.io/faking_url',
-            PayoutLink::MERCHANT_ID     => '10000000000000',
-            PayoutLink::STATUS          => Status::ISSUED,
-            PayoutLink::AMOUNT          => 1000,
+            PayoutLink::CONTACT_ID => $this->contact->getId(),
+            PayoutLink::AMOUNT     => 1000,
+            PayoutLink::CURRENCY   => Currency::INR,
+            PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
         ];
 
         $payout_link = (new PayoutLink)->build($input);
+
+        $payout_link->merchant()->associate($this->contact->merchant);
 
         $payout_link->saveOrFail();
     }
@@ -52,10 +53,35 @@ class PayoutLinkTest extends TestCase
     /**
      * This is to test the many-to-many mapping between payout links and payouts
      */
-    public function testPayoutCreationAndLinkingToPayoutLinks()
+    public function _testPayoutCreationAndLinkingToPayoutLinks()
     {
         #Todo: pl, figure out how to create payouts, then associate it with payout-links,
         # and test if the relationships hasMany and belongs to are fetching the right entities
+    }
+
+    public function testPostRequestForCreatingPayoutLink()
+    {
+
+    }
+
+    public function testPostRequestForCreatingPayoutLinkWithContactId()
+    {
+
+    }
+
+    public function testGetPayoutLinkById()
+    {
+
+    }
+
+    public function testListPayoutLink()
+    {
+
+    }
+
+    public function testListPayoutLinkwithSearchParameter()
+    {
+
     }
 
     public function testShortUrlGenerationSuccessful()
