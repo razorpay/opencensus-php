@@ -179,29 +179,6 @@ class ContactsTest extends TestCase
         $this->assertNotEquals($response['id'], $contact['id']);
     }
 
-    public function testDuplicateContactCreationWithSameNameAndNullAttributes()
-    {
-        $request  = [
-            'content' => [
-                'name'         => 'Test / Contact',
-            ],
-            'url'     => '/contacts',
-            'method'  => 'POST'
-        ];
-
-        $this->ba->privateAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        $contact = $this->getLastEntity('contact', true);
-
-        $this->ba->privateAuth();
-
-        $response = $this->startTest();
-
-        $this->assertNotEquals($response['id'], $contact['id']);
-    }
-
     public function testDuplicateContactCreationWithSameNameAndEmptyAttributes()
     {
         $request  = [

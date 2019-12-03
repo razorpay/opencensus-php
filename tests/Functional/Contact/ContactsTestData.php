@@ -546,24 +546,6 @@ return [
         ],
     ],
 
-    'testDuplicateContactCreationWithSameNameAndNullAttributes' => [
-        'request'  => [
-            'content' => [
-                'name'         => 'Test / Contact',
-            ],
-            'url'     => '/contacts',
-            'method'  => 'POST'
-        ],
-
-        'response' => [
-            'content' => [
-                'entity'       => 'contact',
-                'name'         => 'Test / Contact',
-           ],
-            'status_code' => '200'
-        ],
-    ],
-
     'testDuplicateContactCreationWithSameNameAndEmptyAttributes' =>  [
         'request'  => [
             'content' => [

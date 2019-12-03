@@ -149,14 +149,14 @@ class Service extends Base\Service
                             $fundAccount = $this->checkFundAccountExistence($fundAccountId);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
-                                                    [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                                                    [Entity::IDEMPOTENCY_KEY => $idempotencyKey]);
                         }
                         else
                         {
                             $fundAccount = $this->createFundAcccount($item, $contact, $batchId, $createDuplicate);
 
                             $fundAccountBatch->push($fundAccount->toArrayPublic() +
-                                                    [Entity::IDEMPOTENCY_KEY => $fundAccount->getIdempotencyKey()]);
+                                                    [Entity::IDEMPOTENCY_KEY => $idempotencyKey]);
                         }
                     }
                 });

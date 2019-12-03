@@ -351,19 +351,6 @@ class FundAccountsTest extends TestCase
 
     // below test cases are considering duplicate checks
     // on the same contact in context
-    public function testDuplicateFundAccountCreationOnApiForVpa()
-    {
-        $this->testCreateVpa();
-
-        $fundAccount = $this->getLastEntity('fund_account', true);
-
-        $this->ba->privateAuth();
-
-        $response = $this->startTest();
-
-        $this->assertEquals($fundAccount['id'], $response['id']);
-    }
-
     public function testDuplicateFundAccountCreationOnApiForCard()
     {
         // we do not have duplicate checks for card account type
