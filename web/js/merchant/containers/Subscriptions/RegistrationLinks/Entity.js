@@ -92,21 +92,23 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     }
 
     return Promise.all(promises)
-      .then(([emailStatus, smsStatus]) => {
+      .then(resp => {
         this.props.showNotification({
           type: 'success',
           message: 'Link sent successfully!',
         });
 
         this.props.closeModal();
+
+        return resp;
       })
       .catch(error => {
-        this.setState({
-          status: {
-            type: 'error',
-            message: error.errors,
-          },
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors,
         });
+
+        return error;
       });
   };
 
@@ -121,6 +123,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           email={customer_details.customer_email}
           sms={customer_details.customer_contact}
           description="Are you sure you want to send the registration link again?"
+          closeModal={this.props.closeModal}
           testModeMessage={
             <div>
               This registration link is created in <strong>Test Mode</strong>.
