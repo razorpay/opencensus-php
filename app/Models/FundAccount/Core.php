@@ -60,12 +60,12 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
-        if ($source instanceof Contact\Entity and $createDuplicate === false)
+        if (($source instanceof Contact\Entity) and
+            ($createDuplicate === false))
         {
-            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails(
-                $input,
-                $this->merchant,
-                $source);
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,
+                                                                                       $this->merchant,
+                                                                                       $source);
 
             if (empty($fundAccount) === false)
             {

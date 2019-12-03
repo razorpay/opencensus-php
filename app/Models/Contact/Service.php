@@ -44,16 +44,24 @@ class Service extends Base\Service
         $this->fundAccountService = new FundAccountService;
     }
 
-    // The contact creation logic checks if there is a duplicate present and whether to
-    // return the duplicate contact or create a new one. This decision will be based
-    // on where the request is coming from. If the request comes from the dashboard
-    // every time a new contact will be created and if from API then a duplicate will be
-    // returned if found. The choice is made as we want the contact creation flow to be
-    // same for now on dashboard. Eventually once the designs will be ready, contact
-    // creation flow will be different for the dashboard. Also to ensure backward
-    // compatibilty of contact creation, we will maintain a list of merchants
-    // who want to allow duplicates in contact creation and refer that as well
-    // during contact creation.
+    /**
+     * The contact creation logic checks if there is a duplicate present and whether to
+     * return the duplicate contact or create a new one. This decision will be based
+     * on where the request is coming from. If the request comes from the dashboard
+     * every time a new contact will be created and if from API then a duplicate will be
+     * returned if found. The choice is made as we want the contact creation flow to be
+     * same for now on dashboard. Eventually once the designs will be ready, contact
+     * creation flow will be different for the dashboard. Also to ensure backward
+     * compatibility of contact creation, we will maintain a list of merchants
+     * who want to allow duplicates in contact creation and refer that as well
+     * during contact creation.
+     *
+     * TODO: Add a JIRA Task for this and link it here.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function create(array $input): array
     {
         $createDuplicate = true;
@@ -66,7 +74,7 @@ class Service extends Base\Service
 
         $entity = $this->core->create($input, $this->merchant, $createDuplicate);
 
-        $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : Response::HTTP_OK;
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
         return [
             Constants\Entity::CONTACT => $entity->toArrayPublic(),
@@ -107,7 +115,7 @@ class Service extends Base\Service
                                                        Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
                                                        $this->mode);
 
-        $flag = $variant === 'create_duplicate' ? true : false;
+        $flag = ($variant === 'create_duplicate') ? true : false;
 
         return $flag;
     }

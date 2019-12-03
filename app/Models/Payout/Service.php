@@ -460,14 +460,14 @@ class Service extends Base\Service
                         else
                         {
                             $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                $contact,
-                                $batchId,
-                                $createDuplicate);
+                                                                                         $contact,
+                                                                                         $batchId,
+                                                                                         $createDuplicate);
                         }
 
                         $payout = $this->processEntryForPayoutForFundAccount($item,
-                            $fundAccount,
-                            $batchId
+                                                                             $fundAccount,
+                                                                             $batchId
                         );
 
                         $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
@@ -658,7 +658,7 @@ class Service extends Base\Service
                                                        Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
                                                        $this->mode);
 
-        $flag = $variant === 'create_duplicate' ? true : false;
+        $flag = ($variant === 'create_duplicate') ? true : false;
 
         return $flag;
     }
