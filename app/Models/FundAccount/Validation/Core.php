@@ -379,9 +379,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     protected function associateBalance(Entity $fundAccValidation, array $input)

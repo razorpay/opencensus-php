@@ -1363,7 +1363,7 @@ class Service extends Base\Service
 
                         switch ($input['event'])
                         {
-                            case 'processed_event':
+                            case Refund\ScroogeEvents::PROCESSED_EVENT:
 
                                 $this->updateRefund($refund, $input);
 
@@ -1384,7 +1384,7 @@ class Service extends Base\Service
 
                                 break;
 
-                            case 'failed_event':
+                            case Refund\ScroogeEvents::FAILED_EVENT:
 
                                 $processor->reverseRefund($refund);
 
@@ -1408,7 +1408,7 @@ class Service extends Base\Service
 
                                 break;
 
-                            case 'fee_only_reversal_event':
+                            case Refund\ScroogeEvents::FEE_ONLY_REVERSAL_EVENT:
 
                                 //
                                 // In optimum flow - we would have debit amount + fees in the transaction,
@@ -1428,13 +1428,20 @@ class Service extends Base\Service
 
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
+                                $skipMerchantWebhooks = $input['skip_merchant_webhooks'] ?? false;
+
+                                if ($skipMerchantWebhooks === true)
+                                {
+                                    break;
+                                }
+
                                 $processor->eventRefundSpeedChanged($refund);
 
                                 $processor->eventRefundProcessed($refund);
 
                                 break;
 
-                            case 'processed_to_file_init_event':
+                            case Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT:
 
                                 $this->trace->info(
                                     TraceCode::REFUND_PROCESSED_TO_CREATED,
@@ -1550,7 +1557,7 @@ class Service extends Base\Service
      * @param array $input
      * @param string $event
      */
-    public function makeScroogeEditRefundRequest(Entity $refund, array $input, string $event = 'processed_event')
+    public function makeScroogeEditRefundRequest(Entity $refund, array $input, string $event = Refund\ScroogeEvents::PROCESSED_EVENT)
     {
         $refund->getValidator()->validateScroogeEditRefund($input);
 
@@ -1565,6 +1572,7 @@ class Service extends Base\Service
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ],
                     'processed_source' => $input[Entity::MODE] ?? '',
+                    RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
                 ]
             ],
 

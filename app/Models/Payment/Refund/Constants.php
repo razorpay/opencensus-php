@@ -64,4 +64,7 @@ class Constants
      * Instant Refunds mode level pricing/decisioning razorx experiments related constants
      */
     const RAZORX_VARIANT_ON = 'on';
+
+    // Used to ack scrooge that update status request came from fta status update
+    const FTA_UPDATE = 'fta_update';
 }
