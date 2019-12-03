@@ -785,6 +785,7 @@ final class Route
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
         'workflow_get_multiple'                    => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
+        'workflow_get_multiple_dashboard'          => ['get',      'workflows/dashboard',                            'WorkflowController@getWorkflowDashboard'                           ],
         'workflow_update'                          => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                          => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'             => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
@@ -2141,6 +2142,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'workflow_get_multiple_dashboard',
         'workflow_payout_amount_rules_all',
         'workflow_payout_amount_rules_create',
         'reminder_admin',
@@ -2682,6 +2684,7 @@ final class Route
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_admin'       => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
+        'workflow_get_multiple_dashboard'          => Permission::VIEW_ALL_WORKFLOW,
         'workflow_payout_amount_rules_all'         => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,

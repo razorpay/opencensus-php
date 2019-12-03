@@ -47,6 +47,15 @@ class Service extends Base\Service
         return $workflows->toArrayPublic();
     }
 
+    public function fetchMultipleDashboard(string $orgId, array $input, $permission = null, $limit = 10, $offset = 0)
+    {
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        $workflows = $this->repo->workflow->findByOrgId($orgId, $permission, $limit, $offset)->groupBy(Entity::MERCHANT_ID);
+
+        return $workflows->toArrayPublic();
+    }
+
     public function update(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);

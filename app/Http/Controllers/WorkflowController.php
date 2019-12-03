@@ -164,4 +164,20 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($result);
     }
+
+    public function getWorkflowDashboard()
+    {
+        $input = Request::all();
+        $permission = Request::get('permission') ?? null;
+        $limit = Request::get('count') ?? 10;
+        $offset = Request::get('skip') ?? 0;
+
+        $orgId = $this->ba
+            ->getAdmin()
+            ->getPublicOrgId();
+
+        $data = $this->service()->fetchMultipleDashboard($orgId, $input, $permission, $limit, $offset);
+
+        return ApiResponse::json($data);
+    }
 }
