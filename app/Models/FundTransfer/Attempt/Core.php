@@ -369,11 +369,22 @@ class Core extends Base\Core
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
-    public function updateFTA(Entity $fta, $ftsTransferId, string $status)
+    public function updateFTA(Entity $fta, $ftsTransferId, string $status = null, string $remarks = null)
     {
-        $fta->setFTSTransferId($ftsTransferId);
+        if (empty($remarks) === false)
+        {
+            $fta->setRemarks($remarks);
+        }
 
-        $fta->setStatus($status);
+        if (empty($ftsTransferId) === false)
+        {
+            $fta->setFTSTransferId($ftsTransferId);
+        }
+
+        if (empty($status) === false)
+        {
+            $fta->setStatus($status);
+        }
 
         $this->repo->saveOrFail($fta);
     }
