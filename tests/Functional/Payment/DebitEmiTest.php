@@ -13,6 +13,8 @@ class DebitEmiTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/helpers/DebitEmiTestData.php';
+
         parent::setUp();
 
         $this->gateway = 'debit_emi';
@@ -26,11 +28,11 @@ class DebitEmiTest extends TestCase
         $this->ba->publicAuth();
     }
 
-    public function testHdfcDebitEmiPaymentCreate()
+    public function testHdfcDebitEmiPaymentSuccess()
     {
         $this->doAuthPayment($this->payment);
 
-        $payment= $this->getDbLastEntityToArray('payment');
+        $payment= $this->getDbLastEntity('payment');
 
         $this->assertArraySelectiveEquals(
             [
@@ -40,7 +42,7 @@ class DebitEmiTest extends TestCase
                 'gateway' => 'debit_emi',
 
             ],
-            $payment
+            $payment->toArray()
         );
 
         $card = $this->getDbLastEntityToArray('card');
@@ -53,6 +55,14 @@ class DebitEmiTest extends TestCase
             ],
             $card
         );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
     }
 
     protected function createDependentEntities()
