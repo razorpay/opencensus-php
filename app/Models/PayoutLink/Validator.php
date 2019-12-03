@@ -27,6 +27,8 @@ class Validator extends Base\Validator
     const CONTACT_TYPE         = 'contact.type';
     const CONTACT_NAME         = 'contact.name';
 
+    const COMPOSITE_CREATE     = 'composite_create';
+
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',
         Entity::CURRENCY        => 'required|size:3',

@@ -3,34 +3,42 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
-use RZP\Models\PayoutLink\Clients\Contact;
-use RZP\Models\Merchant\Entity as MerchantEntity;
-use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
+use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
+    const LONG_URL_FORMAT = '%s/payout-links/%s/view';
+
+    protected $elfin;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->elfin = $this->app['elfin'];
+    }
+
     public function create(array $input): Entity
     {
-        #todo: pl a log here
         array_pull($input, 'XDEBUG_SESSION_START');
 
-        # remove all the contact information from here
-        # check if we have to create a contact and create one if required
-        # add that info in the final input
-        # build the payoutlink and save it
-        # return
-        # errors thrown
-        # all the contact related errors, see if you can just throw them from what ever is returned
-        # all the payout links errors, that the DB will create
-        # see how the exceptions are thrown too
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CREATE_REQUEST,
+            $input);
 
         $validator = (new Entity())->getValidator();
 
-        $validator->validateInput('compositeCreate', $input);
+        $validator->validateInput(Validator::COMPOSITE_CREATE, $input);
 
         $this->processContact($input);
 
         $payoutLink = (new Entity)->build($input);
+
+        // Doing this because we need the Id for generating short URL
+        $payoutLink->generateId();
 
         $this->generateAndSetShortUrl($payoutLink);
 
@@ -43,11 +51,43 @@ class Core extends Base\Core
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)
     {
-        $shortUrl = 'https://fakeurl.com';
+        $targetUrl = sprintf(self::LONG_URL_FORMAT,
+                             $this->config['url.api.production'],
+                             $payoutLink->getPublicId());
 
-        $payoutLink->setShortUrl($shortUrl);
+        $params = [
+            'metadata'       => [
+                'mode'   => $this->mode,
+                'entity' => $payoutLink->getEntity(),
+                'id'     => $payoutLink->getPublicId(),
+            ]
+        ];
+
+        try
+        {
+            $shortUrl = $this->elfin->shorten($targetUrl, $params, false);
+
+            $payoutLink->setShortUrl($shortUrl);
+        }
+        catch (BaseException $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
+                [
+                    'message'        => $e->getMessage(),
+                    'payout_link_id' => $payoutLink->getId()
+                ]
+            );
+
+            throw $e;
+        }
     }
 
+    /**
+     * Either creates a new contact or associates the supplied contact_id
+     * @param array $input
+     * @throws BadRequestException
+     */
     protected function processContact(array &$input)
     {
         $contact = array_pull($input, 'contact');
@@ -56,7 +96,9 @@ class Core extends Base\Core
 
         if ($contactId === null)
         {
-            #todo: pl a log here
+            $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
+                               $contact);
+
             $contactClient = new Clients\Contact();
 
             try
@@ -67,9 +109,12 @@ class Core extends Base\Core
             }
             catch(\Exception $e)
             {
-                #todo: pl a  log here
-                dd($e);
-                #todo: pl raise the exception so that this becomes a client error ?
+                throw new BadRequestException(
+                    $e->getMessage(),
+                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
+                    $input,
+                    $e
+                );
             }
         }
     }

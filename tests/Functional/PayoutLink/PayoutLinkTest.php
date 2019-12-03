@@ -58,4 +58,33 @@ class PayoutLinkTest extends TestCase
         # and test if the relationships hasMany and belongs to are fetching the right entities
     }
 
+    public function testShortUrlGenerationSuccessful()
+    {
+
+    }
+
+    public function testShortUrlGenerationExceptionThrown()
+    {
+
+    }
+
+    public function testNewContactCreationPayoutLinkCreateFlow()
+    {
+
+    }
+
+    public function testPayoutLinkCreateWithContactIdParam()
+    {
+
+    }
+
+    public function testPayoutLinkFailedDueToContactCreationFailure()
+    {
+
+    }
+
+    public function testTargetUrlOfShortUrlForPayoutLink()
+    {
+
+    }
 }
