@@ -42,11 +42,16 @@ class Validator extends Base\Validator
         Entity::ID => 'required|public_id',
     ];
 
+    protected static $nachRegisterTestPaymentRules = [
+        Entity::SUCCEED => 'sometimes|bool',
+    ];
+
     protected static $paperMandateAuthenticateRules = [
         Entity::ORDER_ID                   => 'required_without:auth_link_id|public_id',
         Entity::AUTH_LINK_ID               => 'required_without:order_id|public_id',
         PaperMandate\Entity::FORM_UPLOADED => 'required|image|max:5120',
         'key_id'                           => 'sometimes|string',
+        'x_entity_id'                      => 'sometimes|string',
     ];
 
     protected static $getUploadedPaperMandateFormRules = [
@@ -269,5 +274,36 @@ class Validator extends Base\Validator
     public function validateNach($attribute, $value)
     {
         $this->validateInput('nach_array', $value);
+    }
+
+    public function validateNachRegisterTestPaymentAuthorizeOrFail()
+    {
+        if ($this->getMode() !== Constants\Mode::TEST)
+        {
+            throw new BadRequestValidationFailureException(
+                'this is only allowed for test payments'
+            );
+        }
+
+        if ($this->entity->getMethod() !== Method::NACH)
+        {
+            throw new BadRequestValidationFailureException(
+                'this is only allowed for nach method'
+            );
+        }
+
+        if ($this->entity->token === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'payment is not created yet'
+            );
+        }
+
+        if ($this->entity->token->getRecurringStatus() !== Token\RecurringStatus::INITIATED)
+        {
+            throw new BadRequestValidationFailureException(
+                'payment is already processed, can\'t perform this now'
+            );
+        }
     }
 }

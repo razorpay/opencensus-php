@@ -39,6 +39,7 @@ class CardVaultMigrationJob extends Job
 
             $cardId = null;
             $paymentId = null;
+            $bulkUpdate = false;
 
             $this->trace->info(
                 TraceCode::VAULT_TOKEN_MIGRATION_REQUEST,
@@ -61,7 +62,12 @@ class CardVaultMigrationJob extends Job
                 $paymentId = $this->input['payment_id'];
             }
 
-            $updated = (new PaymentService)->migrateCardVaultToken($cardId, $paymentId);
+            if (empty($this->input['bulk_update']) === false)
+            {
+                $bulkUpdate = $this->input['bulk_update'];
+            }
+
+            $updated = (new PaymentService)->migrateCardVaultToken($cardId, $paymentId, $bulkUpdate);
 
             $this->trace->info(
                 TraceCode::VAULT_TOKEN_MIGRATION_SUCCESSFULL,[

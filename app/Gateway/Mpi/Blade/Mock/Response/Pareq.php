@@ -40,6 +40,33 @@ class Pareq
         ];
     }
 
+    public function enrolledValidVisaResponse(array $content)
+    {
+        $accId = $content['Message']['PAReq']['CH']['acctID'];
+
+        $reqMerchant = $content['Message']['PAReq']['Merchant'];
+
+        return [
+            '@attributes' => [
+                'id'   => '122345',
+            ],
+            'version'           => '1.0.2',
+            'Merchant' => [
+                'acqBIN'        => $reqMerchant['acqBIN'],
+                'merID'         => $reqMerchant['merID'],
+            ],
+            'Purchase'          => $content['Message']['PAReq']['Purchase'],
+            'pan'               => CardNumber::getCardNumberFromAccId($accId),
+            'TX' => [
+                'time'          => Carbon::createFromTimestamp(time(), Timezone::IST)->format('Ymd H:m:s'),
+                'status'        => 'Y',
+                'cavv'          => 'AAABBJg0VhI0VniQEjRWAAAAAAA=',
+                'eci'           => '05',
+                'cavvAlgorithm' => '2',
+            ]
+        ];
+    }
+
     public function internationalVisaResponse(array $content)
     {
         $accId = $content['Message']['PAReq']['CH']['acctID'];

@@ -1207,6 +1207,10 @@ class Gateway
         self::WORLDLINE,
     ];
 
+    public static $upiTransferGateway = [
+        self::UPI_MINDGATE,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
@@ -1837,6 +1841,11 @@ class Gateway
     public static function isValidBharatQrGateway($gateway)
     {
         return in_array($gateway , self::$bharatQrGateways, true);
+    }
+
+    public static function isValidUpiTransferGateway($gateway)
+    {
+        return in_array($gateway , self::$upiTransferGateway, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)

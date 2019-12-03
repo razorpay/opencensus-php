@@ -47,4 +47,13 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function addReceiver(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addReceiver($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

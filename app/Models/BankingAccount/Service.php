@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
+        $this->core->notifyOpsAboutProActivation($account);
+
         $this->core->notifyMerchantAboutUpdatedStatus($account);
 
         return $account->toArrayPublic();

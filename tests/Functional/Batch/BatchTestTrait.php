@@ -129,5 +129,7 @@ trait BatchTestTrait
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals($expected, $batch['status']);
+
+        return $batch;
     }
 }

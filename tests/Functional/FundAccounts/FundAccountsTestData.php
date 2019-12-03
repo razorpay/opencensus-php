@@ -352,14 +352,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Address: amitm',
+                    'description' => 'Invalid VPA. Please enter a valid Virtual Payment Address',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         ],
     ],
 
@@ -448,4 +448,53 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testCreateSingleCharacterHandleOfVpa' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a@upi',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateVpaWithDot' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a.mitm@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'address' => 'a.mitm@upi',
+                ],
+            ],
+        ],
+    ],
+
 ];

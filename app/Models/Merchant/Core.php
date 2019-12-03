@@ -11,7 +11,6 @@ use Razorpay\OAuth\Application as OAuthApp;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
-use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -40,7 +39,10 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -511,6 +513,22 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $mode);
+
+        // Avoid Creating a new Balance of type Primary if already exists for the merchant,
+        // This a Safety Check to avoid multiple primary balances being created,
+        // applicable (rare scenarios, due to unknown bug) when a Whitelist Merchant is instantly activated
+        // with primary balance is created but activated flag not set
+        if ($merchantBalance !== null)
+        {
+            $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
+                               [
+                                   "balance_id" => $merchantBalance->getId()
+                               ]);
+
+            return $merchantBalance;
+        }
+
         $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
@@ -1268,6 +1286,8 @@ class Core extends Base\Core
 
             return $accessMap;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
 
         return $accessMap->toArrayPublic();
     }
@@ -2244,6 +2264,19 @@ class Core extends Base\Core
 
         return (int) $amount;
     }
+
+    public function getPaymentTimeoutWindow(Entity $merchant)
+    {
+        $accessor = Accessor::for($merchant, Settings\Module::MERCHANT);
+
+        if ($accessor->exists(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW) === false)
+        {
+            return null;
+        }
+
+        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+    }
+
 
     /**
      * Enable international and set convert currency as false, if applicable
