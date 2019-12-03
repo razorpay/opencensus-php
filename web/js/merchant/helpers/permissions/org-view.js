@@ -6,7 +6,6 @@
 const HDFC_restrictedModules = [
   'subscriptions',
   'accounts',
-  'marketplace',
   'invoices',
   'virtual_accounts',
   'payment_pages',
