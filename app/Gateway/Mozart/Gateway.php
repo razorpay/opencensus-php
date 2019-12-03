@@ -286,6 +286,7 @@ class Gateway extends Base\Gateway
         {
             case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
+            case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::UPI_CITI:
                 return $input;
             case Payment\Gateway::NETBANKING_YESB:
@@ -314,6 +315,8 @@ class Gateway extends Base\Gateway
                 return $response['data']['transactionId'];
             case Payment\Gateway::NETBANKING_KVB:
                 return $response['data']['paymentId'];
+            case Payment\Gateway::UPI_JUSPAY:
+                return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -686,6 +689,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::UPI_JUSPAY => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -764,6 +772,12 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::AUTHORIZE,
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
+            ],
+
+            Payment\Gateway::UPI_JUSPAY => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::AUTHORIZE,
             ],
 
             Payment\Gateway::NETBANKING_SIB => [
@@ -1070,6 +1084,7 @@ class Gateway extends Base\Gateway
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_CITI,
+            Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_UBI,
@@ -1202,6 +1217,8 @@ class Gateway extends Base\Gateway
     // This function is used when the callback does not come as key-value pairs
     // the encrypted value comes as key so as default "encdata" is added as key and the encrypted string as
     // its value. This is a temporary solution.
+    // Note: Modify gateway data to be transformed for gateways
+
     protected function parsegatewayresponse($input, $gatewayInput)
     {
         if ($input['payment']['gateway'] == Payment\Gateway::NETBANKING_IDBI)
@@ -1215,7 +1232,6 @@ class Gateway extends Base\Gateway
                 unset($gatewayInput[$key]);
             }
         }
-
         return $gatewayInput;
     }
 

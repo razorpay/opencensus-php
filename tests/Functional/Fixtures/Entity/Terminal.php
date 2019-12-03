@@ -3360,4 +3360,23 @@ class Terminal extends Base
 
         return $this->createSharedUpiMindgateTerminal($attributes);
     }
+
+    public function createUpiJuspayTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                         => Shared::UPI_JUSPAY_TERMINAL,
+            'merchant_id'                => '10000000000000',
+            'gateway'                    => Gateway::UPI_JUSPAY,
+            'gateway_merchant_id'        => 'MERCHANTid',
+            'gateway_merchant_id2'       => 'merchantid2',
+            'gateway_terminal_password'  => 'priv',
+            'gateway_terminal_password2' => 'pub',
+            'vpa'                        => 'some@abfspay',
+            'upi'                        =>  1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
 }

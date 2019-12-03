@@ -88,6 +88,7 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
+    const UPI_JUSPAY             = 'upi_juspay';
 
     const CARD_FSS               = 'card_fss';
 
@@ -173,6 +174,7 @@ class Gateway
         self::PAYLATER     => [PayLater::EPAYLATER],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
     const POWER_WALLETS = [
@@ -785,6 +787,7 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_AIRTEL,
             self::UPI_CITI,
+            self::UPI_JUSPAY,
         ],
 
         Method::AEPS => [
@@ -903,6 +906,7 @@ class Gateway
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
         self::UPI_CITI,
+        self::UPI_JUSPAY,
         self::WALLET_PHONEPE,
     ];
 
@@ -1379,6 +1383,7 @@ class Gateway
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
+        Gateway::UPI_JUSPAY,
     ];
 
     /**
