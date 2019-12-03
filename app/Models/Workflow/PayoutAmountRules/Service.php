@@ -28,6 +28,7 @@ class Service extends Base\Service
     public function createWorkflowPayoutAmountRules($input): array
     {
         $rules = $input['rules'];
+
         $merchantId = $this->merchant->getId();
 
         // Check if workflow exists and belongs to merchant in context

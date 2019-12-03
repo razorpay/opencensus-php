@@ -139,7 +139,9 @@ class WorkflowController extends Controller
     public function getAllWorkflowPayoutAmountRules()
     {
         $limit = Request::get('count') ?? 10;
+
         $offset = Request::get('skip') ?? 0;
+
         $merchantId = Request::get('merchant_id') ?? null;
 
         $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($limit, $offset, $merchantId);
@@ -158,8 +160,6 @@ class WorkflowController extends Controller
 
     public function getWorkflowRulesForMerchant($merchantId)
     {
-        $input = Request::all();
-
         $result = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getWorkflowRules($merchantId);
 
         return ApiResponse::json($result);

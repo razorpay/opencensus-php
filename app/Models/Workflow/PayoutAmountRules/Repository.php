@@ -26,10 +26,10 @@ class Repository extends Base\Repository
         {
             return $this->fetchWorkflowRulesForMerchant($merchantId)->groupBy(Entity::MERCHANT_ID);
         }
+
         return $this->newQuery()
             ->whereHas('workflow', function($q) use($orgId)
             {
-                s(Entity::ORG_ID, $orgId);
                 $q->where(Entity::ORG_ID, $orgId);
             })
             ->get()

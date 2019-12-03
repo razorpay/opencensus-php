@@ -38,8 +38,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         $permissionId = DB::table('permissions')->where('name','=','create_payout')->value('id');
 
-        // Creating five workflows other than default workflow and storing its ids in $this->workflowIds
-        for ($index = 0; $index < 3; $index++) {
+        // Creating three workflows other than default workflow and storing its ids in $this->workflowIds
+        for ($index = 0; $index < 3; $index++)
+        {
             $workflow = $this->fixtures->create('workflow',
                 [
                     'org_id' => $this->org->getId(),
@@ -57,7 +58,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             );
         }
 
-        for ($index = 4; $index < 5; $index++) {
+        // Creating two more workflows with merchant id different from the default one
+        for ($index = 4; $index < 5; $index++)
+        {
             $workflow = $this->fixtures->create('workflow',
                 [
                     'org_id' => $this->org->getId(),
@@ -148,12 +151,12 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testGetAllPayoutAmountRules()
     {
-        s(DB::table('workflows')->get()->toArray());
-
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
+        // These entries have to be made and inserted here and not setup() because otherwise the create workflow rules
+        // test above will fail, stating that the workflow payout rules have already been created.
         $entries = [
             [
                 'id'          => 1,
@@ -173,11 +176,13 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         ];
 
-        for ($index = 0; $index < 2; $index++) {
+        for ($index = 0; $index < 2; $index++)
+        {
             $this->testData[__FUNCTION__]['response']['content']['items']['10000000000000'][$index]['workflow_id']
                 = $this->workflowIds[$index];
         }
 
+        // Assigning custom merchant id to third workflow rule
         $this->testData[__FUNCTION__]['response']['content']['items'][$this->customMid] = [
             [
                 'min_amount'  => 0,
@@ -187,6 +192,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         ];
 
+        // Inserting workflow payout amount rules
         $index = 0;
         foreach($entries as $entry)
         {
@@ -194,13 +200,15 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             $this->fixtures->create('workflow_payout_amount_rules', $entry);
         }
 
-        $responseContent = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetMerchantWorkflowPayoutAmountRules()
     {
         $this->ba->adminAuth();
 
+        // These entries have to be made and inserted here and not setup() because otherwise the create workflow rules
+        // test above will fail, stating that the workflow payout rules have already been created.
         $entries = [
             [
                 'id'          => 1,
@@ -213,15 +221,19 @@ class WorkflowPayoutAmountRulesTest extends TestCase
                 'max_amount'  => null
             ]
         ];
-        for ($index = 0; $index < 2; $index++) {
+
+        for ($index = 0; $index < 2; $index++)
+        {
             $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index];
         }
+
         $index = 0;
         foreach($entries as $entry)
         {
             $entry['workflow_id'] = $this->workflowIds[$index++];
             $this->fixtures->create('workflow_payout_amount_rules', $entry);
         }
+
         $this->startTest();
     }
 
@@ -238,6 +250,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         );
 
+        // Insert rule with edit_admin permission instead of create_payout permission
         DB::table('workflow_permissions')->insert(
             [
                 'workflow_id'      => $workflow->getId(),
