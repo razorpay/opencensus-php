@@ -225,7 +225,7 @@ class Service extends Base\Service
      * @return Entity           $fundAccount
      */
 
-    public function checkFundAccountExistence(string $fundAccountId)
+    public function checkFundAccountExistence(string $fundAccountId): Entity
     {
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
@@ -238,17 +238,24 @@ class Service extends Base\Service
         return $fundAccount;
     }
 
-    // The fund account creation method will take the parameter
-    // createDuplicate during fund account creation. The value
-    // for this parameter is decided on the basis of origin of
-    // the request. Request coming from API will not allow
-    // duplicate creation(meaning,even if all attributes are same,
-    // create another entity)  by default, if some merchant wants
-    // duplicate creation, he will inform RZP and we will put him
-    // behind razorx feature. Also for requests coming from dashboard
-    // we will not be checking for duplicates by default. This is
-    // because we do not want to change the behaviour on dashboard
-    // till we have proper designs and process in mind.
+    /**
+     * The fund account creation method will take the parameter
+     * createDuplicate during fund account creation. The value
+     * for this parameter is decided on the basis of origin of
+     * the request. Request coming from API will not allow
+     * duplicate creation(meaning,even if all attributes are same,
+     * create another entity)  by default, if some merchant wants
+     * duplicate creation, he will inform RZP and we will put him
+     * behind razorx feature. Also for requests coming from dashboard
+     * we will not be checking for duplicates by default. This is
+     * because we do not want to change the behaviour on dashboard
+     * till we have proper designs and process in mind.
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestValidationFailureException
+     */
     protected function handleFundAccountCreationForContact(array $input)
     {
         /** @var Contact\Entity $source */
@@ -262,7 +269,8 @@ class Service extends Base\Service
 
         $createDuplicate = true;
 
-        if ((($this->auth->isStrictPrivateAuth() === true) or ($this->auth->isPublicAuth() === true)) and
+        if ((($this->auth->isStrictPrivateAuth() === true) or
+             ($this->auth->isPublicAuth() === true)) and
             ($this->shouldCreateDuplicate() === false))
         {
             $createDuplicate = false;
@@ -270,7 +278,7 @@ class Service extends Base\Service
 
         $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
 
-        $responseCode = $entity->wasRecentlyCreated === true ? Response::HTTP_CREATED : Response::HTTP_OK;;
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;;
 
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,
@@ -304,7 +312,7 @@ class Service extends Base\Service
                                                        Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
                                                        $this->mode);
 
-        $flag = $variant === 'create_duplicate' ? true : false;
+        $flag = ($variant === 'create_duplicate') ? true : false;
 
         return $flag;
     }
