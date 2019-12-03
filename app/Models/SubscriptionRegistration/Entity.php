@@ -84,6 +84,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::MERCHANT_ID,
         self::METHOD,
         self::RECURRING_STATUS,
