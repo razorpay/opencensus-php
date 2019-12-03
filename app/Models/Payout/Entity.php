@@ -276,6 +276,27 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::NOTES,
+        self::FEES,
+        self::TAX,
+        self::STATUS,
+        self::PURPOSE,
+        self::UTR,
+        self::MODE,
+        self::REFERENCE_ID,
+        self::NARRATION,
+        self::BATCH_ID,
+        self::FAILURE_REASON,
+        self::CREATED_AT,
+    ];
+
     protected static $modifiers = [
         self::MODE,
         self::NARRATION,
