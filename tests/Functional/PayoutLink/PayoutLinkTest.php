@@ -23,8 +23,6 @@ class PayoutLinkTest extends TestCase
 
         parent::setUp();
 
-//        $this->ba->privateAuth();
-
         $this->createContact();
 
         $this->createFundAccount();
@@ -56,7 +54,8 @@ class PayoutLinkTest extends TestCase
      */
     public function testPayoutCreationAndLinkingToPayoutLinks()
     {
-        # unsure how to do this one ... just not able to do it!!!!!!!!!!!!!!!!!!
+        #Todo: pl, figure out how to create payouts, then associate it with payout-links,
+        # and test if the relationships hasMany and belongs to are fetching the right entities
     }
 
 }
