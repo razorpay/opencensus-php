@@ -58,7 +58,7 @@ class Service extends Base\Service
     {
         $createDuplicate = true;
 
-        if (($this->auth->isStrictPrivateAuth() === true) and
+        if ((($this->auth->isStrictPrivateAuth() === true) or ($this->auth->isPublicAuth() === true)) and
             ($this->shouldCreateDuplicateContacts() === false))
         {
             $createDuplicate = false;
