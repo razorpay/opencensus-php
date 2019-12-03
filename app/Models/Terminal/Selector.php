@@ -212,7 +212,6 @@ class Selector extends Base\Core
                     $this->trace->error(
                         TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
-                            'input_terminals'               => $allTerminals,
                             'terminals_from_smart_routing'  => $newSelectedTerminals,
                             'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
                             'payment_id'                    => $payment->getId(),
