@@ -20,8 +20,8 @@ export default function VirtualAccountDetails({ bankAccount, upiAddress }) {
       )}
 
       {upiAddress && (
-        <EntityDetailRow label="UPI Id">
-          <b>{upiAddress.id}</b>
+        <EntityDetailRow label="UPI Address">
+          <b>{upiAddress.address}</b>
         </EntityDetailRow>
       )}
     </React.Fragment>
@@ -42,7 +42,7 @@ export function getVirtualAccountDetailsToCopy({ bankAccount, upiAddress }) {
   }
 
   if (upiAddress) {
-    const upiAddressDetails = `UPI Id: ${upiAddress.id}`;
+    const upiAddressDetails = `UPI Address: ${upiAddress.address}`;
     valueToCopy.push(upiAddressDetails);
   }
 

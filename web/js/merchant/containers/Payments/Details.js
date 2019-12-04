@@ -51,6 +51,8 @@ export default class PaymentDetailsContainer extends Component {
 
       if (payment.method === 'bank_transfer') {
         this.props.fetchBankTransfer(payment);
+      } else if (payment.method === 'upi') {
+        this.props.fetchUPITransfer(payment);
       }
 
       if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
@@ -292,6 +294,7 @@ export default class PaymentDetailsContainer extends Component {
       refunds,
       transfers,
       bankTransfer,
+      upiTransfer,
     } = this.props;
     let statusMsg = {};
 
@@ -309,6 +312,7 @@ export default class PaymentDetailsContainer extends Component {
           payment={payment}
           card={card}
           bankTransfer={bankTransfer}
+          upiTransfer={upiTransfer}
           refunds={refunds}
           transfers={transfers}
           isLoading={loading}
