@@ -631,6 +631,7 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::NETBANKING_SCB,
