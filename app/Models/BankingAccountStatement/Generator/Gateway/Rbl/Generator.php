@@ -150,7 +150,7 @@ abstract class Generator extends Base
         $lineItem = [
             TransactionLineItem::TRANSACTION_DATE    => $formattedTransactionDate,
 
-            TransactionLineItem::TRANSACTION_DETAILS => $transaction->description,
+            TransactionLineItem::TRANSACTION_DETAILS => $transaction->getAttribute('description'),
 
             TransactionLineItem::CHEQUE_ID           => '',
 
