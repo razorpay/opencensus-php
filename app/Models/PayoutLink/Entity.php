@@ -3,7 +3,6 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
-use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;

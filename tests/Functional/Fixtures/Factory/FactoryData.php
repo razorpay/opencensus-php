@@ -1181,17 +1181,33 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Options\Entity::class,[
-            'id'                => $faker->uniqueid,
-            'merchant_id'       => '10000000000000',
-            'namespace'         => \RZP\Models\Options\Constants::NAMESPACE_PAYMENT_LINKS,
-            'service_type'      => \RZP\Models\Options\Constants::SERVICE_PAYMENT_LINKS,
-            'scope'             => \RZP\Models\Options\Constants::SCOPE_GLOBAL,
-            'reference_id'      => null,
-            'created_at'        => $faker->timestamp,
-            'updated_at'        => $faker->timestamp,
-		]);
+            'id'           => $faker->uniqueid,
+            'merchant_id'  => '10000000000000',
+            'namespace'    => \RZP\Models\Options\Constants::NAMESPACE_PAYMENT_LINKS,
+            'service_type' => \RZP\Models\Options\Constants::SERVICE_PAYMENT_LINKS,
+            'scope'        => \RZP\Models\Options\Constants::SCOPE_GLOBAL,
+            'reference_id' => null,
+            'created_at'   => $faker->timestamp,
+            'updated_at'   => $faker->timestamp,
+            ]);
 
         $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
+        ]);
+
+        $factory(\RZP\Models\PayoutLink\Entity::class, [
+            'id'           => 'DnhDjMDHlQEjgM',
+            'contact_id'   => '1000010contact',
+            'amount'       => 1000,
+            'merchant_id'  => '10000000000000',
+            'user_id'      => null,
+            'currency'     => 'INR',
+            'description'  => 'This is a test payout',
+            'receipt'      => 'Test Payout Receipt',
+            'notes'        => null,
+            'short_url'    => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+            'status'       => 'issued',
+            'created_at'   => 1575367399,
+            'cancelled_at' => null
         ]);
     }
 }

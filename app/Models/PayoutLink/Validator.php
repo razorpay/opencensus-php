@@ -3,21 +3,6 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Base;
-use RZP\Exception;
-use RZP\Models\User;
-use RZP\Models\Card;
-use RZP\Models\Batch;
-use RZP\Models\Payment;
-use RZP\Models\Feature;
-use RZP\Error\ErrorCode;
-use RZP\Models\FundAccount;
-use RZP\Models\FundTransfer\Mode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\Balance\Channel;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Settlement\Channel as BankChannel;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {

@@ -94,6 +94,8 @@ class Core extends Base\Core
 
         $contactId = array_pull($contact, 'contact_id');
 
+        $input['contact_id'] = $contactId;
+
         if ($contactId === null)
         {
             $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,

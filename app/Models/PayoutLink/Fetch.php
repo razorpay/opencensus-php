@@ -13,22 +13,26 @@ class Fetch extends BaseFetch
             Entity::ID => 'sometimes|public_id|size:19',
         ],
         AuthType::PROXY_AUTH => [
-            Entity::ID => 'sometimes|public_id|size:19',
+            Entity::ID          => 'sometimes|public_id|size:19',
+            Entity::MERCHANT_ID => 'sometimes|public_id|size:19'
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::ID => 'sometimes|public_id|size:19',
         ],
         AuthType::PRIVATE_AUTH => [
-            Entity::ID => 'sometimes|public_id|size:19',
+            Entity::ID          => 'sometimes|public_id|size:19',
+            Entity::MERCHANT_ID => 'sometimes|public_id|size:19'
         ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
             Entity::ID,
+            Entity::MERCHANT_ID
         ],
         AuthType::PROXY_AUTH     => [
-            Entity::ID
+            Entity::ID,
+            Entity::MERCHANT_ID
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::ID
@@ -37,6 +41,7 @@ class Fetch extends BaseFetch
 
     const SIGNED_IDS = [
         Entity::ID,
+        Entity::PUBLIC_ID,
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
     ];
