@@ -185,7 +185,14 @@ export const generateReportV2 = (
         })
         .catch(handleError);
     })
-    .catch(handleError);
+    .catch(response => {
+      if (response.errors) {
+        return {
+          error: response.errors[0],
+        };
+      }
+      return downloadReportErrorMsg;
+    });
 };
 
 export const emailReportV2 = (

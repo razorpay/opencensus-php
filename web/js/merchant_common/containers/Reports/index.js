@@ -337,6 +337,7 @@ export default function Reports(store, opts) {
 
       if (shouldInitialize) {
         this.props.addReportToList(data);
+        this.props.showNotification(downloadStartedMessage);
         trackTimeLapse('Download Start', downloadTimeLapse);
       } else {
         this.props.updateReportInList(data);
@@ -480,8 +481,6 @@ export default function Reports(store, opts) {
                 },
               }),
             };
-
-          this.props.showNotification(downloadStartedMessage);
 
           return generateReportV2(
             reqData,
