@@ -72,7 +72,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     // LHS (KEYS) are server side attributes and reasons are read based on this key
     // RHS (VALUE) are key names of UI input component that would be rendered for getting user input
     const mappedFields = {
-      cancelled_check: 'cancelled_cheque',
+      cancelled_cheque: 'cancelled_cheque',
       aadhar_front: 'address_proof_front',
       aadhar_back: 'address_proof_back',
       passport_front: 'address_proof_front',
@@ -329,7 +329,7 @@ const predefinedReasons = {
       },
     },
   },
-  cancelled_check: {
+  cancelled_cheque: {
     reasons: {
       illegible_doc: {
         description:
