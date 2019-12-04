@@ -32,6 +32,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Flow;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\AuthType;
@@ -67,7 +68,9 @@ class Processor
     use Vpa;
     use AuthorizePush;
     use CardCacheTrait;
+    use UpiRecurring;
     use CardPaymentService;
+
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -1753,24 +1756,31 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
 
-        //TODO: Remove this later
-//        try
-//        {
-//            $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
-//        }
-//        catch (\Throwable $e)
-//        {
-//            $this->trace->info(
-//                TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                [
-//                    'payment'             => $this->payment->toArray(),
-//                    'code'                => $code,
-//                    'internal_code'       => $internalCode,
-//                    'error'               => $e->getMessage()
-//                ]
-//            );
-//        }
+        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+        if (($isProduction === true) and
+            (strtolower($variant) === 'on'))
+        {
+            //TODO: Remove this later
+            try
+            {
+                $this->app->doppler->sendFeedback($this->payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $code, $internalCode);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                    [
+                        'payment'             => $this->payment->toArray(),
+                        'code'                => $code,
+                        'internal_code'       => $internalCode,
+                        'error'               => $e->getMessage()
+                    ]
+                );
+            }
+        }
     }
 
     /**

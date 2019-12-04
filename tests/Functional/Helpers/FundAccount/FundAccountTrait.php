@@ -11,7 +11,7 @@ trait FundAccountTrait
         return [
             'account_type' => 'bank_account',
             'contact_id'   => 'cont_1000000contact',
-            'details'      => [
+            'bank_account'      => [
                 'ifsc'           => 'SBIN0007105',
                 'name'           => 'Amit M',
                 'account_number' => '111000111',
@@ -78,7 +78,7 @@ trait FundAccountTrait
         return [
             'account_type' => 'vpa',
             'contact_id'   => 'cont_1000000contact',
-            'details'      => [
+            'vpa'      => [
                 "address" => "withname@razorpay"
             ],
         ];

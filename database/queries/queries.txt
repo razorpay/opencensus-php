@@ -5533,6 +5533,9 @@ ALTER TABLE `mozart`
 ALTER TABLE `terminals`
     ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
 
+ALTER TABLE `tokens`
+    ADD COLUMN `start_time` INTEGER UNSIGNED DEFAULT NULL AFTER `recurring_failure_reason`;
+
 ALTER TABLE banking_account_statement
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
     ADD INDEX banking_account_statement_utr_index (utr);

@@ -369,11 +369,22 @@ class Core extends Base\Core
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
-    public function updateFTA(Entity $fta, $ftsTransferId, string $status)
+    public function updateFTA(Entity $fta, $ftsTransferId, string $status = null, string $failureReason = null)
     {
-        $fta->setFTSTransferId($ftsTransferId);
+        if (empty($failureReason) === false)
+        {
+            $fta->setFailureReason($failureReason);
+        }
 
-        $fta->setStatus($status);
+        if (empty($ftsTransferId) === false)
+        {
+            $fta->setFTSTransferId($ftsTransferId);
+        }
+
+        if (empty($status) === false)
+        {
+            $fta->setStatus($status);
+        }
 
         $this->repo->saveOrFail($fta);
     }
@@ -805,7 +816,7 @@ class Core extends Base\Core
             'ramp_status' => $rampOnFts,
         ]);
 
-        if (strtolower($rampOnFts) === 'on')
+        if ((strtolower($rampOnFts) === 'on') and ($source->isBalanceTypeBanking() === true))
         {
             return [true, $source->getChannel()];
         }

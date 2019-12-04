@@ -25,6 +25,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    use Base\MandateTrait;
+
     const ACQUIRER = 'hdfc';
 
     protected $gateway = Payment\Gateway::UPI_MINDGATE;
@@ -87,6 +89,16 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::action($input, Action::AUTHENTICATE);
+
+        if ($this->isMandateCreateRequest($input) === true)
+        {
+            return $this->mandateCreate($input);
+        }
+
+        if ($this->isMandateExecuteRequest($input) === true)
+        {
+            return $this->mandateExecute($input);
+        }
 
         if (($this->isBharatQrPayment() === true) or
             ($this->isUpiTransferPayment() === true))
@@ -297,6 +309,12 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
+        //TODO:: Fix this condition when we know the correct callback response for OTM.
+        if (isset($input['payload']) === true and ($this->isLiveMode() === false))
+        {
+            return $this->preProcessMandateCallback($input, Payment\Gateway::UPI_MINDGATE);
+        }
+
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
@@ -442,6 +460,19 @@ class Gateway extends Base\Gateway
     public function callback(array $input): array
     {
         parent::callback($input);
+
+        if (isset($input['gateway']['mandateDtls']) === true)
+        {
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            {
+                return $this->mandateCreateCallback($input);
+            }
+
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'UPDATE')
+            {
+                return $this->mandateUpdateCallback($input);
+            }
+        }
 
         $content = $input['gateway'];
 
@@ -1128,6 +1159,11 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response)
     {
+        if (isset($response['mandateDtls']) === true)
+        {
+            return $this->getPaymentIdFromMandateCallback($response, Payment\Gateway::UPI_MINDGATE);
+        }
+
         return $response[ResponseFields::PAYMENT_ID];
     }
 
@@ -1147,6 +1183,16 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    public function isMandateUpdateCallback($input)
+    {
+        if ((isset($input['mandateDtls']) === true) and ($input['mandateDtls'][0]['mandateType'] === 'UPDATE'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isValidUnexpectedPayment($callbackData)

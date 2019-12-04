@@ -113,6 +113,8 @@ trait Authorize
 
         $this->validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret);
 
+        $this->updateTokenOnCreatedIfRequired($payment, $ret);
+
         if ($ret !== null)
         {
             return $ret;
@@ -266,7 +268,6 @@ trait Authorize
 
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
-
             $payment->associateTerminal($currentTerminal);
 
             // assigning $gatewayInput to $terminalGatewayInput because we need to
@@ -366,23 +367,32 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                //TODO: Remove this later
-//                try
-//                {
-//                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT, $errorCode, $internalErrorCode);
-//                }
-//                catch (\Throwable $e)
-//                {
-//                    $this->trace->info(
-//                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                        [
-//                            'payment'             => $payment->toArray(),
-//                            'code'                => $errorCode,
-//                            'internal_code'       => $internalErrorCode,
-//                            'error'               => $e->getMessage()
-//                        ]
-//                    );
-//                }
+                $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+                if (($isProduction === true) and
+                    (strtolower($variant) === 'on'))
+                {
+                    //TODO: Remove this later
+                    try
+                    {
+                        $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
+                            $errorCode, $internalErrorCode);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->info(
+                            TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                            [
+                                'payment'             => $payment->toArray(),
+                                'code'                => $errorCode,
+                                'internal_code'       => $internalErrorCode,
+                                'error'               => $e->getMessage()
+                            ]
+                        );
+                    }
+                }
 
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
@@ -1370,6 +1380,10 @@ trait Authorize
         {
             $this->validateRecurringForEmandate($payment, $token, $input);
         }
+        else if ($payment->isUpiRecurring() === true)
+        {
+            $this->validateRecurringForUpi($payment, $token, $input);
+        }
 
         //
         // The first recurring will be on public auth for non-S2S enabled merchants.
@@ -1648,6 +1662,18 @@ trait Authorize
 
     protected function validateTokenRecurringStatus(Token\Entity $token, Payment\Entity $payment)
     {
+        if (($payment->isSecondRecurring() === true) and
+            ($token->getRecurringStatus() === Token\RecurringStatus::PAID))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $token->toArray(),
+                ]);
+        }
+
         if (($payment->isSecondRecurring() === true) and
             ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
@@ -2710,7 +2736,7 @@ trait Authorize
             if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
             {
               throw new Exception\BadRequestValidationFailureException(
-                    'Recurring field may be sent only when method is card, eMandate');
+                    'Recurring field may be sent only when method is card, eMandate or upi');
             }
         }
         else if ($this->isPreferredRecurring($input) === true)
@@ -2978,7 +3004,6 @@ trait Authorize
                                                          array & $gatewayInput)
     {
         $this->payment->customer()->associate($customer);
-
         //
         // if token is set, payment is either from a saved card or is second recurring
         // else, the card needs to be saved or need to mark the payment as recurring (first recurring)
@@ -3070,6 +3095,10 @@ trait Authorize
 
             $payment->localToken()->associate($token);
         }
+        else if ($payment->isUpiRecurring() === true)
+        {
+            $payment->localToken()->associate($token);
+        }
         else if ($payment->isNach() === true)
         {
             $payment->localToken()->associate($token);
@@ -3118,6 +3147,10 @@ trait Authorize
             //
             $payment->setBank($token->getBank());
 
+            $payment->globalToken()->associate($token);
+        }
+        else if ($payment->isUpiRecurring() === true)
+        {
             $payment->globalToken()->associate($token);
         }
     }
@@ -3181,7 +3214,7 @@ trait Authorize
             // save local saved card for local customer
             $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
-        else if ($payment->isEmandate() === true)
+        else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
         {
             // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
@@ -3222,7 +3255,7 @@ trait Authorize
             // save global saved card for global customer
             $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
-        else if ($payment->isEmandate() === true)
+        else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
         {
             // save emandate bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
@@ -3344,6 +3377,16 @@ trait Authorize
                     $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
                 }
             }
+        }
+
+        else if ($payment->isUpiRecurring() === true)
+        {
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
+                                        $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
+            $saveMethodInput[Token\Entity::EXPIRED_AT] =
+                                            $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+            $saveMethodInput[Token\Entity::START_TIME] =
+                                            $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
         }
 
         $token = null;
@@ -3637,6 +3680,23 @@ trait Authorize
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
+    protected function updateTokenOnCreatedIfRequired($payment, $data)
+    {
+        if ($payment->isUpiRecurring() === true)
+        {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if (empty($data['data']['recurring_status']) === false)
+            {
+                $gatewayRecurringStatus = $data['data']['recurring_status'];
+
+                $token->setRecurringStatus($gatewayRecurringStatus);
+
+                $this->repo->saveOrFail($token);
+            }
+        }
+    }
+
     protected function updateTokenOnAuthorizedForRecurring(
         Payment\Entity $payment, Token\Entity $token, array $data)
     {
@@ -3658,7 +3718,8 @@ trait Authorize
         // allowed on cards and emandate.
         //
         if (($payment->isCard() === false) and
-            ($payment->isEmandate() === false))
+            ($payment->isEmandate() === false) and
+            ($payment->isUpiRecurring() === false))
         {
             return;
         }
@@ -3685,6 +3746,10 @@ trait Authorize
         else if ($payment->isEmandate() === true)
         {
             $this->updateTokenOnAuthorizedForEmandateRecurring($token, $data, $payment);
+        }
+        else if ($payment->isUpiRecurring() === true)
+        {
+            $this->updateTokenOnAuthorizedForUpiRecurring($token, $data, $payment);
         }
 
         // Not required as we only use terminals through
@@ -5604,21 +5669,29 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
-            //TODO: Remove this later
-//            try
-//            {
-//                $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
-//            }
-//            catch (\Throwable $e)
-//            {
-//                $this->trace->info(
-//                    TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
-//                    [
-//                        'payment'             => $payment->toArray(),
-//                        'error'               => $e->getMessage()
-//                    ]
-//                );
-//            }
+            $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+            $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
+
+            if (($isProduction === true) and
+                (strtolower($variant) === 'on'))
+            {
+                //TODO: Remove this later
+                try
+                {
+                    $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_SUCCESS_EVENT);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::DOPPLER_SERVICE_SNS_PUBLISH_FAILED,
+                        [
+                            'payment'             => $payment->toArray(),
+                            'error'               => $e->getMessage()
+                        ]
+                    );
+                }
+            }
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
