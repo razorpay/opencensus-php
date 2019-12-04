@@ -23,13 +23,13 @@ class DebitEmiTest extends TestCase
 
         $this->payment = $this->getDefaultEmiPaymentArray();
 
-        $this->createDependentEntities();
-
         $this->ba->publicAuth();
     }
 
     public function testHdfcDebitEmiPaymentSuccess()
     {
+        $this->createDependentEntitiesForSuccessPayment();
+
         $this->doAuthPayment($this->payment);
 
         $payment= $this->getDbLastEntity('payment');
@@ -47,12 +47,14 @@ class DebitEmiTest extends TestCase
         $this->assertAuthorized();
     }
 
-    protected function createDependentEntities()
+    // ------------- Helpers -----------------
+    protected function createDependentEntitiesForSuccessPayment()
     {
         $this->fixtures->emiPlan->create(
             [
                 'merchant_id' => '10000000000000',
                 'bank'        => 'HDFC',
+                'type'        => 'debit',
                 'rate'        => 1200,
                 'min_amount'  => 300000,
                 'duration'    => 3,
