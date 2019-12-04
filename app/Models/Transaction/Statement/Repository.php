@@ -108,21 +108,23 @@ class Repository extends Transaction\Repository
      */
     public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
     {
-        $basTable = $this->repo->banking_account_statement;
+        $basRepo = $this->repo->banking_account_statement;
 
-        $basTableTransactionColumns = $basTable->dbColumn(BankingAccountStatementEntity::TRANSACTION_ID);
+        $basTableTransactionColumn = $basRepo->dbColumn(BankingAccountStatementEntity::TRANSACTION_ID);
 
-        $createdAt = $this->getTableName() . '.' . Entity::CREATED_AT;
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
-        $id = $this->getTableName() . '.' . Entity::ID;
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->join($basTable->getTableName(), $basTableTransactionColumns, '=', $id)
-                    ->where(Entity::BALANCE_ID, $balanceId)
-                    ->whereBetween($createdAt, [$fromDate, $toDate])
-                    ->orderBy($createdAt, 'desc')
-                    ->orderBy($id, 'desc')
+                    ->join($basRepo->getTableName(), $basTableTransactionColumn, '=', $idColumn)
+                    ->where($balanceIdColumn, $balanceId)
+                    ->whereBetween($createdAtColumn, [$fromDate, $toDate])
+                    ->orderBy($createdAtColumn, 'desc')
+                    ->orderBy($idColumn, 'desc')
                     ->get();
     }
 
