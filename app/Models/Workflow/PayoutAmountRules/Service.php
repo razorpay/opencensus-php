@@ -59,7 +59,7 @@ class Service extends Base\Service
             \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
         }
 
-        $merchantId = $this->merchant->getId();
+        $merchantId = null;
 
         // Check if workflow exists and belongs to merchant in context
         foreach ($rules as $rule)
@@ -76,12 +76,16 @@ class Service extends Base\Service
                     ['id' => $rule[Entity::WORKFLOW_ID]]);
             }
 
-            if($merchantId != $workflow->toArray()[Entity::MERCHANT_ID])
+            if($merchantId && $merchantId != $workflow->toArray()[Entity::MERCHANT_ID])
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
                     null,
                     ['id' => $rule[Entity::WORKFLOW_ID]]);
+            }
+            elseif (!$merchantId)
+            {
+                $merchantId = $workflow->toArray()[Entity::MERCHANT_ID];
             }
         }
 
@@ -98,7 +102,7 @@ class Service extends Base\Service
 
         (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
 
-        $result = $this->core()->create($rules);
+        $result = $this->core()->create($rules, $merchantId);
         return $result;
     }
 }

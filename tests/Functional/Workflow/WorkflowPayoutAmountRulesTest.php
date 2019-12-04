@@ -59,7 +59,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         }
 
         // Creating two more workflows with merchant id different from the default one
-        for ($index = 4; $index < 5; $index++)
+        for ($index = 3; $index < 5; $index++)
         {
             $workflow = $this->fixtures->create('workflow',
                 [
@@ -95,7 +95,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithRangesLeavingGaps()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         for ($index = 0; $index < 3; $index++) {
             $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
@@ -106,14 +106,14 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithWrongWorkflowId()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
 
     public function testCreateRulesWithDuplicateWorkflowIds()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         for ($index = 0; $index < 3; $index++) {
             $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
@@ -124,7 +124,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateWorkflowPayoutAmountRules()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         for ($index = 0; $index < 3; $index++) {
             $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
@@ -136,7 +136,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testEditWorkflowPayoutAmountRules()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         $this->fixtures->create('workflow_payout_amount_rules',[
             'workflow_id' => $this->workflowIds[0],
@@ -241,7 +241,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateWorkflowRulesWithWrongPermission()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         $permissionId = DB::table('permissions')->where('name','=','edit_admin')->value('id');
 
@@ -261,6 +261,16 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         );
 
         $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$workflow->getId();
+
+        $this->startTest();
+    }
+
+    public function testCreateRulesWithMultipleMerchants()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
+        $this->testData[__FUNCTION__]['request']['content']['rules'][1]['workflow_id'] = 'workflow_'.$this->workflowIds[3];
 
         $this->startTest();
     }
