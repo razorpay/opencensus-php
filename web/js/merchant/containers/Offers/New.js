@@ -174,6 +174,24 @@ class NewOfferForm extends React.Component {
       { label: 'Bank of Baroda Bank', name: 'BARB' },
     ];
 
+    let walletIssuers = [
+      { label: 'Select Issuers', name: '' },
+      { label: 'Paytm', name: 'paytm' },
+      { label: 'PAYZAPP', name: 'payzapp' },
+      { label: 'MOBIKWIK', name: 'mobikwik' },
+      { label: 'PayU Money', name: 'payumoney' },
+      { label: 'OLA Money', name: 'olamoney' },
+      { label: 'Airtel Money', name: 'airtelmoney' },
+      { label: 'Amazon Pay', name: 'amazonpay' },
+      { label: 'Freecharge', name: 'freecharge' },
+      { label: 'JIO Money', name: 'jiomoney' },
+      { label: 'SBI buddy', name: 'sbibuddy' },
+      { label: 'OPEN WALLET', name: 'openwallet' },
+      { label: 'M PESA', name: 'mpesa' },
+      { label: 'Phone Pe', name: 'phonepe' },
+      { label: 'Paypal', name: 'paypal' },
+    ];
+
     let paymentNetworks = [
       { label: 'Select Network', name: '' },
       { label: 'Visa', name: 'VISA' },
@@ -194,12 +212,20 @@ class NewOfferForm extends React.Component {
           onChange={this.getFormOnChangeHandler()}
         />
 
-        {(this.isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
+        {(this.isSelectedPaymentMethod(
+          'netbanking',
+          'card',
+          'emi',
+          'wallet'
+        ) && (
           <Input.Select
             label="Bank"
             name="issuer"
             placeholder="Payment Instrument Issuer/Bank Name"
-            options={paymentIssuers}
+            options={
+              (this.isSelectedPaymentMethod('wallet') && walletIssuers) ||
+              paymentIssuers
+            }
             onChange={this.getFormOnChangeHandler()}
           />
         )) ||
@@ -351,10 +377,10 @@ class NewOfferForm extends React.Component {
             patternError="Please enter number upto 2 decimal points"
             validator={val => {
               if (!val) {
-                return 'Should be valid number between 0 and 100';
+                return 'Should be valid percentage';
               }
-              if (val > 100 || val < 0) {
-                return 'Percentage should be between 0 and 100';
+              if (val > 99.99 || val < 0.1) {
+                return 'Percentage should be greater than 0 and less than 100';
               }
             }}
           />

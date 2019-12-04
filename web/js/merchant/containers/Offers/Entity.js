@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as OffersActions from 'merchant/reducers/offers/offerDetails';
+import * as OffersActions from 'merchant/reducers/offers/offersList';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Time from 'common/ui/Time';
@@ -35,6 +35,20 @@ const OfferDetails = props => {
     CITI: 'Citi Bank',
     SBIN: 'State Bank of India',
     BARB: 'Bank of Baroda Bank',
+    paytm: 'Paytm',
+    payzapp: 'PAYZAPP',
+    mobikwik: 'MOBIKWIK',
+    payumoney: 'PayU Money',
+    olamoney: 'OLA Money',
+    airtelmoney: 'Airtel Money',
+    amazonpay: 'Amazon Pay',
+    freecharge: 'Freecharge',
+    jiomoney: 'JIO Money',
+    sbibuddy: 'SBI buddy',
+    openwallet: 'OPEN WALLET',
+    mpesa: 'M PESA',
+    phonepe: 'Phone Pe',
+    paypal: 'Paypal',
   };
 
   const renderPaymentDetails = () => {
@@ -96,7 +110,7 @@ const OfferDetails = props => {
                   label="Status"
                   value={() => (
                     <Fragment>
-                      {offer.active ? 'Active' : 'Inactive'}
+                      {offer.active ? 'Enabled' : 'Disabled'}
                       <Button.Transparent
                         class="Button--Link"
                         style={{ marginLeft: 12 }}
