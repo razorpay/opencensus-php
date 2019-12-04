@@ -245,6 +245,7 @@ class Core extends Base\Core
 
         Processor\Factory::validate($type);
 
+        // Extra checks are not required for non banking, create rules are sufficient
         if ($validation->balance->isTypeBanking() === false)
         {
             return;

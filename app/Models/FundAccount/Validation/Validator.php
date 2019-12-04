@@ -20,7 +20,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $bankingBankAccountRules = [
-        Entity::AMOUNT                          => 'sometimes|integer|min:100|max:200',
+        Entity::AMOUNT                          => 'required|integer|min:100|max:200',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CURRENCY                        => 'filled|string|in:INR',
         Entity::BALANCE_ID                      => 'required|custom',
