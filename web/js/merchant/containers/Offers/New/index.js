@@ -26,18 +26,7 @@ import {
   deepClone,
 } from 'common/utils/rzp-utils';
 
-import AddOnDetails from './AddOnDetails';
-import LinkDetails from './LinkDetails';
-// import PlanDetails from '../common/PlanDetails';
-import Review from './Review';
 import Spinner from 'common/ui/Spinner';
-import moment from 'moment';
-
-// import {
-//   trackSaveDuplicateSubscription,
-//   trackAddAddon,
-//   trackAddPlans,
-// } from '../../ga';
 
 @withRouter
 @connect(
@@ -55,7 +44,7 @@ import moment from 'moment';
     showNotification,
   }
 )
-export default class NewSubscriptionLink extends Component {
+export default class CreateOfferModal extends Component {
   state = {
     currentTab: 0,
     validTabs: [false, false, false, false],
@@ -141,11 +130,6 @@ export default class NewSubscriptionLink extends Component {
   };
 
   isSelectedPaymentMethod = (...methods) => {
-    console.log(
-      methods,
-      this.state.payment_method &&
-        methods.indexOf(this.state.payment_method) > -1
-    );
     return (
       this.state.payment_method &&
       methods.indexOf(this.state.payment_method) > -1
@@ -253,6 +237,59 @@ export default class NewSubscriptionLink extends Component {
     );
   }
 
+  renderDiscountDetailsSection() {
+    let type = this.state.discount_type;
+    if (type && type === 'flat') {
+      return (
+        <Input
+          label="Discount Worth"
+          name="flat_cashback"
+          class="Input--half"
+          addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+          description="Discount worth in cash"
+          pattern="[0-9]+(\.[0-9][0-9]?)?"
+          patternError="Please enter number upto 2 decimal points"
+          required
+        />
+      );
+    }
+    if (type && type === 'percent') {
+      return (
+        <React.Fragment>
+          <Input
+            label="Discount Worth"
+            name="percent_rate"
+            class="Input--half"
+            description="Discount worth in Percent"
+            addonBefore={<span>%</span>}
+            required
+            pattern="[0-9]+(\.[0-9][0-9]?)?"
+            patternError="Please enter number upto 2 decimal points"
+            validator={val => {
+              if (!val) {
+                return 'Should be valid number between 0 and 100';
+              }
+              if (val > 100 || val < 0) {
+                return 'Percentage should be between 0 and 100';
+              }
+            }}
+          />
+          <Input
+            label="Maximum Cashback"
+            name="max_cashback"
+            class="Input--half"
+            onChange={this.getFormOnChangeHandler()}
+            description="Maximum cashback for this offer"
+            addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+            pattern="[0-9]+(\.[0-9][0-9]?)?"
+            patternError="Please enter number upto 2 decimal points"
+            required
+          />
+        </React.Fragment>
+      );
+    }
+  }
+
   renderForm() {
     switch (this.state.currentTab) {
       case 0:
@@ -334,7 +371,27 @@ export default class NewSubscriptionLink extends Component {
           </div>
         );
       case 2:
-        return <div />;
+        return (
+          <div>
+            <strong>Instant Discount</strong>
+            <p>The customer will pay the discounted price for the product</p>
+            <div>
+              <Input.Select
+                name="discount_type"
+                label="Discount Type"
+                placeholder="Discount Type"
+                onChange={this.getFormOnChangeHandler()}
+                required
+                options={[
+                  { label: 'Select Type', name: '' },
+                  { label: 'Percentage', name: 'percent' },
+                  { label: 'Flat', name: 'flat' },
+                ]}
+              />
+              {this.renderDiscountDetailsSection()}
+            </div>
+          </div>
+        );
       case 3:
         return <div />;
     }
