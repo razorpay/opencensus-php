@@ -1611,7 +1611,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ENTITY_BULK_UPDATE_BALANCE_ID_ERROR                   = 'ENTITY_BULK_UPDATE_BALANCE_ID_ERROR';
 
     // Trace codes for Contact and Fund account CRUD
+    const CONTACT_CREATED                                       = 'CONTACT_CREATED';
     const CONTACT_CREATE_REQUEST                                = 'CONTACT_CREATE_REQUEST';
+    const CONTACT_CREATION_RESPONSE                             = 'CONTACT_CREATION_RESPONSE';
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
@@ -1621,7 +1623,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
     const DOCUMENT_DELETE_REQUEST                               = 'DOCUMENT_DELETE_REQUEST';
 
+    const FUND_ACCOUNT_CREATED                                  = 'FUND_ACCOUNT_CREATED';
     const FUND_ACCOUNT_CREATE_REQUEST                           = 'FUND_ACCOUNT_CREATE_REQUEST';
+    const FUND_ACCOUNT_CREATION_RESPONSE                        = 'FUND_ACCOUNT_CREATION_RESPONSE';
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';
     const DUPLICATE_FUND_ACCOUNT_FOUND                          = 'DUPLICATE_FUND_ACCOUNT_FOUND';

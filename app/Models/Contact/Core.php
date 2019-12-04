@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Contact;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -69,6 +70,11 @@ class Core extends Base\Core
         $this->setTypeIfApplicable($contact, $input);
 
         $this->repo->saveOrFail($contact);
+
+        $this->trace->info(TraceCode::CONTACT_CREATED,
+            [
+                Constants\Entity::CONTACT => $contact->getId(),
+            ]);
 
         return $contact;
     }

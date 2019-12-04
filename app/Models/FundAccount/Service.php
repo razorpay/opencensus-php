@@ -199,6 +199,7 @@ class Service extends Base\Service
                 $fundAccountBatch->push($exceptionData);
             }
         }
+
         return $fundAccountBatch->toArrayWithItems();
     }
 
@@ -279,6 +280,12 @@ class Service extends Base\Service
         $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;;
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
+            [
+                Constants\Entity::FUND_ACCOUNT => $entity->getId(),
+                Entity::RESPONSE_CODE          => $responseCode,
+            ]);
 
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,
