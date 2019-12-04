@@ -247,6 +247,7 @@ export default class Entity extends Component {
           .save()
           .then(offer => {
             this.props.fetchOffer(offer.id);
+            this.props.updateOfferInReduxList(offer);
             //analytics code here
             tracking.trackEvent(
               window.rzpQ.success('Offer_edit', {
