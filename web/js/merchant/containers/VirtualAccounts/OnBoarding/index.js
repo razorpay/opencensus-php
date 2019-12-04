@@ -1,13 +1,13 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import Slider, { SliderDots } from 'component/Slider';
+import Slider, { SliderDots } from 'common/new-ui/Slider';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
@@ -79,7 +79,10 @@ export default class InvoicesOnBoarding extends React.Component {
 
     return (
       <OnBoardingWrapper class="SmartCollect">
-        <Slider active={active}>
+        <Slider
+          active={active}
+          afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -101,16 +104,16 @@ export default class InvoicesOnBoarding extends React.Component {
               features={FEATURES_DATA}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              {this.renderSkipButton(sliderProps)}
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots(renderSkipButton) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>
+  );
 }
 
 export function getIsAllowedResetVAOnBoarding({ items, loading }) {

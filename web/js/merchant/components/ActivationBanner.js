@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/modules/config';
+import { fetchFeaturesAjax } from 'merchant/reducers/config';
 
 @connect(state => {
   return {

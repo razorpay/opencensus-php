@@ -69,6 +69,11 @@ $side-width = 240px
   .device--desktop
     display: inline
 
+  .subfooter
+      border-top: 1px solid rgba(0, 0, 0, 0.1)
+      width: 450px
+      padding-top: 8px
+
   footer
     left: 0
     padding: 20px
@@ -100,6 +105,9 @@ $side-width = 240px
         opacity: 1
 
   // File upload component
+  .AddressProof-upload
+      margin: 8px 0
+      
   .Input-content
     &.Input-File
       width: 300px
@@ -107,6 +115,27 @@ $side-width = 240px
     .Dropzone
       .Dropzone-content
         font-size: 14px
+    
+    .Input-desc
+      max-width: 280px
+
+      .bullet-list-container
+        display: flex
+        max-width: 280px
+
+        .bullet-list
+          padding-left: 15px
+
+        .bullet-list--left
+          width: 40%
+        
+        .bullet-list--right
+          width: 60%
+    
+    .Input-error
+      max-width: 260px
+      font-size: 13px
+      margin: 6px 0 8px 0
 
   main-title
     text-transform: uppercase
@@ -511,3 +540,6 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
     main, footer
       left: 0 !important
+    
+    .subfooter
+        width: 100%

@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Subscription from './Subscription';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 export default class Plan extends GenericEntity {
   resourceUrl = 'plans';

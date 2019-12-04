@@ -1,11 +1,11 @@
 import moment from 'moment';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
-import Input from 'component/Input';
-import Time from 'rzp/ui/Time';
-import Button, { AsyncBtn } from 'component/Button';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
+import Input from 'common/new-ui/Input';
+import Time from 'common/ui/Time';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
 export default class EditExpiry extends React.Component {
   state = this.resetState();

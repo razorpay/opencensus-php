@@ -15,6 +15,9 @@
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
       onbr:()=>window.rzpQ,
+      productOnboarding: function() {
+        return window.rzpQ;
+      }
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -32,7 +35,7 @@
 
     if(window.analytics){
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','taboola'],
+          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
           {
             ga: 'UA-53341507-2',
             fb: '697927486977350',
@@ -57,6 +60,14 @@
             {
               propertyName:'event_group',
               value:'onboarding'
+          }],
+          'productOnboarding':[
+            { propertyName:'event_type',
+              value:'product-onboarding-events'
+            },
+            {
+              propertyName:'event_group',
+              value:'product-onboarding'
           }],
         })
 

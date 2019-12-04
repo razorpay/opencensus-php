@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { closeModal, openModal } from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
+import ModalHeader from 'common/ui/ModalHeader';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
 
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
@@ -59,6 +59,7 @@ export default class BatchUpload extends Component {
                 <BatchValidate
                   onValidation={this.handleValidation}
                   batchType={this.props.batchType}
+                  batchTypeText={this.props.batchTypeText}
                   sampleUrl={this.props.sampleUrl}
                   docUrl={this.props.docUrl}
                   gaEvents={this.props.gaEvents}

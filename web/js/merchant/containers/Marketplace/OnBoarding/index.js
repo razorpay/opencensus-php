@@ -1,16 +1,16 @@
 import { connect } from 'react-redux';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import Slider, { SliderDots } from 'component/Slider';
-import Button from 'component/Button';
+import Slider, { SliderDots } from 'common/new-ui/Slider';
+import Button from 'common/new-ui/Button';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
-import { fetchUser } from 'merchant/modules/session';
-import { openModal, closeModal } from 'rzp/modules/modals';
+} from 'merchant/reducers/onboarding';
+import { fetchUser } from 'merchant/reducers/session';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import Features from 'merchant/components/OnBoarding/Slides/Features';
@@ -127,7 +127,10 @@ export default class MarketPlaceOnBoarding extends React.Component {
   render() {
     return (
       <OnBoardingWrapper class="Route">
-        <Slider active={this.props.active}>
+        <Slider
+          active={this.props.active}
+          afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
+        >
           {sliderProps => (
             <Landing
               {...sliderProps}
@@ -148,16 +151,16 @@ export default class MarketPlaceOnBoarding extends React.Component {
               feature={RZPFeatures.ROUTE}
             />
           )}
-
-          {sliderProps => (
-            <SliderDots {...sliderProps}>
-              {this.renderSkipButton(sliderProps)}
-            </SliderDots>
-          )}
         </Slider>
       </OnBoardingWrapper>
     );
   }
+}
+
+function getOnBoardingSliderDots(renderSkipButton) {
+  return sliderProps => (
+    <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>
+  );
 }
 
 export function getIsAllowedResetRouteBoarding({ transfers, accounts }) {

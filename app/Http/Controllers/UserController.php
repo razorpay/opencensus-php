@@ -81,6 +81,22 @@ class UserController extends Controller
                 $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
             }
 
+            $currentMerchantId = $details['current'];
+
+            if(is_null($currentMerchantId) === false)
+            {
+                $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
+                $data['pl_expiry_in_hrs'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
+                $data['pl_customized_form_fields'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getCustomizedFormFieldsByMID($currentMerchantId));
+                $data['is_pl_customer_name_field_enabled'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getIsCustomerNameFieldEnabledByMID($currentMerchantId));
+            }
+            else {
+                $data['custom_notes'] = null;
+                $data['pl_expiry_in_hrs'] = null;
+                $data['pl_customized_form_fields'] = null;
+                $data['is_pl_customer_name_field_enabled'] = null;
+            }
+
             return view('merchant.index', $data);
         }
     }

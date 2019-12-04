@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom';
 
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 
-import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
 
-import { CUSTOM_NOTES_OPTIONS } from 'rzp/utils/constants';
-import { AmountTooltip } from 'rzp/ui/Amount';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { AmountTooltip } from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -131,8 +130,9 @@ export default [
   ],
   {
     name: 'description',
-    label: 'Payment For',
-    placeholder: 'Payment Description',
+    label: form => getPaymentLinkFormLabel('description', form.props.user),
+    placeholder: form =>
+      getPaymentLinkFormPlaceholder('description', form.props.user),
     required: true,
     description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
@@ -195,8 +195,15 @@ export default [
     ],
   },
   {
+    name: 'customer_name',
+    type: 'text',
+    placeholder: 'Customer Name',
+    label: 'Customer Name',
+    _when: form => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
+  },
+  {
     name: 'receipt',
-    label: 'Receipt No.',
+    label: form => getPaymentLinkFormLabel('receipt', form.props.user),
     validator: maxLength(40),
     size: 'half_big',
   },
@@ -320,11 +327,17 @@ export default [
   {
     name: 'notes',
     label: function(ctx) {
-      return getOptions(ctx.props.user.current).type;
+      return (
+        ctx.props.user.isCustomNotesDropdownEnabled &&
+        getCustomNotesOptions().type
+      );
     },
     _cmp: Input.Select,
     options: function(ctx) {
-      return getOptions(ctx.props.user.current).options;
+      return (
+        ctx.props.user.isCustomNotesDropdownEnabled &&
+        getCustomNotesOptions().options
+      );
     },
     _when: function(form) {
       return form.props.user.isCustomNotesDropdownEnabled;
@@ -349,16 +362,24 @@ const ReminderNotEnabled = ({ type = '' }) => (
 const getRemindersOptionDescription = (count, hasNoExpiry) => {
   const totalReminders = hasNoExpiry
     ? count.withOutExpireRemindersCount
-    : count.withOutExpireRemindersCount + count.withExpireRemindersCount;
+    : count.withExpireRemindersCount;
 
   return `${totalReminders} auto reminders will be sent to this customer based on the reminder settings`;
 };
 
-export function getOptions(id) {
-  const { type, options } = CUSTOM_NOTES_OPTIONS[id] || {};
+export function getCustomNotesOptions() {
+  const { type, options } = window.custom_notes;
 
   return {
     type,
     options: [{ label: 'Select A Value', value: '' }, ...options],
   };
+}
+
+function getPaymentLinkFormLabel(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].label;
+}
+
+function getPaymentLinkFormPlaceholder(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].placeholder;
 }

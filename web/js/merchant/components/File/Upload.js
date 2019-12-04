@@ -1,6 +1,6 @@
-import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { readableFileSize } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import { isBlank } from 'common/utils/rzp-utils';
 
 import Staged from './Staged';
 
@@ -173,7 +173,10 @@ export default class FileUpload extends React.Component {
     }
 
     if (this.state.isDocPreUploaded) {
-      this.setState({ isDocPreUploaded: false });
+      this.setState(
+        { isDocPreUploaded: false },
+        () => this.props.onCloseClick && this.props.onCloseClick()
+      );
 
       return;
     }
@@ -181,7 +184,7 @@ export default class FileUpload extends React.Component {
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
       },
-      _ => this.props.onCloseClick && this.props.onCloseClick()
+      () => this.props.onCloseClick && this.props.onCloseClick()
     );
   };
 
@@ -235,6 +238,7 @@ export default class FileUpload extends React.Component {
       renderStagedChildren,
       showFileSize,
       size,
+      dropZoneCavityClassName,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -315,7 +319,8 @@ export default class FileUpload extends React.Component {
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
               stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
-              disabled && 'Dropzone-cavity--disabled'
+              disabled && 'Dropzone-cavity--disabled',
+              dropZoneCavityClassName
             )}
           >
             {files.map((file, index) => (

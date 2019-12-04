@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
-import { toggleMobileMenu } from 'merchantLA/modules/app';
+import { toggleMobileMenu } from 'merchantLA/reducers/app';
 import MainNavLink from 'merchant/components/MainNavLink';
-import { areReportsStillDownloading } from 'merchantLA/modules/reports';
+import { areReportsStillDownloading } from 'merchantLA/reducers/reports';
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 

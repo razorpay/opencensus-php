@@ -3,20 +3,23 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'rzp/utils/localStorage';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import Image from 'rzp/ui/Image';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import debounce from 'rzp/utils/debounce';
-
-import { logout, showOrHideTour } from 'merchant/modules/session';
+import LocalStorageService from 'common/utils/localStorage';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import Image from 'common/ui/Image';
+import ModalHeader from 'common/ui/ModalHeader';
+import Group, { GroupItem } from 'common/ui/Group';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import debounce from 'common/utils/debounce';
+import { updateSession } from 'merchant/reducers/session';
+import User from 'merchant/models/User';
+import { logout, showOrHideTour } from 'merchant/reducers/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
+import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 @withRouter
 @connect(
@@ -25,9 +28,10 @@ import SwitchMerchant, {
       ...state.session,
       ...state.config.config,
       isMobileResolution: state.app.isMobileResolution,
+      user: state.session.user,
     };
   },
-  { logout, closeModal, openModal, showOrHideTour }
+  { logout, closeModal, openModal, showOrHideTour, updateSession }
 )
 export default class ProfileDropdown extends Component {
   state = {
@@ -57,6 +61,21 @@ export default class ProfileDropdown extends Component {
       .then(() => {
         window.location.reload();
       });
+  };
+
+  showPartnerIntent = () => {
+    if (window && typeof window.hj === 'function') {
+      window.hj('trigger', 'partner_onboarding_started');
+      window.hj('tagRecording', ['partner_onboarding_started']);
+    }
+
+    this.props.openModal({
+      size: 'xlarge',
+      disableClose: false,
+      component: (
+        <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />
+      ),
+    });
   };
 
   openTicketModal = () => {
@@ -246,6 +265,24 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
+            {user.role === rolesList.OWNER &&
+              user.partner_type === null && (
+                <div class="media loggedin-as">
+                  <div class="media-body">
+                    <p class="small-txt">
+                      Partner with us and start earning on every referral
+                    </p>
+
+                    <a
+                      class="partner-link"
+                      style={{ color: '#528ff0', fontSize: '14px' }}
+                      onClick={this.showPartnerIntent}
+                    >
+                      <strong>Explore Partner Program</strong>{' '}
+                    </a>
+                  </div>
+                </div>
+              )}
           </div>
         </DropdownContent>
       </Dropdown>

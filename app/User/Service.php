@@ -435,6 +435,8 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
+                    $data = $this->updateExperiments($data);
+
                     $data = $this->updateInstantActivationExperiment($data);
 
                     if (((bool) $merchant['activated']) === true)
@@ -450,8 +452,6 @@ class Service extends Base\Service
                     {
                         $data['partner_intent'] = $merchantService->getPartnerIntent();
                     }
-
-                    $data = $this->updateExperiments($data);
 
                     $data['current'] = $currentMerchantId;
 
@@ -522,9 +522,10 @@ class Service extends Base\Service
 
             // for non-registered check if pre_signup_complete done or not;
 
-            if ($this->isPartnerIntentTrue($data) or $this->isExperimentOnAndIsUnregisteredBusinessType($data))
+            if ($this->isPartnerIntentTrue($data) or
+                $this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
             {
-                if (((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup']) === true)
+                if ((((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
                 {
                     $data['pre_signup_complete'] = true;
                 }
@@ -714,6 +715,14 @@ class Service extends Base\Service
             $enableInstantActivations = false;
         }
 
+        //
+        // For unregistered business activation flow will be null so instant activation should be true for unregistered business
+        //
+        if ($this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
+        {
+            $enableInstantActivations = true;
+        }
+
         $data['instant_activations'] = $enableInstantActivations;
 
         $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
@@ -885,8 +894,8 @@ class Service extends Base\Service
 
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
     {
-        if ($data['experiments']['non_registered_onboarding']['result'] === 'on')
-        {
+        
+        
             // check business_type
 
             $businessType = $data['pre_signup']['business_type'] ?? null;
@@ -895,8 +904,7 @@ class Service extends Base\Service
             {
                 return true;
             }
-        }
-
+            
         return false;
     }
 

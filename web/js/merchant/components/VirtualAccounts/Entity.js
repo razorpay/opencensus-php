@@ -1,22 +1,22 @@
 import { connect } from 'react-redux';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
-import Spinner from 'rzp/ui/Spinner';
-import Alert from 'rzp/ui/Forms/Alert';
-import Definition from 'rzp/ui/Definition';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Spinner from 'common/ui/Spinner';
+import Alert from 'common/ui/Forms/Alert';
+import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import Table from 'rzp/ui/Table/Index';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Table from 'common/ui/Table/Index';
 import AccountDetailsSummary from 'merchant/components/VirtualAccounts/AccountDetailsSummary';
 import EnableTransferMode from './EnableTransferMode';
-import ModalHeader from 'rzp/ui/ModalHeader';
-import { paymentId, amount } from 'rzp/ui/item/pair';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import ModalHeader from 'common/ui/ModalHeader';
+import { paymentId, amount } from 'common/ui/item/pair';
+import { openModal, closeModal } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/modules/virtualaccounts';
 
 @connect(state => ({ user: state.session.user }), {

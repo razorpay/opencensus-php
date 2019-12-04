@@ -1,7 +1,7 @@
 import store from 'merchant/store';
 import GenericEntity from './GenericEntity';
 
-import { pickProps } from 'rzp/utils/rzp-utils';
+import { pickProps } from 'common/utils/rzp-utils';
 
 export default class MerchantUser extends GenericEntity {
   resourceUrl = 'merchants-users';

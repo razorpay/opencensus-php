@@ -1,7 +1,7 @@
 import react from 'react';
 import moment from 'moment';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import ModalHeader from 'common/ui/ModalHeader';
 import AccountDetails, { getVirtualAccountDetails } from './AccountDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { getVirtualAccountDetailsToCopy } from './AccountDetails';

@@ -2,13 +2,13 @@ import { Component } from 'react';
 import { TypeAhead } from 'react-power-select';
 import { connect } from 'react-redux';
 
-import NewItem from 'merchant/containers/Items/New';
-import Amount from 'rzp/ui/Amount';
-import QuickAdd from 'rzp/ui/Select/QuickAdd';
+import NewItem from 'merchant/views/Invoices/Items/New';
+import Amount from 'common/ui/Amount';
+import QuickAdd from 'common/ui/Select/QuickAdd';
 
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import QuantitySelector from './QuantitySelector';
 

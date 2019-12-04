@@ -1,10 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
 import SettlementBreakupTable from 'merchantLA/components/Settlements/BreakupTable';
-import { fetchBreakupDetails } from 'merchantLA/modules/settlements/details';
-import * as ModalActions from 'rzp/modules/modals';
+import { fetchBreakupDetails } from 'merchantLA/reducers/settlements/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 @connect(state => state.settlement.breakupDetails, {
   fetchBreakupDetails,

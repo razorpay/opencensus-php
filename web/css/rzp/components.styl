@@ -421,7 +421,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-/* Component: rzp/ui/Amount.js */
+/* Component: common/ui//Amount.js */
 .rzp-amount {
   white-space: nowrap;
   font-size: 100%;
@@ -452,7 +452,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-/* End Component: rzp/ui/Amount.js */
+/* End Component: common/ui//Amount.js */
 
 /* Component: merchant/containers/TestModeBanner.js */
 .TestModeBanner {
@@ -485,7 +485,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-/* Component: rzp/ui/Banner.js */
+/* Component: common/ui//Banner.js */
 .rzp-banner {
   display: table;
   width: 100%;
@@ -554,7 +554,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-/* Component: rzp/ui/Toggler/ContentToggler.js */
+/* Component: common/ui//Toggler/ContentToggler.js */
 div.rzp-content-toggler {
 
   width: 100%;
@@ -572,9 +572,9 @@ div.rzp-content-toggler {
     }
   }
 }
-/* End Component: rzp/ui/Toggler/ContentToggler.js  */
+/* End Component: common/ui//Toggler/ContentToggler.js  */
 
-/* Component: rzp/ui/Definition.js */
+/* Component: common/ui//Definition.js */
 dl.rzp-definition {
 
   margin-bottom: 0;
@@ -599,7 +599,7 @@ dl.rzp-definition {
     }
   }
 }
-/* End Component: rzp/ui/Definition.js */
+/* End Component: common/ui//Definition.js */
 
 /* Component: merchant/components/File/Upload.js */
 .Dropzone {
@@ -742,7 +742,7 @@ dl.rzp-definition {
 /* End Component: merchant/components/File/Staged */
 
 
-/* Component: rzp/ui/TableSlider */
+/* Component: common/ui//TableSlider */
   .table-slider {
     margin: 20px 0;
     position: relative;
@@ -771,7 +771,7 @@ dl.rzp-definition {
     }
   }
 
-/* End Component: rzp/ui/TableSlider */
+/* End Component: common/ui//TableSlider */
 
 
 /* Component: Infinite Loader Bar */
@@ -826,7 +826,7 @@ dl.rzp-definition {
   100%  { transform: rotate(360deg); }
 }
 
-/* Component: rzp/ui/Accordion */
+/* Component: common/ui//Accordion */
 
 .Accordion {
   .Accordion__item {
@@ -872,6 +872,28 @@ dl.rzp-definition {
         }
       }
     }
+
+    &.danger .Accordion__title {
+        border: 1px solid #f35d5d
+        background: lighten(#f35d5d, 90%);
+
+        .accordion__arrow {
+          &::after,&::before {
+            background-color: #f35d5d
+          }
+        }
+      }
+
+    &.primary .Accordion__title {
+        border: 1px solid $primary-color
+        background: lighten($primary-color, 90%);
+        
+        .accordion__arrow {
+          &::after,&::before { 
+            background-color: $primary-color
+          }
+        }
+      }
 
     &.open {
       .Accordion__title > .accordion__arrow::before {

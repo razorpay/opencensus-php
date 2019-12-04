@@ -1,12 +1,12 @@
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
 import ajax from 'merchant/utils/ajax';
-import Form from 'component/Form';
-import Input from 'component/Input';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
 
-import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
 @withRouter
 export default class PasswordReLogin extends Component {

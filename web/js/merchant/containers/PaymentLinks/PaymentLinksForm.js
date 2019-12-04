@@ -1,50 +1,118 @@
+import { connect } from 'react-redux';
 import { Field } from 'redux-form';
+import { Link } from 'react-router-dom';
 
-import CheckBoxField from 'rzp/ui/Forms/CheckboxField';
+import { findBy } from 'common/utils/rzp-utils';
+
+import CheckBoxField from 'common/ui/Forms/CheckboxField';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+
+import { fetchReminders } from 'merchant/reducers/reminders';
 
 /**
  * Batch Payment Links Form
  * - Send Email/Send SMS
+ * - Enable Reminders
  */
 
-export default ({ batchType, sms_notify, email_notify, onChange }) => {
-  const handleChange = propName => (_, value) => {
-    onChange(propName, value);
+// TODO: Remove `paymentLinksRemindersSettings` setting to global level.
+@connect(
+  state => {
+    return {
+      reminders: state.reminders.reminders,
+      isRemindersEnabled: state.session.user.isRemindersEnabled,
+    };
+  },
+  {
+    fetchReminders,
+  }
+)
+export default class extends React.Component {
+  componentDidMount() {
+    this.props.fetchReminders();
+  }
+
+  handleChange = propName => (_, value) => {
+    this.props.onChange(propName, value);
   };
 
-  return (
-    <div>
-      <h5 class="send-link-head">
-        <strong>SEND PAYMENT LINKS</strong>
-      </h5>
-      <div class="form-group send-links-form">
-        <div class="checkbox rzpCheckbox next m-r">
+  renderRemindersFormFields = () => {
+    if (this.props.reminders.loading) {
+      return <PlaceholderLoader />;
+    }
+
+    const paymentLinksRemindersSettings =
+      findBy(this.props.reminders.items, 'namespace', 'payment_link') || {};
+
+    if (paymentLinksRemindersSettings.active) {
+      return (
+        <div class="checkbox rzpCheckbox next">
           <Field
-            name="config.sms_notify"
-            id="sms_notify"
+            name="config.reminder_enable"
+            id="reminder_enable"
             component={CheckBoxField}
-            onChange={handleChange('sms_notify')}
+            onChange={this.handleChange('reminder_enable')}
           />
-          <label for="sms_notify" class="icon i-check">
-            Send SMS
-          </label>
+          <label for="reminder_enable">Send auto reminders</label>
         </div>
-        <div class="checkbox rzpCheckbox next m-r">
-          <Field
-            name="config.email_notify"
-            id="email_notify"
-            component={CheckBoxField}
-            onChange={handleChange('email_notify')}
-          />
-          <label for="email_notify" class="icon i-check">
-            Send Email
-          </label>
+      );
+    }
+
+    return (
+      <span>
+        Reminders are not set for payment links. Set it up{' '}
+        <Link target="_blank" to="/reminders">
+          here
+        </Link>
+      </span>
+    );
+  };
+
+  render() {
+    return (
+      <div>
+        <div class="form-group send-links-form">
+          <label class="m-r">Notify</label>
+
+          <div class="checkbox rzpCheckbox m-r">
+            <Field
+              name="config.sms_notify"
+              id="sms_notify"
+              component={CheckBoxField}
+              onChange={this.handleChange('sms_notify')}
+            />
+            <label for="sms_notify" class="icon i-check">
+              via SMS
+            </label>
+          </div>
+
+          <div class="checkbox rzpCheckbox">
+            <Field
+              name="config.email_notify"
+              id="email_notify"
+              component={CheckBoxField}
+              onChange={this.handleChange('email_notify')}
+            />
+            <label for="email_notify" class="icon i-check">
+              via Email
+            </label>
+          </div>
         </div>
+
+        {this.props.isRemindersEnabled && (
+          <div class="form-group send-links-form">
+            <label class="m-r">Reminders</label>
+
+            {this.renderRemindersFormFields()}
+          </div>
+        )}
+
+        <p class="m-t">
+          <i class="i i-info-circle m-r" />
+          Payment Links with SMS and Email will be sent once the batch is
+          created.
+        </p>
       </div>
-      <p>
-        <i class="i i-info-circle m-r" />
-        Payment Links with SMS and Email will be sent once the batch is created.
-      </p>
-    </div>
-  );
-};
+    );
+  }
+}

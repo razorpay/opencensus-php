@@ -1,16 +1,16 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
 
-import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
+import DataTable from 'common/ui/Table/DataTable';
+import HeaderAction from 'common/ui/HeaderAction';
 
-import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
+import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
 
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -22,8 +22,8 @@ import {
   nextDueOn,
   createdAt,
   status,
-} from 'rzp/ui/item/pair';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+} from 'common/ui/item/pair';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 

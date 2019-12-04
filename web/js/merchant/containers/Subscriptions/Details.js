@@ -3,25 +3,23 @@ import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import AddOnCreation from 'merchant/containers/AddOns/New';
-
+import AddOnsModal from 'merchant/components/Subscriptions/AddOnsModal';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
-import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
+import CreditNoteDetails from 'merchant/components/Subscriptions/CreditNoteDetails';
 
 import Plan from 'merchant/models/Plan';
 
-import { fetchPlan } from 'merchant/modules/plans';
-import { deleteAddOn } from 'merchant/modules/addons';
-import { fetchCustomer } from 'merchant/modules/customers';
-import { openModal, closeModal } from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
+import { fetchPlan } from 'merchant/reducers/plans';
+import { deleteAddOn, fetchSubscriptionAddOns } from 'merchant/reducers/addons';
+import { fetchCustomer } from 'merchant/reducers/customers';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import {
   fetchInvoice,
   fetchCreditNote,
-} from 'merchant/modules/invoices/details';
+} from 'merchant/reducers/invoices/details';
 import {
   fetchInvoices,
   paymentManualAttempt,
@@ -29,10 +27,10 @@ import {
   cancelUpdateSubscription,
   fetchSubscriptionCreditNotes,
   fetchSubscription as fetchItem,
-} from 'merchant/modules/subscriptions';
+} from 'merchant/reducers/subscriptions';
 
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';
@@ -632,7 +630,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <AddOnCreation
+        <AddOnsModal
           addon={addon}
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}

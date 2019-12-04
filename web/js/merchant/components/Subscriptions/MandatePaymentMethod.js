@@ -1,8 +1,8 @@
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 
-import Definition from 'rzp/ui/Definition';
-import Amount from 'rzp/ui/Amount';
-import Time from 'rzp/ui/Time';
+import Definition from 'common/ui/Definition';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
 
 export default function MandatePaymentMethod({ mandate }) {
   const { method, bank_account, card, bank: issuer } = mandate;
@@ -54,5 +54,5 @@ export default function MandatePaymentMethod({ mandate }) {
     );
   }
 
-  return '--';
+  return titleCase(method);
 }

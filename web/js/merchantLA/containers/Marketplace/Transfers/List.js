@@ -2,20 +2,20 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import TransfersListFilter from 'merchantLA/components/Marketplace/TransfersListFilter';
-import DataTable from 'rzp/ui/Table/DataTable';
+import DataTable from 'common/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'merchantLA/modules/collection';
+import { fetchTransfers as fetchAll } from 'merchantLA/reducers/collection';
 import {
   transferId,
   amount,
   createdAt,
   settlementStatus,
 } from 'merchantLA/utils/item/pair';
-import { classList } from 'common/util';
-import Amount from 'rzp/ui/Amount';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { pluralize, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import Amount from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { pluralize, getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 const helperCues = {
   title: '',

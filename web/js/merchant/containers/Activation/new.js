@@ -1,24 +1,24 @@
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'rzp/modules/notifications';
-import { without } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
-import { activationDuration } from 'common/data';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { without } from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
+import { activationDuration } from 'merchant/helpers/data';
 
-import { Modal, ModalContent } from 'component/Modal';
-import { LinkCard } from 'component/Cards';
-import ActivationWizard from 'component/merchant/Activation';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { LinkCard } from 'common/new-ui/Cards';
+import ActivationWizard from 'merchant/components/Activation';
 import OldActivationWizard from './index';
-import Button from 'component/Button';
+import Button from 'common/new-ui/Button';
 
-import { updateSession } from 'merchant/modules/session';
+import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { showKYCActivationSuccessModal } from 'merchant/modules/home';
+import { showKYCActivationSuccessModal } from 'merchant/reducers/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
-import { LLPIN_BusinessTypes } from 'component/merchant/Activation/ActivationFormMap';
+import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
@@ -256,7 +256,13 @@ export default class ActivationContainer extends React.Component {
     this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
-  saveFile = (fieldName, file, progressTracker) => {
+  saveFile = (fieldName, file, progressTracker, destinationUrl) => {
+    const url =
+      Boolean(destinationUrl) &&
+      typeof destinationUrl === 'string' &&
+      Boolean(destinationUrl.trim(destinationUrl))
+        ? destinationUrl
+        : 'merchant/activation/upload';
     let formData = new FormData();
 
     //TODO: This mapping is just for past form cross-check. It can be removed now after verifying fields.
@@ -271,10 +277,15 @@ export default class ActivationContainer extends React.Component {
       form_12a_url: 'form_12a_url',
       form_80g_url: 'form_80g_url',
     };
-    formData.append(fieldNameMapping[fieldName], file);
+    //If field name doesn't exist in mapping use document type and generice file name
+    if (!Boolean(fieldNameMapping[fieldName])) {
+      formData.append('document_type', fieldName);
+      fieldName = 'file';
+    }
+    formData.append(fieldName, file);
 
     return merchantFetch({
-      url: 'merchant/activation/upload',
+      url: url,
       method: 'post',
       mode: 'live',
       data: formData,
@@ -308,6 +319,31 @@ export default class ActivationContainer extends React.Component {
 
         return err;
       });
+  };
+
+  deleteFile = name => {
+    const { showNotification, data } = this.props;
+    const documents = data.documents;
+    if (documents && Object.keys(documents).length && documents[name].length) {
+      const curDoc = documents[name][0];
+      return merchantFetch({
+        url: `merchant/documents/doc_${curDoc.id}`,
+        method: 'delete',
+        mode: 'live',
+      })
+        .then(res => {
+          showNotification({
+            type: 'success',
+            message: 'File deleted successfully',
+          });
+        })
+        .catch(err => {
+          showNotification({
+            type: 'error',
+            message: 'File Not Found!',
+          });
+        });
+    }
   };
 
   // Fetch state_code and city to auto populate business_*_state and business_*_city fields in form
@@ -405,6 +441,7 @@ export default class ActivationContainer extends React.Component {
           getPincodeDetails={this.getPincodeDetails}
           defaultMsg={this.props.defaultMsg}
           handleUIUpdate={this.handleUIUpdate}
+          deleteFile={this.deleteFile}
         />
       );
     }

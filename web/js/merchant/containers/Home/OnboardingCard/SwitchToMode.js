@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import LocalStorageService from 'rzp/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 
 import { LIVE_MODE, TEST_MODE } from './data';
 

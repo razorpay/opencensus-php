@@ -3,36 +3,34 @@ import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
-import Slider from 'rzp/ui/Slider';
-import { ModalMask } from 'component/Modal';
-
+import Slider from 'common/ui/Slider';
+import { ModalMask } from 'common/new-ui/Modal';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
-import Transactions from 'merchant/containers/Transactions';
-import Settlements from 'merchant/containers/Settlements/List';
+import Transactions from 'merchant/views/Transactions';
+import Settlements from 'merchant/views/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
-import PaymentPages from 'merchant/containers/PaymentPages/Index';
-import PaymentPagesDetails from 'merchant/containers/PaymentPages/Pages/Entity';
-import InvoicingContainer from 'merchant/containers/Invoicing';
-import InvoicesNew from 'merchant/containers/Invoices/New';
+import PaymentPages from 'merchant/views/PaymentPages';
+import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
+import InvoicesContainer from 'merchant/views/Invoices';
+import InvoicesNew from 'merchant/views/Invoices/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
-import Customers from 'merchant/containers/Customers/List';
+import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
-import MyAccount from 'merchant/containers/MyAccount';
-import Settings from 'merchant/containers/Settings';
+import MyAccount from 'merchant/views/Account';
+import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-
-import ErrorBoundary from 'common/ErrorBoundary';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchant/modules/app';
-import { openSlider } from 'rzp/modules/slider';
+} from 'merchant/reducers/app';
+import { openSlider } from 'merchant_common/reducers/slider';
 
 import store from 'merchant/store';
 
@@ -131,6 +129,7 @@ export default class Content extends Component {
 
   getBaseView = () => {
     const { user } = this.props;
+
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
@@ -173,7 +172,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/invoices"
             exact
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
           <ShowWhenRoute
@@ -188,7 +187,7 @@ export default class Content extends Component {
           />
           <ShowWhenRoute
             path="/items"
-            component={InvoicingContainer}
+            component={InvoicesContainer}
             additionalCondition={user => user.isAllowedView('invoices')}
           />
 
@@ -241,7 +240,7 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
-            path="/authlinks"
+            path="/registration_links"
             component={Subscriptions}
             additionalCondition={user =>
               user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
@@ -364,6 +363,8 @@ export default class Content extends Component {
   };
 
   render() {
+    const { user } = this.props;
+
     var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
@@ -410,7 +411,7 @@ export default class Content extends Component {
         {BaseView}
         {DetailView}
         {ModalFormView}
-        <Support />
+        <Support user={user} />
       </main>
     );
   }

@@ -3,26 +3,26 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { TypeAhead } from 'react-power-select';
 
-import { Modal, ModalContent } from 'component/Modal';
-import Form from 'component/Form';
+import Input, { Label, Description } from 'common/new-ui/Input';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import Form from 'common/new-ui/Form';
+import Button from 'common/new-ui/Button';
+import QuickAdd from 'common/ui/Select/QuickAdd';
 
-import { findBy, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import {
+  findBy,
+  getKeysSeparatedByPipe,
+  classList,
+} from 'common/utils/rzp-utils';
+import { closeModal } from 'merchant_common/reducers/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { classList } from 'common/util';
-import QuickAdd from 'rzp/ui/Select/QuickAdd';
+import { luminateRow } from 'merchant/reducers/app';
+import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
+import { saveVirtualAccount } from 'merchant/reducers/virtualaccounts';
 
-import Input, { Label, Description } from 'component/Input';
-import Button, { AsyncBtn } from 'component/Button';
-
-import { closeModal } from 'rzp/modules/modals';
-import * as ModalActions from 'rzp/modules/modals';
-import { showNotification } from 'rzp/modules/notifications';
-
-import { luminateRow } from 'merchant/modules/app';
-import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
-import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
-
-import CustomerCreation from 'merchant/containers/Customers/New';
+import CustomerCreation from 'merchant/views/Customers/New';
 
 import {
   getVirtualAccountDetails,

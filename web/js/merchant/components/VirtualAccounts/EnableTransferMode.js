@@ -1,8 +1,8 @@
 import { connect } from 'react-redux';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import ModalHeader from 'common/ui/ModalHeader';
 import Form from 'component/Form';
-import Input from 'component/Input';
+import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'component/Button';
 
 import {
@@ -10,8 +10,8 @@ import {
   rupeesToPaise,
   paiseToRupees,
   titleCase,
-} from 'rzp/utils/rzp-utils';
-import { closeModal } from 'rzp/modules/modals';
+} from 'common/utils/rzp-utils';
+import { closeModal } from 'merchant_common/reducers/notifications';
 
 @connect(state => ({}), {
   closeModal,

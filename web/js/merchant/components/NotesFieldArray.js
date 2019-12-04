@@ -1,7 +1,7 @@
 import { Field } from 'redux-form';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import InputField from 'rzp/ui/Forms/InputField';
-import { isPresent } from 'rzp/utils/rzp-utils';
+import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
+import InputField from 'common/ui/Forms/InputField';
+import { isPresent } from 'common/utils/rzp-utils';
 
 const required = index => {
   return (currentValue, allProps) => {

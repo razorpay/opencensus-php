@@ -1,0 +1,143 @@
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { updateFeatures } from 'merchant/reducers/config';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
+import SwitchField from 'common/ui/Forms/SwitchField';
+
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+      features: state.config.features,
+    };
+  },
+  { updateFeatures, showNotification }
+)
+export default class FlashCheckout extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+
+    if (props.features.length) {
+      const fcEnabled = this.getFlashCheckoutFlag(props.features);
+      this.state.fcEnabled = fcEnabled;
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.features.length && nextProps.features.length) {
+      const fcEnabled = this.getFlashCheckoutFlag(nextProps.features);
+
+      this.setState({ fcEnabled });
+    }
+  }
+
+  getFlashCheckoutFlag(features) {
+    let noFlashCheckout =
+      features.find(feature => feature.feature === 'noflashcheckout') || {};
+
+    const fcEnabled = !noFlashCheckout.value;
+    return fcEnabled;
+  }
+
+  analytics = action => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settings',
+      eventAction: `${action} - Flash Checkout`,
+    });
+  };
+
+  toggleFc = (enableFC, cb) => {
+    let shouldSync = 1;
+    var data = {
+      features: {
+        noflashcheckout: enableFC ? 0 : 1,
+      },
+      should_sync: shouldSync,
+    };
+
+    return this.props
+      .updateFeatures(data, this.props.user.current)
+      .then(res => {
+        cb(true);
+
+        if (enableFC) {
+          this.analytics('Enable');
+        } else {
+          this.analytics('Disable');
+        }
+        this.props.showNotification({
+          type: 'success',
+          message: 'Your preference was saved',
+        });
+        this.setState({
+          fcEnabled: enableFC,
+        });
+      })
+      .catch(err => {
+        cb(false);
+
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  render() {
+    let { fcEnabled } = this.state;
+
+    return (
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span class="title">Flash Checkout</span>
+
+          <span class="toggler-btn">
+            <SwitchField
+              defaultChecked={!!fcEnabled}
+              onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
+              type="prime"
+            />
+            {fcEnabled ? (
+              <b class="text-primary">Enabled</b>
+            ) : (
+              <b className="text-faded">Disabled</b>
+            )}
+          </span>
+        </div>
+
+        <div class="panel-body">
+          <form class="form-horizontal">
+            <div class="description">
+              Securely save the card details of your customers, with Razorpay's
+              Flash Checkout.
+            </div>
+
+            <div class="form-group">
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <div class="col-sm-10">
+                  <a
+                    class="highlight"
+                    target="_blank"
+                    href="https://razorpay.com/flashcheckout/"
+                  >
+                    Know more
+                    <i
+                      class="i i-external-link"
+                      style={{ marginLeft: '5px' }}
+                    />
+                  </a>
+                </div>
+              </ShowWhen>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+}

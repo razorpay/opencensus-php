@@ -1,28 +1,29 @@
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Switch, NavLink, Route } from 'react-router-dom';
 
-import { classList } from 'common/util';
+import { classList } from 'common/utils/rzp-utils';
 
-import { RZPFeatures } from 'rzp/utils/constants';
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-import { fetchPlans } from 'merchant/modules/plans';
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import { fetchPlans } from 'merchant/reducers/plans';
+import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
-} from 'merchant/modules/onboarding';
+} from 'merchant/reducers/onboarding';
 
 import PlansList from 'merchant/containers/Plans/List';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 
 import TokensList from './Tokens/List';
-import AuthLinksList from './AuthLinks/List';
+import RegistrationLinksList from './RegistrationLinks/List';
 import HostedEmanadateBatches from './Batch/List';
 import RecurringPayments from './RecurringPayments/List';
-
 import OnBoarding, {
   getIsAllowedResetSubscriptionBoarding,
 } from './OnBoarding';
@@ -150,7 +151,17 @@ export default class SubscriptionsController extends React.Component {
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
               <NavLink to="/recurring_payments">Payments</NavLink>
               <NavLink to="/tokens">Tokens</NavLink>
-              <NavLink to="/authlinks">Authorization Links</NavLink>
+              <NavLink to="/registration_links">
+                Registration Links{' '}
+                <span>
+                  <i class="i i-info-circle" />
+                  <Popover theme="dark">
+                    <PopoverBody>
+                      Authorization links are now called Registration links
+                    </PopoverBody>
+                  </Popover>
+                </span>
+              </NavLink>
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>
@@ -166,15 +177,24 @@ export default class SubscriptionsController extends React.Component {
                 component={HostedEmanadateBatches}
                 additionalCondition={user => user.isChargeAtWillEnabled}
               />
+
               <ShowWhenRoute
                 path="/subscriptions"
                 component={SubscriptionsList}
                 additionalCondition={user => !user.isChargeAtWillEnabled}
               />
-              <Route path="/plans" component={ClonedPlanList} />
-              <Route path="/tokens" component={TokensList} />
+              <ShowWhenRoute
+                path="/plans"
+                component={ClonedPlanList}
+                additionalCondition={user => !user.isChargeAtWillEnabled}
+              />
+
               <Route path="/recurring_payments" component={RecurringPayments} />
-              <Route path="/authlinks" component={AuthLinksList} />
+              <Route path="/tokens" component={TokensList} />
+              <Route
+                path="/registration_links"
+                component={RegistrationLinksList}
+              />
             </Switch>
           </content>
         </tabbed-container>

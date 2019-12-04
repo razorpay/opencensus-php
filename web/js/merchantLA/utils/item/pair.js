@@ -2,7 +2,7 @@ import * as items from './index';
 import * as id from './id';
 import { getAmount, getTime } from 'merchantLA/utils/item';
 import { makeIdLink } from 'merchantLA/utils/item/id';
-import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
+import { getIntervalCycle, subString } from 'common/utils/rzp-utils';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {

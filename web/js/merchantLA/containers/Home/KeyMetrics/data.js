@@ -5,16 +5,16 @@ import {
   isDefined,
   paiseToRupees,
   arrayToCsvDataUrl,
-} from 'rzp/utils/rzp-utils';
-import colors from 'rzp/utils/chart/colors.js';
+} from 'common/utils/rzp-utils';
+import colors from 'common/utils/chart/colors.js';
+import { groupBy } from 'common/utils/rzp-utils';
 import {
   globalGroupTitleMap,
-  groupBy,
   groupByPlatform,
   getDefaultFilter,
   getDefaultPaymentFilter,
-} from 'rzp/utils/pokedex';
-import { platformGroupingVals } from 'rzp/utils/pokedex';
+} from 'common/utils/pokedex';
+import { platformGroupingVals } from 'common/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -383,20 +383,20 @@ export const getTimelineData = ({
       : { [groupByColumnName]: data },
     groups = Object.keys(groupedData),
     /* `timelineGroupMap` is like
-         * {
-         *   "<timestamp1>": {
-         *     "<group1>": "<y-axis value1>",
-         *     "<group2>": "<y-axis value2>",
-         *     ....
-         *   }
-         * }
-         *
-         * used to get all the timestamps
-         * used to check if the all groups have data for the particular
-         * timestamp , else 0 will be put. it serves as a quick reference
-         * of what is the value present in certain group at certain
-         * timestamp
-         */
+     * {
+     *   "<timestamp1>": {
+     *     "<group1>": "<y-axis value1>",
+     *     "<group2>": "<y-axis value2>",
+     *     ....
+     *   }
+     * }
+     *
+     * used to get all the timestamps
+     * used to check if the all groups have data for the particular
+     * timestamp , else 0 will be put. it serves as a quick reference
+     * of what is the value present in certain group at certain
+     * timestamp
+     */
     timelineGroupMap = {},
     /*
      * `datasets` contain data as defined in chart.js

@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Refund from './Refund';
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount } from 'common/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
 
 export default class Payment extends GenericEntity {

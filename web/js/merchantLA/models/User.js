@@ -1,5 +1,5 @@
 import ajax from 'merchantLA/utils/ajax';
-import { filterBy } from 'rzp/utils/rzp-utils';
+import { filterBy } from 'common/utils/rzp-utils';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {

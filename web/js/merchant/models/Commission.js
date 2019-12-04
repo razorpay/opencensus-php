@@ -2,7 +2,7 @@ import GenericEntity from './GenericEntity';
 import {
   groupCommissionListData,
   groupSingleDayCommissionData,
-} from 'rzp/utils/pokedex';
+} from 'common/utils/pokedex';
 
 export default class Commission extends GenericEntity {
   resourceUrl = 'commissions';

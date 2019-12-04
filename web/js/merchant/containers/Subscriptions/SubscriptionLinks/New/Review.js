@@ -1,7 +1,7 @@
-import Amount from 'rzp/ui/Amount';
+import Amount from 'common/ui/Amount';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
+import { getIntervalCycle } from 'common/utils/rzp-utils';
 
 export default function NewSubscriptionLinkReview({
   fields,

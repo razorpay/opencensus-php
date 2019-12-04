@@ -1,4 +1,4 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { setTrackData } from 'common/utils/googleAnalytics';
 
 export default eventCategory => {
   const track = setTrackData({ eventCategory });

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchCreditBalance } from 'merchantLA/modules/credits';
-import CreditsDetails from 'merchant/components/Credits';
+import { fetchCreditBalance } from 'merchantLA/reducers/credits';
+import CreditsDetails from 'merchant/views/Account/Credits/components';
 
 import gaTrack from './ga';
 

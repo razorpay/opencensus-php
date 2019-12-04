@@ -151,21 +151,39 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Instant Settlements!',
-            'description' => 'Get your payments settled on the same working day! Avoid cash-flow issues and prepare better for working capital needs.',
-            'start_ts'    => 1569329294,
+            'title'       => 'Enable Daily Settlements',
+            'description' => 'Get your payments settled on the same working day automatically! Avoid cash-flow issues and prepare better for working capital needs.',
+            'start_ts'    => 1573187366,
             'end_ts'      => 1577791088,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Settle Now',
-                    'url'   => '/settlements#settlenow',
+                    'label' => 'Enable Daily Settlements',
+                    'url'   => '/settlements#automaticsettle',
                 ],
             ],
             'filters'     => [
                 'features'         => ['es_on_demand'],
             ]
+        ],
+        [
+            'title'       => 'Free Credit Score!',
+            'description' => 'Click Here to get your credit score along with the credit report for FREE!',
+            'start_ts'    => 1571898702,
+            'end_ts'      => 1577791088,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/badge.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Free Credit Report',
+                    'url'   => '/dashboard#creditscore',
+                ],
+            ],
+            'filters'     => [
+                'features'  => ['show_credit_score'],
+                'role'  => ['owner'],
+            ],
         ],
     ];
 
