@@ -74,7 +74,7 @@ class Core extends Base\Core
         });
 
         // Return inserted elements
-        $response = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArrayAdmin();
+        $response = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArrayWithitems();
 
         return $response;
     }
