@@ -77,7 +77,7 @@ class Service extends Base\Service
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
-        $this->trace->info(TraceCode::CONTACT_CREATE_RESPONSE,
+        $this->trace->info(TraceCode::CONTACT_CREATION_RESPONSE,
             [
                 Constants\Entity::CONTACT => $entity->getId(),
                 Entity::RESPONSE_CODE     => $responseCode,

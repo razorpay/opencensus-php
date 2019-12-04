@@ -281,7 +281,7 @@ class Service extends Base\Service
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;;
 
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_RESPONSE,
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
             [
                 Constants\Entity::FUND_ACCOUNT => $entity->getId(),
                 Entity::RESPONSE_CODE          => $responseCode,

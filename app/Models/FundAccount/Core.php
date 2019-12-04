@@ -113,7 +113,7 @@ class Core extends Base\Core
 
         $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
 
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_RESPONSE,
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
             [
                 E::FUND_ACCOUNT => $fundAccount->getId(),
             ]);
