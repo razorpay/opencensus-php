@@ -35,7 +35,7 @@ class Service extends Base\Service
         foreach($groupedRules as $mid => $groupedRule)
         {
             $result = [
-                "merchant_id" => $mid,
+                "merchant_id" => (string)$mid,
                 "rules"       => $groupedRule
             ];
             $results[] = $result;

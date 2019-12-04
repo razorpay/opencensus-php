@@ -178,12 +178,14 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         for ($index = 0; $index < 2; $index++)
         {
-            $this->testData[__FUNCTION__]['response']['content']['items']['10000000000000'][$index]['workflow_id']
+            $this->testData[__FUNCTION__]['response']['content']['items'][0]['rules'][$index]['workflow_id']
                 = $this->workflowIds[$index];
         }
 
+        $this->testData[__FUNCTION__]['response']['content']['items'][1]['merchant_id'] = $this->customMid;
+
         // Assigning custom merchant id to third workflow rule
-        $this->testData[__FUNCTION__]['response']['content']['items'][$this->customMid] = [
+        $this->testData[__FUNCTION__]['response']['content']['items'][1]['rules'] = [
             [
                 'min_amount'  => 0,
                 'max_amount'  => null,
