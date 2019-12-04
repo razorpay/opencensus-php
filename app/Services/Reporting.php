@@ -1007,9 +1007,19 @@ class Reporting implements ExternalService
     {
         if ($response->status_code !== 200)
         {
-            $payload['body'] = $response->body;
+            $responseBody = json_decode($response->body, true);
+            $payload = [
+                'body' => $responseBody,
+            ];
+            $errorMsg = null;
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload);
+            if (isset($responseBody['error']) and
+                isset($responseBody['error']['description']))
+            {
+                $errorMsg = $responseBody['error']['description'];
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload, $errorMsg);
         }
     }
 
