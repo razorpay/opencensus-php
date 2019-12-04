@@ -18,6 +18,7 @@ class PayInitData extends Base\Mock\Server
                     'MerchantReferenceNo' => $entities['payment']['id'],
                     'ErrorCode'           => '0000',
                     'EligibilityStatus'   => 'Yes',
+                    'Token'               => '123456',
                     '_raw'                => '',
                 ],
             'next' => [

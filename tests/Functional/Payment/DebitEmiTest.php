@@ -34,27 +34,7 @@ class DebitEmiTest extends TestCase
 
         $payment= $this->getDbLastEntity('payment');
 
-        $this->assertArraySelectiveEquals(
-            [
-                'status'  => 'created',
-                'amount'  => 300000,
-                'method'  => 'emi',
-                'gateway' => 'debit_emi',
-
-            ],
-            $payment->toArray()
-        );
-
-        $card = $this->getDbLastEntityToArray('card');
-
-        $this->assertArraySelectiveEquals(
-            [
-                'id'     => $payment['card_id'],
-                'iin'    => '485446',
-                'issuer' => 'HDFC',
-            ],
-            $card
-        );
+        $this->assertCreateSuccess($payment);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -63,6 +43,8 @@ class DebitEmiTest extends TestCase
         $data['request']['url'] = $url;
 
         $this->runRequestResponseFlow($data);
+
+        $this->assertAuthorized();
     }
 
     protected function createDependentEntities()
@@ -86,6 +68,68 @@ class DebitEmiTest extends TestCase
             ]);
 
         $this->fixtures->create('terminal:hdfc_debit_emi');
+    }
+
+    protected function assertCreateSuccess($payment)
+    {
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'created',
+                'amount'  => 300000,
+                'method'  => 'emi',
+                'gateway' => 'debit_emi',
+
+            ],
+            $payment->toArray()
+        );
+
+        $card = $this->getDbLastEntityToArray('card');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'id'     => $payment['card_id'],
+                'iin'    => '485446',
+                'issuer' => 'HDFC',
+            ],
+            $card
+        );
+
+        $mozart = $this->getDbLastEntityToArray('mozart');
+        $mozart = json_decode($mozart['raw'], true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'Token'               => '123456',
+                'Status'              => 'Success',
+                'ErrorCode'           => '0000',
+                'BankReferncNo'       => 'abc123456',
+                'EligibilityStatus'   => 'Yes',
+                'MerchantReferenceNo' => $payment['id'],
+            ],
+            $mozart
+        );
+    }
+
+    protected function assertAuthorized()
+    {
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'authorized',
+            ],
+            $payment
+        );
+
+        $mozart = $this->getDbLastEntityToArray('mozart');
+        $mozart = json_decode($mozart['raw'], true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'OrderConfirmationStatus' => 'Yes',
+            ],
+            $mozart
+        );
     }
 
     protected function getDefaultEmiPaymentArray()
