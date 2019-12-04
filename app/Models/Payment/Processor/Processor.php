@@ -68,7 +68,9 @@ class Processor
     use Vpa;
     use AuthorizePush;
     use CardCacheTrait;
+    use UpiRecurring;
     use CardPaymentService;
+
 
     /**
      * Callback urls can be hit multiple times by customers.

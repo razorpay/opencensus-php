@@ -1180,6 +1180,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
     ];
 
@@ -1384,6 +1385,15 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+    ];
+
+    /**
+     * List of gateways which support S2S mandate callbacks.
+     *
+     * @var array
+     */
+    public static $s2sMandateCallbackGateways = [
+        Gateway::UPI_MINDGATE
     ];
 
     /**

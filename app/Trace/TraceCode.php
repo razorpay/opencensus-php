@@ -722,6 +722,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                             = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_PRE_AUTH_REQUEST                              = 'GATEWAY_PRE_AUTH_REQUEST';
+    const GATEWAY_MANDATE_CREATE_REQUEST                        = 'GATEWAY_MANDATE_CREATE_REQUEST';
+    const GATEWAY_MANDATE_CREATE_RESPONSE                       = 'GATEWAY_MANDATE_CREATE_RESPONSE';
+    const GATEWAY_MANDATE_EXECUTE_REQUEST                       = 'GATEWAY_MANDATE_EXECUTE_REQUEST';
+    const GATEWAY_MANDATE_EXECUTE_RESPONSE                      = 'GATEWAY_MANDATE_EXECUTE_RESPONSE';
+    const GATEWAY_MANDATE_UPDATE_REQUEST                        = 'GATEWAY_MANDATE_UPDATE_REQUEST';
+    const GATEWAY_MANDATE_UPDATE_RESPONSE                       = 'GATEWAY_MANDATE_UPDATE_RESPONSE';
+    const GATEWAY_MANDATE_UPDATE_ERROR                          = 'GATEWAY_MANDATE_UPDATE_ERROR';
     const GATEWAY_PRE_AUTH_RESPONSE                             = 'GATEWAY_PRE_AUTH_RESPONSE';
     const GATEWAY_AUTHORIZE_ERROR                               = 'GATEWAY_AUTHORIZE_ERROR';
     const GATEWAY_VOID_RESPONSE                                 = 'GATEWAY_VOID_RESPONSE';
