@@ -32,6 +32,7 @@ export default class SettlementsExample extends Component {
           style={{ width: width + '%' }}
         >
           <div class="s-holiday" />
+          Holiday
         </div>
       );
     }

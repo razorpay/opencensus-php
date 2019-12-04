@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import SettlementsExample from 'merchant/views/Settlements/components/SettlementsExample';
 import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 export default class SettlementSchedule extends Component {
   state = {
@@ -11,7 +12,10 @@ export default class SettlementSchedule extends Component {
   render() {
     return (
       <div>
-        <ModalHeader title={`Settlement Schedule`} />
+        <ModalHeader
+          title={`Settlement Schedule`}
+          onCloseClick={() => closeModal()}
+        />
         <div class="modal-body">
           <Fragment>
             <div class="grey">
