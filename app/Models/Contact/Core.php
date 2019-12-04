@@ -71,7 +71,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($contact);
 
-        $this->trace->info(TraceCode::CONTACT_CREATION_RESPONSE,
+        $this->trace->info(TraceCode::CONTACT_CREATED,
             [
                 Constants\Entity::CONTACT => $contact->getId(),
             ]);
