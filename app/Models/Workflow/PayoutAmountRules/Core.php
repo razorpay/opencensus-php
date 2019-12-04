@@ -57,10 +57,8 @@ class Core extends Base\Core
         return $evaluatedRule;
     }
 
-    public function create($rules): array
+    public function create($rules, $merchantId): array
     {
-        $merchantId = $this->merchant->getId();
-
         // Insert all rules together into database
         $this->repo->transaction( function() use ($rules, $merchantId){
             foreach($rules as $rule)

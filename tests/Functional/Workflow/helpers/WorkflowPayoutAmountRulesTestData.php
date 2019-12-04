@@ -160,6 +160,40 @@ return [
         ],
     ],
 
+    'testCreateRulesWithMultipleMerchants' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100
+                    ],
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                'error' => [
+                    'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'=> 'Workflow does not belong to one merchant'
+                ]
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
+        ],
+    ],
+
     'testCreateRulesWithDuplicateWorkflowIds' => [
         'request' => [
             'method'  => 'POST',
