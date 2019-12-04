@@ -3644,8 +3644,13 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
+        // Here, set type only if it's debit. This is because all of the emi plans currently created does not have a type
+        // value set(debit, credit, etc). So, if we pass the value 'credit' here, the emi plan does not gets selected.
+        // To fix this, we'll need to backfill and whole emi plans with the type credit / debit.
+        $planType = ($iinEntity->getType() === 'debit' ? 'debit' : null);
+
         // Set emi plan id
-        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant);
+        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant, $planType);
 
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
@@ -6456,11 +6461,10 @@ trait Authorize
     }
 
     // returns the emi plan which belongs to merchant, in case not present it returns the plan mapped to shared merchant
-    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant)
+    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant, $type = null)
     {
-
         //fetches the emi plans for merchant as well as shared merchant
-        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant);
+        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant, $type);
 
         if ($emiPlans->count() == 0)
         {
