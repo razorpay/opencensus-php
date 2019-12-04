@@ -861,22 +861,33 @@ class Core extends Base\Core
         return [false, Settlement\Channel::YESBANK];
     }
 
-    protected function getChannelForFundAccountValidation(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    protected function getChannelForFundAccountValidation(Base\PublicEntity $source,
+                                                          string $accountType,
+                                                          CardEntity $card = null): array
     {
-        if ($accountType === E::CARD)
+        $key = 'fts_penny_testing_' . strtolower($accountType);
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_INIT, ['key' => $key]);
+
+        $rampingOnPennyTesting = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_COMPLETE,
+            [
+                'key'           => $key,
+                'mode'          => $this->mode,
+                'ramp_status'   => $rampingOnPennyTesting,
+            ]);
+
+        if(strtolower($rampingOnPennyTesting) === 'on')
         {
-            throw new LogicException('Penny testing on card not supported via FTA flow');
+            return [false, Settlement\Channel::YESBANK];
         }
 
-        // TODO: Need to refactor this and use razorx for ramping
-        $rampingEnabled = $this->getRampingStatus($source);
-
-        if ($rampingEnabled === true)
-        {
-            return [true, Settlement\Channel::ICICI];
-        }
-
-        return [false, Settlement\Channel::YESBANK];
+        return [true, Settlement\Channel::ICICI];
     }
 
     protected function getRampingStatus(Base\PublicEntity $source, string $key = ConfigKey::FTS_TEST_MERCHANT)
