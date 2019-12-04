@@ -638,6 +638,7 @@ class Gateway
         Payment\Gateway::WALLET_OPENWALLET,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::NETBANKING_OBC,
+        Payment\Gateway::NETBANKING_CANARA,
     ];
 
     public static $channels = [
