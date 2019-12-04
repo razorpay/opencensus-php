@@ -242,19 +242,24 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => [
-                    '10000000000000'    =>  [
-                        [
-                            'merchant_id'   =>  '10000000000000',
-                            'condition'     =>  null,
-                            'min_amount'    =>  0,
-                            'max_amount'    =>  100,
-                        ],
-                        [
-                            'merchant_id'   =>  '10000000000000',
-                            'condition'     =>  null,
-                            'min_amount'    =>  101,
-                            'max_amount'    =>  null,
+                'entity'            => 'collection',
+                'count'             => 2,
+                'items'    =>  [
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'rules'         => [
+                            [
+                                'merchant_id'   =>  '10000000000000',
+                                'condition'     =>  null,
+                                'min_amount'    =>  0,
+                                'max_amount'    =>  100,
+                            ],
+                            [
+                                'merchant_id'   =>  '10000000000000',
+                                'condition'     =>  null,
+                                'min_amount'    =>  101,
+                                'max_amount'    =>  null,
+                            ]
                         ]
                     ]
                 ]
