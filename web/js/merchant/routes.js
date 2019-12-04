@@ -14,6 +14,7 @@ import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
 import OffersNew from 'merchant/containers/Offers/New';
+import OfferEntity from 'merchant/containers/Offers/Entity';
 import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
@@ -60,7 +61,7 @@ const entityDetailsMap = {
     additionalCondition: user => user.isAllowedView('refunds'),
   },
   '/offers/:id(offer_.+)': {
-    component: Entity,
+    component: OfferEntity,
     additionalCondition: user => user.isAllowedView('offers'),
   },
   '/orders/:id': {
