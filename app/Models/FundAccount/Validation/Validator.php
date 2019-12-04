@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         /** @var Entity $validation */
         $validation = $this->entity;
 
-        if ((empty(optional($validation)->balance) === true) or
+        if ((empty($validation->balance) === true) or
             (($validation->balance->isTypeBanking() === true) and
              ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED)))
         {

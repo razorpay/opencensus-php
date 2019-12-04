@@ -3,7 +3,7 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use RZP\Models\FundAccount\Entity;
-use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 class Factory
@@ -17,7 +17,7 @@ class Factory
      * @param FundAccountValidation\Entity $fundAccountValidation
      *
      * @return Base
-     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
      */
     public static function get(FundAccountValidation\Entity $fundAccountValidation): Base
     {
@@ -33,13 +33,13 @@ class Factory
     /**
      * @param string $type
      *
-     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
      */
     public static function validate(string $type)
     {
         if (self::isValid($type) === false)
         {
-            throw new BadRequestException("Invalid fund account type: $type");
+            throw new BadRequestValidationFailureException('Invalid fund account type: ' . $type);
         }
     }
 

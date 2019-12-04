@@ -237,7 +237,7 @@ class Core extends Base\Core
      * @param Entity $validation
      * @param array  $input
      *
-     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function runInputValidations(Entity $validation, array $input)
     {

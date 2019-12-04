@@ -688,7 +688,6 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid fund account type: card',
-                    'field'       => Validation::FUND_ACCOUNT
                 ],
             ],
             'status_code' => 400,
