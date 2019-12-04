@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount\Service as FundAccountService;
 
 /**
@@ -75,6 +76,12 @@ class Service extends Base\Service
         $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
+
+        $this->trace->info(TraceCode::CONTACT_CREATE_RESPONSE,
+            [
+                Constants\Entity::CONTACT => $entity->getId(),
+                Entity::RESPONSE_CODE     => $responseCode,
+            ]);
 
         return [
             Constants\Entity::CONTACT => $entity->toArrayPublic(),
