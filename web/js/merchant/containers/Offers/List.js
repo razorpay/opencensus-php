@@ -24,7 +24,7 @@ const OfferListItem = ({ offer }) => {
       <td>{offer.payment_method}</td>
       <td>
         {' '}
-        <OfferStatusLabel status={offer.active ? 'Active' : 'Inactive'} />
+        <OfferStatusLabel status={offer.active ? 'Enabled' : 'Disabled'} />
       </td>
       <td>
         <Time value={offer.starts_at} format="DD MMM YYYY, hh:mm a" />

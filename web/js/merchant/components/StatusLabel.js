@@ -102,8 +102,8 @@ export const tokenStatusMap = {
 };
 
 export const offerStatusMap = {
-  Active: 'label-success',
-  Inactive: 'label-muted',
+  Enabled: 'label-info',
+  Disabled: 'label-muted',
 };
 
 const entityMap = {

@@ -89,6 +89,9 @@ class NewOfferForm extends React.Component {
     if (!this.isSelectedPaymentMethod('card', 'emi')) {
       fieldsTobeDeleted.push('max_payment_count');
     }
+    if (transformed.min_amount === null) {
+      fieldsTobeDeleted.push('min_amount');
+    }
     //fields to be deleted
     fieldsTobeDeleted.forEach(field => {
       if (field in transformed) {
@@ -193,7 +196,7 @@ class NewOfferForm extends React.Component {
 
         {(this.isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
           <Input.Select
-            label="Issuer"
+            label="Bank"
             name="issuer"
             placeholder="Payment Instrument Issuer/Bank Name"
             options={paymentIssuers}
@@ -209,7 +212,7 @@ class NewOfferForm extends React.Component {
               name="max_payment_count"
               type="number"
               onChange={this.getFormOnChangeHandler()}
-              placeholder="Maximum usage of a card to avail this offer"
+              description="Maximum number of times a particular card can avail this offer"
             />
             <Input.Select
               label="Card Type"
@@ -227,7 +230,7 @@ class NewOfferForm extends React.Component {
               required
             />
             <Input.Select
-              label="Payment Method Network"
+              label="Network"
               name="payment_network"
               placeholder="Payment Method Type"
               onChange={this.getFormOnChangeHandler()}
@@ -236,7 +239,7 @@ class NewOfferForm extends React.Component {
             <Input
               label="IINs"
               onChange={this.getFormOnChangeHandler('iins')}
-              placeholder="6 digit IINs for cards. Separated by comma if more than one"
+              placeholder="6 digit IINs Separated by comma"
               description={this.state.iins && this.state.iins.join(', ')}
             />
           </React.Fragment>
@@ -262,7 +265,7 @@ class NewOfferForm extends React.Component {
             message: SUCCESS_NOTIFICATION,
           });
 
-          //@todo analytics event tracking
+          //analytics event tracking
           this.props.tracking.trackEvent(window.rzpQ.success('Offer_create'));
 
           const entityId = savedOffer.id;
@@ -277,12 +280,12 @@ class NewOfferForm extends React.Component {
             this.props.history.push(redirectUrl);
           }
         } else {
-          //@todo track when offer creation fails
-          // tracking.trackEvent(
-          //   window.rzpQ.onbr().success('dash.pl_action', {
-          //     action: 'PL_Creation_Failed',
-          //   })
-          // );
+          //analytics event tracking
+          this.props.tracking.trackEvent(
+            window.rzpQ.failed('Offer_create', {
+              error: resp.errors,
+            })
+          );
           throw new Error(resp.errors);
         }
       })
@@ -356,11 +359,11 @@ class NewOfferForm extends React.Component {
             }}
           />
           <Input
-            label="Maximum Cashback"
+            label="Maximum Discount"
             name="max_cashback"
             class="Input--half"
             onChange={this.getFormOnChangeHandler('floatFromEvent')}
-            description="Maximum cashback for this offer"
+            description="Maximum discount for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
             pattern="[0-9]+(\.[0-9][0-9]?)?"
             patternError="Please enter number upto 2 decimal points"
@@ -390,35 +393,35 @@ class NewOfferForm extends React.Component {
               </Alert>
             )}
             <Alert type="error" message={this.state.errors} />
-            <h4>Basic Details</h4>
+            <h4>Offer Description</h4>
             <Input
               label="Offer Name"
               name="name"
-              placeholder="Offer Short name"
+              placeholder="Enter your offer name here"
               autoFocus={true}
               required
               onChange={this.getFormOnChangeHandler()}
               validator={val => {
                 if (!val || val.length < 4) {
-                  return 'Short name should be at least of 4 characters';
+                  return 'Too short offer name';
                 }
                 if (val.length > 50) {
-                  return 'Short name should not exceed 50 characters';
+                  return 'Offer name should not exceed 50 characters';
                 }
               }}
             />
             <Input
               label="Display Text"
               name="display_text"
-              placeholder="Display text for offer"
+              placeholder="Details about your offer"
               onChange={this.getFormOnChangeHandler()}
               required
               validator={val => {
                 if (!val || val.length < 4) {
-                  return 'Short name should be at least of 4 characters';
+                  return 'Too short offer text';
                 }
                 if (val.length > 250) {
-                  return 'Short name should not exceed 250 characters';
+                  return 'Offer text should not exceed 250 characters';
                 }
               }}
             />
@@ -466,7 +469,6 @@ class NewOfferForm extends React.Component {
                   return `Maximum value allowed is ${MAX_INT}`;
                 }
               }}
-              {...{ required: this.state.discount_type === 'flat' }}
             />
             <Input.Select
               label="On Offer Failure"
@@ -497,11 +499,10 @@ class NewOfferForm extends React.Component {
             <h4>Payment Method</h4>
             {this.renderPaymentMethods()}
             <hr />
-            <h4>Duration</h4>
+            <h4>Offer Duration</h4>
             <Input.DateTime
-              label="Starting On"
+              label="Offer begins on"
               name="starts_at"
-              description="Start date for offer"
               onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
               isInline
               required
@@ -513,10 +514,9 @@ class NewOfferForm extends React.Component {
               }}
             />
             <Input.DateTime
-              label="Expires On"
+              label="Offer ends on"
               name="ends_at"
               onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
-              description="Expiry date for offer"
               isInline
               required
               defaultValue={''}
