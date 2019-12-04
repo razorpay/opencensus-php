@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link, NavLink } from 'react-router-dom';
@@ -18,6 +18,8 @@ import EarlySettlementsAnnouncement from 'merchant/components/Announcements/Earl
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
@@ -31,6 +33,7 @@ import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import { trackInstantSettlementsBanner } from 'merchant/components/Announcements/ga';
+import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 
 @withRouter
 @connect(
@@ -226,13 +229,34 @@ export default class SettlementsListContainer extends ListContainer {
                     }
                   >
                     <a
-                      class="btn btn-link settlement-doc-btn pull-left"
+                      class="btn right-border-margin settlement-doc-btn pull-left"
                       href="http://razorpay.com/settlement"
                       target="_blank"
                       onClick={trackHowSettlementsWorkClicks}
                     >
                       How settlements work?&nbsp;
                       <span class="icon i-external-link" />
+                    </a>
+                    <a
+                      class="btn right-border-margin settlement-doc-btn pull-left"
+                      onClick={() => {
+                        this.props.openModal({
+                          size: 'regular',
+                          component: <SettlementSchedule />,
+                        });
+                      }}
+                    >
+                      Settlement Schedule&nbsp;
+                      <span class="icon i-external-link" />
+                    </a>
+                    <a
+                      class="btn btn-outline settlement-doc-btn pull-left"
+                      href="http://razorpay.com/settlement"
+                      target="_blank"
+                      onClick={trackHowSettlementsWorkClicks}
+                    >
+                      Activate Daily Settlement&nbsp;
+                      <span class="icon i-arrow-forward" />
                     </a>
                   </ShowWhen>
                   {this.props.user.isOndemandSettlementEnabled && (
@@ -267,9 +291,48 @@ export default class SettlementsListContainer extends ListContainer {
                 {this.props.user.isOrgAllowedFunctionality(
                   'current_balance'
                 ) && (
-                  <span class="settlement-balance-amount">
-                    Current Balance: <Amount value={balance} currency={'INR'} />
-                  </span>
+                  <Fragment>
+                    <div class="flex text-right">
+                      <div class="right-border-margin">
+                        <span class="settlement-balance-amount">
+                          Current Balance:{' '}
+                          <Amount value={balance} currency={'INR'} />
+                        </span>
+                        <br />
+                        <span style={{ fontSize: '11px' }}>
+                          <strong>₹3,24,666.36</strong> will be settled by 01
+                          Dec, 5PM.{' '}
+                          <i class="i i-info-circle">
+                            <Popover align="bottom" theme="dark">
+                              <PopoverBody>
+                                <p>
+                                  This is just a tentative amount, it might vary
+                                  by refund and others.{' '}
+                                </p>
+                              </PopoverBody>
+                            </Popover>
+                          </i>{' '}
+                          <span
+                            onClick={() => {
+                              this.props.openModal({
+                                size: 'regular',
+                                component: <SettlementSchedule />,
+                              });
+                            }}
+                            class="clr-primary btn-link"
+                          >
+                            <b>Know More</b>
+                          </span>
+                        </span>
+                      </div>
+                      <div>
+                        <button class="btn btn-primary confirm-ok">
+                          <i class="i i-early-settlement settle-icon settle-now pull-right temp-icon-2" />
+                          Settle Now
+                        </button>
+                      </div>
+                    </div>
+                  </Fragment>
                 )}
                 {this.props.user.isAutomaticSettlementEnabled && (
                   <>
@@ -300,6 +363,8 @@ export default class SettlementsListContainer extends ListContainer {
                   </ShowWhen>
                 )}
               </div>
+
+              <div class="clearfix" />
 
               {error && <Alert type="error" message={error} />}
 

@@ -26,6 +26,7 @@ import OndemandModal from 'merchant/views/Settlements/components/Modals/Ondemand
 import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
+import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 
 import {
   trackPresetChange,
@@ -186,7 +187,7 @@ class AnalyticsDesktop extends Component {
                   'current_balance'
                 ) && (
                   <GroupItem>
-                    <span className="balance-amount">
+                    {/* <span className="balance-amount">
                       Current Balance:{' '}
                       {!current_balance.loading && (
                         <Amount
@@ -194,14 +195,51 @@ class AnalyticsDesktop extends Component {
                           currency={'INR'}
                         />
                       )}
-                    </span>
+                    </span> */}
+                    {/* hard code */}
+                    <div style={{ textAlign: 'right' }}>
+                      <span class="settlement-balance-amount">
+                        Current Balance:{' '}
+                        {!current_balance.loading && (
+                          <Amount
+                            value={current_balance.data.balance}
+                            currency={'INR'}
+                          />
+                        )}
+                      </span>
+                      <br />
+                      <span style={{ fontSize: '12px' }}>
+                        <strong>₹3,24,666.36</strong> will be settled by 01 Dec,
+                        5PM.<i class="i i-info-circle">
+                          <Popover align="bottom" theme="dark">
+                            <PopoverBody>
+                              <p>
+                                Saturday and Sunday are weekends hence the next
+                                settlement would happen on 02 Dec, 9AM.
+                              </p>
+                            </PopoverBody>
+                          </Popover>
+                        </i>{' '}
+                        <span
+                          onClick={() => {
+                            this.props.openModal({
+                              size: 'regular',
+                              component: <SettlementSchedule />,
+                            });
+                          }}
+                          class="clr-primary btn-link"
+                        >
+                          <b>Know More</b>
+                        </span>
+                      </span>
+                    </div>
                   </GroupItem>
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
                     <ShowWhen myRole="owner admin finance">
                       <Button.Secondary
-                        class="settle-btn"
+                        class="settle-btn btn-outline"
                         onClick={this.showOndemandSettlementForm}
                         disabled={
                           current_balance.loading ||
