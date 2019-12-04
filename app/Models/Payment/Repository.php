@@ -1732,6 +1732,14 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN_ID, $tokenId)
+                    ->where(Entity::CUSTOMER_ID, $customerId)
+                    ->first();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()

@@ -1464,6 +1464,25 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getOtmInitialPaymentArray()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        unset($payment['card']);
+
+        $payment['recurring'] = 1;
+        $payment['amount'] = 0;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['recurring_token']['max_amount'] = 4000;
+
+        $payment['recurring_token']['expire_by'] = Carbon::now()->addDays(3)->getTimestamp();
+
+        $payment['recurring_token']['start_time'] = Carbon::now()->getTimestamp();
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;

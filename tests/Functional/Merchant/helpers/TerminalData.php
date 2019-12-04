@@ -2600,6 +2600,21 @@ return [
         ],
     ],
 
+    'testUpdateTerminalOnboardingStatus' => [
+        'request'   => [
+            'url'     => '/terminal_onboarding_update_status',
+            'content' => [
+                ['termianl_ids_array']
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ]
+    ],
+
     'testCreateJuspayTerminal'                => [
         'request' => [
             'content' => [

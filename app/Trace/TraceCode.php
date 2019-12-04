@@ -276,6 +276,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
+    const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -722,6 +723,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                             = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_PRE_AUTH_REQUEST                              = 'GATEWAY_PRE_AUTH_REQUEST';
+    const GATEWAY_MANDATE_CREATE_REQUEST                        = 'GATEWAY_MANDATE_CREATE_REQUEST';
+    const GATEWAY_MANDATE_CREATE_RESPONSE                       = 'GATEWAY_MANDATE_CREATE_RESPONSE';
+    const GATEWAY_MANDATE_EXECUTE_REQUEST                       = 'GATEWAY_MANDATE_EXECUTE_REQUEST';
+    const GATEWAY_MANDATE_EXECUTE_RESPONSE                      = 'GATEWAY_MANDATE_EXECUTE_RESPONSE';
+    const GATEWAY_MANDATE_UPDATE_REQUEST                        = 'GATEWAY_MANDATE_UPDATE_REQUEST';
+    const GATEWAY_MANDATE_UPDATE_RESPONSE                       = 'GATEWAY_MANDATE_UPDATE_RESPONSE';
+    const GATEWAY_MANDATE_UPDATE_ERROR                          = 'GATEWAY_MANDATE_UPDATE_ERROR';
     const GATEWAY_PRE_AUTH_RESPONSE                             = 'GATEWAY_PRE_AUTH_RESPONSE';
     const GATEWAY_AUTHORIZE_ERROR                               = 'GATEWAY_AUTHORIZE_ERROR';
     const GATEWAY_VOID_RESPONSE                                 = 'GATEWAY_VOID_RESPONSE';
@@ -1604,7 +1612,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ENTITY_BULK_UPDATE_BALANCE_ID_ERROR                   = 'ENTITY_BULK_UPDATE_BALANCE_ID_ERROR';
 
     // Trace codes for Contact and Fund account CRUD
+    const CONTACT_CREATED                                       = 'CONTACT_CREATED';
     const CONTACT_CREATE_REQUEST                                = 'CONTACT_CREATE_REQUEST';
+    const CONTACT_CREATION_RESPONSE                             = 'CONTACT_CREATION_RESPONSE';
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
@@ -1614,7 +1624,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
     const DOCUMENT_DELETE_REQUEST                               = 'DOCUMENT_DELETE_REQUEST';
 
+    const FUND_ACCOUNT_CREATED                                  = 'FUND_ACCOUNT_CREATED';
     const FUND_ACCOUNT_CREATE_REQUEST                           = 'FUND_ACCOUNT_CREATE_REQUEST';
+    const FUND_ACCOUNT_CREATION_RESPONSE                        = 'FUND_ACCOUNT_CREATION_RESPONSE';
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';
     const DUPLICATE_FUND_ACCOUNT_FOUND                          = 'DUPLICATE_FUND_ACCOUNT_FOUND';
@@ -2352,6 +2364,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
+    const FTA_PENNY_TESTING_RAMP_INIT                           = 'FTA_PENNY_TESTING_RAMP_INIT';
+    const FTA_PENNY_TESTING_RAMP_COMPLETE                       = 'FTA_PENNY_TESTING_RAMP_COMPLETE';
     const PARTNER_FETCH_FOR_SUBMERCHANT_ERROR                   = 'PARTNER_FETCH_FOR_SUBMERCHANT_ERROR';
 
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';
@@ -2361,7 +2375,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          = 'FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                = 'PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const GATEWAY_PROCESSING_CPS_FAILURE                        = 'GATEWAY_PROCESSING_CPS_FAILURE';
-  
+
     // Trace Code for Merchant status
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';

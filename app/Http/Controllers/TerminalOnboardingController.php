@@ -74,4 +74,17 @@ class TerminalOnboardingController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * This is a precautionary API, which will be used using adminAuth, in case we need to change status of a terminalonboarding manually
+     * This will update status of input terminal_onboarding_details ids to created
+     */
+    public function putTerminalOnboardingStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTerminalOnboardingStatus($input);
+
+        return ApiResponse::json($response);
+    }
 }

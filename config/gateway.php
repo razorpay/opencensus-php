@@ -33,6 +33,7 @@ return [
         'isg',
         'kotak',
         'mobikwik',
+        'mozart',
         'netbanking_sib',
         'netbanking_cbi',
         'netbanking_hdfc',

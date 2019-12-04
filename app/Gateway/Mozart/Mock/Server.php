@@ -5,8 +5,11 @@ namespace RZP\Gateway\Mozart\Mock;
 use Str;
 use RZP\App;
 use RZP\Gateway\Base;
+use phpseclib\Crypt\AES;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Mozart\Action;
 use RZP\Gateway\Mozart\UpiJuspay;
+
 
 class Server extends Base\Mock\Server
 {
@@ -82,6 +85,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $intentObj, 'intent');
     }
 
+    public function authInit($input)
+    {
+        $mandateCreateObj = new AuthInitData();
+
+        return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -93,13 +103,13 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function processMockResponse($input, $actionClass, $action)
+    protected function processMockResponse($input, $actionClass, $action, $gateway = null)
     {
         $input = json_decode($input, true);
 
         $entities = $input['entities'];
 
-        $gateway = $this->getGateway($entities);
+        $gateway = $gateway === null ? $this->getGateway($entities) : $gateway;
 
         $response = $actionClass->$gateway($entities);
 
@@ -188,7 +198,7 @@ class Server extends Base\Mock\Server
             'method'    => $method,
             'raw'       => $raw,
             'server'    => $server,
-        ];;
+        ];
     }
 
     public function getAsyncCallbackContent(array $payment)
@@ -639,4 +649,144 @@ class Server extends Base\Mock\Server
         return $data;
     }
 
+    protected function getAsyncCallbackResponseMandateCreate($payment)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  $payment['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => $payment['id'],
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'CREATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => '',
+                    'payerVpa'             => $payment['vpa'],
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'ACTIVE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate created successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $content = $this->encrypt($jsonResponse);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+        ];
+
+        return $response;
+    }
+
+    protected function getAsyncCallbackResponseMandateUpdate($payment)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  $payment['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => $payment['id'],
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'UPDATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => '',
+                    'payerVpa'             => $payment['vpa'],
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'ACTIVE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_UPDATE',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate updated successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $content = $this->encrypt($jsonResponse);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'type'         => 'mandate_update'
+        ];
+
+        return $response;
+    }
+
+    protected function encrypt($plaintext)
+    {
+        $key = $this->getEncryptionKey();
+
+        $ciphertext = $this->getCipherInstance($key)
+            ->encrypt($plaintext);
+
+        return strtoupper(bin2hex($ciphertext));
+    }
+
+    protected function getEncryptionKey()
+    {
+        $key = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        return hex2bin($key);
+    }
+
+    protected function getCipherInstance($key)
+    {
+        $cipher = new AES(AES::MODE_ECB);
+
+        $cipher->setKey($key);
+
+        return $cipher;
+    }
 }

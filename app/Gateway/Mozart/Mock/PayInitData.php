@@ -466,4 +466,41 @@ class PayInitData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_mindgate($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'referenceNumber' => 'IFPO039F3940343',
+                    'pgMerchantId' => 'HDFC000006002278',
+                    'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',
+                    'amount' => 200,
+                    'custRefNo' => '920515212270',
+                    'mandateStatus' => 'COMPLETED',
+                    'reqStatus' => 'S',
+                    'message' => 'Transaction success',
+                    'payerVPA' => 'testvpa@yesb',
+                    'payeeVPA' => 'india.uber@hdfcbank',
+                    'credAcc' => '01601200021634',
+                    'endDate' => '26 Jul 2019',
+                    'txnId' => 'HDF542de25ds56ad9896ac96cef89475623',
+                    'creditIFSC' => 'HDFC0000160',
+                    'mcc' => '4121',
+                    'startDate' => '24 Jul 2019',
+                    'isVerified' => false,
+                    'respCode' => 'MD200',
+                    'umn' => 'MER5cb6b2b0640caa3d93d190095c003@hdfcbank',
+                    'status' => 'mandate_execution_successful',
+                    '_raw' => '',
+                    ''
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }
