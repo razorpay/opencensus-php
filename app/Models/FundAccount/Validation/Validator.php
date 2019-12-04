@@ -10,6 +10,7 @@ use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
+    // This is used for both banking and PG creation request
     protected static $createRules = [
         Entity::FUND_ACCOUNT => 'required|associative_array',
         Entity::AMOUNT       => 'sometimes|integer|min:100|max:200',
@@ -19,6 +20,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID   => 'sometimes|unsigned_id',
     ];
 
+    // This is only used for banking bank account creation request
     protected static $bankingBankAccountRules = [
         Entity::AMOUNT                          => 'required|integer|min:100|max:200',
         Entity::NOTES                           => 'sometimes|notes',
@@ -28,6 +30,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT . '.' . Entity::ID => 'required|unsigned_id',
     ];
 
+    // This is only used for banking vpa creation request
     protected static $bankingVpaRules = [
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BALANCE_ID                      => 'required|custom',
