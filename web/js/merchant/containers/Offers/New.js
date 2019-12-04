@@ -89,7 +89,7 @@ class NewOfferForm extends React.Component {
     if (!this.isSelectedPaymentMethod('card', 'emi')) {
       fieldsTobeDeleted.push('max_payment_count');
     }
-    if (transformed.min_amount === null) {
+    if (transformed.min_amount === null || isNaN(transformed.min_amount)) {
       fieldsTobeDeleted.push('min_amount');
     }
     //fields to be deleted
