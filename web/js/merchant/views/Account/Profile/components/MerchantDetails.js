@@ -18,12 +18,16 @@ import { isPresent } from 'common/utils/rzp-utils';
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
     <div>
-      <a href={user.businessWebsite} rel="noopener">
+      <a href={user.business_website} target="_blank" rel="noopener">
         {user.business_website}
       </a>
     </div>
   ) : null;
 
+  /* 
+    has_key_access determines if merchant can generate keys
+    Let User enter business_website if has_key_access = false & isWebsiteInWorkflow = false 
+  */
   if (!user.has_key_access) {
     if (!user.business_website && !isWebsiteInWorkflow) {
       businessWebsite = (
@@ -32,27 +36,23 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
         </span>
       );
     } else {
-      businessWebsite =
-        !isWebsiteInWorkflow && user.business_website ? (
-          <a href={user.business_website} rel="noopener">
-            {user.business_website}
-          </a>
-        ) : (
-          <span class="status-label label label-info">Under Review</span>
-        );
+      businessWebsite = (
+        <span class="status-label label label-info">Under Review</span>
+      );
     }
   }
 
   return (
     <div>
       {businessWebsite}
-      {user.additional_websites.map(website => (
-        <div>
-          <a href={website} target="_blank" rel="noopener">
-            {website}
-          </a>
-        </div>
-      ))}
+      {isPresent(user.additional_websites) &&
+        user.additional_websites.map(website => (
+          <div>
+            <a href={website} target="_blank" rel="noopener">
+              {website}
+            </a>
+          </div>
+        ))}
     </div>
   );
 }
