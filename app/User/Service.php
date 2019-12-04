@@ -878,7 +878,8 @@ class Service extends Base\Service
             'paymentpages_mli',
             'show_commission_balance',
             'custom_notes',
-            'sellerapp_PL_batch_upload'
+            'sellerapp_PL_batch_upload',
+            'nps_survey_banner'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

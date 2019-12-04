@@ -426,6 +426,10 @@ export default class User {
     return this.getExpStatus('mobile_hotjar_survey');
   }
 
+  get isNPSSurveyBannerEnabled() {
+    return this.getExpStatus('nps_survey_banner');
+  }
+
   get isShowCommissionBalanceEnabled() {
     return this.getExpStatus('show_commission_balance');
   }
