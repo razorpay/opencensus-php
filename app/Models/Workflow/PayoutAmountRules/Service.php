@@ -22,7 +22,32 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        return $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId);
+        $results = $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId);
+
+        $results = $this->convertToDashboardFormat($results);
+
+        return $results;
+    }
+
+    public function convertToDashboardFormat($response)
+    {
+        $groupedRules = $response['items'];
+        foreach($groupedRules as $mid => $groupedRule)
+        {
+            $result = [
+                "merchant_id" => $mid,
+                "rules"       => $groupedRule
+            ];
+            $results[] = $result;
+        }
+
+        $newResponse = [
+            "entity" => $response['entity'],
+            "count"  => $response['count'],
+            "items"  => $results
+        ];
+
+        return $newResponse;
     }
 
     public function createWorkflowPayoutAmountRules($input): array
