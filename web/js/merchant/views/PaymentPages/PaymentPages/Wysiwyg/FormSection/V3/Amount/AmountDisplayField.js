@@ -105,7 +105,9 @@ const displayField = ({
         field.mandatory && 'Field--required',
         field.image_url && 'Field--has-image',
         isListSorting && 'disable-hover',
-        `Field--currency-${currencySymbol.length}`
+        `Field--currency-${
+          currencySymbol.length > 4 ? 'long' : currencySymbol.length
+        }`
       )}
       onClick={openBaseForm}
       setRef={setRef}
