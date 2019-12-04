@@ -641,16 +641,12 @@ return [
             'method'  => 'post',
             'content' => [
                 FundAccount::ACCOUNT_NUMBER => '2224440041626905',
-                Validation::FUND_ACCOUNT => [
-                    'entity'       => 'fund_account',
-                    'contact_id'   => 'cont_1000000contact',
-                    'account_type' => 'bank_account',
-                    'active'       => true,
-                    'details'      => [
-                        'ifsc'           => 'SBIN0007105',
-                        'bank_name'      => 'State Bank of India',
-                        'name'           => 'Jayesh Pawar',
-                        'account_number' => '111000111',
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Jayesh Pawar',
+                        BankAccount::IFSC           => 'SBIN0010432',
                     ],
                 ],
                 Validation::NOTES        => [],
