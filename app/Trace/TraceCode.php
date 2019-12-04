@@ -276,6 +276,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
+    const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -2372,7 +2373,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          = 'FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                = 'PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const GATEWAY_PROCESSING_CPS_FAILURE                        = 'GATEWAY_PROCESSING_CPS_FAILURE';
-  
+
     // Trace Code for Merchant status
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
