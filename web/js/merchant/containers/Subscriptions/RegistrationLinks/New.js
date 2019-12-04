@@ -107,6 +107,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         mandateExpireAt: undefined,
         skipBankDetails: false,
         accountType: '',
+        formReference1: '',
+        formReference2: '',
       },
       validTabs: [false, false, false],
     };
@@ -296,6 +298,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     if (this.isNACHPayment) {
       payload.subscription_registration.bank_account = bankAccountDetails;
+      payload.subscription_registration.form_reference1 = data.formReference1;
+      payload.subscription_registration.form_reference2 = data.formReference2;
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
@@ -471,6 +475,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             trackReceivedNACHForm={trackReceivedNACHForm}
             trackNACHToolTipHover={trackNACHToolTipHover}
             trackSkipBankDetails={trackSkipBankDetails}
+            formReference1={formFields.formReference1}
+            formReference2={formFields.formReference2}
           />
         );
       }
