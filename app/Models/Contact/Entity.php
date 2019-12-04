@@ -45,6 +45,8 @@ class Entity extends Base\PublicEntity
     const FUND_ACCOUNT_ID = 'fund_account_id';
     const IDEMPOTENCY_KEY = 'idempotency_key';
 
+    const RESPONSE_CODE   = 'response_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

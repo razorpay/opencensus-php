@@ -74,6 +74,8 @@ class FundTransfer extends Base
     {
         $input = $this->makeRequestUsingType();
 
+        $this->updateFTAWithResponse();
+
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
             'POST', $input);
@@ -316,7 +318,7 @@ class FundTransfer extends Base
      */
     protected function handleResponse(array $responseBody, string $type)
     {
-        $this->updateFTA($responseBody);
+        $this->updateFTAWithResponse($responseBody);
 
 //        $this->updatePaymentInstrumentByType($responseBody, $type);
     }
@@ -324,18 +326,32 @@ class FundTransfer extends Base
     /**
      * @param array $responseBody
      */
-    protected function updateFTA(array $responseBody)
+    protected function updateFTAWithResponse(array $responseBody = [])
     {
-        $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
+        $failureReason = null;
 
-        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+        $ftsTransferId = 0;
 
-        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        $status        = Constants::STATUS_INITIATED;
+
+        if (isset($responseBody[Constants::FUND_TRANSFER_ID]) === true)
         {
-            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+            $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
         }
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
+        if ((isset($responseBody[Constants::INTERNAL_ERROR]) === true) and
+            ((isset($responseBody[Constants::INTERNAL_ERROR][Constants::CODE]) === true) and
+                ($responseBody[Constants::INTERNAL_ERROR][Constants::CODE] === Constants::VALIDATION_ERROR)))
+        {
+            $status = Constants::STATUS_FAILED;
+
+            if (isset($responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE]) === true)
+            {
+                $failureReason = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
+            }
+        }
+
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
 
         $this->updateSource($ftsTransferId);
     }

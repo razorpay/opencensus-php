@@ -13,6 +13,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_NEW_REQUEST                                   = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                                       = 'PAYMENT_CREATED';
+    const PAYMENT_UPDATED_WITH_CPS_RESPONSE                     = 'PAYMENT_UPDATED_WITH_CPS_RESPONSE';
     const PAYMENT_CREATED_RESPONSE                              = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                                 = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                                  = 'PAYMENT_AUTH_SUCCESS';
@@ -1287,6 +1288,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_BULK_UPDATE_RESPONSE                     = 'TRANSACTIONS_BULK_UPDATE_RESPONSE';
     const PRICING_RULE_MISTMATCH                                = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                          = 'PRICING_RULE_DOES_NOT_EXISTS';
+    const ES_PRICING_SHOWN_TO_MERCHANT                          = 'ES_PRICING_SHOWN_TO_MERCHANT';
 
     const BATCH_CREATE_REQUEST                                  = 'BATCH_CREATE_REQUEST';
     const BATCH_FILE_VALIDATE_REQUEST                           = 'BATCH_FILE_VALIDATE_REQUEST';
@@ -1605,6 +1607,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_CREATE_REQUEST                                = 'CONTACT_CREATE_REQUEST';
     const CONTACT_UPDATE_REQUEST                                = 'CONTACT_UPDATE_REQUEST';
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
+    const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
+    const CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY      = 'CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
@@ -1613,7 +1617,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_CREATE_REQUEST                           = 'FUND_ACCOUNT_CREATE_REQUEST';
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';
-
+    const DUPLICATE_FUND_ACCOUNT_FOUND                          = 'DUPLICATE_FUND_ACCOUNT_FOUND';
     // Trace codes for Fund Account Validation
     const FUND_ACCOUNT_VALIDATION_REQUEST                       = 'FUND_ACCOUNT_VALIDATION_REQUEST';
     const BENEFICIARY_NAME_NOT_PRESENT                          = 'BENEFICIARY_NAME_NOT_PRESENT';
@@ -1625,6 +1629,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_RETRY_FAILED                  = 'FUND_ACCOUNT_VALIDATION_RETRY_FAILED';
     const FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           = 'FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED';
     const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
+    const FUND_ACCOUNT_EXIST                                    = 'FUND_ACCOUNT_EXIST';
     const FUND_ACCOUNT_VALIDATION_VPA_FAILED                    = 'FUND_ACCOUNT_VALIDATION_VPA_FAILED';
     const FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_TIMEOUT          = 'FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_TIMEOUT';
     const FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_FAILED           = 'FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_FAILED';
@@ -2080,7 +2085,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SORTER_RULES                                     = 'AUTH_SORTER_RULES';
     const AUTH_SELECTION_AFTER_FILTER_RULE                      = 'AUTH_SELECTION_AFTER_FILTER_RULE';
     const AUTH_SELECTION_VIA_GATEWAY_RULES                      = 'AUTH_SELECTION_VIA_GATEWAY_RULES';
+    const AUTH_SELECTION_VIA_GATEWAY_RULES_V2                   = 'AUTH_SELECTION_VIA_GATEWAY_RULES_V2';
+    const AUTH_SELECTION_FOR_TERMINALS                          = 'AUTH_SELECTION_FOR_TERMINALS';
+    const AUTH_SELECTION_FOR_TERMINALS_V2                       = 'AUTH_SELECTION_FOR_TERMINALS_V2';
     const AUTH_SELECTION_FAILURE                                = 'AUTH_SELECTION_FAILURE';
+    const AUTH_SELECTION_FAILURE_V2                             = 'AUTH_SELECTION_FAILURE';
     const AUTH_SELECTION_FINAL_TERMINAL                         = 'AUTH_SELECTION_FINAL_TERMINAL';
     const AUTH_SELECTION_VALID_AUTHS                            = 'AUTH_SELECTION_VALID_AUTHS';
     const AUTH_SELECTION_GATEWAY_RULES                          = 'AUTH_SELECTION_GATEWAY_RULES';
@@ -2139,6 +2148,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_PAYMENT_SERVICE_REQUEST                          = 'CARD_PAYMENT_SERVICE_REQUEST';
     const CARD_PAYMENT_SERVICE_RESPONSE                         = 'CARD_PAYMENT_SERVICE_RESPONSE';
     const CARD_PAYMENT_SERVICE_RETRY                            = 'CARD_PAYMENT_SERVICE_RETRY';
+    const CARD_PAYMENT_SERVICE_DISABLING                        = 'CARD_PAYMENT_SERVICE_DISABLING';
     const CARD_PAYMENT_SERVICE_ERROR                            = 'CARD_PAYMENT_SERVICE_ERROR';
 
     // Batch Micro Service
@@ -2150,7 +2160,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
-    const BATCH_SERVICE_CONTACT_BULK_REQUEST                    = 'BATCH_SERVICE_CONTACT_BULK_REQUEST';
+    const BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST               = 'BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST';
     const BATCH_SERVICE_PAYOUT_BULK_REQUEST                     = 'BATCH_SERVICE_PAYOUT_BULK_REQUEST';
     const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST         = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_REQUEST';
     const BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE        = 'BATCH_SERVICE_SUBMERCHANT_ASSIGN_BULK_RESPONSE';
@@ -2348,8 +2358,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
 
+    const FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          = 'FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+    const PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                = 'PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+    const GATEWAY_PROCESSING_CPS_FAILURE                        = 'GATEWAY_PROCESSING_CPS_FAILURE';
+  
     // Trace Code for Merchant status
-
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
@@ -2500,6 +2513,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
         self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
         self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.',
+        self::FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          => 'Fund account already exist with same idempotency key',
+        self::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                => 'Payout already exist with same idempotency key',
         self::MERCHANT_MTU_UPDATE_SUCCESS                           => 'Updating live by transaction is successful for merchant ',
         self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
     ];

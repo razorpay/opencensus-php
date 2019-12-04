@@ -23,6 +23,9 @@ class Scbl extends Base
             'total'   => 0
         ];
 
+        $refundsFile = [];
+
+        $claimsFile = [];
 
         if (isset($data['refunds']) === true)
         {

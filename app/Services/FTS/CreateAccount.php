@@ -507,6 +507,6 @@ class CreateAccount extends Base
         return $this->createAndSendRequest(
             parent::SOURCE_ACCOUNT_DELETE_URI,
             Requests::DELETE,
-            $input)['body'];
+            $input);
     }
 }

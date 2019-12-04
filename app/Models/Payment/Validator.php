@@ -113,6 +113,11 @@ class Validator extends Base\Validator
         Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
+    protected static $editCpsResponseRules = [
+        Entity::AUTH_TYPE               => 'sometimes|nullable|string',
+        Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
+    ];
+
     protected static $editRules = [
         Entity::NOTES                => 'sometimes|notes',
     ];
@@ -211,7 +216,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $paymentCardMigrateRules = [
-        'limit' => 'sometimes|integer',
+        'limit'                             => 'sometimes|integer',
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
     ];
 
     protected static $createValidators = [

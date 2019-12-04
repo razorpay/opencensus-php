@@ -6,6 +6,7 @@ use Str;
 use RZP\App;
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Mozart\UpiJuspay;
 
 class Server extends Base\Mock\Server
 {
@@ -147,6 +148,39 @@ class Server extends Base\Mock\Server
                 }
 
                 $raw = json_encode(['PushNotificationToSSG' => $content]);
+                break;
+
+            case 'upi_juspay':
+                $content = [
+                    UpiJuspay\Fields::AMOUNT                    => $payment['amount'],
+                    UpiJuspay\Fields::CUSTOM_RESPONSE           => '{}',
+                    UpiJuspay\Fields::EXPIRY                    => '2016-11-25T00:10:00+05:30',
+                    UpiJuspay\Fields::GATEWAY_REFERENCE_ID      => '806115044725',
+                    UpiJuspay\Fields::GATEWAY_RESPONSE_CODE     => '00',
+                    UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE  => 'Transaction is approved',
+                    UpiJuspay\Fields::GATEWAY_TRANSACTION_ID    => 'XYZd0c077f39c454979...',
+                    UpiJuspay\Fields::MERCHANT_CHANNEL_ID       => 'DEMOUATAPP',
+                    UpiJuspay\Fields::MERCHANT_ID               => 'DEMOUAT01',
+                    UpiJuspay\Fields::MERCHANT_REQUEST_ID       => $payment['id'],
+                    UpiJuspay\Fields::PAYEE_VPA                 => 'merchant@abc',
+                    UpiJuspay\Fields::PAYER_NAME                => 'Customer Name',
+                    UpiJuspay\Fields::PAYER_VPA                 => 'customer@xyz',
+                    UpiJuspay\Fields::TRANSACTION_TIMESTAMP     => '2016-11-25T00:00:00+05:30',
+                    UpiJuspay\Fields::TYPE                      => 'MERCHANT_CREDITED_VIA_COLLECT',
+                    UpiJuspay\Fields::UDF_PARAMETERS            => '{}',
+                ];
+
+                switch ($payment['description'])
+                {
+                    case 'failedCallback':
+                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
+                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
+                        break;
+                }
+                // TODO: Create proper signature
+                $server['HTTP_X-Merchant-Payload-Signature']                      = 'signature';
+                $raw = json_encode($content);
+                break;
         }
 
         return [

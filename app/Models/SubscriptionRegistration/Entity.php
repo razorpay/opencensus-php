@@ -84,6 +84,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::MERCHANT_ID,
         self::METHOD,
         self::RECURRING_STATUS,
@@ -189,6 +191,8 @@ class Entity extends Base\PublicEntity
             $uploadFormUrl = $invoice === null ? null : $invoice->getShortUrl();
 
             $nachArray[Entity::UPLOAD_FORM_URL] = $uploadFormUrl;
+
+            $nachArray[Invoice\Entity::DESCRIPTION] = $invoice->getDescription();
 
             $tokenArray[Entity::NACH] = $nachArray;
 

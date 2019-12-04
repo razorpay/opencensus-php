@@ -194,7 +194,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
-    const BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL                              = 'Invalid mode sent for the payout';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -664,7 +663,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
-    CONST SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND                           = 'ES scheduled pricing is not assigned to this Merchant';
+    const SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND                           = 'ES scheduled pricing is not assigned to this Merchant';
+    const SERVER_ERROR_INVALID_ES_PRICING                                       = 'Invalid ES pricing was assigned to this merchant';
 
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 
@@ -783,6 +783,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
     const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
+    const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
+    const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';

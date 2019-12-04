@@ -12,7 +12,8 @@ class FactoryVerifier
     {
         $app = App::getFacadeRoot();
 
-        $mock = $app['config']['applications.mozart.mock'];
+        $mock = ($app['config']['applications.kyc_service.mock']
+                 or $app['config']['applications.mozart.mock']);
 
         if ($mock === true)
         {
