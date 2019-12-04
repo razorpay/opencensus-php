@@ -932,12 +932,11 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      */
-    public function cancelInvoicesOfBatch(array $batch, Merchant\Entity $merchant)
+    public function cancelInvoicesOfBatch(array $batch)
     {
-        if ($batch[Batch\Entity::STATUS] !== Batch\Status::FAILED and
-            $this->isFailBatchEnabled($merchant) === true)
+        if ($batch[Batch\Entity::STATUS] !== Batch\Status::FAILED)
         {
-            if ((new Batch\Service())->failBatchProcessIfRequired($batch) === false)
+            if ((new Batch\Service())->stopBatchProcessIfRequired($batch) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
@@ -945,7 +944,7 @@ class Core extends Base\Core
                     [
                         'batch_id' => $batch[Batch\Entity::ID],
                     ],
-                    'Batch process ongoing, unable to cancel'
+                    'Unable to stop batch processing'
                 );
             }
         }
@@ -1212,16 +1211,5 @@ class Core extends Base\Core
             $input[Entity::CUSTOMER][Customer\Entity::EMAIL] = null;
             $input[Entity::CUSTOMER][Customer\Entity::CONTACT] = null;
         }
-    }
-
-    protected function isFailBatchEnabled(Merchant\Entity $merchant)
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::FAIL_BATCH_BEFORE_CANCEL,
-            $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
     }
 }

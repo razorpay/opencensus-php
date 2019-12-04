@@ -649,9 +649,10 @@ class BatchMicroService
         catch (\Exception $exception)
         {
             $this->trace->error(
-                TraceCode::FAIL_BATCH_BATCH_SERVICE_FAILED, // Suggestions?
+                TraceCode::STOP_BATCH_PROCESS_FAILED,
                 [
                     'batch_id' => $id,
+                    'response' => $response,
                 ]
             );
 
@@ -659,9 +660,10 @@ class BatchMicroService
         }
 
         $this->trace->info(
-            TraceCode::FAIL_BATCH_BATCH_SERVICE_SUCCESS,
+            TraceCode::STOP_BATCH_PROCESS_SUCCESS,
             [
                 'batch_id' => $id,
+                'response' => $response,
             ]
         );
 
