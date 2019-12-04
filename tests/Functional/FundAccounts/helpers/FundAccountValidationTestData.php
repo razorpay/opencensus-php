@@ -650,6 +650,8 @@ return [
                     ],
                 ],
                 Validation::NOTES        => [],
+                Validation::AMOUNT       => '100',
+                Validation::CURRENCY     => 'INR',
             ],
         ],
         'response' => [
