@@ -2,23 +2,28 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+
 import Time from 'common/ui/Time';
 import DetailRow from 'merchant/components/DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { isPresent } from 'common/utils/rzp-utils';
+
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
-    <a class="link--block" href={user.businessWebsite} rel="noopener">
-      {user.business_website}
-    </a>
+    <div>
+      <a href={user.businessWebsite} rel="noopener">
+        {user.business_website}
+      </a>
+    </div>
   ) : null;
+
   if (!user.has_key_access) {
     if (!user.business_website && !isWebsiteInWorkflow) {
       businessWebsite = (
@@ -26,23 +31,27 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
           <a onClick={handleEditWebsite}>Add Website/App URL for Full Access</a>
         </span>
       );
-    } else
+    } else {
       businessWebsite =
         !isWebsiteInWorkflow && user.business_website ? (
-          <a class="link--block" href={user.business_website} rel="noopener">
+          <a href={user.business_website} rel="noopener">
             {user.business_website}
           </a>
         ) : (
           <span class="status-label label label-info">Under Review</span>
         );
+    }
   }
+
   return (
     <div>
       {businessWebsite}
       {user.additional_websites.map(website => (
-        <a class="link--block" href={website} target="_blank" rel="noopener">
-          {website}
-        </a>
+        <div>
+          <a href={website} target="_blank" rel="noopener">
+            {website}
+          </a>
+        </div>
       ))}
     </div>
   );
