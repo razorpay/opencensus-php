@@ -74,6 +74,8 @@ class FundTransfer extends Base
     {
         $input = $this->makeRequestUsingType();
 
+        $this->updateFTAWithResponse();
+
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
             'POST', $input);
@@ -316,7 +318,7 @@ class FundTransfer extends Base
      */
     protected function handleResponse(array $responseBody, string $type)
     {
-        $this->updateFTA($responseBody);
+        $this->updateFTAWithResponse($responseBody);
 
 //        $this->updatePaymentInstrumentByType($responseBody, $type);
     }
@@ -324,18 +326,32 @@ class FundTransfer extends Base
     /**
      * @param array $responseBody
      */
-    protected function updateFTA(array $responseBody)
+    protected function updateFTAWithResponse(array $responseBody = [])
     {
-        $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
+        $failureReason = null;
 
-        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+        $ftsTransferId = 0;
 
-        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        $status        = Constants::STATUS_INITIATED;
+
+        if (isset($responseBody[Constants::FUND_TRANSFER_ID]) === true)
         {
-            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+            $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
         }
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
+        if ((isset($responseBody[Constants::INTERNAL_ERROR]) === true) and
+            ((isset($responseBody[Constants::INTERNAL_ERROR][Constants::CODE]) === true) and
+                ($responseBody[Constants::INTERNAL_ERROR][Constants::CODE] === Constants::VALIDATION_ERROR)))
+        {
+            $status = Constants::STATUS_FAILED;
+
+            if (isset($responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE]) === true)
+            {
+                $failureReason = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
+            }
+        }
+
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
 
         $this->updateSource($ftsTransferId);
     }
@@ -596,8 +612,18 @@ class FundTransfer extends Base
         if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
             ($this->fta->source->isBalanceTypeBanking() === true))
         {
-            $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                      ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if (($currentTime < $this->bankingStartTime) &&
+                (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt($this->bankingStartTime);
+            }
+            else
+            {
+                $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+            }
 
             return true;
         }
@@ -694,6 +720,16 @@ class FundTransfer extends Base
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function getRawBankStatus(array $input)
+    {
+        $this->setDashboardAuth();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
             Requests::POST,
             $input);
     }

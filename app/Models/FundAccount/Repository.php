@@ -38,22 +38,12 @@ class Repository extends Base\Repository
         switch ($input[Entity::ACCOUNT_TYPE])
         {
             case Type::BANK_ACCOUNT:
-                $account = $this->repo
-                                ->bank_account
-                                ->findLatestBankAccountByAccountNumber(
-                                    $input[Entity::DETAILS][BankAccount\Entity::ACCOUNT_NUMBER],
-                                    $input[Entity::DETAILS][BankAccount\Entity::IFSC],
-                                    E::CONTACT,
-                                    $merchant->getId());
+               $account = $this->fetchFundAccountOfTypeBankAccountForContact($merchant, $contact, $input);
 
                 break;
 
             case Type::VPA:
-                $account = $this->repo
-                                ->vpa
-                                ->findLatestByAddressAndMerchantId(
-                                    $input[Entity::DETAILS][Vpa\Entity::ADDRESS],
-                                    $merchant->getId());
+                $account = $this->fetchFundAccountOfTypeVpaForContact($merchant, $contact, $input);
 
                 break;
 
@@ -63,38 +53,7 @@ class Repository extends Base\Repository
                 break;
         }
 
-        // If no underlying account (bank account/vpa) found, return null.
-        if ($account === null)
-        {
-            return null;
-        }
-
-        // Else gets latest fund account entity with this account and contact(optionally).
-        $query = $this->newQuery()
-                      ->merchantId($merchant->getId())
-                      ->where(Entity::ACCOUNT_ID, $account->getId())
-                      ->where(Entity::ACCOUNT_TYPE, $account->getEntity())
-                      ->latest();
-
-        if ($contact !== null)
-        {
-            $query->where(Entity::SOURCE_ID, $contact->getId())
-                  ->where(Entity::SOURCE_TYPE, $contact->getEntity());
-        }
-
-        return $query->first();
-    }
-
-    protected function addQueryParamCustomerId($query, $params)
-    {
-        $query->where(Entity::SOURCE_ID, $params[Entity::CUSTOMER_ID])
-              ->where(Entity::SOURCE_TYPE, E::CUSTOMER);
-    }
-
-    protected function addQueryParamContactId($query, $params)
-    {
-        $query->where(Entity::SOURCE_ID, $params[Entity::CONTACT_ID])
-              ->where(Entity::SOURCE_TYPE, E::CONTACT);
+        return $account;
     }
 
     public function fetchByIdempotentKey(string $idempotentKey,
@@ -105,6 +64,87 @@ class Repository extends Base\Repository
                     ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
                     ->where(Entity::BATCH_ID, $batchId)
                     ->merchantId($merchantId)
+                    ->first();
+    }
+
+    public function fetchFundAccountOfTypeBankAccountForContact(Merchant\Entity $merchant,
+                                                                Contact\Entity $contact,
+                                                                array $input)
+    {
+        $bankAccount = $input[Type::BANK_ACCOUNT];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+
+        $bankAccountTable = $this->repo->bank_account->getTableName();
+
+        $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
+        $bankAccountBeneficiaryName = $this->repo->bank_account->dbColumn(BankAccount\Entity::BENEFICIARY_NAME);
+
+        $bankAccountIfscCodeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
+
+        $bankAccountTypeColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::TYPE);
+
+        $bankAccountMerchantIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::MERCHANT_ID);
+
+        $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->select($allFundAccountAttributes)
+                    ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                    ->where($faSourceIdColumn, '=', $contact->getId())
+                    ->where($bankAccountTypeColumn, '=', E::CONTACT)
+                    ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
+                    ->where($bankAccountIfscCodeColumn, '=', $bankAccount[BankAccount\Entity::IFSC])
+                    ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
+                    ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                    ->latest($bankAccountCreatedAtColumn)
+                    ->first();
+    }
+
+    public function fetchFundAccountOfTypeVpaForContact(Merchant\Entity $merchant,
+                                                        Contact\Entity $contact,
+                                                        array $input)
+    {
+        $vpa = $input[Type::VPA];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+
+        $vpaTable = $this->repo->vpa->getTableName();
+
+        $vpaIdColumn = $this->repo->vpa->dbColumn(Vpa\Entity::ID);
+
+        $vpaTypeColumn = $this->repo->vpa->dbColumn(Vpa\Entity::ENTITY_TYPE);
+
+        $vpaCreatedAtColumn = $this->repo->vpa->dbColumn(Vpa\Entity::CREATED_AT);
+
+        $vpaUsernameColumn = $this->repo->vpa->dbColumn(Vpa\Entity::USERNAME);
+
+        $vpaHandleColumn = $this->repo->vpa->dbColumn(Vpa\Entity::HANDLE);
+
+        $vpaMerchantIdColumn = $this->repo->vpa->dbColumn(Vpa\Entity::MERCHANT_ID);
+
+        list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpa[Vpa\Entity::ADDRESS]);
+
+        return $this->newQuery()
+                    ->select($allFundAccountAttributes)
+                    ->join($vpaTable, $faAccountIdColumn, '=', $vpaIdColumn)
+                    ->where($faSourceIdColumn, '=', $contact->getId())
+                    ->where($vpaTypeColumn, '=', E::CONTACT)
+                    ->where($vpaUsernameColumn, $username)
+                    ->where($vpaHandleColumn, $handle)
+                    ->where($vpaMerchantIdColumn, '=', $merchant->getId())
+                    ->latest($vpaCreatedAtColumn)
                     ->first();
     }
 }

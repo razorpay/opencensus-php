@@ -1437,4 +1437,28 @@ class MerchantController extends Controller
 
         $this->service()->removeSuspendedMerchantsFromMailingList($input);
     }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function fetchReferral(string  $merchantId)
+    {
+        $response = $this->service()->fetchReferral($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function createReferral(string  $merchantId)
+    {
+        $response = $this->service()->createReferral($merchantId);
+
+        return ApiResponse::json($response);
+    }
 }

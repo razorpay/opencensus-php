@@ -250,7 +250,8 @@ class Core extends Base\Core
 
         if((array_key_exists('expire_by', $input) === true) and
             ((empty($reminderStatus) === false) and
-             ($reminderStatus === Reminder\Status::IN_PROGRESS)))
+             ($reminderStatus === Reminder\Status::IN_PROGRESS or
+              $reminderStatus === Reminder\Status::FAILED)))
         {
             return true;
         }
@@ -524,12 +525,9 @@ class Core extends Base\Core
 
         $pdfPath = null;
 
-        if ($invoice->isTypeOfSubscriptionRegistration() === false)
+        if ($medium === NotifyMedium::EMAIL)
         {
-            if ($medium === NotifyMedium::EMAIL)
-            {
-                $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
-            }
+            $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();

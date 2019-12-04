@@ -5414,6 +5414,10 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
+ALTER TABLE offers
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
 # adds fee_bearer column for payments (renaming the existing column 'reference12')
 ALTER TABLE payments
     CHANGE COLUMN reference12 fee_bearer BIGINT;
@@ -5499,6 +5503,9 @@ ALTER TABLE `p2p_concerns`
     ADD INDEX `p2p_concerns_created_at_index`(`created_at`);
 
 -- P2P - Adding Indices
+
+ALTER TABLE `iins`
+    ADD COLUMN `product_code` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
 
 ---Virtual VPA----
 

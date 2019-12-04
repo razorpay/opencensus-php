@@ -75,6 +75,7 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE            = 'source';
     const ACCOUNT_BALANCE   = 'account_balance';
+    const SETTLEMENT        = 'settlement';
 
     protected static $sign = 'txn';
 
@@ -121,6 +122,16 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
+    ];
+
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::SETTLEMENT,
     ];
 
     protected $publicSetters = [
@@ -473,7 +484,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
-    public function setReconciledType(string $reconciledType)
+    public function setReconciledType($reconciledType)
     {
         ReconciledType::validateReconciledType($reconciledType);
 

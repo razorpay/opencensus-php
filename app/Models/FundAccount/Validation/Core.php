@@ -173,6 +173,8 @@ class Core extends Base\Core
     {
         assertTrue(isset($input['fund_account']) === true);
 
+        $this->fundAccountCore->modifyRequestForBackwardCompatibility($input['fund_account']);
+
         try
         {
             if (empty($input['fund_account']['id']) === false)
@@ -379,9 +381,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     protected function associateBalance(Entity $fundAccValidation, array $input)

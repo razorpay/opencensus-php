@@ -227,6 +227,18 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_JUSPAY:
+
+                $input = [
+                    'headers' => Request::header(),
+                    'raw'     => Request::getContent(),
+                    'body'    => $input,
+                ];
+
+                $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
             case Gateway::UPI_HULK:
                 $input['headers'] = Request::header();
                 $input['raw'] = Request::getContent();

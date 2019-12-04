@@ -262,11 +262,13 @@ class Service extends Base\Service
 
         $customer = $paperMandate->customer;
 
-        $paymentInput[Payment\Entity::AMOUNT]      = $subscriptionRegistration->getAmount();
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
-        $paymentInput[Payment\Entity::CURRENCY]    = $subscriptionRegistration->getCurrency();
+        $paymentInput[Payment\Entity::AMOUNT]      = $order->getAmount();
 
-        $paymentInput[Payment\Entity::METHOD]      = $subscriptionRegistration->getMethod();
+        $paymentInput[Payment\Entity::CURRENCY]    = $order->getCurrency();
+
+        $paymentInput[Payment\Entity::METHOD]      = $order->getMethod();
 
         $paymentInput[Payment\Entity::RECURRING]   = true;
 
@@ -343,7 +345,7 @@ class Service extends Base\Service
 
         $subscriptionRegistration->getValidator()->validateTokenToRetry($token);
 
-        $payments = $token->payments;
+        $payments = $token->nachPayments;
 
         if (count($payments) !== 1)
         {
@@ -374,6 +376,27 @@ class Service extends Base\Service
         }
 
         return $this->createPaymentForPaperMandate([Entity::ORDER_ID => $order->getPublicId()]);
+    }
+
+    public function nachRegisterTestPaymentAuthorizeOrFail(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $subscriptionRegistration = $invoice->entity;
+
+        if (($subscriptionRegistration === null) or
+            ($invoice->getEntityType() !== Constants\Entity::SUBSCRIPTION_REGISTRATION))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'id provided does not exist'
+            );
+        }
+
+        $subscriptionRegistration->getValidator()->validateNachRegisterTestPaymentAuthorizeOrFail();
+
+        (new Validator)->validateInput('nach_register_test_payment', $input);
+
+        return $this->core->nachRegisterTestPaymentAuthorizeOrFail($subscriptionRegistration, $input);
     }
 
     protected function getSubscriptionRegistrationForToken(string $tokenId)
@@ -468,6 +491,6 @@ class Service extends Base\Service
 
         $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
-        return $invoice->toArrayPublic();
+        return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 }

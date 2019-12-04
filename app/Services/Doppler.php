@@ -145,7 +145,7 @@ class Doppler
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = $payment->getVpa();
-            $upi['psp'] = $payment->$psp;
+            $upi['psp'] = $psp;
             $upi['bank'] = $payment->getBankName();
             $upi['type'] = $payment->getMetadata('flow');
             $netbanking['bank'] = null;

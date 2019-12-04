@@ -4,7 +4,6 @@ namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 
 use App;
 use Carbon\Carbon;
-use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
@@ -58,11 +57,15 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
             Terminal\Entity::IFSC_CODE           => $ifscCode,
             Terminal\Entity::GATEWAY             => Gateway::WORLDLINE,
+            Terminal\Entity::GATEWAY_ACQUIRER    => Gateway::ACQUIRER_AXIS,
             Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid($subMerchant),
+            Terminal\Entity::CARD                => '1',
+            Terminal\Entity::EXPECTED            => '1',
             Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
             Terminal\Entity::TYPE                => [
-                                                        Terminal\Type::NON_RECURRING => '1',
-                                                        Terminal\Type::BHARAT_QR     => '1',
+                                                        Terminal\Type::NON_RECURRING                 => '1',
+                                                        Terminal\Type::BHARAT_QR                     => '1',
+                                                        Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
                                                     ],            
         ];
 
@@ -102,16 +105,20 @@ class GatewayProcessor extends BaseGatewayProcessor
             function() use ($input, $merchant)
             {
                 $terminalData = [
-                    'gateway'                   => Gateway::WORLDLINE,
-                    'gateway_merchant_id'       => '999999999999',
-                    'gateway_terminal_id'       => '12345678',
-                    'type'                      => [
-                                                        Terminal\Type::NON_RECURRING => '1',
-                                                        Terminal\Type::BHARAT_QR     => '1',
-                                                    ],
-                    'mc_mpan'                   => $input[Constants::MPAN][Constants::MASTERCARD],
-                    'visa_mpan'                 => $input[Constants::MPAN][Constants::VISA],
-                    'rupay_mpan'                => $input[Constants::MPAN][Constants::RUPAY],
+                    Terminal\Entity::GATEWAY               => Gateway::WORLDLINE,
+                    Terminal\Entity::GATEWAY_ACQUIRER      => Gateway::ACQUIRER_AXIS,
+                    Terminal\Entity::GATEWAY_MERCHANT_ID   => '999999999999',
+                    Terminal\Entity::GATEWAY_TERMINAL_ID   => '12345678',
+                    Terminal\Entity::TYPE                  => [
+                                                                Terminal\Type::NON_RECURRING => '1',
+                                                                Terminal\Type::BHARAT_QR     => '1',
+                                                                Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                                                            ],
+                    Terminal\Entity::MC_MPAN               => $input[Constants::MPAN][Constants::MASTERCARD],
+                    Terminal\Entity::VISA_MPAN             => $input[Constants::MPAN][Constants::VISA],
+                    Terminal\Entity::RUPAY_MPAN            => $input[Constants::MPAN][Constants::RUPAY],
+                    Terminal\Entity::CARD                  => '1',
+                    Terminal\Entity::EXPECTED              => '1',
                 ];
 
                 (new Core)->create($terminalData, $merchant);

@@ -19,6 +19,7 @@ class PaymentLinkDefaultOption implements DefaultOption
     {
         return array (
 //                    'org_id' => '100000000',
+            'name'        => '',
             'description' => '',
             'checkout' =>
                 array (
@@ -63,8 +64,7 @@ class PaymentLinkDefaultOption implements DefaultOption
                     'hidden' =>
                         array (
                             'contact' => false,
-                            'email' => false,
-                            'entity_id' => false
+                            'email' => false
                         ),
                     'theme' =>
                         array (
@@ -88,11 +88,11 @@ class PaymentLinkDefaultOption implements DefaultOption
                             'handleback' => true,
                             'select_partial' => false
                         ),
-                    'label' =>
+                    'partial_payment' =>
                         array (
-                            'min_amount' => 'Minimum first amount',
-                            'partial_payment' => 'Make payment in parts'
-//                                    'business_slug' => 'Use if sent : Registered Name',
+                            'min_amount_label' => 'Minimum first amount',
+                            'total_amount_label' => 'Make payment in parts',
+                            'total_amount_description' => 'Pay some now and remaining later'
                         ),
                 ),
             'order' =>
@@ -114,14 +114,14 @@ class PaymentLinkDefaultOption implements DefaultOption
                         ),
                     'label' =>
                         array (
-                            'receipt' 				 => 'Receipt',
-                            'description' 		     => 'Payment For',
-                            'amount_payable' 		 => 'Amount Payable',
-                            'amount_paid'    		 => 'Amount Paid',
-                            'partial_amount_due'     => 'Due',
-                            'partial_amount_paid'    => 'Paid',
-                            'expire_by'  		     => 'Expire By',
-                            'expired_on'             => 'Expired On'
+                            'receipt' 				 => 'RECEIPT',
+                            'description' 		     => 'PAYMENT FOR',
+                            'amount_payable' 		 => 'AMOUNT PAYABLE',
+                            'amount_paid'    		 => 'AMOUNT PAID',
+                            'partial_amount_due'     => 'DUE',
+                            'partial_amount_paid'    => 'PAID',
+                            'expire_by'  		     => 'EXPIRE BY',
+                            'expired_on'             => 'EXPIRED ON'
                         ),
                     'show_preferences' =>
                         array (

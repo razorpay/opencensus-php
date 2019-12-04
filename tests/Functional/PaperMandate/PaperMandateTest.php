@@ -59,7 +59,7 @@ class PaperMandateTest extends TestCase
 
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
-        $this->assertEquals(PaperMandate\Status::AUTHENTICATED, $paperMandate->getStatus());
+        $this->assertEquals('mandate', $paperMandate->getUploadedFileID());
     }
 
     public function testAuthenticatePaperMandateWithoutCustomerSign()
@@ -171,7 +171,10 @@ class PaperMandateTest extends TestCase
     {
         $callable = function ()
         {
-            return ['outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf'))];
+            return [
+                'outputImage' => base64_encode(file_get_contents(__DIR__ . '/Helpers/sample_form.pdf')),
+                'uid'         => 'XXXXXXX'
+            ];
         };
 
         return $this->mockHyperVerge($callable);

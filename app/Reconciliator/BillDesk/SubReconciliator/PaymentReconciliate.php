@@ -105,7 +105,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'date'          => $row[self::COLUMN_SETTLED_AT],
+                    'payment_id'    => $this->payment->getId(),
                     'gateway'       => $this->gateway
                 ]);
 

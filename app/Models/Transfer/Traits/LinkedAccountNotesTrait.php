@@ -15,7 +15,7 @@ trait LinkedAccountNotesTrait
 
         if (empty($laNotes) === false)
         {
-            $laNotes = implode(",", $laNotes);
+            $laNotes = implode(',', $laNotes);
 
             $notes[self::LINKED_ACCOUNT_NOTES] = $laNotes;
 
@@ -36,12 +36,30 @@ trait LinkedAccountNotesTrait
 
         if ((empty($notes) === false) and (empty($laNotesList) === false))
         {
-            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(",", $laNotesList);
+            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(',', $laNotesList);
             unset($attributes[self::NOTES][self::LINKED_ACCOUNT_NOTES]);
         }
         else
         {
             $attributes[self::LINKED_ACCOUNT_NOTES] = [];
         }
+    }
+
+    /**
+     * This function will fetch the linked account notes keys from notes
+     * and return the list.
+     */
+    public function getLinkedAccountNotes()
+    {
+        $notes = $this->getNotes();
+
+        $laNotesList = $notes[self::LINKED_ACCOUNT_NOTES] ?? [];
+
+        if ((empty($notes) === false) and (empty($laNotesList) === false))
+        {
+            return explode(',', $laNotesList);
+        }
+
+        return $laNotesList;
     }
 }

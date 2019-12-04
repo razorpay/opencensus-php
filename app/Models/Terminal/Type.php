@@ -52,6 +52,9 @@ class Type
     // Terminal to be used for specific product line - business banking during bank transfer payments
     const BUSINESS_BANKING                   = 'business_banking';
 
+    // Terminals For Upi Transfer payments
+    const UPI_TRANSFER                       = 'upi_transfer';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -69,6 +72,7 @@ class Type
         self::NUMERIC_ACCOUNT,
         self::ALPHA_NUMERIC_ACCOUNT,
         self::BUSINESS_BANKING,
+        self::UPI_TRANSFER,
     ];
 
     protected static $bitPosition = [
@@ -88,6 +92,7 @@ class Type
         self::ALPHA_NUMERIC_ACCOUNT            => 14,
         self::BUSINESS_BANKING                 => 15,
         self::DIRECT_SETTLEMENT_WITHOUT_REFUND => 16,
+        self::UPI_TRANSFER                     => 17,
     ];
 
     /**

@@ -408,4 +408,38 @@ return [
             ],
         ],
     ],
+
+    'testPaymentFetchWithPartnerAuthWithoutAccountIdInHeader' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'method'   => 'card',
+                'status'   => 'authorized',
+                'entity'   => 'payment',
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testPaymentFetchWithDifferentPartnerAuthWithoutAccountIdInHeader' => [
+        'request' => [
+            'url'     => '/payments/{id}/partner',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
 ];

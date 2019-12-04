@@ -2634,4 +2634,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testAddPricingPlanRuleWithVpaReceiver' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'upi',
+                'feature'             => 'payment',
+                'percent_rate'        => 100,
+                'receiver_type'       => 'vpa',
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => 5000,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'      => 'TestPlan1',
+                'payment_method' => 'upi',
+                'feature'        => 'payment',
+                'percent_rate'        => 100,
+                'receiver_type'       => 'vpa',
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
 ];

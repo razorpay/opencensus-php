@@ -164,6 +164,10 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
     ];
 
+    //
+    // If adding any default methods here, also add
+    // in $defaultPaymentMethodsForSubmerchantByPartner with default as false.
+    //
     protected $defaults = array(
         self::CARD_NETWORKS  => Network::DEFAULT_CARD_NETWORKS,
         self::AMEX           => false,
@@ -191,6 +195,38 @@ class Entity extends Base\PublicEntity
         self::PREPAID_CARD   => true,
         self::CARD_SUBTYPE   => SubType::DEFAULT_CARD_SUBTYPE,
         self::BANK_TRANSFER  => true,
+        self::AMAZONPAY      => false,
+        self::CARDLESS_EMI   => false,
+        self::PAYLATER       => false,
+        self::PHONEPE        => false,
+        self::PAYPAL         => false,
+    );
+
+    public static $defaultPaymentMethodsForSubmerchantByPartner = array(
+        self::AMEX           => false,
+        self::PAYTM          => false,
+        self::MOBIKWIK       => false,
+        self::PAYZAPP        => false,
+        self::PAYUMONEY      => false,
+        self::AIRTELMONEY    => false,
+        self::OLAMONEY       => false,
+        self::FREECHARGE     => false,
+        self::JIOMONEY       => false,
+        self::SBIBUDDY       => false,
+        self::OPENWALLET     => false,
+        self::MPESA          => false,
+        self::DISABLED_BANKS => [],
+        self::EMI            => false,
+        self::UPI            => false,
+        self::AEPS           => false,
+        self::EMANDATE       => false,
+        self::NACH           => false,
+        self::NETBANKING     => false,
+        self::CREDIT_CARD    => false,
+        self::DEBIT_CARD     => false,
+        self::PREPAID_CARD   => false,
+        self::CARD_SUBTYPE   => SubType::DEFAULT_CARD_SUBTYPE,
+        self::BANK_TRANSFER  => false,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
         self::PAYLATER       => false,
