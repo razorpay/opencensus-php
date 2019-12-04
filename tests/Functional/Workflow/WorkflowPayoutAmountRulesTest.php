@@ -87,7 +87,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->ba->adminProxyAuth();
 
         for ($index = 0; $index < 3; $index++) {
-            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = $this->workflowIds[$index];
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
         }
 
         $this->startTest();
@@ -98,7 +98,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->ba->adminProxyAuth();
 
         for ($index = 0; $index < 3; $index++) {
-            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = $this->workflowIds[$index];
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
         }
 
         $this->startTest();
@@ -116,7 +116,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->ba->adminProxyAuth();
 
         for ($index = 0; $index < 3; $index++) {
-            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = $this->workflowIds[0];
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
         }
 
         $this->startTest();
@@ -127,7 +127,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->ba->adminProxyAuth();
 
         for ($index = 0; $index < 3; $index++) {
-            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = $this->workflowIds[$index];
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
             $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index];
         }
 
@@ -144,7 +144,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             'max_amount'  => null
         ]);
 
-        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = $this->workflowIds[0];
+        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
 
         $this->startTest();
     }
@@ -260,7 +260,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         );
 
-        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = $workflow->getId();
+        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$workflow->getId();
 
         $this->startTest();
     }

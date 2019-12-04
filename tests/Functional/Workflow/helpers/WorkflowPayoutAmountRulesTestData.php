@@ -31,31 +31,24 @@ return [
             'content' => [
                 'entity'    => 'collection',
                 'count'     => 3,
-                'admin'     => true,
                 'items'     => [
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  0,
-                        'max_amount'    =>  100000,
-                        'entity'        =>  'workflow_payout_amount_rules',
-                        'admin'         =>  true
+                        'max_amount'    =>  100000
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  100001,
-                        'max_amount'    =>  1000000,
-                        'entity'        =>  'workflow_payout_amount_rules',
-                        'admin'         =>  true
+                        'max_amount'    =>  1000000
                     ],
                     [
                         'merchant_id'   => '10000000000000',
                         'condition'     => null,
                         'min_amount'    => 1000001,
-                        'max_amount'    => null,
-                        'entity'        => 'workflow_payout_amount_rules',
-                        'admin'         =>  true
+                        'max_amount'    => null
                     ]
                 ]
             ]
@@ -143,7 +136,7 @@ return [
             'content' => [
                 'rules' => [
                     [
-                        'workflow_id'   =>  'wrongWorkflowId',
+                        'workflow_id'   =>  'workflow_1000000wrongId',
                         'min_amount'	=>	0,
                         'max_amount'	=>	null
                     ]

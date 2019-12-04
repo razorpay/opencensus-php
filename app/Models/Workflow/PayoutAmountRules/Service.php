@@ -54,6 +54,11 @@ class Service extends Base\Service
     {
         $rules = $input['rules'];
 
+        for($index = 0; $index < count($rules); $index++)
+        {
+            \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
+        }
+
         $merchantId = $this->merchant->getId();
 
         // Check if workflow exists and belongs to merchant in context
