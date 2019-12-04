@@ -17,7 +17,7 @@ import { closeModal } from 'rzp/modules/modals';
   closeModal,
   ...NotificationsActions,
 })
-export default class EnableTransferModal extends React.Component {
+export default class EnableTransferMode extends React.Component {
   onSubmit = data => {
     const { isForBankAccount, isForUPIAddress } = this.props;
     const { descriptor } = data;

@@ -4,20 +4,20 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import Definition from 'rzp/ui/Definition';
-import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import Table from 'rzp/ui/Table/Index';
+import AccountDetailsSummary from 'merchant/components/VirtualAccounts/AccountDetailsSummary';
+import EnableTransferMode from './EnableTransferMode';
+import ModalHeader from 'rzp/ui/ModalHeader';
 import { paymentId, amount } from 'rzp/ui/item/pair';
 import { openModal, closeModal } from 'rzp/modules/modals';
-import EnableTransferModal from './Modals/EnableTransferModal';
-import { updateVirtualAccountDetails } from 'merchant/modules/VirtualAccounts';
-import { VirtualAccountDetailsSummary } from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
-import ModalHeader from 'rzp/ui/ModalHeader';
+import { updateVirtualAccountDetails } from 'merchant/modules/virtualaccounts';
 
 @connect(state => ({}), {
   openModal,
@@ -25,14 +25,14 @@ import ModalHeader from 'rzp/ui/ModalHeader';
   updateVirtualAccountDetails,
 })
 export default class extends React.Component {
-  openEnableTransferModal = () => {
+  openEnableTransferModeModal = () => {
     const { bankAccount, upiAddress } = getVirtualAccountDetails(
       this.props.virtualaccount
     );
 
     this.props.openModal({
       component: (
-        <EnableTransferModal
+        <EnableTransferMode
           isForBankAccount={!bankAccount}
           isForUPIAddress={!upiAddress}
           updateVirtualAccountDetails={this.updateVirtualAccountDetails}
@@ -64,38 +64,13 @@ export default class extends React.Component {
         this.props.openModal({
           size: 'small',
           component: (
-            <div>
-              <ModalHeader
-                title={modalTitle}
-                onCloseClick={this.props.closeModal}
-              />
-
-              <VirtualAccountDetailsSummary
-                virtualAccount={data}
-                onClose={_ => {}}
-                showUPIAddressDetails={showUPIAddressDetails}
-                showBankAccountDetails={showBankAccountDetails}
-              />
-
-              <p className="text-muted">
-                Share the following information with the customer to accept
-                payments
-              </p>
-
-              <br />
-
-              <div className="modal-body">
-                <Form onSubmit={this.onSubmit} class="filters">
-                  {field}
-                  <br />
-                  <div className="Modal__actions">
-                    <button className="btn btn-primary btn-block">
-                      {buttonLabel}
-                    </button>
-                  </div>
-                </Form>
-              </div>
-            </div>
+            <AccountDetailsSummary
+              modalTitle={modalTitle}
+              closeModal={this.props.closeModal}
+              virtualAccount={data}
+              showUPIAddressDetails={showUPIAddressDetails}
+              showBankAccountDetails={showBankAccountDetails}
+            />
           ),
         });
       });
@@ -164,7 +139,7 @@ export default class extends React.Component {
                   !bankAccount && (
                     <button
                       class="btn btn-default"
-                      onClick={this.openEnableTransferModal}
+                      onClick={this.openEnableTransferModeModal}
                     >
                       Enable Account Transfer
                     </button>
@@ -176,7 +151,7 @@ export default class extends React.Component {
                   !upiAddress && (
                     <button
                       class="btn btn-default"
-                      onClick={this.openEnableTransferModal}
+                      onClick={this.openEnableTransferModeModal}
                     >
                       Enable UPI Transfer
                     </button>
