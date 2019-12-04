@@ -50,5 +50,12 @@ final class RazorxTreatment
     // Decides if Instant Refunds Mode decisioning call should go to scrooge during refund creation flow
     const INSTANT_REFUND_MODES = 'instant_refunds_modes';
 
-    const FAIL_BATCH_BEFORE_CANCEL = 'fail_batch_before_cancel';
+    // Decides if fund account and contact creation should have duplicate checks
+    const X_CONTACT_AND_FUND_ACCOUNT_CREATION = 'x_contact_and_fund_account_creation';
+
+    // Decides what payload to return in the payouts webhook
+    const PAYOUTS_WEBHOOK_FILTER = 'payouts_webhook_filter';
+
+    // Decides if payout.created webhook should be fired for the merchant
+    const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
 }

@@ -4,7 +4,6 @@ namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Models\FundTransfer\Mode;
 
 class Fetch extends BaseFetch
 {

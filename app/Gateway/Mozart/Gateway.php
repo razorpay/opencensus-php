@@ -9,8 +9,10 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
@@ -153,6 +155,101 @@ class Gateway extends Base\Gateway
         return $this->authorize($input);
     }
 
+    public function mandateCreate($input)
+    {
+        parent::action($input, Action::AUTH_INIT);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+          'method' => $request['method'],
+          'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_CREATE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_CREATE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_CREATE);
+
+        return [
+            'data'   => [
+                Payment\Entity::VPA            => $input['terminal']['gateway_merchant_id2'],
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::INITIATED,
+            ],
+        ];
+    }
+
+    public function mandateExecute($input)
+    {
+        parent::action($input, Action::PAY_INIT);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_EXECUTE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_EXECUTE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_EXECUTE);
+
+        return;
+    }
+
+    public function mandateUpdate($input)
+    {
+        parent::action($input, Action::AUTH_INIT);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url']
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_UPDATE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::GATEWAY_MANDATE_UPDATE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::MANDATE_CREATE);
+
+        $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
+            $gatewayPayment,
+            $response,
+            true,
+            Action::MANDATE_CREATE
+        );
+    }
+
     public function callbackOtpSubmit(array $input)
     {
         $this->verifyOtpAttempts($input['payment']);
@@ -198,14 +295,22 @@ class Gateway extends Base\Gateway
             $response = json_decode($input['gateway']['preProcessServerCallbackResponse'], true);
         }
 
+        $action = Action::AUTHORIZE;
+
+        if (($input['payment']['method'] === Payment\Method::UPI) and
+            ($input['payment']['recurring_type'] === 'initial'))
+        {
+            $action = Action::MANDATE_CREATE;
+        }
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+                $input['payment']['id'], $action);
 
         $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
                                                    $gatewayPayment,
                                                    $response,
                                                    true,
-                                                   Action::AUTHORIZE
+                                                   $action
                                              );
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
@@ -286,6 +391,7 @@ class Gateway extends Base\Gateway
         {
             case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
+            case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::UPI_CITI:
                 return $input;
             case Payment\Gateway::NETBANKING_YESB:
@@ -297,6 +403,31 @@ class Gateway extends Base\Gateway
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
+        }
+    }
+
+    public function preProcessMandateCallback($input, $gateway)
+    {
+        switch ($gateway)
+        {
+            case Payment\Gateway::UPI_MINDGATE:
+                return json_decode($this->decrypt($input['payload']), true);
+            default :
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for processing mandate callback');
+        }
+    }
+
+    public function getPaymentIdFromMandateCallback($response, $gateway)
+    {
+        switch($gateway)
+        {
+            case Payment\Gateway::UPI_MINDGATE:
+                return $response['requestInfo']['pspRefNo'];
+            default :
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for processing mandate callback');
+
         }
     }
 
@@ -314,6 +445,8 @@ class Gateway extends Base\Gateway
                 return $response['data']['transactionId'];
             case Payment\Gateway::NETBANKING_KVB:
                 return $response['data']['paymentId'];
+            case Payment\Gateway::UPI_JUSPAY:
+                return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -686,6 +819,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND        => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::UPI_JUSPAY => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -705,6 +843,11 @@ class Gateway extends Base\Gateway
             ],
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
+            ],
+            Payment\Gateway::UPI_MINDGATE => [
+                Action::AUTH_INIT         => null,
+                Action::PAY_INIT          => null,
+                Action::PAY_VERIFY        => null,
             ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
@@ -726,13 +869,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
-
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::WALLET_PHONEPE => [
                 Action::INTENT => null,
                 Action::PAY_INIT => null,
@@ -748,7 +889,6 @@ class Gateway extends Base\Gateway
                 Action::REFUND     => null,
                 Action::VERIFY_REFUND => null
             ],
-
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -757,7 +897,6 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => Action::REFUND,
                 Action::VERIFY => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::UPI_AIRTEL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -765,19 +904,21 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
-
+            Payment\Gateway::UPI_JUSPAY => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::AUTHORIZE,
+            ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::NETBANKING_CBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -793,17 +934,14 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::NETBANKING_IDBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
             ],
-
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
@@ -811,7 +949,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND          => Action::AUTHORIZE,
                 Action::VERIFY_REFUND   => Action::REFUND,
             ],
-
+            Payment\Gateway::UPI_MINDGATE => [
+                Action::AUTH_INIT       => null,
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+            ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
                 Action::PAY_VERIFY  =>  null,
@@ -1070,6 +1212,7 @@ class Gateway extends Base\Gateway
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_CITI,
+            Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_UBI,
@@ -1115,7 +1258,24 @@ class Gateway extends Base\Gateway
 
     protected function getResponseData($input, $mozartResponse, $gatewayPayment)
     {
-        if ($input['payment']['method'] === Payment\Method::UPI)
+        if ((isset($input['gateway']['redirect']['mandateDtls']) === true) and
+            ($input['gateway']['redirect']['mandateDtls'][0]['mandateType'] === 'UPDATE'))
+        {
+           $response = [
+               'amount'     => $mozartResponse['data']['amount'],
+               'start_time' => $mozartResponse['data']['start_time']
+           ];
+
+           return $response;
+        }
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::INITIAL) and
+            ($input['payment']['method'] === Payment\Method::UPI))
+        {
+            $response = [
+                'recurring_status' => 'confirmed'
+            ];
+        }
+        elseif ($input['payment']['method'] === Payment\Method::UPI)
         {
             $response = [
                 'acquirer' => [
@@ -1202,6 +1362,8 @@ class Gateway extends Base\Gateway
     // This function is used when the callback does not come as key-value pairs
     // the encrypted value comes as key so as default "encdata" is added as key and the encrypted string as
     // its value. This is a temporary solution.
+    // Note: Modify gateway data to be transformed for gateways
+
     protected function parsegatewayresponse($input, $gatewayInput)
     {
         if ($input['payment']['gateway'] == Payment\Gateway::NETBANKING_IDBI)
@@ -1215,7 +1377,6 @@ class Gateway extends Base\Gateway
                 unset($gatewayInput[$key]);
             }
         }
-
         return $gatewayInput;
     }
 
@@ -1253,6 +1414,26 @@ class Gateway extends Base\Gateway
             );
 
         }
+    }
+
+    public function decrypt(string $cipherText)
+    {
+        return $this->getCipherInstance()
+            ->decrypt($cipherText);
+    }
+
+    protected function getEncryptionKey()
+    {
+        $key = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        return hex2bin($key);
+    }
+
+    protected function getCipherInstance()
+    {
+        $key = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        return new Crypto($key);
     }
 
     /**
