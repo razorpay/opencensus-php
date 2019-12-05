@@ -108,22 +108,12 @@ class Repository extends Transaction\Repository
      */
     public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
     {
-        $basRepo = $this->repo->banking_account_statement;
-
-        $basTableTransactionColumn = $basRepo->dbColumn(BankingAccountStatementEntity::TRANSACTION_ID);
-
-        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
-
-        $idColumn = $this->dbColumn(Entity::ID);
-
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->where($balanceIdColumn, $balanceId)
-                    ->whereBetween($createdAtColumn, [$fromDate, $toDate])
-                    ->orderBy($createdAtColumn, 'desc')
-                    ->orderBy($idColumn, 'desc')
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
                     ->with('bankingAccountStatement')
                     ->get();
     }
