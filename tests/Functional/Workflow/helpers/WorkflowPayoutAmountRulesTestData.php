@@ -17,11 +17,11 @@ return [
                         'max_amount'	=>	100000
                     ],
                     [
-                        'min_amount'	=>	100001,
+                        'min_amount'	=>	100000,
                         'max_amount'	=>	1000000
                     ],
                     [
-                        'min_amount'	=>	1000001,
+                        'min_amount'	=>	1000000,
                         'max_amount'	=>	null
                     ]
                     ]
@@ -41,13 +41,13 @@ return [
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
-                        'min_amount'    =>  100001,
+                        'min_amount'    =>  100000,
                         'max_amount'    =>  1000000
                     ],
                     [
                         'merchant_id'   => '10000000000000',
                         'condition'     => null,
-                        'min_amount'    => 1000001,
+                        'min_amount'    => 1000000,
                         'max_amount'    => null
                     ]
                 ]
@@ -66,11 +66,11 @@ return [
                         'max_amount'	=>	100001
                     ],
                     [
-                        'min_amount'	=>	100001,
+                        'min_amount'	=>	100000,
                         'max_amount'	=>	1000000
                     ],
                     [
-                        'min_amount'	=>	1000001,
+                        'min_amount'	=>	1000000,
                         'max_amount'	=>  null
                     ]
                 ]
@@ -171,8 +171,8 @@ return [
                         'max_amount'	=>	100
                     ],
                     [
-                        'min_amount'	=>	0,
-                        'max_amount'	=>	100
+                        'min_amount'	=>	100,
+                        'max_amount'	=>	null
                     ]
                 ]
             ],
@@ -205,11 +205,11 @@ return [
                         'max_amount'	=>	100000
                     ],
                     [
-                        'min_amount'	=>	100001,
+                        'min_amount'	=>	100000,
                         'max_amount'	=>	1000000
                     ],
                     [
-                        'min_amount'	=>	1000001,
+                        'min_amount'	=>	1000000,
                         'max_amount'	=>	null
                     ]
                 ]
@@ -284,7 +284,7 @@ return [
                             [
                                 'merchant_id'   =>  '10000000000000',
                                 'condition'     =>  null,
-                                'min_amount'    =>  101,
+                                'min_amount'    =>  100,
                                 'max_amount'    =>  null,
                             ]
                         ]
@@ -315,7 +315,7 @@ return [
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
-                        'min_amount'    =>  101,
+                        'min_amount'    =>  100,
                         'max_amount'    =>  null
                     ]
                 ]
