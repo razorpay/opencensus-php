@@ -396,7 +396,13 @@ class NewOfferForm extends React.Component {
             class="Input--half"
             onChange={this.getFormOnChangeHandler('floatFromEvent')}
             description="Maximum discount for this offer"
-            addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+            addonBefore={
+              <span>
+                {(window.currencyList &&
+                  window.currencyList[CURRENCY].symbol) ||
+                  CURRENCY}
+              </span>
+            }
             pattern="[0-9]+(\.[0-9][0-9]?)?"
             patternError="Please enter number upto 2 decimal points"
             validator={val => {
@@ -485,7 +491,13 @@ class NewOfferForm extends React.Component {
               label="Minimum Payment"
               name="min_amount"
               class="Input--half"
-              addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+              addonBefore={
+                <span>
+                  {(window.currencyList &&
+                    window.currencyList[CURRENCY].symbol) ||
+                    CURRENCY}
+                </span>
+              }
               onChange={this.getFormOnChangeHandler('floatFromEvent')}
               description="Minimum bill amount on for this offer"
               pattern="[0-9]+(\.[0-9][0-9]?)?"
