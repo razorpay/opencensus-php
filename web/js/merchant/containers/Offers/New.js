@@ -16,6 +16,7 @@ import RTracking from 'react-tracking';
 
 const SUCCESS_NOTIFICATION = 'New offer created';
 const MAX_INT = 21474836;
+const CURRENCY = 'INR';
 
 @RTracking(() => window.rzpQ.component('NewOfferForm'))
 class NewOfferForm extends React.Component {
@@ -348,7 +349,12 @@ class NewOfferForm extends React.Component {
           label="Discount Worth"
           name="flat_cashback"
           class="Input--half"
-          addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+          addonBefore={
+            <span>
+              {(window.currencyList && window.currencyList[CURRENCY].symbol) ||
+                CURRENCY}
+            </span>
+          }
           description="Discount worth in cash"
           pattern="[0-9]+(\.[0-9][0-9]?)?"
           patternError="Please enter number upto 2 decimal points"
