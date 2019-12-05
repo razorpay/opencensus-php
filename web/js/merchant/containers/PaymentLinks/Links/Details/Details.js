@@ -73,6 +73,11 @@ export default props => {
 
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
+  const isContactDetailsAvl =
+    invoice.contact_details &&
+    (invoice.contact_details.contact_email ||
+      invoice.contact_details.contact_phone);
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -231,28 +236,35 @@ export default props => {
                 {user.isRemindersEnabled &&
                   isPaymentLinksRemindersEnabled && (
                     <EntityDetailRow label="Reminders">
-                      <Input.Check
-                        name="auto_reminders"
-                        fieldLabel="Send auto reminders"
-                        checked={isRemindersEnabled}
-                        disabled={
-                          isPaymentLinkClosed || isAutoRemindersUpdating
-                        }
-                        onChange={onChangeSendAutoReminder}
-                        autoRender
-                      />
+                      {isContactDetailsAvl ? (
+                        <React.Fragment>
+                          <Input.Check
+                            name="auto_reminders"
+                            fieldLabel="Send auto reminders"
+                            checked={isRemindersEnabled}
+                            disabled={
+                              isPaymentLinkClosed || isAutoRemindersUpdating
+                            }
+                            onChange={onChangeSendAutoReminder}
+                            autoRender
+                          />
 
-                      <ReminderStepsDetails
-                        isRemindersEnabled={isRemindersEnabled}
-                        nextReminders={nextReminders}
-                        isAutoRemindersUpdating={isAutoRemindersUpdating}
-                        isPaymentLinkClosed={isPaymentLinkClosed}
-                      />
+                          <ReminderStepsDetails
+                            isRemindersEnabled={isRemindersEnabled}
+                            nextReminders={nextReminders}
+                            isAutoRemindersUpdating={isAutoRemindersUpdating}
+                            isPaymentLinkClosed={isPaymentLinkClosed}
+                          />
+                        </React.Fragment>
+                      ) : (
+                        'Contact details are not available'
+                      )}
                     </EntityDetailRow>
                   )}
 
                 {user.isRemindersEnabled &&
-                  !isPaymentLinksRemindersEnabled && (
+                  !isPaymentLinksRemindersEnabled &&
+                  isContactDetailsAvl && (
                     <EntityDetailRow label="Reminders">
                       <div class="Input-content">
                         Reminders are not set for payment links.
