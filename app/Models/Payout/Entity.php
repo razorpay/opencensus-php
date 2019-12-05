@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
     const BATCH_ID               = 'batch_id';
     const IDEMPOTENCY_KEY        = 'idempotency_key';
     const INITIATED_AT           = 'initiated_at';
+    const PAYOUT_LINK_ID         = 'payout_link_id';
 
     // Public attribute
     const DESTINATION            = 'destination';

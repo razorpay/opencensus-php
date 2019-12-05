@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
     const SHORT_URL             = 'short_url';
     const MERCHANT_ID           = 'merchant_id';
     const USER_ID               = 'user_id';
+    const BATCH_ID               = 'batch_id';
+    const IDEMPOTENCY_KEY        = 'idempotency_key';
     const STATUS                = 'status';
     const AMOUNT                = 'amount';
     const NOTES                 = 'notes';
@@ -51,55 +53,47 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::CONTACT_ID,
+        self::FUND_ACCOUNT_ID,
+        self::STATUS,
         self::AMOUNT,
-        self::MERCHANT_ID,
-        self::USER_ID,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
-        self::STATUS,
         self::CREATED_AT,
         self::CANCELLED_AT
     ];
 
     protected $fillable = [
         self::ID,
-        self::CONTACT_ID,
-        self::FUND_ACCOUNT_ID,
         self::SHORT_URL,
-        self::MERCHANT_ID,
-        self::USER_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
-        self::STATUS,
-        self::CREATED_AT,
-        self::CANCELLED_AT,
-        self::UPDATED_AT
     ];
 
     protected $visible = [
         self::ID,
+        self::MERCHANT_ID,
+        self::USER_ID,
         self::CONTACT_ID,
         self::FUND_ACCOUNT_ID,
         self::SHORT_URL,
-        self::MERCHANT_ID,
-        self::USER_ID,
+        self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
-        self::STATUS,
-        self::CREATED_AT,
         self::CANCELLED_AT,
+        self::CREATED_AT,
         self::UPDATED_AT
     ];
 
@@ -138,14 +132,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION           => null,
         self::RECEIPT               => null,
         self::NOTES                 => [],
-        self::STATUS                => Status::ISSUED,
         self::CANCELLED_AT          => null,
-    ];
-
-    protected $publicSetters = [
-        self::ID,
-        self::ENTITY,
-        self::DESCRIPTION,
     ];
 
     protected $table  = Table::PAYOUT_LINK;

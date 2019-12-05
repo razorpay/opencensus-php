@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\PayoutLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
@@ -222,6 +223,11 @@ class CreatePayoutsTable extends Migration
             $table->foreign(Payout::BATCH_FUND_TRANSFER_ID)
                   ->references(BatchFundTransfer\Entity::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
+                  ->on_delete('restrict');
+
+            $table->foreign(Payout::PAYOUT_LINK_ID)
+                  ->references(PayoutLink\Entity::ID)
+                  ->on(Table::PAYOUT_LINK)
                   ->on_delete('restrict');
         });
     }

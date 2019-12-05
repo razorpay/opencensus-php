@@ -1,15 +1,16 @@
 <?php
 
+use RZP\Models\Batch;
 use RZP\Constants\Table;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Models\Currency\Currency;
+use RZP\Models\User\Entity as User;
 use Illuminate\Support\Facades\Schema;
+use RZP\Models\Contact\Entity as Contact;
 use Illuminate\Database\Schema\Blueprint;
 use RZP\Models\Merchant\Entity as Merchant;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Models\FundAccount\Entity as FundAccount;
-use RZP\Models\Contact\Entity as Contact;
-use RZP\Models\User\Entity as User;
 
 class CreatePayoutLinksTable extends Migration
 {
@@ -40,6 +41,12 @@ class CreatePayoutLinksTable extends Migration
             $table->char(Entity::USER_ID, User::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::BATCH_ID, Batch\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::IDEMPOTENCY_KEY, Batch\Entity::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
             $table->string(Entity::STATUS, 40);
 
             $table->bigInteger(Entity::AMOUNT);
@@ -52,10 +59,16 @@ class CreatePayoutLinksTable extends Migration
             $table->string(Entity::RECEIPT, 40)
                   ->nullable();
 
-            $table->string(\RZP\Models\PaymentLink\Entity::CURRENCY, 3)
-                  ->default(Currency::INR);
+            $table->string(\RZP\Models\PaymentLink\Entity::CURRENCY, 3);
 
             $table->integer(Entity::CANCELLED_AT)
+                  ->nullable();
+
+            $table->integer(Entity::CREATED_AT);
+
+            $table->integer(Entity::UPDATED_AT);
+
+            $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
             $table->index(Entity::CREATED_AT);
@@ -69,13 +82,6 @@ class CreatePayoutLinksTable extends Migration
             $table->index(Entity::RECEIPT);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
-
-            $table->integer(Entity::CREATED_AT);
-
-            $table->integer(Entity::UPDATED_AT);
-
-            $table->integer(Entity::DELETED_AT)
-                  ->nullable();
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant::ID)

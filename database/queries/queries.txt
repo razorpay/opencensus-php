@@ -1,31 +1,26 @@
-Alter table payouts
-    add column payout_link_id varchar(14) null,
-    add index (`payout_link_id`),
-    add constraint `fk_payout_link_id`
-    foreign key(`payout_link_id`)
-    references payout_links(id)
-    on delete no action
-    on update no action;
+ALTER TABLE payouts
+    ADD COLUMN payout_link_id varchar(14) null,
+    ADD INDEX (`payout_link_id`);
 
-Alter table cards
-    add merchant_id varchar(14) after id;
+ALTER TABLE cards
+    ADD merchant_id varchar(14) after id;
 
-alter table merchant_documents
-    modify file_store_id char(14) NULL;
+ALTER TABLE merchant_documents
+    MODIFY file_store_id char(14) NULL;
 
 ALTER TABLE merchant_documents
     ADD INDEX (`file_store_id`);
 
-update cards, payments
-    set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
+UPDATE cards, payments
+    SET cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
 ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
     ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY(merchant_id)
     REFERENCES merchants(id) ON DELETE RESTRICT;
 ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
 
-alter table transactions
-    add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions
+    ADD channel VARCHAR(8) NOT NULL after escrow_balance;
 ALTER TABLE transactions
     ADD INDEX transactions_channel_index (`channel`);
 
