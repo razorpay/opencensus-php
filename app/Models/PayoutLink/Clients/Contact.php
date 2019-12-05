@@ -3,12 +3,11 @@
 namespace RZP\Models\PayoutLink\Clients;
 
 use App;
-
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\Contact\Core as ContactCore;
+use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
@@ -57,10 +56,7 @@ class Contact
             catch(\Exception $e)
             {
                 throw new BadRequestException(
-                    $e->getMessage(),
-                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
-                    $contact,
-                    $e
+                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED
                 );
             }
         }

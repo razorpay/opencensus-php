@@ -1,15 +1,21 @@
 <?php
 
+namespace RZP\Tests\Functional\PayoutLink;
+
+use Mockery;
+use Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
-use \RZP\Tests\Functional\TestCase;
-use RZP\Models\BankingAccount\Channel;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Models\PayoutLink\Status;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Elfin\Service as ElfinService;
+use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class PayoutLinkTest extends TestCase
 {
@@ -162,36 +168,6 @@ class PayoutLinkTest extends TestCase
 
         $this->assertEquals($fetchedPayoutLinkId , $payoutLink->getPublicId());
     }
-//
-//    public function testShortUrlGenerationSuccessful()
-//    {
-//
-//    }
-//
-//    public function testShortUrlGenerationExceptionThrown()
-//    {
-//
-//    }
-//
-//    public function testNewContactCreationPayoutLinkCreateFlow()
-//    {
-//
-//    }
-//
-//    public function testPayoutLinkCreateWithContactIdParam()
-//    {
-//
-//    }
-//
-//    public function testPayoutLinkFailedDueToContactCreationFailure()
-//    {
-//
-//    }
-//
-//    public function testTargetUrlOfShortUrlForPayoutLink()
-//    {
-//
-//    }
 
     public function testPayoutWithPayoutLinkRelationship()
     {
@@ -210,4 +186,70 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($associatedPayout->getId(), $payout->getId());
     }
 
+    public function testShortUrlGenerationSuccessful()
+    {
+        $this->ba->privateAuth();
+
+        $testHardCodedShortUrl = 'www.this_is_when_elfin_works.com';
+
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('shorten')
+              ->willReturn($testHardCodedShortUrl);
+
+        $this->app->instance('elfin', $elfin);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['short_url'], $testHardCodedShortUrl);
+    }
+
+    public function testShortUrlGenerationExceptionThrown()
+    {
+        $urlFormat = '%s/payout-links/%s/view';
+
+        $this->ba->privateAuth();
+
+        // mock elfin and make it throw an error, check the right exception is thrown on our end
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('shorten')
+              ->willThrowException(new Exception('Elfin failed because I want it to'));
+
+        $this->app->instance('elfin', $elfin);
+
+        $response = $this->startTest();
+
+        $payoutLinkId = $response['id'];
+
+        $expectedTargetUrl = sprintf($urlFormat,
+                             $this->app['config']['url.api.production'],
+                             $payoutLinkId);
+
+        // asserting that the short_url is same as the full target url, because elfin failed
+        $this->assertEquals($response['short_url'], $expectedTargetUrl);
+
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testPayoutLinkFailedDueToContactCreationFailure()
+    {
+        // mocking Contact Core, so that I can throw exception when contacts->create is called
+        $mockedContactCore = Mockery::mock('overload:RZP\Models\Contact\Core');
+
+        $mockedContactCore->shouldReceive('create')
+                          ->once()
+                          ->andThrow(new Exception('I failed for the sake of testing'));
+
+        $contactClient = new ContactClient();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED);
+
+        $contactClient->processContact(['contact_id' => null], $this->contact->merchant);
+    }
 }

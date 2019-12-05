@@ -4,8 +4,6 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Exception\BaseException;
-use RZP\Models\PayoutLink\Clients\Contact;
 use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class Core extends Base\Core
@@ -48,8 +46,8 @@ class Core extends Base\Core
 
         $payoutLink->contact()->associate($contact);
 
-        #todo: pl , unsure how to get the user entity from the request in core
-//        $payoutLink->user()->associate($this->app->basicauth->getUser());
+        // todo: pl , unsure how to get the user entity from the request in core
+        // $payoutLink->user()->associate($this->app->basicauth->getUser());
 
         $payoutLink->setStatus(Status::ISSUED);
 
@@ -75,20 +73,23 @@ class Core extends Base\Core
         try
         {
             $shortUrl = $this->elfin->shorten($targetUrl, $params, false);
-
-            $payoutLink->setShortUrl($shortUrl);
         }
-        catch (BaseException $e)
+        catch (\Exception $e)
         {
-            $this->trace->error(
+            // in case of a problem with elfin, the short url will be same as the target url.
+            $shortUrl = $targetUrl;
+
+            $this->trace->traceException(
+                $e,
+                null,
                 TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
                 [
                     'message'        => $e->getMessage(),
-                    'payout_link_id' => $payoutLink->getId()
+                    'payout_link_id' => $payoutLink->getId(),
                 ]
             );
-
-            throw $e;
         }
+
+        $payoutLink->setShortUrl($shortUrl);
     }
 }
