@@ -79,7 +79,7 @@ export default class Profile extends Component {
     }
 
     this.props
-      .fetchAddWebsiteWorkflowStatus(this.props.user.id)
+      .fetchAddWebsiteWorkflowStatus()
       .then(({ data }) => {
         this.setState({
           isWebsiteInWorkflow: data,

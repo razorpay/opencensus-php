@@ -108,11 +108,11 @@ export const fetchBankAccountChangeStatus = merchantId => {
   };
 };
 
-export const fetchAddWebsiteWorkflowStatus = merchantId => {
+export const fetchAddWebsiteWorkflowStatus = () => {
   return {
     type: ADD_WEBSITE_WORKFLOW_STATUS,
     payload: merchantFetch({
-      url: `merchant/activation/${merchantId}/update_website/status`,
+      url: `merchant/activation/websites/status`,
       mode: 'live',
     }),
   };
