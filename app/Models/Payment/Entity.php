@@ -207,6 +207,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
 
     // payment services
@@ -2782,6 +2783,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
+
+        return $data;
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        $data =  parent::toArrayPublicWithExpand();
+
+        if ($this->getCurrency() !== Currency\Currency::INR)
+        {
+            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
+
+            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
+        }
 
         return $data;
     }
