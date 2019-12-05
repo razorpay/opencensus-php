@@ -484,7 +484,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
-    public function setReconciledType(string $reconciledType)
+    public function setReconciledType($reconciledType)
     {
         ReconciledType::validateReconciledType($reconciledType);
 

@@ -26,6 +26,7 @@ class Defaults
                 Gateway::CYBERSOURCE,
                 Gateway::FIRST_DATA,
                 Gateway::HITACHI,
+                Gateway::MPGS,
                 Gateway::CARD_FSS,
             ],
 

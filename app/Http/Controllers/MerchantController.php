@@ -1443,9 +1443,9 @@ class MerchantController extends Controller
      *
      * @return mixed
      */
-    public function fetchReferral(string  $merchantId)
+    public function fetchReferral()
     {
-        $response = $this->service()->fetchReferral($merchantId);
+        $response = $this->service()->fetchReferral();
 
         return ApiResponse::json($response);
     }
@@ -1455,9 +1455,9 @@ class MerchantController extends Controller
      *
      * @return mixed
      */
-    public function createReferral(string  $merchantId)
+    public function createReferral()
     {
-        $response = $this->service()->createReferral($merchantId);
+        $response = $this->service()->createReferral();
 
         return ApiResponse::json($response);
     }

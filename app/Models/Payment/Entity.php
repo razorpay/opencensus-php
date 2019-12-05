@@ -174,6 +174,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
@@ -355,6 +356,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
+        self::REFUNDS,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
@@ -1791,6 +1793,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
+    public function isUpiRecurring()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::UPI) and
+                ($this->getAttribute(self::RECURRING) === true));
     }
 
     public function isTransfer()
@@ -3240,7 +3248,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $gateway = $this->getGateway();
 
         // default is 9 mins
-        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+        $timeWindow = (new Merchant\Core)->getPaymentTimeoutWindow($this->merchant) ?? self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
         {

@@ -16,6 +16,7 @@ trait ErrorCodes
         'MAX_AMT_LMT'                      => ErrorCode::BAD_REQUEST_CARDLESS_EMI_MAXIMUM_AMOUNT_LIMIT,
         'PAYMENT_TIMED_OUT'                => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
         'PAYMENT_CANCELLED'                => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
+        'INV_TXN_ID'                       => ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT,
         'PAYMENT_FAILED_PARTNER'           => ErrorCode::GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER,
         'PAYMENT_FAILED'                   => ErrorCode::GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER,
         'CREDIT_LIMIT_EXHAUSTED'           => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED,
