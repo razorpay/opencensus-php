@@ -12,6 +12,69 @@ class Constants
         self::TEST_MID => 72
     ];
 
+    const EXTRA_FORM_FIELDS = [
+        self::BHARTI_AXA => [
+            [
+                'name' => 'extra_field_1', // Should be unique
+                'label' => 'Product',
+                'fieldType' => 'Select',
+                'required' => true,
+                'options' => [
+                    [
+                        'label' => '--Select--',
+                        'value' => ''
+                    ],
+                    [
+                        'label' => 'Car',
+                        'value' => 'Car'
+                    ],
+                    [
+                        'label' => 'Health',
+                        'value' => 'Health'
+                    ],
+                    [
+                        'label' => 'Travel',
+                        'value' => 'Travel'
+                    ]
+                ],
+                'addAt' => [
+                    'fieldName' => 'description',
+                    'as' => 'prefix'
+                ]
+            ]
+        ],
+        self::TEST_MID => [
+            [
+                'name' => 'extra_field_1',
+                'label' => 'Product',
+                'fieldType' => 'Select',
+                'required' => true,
+                'options' => [
+                    [
+                        'label' => '--Select--',
+                        'value' => ''
+                    ],
+                    [
+                        'label' => 'Car',
+                        'value' => 'Car'
+                    ],
+                    [
+                        'label' => 'Health',
+                        'value' => 'Health'
+                    ],
+                    [
+                        'label' => 'Travel',
+                        'value' => 'Travel'
+                    ]
+                ],
+                'addAt' => [
+                    'fieldName' => 'description',
+                    'as' => 'prefix'
+                ]
+            ]
+        ]
+    ];
+
     const DEFAULT_CUSTOMIZED_FIELDS = [
         'receipt' => [
             'label' => 'Receipt No.',
@@ -54,6 +117,11 @@ class Constants
     public static function getDefaultExpiryTimeForPaymentLinksByMID($mid)
     {
         return self::DEFAULT_EXPIRY[$mid] ?? null;
+    }
+
+    public static function getExtraFormFieldsByMID($mid)
+    {
+        return self::EXTRA_FORM_FIELDS[$mid] ?? [];
     }
 
     public static function getCustomizedFormFieldsByMID($mid)
