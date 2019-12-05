@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
@@ -152,12 +153,12 @@ class Entity extends Base\PublicEntity
 
     public function fundAccount()
     {
-        return $this->hasOne(FundAccount\Entity::class);
+        return $this->belongsTo(FundAccount\Entity::class);
     }
 
     public function contact()
     {
-        return $this->hasOne(Contact\Entity::class);
+        return $this->belongsTo(Contact\Entity::class);
     }
 
     public function payouts()
@@ -176,6 +177,11 @@ class Entity extends Base\PublicEntity
     public function setShortUrl($shortUrl)
     {
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(ENTITY::STATUS, $status);
     }
 
     // -------------------------------------- End Setters -----------------------------

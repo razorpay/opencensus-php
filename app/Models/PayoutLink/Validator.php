@@ -19,8 +19,6 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'required|size:3',
         Entity::NOTES           => 'sometimes|notes',
         Entity::DESCRIPTION     => 'required|string|max:255',
-        Entity::CONTACT_ID      => 'sometimes|string|size:14',
-        Entity::USER_ID         => 'sometimes|string|size:14',
         Entity::RECEIPT         => 'sometimes|string|max:40',
     ];
 
@@ -29,7 +27,6 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'required|size:3',
         Entity::NOTES           => 'sometimes|notes',
         Entity::DESCRIPTION     => 'required|string|max:255',
-        Entity::USER_ID         => 'sometimes|string|size:14',
         Entity::RECEIPT         => 'sometimes|string|max:40',
         'contact'               => 'required|array',
         'contact.contact_id'    => 'present|nullable|string|size:14',

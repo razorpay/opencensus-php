@@ -57,7 +57,6 @@ class PayoutLinkTest extends TestCase
     public function testPayoutLinkCreation()
     {
         $input = [
-            PayoutLink::CONTACT_ID => $this->contact->getId(),
             PayoutLink::AMOUNT     => 1000,
             PayoutLink::CURRENCY   => Currency::INR,
             PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
@@ -66,6 +65,10 @@ class PayoutLinkTest extends TestCase
         $payout_link = (new PayoutLink)->build($input);
 
         $payout_link->merchant()->associate($this->contact->merchant);
+
+        $payout_link->contact()->associate($this->contact);
+
+        $payout_link->setStatus(Status::ISSUED);
 
         $payout_link->saveOrFail();
     }
@@ -149,7 +152,7 @@ class PayoutLinkTest extends TestCase
 
         $url = $this->testData['testListPayoutLinkWithSearchParameter']['request']['url'];
 
-        $urlWithId = $url . '?merchant_id=10000000000000';
+        $urlWithId = $url . '?contact_id=' . $this->contact->getPublicId();
 
         $this->testData['testListPayoutLinkWithSearchParameter']['request']['url'] = $urlWithId;
 
@@ -157,7 +160,7 @@ class PayoutLinkTest extends TestCase
 
         $fetchedPayoutLinkId = $response['items'][0]['id'];
 
-        $this->assertEquals($fetchedPayoutLinkId , 'plnk_DnhDjMDHlQEjgM');
+        $this->assertEquals($fetchedPayoutLinkId , $payoutLink->getPublicId());
     }
 //
 //    public function testShortUrlGenerationSuccessful()

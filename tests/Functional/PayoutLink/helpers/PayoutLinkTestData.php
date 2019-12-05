@@ -21,7 +21,6 @@ return [
         'response' => [
             'content' => [
                 'amount'       => 1000,
-                'user_id'      => null,
                 'currency'     => 'INR',
                 'description'  => 'This is a test payout',
                 'receipt'      => 'Test Payout Receipt',
@@ -50,7 +49,6 @@ return [
         'response' => [
             'content' => [
                 'amount'       => 1000,
-                'user_id'      => null,
                 'contact_id'   => '1000010contact',
                 'currency'     => 'INR',
                 'description'  => 'This is a test payout',
@@ -71,7 +69,6 @@ return [
             'content' => [
                 'id'          => 'plnk_DnhDjMDHlQEjgM',
                 'amount'      => 1000,
-                'user_id'     => null,
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',

@@ -4,9 +4,9 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
-use RZP\Exception\BadRequestException;
+use RZP\Models\PayoutLink\Clients\Contact;
+use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class Core extends Base\Core
 {
@@ -33,7 +33,9 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::COMPOSITE_CREATE, $input);
 
-        $this->processContact($input);
+        $contact = array_pull($input, 'contact');
+
+        $contact = (new ContactClient())->processContact($contact, $this->merchant);
 
         $payoutLink = (new Entity)->build($input);
 
@@ -43,6 +45,13 @@ class Core extends Base\Core
         $this->generateAndSetShortUrl($payoutLink);
 
         $payoutLink->merchant()->associate($this->merchant);
+
+        $payoutLink->contact()->associate($contact);
+
+        #todo: pl , unsure how to get the user entity from the request in core
+//        $payoutLink->user()->associate($this->app->basicauth->getUser());
+
+        $payoutLink->setStatus(Status::ISSUED);
 
         $payoutLink->saveOrFail();
 
@@ -80,44 +89,6 @@ class Core extends Base\Core
             );
 
             throw $e;
-        }
-    }
-
-    /**
-     * Either creates a new contact or associates the supplied contact_id
-     * @param array $input
-     * @throws BadRequestException
-     */
-    protected function processContact(array &$input)
-    {
-        $contact = array_pull($input, 'contact');
-
-        $contactId = array_pull($contact, 'contact_id');
-
-        $input['contact_id'] = $contactId;
-
-        if ($contactId === null)
-        {
-            $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
-                               $contact);
-
-            $contactClient = new Clients\Contact();
-
-            try
-            {
-                $contactEntity = $contactClient->createContact($contact,  $this->merchant);
-
-                $input['contact_id'] = $contactEntity->getId();
-            }
-            catch(\Exception $e)
-            {
-                throw new BadRequestException(
-                    $e->getMessage(),
-                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
-                    $input,
-                    $e
-                );
-            }
         }
     }
 }

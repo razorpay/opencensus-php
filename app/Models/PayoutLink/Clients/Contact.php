@@ -2,6 +2,11 @@
 
 namespace RZP\Models\PayoutLink\Clients;
 
+use App;
+
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\Contact\Core as ContactCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -14,21 +19,51 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  */
 class Contact
 {
-    public function getContactById(string $contactId): ContactEntity
-    {
+    protected $trace;
 
+    protected $repo;
+
+    public function __construct()
+    {
+        $this->trace = App::getFacadeRoot()['trace'];
+
+        $this->repo = App::getFacadeRoot()['repo'];
     }
 
     /**
-     * @param array $input
+     * Calls the Contact Core, to create the contact and return the Contact Entity
+     * @param array $contact
      * @param MerchantEntity $merchant
      * @return ContactEntity
-     * Calls the Contact Core, to create the contact and return the contact entity ...
+     * @throws BadRequestException
      */
-    public function createContact(array $input, MerchantEntity $merchant): ContactEntity
+    public function processContact(array $contact, MerchantEntity $merchant): ContactEntity
     {
-        $contact = (new ContactCore())->create($input, $merchant);
+        $contactId = array_pull($contact, 'contact_id');
 
+        if ($contactId !== null)
+        {
+            $contact = $this->repo->contact->findByIdAndMerchant($contactId, $merchant);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
+                               $contact);
+
+            try
+            {
+                $contact = (new ContactCore())->create($contact, $merchant);
+            }
+            catch(\Exception $e)
+            {
+                throw new BadRequestException(
+                    $e->getMessage(),
+                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
+                    $contact,
+                    $e
+                );
+            }
+        }
         return $contact;
     }
 }
