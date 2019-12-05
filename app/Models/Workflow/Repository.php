@@ -15,28 +15,38 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
-    public function findByOrgId(string $orgId, $permission = null, $limit = 10, $offset = 0)
+    public function findByOrgId($params, string $orgId)
     {
+        // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
+        // which cannot be filtered further according to permission attached which is required here.
+        $permission = $params[Entity::PERMISSIONS] ?? null;
+
+        $offset = $params[self::SKIP] ?? null;
+
+        $limit = $params[self::COUNT] ?? null;
+
+        $query =  $this->newQuery()
+                ->where(Entity::ORG_ID, '=', $orgId);
+
+        // Filter by permission if the permission name has been passed as a query parameter
         if($permission)
         {
-            $query =  $this->newQuery()
-                ->orderBy(Entity::MERCHANT_ID)
-                ->take($limit)
-                ->skip($offset)
-                ->where(Entity::ORG_ID, '=', $orgId)
-                ->whereHas('permissions', function($q) use($permission)
-                {
-                    $q->where('name', '=', $permission);
-                })->get();
-        }
-        else
-        {
-            $query =  $this->newQuery()
-                ->where(Entity::ORG_ID, '=', $orgId)
-                ->get();
+            $query = $query->whereHas('permissions', function($q) use($permission)
+            {
+                $q->where('name', '=', $permission);
+            });
         }
 
-        return $query;
+        $results  = $query
+               ->get();
+
+        // Implementing pagination if both count and skip parameters have been passed
+        if($offset != null && $limit != null)
+        {
+            $results = $results->splice($offset, $limit);
+        }
+
+        return $results;
     }
 
     public function fetchWorkflowsByPermissionsOrgAndMerchant(

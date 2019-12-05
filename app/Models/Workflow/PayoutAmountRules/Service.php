@@ -16,13 +16,13 @@ class Service extends Base\Service
     }
 
     // Gets workflow rules for all merchants
-    public function getAllWorkflowRules($limit, $offset, $merchantId)
+    public function getAllWorkflowRules($input)
     {
         $orgId = $this->auth->getOrgId();
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $results = $this->core()->getAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId);
+        $results = $this->core()->getAllWorkflowRulesForOrg($input, $orgId);
 
         $results = $this->convertToDashboardFormat($results);
 
@@ -32,6 +32,9 @@ class Service extends Base\Service
     public function convertToDashboardFormat($response)
     {
         $groupedRules = $response['items'];
+
+        $results = [];
+
         foreach($groupedRules as $mid => $groupedRule)
         {
             $result = [
