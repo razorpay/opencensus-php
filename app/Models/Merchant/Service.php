@@ -3603,14 +3603,12 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $merchantId
-     *
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function fetchReferral(string $merchantId): array
+    public function fetchReferral(): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->auth->getMerchant();
 
         $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
 
@@ -3618,15 +3616,13 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $merchantId
-     *
      * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function createReferral(string $merchantId): array
+    public function createReferral(): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->auth->getMerchant();
 
         $partner = $this->fetchPartner();
 
