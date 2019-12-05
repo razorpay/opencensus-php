@@ -19,22 +19,38 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function fetchAllWorkflowRulesForOrg($limit, $offset, $merchantId, $orgId)
+    public function fetchAllWorkflowRulesForOrg($params, $orgId)
     {
-        // If merchant id passed as query parameter
-        if($merchantId)
-        {
-            return $this->fetchWorkflowRulesForMerchant($merchantId)->groupBy(Entity::MERCHANT_ID);
-        }
+        // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
+        // which cannot be filtered further according to merchant to which it belongs which is required here.
+        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
-        return $this->newQuery()
+        $limit = $params[self::COUNT] ?? null;
+
+        $offset = $params[self::SKIP] ?? null;
+
+        $query = $this->newQuery()
             ->whereHas('workflow', function($q) use($orgId)
             {
                 $q->where(Entity::ORG_ID, $orgId);
-            })
-            ->get()
-            ->groupBy(Entity::MERCHANT_ID)
-            ->slice($offset,$limit);
+            });
+
+        // Filter by merchant if merchant id passed as query parameter
+        if($merchantId)
+        {
+            $query = $query->merchantId($merchantId);
+        }
+
+        $results = $query->get()
+            ->groupBy(Entity::MERCHANT_ID);
+
+        // Implementing pagination if both count and skip parameters have been passed
+        if($offset != null && $limit != null)
+        {
+            $results = $results->slice($offset,$limit);
+        }
+
+        return $results;
     }
 
     public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)
