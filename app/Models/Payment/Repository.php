@@ -1749,6 +1749,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsGivenIds(array $paymentIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Payment\Entity::ID, $paymentIds)
+                    ->get();
+    }
+
     public function findPaymentsWithCardVault(string $vault, int $limit)
     {
         $window = 1200;
