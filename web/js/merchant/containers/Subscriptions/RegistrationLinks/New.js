@@ -298,10 +298,20 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     if (this.isNACHPayment) {
       payload.subscription_registration.bank_account = bankAccountDetails;
-      payload.subscription_registration.nach = {
-        form_reference1: data.formReference1,
-        form_reference2: data.formReference2,
-      };
+
+      if (data.formReference1 || data.formReference2) {
+        payload.subscription_registration.nach = {};
+
+        if (data.formReference1) {
+          payload.subscription_registration.nach.form_reference1 =
+            data.formReference1;
+        }
+
+        if (data.formReference2) {
+          payload.subscription_registration.nach.form_reference2 =
+            data.formReference2;
+        }
+      }
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
