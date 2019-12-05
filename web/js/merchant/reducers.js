@@ -28,6 +28,8 @@ import reversalReducer from 'merchant/reducers/marketplace/reversal';
 import mpAccountsReducer from 'merchant/reducers/marketplace/accounts';
 import referralsReducer from 'merchant/reducers/referrals';
 import applicationsReducer from 'merchant/reducers/applications';
+import offerReducer from 'merchant/reducers/offers/offerDetails';
+import offerListReducer from 'merchant/reducers/offers/offersList';
 import {
   virtualAccountsReducer,
   virtualAccountReducer,
@@ -101,6 +103,8 @@ export default combineReducers({
   profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
+  offer: offerReducer,
+  offers: offerListReducer,
   orders: ordersReducer,
   order: orderReducer,
   payments: paymentsReducer,

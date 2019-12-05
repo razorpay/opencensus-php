@@ -108,10 +108,10 @@ function differentAddress(activation) {
 }
 
 function isUnregisteredBusiness(activation) {
-  return (
-    UNREGISTERED_TYPES[Number(activation.state.dirty['business_type'])] ||
-    UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
-  );
+  const currentBusinessType =
+    activation.state.dirty['business_type'] ||
+    activation.props.data['business_type'];
+  return UNREGISTERED_TYPES[Number(currentBusinessType)];
 }
 
 function excludeFor_Indiv(activation) {
@@ -233,7 +233,12 @@ function hasSelectedBlacklistedCategory(activation) {
         state.dirty.business_subcategory || props.data.business_subcategory;
       return (
         subcategories[selectedSubcategory] &&
-        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+        (isUnregisteredBusiness(activation)
+          ? subcategories[selectedSubcategory][
+              'non_registered_activation_flow'
+            ] === 'blacklist'
+          : subcategories[selectedSubcategory]['activation_flow'] ===
+            'blacklist')
       );
     }
   }
