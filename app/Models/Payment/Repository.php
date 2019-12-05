@@ -1749,10 +1749,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPaymentsGivenIds(array $paymentIds)
+    public function fetchPaymentsGivenIds(array $paymentIds, int $limit)
     {
         return $this->newQuery()
                     ->whereIn(Payment\Entity::ID, $paymentIds)
+                    ->limit($limit)
                     ->get();
     }
 

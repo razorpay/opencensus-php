@@ -85,11 +85,11 @@ class Base extends BaseProcessor
 
             $payments = new PublicCollection();
 
-            while($shouldFetchPayments === true)
+            while ($shouldFetchPayments === true)
             {
                 $paymentIds = array_slice($this->scroogeRefundPaymentIds, $start, $this->queryLimit);
 
-                $fetchedPayments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds);
+                $fetchedPayments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds, $this->queryLimit);
 
                 $payments = $payments->merge($fetchedPayments);
 
@@ -152,20 +152,11 @@ class Base extends BaseProcessor
         {
             foreach ($this->scroogeRefunds as $refund)
             {
-                $payment = $entities->where('id', '=' , $refund['payment_id'])->first();
+                $payment = $entities->where('id', '=', $refund['payment_id'])->first();
 
-                $terminal = $payment->terminal;
+                $col = $this->collectPaymentData($payment);
 
                 $col['refund'] = $refund;
-
-                $col['payment'] = $payment->toArray();
-
-                $col['terminal'] = $terminal->toArray();
-
-                if ($payment->hasCard() === true)
-                {
-                    $col['card'] = $payment->card->toArray();
-                }
 
                 $data[] = $col;
             }
@@ -179,18 +170,9 @@ class Base extends BaseProcessor
             {
                 $payment = $refund->payment;
 
-                $terminal = $payment->terminal;
+                $col = $this->collectPaymentData($payment);
 
                 $col['refund'] = $refund->toArray();
-
-                $col['payment'] = $payment->toArray();
-
-                $col['terminal'] = $terminal->toArray();
-
-                if ($payment->hasCard() === true)
-                {
-                    $col['card'] = $payment->card->toArray();
-                }
 
                 $data[] = $col;
             }
@@ -497,5 +479,25 @@ class Base extends BaseProcessor
         while ($fetchFromScrooge === true);
 
         return [$returnData, true];
+    }
+
+    protected function collectPaymentData(Payment\Entity $payment): array
+    {
+        $terminal = $payment->terminal;
+
+        $merchant = $payment->merchant;
+
+        $col['payment'] = $payment->toArray();
+
+        $col['terminal'] = $terminal->toArray();
+
+        $col['merchant'] = $merchant->toArray();
+
+        if ($payment->hasCard() === true)
+        {
+            $col['card'] = $payment->card->toArray();
+        }
+
+        return $col;
     }
 }
