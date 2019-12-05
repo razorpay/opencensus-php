@@ -46,8 +46,6 @@ class Refund extends Base
         $this->checkAndSetTxnReconciliation();
 
         $this->repo->saveOrFail($this->txn);
-
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     protected function checkAndSetTxnReconciliation()
