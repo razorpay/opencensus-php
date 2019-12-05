@@ -120,11 +120,11 @@ class Repository extends Transaction\Repository
 
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->join($basRepo->getTableName(), $basTableTransactionColumn, '=', $idColumn)
                     ->where($balanceIdColumn, $balanceId)
                     ->whereBetween($createdAtColumn, [$fromDate, $toDate])
                     ->orderBy($createdAtColumn, 'desc')
                     ->orderBy($idColumn, 'desc')
+                    ->with('bankingAccountStatement')
                     ->get();
     }
 
