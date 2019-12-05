@@ -2295,9 +2295,9 @@ class Core extends Base\Core
             ];
         }
 
-        $translationPath = $this->getWebhookTranslatePath($partner);
+        $translationGateway = $this->getTranslateWebhookGateway($partner);
 
-        if (empty($translationPath) === true)
+        if (empty($translationGateway) === true)
         {
             return [
                 'headers' => [],
@@ -2307,16 +2307,16 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PARTNER_WEBHOOK_TRANSLATION,
             [
-                'translation_path' => $translationPath,
-                'partner_id'       => $partner->getId(),
+                'translation_gateway' => $translationGateway,
+                'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['mozart']->translateWebhook($translationPath, $payload);
+        return $this->app['mozart']->translateWebhook($translationGateway, $payload);
     }
 
-    protected function getWebhookTranslatePath(Entity $partner)
+    protected function getTranslateWebhookGateway(Entity $partner)
     {
-        return (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::TRANSLATE_WEBHOOK_PATH, $partner);
+        return (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::TRANSLATE_WEBHOOK_GATEWAY, $partner);
     }
 
     /**
