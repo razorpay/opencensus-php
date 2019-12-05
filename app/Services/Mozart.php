@@ -106,7 +106,12 @@ class Mozart
 
     public function translateWebhook(string $path, string $payload) : array
     {
-        $translateWebhookRequest = $this->getTranslateWebhookRequest($path, $payload);
+        $translateWebhookRequest = $this->getRequestV2(
+            $payload,
+            self::WEBHOOK,
+            $path,
+            self::DEFAULT_MOZART_VERSION,
+            self::TRANSLATE);
 
         $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, [
             self::URL           => $translateWebhookRequest[self::URL],
@@ -139,11 +144,6 @@ class Mozart
         ]);
 
         return $translateWebhookResponse;
-    }
-
-    protected function getTranslateWebhookRequest(string $path, string $payload)
-    {
-        return $this->getRequestV2($payload, self::WEBHOOK, $path, self::DEFAULT_MOZART_VERSION, self::TRANSLATE);
     }
 
     protected function getUrl(): string
