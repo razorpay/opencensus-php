@@ -104,12 +104,12 @@ class Mozart
         return $responseArray;
     }
 
-    public function translateWebhook(string $path, string $payload) : array
+    public function translateWebhook(string $gateway, string $payload) : array
     {
         $translateWebhookRequest = $this->getRequestV2(
             $payload,
             self::WEBHOOK,
-            $path,
+            $gateway,
             self::DEFAULT_MOZART_VERSION,
             self::TRANSLATE);
 
