@@ -295,6 +295,7 @@ class Event
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY, Product::BANKING],
         self::TRANSACTION_CREATED               => [Product::BANKING],
+        // TODO: Remove this once the Rollout treatment is removed.
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],

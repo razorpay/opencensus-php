@@ -4,13 +4,15 @@ namespace RZP\Models\Invoice\Reminder;
 
 use RZP\Models\Base;
 use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\CreditNote;
-use RZP\Models\Payment\Refund;
+use Cache;
 
 class Core extends Base\Core
 {
+    const CACHE_REMINDER_SETTINGS_PREFIX = 'reminder_settings';
+
+    const CACHE_REMINDER_SETTINGS_TTL = 1; // minutes
+
     public function create(
         array $input,
         Invoice\Entity $invoice): Entity
@@ -47,5 +49,18 @@ class Core extends Base\Core
         }
 
         return $reminderEntity;
+    }
+
+    public function fetchReminderSettings(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        return Cache::remember(
+            self::CACHE_REMINDER_SETTINGS_PREFIX . '_' . $merchantId . '_' . implode('_', $input),
+            self::CACHE_REMINDER_SETTINGS_TTL,
+            function () use ($input) {
+                return $this->app['reminders']->getReminderSettings($input);
+            }
+        );
     }
 }

@@ -51,8 +51,6 @@ class HitachiGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
-
         $this->gateway = 'hitachi';
 
         $this->payment = $this->getDefaultPaymentArray();
@@ -76,6 +74,11 @@ class HitachiGatewayTest extends TestCase
              ->method('getTreatment')
              ->will($this->returnCallback(function ($mid, $feature, $mode)
                 {
+                    if ($feature === 'shield_risk_evaluation')
+                    {
+                        return 'shield_on';
+                    }
+
                     if ($feature === 'save_all_cards')
                     {
                         return 'off';

@@ -403,8 +403,11 @@ return [
         ],
     ],
 
-
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
+    ],
+
+    'kyc_service' => [
+        'mock' => env('KYC_SERVICE_MOCK', false),
     ],
 ];

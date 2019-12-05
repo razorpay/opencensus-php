@@ -176,7 +176,7 @@ class Core extends Base\Core
         return $this->find($namespace, $serviceName, $referenceId, $merchantId)[Constants::MERGED_OPTIONS];
     }
 
-    public function find(string $namespace, string $serviceName = null, string $referenceId = null, string $merchantId)
+    public function find(string $namespace, string $serviceName, string $referenceId = null, string $merchantId)
     {
         $this->validateNamespaceAndService($namespace, $serviceName);
 
@@ -249,7 +249,7 @@ class Core extends Base\Core
         return array_replace_recursive($arr1, $arr2);
     }
 
-    private function validateNamespaceAndService(string $namespace, string $serviceName)
+    public function validateNamespaceAndService(string $namespace, string $serviceName)
     {
         $this->validateNamespace($namespace);
 

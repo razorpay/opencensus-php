@@ -33,4 +33,18 @@ class FTSController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function createSourceAccount()
+    {
+        $response = $this->app['fts_create_account']->createAccountMappingForFts($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteSourceAccount()
+    {
+        $response = $this->app['fts_create_account']->deleteSourceAccount($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

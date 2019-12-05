@@ -212,9 +212,10 @@ class Selector extends Base\Core
                     $this->trace->error(
                         TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
-                            'input_terminals' => $allTerminals,
-                            'terminals_from_smart_routing' => $newSelectedTerminals,
-                            'is_error_timeout' => $terminalSetReceivedFromSmartRouting != null ? false : true,
+                            'terminals_from_smart_routing'  => $newSelectedTerminals,
+                            'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
+                            'payment_id'                    => $payment->getId(),
+
                         ]);
                 }
 
@@ -234,7 +235,8 @@ class Selector extends Base\Core
                 $this->trace->error(
                     TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
                     [
-                        'error' => $e->getMessage(),
+                        'error'         => $e->getMessage(),
+                        'payment_id'    => $payment->getId(),
                     ]);
             }
 
@@ -530,7 +532,7 @@ class Selector extends Base\Core
 
             if ($payment->hasCard() === true)
             {
-                $card = $this->repo->card->findOrFail($payment->getCardId());
+                $card = $payment->card;
 
                 $paymentData['card'] = $card->toArray();
 
@@ -614,7 +616,10 @@ class Selector extends Base\Core
             $this->trace->error(
                 TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
                 [
-                    'error'     => $e->getMessage(),
+                    'error'             => $e->getMessage(),
+                    'payment_id'        => $payment->getId(),
+                    'execution_type'    => $executionType,
+
                 ]);
         }
 
@@ -752,19 +757,6 @@ class Selector extends Base\Core
         $merchantData['features']          = $merchant->getEnabledFeatures();
         $merchantData['fee_bearer']        = $merchant->getFeeBearer();
         $merchantData['org_id']            = $merchant->getOrgId();
-
-        $subMerchantIds = [];
-
-        if ($merchant->isPartner() === true)
-        {
-            $subMerchants = (new MerchantCore())->listSubmerchants($merchant, []);
-
-            foreach ($subMerchants as $subMerchant)
-            {
-                $subMerchantIds[] = $subMerchant->getId();
-            }
-        }
-        $merchantData['sub_merchants_ids']  = $subMerchantIds;
 
         return $merchantData;
     }
