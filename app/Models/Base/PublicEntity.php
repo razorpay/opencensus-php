@@ -178,6 +178,20 @@ class PublicEntity extends UniqueIdEntity
         return $publicArray;
     }
 
+    /**
+     * toArrayPublic at times has fields that we set/unset based on auth type. This should not impact the webhook data.
+     * toArrayWebhook assumes that the $webhook array will be a subset of the $public array.
+     * This function uses the public setters itself for custom data but only returns fields present in $webhook array.
+     *
+     * @return array
+     */
+    public function toArrayWebhook()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->webhook);
+    }
+
     public function toArrayAdmin()
     {
         $app = App::getFacadeRoot();

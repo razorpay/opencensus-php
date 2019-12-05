@@ -336,6 +336,18 @@ class Core extends Base\Core
         }
     }
 
+    public function updateTokenForUpi(Entity $token, array $gatewayData)
+    {
+        $token->setRecurringStatus($gatewayData['recurring_status']);
+
+        if ($gatewayData['recurring_status'] === RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+        }
+
+        $this->repo->saveOrFail($token);
+    }
+
     public function updateTokenFromNachGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
@@ -548,6 +560,11 @@ class Core extends Base\Core
         return null;
     }
 
+    protected function validateExistingTokenUpi($existingTokens, $newToken)
+    {
+        return null;
+    }
+
     protected function validateExistingTokenNach($existingTokens, $newToken)
     {
         return null;
@@ -566,5 +583,34 @@ class Core extends Base\Core
         $cardInput[Card\Entity::CVV] = Card\Entity::getDummyCvv($network);
 
         return $cardInput;
+    }
+
+    public function validateUpiTokenForUpdate(Token\Entity $token)
+    {
+        $this->validateExpiryTimeForUpiTokenUpdate($token);
+
+        $this->validateRecurringStatusForUpiTokenUpdate($token);
+    }
+
+    protected function validateExpiryTimeForUpiTokenUpdate(Token\Entity $token)
+    {
+        $currentTimestamp = $token->freshTimestamp();
+
+        $expireTimestamp = $token->getExpiredAt();
+
+        if ($currentTimestamp > $expireTimestamp)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_EXPIRED_TOKEN);
+        }
+    }
+
+    protected function validateRecurringStatusForUpiTokenUpdate(Token\Entity $token)
+    {
+        $tokenStatus = $token->getRecurringStatus();
+
+        if ($tokenStatus !== RecurringStatus::CONFIRMED)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN);
+        }
     }
 }

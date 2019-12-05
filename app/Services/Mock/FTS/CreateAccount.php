@@ -18,8 +18,11 @@ class CreateAccount extends BaseCreateAccount
             ];
     }
 
-    public function createSourceAccount(string $id, string $ftsAccountId, array $content,
-                                        string $product, string $channel = 'ICICI')
+    public function createSourceAccount(string $id,
+                                        string $ftsAccountId,
+                                        array $content,
+                                        string $product,
+                                        string $channel = 'ICICI')
     {
         return
             [

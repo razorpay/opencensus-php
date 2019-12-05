@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Constants;
 use RZP\Models\Contact;
 
 /**
@@ -43,16 +44,16 @@ class ContactController extends Controller
         return ApiResponse::json($data);
     }
 
-    /**
-     *  Route to create bulk contacts.
-     *  Currently it is used by batch Service
-     */
-    public function createContactBulk()
+    public function create()
     {
         $input = Request::all();
 
-        $response = $this->service()->createBulkContact($input);
+        $data = $this->service()->create($input);
 
-        return ApiResponse::json($response);
+        $response = $data[Constants\Entity::CONTACT];
+
+        $responseCode = $data[Contact\Entity::RESPONSE_CODE];
+
+        return ApiResponse::json($response, $responseCode);
     }
 }

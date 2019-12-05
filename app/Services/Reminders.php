@@ -3,8 +3,8 @@
 namespace RZP\Services;
 
 use Requests;
-use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
+use RZP\Trace\TraceCode;
 
 class Reminders
 {
@@ -34,10 +34,11 @@ class Reminders
     protected $auth;
 
     const REMINDERS_URL = [
-        'create_reminder' => 'reminders',
-        'update_reminder' => 'reminders',
-        'delete_reminder' => 'reminders',
-        'next_run_at'     => 'reminders/next_run_at'
+        'create_reminder'   => 'reminders',
+        'update_reminder'   => 'reminders',
+        'delete_reminder'   => 'reminders',
+        'next_run_at'       => 'reminders/next_run_at',
+        'merchant_settings' => 'merchant_settings',
     ];
 
     public function __construct($app)
@@ -82,6 +83,36 @@ class Reminders
     {
         $url = self::REMINDERS_URL['next_run_at'];
         $response = $this->sendRequest($url, 'POST', $input);
+        return $response;
+    }
+
+    /**
+     * Fetches reminder settings from reminder service.
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     */
+    public function getReminderSettings(array $input)
+    {
+        $url = self::REMINDERS_URL['merchant_settings'];
+
+        try
+        {
+            $response = $this->sendRequest($url, 'GET', $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            // sending items as empty array when reminders is down.
+            // We don't want to fail entity creation when reminders is not available.
+            $response = [
+                'count' => 0,
+                'items' => []
+            ];
+        }
+
         return $response;
     }
 

@@ -328,7 +328,7 @@ class FundTransfer extends Base
      */
     protected function updateFTAWithResponse(array $responseBody = [])
     {
-        $remarks       = null;
+        $failureReason = null;
 
         $ftsTransferId = 0;
 
@@ -347,11 +347,11 @@ class FundTransfer extends Base
 
             if (isset($responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE]) === true)
             {
-                $remarks = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
+                $failureReason = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
             }
         }
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $remarks);
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
 
         $this->updateSource($ftsTransferId);
     }

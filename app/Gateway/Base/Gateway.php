@@ -1834,4 +1834,9 @@ class Gateway
                 $this->action);
         }
     }
+
+    public function isMandateUpdateCallback($input)
+    {
+        return false;
+    }
 }

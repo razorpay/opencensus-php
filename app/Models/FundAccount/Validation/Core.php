@@ -3,17 +3,18 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -171,7 +172,7 @@ class Core extends Base\Core
      */
     protected function createOrGetFundAccount(array $input, Merchant\Entity $merchant): FundAccount\Entity
     {
-        assertTrue(isset($input['fund_account']) === true);
+        $this->fundAccountCore->modifyRequestForBackwardCompatibility($input['fund_account']);
 
         try
         {
@@ -206,11 +207,7 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            $inputValidator = $validation->getValidator();
-
-            $inputValidator->validateAmount($validation, $input);
-
-            $inputValidator->validateCurrency($validation, $input);
+            $this->runInputValidations($validation, $input);
 
             $processor = Processor\Factory::get($validation);
 
@@ -234,6 +231,31 @@ class Core extends Base\Core
         });
 
         return $validation;
+    }
+
+    /**
+     * @param Entity $validation
+     * @param array  $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function runInputValidations(Entity $validation, array $input)
+    {
+        $type = $validation->fundAccount->account->getEntityName();
+
+        Processor\Factory::validate($type);
+
+        // Extra checks are not required for non banking, create rules are sufficient
+        if ($validation->balance->isTypeBanking() === false)
+        {
+            return;
+        }
+
+        $accountType = $validation->fundAccount->getAccountType();
+
+        $validationRuleName = Product::BANKING . '_' . $accountType;
+
+        (new Validator($validation))->validateInput($validationRuleName, $input);
     }
 
     /**
