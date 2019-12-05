@@ -18,23 +18,23 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use SoftDeletes;
 
-    const ID                    = 'id';
-    const CONTACT_ID            = 'contact_id';
-    const FUND_ACCOUNT_ID       = 'fund_account_id';
-    const SHORT_URL             = 'short_url';
-    const MERCHANT_ID           = 'merchant_id';
-    const USER_ID               = 'user_id';
-    const BATCH_ID               = 'batch_id';
-    const IDEMPOTENCY_KEY        = 'idempotency_key';
-    const STATUS                = 'status';
-    const AMOUNT                = 'amount';
-    const NOTES                 = 'notes';
-    const DESCRIPTION           = 'description';
-    const RECEIPT               = 'receipt';
-    const CURRENCY              = 'currency';
-    const CANCELLED_AT          = 'cancelled_at';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
+    const ID              = 'id';
+    const CONTACT_ID      = 'contact_id';
+    const FUND_ACCOUNT_ID = 'fund_account_id';
+    const SHORT_URL       = 'short_url';
+    const MERCHANT_ID     = 'merchant_id';
+    const USER_ID         = 'user_id';
+    const BATCH_ID        = 'batch_id';
+    const IDEMPOTENCY_KEY = 'idempotency_key';
+    const STATUS          = 'status';
+    const AMOUNT          = 'amount';
+    const NOTES           = 'notes';
+    const DESCRIPTION     = 'description';
+    const RECEIPT         = 'receipt';
+    const CURRENCY        = 'currency';
+    const CANCELLED_AT    = 'cancelled_at';
+    const CREATED_AT      = 'created_at';
+    const UPDATED_AT      = 'updated_at';
 
     protected $generateIdOnCreate = true;
 
