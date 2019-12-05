@@ -59,6 +59,7 @@ class Method
     public static $recurringMethods = [
         self::CARD,
         self::EMANDATE,
+        self::UPI,
         self::NACH,
     ];
 

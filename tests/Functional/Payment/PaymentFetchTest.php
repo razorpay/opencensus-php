@@ -210,6 +210,51 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentFetchWithExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id'], ['expand' => [
+                'refunds'
+            ]]);
+
+        $this->assertEquals('30000', $paymentFetchResponse['amount_refunded']);
+
+        $this->assertArrayHasKey('refunds', $paymentFetchResponse);
+
+        $refundsFromResponse = $paymentFetchResponse['refunds'];
+
+        $this->assertEquals(2, $refundsFromResponse['count']);
+
+        foreach ($refundsFromResponse['items'] as $refund)
+        {
+            $this->assertEquals($response['id'], $refund['payment_id']);
+        }
+    }
+
+    public function testPaymentFetchWithoutExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id']);
+
+        $this->assertArrayNotHasKey('refunds', $paymentFetchResponse);
+    }
+
     public function testFetchWithExpandsTransfer()
     {
         $this->ba->proxyAuth();

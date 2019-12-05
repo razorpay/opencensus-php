@@ -46,6 +46,7 @@ final class Route
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_calculate_fees'                   => ['post',     'payments/calculate/fees',                        'PaymentCreateController@postCalculatePaymentFees'                  ],
         'payment_fees'                             => ['post',     'payments/fees',                                  'PaymentCreateController@postPaymentFees'                           ],
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
@@ -287,6 +288,7 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'    ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
@@ -400,6 +402,7 @@ final class Route
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
+        'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
         'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
@@ -1125,8 +1128,8 @@ final class Route
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
-        'partner_referral_fetch'                   => ['get',      'merchant/{id}/referral',                         'MerchantController@fetchReferral'                                  ],
-        'partner_referral_create'                  => ['post',     'merchant/{id}/referral',                         'MerchantController@createReferral'                                 ],
+        'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
+        'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
 
 
 
@@ -1167,7 +1170,7 @@ final class Route
         'subscription_registration_list_links'          => ['get',      'subscription_registration/auth_links',                'SubscriptionRegistrationController@listAuthLinks'                  ],
         'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
-        'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify/{medium}',    'SubscriptionRegistrationController@sendNotification'      ],
+        'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify_by/{medium}', 'SubscriptionRegistrationController@sendNotification'      ],
         'subscription_registration_resend_links_batch'  => ['put',      'subscription_registration/auth_links/batch/{batchId}/notify',  'SubscriptionRegistrationController@notifyAuthLinksOfBatch'],
         'subscription_registration_cancel_link'         => ['post',     'subscription_registration/auth_links/{id}/cancel',             'SubscriptionRegistrationController@cancelAuthLink'        ],
         'subscription_registration_cancel_links_batch'  => ['post',     'subscription_registration/auth_links/batch/{batch_id}/cancel', 'SubscriptionRegistrationController@cancelAuthLinksOfBatch'],
@@ -1195,7 +1198,8 @@ final class Route
         'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
-        'bulk_contact_create'                      => ['post',     'contacts/bulk',                                  'ContactController@createContactBulk'                               ],
+        //TODO: This is a hack, till batch changes with new endpoint are deployed in production - https://razorpay.atlassian.net/browse/RX-798
+        'bulk_contact_create'                      => ['post',     'contacts/bulk',                                  'FundAccountController@createFundAccountBulk'                       ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
@@ -1214,6 +1218,7 @@ final class Route
         'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
+        'fund_account_bulk_create'                 => ['post',     'fund_accounts/bulk',                             'FundAccountController@createFundAccountBulk'                       ],
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
@@ -1372,6 +1377,7 @@ final class Route
         'payment_create_jsonp',
         'payment_create_ajax',
         'payment_create_fees',
+        'payment_calculate_fees',
         'payment_otp_submit',
         'payment_otp_resend',
         'payment_topup_ajax',
@@ -1671,6 +1677,7 @@ final class Route
         'merchant_activation_status_partner',
         'merchant_fetch_schedule_tasks',
         'setl_holidays',
+        'fb_setl_fetch_transactions',
     ];
 
     // Only routes defined in internalApps go here
@@ -1895,7 +1902,8 @@ final class Route
         // submerchants to use only one set of credentials everywhere
         'mpans_issue',
         'mpans_fetch',
-        'payment_fetch_by_id'
+        'payment_fetch_by_id',
+        'fb_setl_fetch_transactions',
     ];
 
     public static $proxy = [
@@ -2109,8 +2117,9 @@ final class Route
         'commissions_analytics',
         'invoice_update_billing_period',
         'bulk_invoice_create',
-        'bulk_contact_create',
         'payout_bulk_create',
+        'fund_account_bulk_create',
+        'bulk_contact_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
@@ -2408,6 +2417,7 @@ final class Route
         'terminal_check_encrypted_value',
         'terminal_delete',
         'terminal_edit',
+        'terminal_onboarding_update_status',
         'terminal_reassign_merchant',
         'terminal_remove_merchant',
         'terminal_restore',
@@ -2722,6 +2732,7 @@ final class Route
         'gateway_update_rule'                      => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'                      => Permission::DELETE_GATEWAY_RULE,
         'terminal_toggle'                          => Permission::TOGGLE_TERMINAL,
+        'terminal_onboarding_update_status'        => '*',
         'terminal_check_encrypted_value'           => Permission::CHECK_TERMINAL_SECRET,
         'terminal_delete'                          => Permission::DELETE_TERMINAL,
         'terminal_edit'                            => Permission::EDIT_TERMINAL,
@@ -3234,6 +3245,7 @@ final class Route
         'payment_create_jsonp',
         'payment_create_ajax',
         'payment_create_fees',
+        'payment_calculate_fees',
         'app_fetch_payments',
         'customer_logout_global',
         'app_delete_token',
@@ -3534,6 +3546,8 @@ final class Route
             'bulk_contact_create',
             'bulk_submerchant_assign',
             'payout_bulk_create',
+            'fund_account_bulk_create',
+            'bulk_contact_create',
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
@@ -3716,6 +3730,7 @@ final class Route
         'payment_create_jsonp',
         'payment_create_ajax',
         'payment_create_fees',
+        'payment_calculate_fees',
         'payment_create_wallet',
         'payment_create_openwallet',
         'payment_create_upi',

@@ -28,6 +28,12 @@ class CardPaymentService extends BaseCardPaymentService
         return [];
     }
 
+
+    public function authorizeAcrossTerminals(Payment\Entity $payment, array $gatewayInput, array $terminals)
+    {
+        return [];
+    }
+  
     public function fetchAuthorizationData(array $input)
     {
         $paymentId = $input['payment_ids'][0];

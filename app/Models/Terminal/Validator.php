@@ -82,6 +82,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::UPI_CITI,
+        Payment\Gateway::UPI_JUSPAY,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
@@ -159,6 +160,19 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+    ];
+
+    protected static $upiJuspayTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_juspay',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
     ];
 
     protected static $atomTerminalRules = [
@@ -451,6 +465,14 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+    ];
+
+    protected static $upiJuspayEditTerminalRules = [
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
@@ -866,6 +888,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [

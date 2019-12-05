@@ -703,6 +703,7 @@ trait SettlementTrait
                 [
                     'balance_id'   => $balance->getId(),
                     'balance_type' => $balance->getType(),
+                    'balance'      => $balance->getBalance(),
                     'merchant'     => $merchant->getId(),
                     'setlAmount'   => $setlAmount,
                     'reason'       => 'settlement amount less than 1rs or greater than balance',
