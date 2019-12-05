@@ -427,8 +427,6 @@ class Core extends Base\Core
 
             $fta = $this->updateFtaWithInput($input, $fta);
 
-            $fta->fill($input);
-
             if (method_exists($fta->source, 'setFTSTransferId') === true)
             {
                 $fta->source->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
@@ -751,6 +749,22 @@ class Core extends Base\Core
         if ((isset($input['extra_info']) === true) and (is_array($input['extra_info']) === true))
         {
             $this->updateExtraInfo($input['extra_info'], $fta);
+        }
+
+        if (empty($input[Entity::STATUS]) === false) {
+            $fta->setStatus($input[Entity::STATUS]);
+        }
+
+        if (empty($input[Entity::FAILURE_REASON]) === false) {
+            $fta->setFailureReason($input[Entity::FAILURE_REASON]);
+        }
+
+        if (empty($input[Entity::BANK_STATUS_CODE]) === false) {
+            $fta->setBankStatusCode($input[Entity::BANK_STATUS_CODE]);
+        }
+
+        if (empty($input[Entity::REMARKS]) === false) {
+            $fta->setRemarks($input[Entity::REMARKS]);
         }
 
         return $fta;
