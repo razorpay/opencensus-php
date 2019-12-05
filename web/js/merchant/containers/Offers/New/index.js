@@ -44,7 +44,99 @@ import Spinner from 'common/ui/Spinner';
     showNotification,
   }
 )
-export default class CreateOfferModal extends Component {
+export default class CreateOfferWizard extends Component {
+  constructor(props) {
+    super(props);
+    this.formInputs = [];
+  }
+
+  getFormElementValidations = elementName => {
+    return (
+      {
+        name: val => {
+          if (!val || val.length < 4) {
+            return 'Short name should be at least of 4 characters';
+          }
+          if (val.length > 50) {
+            return 'Short name should not exceed 50 characters';
+          }
+        },
+        display_text: val => {
+          if (!val || val.length < 4) {
+            return 'Short name should be at least of 4 characters';
+          }
+          if (val.length > 250) {
+            return 'Short name should not exceed 50 characters';
+          }
+        },
+        discount_type: val => {
+          if (!val || val == '') {
+            return 'Please select a field type';
+          }
+        },
+        percent_rate: val => {
+          if (!val) {
+            return 'Should be valid number between 0 and 100';
+          }
+          if (val > 100 || val < 0) {
+            return 'Percentage should be between 0 and 100';
+          }
+          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+            return 'Please enter number upto 2 decimal points';
+        },
+        flat_cashback: val => {
+          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+            return 'Please enter number upto 2 decimal points';
+        },
+        max_cashback: val => {
+          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+            return 'Please enter number upto 2 decimal points';
+        },
+      }[elementName] ||
+      (val => {
+        if (!val) return 'must exist';
+      })
+    );
+  };
+
+  isFormElementValid = elementName => {
+    return !this.getFormElementValidations(elementName)(
+      this.state[elementName]
+    );
+  };
+
+  isTabDataValid = tabNumber => {
+    let isValid = true;
+    switch (tabNumber) {
+      case 0:
+        isValid =
+          isValid &&
+          this.isFormElementValid('name') &&
+          this.isFormElementValid('display_text');
+        break;
+      case 1:
+        isValid = isValid;
+        break;
+      case 2:
+        isValid =
+          this.isFormElementValid('discount_type') &&
+          (this.state.discount_type == 'flat'
+            ? this.isFormElementValid('flat_cashback')
+            : this.isFormElementValid('max_cashback') &&
+              this.isFormElementValid('percent_rate'));
+        break;
+      default:
+        break;
+    }
+    return isValid;
+  };
+
+  createAndGetRef(myRef) {
+    // let ref = React.createRef();
+    this.formInputs.push(myRef);
+    // return ref
+  }
+
   state = {
     currentTab: 0,
     validTabs: [false, false, false, false],
@@ -58,37 +150,16 @@ export default class CreateOfferModal extends Component {
 
   handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
-    this.setState({ currentTab });
-  };
-
-  handleChangeIn = ({ target }) => {
-    let value = target.value;
-    const name = target.name || target.dataset.name;
-    const stateKey = target.name ? 'fields' : 'internals';
-    let values = { ...this.state[stateKey] };
-
-    if (name.match(/_time/)) {
-      return;
-    } else if (target.type === 'number') {
-      value = Number(value);
-    } else if (target.type === 'checkbox') {
-      value = target.checked;
-    }
-
-    values = stringToObj(name, value, values);
-
-    this.setState({ [stateKey]: values }, () => {
-      if (name === '_addOnPresent') {
-        this.setState({
-          fields: {
-            ...this.state.fields,
-            addons: target.checked ? [{}] : [],
-          },
-        });
-      }
+    this.setState({ currentTab }, () => {
       this.toggleDisableState();
     });
   };
+
+  componentDidUpdate() {
+    setTimeout(() => {
+      this.toggleDisableState();
+    }, 0);
+  }
 
   getFormOnChangeHandler(type, ...options) {
     const makeState = (name, value) => {
@@ -247,9 +318,9 @@ export default class CreateOfferModal extends Component {
           class="Input--half"
           addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
           description="Discount worth in cash"
-          pattern="[0-9]+(\.[0-9][0-9]?)?"
-          patternError="Please enter number upto 2 decimal points"
           required
+          defaultValue={this.state.flat_cashback}
+          validator={this.getFormElementValidations('flat_cashback')}
         />
       );
     }
@@ -263,16 +334,7 @@ export default class CreateOfferModal extends Component {
             description="Discount worth in Percent"
             addonBefore={<span>%</span>}
             required
-            pattern="[0-9]+(\.[0-9][0-9]?)?"
-            patternError="Please enter number upto 2 decimal points"
-            validator={val => {
-              if (!val) {
-                return 'Should be valid number between 0 and 100';
-              }
-              if (val > 100 || val < 0) {
-                return 'Percentage should be between 0 and 100';
-              }
-            }}
+            validator={this.getFormElementValidations('percent_rate')}
           />
           <Input
             label="Maximum Cashback"
@@ -281,8 +343,9 @@ export default class CreateOfferModal extends Component {
             onChange={this.getFormOnChangeHandler()}
             description="Maximum cashback for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
-            pattern="[0-9]+(\.[0-9][0-9]?)?"
-            patternError="Please enter number upto 2 decimal points"
+            // pattern="[0-9]+(\.[0-9][0-9]?)?"
+            // patternError="Please enter number upto 2 decimal points"
+            validator={this.getFormElementValidations('max_cashback')}
             required
           />
         </React.Fragment>
@@ -293,41 +356,7 @@ export default class CreateOfferModal extends Component {
   renderForm() {
     switch (this.state.currentTab) {
       case 0:
-        return (
-          <React.Fragment>
-            <Input
-              label="Offer Name"
-              name="name"
-              placeholder="Offer Short name"
-              autoFocus={true}
-              defaultValue={this.state.name}
-              required
-              validator={val => {
-                if (!val || val.length < 4) {
-                  return 'Short name should be at least of 4 characters';
-                }
-                if (val.length > 50) {
-                  return 'Short name should not exceed 50 characters';
-                }
-              }}
-            />
-            <Input
-              label="Display Text"
-              name="display_text"
-              placeholder="Display text for offer"
-              required
-              defaultValue={this.state.display_text}
-              validator={val => {
-                if (!val || val.length < 4) {
-                  return 'Short name should be at least of 4 characters';
-                }
-                if (val.length > 250) {
-                  return 'Short name should not exceed 250 characters';
-                }
-              }}
-            />
-          </React.Fragment>
-        );
+        return this.getOfferDescriptionFormInputs();
       case 1:
         return (
           <div>
@@ -382,18 +411,50 @@ export default class CreateOfferModal extends Component {
                 placeholder="Discount Type"
                 onChange={this.getFormOnChangeHandler()}
                 required
+                ref={myRef => this.createAndGetRef(myRef)}
+                defaultValue={this.state.discount_type}
                 options={[
                   { label: 'Select Type', name: '' },
-                  { label: 'Percentage', name: 'percent' },
                   { label: 'Flat', name: 'flat' },
+                  { label: 'Percentage', name: 'percent' },
                 ]}
+                validator={this.getFormElementValidations('discount_type')}
               />
               {this.renderDiscountDetailsSection()}
             </div>
           </div>
         );
       case 3:
-        return <div />;
+        return (
+          <React.Fragment>
+            <Input.DateTime
+              label="Starting On"
+              name="starts_at"
+              description="Start date for offer"
+              onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
+              isInline
+              required
+              validator={val => {
+                if (moment() > val) {
+                  return 'Start date cannot be in past.';
+                }
+              }}
+            />
+            <Input.DateTime
+              label="Expires On"
+              name="ends_at"
+              onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
+              description="Expiry date for offer"
+              isInline
+              required
+              validator={val => {
+                if (this.state.starts_at > val.unix()) {
+                  return 'End date cannot be less that start date.';
+                }
+              }}
+            />
+          </React.Fragment>
+        );
     }
   }
 
@@ -446,7 +507,7 @@ export default class CreateOfferModal extends Component {
                 <Button.Primary
                   onClick={this.changeTab(1)}
                   type="button"
-                  disabled={!this.state.enableSubmit}
+                  disabled={!this.isTabDataValid(this.state.currentTab)}
                 >
                   Next
                 </Button.Primary>
@@ -474,11 +535,14 @@ export default class CreateOfferModal extends Component {
     if (!invalidFields.length) {
       enableSubmit = true;
     }
-    this.setState({ enableSubmit });
+    console.log(invalidFields);
+    if (this.state.enableSubmit !== enableSubmit)
+      this.setState({ enableSubmit });
   }
 
   render() {
     const isModalView = this.props.onClose;
+    console.log('rendering');
 
     return isModalView ? (
       <Modal
@@ -491,6 +555,30 @@ export default class CreateOfferModal extends Component {
       <div class="StandAloneContainer">
         {this.renderWizard({ isModalView })}
       </div>
+    );
+  }
+
+  getOfferDescriptionFormInputs() {
+    return (
+      <React.Fragment>
+        <Input
+          label="Offer Name"
+          name="name"
+          placeholder="Offer Short name"
+          autoFocus={true}
+          defaultValue={this.state.name}
+          required
+          validator={this.getFormElementValidations('name')}
+        />
+        <Input
+          label="Display Text"
+          name="display_text"
+          placeholder="Display text for offer"
+          required
+          defaultValue={this.state.display_text}
+          validator={this.getFormElementValidations('display_text')}
+        />
+      </React.Fragment>
     );
   }
 }
