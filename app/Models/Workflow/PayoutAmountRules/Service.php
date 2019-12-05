@@ -37,10 +37,20 @@ class Service extends Base\Service
 
         foreach($groupedRules as $mid => $groupedRule)
         {
+            $modifiedGroupedRule = [];
+
+            foreach($groupedRule->toArray() as $rule)
+            {
+                $rule['steps'] = $rule['workflow']['steps'];
+                unset($rule['workflow']);
+                $modifiedGroupedRule[] = $rule;
+            }
+
             $result = [
                 "merchant_id" => (string)$mid,
-                "rules"       => $groupedRule
+                "rules"       => $modifiedGroupedRule
             ];
+
             $results[] = $result;
         }
 

@@ -165,7 +165,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ],
             [
                 'id'          => 2,
-                'min_amount'  => 101,
+                'min_amount'  => 100,
                 'max_amount'  => null
             ],
             [
@@ -219,7 +219,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ],
             [
                 'id'          => 2,
-                'min_amount'  => 101,
+                'min_amount'  => 100,
                 'max_amount'  => null
             ]
         ];
