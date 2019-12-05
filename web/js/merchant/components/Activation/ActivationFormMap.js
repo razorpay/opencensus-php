@@ -2,7 +2,11 @@ import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { isValidGSTIN, getDetailsForIFSC } from 'common/utils/rzp-utils';
+import {
+  isValidGSTIN,
+  getDetailsForIFSC,
+  isPresent,
+} from 'common/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
@@ -265,6 +269,9 @@ const businessModel = [
           ),
         },
       ],
+      _disabledWhen: activation =>
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_website),
     },
     {
       label: '',
@@ -317,6 +324,9 @@ const businessModel = [
       ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
       _when: activation => activation.state.has_url === '0',
+      _disabledWhen: activation =>
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_website),
     },
   ],
 ];
