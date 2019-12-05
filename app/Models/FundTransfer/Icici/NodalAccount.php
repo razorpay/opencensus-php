@@ -30,7 +30,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
     const DEBIT_ACCOUNT_NO = '000205025290';
 
-    const RZP_FILE_MIME_TYPE  = 'text/plain';
+    const RZP_FILE_MIME_TYPE  = 'application/octet-stream';
 
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
