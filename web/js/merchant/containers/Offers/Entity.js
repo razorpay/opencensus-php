@@ -226,7 +226,7 @@ export default class Entity extends Component {
     const tracking = this.props.tracking;
     //analytics
     tracking.trackEvent(
-      window.rzpQ.initiated('Offer_edit', {
+      window.rzpQ.merchantActions().initiated('Offer_edit', {
         edited_field: ['active'],
       })
     );
@@ -250,7 +250,7 @@ export default class Entity extends Component {
             this.props.updateOfferInReduxList(offer);
             //analytics code here
             tracking.trackEvent(
-              window.rzpQ.success('Offer_edit', {
+              window.rzpQ.merchantActions().success('Offer_edit', {
                 edited_field: ['active'],
                 field_value: [activationValue],
               })

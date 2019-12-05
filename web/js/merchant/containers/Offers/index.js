@@ -36,7 +36,9 @@ export default class OfferIndex extends Component {
                         <span
                           onClick={() => {
                             this.props.tracking.trackEvent(
-                              window.rzpQ.initiated('Offer_create')
+                              window.rzpQ
+                                .merchantActions()
+                                .initiated('Offer_create')
                             );
                           }}
                         >
