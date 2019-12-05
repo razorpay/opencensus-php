@@ -39,7 +39,7 @@ class Validator extends Base\Validator
             }
             if($rule['max_amount'] && $rule['max_amount'] != PHP_INT_MAX)
             {
-                $presentAmount = $rule['max_amount'] + 1;
+                $presentAmount = $rule['max_amount'];
             }
             else
             {
