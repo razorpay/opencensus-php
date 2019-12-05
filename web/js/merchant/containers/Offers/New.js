@@ -293,7 +293,9 @@ class NewOfferForm extends React.Component {
           });
 
           //analytics event tracking
-          this.props.tracking.trackEvent(window.rzpQ.success('Offer_create'));
+          this.props.tracking.trackEvent(
+            window.rzpQ.merchantActions().success('Offer_create')
+          );
 
           const entityId = savedOffer.id;
 
@@ -309,7 +311,7 @@ class NewOfferForm extends React.Component {
         } else {
           //analytics event tracking
           this.props.tracking.trackEvent(
-            window.rzpQ.failed('Offer_create', {
+            window.rzpQ.merchantActions().failed('Offer_create', {
               error: resp.errors,
             })
           );
