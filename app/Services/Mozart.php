@@ -26,6 +26,7 @@ class Mozart
     // Mozart constants
     const HEADERS                        = 'headers';
     const CONTENT                        = 'content';
+    const OPTIONS                        = 'options';
     const STATUS_CODE                    = 'status_code';
     const URL                            = 'url';
     const WEBHOOK                        = 'webhook';
@@ -142,12 +143,7 @@ class Mozart
 
     protected function getTranslateWebhookRequest(string $path, string $payload)
     {
-        return [
-            'url'       => $this->getTranslateWebhookUrl($path),
-            'content'   => $payload,
-            'method'    => Requests::POST,
-            'options'   => ['auth'  => $this->getAuthenticationDetails()],
-        ];
+        return $this->getRequestV2($payload, self::WEBHOOK, $path, self::DEFAULT_MOZART_VERSION, self::TRANSLATE);
     }
 
     protected function getUrl(): string
@@ -159,19 +155,11 @@ class Mozart
         return $url;
     }
 
-    protected function getTranslateWebhookUrl(string $path) : string
+    protected function getUrlV2(string $namespace, string $gateway, string $version, string $action): string
     {
-        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+        $baseUrl = $this->config->get('applications.mozart.url');
 
-        $baseUrl = $this->config->get($urlConfig);
-
-        $namespace = self::WEBHOOK;
-
-        $version = self::DEFAULT_MOZART_VERSION;
-
-        $action = self::TRANSLATE;
-
-        return "{$baseUrl}{$namespace}/{$path}/{$version}/{$action}";
+        return "{$baseUrl}{$namespace}/{$gateway}/{$version}/{$action}";
     }
 
     protected function getAuthenticationDetails(): array
@@ -202,6 +190,22 @@ class Mozart
             'options' => [
                 'auth' => $authentication
             ]
+        ];
+
+        return $request;
+    }
+
+    protected function getRequestV2(string $content, string $namespace, string $gateway, string $version, string $action)
+    {
+        $request = [
+            self::URL       => $this->getUrlV2($namespace, $gateway, $version, $action),
+            'method'        => Requests::POST,
+            self::HEADERS   => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::X_TASK_ID     => $this->app['request']->getTaskId(),
+            ],
+            self::CONTENT   => $content,
+            self::OPTIONS   => ['auth' => $this->getAuthenticationDetails()],
         ];
 
         return $request;
