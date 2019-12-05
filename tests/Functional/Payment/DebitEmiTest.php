@@ -47,6 +47,72 @@ class DebitEmiTest extends TestCase
         $this->assertAuthorized();
     }
 
+    public function testHdfcDebitEmiRefundSuccess()
+    {
+        $card = $this->fixtures->card->create(
+            [
+                'name'         => 'Albin',
+                'merchant_id'  => '10000000000000',
+                'expiry_month' => 12,
+                'expiry_year'  => 2024,
+                'iin'          => '485446',
+                'last4'        => '0607',
+                'network'      => 'Visa',
+                'type'         => 'debit',
+                'issuer'       => 'HDFC',
+                'emi'          => false,
+                'vault'        => 'rzpvault',
+                'vault_token'  => 'NDg1NDQ2MDEwMDg0MDYwNw==',
+            ]);
+
+        $payment = $this->fixtures->payment->create(
+            [
+                'amount'      => 300000,
+                'merchant_id' => '10000000000000',
+                'method'      => 'emi',
+                'status'      => 'captured',
+                'gateway'     => 'debit_emi',
+                'card_id'     => $card->getId(),
+            ]);
+
+        $transaction = $this->fixtures->create('transaction',
+            ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $this->fixtures->mozart->create(
+            [
+                'payment_id' => $payment->getId(),
+                'action'     => 'authorize',
+                'amount'     => 300000,
+                'gateway'    => 'debit_emi',
+                'raw'        => '{"Token": "123456", "Status": "Success", "ErrorCode": "0000", "BankReferncNo": "abc123456", "EligibilityStatus": "Yes", "MerchantReferenceNo": "DoERhejxpA5CjO", "OrderConfirmationStatus": "Yes"}',
+            ]);
+
+        $this->refundPayment('pay_' . $payment->getId());
+
+        // Don't need to check payment refund status, since it'd be marked as refund even if gateway request fails.
+        $mozart = $this->getDbEntity('mozart', ['action' => 'refund'])->toArray();
+        $mozart = json_decode($mozart['raw'], true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'OrderCancellationStatus' => 'Yes',
+            ],
+            $mozart
+        );
+    }
+
+    public function testHdfcDebitEmiMissingEmiPlan()
+    {
+
+    }
+
+    public function testHdfcDebitEmiMissingPhoneNumber()
+    {
+
+    }
+
     // ------------- Helpers -----------------
     protected function createDependentEntitiesForSuccessPayment()
     {
