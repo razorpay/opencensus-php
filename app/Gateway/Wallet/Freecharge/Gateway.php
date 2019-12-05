@@ -4,23 +4,26 @@ namespace RZP\Gateway\Wallet\Freecharge;
 
 use Carbon\Carbon;
 use Config;
-use RZP\Constants\HashAlgo;
-use RZP\Constants\Mode;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
-use RZP\Models\Customer\Token;
-use RZP\Models\Merchant;
-use RZP\Models\Payment\Processor;
-use RZP\Models\Payment\TwoFactorAuth;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Trace\TraceCode;
 use View;
+use RZP\Error;
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Processor;
+use RZP\Gateway\Base\VerifyResult;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base as GatewayBase;
+use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Models\Payment\Gateway as PaymentGateway;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -304,6 +307,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
+        $content = [];
+
         try
         {
             $response = $this->sendGatewayRequest($request);
@@ -322,7 +327,9 @@ class Gateway extends Base\Gateway
             //
             if ($retry === true)
             {
-                throw $ex;
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR
+                );
             }
 
             //
@@ -333,7 +340,9 @@ class Gateway extends Base\Gateway
             //
             if ($this->isStatusUnknown($ex) === false)
             {
-                throw $ex;
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR
+                    );
             }
 
             $this->trace->traceException(
@@ -352,7 +361,10 @@ class Gateway extends Base\Gateway
             // We would create the refund for this later, via cron `create_refund_record`.
             // For now, we would be marking this as successful on the API refund entity.
             //
-            return;
+            return [
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($content),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+            ];
         }
 
         $this->verifyCheckSumForResponse($content);
@@ -376,6 +388,26 @@ class Gateway extends Base\Gateway
         {
             $this->createGatewayRefundEntity($attributes);
         }
+
+        return [
+            PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($content),
+            PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+        ];
+    }
+
+   protected function getGatewayData(array $refundFields =[])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                ResponseFields::STATUS           => $refundFields[ResponseFields::STATUS] ?? null,
+                ResponseFields::REFUND_TXN_ID    => $refundFields[ResponseFields::REFUND_TXN_ID] ?? null,
+                ResponseFields::ERROR_CODE       => $refundFields[ResponseFields::ERROR_CODE ] ?? null,
+                ResponseFields::ERROR_MESSAGE    => $refundFields[ResponseFields::ERROR_MESSAGE ] ?? null,
+            ];
+        }
+
+        return [];
     }
 
     public function alreadyRefunded(array $input)
@@ -430,17 +462,25 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+        
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        parent::verifyRefund($input);
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
+
     }
 
     public function checkBalance(array $input)
@@ -798,7 +838,13 @@ class Gateway extends Base\Gateway
         if (hash_equals($expectedCheckSum, $checkSum) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
+                'Failed checksum verification',
+                null,
+                [
+                    PaymentGateway::GATEWAY_RESPONSE  => json_encode($response),
+                    PaymentGateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ]
+            );
         }
     }
 
@@ -1370,24 +1416,19 @@ class Gateway extends Base\Gateway
      */
     protected function handleRequestFailed($response)
     {
-        if ($response->status_code === 202)
+        if (($response->status_code === 202 ) or ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+        (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE)))
         {
             $content = $this->jsonToArray($response->body);
 
             throw new Exception\GatewayErrorException(
                 ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
                 $content[ResponseFields::ERROR_CODE],
-                $content[ResponseFields::ERROR_MESSAGE]);
-        }
-        else if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-                 (isset($content[ResponseFields::ERROR_CODE]) !== ResponseCode::SUCCESS_CODE))
-        {
-            $content = $this->jsonToArray($response->body);
-
-            throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERROR_CODE]),
-                $content[ResponseFields::ERROR_CODE],
-                $content[ResponseFields::ERROR_MESSAGE]);
+                $content[ResponseFields::ERROR_MESSAGE],
+                [
+                    PaymentGateway::GATEWAY_RESPONSE  => json_encode($content),
+                    PaymentGateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                ]);
         }
     }
 
