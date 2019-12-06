@@ -2602,13 +2602,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     /**
      * @param array $array
      *
-     * Base amount(and base currency) should be set in public array if
+     * Base amount should be set in public array iff
      * 1) route is privileged route
      * 2) the payment is non-inr payment
      */
     public function setPublicBaseAmountAttribute(array & $array)
     {
-        if ($this->getCurrency() !== Currency\Currency::INR)
+        $app = \App::getFacadeRoot();
+
+        if (($this->getCurrency() !== Currency\Currency::INR) or
+            ($app['basicauth']->isProxyOrPrivilegeAuth() === true))
         {
             return;
         }
@@ -2618,9 +2621,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     /**
      * @param array $array
      *
-     * Base amount(and base currency) should be set in public array if
-     * 1) route is privileged route
-     * 2) the payment is non-inr payment
+     * Base currency should be set in public array iff
+     * 1) the payment is non-inr payment
      */
     public function setPublicBaseCurrencyAttribute(array & $array)
     {
