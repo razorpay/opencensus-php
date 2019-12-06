@@ -2309,6 +2309,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
+    const SMART_ROUTING_TERMINALS_MISMATCH                      = 'SMART_ROUTING_TERMINALS_MISMATCH';
 
     // Doppler service
     const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
@@ -2372,7 +2373,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY          = 'FUND_ACCOUNT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                = 'PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
     const GATEWAY_PROCESSING_CPS_FAILURE                        = 'GATEWAY_PROCESSING_CPS_FAILURE';
-  
+
     // Trace Code for Merchant status
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
