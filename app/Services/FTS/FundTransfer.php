@@ -371,7 +371,6 @@ class FundTransfer extends Base
                     'failure_reason'    => $failureReason,
                     'fts_transfer_id'   => $ftsTransferId,
                 ]);
-
         }
     }
 
