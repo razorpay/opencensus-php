@@ -2,54 +2,17 @@ import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchPlans } from 'merchant/reducers/plans';
-import {
-  fetchSubscriptionItems,
-  fetchSubscription,
-  saveSubscription,
-} from 'merchant/reducers/subscriptions';
-import { fetchAddOns } from 'merchant/reducers/addons';
-import { fetchCustomer } from 'merchant/reducers/customers';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 
-import {
-  isPresent,
-  findBy,
-  getURLQueryParams,
-  stringToObj,
-  deepClone,
-} from 'common/utils/rzp-utils';
-
-import Spinner from 'common/ui/Spinner';
-
 @withRouter
-@connect(
-  state => ({
-    plans: state.plans,
-    items: state.items,
-    user: state.session.user,
-  }),
-  {
-    fetchSubscription,
-    fetchCustomer,
-    fetchPlans,
-    fetchSubscriptionItems,
-    saveSubscription,
-    showNotification,
-  }
-)
+@connect(state => ({
+  user: state.session.user,
+}))
 export default class CreateOfferWizard extends Component {
-  constructor(props) {
-    super(props);
-    this.formInputs = [];
-  }
-
   getFormElementValidations = elementName => {
     return (
       {
@@ -92,6 +55,16 @@ export default class CreateOfferWizard extends Component {
           if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
             return 'Please enter number upto 2 decimal points';
         },
+        ends_at: val => {
+          if (this.state.starts_at >= val) {
+            return 'End date cannot be less that start date.';
+          }
+        },
+        starts_at: val => {
+          if (moment() > val) {
+            return 'Start date cannot be in past.';
+          }
+        },
       }[elementName] ||
       (val => {
         if (!val) return 'must exist';
@@ -125,20 +98,20 @@ export default class CreateOfferWizard extends Component {
             : this.isFormElementValid('max_cashback') &&
               this.isFormElementValid('percent_rate'));
         break;
+      case 3:
+        isValid =
+          this.isFormElementValid('starts_at') &&
+          this.isFormElementValid('ends_at');
       default:
         break;
     }
     return isValid;
   };
 
-  createAndGetRef(myRef) {
-    // let ref = React.createRef();
-    this.formInputs.push(myRef);
-    // return ref
-  }
-
   state = {
     currentTab: 0,
+    starts_at: moment(),
+    ends_at: moment().add(1, 'days'),
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
@@ -150,16 +123,8 @@ export default class CreateOfferWizard extends Component {
 
   handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
-    this.setState({ currentTab }, () => {
-      this.toggleDisableState();
-    });
+    this.setState({ currentTab });
   };
-
-  componentDidUpdate() {
-    setTimeout(() => {
-      this.toggleDisableState();
-    }, 0);
-  }
 
   getFormOnChangeHandler(type, ...options) {
     const makeState = (name, value) => {
@@ -170,21 +135,16 @@ export default class CreateOfferWizard extends Component {
     const handlers = {
       default: syntheticEvent => {
         this.setState(
-          makeState(syntheticEvent.target.name, syntheticEvent.target.value),
-          this.toggleDisableState
+          makeState(syntheticEvent.target.name, syntheticEvent.target.value)
         );
       },
-      datetime: momentObj =>
-        this.setState(
-          makeState(options[0], momentObj.unix()),
-          this.toggleDisableState
-        ),
+      datetime: momentObj => this.setState(makeState(options[0], momentObj)),
       iins: syntheticEvent => {
         let iins = syntheticEvent.target.value
           .split(',')
           .map(iin => iin.trim())
           .filter(iin => iin.length > 5 && iin.length < 7);
-        this.setState({ iins }, this.toggleDisableState);
+        this.setState({ iins });
       },
     };
 
@@ -343,8 +303,6 @@ export default class CreateOfferWizard extends Component {
             onChange={this.getFormOnChangeHandler()}
             description="Maximum cashback for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
-            // pattern="[0-9]+(\.[0-9][0-9]?)?"
-            // patternError="Please enter number upto 2 decimal points"
             validator={this.getFormElementValidations('max_cashback')}
             required
           />
@@ -358,47 +316,7 @@ export default class CreateOfferWizard extends Component {
       case 0:
         return this.getOfferDescriptionFormInputs();
       case 1:
-        return (
-          <div>
-            {/*             
-            <Input.Radio
-              class="Input--isStockSet Input--vTop"
-              onChange={() => {
-                this.setState({
-                  allPaymentMethodsAllowed: !this.state.allPaymentMethodsAllowed
-                });
-              }}
-              options={[
-                {
-                  label: (
-                    <div>
-                      <strong> Apply on all payment methods </strong>
-                      <p>
-                        {" "}
-                        The offer get automatically applied to all payment
-                        methods{" "}
-                      </p>
-                    </div>
-                  )
-                },
-                {
-                  label: (
-                    <div class="Input--stock">
-                      <strong>Filter by payment method</strong>
-                      <p>
-                        You can add filters depanding on the method. Eg, Network
-                        (for cards) or duration (for EMI)
-                      </p>
-                    </div>
-                  )
-                }
-              ]}
-              defaultValue={!this.state.allPaymentMethodsAllowed}
-            /> */}
-
-            {this.renderPaymentMethods()}
-          </div>
-        );
+        return this.renderPaymentMethods();
       case 2:
         return (
           <div>
@@ -411,7 +329,6 @@ export default class CreateOfferWizard extends Component {
                 placeholder="Discount Type"
                 onChange={this.getFormOnChangeHandler()}
                 required
-                ref={myRef => this.createAndGetRef(myRef)}
                 defaultValue={this.state.discount_type}
                 options={[
                   { label: 'Select Type', name: '' },
@@ -434,11 +351,8 @@ export default class CreateOfferWizard extends Component {
               onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
               isInline
               required
-              validator={val => {
-                if (moment() > val) {
-                  return 'Start date cannot be in past.';
-                }
-              }}
+              validator={this.getFormElementValidations('starts_at')}
+              defaultValue={this.state.starts_at}
             />
             <Input.DateTime
               label="Expires On"
@@ -447,11 +361,8 @@ export default class CreateOfferWizard extends Component {
               description="Expiry date for offer"
               isInline
               required
-              validator={val => {
-                if (this.state.starts_at > val.unix()) {
-                  return 'End date cannot be less that start date.';
-                }
-              }}
+              validator={this.getFormElementValidations('ends_at')}
+              defaultValue={this.state.ends_at}
             />
           </React.Fragment>
         );
@@ -459,13 +370,11 @@ export default class CreateOfferWizard extends Component {
   }
 
   renderWizard() {
-    const { isFetchingSubscription, currentTab } = this.state;
+    const { currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
 
     return (
-      // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
-        {/* create subscription link tabs */}
         <ModalAsideNav
           title="Create an Offer"
           description={
@@ -481,68 +390,47 @@ export default class CreateOfferWizard extends Component {
             tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
           }
         />
-        {isFetchingSubscription ? (
-          <div className="page-center">
-            <Spinner />
-          </div>
-        ) : (
-          <>
-            <main class="form-container">
-              <main-title>{tabs[currentTab]}</main-title>
-              <Form
-                class="PaymentLinks--Create--Form"
-                layout="tabular"
-                onChange={this.getFormOnChangeHandler()}
-              >
-                {this.renderForm()}
-              </Form>
-            </main>
-            <footer>
-              {currentTab > 0 && (
-                <Button onClick={this.changeTab(-1)} type="button">
-                  Previous
-                </Button>
-              )}
-              {!isLastTab ? (
-                <Button.Primary
-                  onClick={this.changeTab(1)}
-                  type="button"
-                  disabled={!this.isTabDataValid(this.state.currentTab)}
-                >
-                  Next
-                </Button.Primary>
-              ) : (
-                <AsyncBtn.Primary
-                  pendingState="Creating..."
-                  type="submit"
-                  onClick={() => {}}
-                >
-                  Create Subscription Link
-                </AsyncBtn.Primary>
-              )}
-            </footer>
-          </>
-        )}
+        <main class="form-container">
+          <main-title>{tabs[currentTab]}</main-title>
+          <Form
+            class="PaymentLinks--Create--Form"
+            layout="tabular"
+            onChange={this.getFormOnChangeHandler()}
+          >
+            {this.renderForm()}
+          </Form>
+        </main>
+        <footer>
+          {currentTab > 0 && (
+            <Button onClick={this.changeTab(-1)} type="button">
+              Previous
+            </Button>
+          )}
+          {!isLastTab ? (
+            <Button.Primary
+              onClick={this.changeTab(1)}
+              type="button"
+              disabled={!this.isTabDataValid(this.state.currentTab)}
+            >
+              Next
+            </Button.Primary>
+          ) : (
+            <AsyncBtn.Primary
+              pendingState="Creating..."
+              type="submit"
+              onClick={() => {}}
+              disabled={[0, 1, 2, 3].some(tab => !this.isTabDataValid(tab))}
+            >
+              Create Subscription Link
+            </AsyncBtn.Primary>
+          )}
+        </footer>
       </div>
     );
   }
 
-  toggleDisableState() {
-    let enableSubmit = false;
-    const invalidFields = document.querySelectorAll(
-      '.PaymentLinks--Create .Input.is-invalid'
-    );
-    if (!invalidFields.length) {
-      enableSubmit = true;
-    }
-    console.log(invalidFields);
-    if (this.state.enableSubmit !== enableSubmit)
-      this.setState({ enableSubmit });
-  }
-
   render() {
     const isModalView = this.props.onClose;
-    console.log('rendering');
 
     return isModalView ? (
       <Modal
