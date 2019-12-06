@@ -319,7 +319,7 @@ export default class SettlementsListContainer extends ListContainer {
                                 component: <SettlementSchedule />,
                               });
                             }}
-                            class="clr-primary btn-link pointer"
+                            class="btn-link pointer"
                           >
                             <b>Know More</b>
                           </span>

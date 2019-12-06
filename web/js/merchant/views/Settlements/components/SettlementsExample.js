@@ -12,11 +12,7 @@ export default class SettlementsExample extends Component {
     if (this.props.holiday) {
       width = 100 / this.props.duration;
     }
-    for (
-      var i = 1;
-      i <= this.props.duration - 2 + (this.props.holiday ? 1 : 0);
-      i++
-    ) {
+    for (var i = 1; i <= this.props.duration - 1; i++) {
       jsx.push(
         <div class="pull-right s-header" key={i} style={{ width: width + '%' }}>
           <div class="s-working" />
