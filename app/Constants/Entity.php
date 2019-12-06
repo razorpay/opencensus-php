@@ -361,6 +361,7 @@ class Entity
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
         self::OPTIONS,
+        self::PAYOUT_LINK
     ];
 
     /**

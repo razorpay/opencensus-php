@@ -168,6 +168,12 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- End Relations ---------------------------
 
+    // #todo, pl do we really need these getters ? #code-reviewer
+    public function getContact(): Contact\Entity
+    {
+        return $this->contact;
+    }
+
     // ----------------------------------------- Getters ------------------------------
 
     // -------------------------------------- End Getters -----------------------------

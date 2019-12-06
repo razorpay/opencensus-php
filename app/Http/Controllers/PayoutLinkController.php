@@ -2,6 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
+
 class PayoutLinkController extends Controller
 {
     use Traits\HasCrudMethods;
@@ -16,9 +18,12 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
-    public function generateCustomerOtp(string $id)
+    public function generateCustomerOtp(string $payoutLinkId)
     {
-        $this->service->generateCustomerOtp($id, $this->input);
+        $response = $this->service()->generateCustomerOtp($payoutLinkId, $this->input);
+
+        return ApiResponse::json($response);
+
     }
 
 }

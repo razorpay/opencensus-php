@@ -58,10 +58,20 @@ class Core extends Base\Core
 
     public function generateCustomerOtp($payoutLinkId)
     {
-        # the basic validation is already done
-        # , now we just have to get the entity, then the contact, then the phone-number and
-        # send get the email and phone-number,
-        # and make the push
+        $this->trace->log(
+            TraceCode::PAYOUT_LINK_CONTACT_ADD_FAILED
+            ,
+            [
+                'payout_link_id' => $payoutLinkId
+            ]
+        );
+        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $contact = $payoutLink->contact;
+        
+        # get the email and the phonenumber
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)
