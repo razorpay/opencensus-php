@@ -157,7 +157,9 @@ class Mozart
 
     protected function getUrlV2(string $namespace, string $gateway, string $version, string $action): string
     {
-        $baseUrl = $this->config->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->config->get($urlConfig);
 
         return "{$baseUrl}{$namespace}/{$gateway}/{$version}/{$action}";
     }
