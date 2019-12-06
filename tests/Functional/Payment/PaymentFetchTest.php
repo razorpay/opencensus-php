@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Feature\Constants as Feature;
@@ -404,5 +405,50 @@ class PaymentFetchTest extends TestCase
         $testData['request']['url'] = '/payments/pay_' . $paymentId;
 
         $this->startTest($testData);
+    }
+
+    public function testPaymentFetchINRCurrency()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        foreach (['base_amount', 'base_currency'] as $key)
+        {
+            $this->assertArrayNotHasKey($key, $paymentFetchResponse);
+        }
+    }
+
+
+    public function testPaymentFetchNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['currency'] = Currency::USD;
+
+        $response = $this->doAuthAndCapturePayment($paymentArray, $paymentArray['amount'], Currency::USD);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        $this->assertEquals('50000', $paymentFetchResponse['amount']);
+
+        $this->assertEquals(Currency::USD, $paymentFetchResponse['currency']);
+
+        $this->assertArrayHasKey('base_amount', $paymentFetchResponse);
+
+        $this->assertArrayHasKey('base_currency', $paymentFetchResponse);
+
+        $this->assertEquals('500000', $paymentFetchResponse['base_amount']);
+
+        $this->assertEquals(Currency::INR, $paymentFetchResponse['base_currency']);
+
     }
 }

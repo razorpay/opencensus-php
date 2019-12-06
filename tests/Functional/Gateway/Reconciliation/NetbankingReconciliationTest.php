@@ -1679,6 +1679,31 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testKotakSuccessRecon()
+    {
+        $this->gateway = 'kotak';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'kotak', 'SUC', 99999, 456789);
+
+        $fileContents = $this->generateFile('kotak', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('Kotak', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     protected function reconcile($gateway, $uploadedFile, $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
@@ -1756,7 +1781,7 @@ class NetbankingReconciliationTest extends TestCase
         return $payment;
     }
 
-    protected function createNetbanking($paymentId, $bank, $status = 'SUC', $bankPaymentId = 99999)
+    protected function createNetbanking($paymentId, $bank, $status = 'SUC', $bankPaymentId = 99999, $verificationId = null)
     {
         $netbankingAttributes = [
             'payment_id'      => $paymentId,
@@ -1764,6 +1789,7 @@ class NetbankingReconciliationTest extends TestCase
             'caps_payment_id' => strtoupper($paymentId),
             'bank_payment_id' => $bankPaymentId,
             'status'          => $status,
+            'verification_id' => $verificationId,
         ];
 
         $netbanking = $this->fixtures->create('netbanking', $netbankingAttributes);
