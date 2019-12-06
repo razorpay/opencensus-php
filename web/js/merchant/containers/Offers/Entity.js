@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as OffersActions from 'merchant/reducers/offers/offerDetails';
+import * as OffersActions from 'merchant/reducers/offers/offersList';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
+import Button from 'common/new-ui/Button';
+import RTracking from 'react-tracking';
 
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
@@ -16,22 +17,68 @@ const OfferDetails = props => {
   let discountType = offer.percent_rate !== null ? 'Percentage' : 'Flat';
   let discountWorth =
     offer.percent_rate !== null ? (
-      <span>{offer.percent_rate}%</span>
+      <span>{offer.percent_rate / 100}%</span>
     ) : (
       <Amount value={offer.flat_cashback} cureency={'INR'} />
     );
-  const renderPaymentMethod = () => {
-    let paymentMethod = offer.payment_method;
-    if (paymentMethod === null) {
-      return '--';
-    }
+
+  const ISSUERS = {
+    HDFC: 'HDFC Bank',
+    HSBC: 'HSBC Bank',
+    ICIC: 'ICICI Bank',
+    INDB: 'INDUSIND Bank',
+    KKBK: 'Kotak Mahindra Bank',
+    RATN: 'Ratnakar Bank Bank',
+    SCBL: 'Standard Chartered Bank',
+    UTIB: 'Axis Bank',
+    YESB: 'Yes Bank',
+    CITI: 'Citi Bank',
+    SBIN: 'State Bank of India',
+    BARB: 'Bank of Baroda Bank',
+    paytm: 'Paytm',
+    payzapp: 'PAYZAPP',
+    mobikwik: 'MOBIKWIK',
+    payumoney: 'PayU Money',
+    olamoney: 'OLA Money',
+    airtelmoney: 'Airtel Money',
+    amazonpay: 'Amazon Pay',
+    freecharge: 'Freecharge',
+    jiomoney: 'JIO Money',
+    sbibuddy: 'SBI buddy',
+    openwallet: 'OPEN WALLET',
+    mpesa: 'M PESA',
+    phonepe: 'Phone Pe',
+    paypal: 'Paypal',
+  };
+
+  const renderPaymentDetails = () => {
+    let paymentMethod = offer.payment_method || '--';
+    let iins = (offer.iins && offer.iins.join(', ')) || '--';
     if (paymentMethod == 'card') {
       if (offer.payment_method_type == 'credit') {
-        return 'Credit Card';
+        paymentMethod = 'Credit Card';
       }
-      return 'Debit Card';
+      paymentMethod = 'Debit Card';
     }
-    return paymentMethod;
+
+    return (
+      <React.Fragment>
+        <EntityDetailRow label="Method" value={paymentMethod} />
+        {offer.payment_method == 'card' ? (
+          <React.Fragment>
+            <EntityDetailRow label="IINs" value={iins} />
+            <EntityDetailRow
+              label="Network"
+              value={offer.payment_network || '--'}
+            />
+          </React.Fragment>
+        ) : null}
+        <EntityDetailRow
+          label="Bank Name"
+          value={ISSUERS[offer.issuer] || '--'}
+        />
+      </React.Fragment>
+    );
   };
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -61,8 +108,20 @@ const OfferDetails = props => {
                 />
                 <EntityDetailRow
                   label="Status"
-                  value={offer.active ? 'Active' : 'Inactive'}
+                  value={() => (
+                    <Fragment>
+                      {offer.active ? 'Enabled' : 'Disabled'}
+                      <Button.Transparent
+                        class="Button--Link"
+                        style={{ marginLeft: 12 }}
+                        onClick={props.onActivationToggle}
+                      >
+                        {offer.active ? 'Disable' : 'Enable'}
+                      </Button.Transparent>
+                    </Fragment>
+                  )}
                 />
+
                 <EntityDetailRow
                   label="Offer Name"
                   value={offer.name || '--'}
@@ -76,6 +135,10 @@ const OfferDetails = props => {
                 <EntityDetailRow
                   label="Offer Usage"
                   value={offer.current_offer_usage || '--'}
+                />
+                <EntityDetailRow
+                  label="On Offer Failure"
+                  value={offer.block ? 'Block Payment' : 'Allow Payment'}
                 />
                 <EntityDetailRow
                   label="Min Payment"
@@ -118,12 +181,7 @@ const OfferDetails = props => {
                   label="Maximum Usage"
                   value={offer.max_offer_usage || '--'}
                 />
-
-                <EntityDetailRow label="Method" value={renderPaymentMethod} />
-                <EntityDetailRow
-                  label="Bank Name"
-                  value={offer.issuer || '--'}
-                />
+                {renderPaymentDetails()}
               </div>
             </div>
           </div>
@@ -137,8 +195,8 @@ const OfferDetails = props => {
   ...OffersActions,
   ...ModalActions,
   ...NotificationsActions,
-  updatePLInReduxList,
 })
+@RTracking(() => window.rzpQ.component('Entity'))
 export default class Entity extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -161,6 +219,71 @@ export default class Entity extends Component {
     }
   }
 
+  toggleActivation = () => {
+    let offer = this.props.offer;
+    const actionName = offer.active ? 'Disable' : 'Enable';
+    let header = `${actionName} Offer`;
+    const tracking = this.props.tracking;
+    //analytics
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('Offer_edit', {
+        edited_field: ['active'],
+      })
+    );
+    this.context.confirm({
+      header,
+      message: () => (
+        <div class="text-semi-muted">
+          <p>The offer will be {actionName}d</p>
+        </div>
+      ),
+      affirmativeLabel: `Yes, ${actionName}`,
+      affirmativePendingLabel: 'Requesting...',
+      abortLabel: "No, don't!",
+      action: () => {
+        let activationValue = offer.active ? 0 : 1;
+        offer.active = activationValue;
+        return offer
+          .save()
+          .then(offer => {
+            this.props.fetchOffer(offer.id);
+            this.props.updateOfferInReduxList(offer);
+            //analytics code here
+            tracking.trackEvent(
+              window.rzpQ.merchantActions().success('Offer_edit', {
+                edited_field: ['active'],
+                field_value: [activationValue],
+              })
+            );
+            this.props.showNotification({
+              type: 'success',
+              message: `Offer ${actionName}d!`,
+            });
+          })
+          .catch(({ errors }) => {
+            if (
+              !errors ||
+              (errors instanceof Array === true &&
+                (!errors.length || !errors[0]))
+            ) {
+              errors = 'Some network error has occurred';
+            }
+
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      },
+      onMount: () => {
+        //analytics code here
+      },
+      abort: () => {
+        //analytics code here
+      },
+    });
+  };
+
   render() {
     let { loading, offer, user } = this.props;
     let statusMsg = this.state.statusMsg;
@@ -172,7 +295,7 @@ export default class Entity extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         onIssue={() => {}}
-        onCancel={() => {}}
+        onActivationToggle={this.toggleActivation}
         editPaymentLink={() => {}}
         isRoleAllowedEdit={user.isAllowedEdit('offers')}
       />

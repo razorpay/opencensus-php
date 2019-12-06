@@ -59,6 +59,7 @@ export default class BatchUpload extends Component {
                 <BatchValidate
                   onValidation={this.handleValidation}
                   batchType={this.props.batchType}
+                  batchTypeText={this.props.batchTypeText}
                   sampleUrl={this.props.sampleUrl}
                   docUrl={this.props.docUrl}
                   gaEvents={this.props.gaEvents}

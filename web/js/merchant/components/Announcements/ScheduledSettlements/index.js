@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Button from 'common/new-ui/Button';
-import ScheduledModal from 'merchant/containers/Settlements/ScheduledModal';
+import ScheduledModal from 'merchant/views/Settlements/components/Modals/ScheduledModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcement';

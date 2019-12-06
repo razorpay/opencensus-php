@@ -43,9 +43,6 @@ export default class Offer extends GenericEntity {
    */
   serializeProperty(prop) {
     // nothing to serialize
-    if (prop == 'block') {
-      return (prop === false && false) || true;
-    }
     return super.serializeProperty(prop);
   }
 

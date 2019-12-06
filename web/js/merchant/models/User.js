@@ -159,6 +159,7 @@ export default class User {
       activation_flow: this.activation_flow,
       business_type: this.business_type,
       activated: this.activated,
+      isUnregisteredBusiness: this.isUnregisteredBusiness,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -178,7 +179,7 @@ export default class User {
 
       get isL1Submitted() {
         return (
-          (this.business_type != 11 && !!this.activation_flow) ||
+          (!this.isUnregisteredBusiness && !!this.activation_flow) ||
           this.isUnregBizActivated
         );
       },
@@ -396,8 +397,16 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get getPaymentLinkCustomizedFormFields() {
+    return window.pl_customized_form_fields;
+  }
+
   get getCurrencyList() {
     return window.currencyList;
+  }
+
+  get plDefaultExpiryTime() {
+    return window.pl_expiry_in_hrs;
   }
 
   get toShowExtraFieldsInPP() {
@@ -417,6 +426,10 @@ export default class User {
     return this.getExpStatus('mobile_hotjar_survey');
   }
 
+  get isNPSSurveyBannerEnabled() {
+    return this.getExpStatus('nps_survey_banner');
+  }
+
   get isShowCommissionBalanceEnabled() {
     return this.getExpStatus('show_commission_balance');
   }
@@ -424,6 +437,14 @@ export default class User {
   get isUnregBizFlowEnabled() {
     // return true;
     return this.getExpStatus('non_registered_onboarding');
+  }
+
+  get isFirstAmountHidden() {
+    return this.getExpStatus('hide_registration_link_first_amount');
+  }
+
+  get paymentLinkCreationFormExtraFields() {
+    return window.pl_extra_fields;
   }
 
   get isAllowedTeamManagement() {
@@ -434,6 +455,10 @@ export default class User {
 
   get isCustomNotesDropdownEnabled() {
     return window.custom_notes && this.getExpStatus('custom_notes');
+  }
+
+  get isPaymentLinkCustomerNameFieldEnabled() {
+    return window.is_pl_customer_name_field_enabled;
   }
 
   get isPaymentLinkBatchEnabledForSellerAppRole() {

@@ -38,13 +38,12 @@ import submerchantReducer from 'merchant/reducers/submerchant';
 import commissionReducer, {
   commAggSingleDayReducer,
 } from 'merchant/reducers/commission';
+import registrationLinkReducer from 'merchant/reducers/registration_link';
 import statesReducer from 'merchant/reducers/states';
 import taxesReducer from 'merchant/reducers/taxes';
 import tokenReducer from 'merchant/reducers/token';
 import onboardingReducer from 'merchant/reducers/onboarding';
 import remindersReducer from 'merchant/reducers/reminders';
-
-import authLinkReducer from 'merchant/reducers/auth_link';
 
 import {
   refundBatchesReducer,
@@ -63,7 +62,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
-  authLinksReducer,
+  registrationLinksReducer,
   tokensReducer,
   commissionsReducer,
   commissionsAggregateReducer,
@@ -143,8 +142,8 @@ export default combineReducers({
   commissionsAggregate: commissionsAggregateReducer,
   commAggSingleDay: commAggSingleDayReducer,
   wysiwyg: wysiwygReducer,
-  authLinks: authLinksReducer,
-  authLink: authLinkReducer,
+  registrationLinks: registrationLinksReducer,
+  registrationLink: registrationLinkReducer,
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,

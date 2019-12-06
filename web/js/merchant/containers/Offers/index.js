@@ -5,7 +5,9 @@ import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import List from 'merchant/containers/Offers/List';
 import { Route, Switch, NavLink } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
+@RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
   render() {
     return (
@@ -29,16 +31,15 @@ export default class OfferIndex extends Component {
                         user.isAllowedEdit('offers')
                       }
                     >
-                      <NavLink class="btn btn-primary" exact to="/offers/New">
+                      <NavLink class="btn btn-primary" exact to="/offers/new">
                         <i className="i i-plus" />
                         <span
                           onClick={() => {
-                            //@todo tracking
-                            // this.props.tracking.trackEvent(
-                            //   window.rzpQ.onbr().success('dash.pl_action', {
-                            //     action: 'Initiate_PL_Creation',
-                            //   })
-                            // )
+                            this.props.tracking.trackEvent(
+                              window.rzpQ
+                                .merchantActions()
+                                .initiated('Offer_create')
+                            );
                           }}
                         >
                           Create New Offer

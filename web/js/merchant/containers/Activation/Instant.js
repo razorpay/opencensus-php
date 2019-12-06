@@ -24,7 +24,6 @@ import User from 'merchant/models/User';
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
-  trackTaboola,
 } from 'common/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
@@ -254,8 +253,6 @@ export default class ActivationWizard extends React.Component {
           activation_flow: this.user.activation_flow,
           completed: true,
         });
-
-        trackTaboola('l1_activation');
 
         const {
           isWhitelistFlow,

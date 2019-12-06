@@ -41,6 +41,7 @@ import {
   closePaymentLinkForm,
   trackSaveDuplicatePaymentLink,
 } from '../ga';
+import { generateField } from './Utils';
 
 import Spinner from 'common/ui/Spinner';
 
@@ -210,11 +211,18 @@ export default class CreateNewContainer extends React.Component {
     defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
-      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      dirty: {
+        reminder_enable:
+          props.user.isRemindersEnabled &&
+          props.paymentLinksRemindersSettings.isEnabled
+            ? '1'
+            : '0', // 1 => selected
+      }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
         hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
+      isLoading: true,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -224,13 +232,19 @@ export default class CreateNewContainer extends React.Component {
     }
 
     trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
+
+    const defaultPLExpiryByTime = this.props.user.plDefaultExpiryTime;
+
+    if (defaultPLExpiryByTime) {
+      const nextDate = moment(new Date()).add(defaultPLExpiryByTime, 'hours');
+
+      this.state.dirty.expire_by = nextDate;
+      this.state._name.expire_by_date = nextDate;
+      this.state._name.hasNoExpiry = '0';
+    }
   }
 
   fetchIfIntentDuplicate(invoiceId) {
-    this.setState({
-      fetchingInvoice: true,
-    });
-
     this.props
       .fetchInvoice(invoiceId)
       .then(data => {
@@ -247,8 +261,7 @@ export default class CreateNewContainer extends React.Component {
           value: data.notes[key],
         }));
 
-        this.setState({
-          fetchingInvoice: false,
+        const newState = {
           dirty: {
             currency: data.currency,
             description: data.description,
@@ -258,6 +271,7 @@ export default class CreateNewContainer extends React.Component {
             email_notify: data.email_notify | 0,
             email: data.customer_details.email,
             contact: data.customer_details.contact,
+            customer_name: data.customer_details.name,
             expire_by,
             notes: defaultValueNotes,
             reminder_enable:
@@ -267,7 +281,22 @@ export default class CreateNewContainer extends React.Component {
             hasNoExpiry: expire_by ? '0' : '1',
             expire_by_date: expire_by ? expire_by : null,
           },
-        });
+        };
+
+        const defaultPLExpiryByTime = this.props.user.plDefaultExpiryTime;
+
+        if (defaultPLExpiryByTime) {
+          const nextDate = moment(new Date()).add(
+            defaultPLExpiryByTime,
+            'hours'
+          );
+
+          newState.dirty.expire_by = nextDate;
+          newState._name.expire_by_date = nextDate;
+          newState._name.hasNoExpiry = '0';
+        }
+
+        this.setState(newState);
 
         // state.dirty.notes of this component has different structure than defaultValue of notes component. So, after defaultValue is set, updating notes value in state.dirty
         setTimeout(_ => this.onChangeNotes(defaultValueNotes), 0);
@@ -281,24 +310,54 @@ export default class CreateNewContainer extends React.Component {
   }
 
   componentDidMount() {
-    const searchQuery = getURLQueryParams(this.props.location.search);
-    if (searchQuery.duplicate_id) {
-      this.fetchIfIntentDuplicate(searchQuery.duplicate_id);
-    }
-
     this.toggleDisableState();
 
-    if (!this.props.reminders.reminders.items.length) {
-      this.props.fetchReminders();
-    }
-
-    if (!this.props.reminders.merchant_config.items.length) {
-      this.props.fetchRemindersMerchantConfigs();
-    }
+    this.prepareDataForPaymentLinkCreation()
+      .then(() => {
+        this.setState({
+          isLoading: false,
+          dirty: {
+            ...this.state.dirty,
+            reminder_enable:
+              this.props.user.isRemindersEnabled &&
+              this.props.paymentLinksRemindersSettings.isEnabled
+                ? '1'
+                : '0', // 1 => selected
+          },
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isLoading: false,
+        });
+      });
   }
 
   componentDidUpdate() {
     this.toggleDisableState();
+  }
+
+  prepareDataForPaymentLinkCreation() {
+    const promiseList = [];
+
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
+    }
+
+    if (!this.props.user.isRemindersEnabled) {
+      return Promise.all(promiseList);
+    }
+
+    if (!this.props.reminders.reminders.items.length) {
+      promiseList.push(this.props.fetchReminders());
+    }
+
+    if (!this.props.reminders.merchant_config.items.length) {
+      promiseList.push(this.props.fetchRemindersMerchantConfigs());
+    }
+
+    return Promise.all(promiseList);
   }
 
   toggleDisableState() {
@@ -481,6 +540,18 @@ export default class CreateNewContainer extends React.Component {
       };
     }
 
+    const extraFields = this.props.user.paymentLinkCreationFormExtraFields;
+
+    extraFields.forEach(field => {
+      if (field.addAt.as === 'prefix') {
+        reqPayload[field.addAt.fieldName] = `${reqPayload[field.name]} : ${
+          reqPayload[field.addAt.fieldName]
+        }`;
+
+        delete reqPayload[field.name];
+      }
+    });
+
     return FORM_FIELDS.onCreate(reqPayload)
       .then(resp => {
         this.setState({
@@ -551,10 +622,8 @@ export default class CreateNewContainer extends React.Component {
       });
   };
 
-  getFormFields() {
-    const fields = FORM_FIELDS.content;
-
-    return fields.map((f, i) => {
+  getFormFields(fields = FORM_FIELDS.content) {
+    const formFields = fields.map((f, i) => {
       if (Array.isArray(f)) {
         return (
           <Input.Group key={i} disabled={this.state.parentFormLock}>
@@ -605,8 +674,27 @@ export default class CreateNewContainer extends React.Component {
         f.label = f.label(this);
       }
 
+      let placeholder = f.placeholder;
+      if (typeof placeholder === 'function') {
+        f.placeholder = f.placeholder(this);
+      }
+
       return WizardFields.call(this, f);
     });
+
+    if (this.props.user.paymentLinkCreationFormExtraFields.length) {
+      const extraFields = this.props.user.paymentLinkCreationFormExtraFields.map(
+        meta => {
+          const newField = generateField(meta);
+
+          return WizardFields.call(this, newField);
+        }
+      );
+
+      formFields.push(extraFields);
+    }
+
+    return formFields;
   }
 
   onFormAbruptClose = e => {
@@ -667,7 +755,7 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
-        fetchingInvoice={this.state.fetchingInvoice}
+        isLoading={this.state.isLoading}
       />
     );
 
@@ -693,7 +781,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { disableSubmit, mode, fetchingInvoice } = this.props;
+    const { disableSubmit, mode, isLoading } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -708,7 +796,7 @@ class CreateWizard extends React.Component {
             </Alert.Warning>
           )}
 
-          {fetchingInvoice ? (
+          {isLoading ? (
             <div className="page-center">
               <Spinner />
             </div>
@@ -725,7 +813,7 @@ class CreateWizard extends React.Component {
           )}
         </main>
 
-        {!fetchingInvoice && (
+        {!isLoading && (
           /* FORM FOOTER */
           <footer>
             {/* Action Button 1 */}
