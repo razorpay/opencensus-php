@@ -939,6 +939,7 @@ class ErrorCode
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                              = 'SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE';
     const SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS                      = 'SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS';
     const SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED                                  = 'SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED';
+    const SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE                     = 'SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE';
 
     const SERVER_ERROR_AUTH_SERVICE_FAILURE                                         = 'SERVER_ERROR_AUTH_SERVICE_FAILURE';
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
@@ -1373,9 +1374,6 @@ class ErrorCode
     const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_SERVICE_ERROR';
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
-
-    // Express service
-    const SERVER_ERROR_EXPRESS_SERVICE_ERROR                                        = 'SERVER_ERROR_EXPRESS_SERVICE_ERROR';
 
     // Fund transfer service
     const SERVER_ERROR_FTS_SERVICE_TIMEOUT                                          = 'SERVER_ERROR_FTS_SERVICE_TIMEOUT';

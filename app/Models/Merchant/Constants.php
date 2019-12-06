@@ -32,7 +32,7 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
-    const TRANSLATE_WEBHOOK_URL                   = 'translate_webhook_url';
+    const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
 
     const DOCUMENT_TYPE                           = 'document_type';
 
