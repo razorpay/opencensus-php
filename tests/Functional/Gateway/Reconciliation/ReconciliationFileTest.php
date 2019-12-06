@@ -1390,7 +1390,7 @@ class ReconciliationFileTest extends TestCase
             $paymentEntity = $this->getDbLastPayment();
         }
 
-        return $paymentEntity->toArrayAdmin();
+        return $this->getEntityById('payment', $paymentEntity->getId(), true);
     }
 
     private function getNewRefundEntity($captured = false)

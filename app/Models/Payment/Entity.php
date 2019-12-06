@@ -266,6 +266,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::BASE_AMOUNT_REFUNDED,
