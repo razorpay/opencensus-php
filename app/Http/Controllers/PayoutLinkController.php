@@ -15,4 +15,10 @@ class PayoutLinkController extends Controller
     {
         return ApiResponse::json('Not Supported');
     }
+
+    public function generateCustomerOtp(string $id)
+    {
+        $this->service->generateCustomerOtp($id, $this->input);
+    }
+
 }

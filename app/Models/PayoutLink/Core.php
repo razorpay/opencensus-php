@@ -29,7 +29,7 @@ class Core extends Base\Core
 
         $validator = (new Entity())->getValidator();
 
-        $validator->validateInput(Validator::COMPOSITE_CREATE, $input);
+        $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
         $contact = array_pull($input, 'contact');
 
@@ -54,6 +54,14 @@ class Core extends Base\Core
         $payoutLink->saveOrFail();
 
         return $payoutLink;
+    }
+
+    public function generateCustomerOtp($payoutLinkId)
+    {
+        # the basic validation is already done
+        # , now we just have to get the entity, then the contact, then the phone-number and
+        # send get the email and phone-number,
+        # and make the push
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)

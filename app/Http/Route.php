@@ -837,7 +837,7 @@ final class Route
         'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
         'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
-
+        'payout_links_generate_end_user_otp'       => ['get',       'payout-links/{id}/generate-customer-otp',       'PayoutLinkController@generateCustomerOtp'                           ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
@@ -2122,7 +2122,8 @@ final class Route
         'partner_referral_create',
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
-        'payout_links_create'
+        'payout_links_create',
+        'payout_links_generate_end_user_otp'
         ];
 
     //

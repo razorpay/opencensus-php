@@ -12,7 +12,12 @@ class Validator extends Base\Validator
     const CONTACT_TYPE         = 'contact.type';
     const CONTACT_NAME         = 'contact.name';
 
-    const COMPOSITE_CREATE     = 'composite_create';
+    const COMPOSITE_CREATE_RULE = 'composite_create';
+    const PAYOUT_LINK_ID_RULE   = 'payout_link_id';
+
+    protected static $payoutLinkIdRule = [
+        Entity::ID => 'sometimes|public_id|size:19',
+    ];
 
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',
