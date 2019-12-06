@@ -30,7 +30,7 @@ class Repository extends Base\Repository
         $offset = $params[self::SKIP] ?? Entity::DEFAULT_FETCH_OFFSET;
 
         $query = $this->newQuery()
-            ->with('steps')
+            ->with('steps','steps.role')
             ->whereHas('workflow', function($q) use($orgId)
             {
                 $q->where(Entity::ORG_ID, $orgId);
