@@ -33,7 +33,7 @@ class Core extends Base\Core
 
         $rule->getValidator()->validateTypeMatch($plan);
 
-        $rule->getValidator()->validateAddPlanRuleForFeeBearer($plan, $rule);
+        $rule->getValidator()->validateRuleForFeeBearer($plan, $rule);
 
         $rule->getValidator()->validatePlanTypeForOrg();
 
