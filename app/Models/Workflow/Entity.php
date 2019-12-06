@@ -69,6 +69,9 @@ class Entity extends Base\Entity
         self::ORG_ID,
     ];
 
+    const DEFAULT_FETCH_LIMIT = 10;
+    const DEFAULT_FETCH_OFFSET = 0;
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

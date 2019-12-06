@@ -21,9 +21,9 @@ class Repository extends Base\Repository
         // which cannot be filtered further according to permission attached which is required here.
         $permission = $params[Entity::PERMISSIONS] ?? null;
 
-        $offset = $params[self::SKIP] ?? null;
+        $limit = $params[self::COUNT] ?? Entity::DEFAULT_FETCH_LIMIT;
 
-        $limit = $params[self::COUNT] ?? null;
+        $offset = $params[self::SKIP] ?? Entity::DEFAULT_FETCH_OFFSET;
 
         $query =  $this->newQuery()
                 ->where(Entity::ORG_ID, '=', $orgId);
@@ -40,11 +40,8 @@ class Repository extends Base\Repository
         $results  = $query
                ->get();
 
-        // Implementing pagination if both count and skip parameters have been passed
-        if($offset != null && $limit != null)
-        {
-            $results = $results->splice($offset, $limit);
-        }
+        // Implementing pagination
+        $results = $results->slice($offset,$limit);
 
         return $results;
     }
