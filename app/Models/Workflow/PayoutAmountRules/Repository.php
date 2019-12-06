@@ -25,9 +25,9 @@ class Repository extends Base\Repository
         // which cannot be filtered further according to merchant to which it belongs which is required here.
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
-        $limit = $params[self::COUNT] ?? null;
+        $limit = $params[self::COUNT] ?? Entity::DEFAULT_FETCH_LIMIT;
 
-        $offset = $params[self::SKIP] ?? null;
+        $offset = $params[self::SKIP] ?? Entity::DEFAULT_FETCH_OFFSET;
 
         $query = $this->newQuery()
             ->with('steps')
@@ -45,11 +45,8 @@ class Repository extends Base\Repository
         $results = $query->get()
             ->groupBy(Entity::MERCHANT_ID);
 
-        // Implementing pagination if both count and skip parameters have been passed
-        if($offset != null && $limit != null)
-        {
-            $results = $results->slice($offset,$limit);
-        }
+        // Implementing pagination
+        $results = $results->slice($offset,$limit);
 
         return $results;
     }
