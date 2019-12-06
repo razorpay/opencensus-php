@@ -28,6 +28,7 @@ class Entity extends Base\Entity
 
     // Relations
     const WORKFLOW = 'workflow';
+    const STEPS    = 'steps';
 
     protected $generateIdOnCreate = false;
 
@@ -50,6 +51,7 @@ class Entity extends Base\Entity
         self::MAX_AMOUNT,
         self::WORKFLOW_ID,
         self::WORKFLOW,
+        self::STEPS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -94,5 +96,10 @@ class Entity extends Base\Entity
     public function getMaxAmount()
     {
         return $this->getAttribute(self::MAX_AMOUNT);
+    }
+
+    public function steps()
+    {
+        return $this->hasMany(Workflow\Step\Entity::class, self::WORKFLOW_ID, self::WORKFLOW_ID);
     }
 }
