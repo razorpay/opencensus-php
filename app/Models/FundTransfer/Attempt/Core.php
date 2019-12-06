@@ -596,7 +596,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateSourceEntityByFta(Entity $fta, array $input)
+    public function updateSourceEntityByFta(Entity $fta, array $input = [])
     {
         $extraInfo = $input['extra_info'] ?? [];
 
