@@ -397,17 +397,6 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(
@@ -490,18 +479,6 @@ class AttemptTest extends TestCase
         Carbon::setTestNow($now);
 
         $channel = Channel::RBL;
-
-        $redisMock = $this->getMockBuilder(Redis::class)
-                          ->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
 
         $this->ba->privateAuth();
 
@@ -587,17 +564,6 @@ class AttemptTest extends TestCase
         Carbon::setTestNow($now);
 
         $channel = Channel::RBL;
-
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
 
         $this->ba->privateAuth();
 
