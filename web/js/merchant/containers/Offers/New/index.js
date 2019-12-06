@@ -13,101 +13,6 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
   user: state.session.user,
 }))
 export default class CreateOfferWizard extends Component {
-  getFormElementValidations = elementName => {
-    return (
-      {
-        name: val => {
-          if (!val || val.length < 4) {
-            return 'Short name should be at least of 4 characters';
-          }
-          if (val.length > 50) {
-            return 'Short name should not exceed 50 characters';
-          }
-        },
-        display_text: val => {
-          if (!val || val.length < 4) {
-            return 'Short name should be at least of 4 characters';
-          }
-          if (val.length > 250) {
-            return 'Short name should not exceed 50 characters';
-          }
-        },
-        discount_type: val => {
-          if (!val || val == '') {
-            return 'Please select a field type';
-          }
-        },
-        percent_rate: val => {
-          if (!val) {
-            return 'Should be valid number between 0 and 100';
-          }
-          if (val > 100 || val < 0) {
-            return 'Percentage should be between 0 and 100';
-          }
-          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
-            return 'Please enter number upto 2 decimal points';
-        },
-        flat_cashback: val => {
-          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
-            return 'Please enter number upto 2 decimal points';
-        },
-        max_cashback: val => {
-          if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
-            return 'Please enter number upto 2 decimal points';
-        },
-        ends_at: val => {
-          if (this.state.starts_at >= val) {
-            return 'End date cannot be less that start date.';
-          }
-        },
-        starts_at: val => {
-          if (moment() > val) {
-            return 'Start date cannot be in past.';
-          }
-        },
-      }[elementName] ||
-      (val => {
-        if (!val) return 'must exist';
-      })
-    );
-  };
-
-  isFormElementValid = elementName => {
-    return !this.getFormElementValidations(elementName)(
-      this.state[elementName]
-    );
-  };
-
-  isTabDataValid = tabNumber => {
-    let isValid = true;
-    switch (tabNumber) {
-      case 0:
-        isValid =
-          isValid &&
-          this.isFormElementValid('name') &&
-          this.isFormElementValid('display_text');
-        break;
-      case 1:
-        isValid = isValid;
-        break;
-      case 2:
-        isValid =
-          this.isFormElementValid('discount_type') &&
-          (this.state.discount_type == 'flat'
-            ? this.isFormElementValid('flat_cashback')
-            : this.isFormElementValid('max_cashback') &&
-              this.isFormElementValid('percent_rate'));
-        break;
-      case 3:
-        isValid =
-          this.isFormElementValid('starts_at') &&
-          this.isFormElementValid('ends_at');
-      default:
-        break;
-    }
-    return isValid;
-  };
-
   state = {
     currentTab: 0,
     starts_at: moment(),
@@ -121,24 +26,95 @@ export default class CreateOfferWizard extends Component {
     allPaymentMethodsAllowed: false,
   };
 
+  getFormElementValidations = elementName => {
+    return {
+      name: val => {
+        if (!val || val.length < 4) {
+          return 'Short name should be at least of 4 characters';
+        }
+        if (val.length > 50) {
+          return 'Short name should not exceed 50 characters';
+        }
+      },
+      display_text: val => {
+        if (!val || val.length < 4) {
+          return 'Short description should be at least of 4 characters';
+        }
+        if (val.length > 250) {
+          return 'Short description should not exceed 250 characters';
+        }
+      },
+      discount_type: val => {
+        if (!val || val == '') {
+          return 'Please select a field type';
+        }
+      },
+      percent_rate: val => {
+        if (!val) {
+          return 'Should be valid number between 0 and 100';
+        }
+        if (val > 100 || val < 0) {
+          return 'Percentage should be between 0 and 100';
+        }
+        if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+          return 'Please enter number upto 2 decimal points';
+      },
+      flat_cashback: val => {
+        if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+          return 'Please enter number upto 2 decimal points';
+      },
+      max_cashback: val => {
+        if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+          return 'Please enter number upto 2 decimal points';
+      },
+      ends_at: val => {
+        if (this.state.starts_at >= val) {
+          return 'End date cannot be less that start date.';
+        }
+      },
+      starts_at: val => {
+        if (moment() > val) {
+          return 'Start date cannot be in past.';
+        }
+      },
+    }[elementName];
+  };
+
+  isTabDataValid = tabNumber => {
+    switch (tabNumber) {
+      case 0:
+        return this.areGivenFormElementsValid('name', 'display_text');
+      case 1:
+        return true;
+      case 2:
+        return this.areGivenFormElementsValid(
+          'discount_type',
+          ...{
+            flat: ['flat_cashback'],
+            percent: ['max_cashback', 'percent_rate'],
+          }[this.state.discount_type]
+        );
+      case 3:
+        return this.areGivenFormElementsValid('starts_at', 'ends_at');
+      default:
+        return false;
+    }
+  };
+
   handleTabChange = ({ target }) => {
     const currentTab = Number(target.dataset.index);
     this.setState({ currentTab });
   };
 
-  getFormOnChangeHandler(type, ...options) {
-    const makeState = (name, value) => {
-      let state = {};
-      state[name] = value;
-      return state;
-    };
+  getFormOnChangeHandler(type = 'default', ...options) {
     const handlers = {
-      default: syntheticEvent => {
-        this.setState(
-          makeState(syntheticEvent.target.name, syntheticEvent.target.value)
-        );
-      },
-      datetime: momentObj => this.setState(makeState(options[0], momentObj)),
+      default: syntheticEvent =>
+        this.setState({
+          [syntheticEvent.target.name]: syntheticEvent.target.value,
+        }),
+
+      datetime: momentObj => this.setState({ [options[0]]: momentObj }),
+
       iins: syntheticEvent => {
         let iins = syntheticEvent.target.value
           .split(',')
@@ -148,7 +124,7 @@ export default class CreateOfferWizard extends Component {
       },
     };
 
-    return handlers[type] || handlers.default;
+    return handlers[type];
   }
 
   changeTab = step => () => {
@@ -167,10 +143,60 @@ export default class CreateOfferWizard extends Component {
     );
   };
 
+  renderDiscountFormInputs() {
+    return (
+      <React.Fragment>
+        <strong>Instant Discount</strong>
+        <p>The customer will pay the discounted price for the product</p>
+        <div>
+          <Input.Select
+            name="discount_type"
+            label="Discount Type"
+            placeholder="Discount Type"
+            onChange={this.getFormOnChangeHandler()}
+            required
+            defaultValue={this.state.discount_type}
+            options={[
+              { label: 'Select Type', name: '' },
+              { label: 'Flat', name: 'flat' },
+              { label: 'Percentage', name: 'percent' },
+            ]}
+            validator={this.getFormElementValidations('discount_type')}
+          />
+          {this.renderDiscountDetailsSection()}
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  renderOfferDescriptionFormInputs() {
+    return (
+      <React.Fragment>
+        <Input
+          label="Offer Name"
+          name="name"
+          placeholder="Offer Short name"
+          autoFocus={true}
+          defaultValue={this.state.name}
+          required
+          validator={this.getFormElementValidations('name')}
+        />
+        <Input
+          label="Display Text"
+          name="display_text"
+          placeholder="Display text for offer"
+          required
+          defaultValue={this.state.display_text}
+          validator={this.getFormElementValidations('display_text')}
+        />
+      </React.Fragment>
+    );
+  }
+
   renderPaymentMethods() {
     const { allPaymentMethodsAllowed } = this.state;
 
-    let paymentMethods = [
+    const paymentMethods = [
       { label: 'Select Payment method', name: '' },
       { label: 'Card', name: 'card' },
       { label: 'Net Banking', name: 'netbanking' },
@@ -180,7 +206,7 @@ export default class CreateOfferWizard extends Component {
       { label: 'Cardless EMI', name: 'cardless_emi' },
       { label: 'Pay Later', name: 'paylater' },
     ];
-    let paymentIssuers = [
+    const paymentIssuers = [
       { label: 'Select Issuers', name: '' },
       { label: 'HDFC Bank', name: 'HDFC' },
       { label: 'HSBC Bank', name: 'HSBC' },
@@ -196,7 +222,7 @@ export default class CreateOfferWizard extends Component {
       { label: 'Bank of Baroda Bank', name: 'BARB' },
     ];
 
-    let paymentNetworks = [
+    const paymentNetworks = [
       { label: 'Select Network', name: '' },
       { label: 'Visa', name: 'VISA' },
       { label: 'RuPay', name: 'RUPAY' },
@@ -294,13 +320,14 @@ export default class CreateOfferWizard extends Component {
             description="Discount worth in Percent"
             addonBefore={<span>%</span>}
             required
+            defaultValue={this.state.percent_rate}
             validator={this.getFormElementValidations('percent_rate')}
           />
           <Input
             label="Maximum Cashback"
             name="max_cashback"
+            defaultValue={this.state.max_cashback}
             class="Input--half"
-            onChange={this.getFormOnChangeHandler()}
             description="Maximum cashback for this offer"
             addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
             validator={this.getFormElementValidations('max_cashback')}
@@ -312,35 +339,15 @@ export default class CreateOfferWizard extends Component {
   }
 
   renderForm() {
-    switch (this.state.currentTab) {
+    const { currentTab, discount_type, starts_at, ends_at } = this.state;
+
+    switch (currentTab) {
       case 0:
-        return this.getOfferDescriptionFormInputs();
+        return this.renderOfferDescriptionFormInputs();
       case 1:
         return this.renderPaymentMethods();
       case 2:
-        return (
-          <div>
-            <strong>Instant Discount</strong>
-            <p>The customer will pay the discounted price for the product</p>
-            <div>
-              <Input.Select
-                name="discount_type"
-                label="Discount Type"
-                placeholder="Discount Type"
-                onChange={this.getFormOnChangeHandler()}
-                required
-                defaultValue={this.state.discount_type}
-                options={[
-                  { label: 'Select Type', name: '' },
-                  { label: 'Flat', name: 'flat' },
-                  { label: 'Percentage', name: 'percent' },
-                ]}
-                validator={this.getFormElementValidations('discount_type')}
-              />
-              {this.renderDiscountDetailsSection()}
-            </div>
-          </div>
-        );
+        return this.renderDiscountFormInputs();
       case 3:
         return (
           <React.Fragment>
@@ -352,7 +359,7 @@ export default class CreateOfferWizard extends Component {
               isInline
               required
               validator={this.getFormElementValidations('starts_at')}
-              defaultValue={this.state.starts_at}
+              defaultValue={starts_at}
             />
             <Input.DateTime
               label="Expires On"
@@ -362,7 +369,7 @@ export default class CreateOfferWizard extends Component {
               isInline
               required
               validator={this.getFormElementValidations('ends_at')}
-              defaultValue={this.state.ends_at}
+              defaultValue={ends_at}
             />
           </React.Fragment>
         );
@@ -385,7 +392,9 @@ export default class CreateOfferWizard extends Component {
           tabs={tabs}
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
-          tabsValidity={this.state.validTabs}
+          tabsValidity={[0, 1, 2, 3].map(
+            x => this.state.validTabs[x] && this.isTabDataValid(x)
+          )}
           disableTabCondition={tabIndex =>
             tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
           }
@@ -446,29 +455,15 @@ export default class CreateOfferWizard extends Component {
     );
   }
 
-  getOfferDescriptionFormInputs() {
-    return (
-      <React.Fragment>
-        <Input
-          label="Offer Name"
-          name="name"
-          placeholder="Offer Short name"
-          autoFocus={true}
-          defaultValue={this.state.name}
-          required
-          validator={this.getFormElementValidations('name')}
-        />
-        <Input
-          label="Display Text"
-          name="display_text"
-          placeholder="Display text for offer"
-          required
-          defaultValue={this.state.display_text}
-          validator={this.getFormElementValidations('display_text')}
-        />
-      </React.Fragment>
+  isFormElementValid = elementName => {
+    return !this.getFormElementValidations(elementName)(
+      this.state[elementName]
     );
-  }
+  };
+
+  areGivenFormElementsValid = (...args) => {
+    return !args.some(x => !this.isFormElementValid(x));
+  };
 }
 
 const tabs = [
