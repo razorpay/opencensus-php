@@ -110,6 +110,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCROOGE_VERIFY_REFUND_CRON_RESPONSE                   = 'SCROOGE_VERIFY_REFUND_CRON_RESPONSE';
     const SCROOGE_VERIFY_REFUND_CRON_EXCEPTION                  = 'SCROOGE_VERIFY_REFUND_CRON_EXCEPTION';
     const SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED              = 'SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED';
+    const SCROOGE_FETCH_FILE_BASED_REFUNDS_FAILED               = 'SCROOGE_FETCH_FILE_BASED_REFUNDS_FAILED';
     const REFUND_ADD_DASHBOARD_PARAMS_FAILED                    = 'REFUND_ADD_DASHBOARD_PARAMS_FAILED';
     const REFUND_UPDATE_IS_SCROOGE_REQUEST                      = 'REFUND_UPDATE_IS_SCROOGE_REQUEST';
     const REFUND_IS_SCROOGE_UPDATED_COUNT                       = 'REFUND_IS_SCROOGE_UPDATED_COUNT';
@@ -276,6 +277,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
 
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
+    const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
 
     const BULK_CREATE_BANKING_ACCOUNTS_REQUEST                  = 'BULK_CREATE_BANKING_ACCOUNTS_REQUEST';
 
@@ -1708,6 +1710,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_RECEIVED                             = 'GATEWAY_FILE_JOB_RECEIVED';
     const GATEWAY_FILE_JOB_HANDLED                              = 'GATEWAY_FILE_JOB_HANDLED';
     const GATEWAY_FILE_JOB_ERROR                                = 'GATEWAY_FILE_JOB_ERROR';
+    const GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE              = 'GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE';
 
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
     const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';
@@ -2364,6 +2367,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
+    const FTA_PENNY_TESTING_RAMP_INIT                           = 'FTA_PENNY_TESTING_RAMP_INIT';
+    const FTA_PENNY_TESTING_RAMP_COMPLETE                       = 'FTA_PENNY_TESTING_RAMP_COMPLETE';
     const PARTNER_FETCH_FOR_SUBMERCHANT_ERROR                   = 'PARTNER_FETCH_FOR_SUBMERCHANT_ERROR';
 
     const PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA';

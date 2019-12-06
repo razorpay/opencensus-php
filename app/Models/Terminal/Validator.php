@@ -888,6 +888,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [

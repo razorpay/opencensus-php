@@ -568,7 +568,7 @@ class FundTransfer extends Base
 
     public function bulkUpdateFtsAttempts(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setDashboardAuthAndAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
@@ -706,7 +706,7 @@ class FundTransfer extends Base
 
     public function getBulkTransferStatus(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setDashboardAuthAndAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
@@ -716,7 +716,7 @@ class FundTransfer extends Base
 
     public function checkTransferStatus(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setDashboardAuthAndAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
@@ -726,7 +726,7 @@ class FundTransfer extends Base
 
     public function getRawBankStatus(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setDashboardAuthAndAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
