@@ -7,7 +7,7 @@ return [
         'request'  => [
             'content' => [
             ],
-            'url'     => '/merchants/{$id}/referral',
+            'url'     => '/merchant/referral',
             'method'  => 'POST'
         ],
         'response' => [
@@ -19,7 +19,7 @@ return [
 
     'testFetchMerchantReferral' => [
         'request'  => [
-            'url'    => '/merchants/{$id}/referral',
+            'url'    => '/merchant/referral',
             'method' => 'GET'
         ],
         'response' => [
@@ -31,7 +31,7 @@ return [
 
     'testCreateReferralNonResellerPartner' => [
         'request'   => [
-            'url'    => '/merchants/{$id}/referral',
+            'url'    => '/merchant/referral',
             'method' => 'POST'
         ],
         'response'  => [

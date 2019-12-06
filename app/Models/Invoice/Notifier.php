@@ -765,6 +765,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_BAGIC:
+                $sender = 'BAGICZ';
                 $template = 'sms.custom_invoice.bagic_pl';
                 $params = [
                     'invoice_link'  => $invoiceLink,
@@ -855,6 +856,8 @@ class Notifier extends Base\Core
             case Preferences::MID_BAGIC:
 
                 $template = 'sms.custom_invoice.bagic_sub';
+
+                $sender = 'BAGICZ';
 
                 $params = [
                     'invoice_link'    => $invoiceLink
