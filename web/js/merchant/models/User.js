@@ -409,10 +409,6 @@ export default class User {
     return window.pl_expiry_in_hrs;
   }
 
-  get toShowExtraFieldsInPP() {
-    return this.getExpStatus('show_extra_fields_in_pp');
-  }
-
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
   }

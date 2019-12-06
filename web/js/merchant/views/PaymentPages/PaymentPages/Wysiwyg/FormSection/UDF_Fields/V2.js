@@ -16,43 +16,25 @@ if (typeof window !== 'undefined') {
 * */
 
 export function getFieldTypes() {
-  let FIELD_TYPES = [
+  const FIELD_TYPES = [
     {
       label: 'Text',
       icon: 'sort i-fix-sort',
       options: [
         fUnits.str,
+        fUnits.alphabets,
+        fUnits.alphanumeric,
         fUnits.number,
         fUnits.email,
         fUnits.phone,
         fUnits.url,
         fUnits.textarea,
+        fUnits.pan,
+        fUnits.pincode,
       ],
     },
     fUnits.dropdown,
   ];
-
-  if (getUser && getUser().toShowExtraFieldsInPP) {
-    FIELD_TYPES = [
-      {
-        label: 'Text',
-        icon: 'sort i-fix-sort',
-        options: [
-          fUnits.str,
-          fUnits.alphabets,
-          fUnits.alphanumeric,
-          fUnits.number,
-          fUnits.email,
-          fUnits.phone,
-          fUnits.url,
-          fUnits.textarea,
-          fUnits.pan,
-          fUnits.pincode,
-        ],
-      },
-      fUnits.dropdown,
-    ];
-  }
 
   return FIELD_TYPES;
 }
