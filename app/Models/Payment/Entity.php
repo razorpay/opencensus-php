@@ -352,6 +352,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -439,6 +441,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::CARD_ID,
@@ -2595,6 +2599,39 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $reference;
     }
 
+    /**
+     * @param array $array
+     *
+     * Base amount(and base currency) should be set in public array if
+     * 1) route is privileged route
+     * 2) the payment is non-inr payment
+     */
+    public function setPublicBaseAmountAttribute(array & $array)
+    {
+        if ($this->getCurrency() !== Currency\Currency::INR)
+        {
+            return;
+        }
+
+        unset($array[self::BASE_AMOUNT]);
+    }
+    /**
+     * @param array $array
+     *
+     * Base amount(and base currency) should be set in public array if
+     * 1) route is privileged route
+     * 2) the payment is non-inr payment
+     */
+    public function setPublicBaseCurrencyAttribute(array & $array)
+    {
+        if ($this->getCurrency() === Currency\Currency::INR)
+        {
+            return;
+        }
+
+        $array[self::BASE_CURRENCY] = Currency\Currency::INR;
+    }
+
     public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
@@ -2783,20 +2820,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
-
-        return $data;
-    }
-
-    public function toArrayPublicWithExpand()
-    {
-        $data =  parent::toArrayPublicWithExpand();
-
-        if ($this->getCurrency() !== Currency\Currency::INR)
-        {
-            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
-
-            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
-        }
 
         return $data;
     }
