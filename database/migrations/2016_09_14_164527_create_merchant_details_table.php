@@ -50,6 +50,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_WEBSITE)
                   ->nullable();
 
+            $table->string(MerchantDetail::ADDITIONAL_WEBSITES, 511)
+                  ->nullable();
+
              $table->boolean(MerchantDetail::BUSINESS_INTERNATIONAL)
                   ->default(0);
 

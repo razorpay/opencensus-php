@@ -1046,6 +1046,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_MARK_HAS_KEY_ACCESS                          = 'MERCHANT_MARK_HAS_KEY_ACCESS';
     const MERCHANT_UPDATE_ACTIVATION_STATUS                     = 'MERCHANT_UPDATE_ACTIVATION_STATUS';
     const MERCHANT_UPDATE_WEBSITE_DETAILS                       = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
+    const MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS               = 'MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS';
     const MERCHANT_UPDATE_INTERNATIONAL                         = 'MERCHANT_UPDATE_INTERNATIONAL';
     const MERCHANT_UPDATE_KEY_ACCESS                            = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';

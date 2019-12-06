@@ -112,6 +112,37 @@ class ActivationTest extends TestCase
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
     }
 
+    public function testBusinessWebsiteUpdate()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+
+        $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+
+        $this->assertNotContains('abc.com', $merchant->getWhitelistedDomains());
+    }
+
 
     public function testPostInstantActivationWithBalanceCreation()
     {

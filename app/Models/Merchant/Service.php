@@ -39,6 +39,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
@@ -1133,8 +1134,36 @@ class Service extends Base\Service
             return false;
         }
 
-        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
             $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getWebsiteStatus()
+    {
+        $oldMerchantDetail = $this->merchant->merchantDetail;
+
+        if (empty($oldMerchantDetail) === true)
+        {
+            return false;
+        }
+
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
+            $oldMerchantDetail->getMerchantId(),
+            $oldMerchantDetail->getEntity(),
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL);
 
         $actions = $actions->toArray();
 
