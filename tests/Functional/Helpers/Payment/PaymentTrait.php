@@ -2150,19 +2150,19 @@ trait PaymentTrait
         });
     }
 
-    protected function mockExpressSendRequest($closure, $times = 1)
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
     {
-        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
 
-        $express->shouldAllowMockingProtectedMethods();
+        $mozart->shouldAllowMockingProtectedMethods();
 
-        $express->shouldReceive('sendRequest')
+        $mozart->shouldReceive('translateWebhook')
                 ->times($times)
                 ->andReturnUsing($closure);
 
-        $this->app->instance('express', $express);
+        $this->app->instance('mozart', $mozart);
 
-        return $express;
+        return $mozart;
     }
 
     protected function mockShield()

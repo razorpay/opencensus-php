@@ -2275,11 +2275,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
 
-    //Express service
-    const EXPRESS_SERVICE_REQUEST                               = 'EXPRESS_SERVICE_REQUEST';
-    const EXPRESS_SERVICE_RESPONSE                              = 'EXPRESS_SERVICE_RESPONSE';
-    const EXPRESS_INTEGRATION_ERROR                             = 'EXPRESS_INTEGRATION_ERROR';
-
     // Stork service
     const STORK_DISPATCH_EVENT_FAILED                           = 'STORK_DISPATCH_EVENT_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
