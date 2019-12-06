@@ -1971,9 +1971,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
