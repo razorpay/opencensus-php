@@ -274,8 +274,7 @@ export default props => {
                   )}
 
                 {user.isRemindersEnabled &&
-                  !isPaymentLinksRemindersEnabled &&
-                  isContactDetailsAvl && (
+                  !isPaymentLinksRemindersEnabled && (
                     <EntityDetailRow label="Reminders">
                       <div class="Input-content">
                         Reminders are not set for payment links.
