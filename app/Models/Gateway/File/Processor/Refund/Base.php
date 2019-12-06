@@ -374,7 +374,10 @@ class Base extends BaseProcessor
                     RefundConstants::SCROOGE_CREATED_AT => [
                         RefundConstants::SCROOGE_GTE => $from,
                         RefundConstants::SCROOGE_LTE => $to,
-                    ]
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
                 ],
             ],
             RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
