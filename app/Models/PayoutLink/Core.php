@@ -58,20 +58,25 @@ class Core extends Base\Core
 
     public function generateCustomerOtp($payoutLinkId)
     {
-        $this->trace->log(
-            TraceCode::PAYOUT_LINK_CONTACT_ADD_FAILED
-            ,
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
             [
                 'payout_link_id' => $payoutLinkId
             ]
         );
+
         $payoutLink = $this->repo
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         $contact = $payoutLink->contact;
-        
-        # get the email and the phonenumber
+        return $contact;
+
+        # todo: pl request for otp
+        # todo: pl send otp to mobile
+            # todo: pl make changes in the raven thingy to add the new template ....
+        # todo: pl   # ask design for the new email template for OTP
+
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)

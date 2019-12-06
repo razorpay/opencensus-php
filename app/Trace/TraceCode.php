@@ -47,10 +47,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_RESPONSE                         = 'PAYMENT_CAPTURE_BULK_RESPONSE';
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
+
+    //payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
     const PAYOUT_LINK_CONTACT_ADD_FAILED                        = 'PAYOUT_LINK_CONTACT_ADD_FAILED';
     const PAYOUT_LINK_PROCESS_CONTACT_REQUEST                   = 'PAYOUT_LINK_PROCESS_CONTACT_REQUEST';
     const PAYOUT_LINK_SHORT_URL_GENERATION_FAILED               = 'PAYOUT_LINK_SHORT_URL_GENERATION_FAILED';
+    const PAYOUT_LINK_CUSTOMER_OTP_GENERATE                     = 'PAYOUT_LINK_CUSTOMER_OTP_GENERATE';
+
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_CRON                             = 'PAYMENT_AUTO_CAPTURE_CRON';
