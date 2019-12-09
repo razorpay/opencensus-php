@@ -50,8 +50,6 @@ class Scrooge
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
-        'enable-dark'                   => 'enable-dark',
-        'disable-dark'                  => 'disable-dark',
         'instant_refunds_mode'          => 'instant_refunds_mode',
         'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
         'get_file_based_refunds'        => 'file_based_refunds',
@@ -119,22 +117,6 @@ class Scrooge
     public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundBaseURL . '/' . $input['id'] . '/' . self::URLS['retry'],
-            Requests::POST, $input, $throwExceptionOnFailure);
-    }
-
-    /**
-     * @param string $id
-     * @param string action
-     * @param      $input
-     * @param bool $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function setRefundDark(string $id, string $action, array $input, bool $throwExceptionOnFailure = false): array
-    {
-        $setRefundDark = $action . '-' . 'dark';
-
-        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS[$setRefundDark],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
