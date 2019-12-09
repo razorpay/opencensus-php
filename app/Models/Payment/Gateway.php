@@ -2259,6 +2259,15 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
+    public static function isNbPlusServiceGateway($gateway)
+    {
+        $gateways = [
+            self::BILLDESK
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     /**
      * Some gateways, for example sbi netbanking expect us to send the sequence no or the order in which the refunds
      * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created
