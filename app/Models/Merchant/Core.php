@@ -1675,6 +1675,13 @@ class Core extends Base\Core
     {
         $appIds = $this->getPartnerApplicationIds($partner);
 
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+            [
+                'partner_id' => $partner->getId(),
+                'app_ids'    => $appIds,
+                'params'     => $params,
+            ]);
+
         if (empty($params[Constants::APPLICATION_ID]) === false)
         {
             $inputAppId = $params[Constants::APPLICATION_ID];

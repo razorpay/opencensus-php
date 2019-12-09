@@ -369,6 +369,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->core()->markSubmittedAndLock($merchant->merchantDetail);
+
         $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
 
         return $merchantDetails->toArrayPublic();
