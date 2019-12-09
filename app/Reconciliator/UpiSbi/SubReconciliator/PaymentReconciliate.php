@@ -2,10 +2,10 @@
 
 namespace RZP\Reconciliator\UpiSbi\SubReconciliator;
 
-use RZP\Gateway\Upi\Sbi\Action;
-use RZP\Reconciliator\Base;
-use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Gateway\Upi\Sbi\Action;
+use RZP\Models\Base\PublicEntity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -27,7 +27,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     ];
     protected function getPaymentId(array $row)
     {
-        return $row[self::ORDER_NUMBER];
+        $paymentId = $row[self::ORDER_NUMBER] ?? null;
+
+        $reconStatus = $this->getReconPaymentStatus($row);
+
+        if ($reconStatus === Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
+
+        return $paymentId;
     }
 
     protected function getReferenceNumber($row)
