@@ -7,6 +7,13 @@ const REGISTRATION_LINK_FETCH = 'REGISTRATION_LINK_FETCH';
 const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
 const REGISTRATION_LINK_CANCEL = 'REGISTRATION_LINK_CANCEL';
 
+export const notifyCustomer = (id, type) => {
+  return merchantFetch({
+    url: `subscription_registration/auth_links/${id}/notify_by/${type}`,
+    method: 'post',
+  });
+};
+
 export const fetchRegistrationLink = id => ({
   type: REGISTRATION_LINK_FETCH,
   payload: merchantFetch(
