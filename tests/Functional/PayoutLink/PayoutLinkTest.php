@@ -252,4 +252,39 @@ class PayoutLinkTest extends TestCase
 
         $contactClient->processContact(['contact_id' => null], $this->contact->merchant);
     }
+
+    public function testCustomerOtpGenerated()
+    {
+
+    }
+
+    public function testCustomerOtpSmsFailed()
+    {
+
+    }
+
+    public function testCustomerOtpEmailFailed()
+    {
+
+    }
+
+    public function testCustomerOtpEmailQueued()
+    {
+
+    }
+
+    public function testCustomerOtpVerificationSuccess()
+    {
+
+    }
+
+    public function testCustomerOtpVerificationFailed()
+    {
+
+    }
+
+    public function testOtpGenerationWithOutPhoneNumber()
+    {
+
+    }
 }

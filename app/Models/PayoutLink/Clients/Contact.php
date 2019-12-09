@@ -56,7 +56,12 @@ class Contact
             catch(\Exception $e)
             {
                 throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED
+                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
+                    null,
+                    [
+                        'merchant_id' => $merchant->getPublicId(),
+                        'contact'     => $contact
+                    ]
                 );
             }
         }

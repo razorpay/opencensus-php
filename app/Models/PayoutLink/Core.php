@@ -2,8 +2,12 @@
 
 namespace RZP\Models\PayoutLink;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
@@ -85,18 +89,43 @@ class Core extends Base\Core
 
         $contact = $payoutLink->contact;
 
-        $otp = $this->generateOtp($contact->getContact(), $payoutLinkId);
+        $otp = $this->generateOtp($contact, $payoutLinkId);
 
         $this->sendCustomerOtpSms($contact, $otp);
 
         $this->sendCustomerOtpEmail($contact, $otp);
 
+        $uniqueToken = $this->generateUniqueRequestToken($payoutLinkId);
+
+        return [
+            'token' => $uniqueToken
+        ];
+    }
+
+    /**
+     * Timestamp + payout_link_id
+     */
+    protected function generateUniqueRequestToken($payoutLinkId): string
+    {
+        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
+
+        return $payoutLinkId . '.' . $timestamp;
+    }
+
+    /**
+     * Returns true, if atkleast one delivery worked. else returns false
+     * @param ContactEntity $contact
+     * @return bool
+     */
+    protected function deliverOtp(ContactEntity $contact, string $otp): bool
+    {
+        # get the phone-number
+        # send SMS
     }
 
     protected function sendCustomerOtpEmail(ContactEntity $contactEntity, string $otp)
     {
-        #todo, pl, the email template is not yet decided on.
-        # Also this will be a silent fail, with a log ?
+
     }
 
     protected function sendCustomerOtpSms(ContactEntity $contactEntity, string $otp)
@@ -111,16 +140,36 @@ class Core extends Base\Core
             self::RECEIVER => $contactEntity->getContact()
         ];
 
-        $this->raven->sendSms($payload);
+        try
+        {
+            $this->raven->sendSms($payload);
+        }
+        catch(\Exception $e)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_OTP_SMS_FAILED,
+                null,
+                $payload
+            );
+        }
     }
 
-    protected function generateOtp(string $phoneNumber, string $payoutLinkId)
+    protected function generateOtp(ContactEntity $contact, string $payoutLinkId)
     {
-        $payload = [
-            self::RECEIVER => $phoneNumber,
-            self::CONTEXT  => $payoutLinkId,
-            self::SOURCE   => "api.{$this->mode}.payment_link"
-        ];
+        $phoneNumber = $contact->getContact();
+
+        if ($phoneNumber === null)
+        {
+            #todo, pl how will we handle OTP creation when we do not have a phone-number
+        }
+        else
+        {
+            $payload = [
+                self::RECEIVER => $phoneNumber,
+                self::CONTEXT  => $payoutLinkId,
+                self::SOURCE   => 'api.pout_lnk'
+            ];
+        }
 
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_REQUEST,
@@ -128,6 +177,20 @@ class Core extends Base\Core
         );
 
         $response = $this->raven->generateOtp($payload);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_RESPONSE,
+            $response
+        );
+        if (key_exists(self::OTP, $response) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                                          [
+                                              'request'  => $payload,
+                                              'response' => $response,
+                                          ]
+            );
+        }
 
         return $response[self::OTP];
     }
