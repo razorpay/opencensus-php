@@ -40,42 +40,19 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payout_link';
 
+    protected $table  = Table::PAYOUT_LINK;
+
     protected $amounts = [
       self::AMOUNT
     ];
 
-    protected $dates = [
-        self::CREATED_AT,
-        self::UPDATED_AT,
-        self::DELETED_AT,
-        self::CANCELLED_AT
-    ];
-
-    protected $public = [
-        self::ID,
-        self::ENTITY,
-        self::CONTACT_ID,
-        self::FUND_ACCOUNT_ID,
-        self::STATUS,
-        self::AMOUNT,
-        self::CURRENCY,
-        self::DESCRIPTION,
-        self::RECEIPT,
-        self::NOTES,
-        self::SHORT_URL,
-        self::CREATED_AT,
-        self::CANCELLED_AT
-    ];
-
     protected $fillable = [
         self::ID,
-        self::SHORT_URL,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
-        self::SHORT_URL,
     ];
 
     protected $visible = [
@@ -95,6 +72,22 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
+    ];
+
+    protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::CONTACT_ID,
+        self::FUND_ACCOUNT_ID,
+        self::STATUS,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::RECEIPT,
+        self::NOTES,
+        self::SHORT_URL,
+        self::CREATED_AT,
+        self::CANCELLED_AT
     ];
 
     protected $hosted = [
@@ -117,6 +110,13 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
+        self::CANCELLED_AT
+    ];
+
     protected $casts = [
         self::AMOUNT => 'int',
     ];
@@ -135,7 +135,6 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT          => null,
     ];
 
-    protected $table  = Table::PAYOUT_LINK;
 
     // -------------------------------------- Relations -------------------------------
 
@@ -161,7 +160,7 @@ class Entity extends Base\PublicEntity
 
     public function payouts()
     {
-        return $this->hasmany(Payout\Entity::class);
+        return $this->hasMany(Payout\Entity::class);
     }
 
     // -------------------------------------- End Relations ---------------------------
