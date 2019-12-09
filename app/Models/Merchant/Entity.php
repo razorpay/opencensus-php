@@ -219,6 +219,8 @@ class Entity extends Base\PublicEntity
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
 
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
