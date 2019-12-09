@@ -1264,6 +1264,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
+    public function enableNbPlusService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 3);
+    }
+
     public function setMethod(string $method)
     {
         $this->setAttribute(self::METHOD, $method);
