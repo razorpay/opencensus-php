@@ -51,8 +51,9 @@ class Scrooge
         'enqueue'                       => 'enqueue',
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
         'instant_refunds_mode'          => 'instant_refunds_mode',
-        'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
         'get_file_based_refunds'        => 'file_based_refunds',
+        'refresh_fta_modes'             => 'fta_modes_refresh',
+        'fetch_instant_refunds_modes'   => 'fetch/instant_refund_mode_configs'
     ];
 
     // Headers
@@ -227,28 +228,78 @@ class Scrooge
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_file_based_refunds'], Requests::POST, $input, true);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
     public function downloadRefunds(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], Requests::POST, $input);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
     public function setInstantRefundsMode(array $input): array
     {
         return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::POST, $input);
     }
 
-    public function expireInstantRefundsModeConfig(array $input): array
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     */
+    public function expireInstantRefundsModeConfig(string $id, array $input): array
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode_expire'],
-            Requests::POST, $input);
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'] . '/' . $id . '/expire',
+            Requests::PUT,
+            $input
+        );
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function refreshFtaModes(array $input): array
+    {
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['refresh_fta_modes'],
+            Requests::POST,
+            $input
+        );
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function fetchInstantRefundsModeConfigs(array $input): array
+    {
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['fetch_instant_refunds_modes'],
+            Requests::POST,
+            $input
+        );
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
     public function downloadGatewayRefundsFile(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
             Requests::POST, $input);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
     public function dashboardInit(array $input): array
     {
         return $this->sendRequest(
