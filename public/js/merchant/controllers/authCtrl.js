@@ -149,16 +149,12 @@ app
               value: 6,
             },
             9: {
-              name: 'Trust',
+              name: 'Trust / Society / NGO',
               value: 9,
             },
             10: {
-              name: 'Society',
-              value: 10,
-            },
-            11: {
-              name: 'NGO',
-              value: 7,
+              name: "I'm not sure",
+              value: 12,
             },
           },
 
@@ -169,6 +165,7 @@ app
             4: '25 Lacs to 50 Lacs',
             5: '50 Lacs to 1 Crore',
             6: 'More than 1 Crore',
+            7: "I'm not sure",
           },
 
           department: {
@@ -183,6 +180,10 @@ app
             3: {
               name: 'Business',
               value: '3',
+            },
+            4: {
+              name: "I'm not sure",
+              value: '4',
             },
           },
         },
@@ -810,7 +811,7 @@ app
       $scope.onCreateClick = function() {
         window.rzpQ.push(
           window.rzpQ
-            .now()
+            // .now()
             .onbr()
             .initiated('signup.create_account', { mode: $scope.eventsMode })
         );
@@ -824,7 +825,7 @@ app
         var toRoute = 'access.signin';
         window.rzpQ.push(
           window.rzpQ
-            .now()
+            // .now()
             .onbr()
             .success('signup.click_other_links', {
               source: 'sign_in',
