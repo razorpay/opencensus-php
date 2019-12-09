@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'paysecure_%s_card_details';
 
+    const MIGRATION_TIMESTAMP = 1575912600;
+
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
     protected $gatewayPayment = null;
@@ -63,7 +65,14 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
+        if ($input['payment']['created_at'] > self::MIGRATION_TIMESTAMP)
+        {
+            $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay_new.wsdl';
+        }
+        else
+        {
+            $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
+        }
     }
 
     /**
@@ -606,7 +615,15 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        $input = $this->input;
+
         $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        if (($input['payment']['created_at'] > self::MIGRATION_TIMESTAMP) and
+            (strtoupper($this->mode) === 'LIVE'))
+        {
+            return constant($urlClass . '::' . 'NEW_' .strtoupper($this->mode));
+        }
 
         return constant($urlClass . '::' .strtoupper($this->mode));
     }
