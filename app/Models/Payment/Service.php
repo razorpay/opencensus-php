@@ -912,6 +912,15 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
+    public function mandateUpdateCallback($id, $input)
+    {
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->mandateUpdateCallback($payment, $input);
+    }
+
     public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);
@@ -1849,6 +1858,11 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function mandateUpdate($id, $token, $input)
+    {
+        $data = $this->getNewProcessor()->mandateUpdate($id, $token, $input);
+    }
+
     public function validateEntity(array $input)
     {
         (new Payment\Validator())->validateInput('validate_entity', $input);
@@ -1875,6 +1889,8 @@ class Service extends Base\Service
         $txn->setOnHold(false);
 
         $this->repo->saveOrFail($txn);
+
+        (new Transaction\Core)->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
 
         //
         // If the payment has a transfer, update the
@@ -2013,11 +2029,11 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId = null)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null, bool $bulkUpdate = false)
     {
         $updated = null;
 
-        (new Card\Service)->migtateCardVaultToken($cardId);
+        (new Card\Service)->migtateCardVaultToken($cardId, $bulkUpdate);
 
         if ($paymentId !== null)
         {
@@ -2115,22 +2131,33 @@ class Service extends Base\Service
 
         $limit = $input['limit'] ?? 1000;
 
-        $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+        $migrateMissingFingerprintCards = $input['migrate_missing_fingerprint_cards'] ?? false;
 
-        $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+        $payments = $cards = $cardsWithoutFingerprint = [];
 
-        $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        if($migrateMissingFingerprintCards)
+        {
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+        }
+        else
+        {
+            $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+
+            $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+
+            $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        }
 
         $this->trace->info(
             TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST,
             [
                 'payments_count' => count($payments),
-                'cards_count'    => count($cards),
+                'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             ]);
 
         $result = [
             'payments_count' => count($payments),
-            'cards_count'    => count($cards),
+            'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             'payment_failed' => [],
             'card_failed'    => [],
         ];
@@ -2159,19 +2186,32 @@ class Service extends Base\Service
             }
         }
 
+        foreach ($cardsWithoutFingerprint as $card)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable(null, $card, true);
+            }
+            catch (\Throwable $e)
+            {
+                $result['card_failed'][] = $card->getId();
+            }
+        }
+
         return $result;
     }
 
-    public function migrateCardDataIfApplicable($payment, $card)
+    public function migrateCardDataIfApplicable($payment, $card, $bulkUpdate=false)
     {
         $payload = [];
 
         try
         {
             $payload = [
-                'card_id'    => $card->getId(),
-                'token'      => $card->getVaultToken(),
-                'mode'       => $this->mode,
+                'card_id'     => $card->getId(),
+                'token'       => $card->getVaultToken(),
+                'mode'        => $this->mode,
+                'bulk_update' => $bulkUpdate,
             ];
 
             if ($payment !== null)

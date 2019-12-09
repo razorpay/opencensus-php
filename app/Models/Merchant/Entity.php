@@ -163,6 +163,11 @@ class Entity extends Base\PublicEntity
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,

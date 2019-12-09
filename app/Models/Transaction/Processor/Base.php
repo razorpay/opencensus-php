@@ -598,7 +598,8 @@ abstract class Base extends BaseCore
         // in case the transaction is not eligible for settlement then
         // settled_at will have some number else it will be null
         //
-        if ($settledAt === null)
+        if (($settledAt === null) or
+            ($txn->isOnHold() === true))
         {
             return;
         }

@@ -99,6 +99,49 @@ class TerminalProcessor extends Base\Core
         }
     }
 
+    public function selectAuthenticationGatewayForTerminals(Payment\Entity $payment, array $terminals)
+    {
+        $this->payment = $payment;
+
+        $authenticationMap = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $payment->associateTerminal($terminal);
+
+            $authenticationMap[$terminal->getId()] = [];
+
+            $input = [
+                'payment'   => $this->payment,
+                'merchant'  => $this->payment->merchant,
+            ];
+
+            if (($payment->isMoto() === false) and
+                ($payment->isSecondRecurring() === false))
+            {
+                try
+                {
+                    $paymentAuthSelect = new Terminal\AuthSelector($input);
+                    $authenticationMap[$terminal->getId()] = $paymentAuthSelect->select();
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        TraceCode::AUTH_SELECTION_FAILURE_V2,
+                        ['payment_id' => $payment->getId()]
+                    );
+                }
+            }
+        }
+
+        $payment->disassociateTerminal();
+
+        return $authenticationMap;
+    }
+
+
     public function getTerminalFromGatewayData(array $gatewayData = []): Terminal\Entity
     {
         $terminalId = $gatewayData[Payment\Entity::TERMINAL_ID];

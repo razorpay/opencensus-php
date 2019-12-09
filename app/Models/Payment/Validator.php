@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -96,9 +97,9 @@ class Validator extends Base\Validator
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
-        'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
-        'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
-        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
+        'recurring_token'               => 'sometimes_if:method,emandate,upi|associative_array|filled',
+        'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
@@ -110,6 +111,11 @@ class Validator extends Base\Validator
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
+    ];
+
+    protected static $editCpsResponseRules = [
+        Entity::AUTH_TYPE               => 'sometimes|nullable|string',
+        Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
@@ -210,7 +216,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $paymentCardMigrateRules = [
-        'limit' => 'sometimes|integer',
+        'limit'                             => 'sometimes|integer',
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
+    ];
+
+    protected static $mandateUpdateRules = [
+        'start_time'  => 'sometimes',
+        'max_amount'  => 'sometimes',
+        'token_id'    => 'sometimes',
+        'is_mandate'  => 'sometimes'
     ];
 
     protected static $createValidators = [
@@ -445,11 +459,11 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+
         $vpaParts = explode('@', $vpa);
 
-        if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false) or
-            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
+        if (ProviderCode::validate($vpaParts[1]) === false)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -614,7 +628,8 @@ class Validator extends Base\Validator
         }
 
         if (($method !== Payment\Method::EMANDATE) and
-            ($method !== Payment\Method::NACH))
+            ($method !== Payment\Method::NACH) and
+            ($this->checkUpiRecurring($input) === false))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -661,6 +676,20 @@ class Validator extends Base\Validator
                 'amount',
                 ['amount' => $amount]);
         }
+    }
+
+    protected function checkUpiRecurring($input)
+    {
+        $method = $input['method'];
+
+        if (($method === Payment\Method::UPI) and
+            (isset($input['recurring']) === true) and
+            ($input['recurring']) === '1')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateUpiVpaPsp(string $vpa, array $excludedPsps)

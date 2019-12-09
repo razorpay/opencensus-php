@@ -1287,6 +1287,23 @@ return [
         ],
     ],
 
+    'testAdditionalWebsite' => [
+        'request'  => [
+            'content' => [
+                'additional_website' => 'https://example.com',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'additional_websites' => [
+                    'https://example.com',
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithReferralCode' => [
         'request' => [
             'content' => [

@@ -225,4 +225,21 @@ class CitiPayoutTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testCreateQueuedPayoutUnsupportedModeForCitiIcici()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
+        $this->startTest();
+    }
 }

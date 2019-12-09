@@ -254,7 +254,9 @@ class Core extends Base\Core
 
         $payment->setOnHoldUntil($transferOnHoldUntil);
 
-        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
+        $txnCore = new Transaction\Core;
+
+        $txn = $txnCore->updateOnHoldToggle($payment);
 
         $this->repo->saveOrFail($payment);
 

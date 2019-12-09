@@ -162,6 +162,11 @@ class Core extends Base\Core
     {
         $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
 
+        if ($configs->isEmpty() === true)
+        {
+            return 0;
+        }
+
         $tdsPercentage = $configs->first()->getTdsPercentage();
 
         return ((int) round(($tdsPercentage * $totalCommission) / 10000));
@@ -185,7 +190,7 @@ class Core extends Base\Core
     {
         $transactionId = $transaction->getId();
 
-        return $this->repo->transaction(function () use ($transactionId)
+        $result = $this->repo->transaction(function () use ($transactionId)
         {
             $txn = $this->repo->transaction->lockForUpdate($transactionId);
 
@@ -195,6 +200,10 @@ class Core extends Base\Core
 
             return $txn;
         });
+
+        (new Transaction\Core)->dispatchForSettlementBucketing($transaction, $transaction->getSettledAt());
+
+        return $result;
     }
 
     /**

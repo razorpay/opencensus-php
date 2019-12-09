@@ -8,6 +8,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Models\Feature;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -159,7 +160,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -188,7 +189,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -219,7 +220,7 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -264,7 +265,7 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $this->fixtures->merchant->enableUpi();
 
@@ -273,5 +274,27 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('payment_id', $response);
+    }
+
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'shield_risk_evaluation')
+                        {
+                            return 'shield_on';
+                        }
+
+                        return 'shield_off';
+                    }));
     }
 }

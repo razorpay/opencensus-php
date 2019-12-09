@@ -35,6 +35,8 @@ class Scrooge
     const ListBaseURL = 'list';
     const MerchantsBaseURL = 'merchants';
 
+    const RESPONSE_SUCCESS_CODES = [200];
+
     const URLS = [
         'retry'                         => 'retry',
         'get_reports'                   => 'reports',
@@ -52,6 +54,7 @@ class Scrooge
         'disable-dark'                  => 'disable-dark',
         'instant_refunds_mode'          => 'instant_refunds_mode',
         'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
+        'get_file_based_refunds'        => 'file_based_refunds',
     ];
 
     // Headers
@@ -228,6 +231,18 @@ class Scrooge
     public function getRefunds(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], Requests::POST, $input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function getFileBasedRefunds(array $input): array
+    {
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_file_based_refunds'], Requests::POST, $input, true);
     }
 
     public function downloadRefunds(array $input): array

@@ -23,8 +23,6 @@ class Fields
     const PRODUCT_TYPE                                    = 'ACH';
     const BENEFICIARY_AADHAR_NUMBER                       = '               ';
     const FILLER                                          = '       ';
-    // TODO CLIENT CODE Will be provided by CITI
-    const CLIENT_CODE                                     = 'DUMMY';
     const END_TIMESTAMP                                   = 'end_timestamp';
     const START_TIMESTAMP                                 = 'start_timestamp';
     const FREQUENCY                                       = 'As & when Presented';
@@ -48,6 +46,7 @@ class Fields
     const USER_BANK_ACCOUNT_NUMBER_HEADING                = '00000000000000000000000000000000000';
     const SETTLEMENT_CYCLE_HEADING                        = '  ';
     const FILLER_57                                       = '                                                         ';
+    const CLIENT_CODE                                     = 'CTRAZORPAY';
 
     const ACCOUNT_TYPE_VALUE                             =  'accountType' ;
     const ACCOUNT_NAME                                   =  'accountName';

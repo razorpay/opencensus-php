@@ -1199,6 +1199,87 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals('rzpvault', $card2['vault']);
     }
 
+    public function testMissingFingerprintCardVaultMigration()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+                        $this->assertEquals('4000400000000004', $input['secret']);
+                        $response['token'] = base64_encode($input['secret']);
+                        $response['fingerprint'] = "";
+                        $response['scheme'] = "1";
+
+                        break;
+
+                    case 'detokenize':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        $response['value'] = base64_decode($input['token']);
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+
+                    case 'delete':
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
+                    case 'token/migrate':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        $response['token'] = strrev($input['token']);
+                        $response['fingerprint'] = strrev($input['token']);
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $card = $this->fixtures->create('card', [
+            'vault'       => 'rzpvault',
+            'vault_token' => 'NDAwMDQwMDAwMDAwMDAwNA==',
+            'created_at'  => Carbon::now()->getTimestamp() - 3600,
+        ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/cards',
+            'content' => [
+                'limit' => 1,
+                'migrate_missing_fingerprint_cards' => true,
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $card = $this->getDbEntityById('card', $card->getId());
+
+        $this->assertEquals('0', $response['payments_count']);
+        $this->assertEquals('1', $response['cards_count']);
+        $this->assertNotEmpty($card->getGlobalFingerPrint());
+    }
+
     public function testProcessFeesTransaction()
     {
         $this->fixtures->merchant->enableConvenienceFeeModel();
