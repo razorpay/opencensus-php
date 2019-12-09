@@ -971,10 +971,9 @@ final class Route
         'scrooge_refunds_download'                   => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                               ],
         'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                       ],
         'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                    ],
-        'set_scrooge_refund_dark'                    => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                 ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change', 'ScroogeController@bulkStatusUpdate'                              ],
         'scrooge_set_instant_refunds_mode_config'    => ['post',     'scrooge/merchants/instant_refunds_mode',         'ScroogeController@setInstantRefundsMode'                         ],
-        'scrooge_expire_instant_refunds_mode_config' => ['post',     'scrooge/merchants/instant_refunds_mode/expire',  'ScroogeController@expireInstantRefundsModeConfig'                      ],
+        'scrooge_expire_instant_refunds_mode_config' => ['post',     'scrooge/merchants/instant_refunds_mode/expire',  'ScroogeController@expireInstantRefundsModeConfig'                ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -2198,7 +2197,6 @@ final class Route
         'refund_edit_status',
         'refund_mark_processed_bulk',
         'refund_reference1_bulk_update',
-        'set_scrooge_refund_dark',
         'admin_logout',
         'schedule_create',
         'schedule_delete',
@@ -2977,7 +2975,6 @@ final class Route
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
-        'set_scrooge_refund_dark'                  => Permission::EDIT_SCROOGE_REDIS_CONFIG,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'send_test_sms'                            => '*',
