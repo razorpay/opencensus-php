@@ -869,7 +869,6 @@ class Service extends Base\Service
             'non_registered_onboarding',
             'international_currencies',
             'announcements_early_settlements_1',
-            'show_extra_fields_in_pp',
             'checkout_survey',
             'sellerapp_plus',
             'second_factor_auth',
@@ -878,7 +877,8 @@ class Service extends Base\Service
             'paymentpages_mli',
             'show_commission_balance',
             'custom_notes',
-            'sellerapp_PL_batch_upload'
+            'sellerapp_PL_batch_upload',
+            'nps_survey_banner'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
@@ -894,8 +894,8 @@ class Service extends Base\Service
 
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
     {
-        
-        
+
+
             // check business_type
 
             $businessType = $data['pre_signup']['business_type'] ?? null;
@@ -904,7 +904,7 @@ class Service extends Base\Service
             {
                 return true;
             }
-            
+
         return false;
     }
 

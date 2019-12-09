@@ -45,6 +45,12 @@ export function createPaymentLink(payload) {
 
   delete reqPayload.email;
 
+  if (reqPayload.customer_name) {
+    customer.name = reqPayload.customer_name;
+  }
+
+  delete reqPayload.customer_name;
+
   if (Object.keys(customer).length) {
     reqPayload.customer = customer;
   }

@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import User from 'merchant/models/User';
-import { updateSession } from 'merchant/reducers/session';
-import { merchantFetch } from 'merchant/utils/ajax';
 import ModalHeader from 'common/ui/ModalHeader';
-
 import EditWebsite, {
   SuccessModalContent,
 } from 'merchant/components/EditWebsiteDetails/EditWebsite';
 
+import User from 'merchant/models/User';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { merchantFetch } from 'merchant/utils/ajax';
+
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateSession } from 'merchant/reducers/session';
 @connect(
   state => ({
     user: state.session.user,
@@ -17,17 +19,18 @@ import EditWebsite, {
   }),
   {
     updateSession,
+    showNotification,
   }
 )
 class EditWebsiteDetails extends Component {
   onSubmit = form => {
-    const { user } = this.props;
+    const { user, showNotification } = this.props;
 
     return merchantFetch({
       url: 'merchant/activation/update_website_details',
       mode: this.props.mode,
       method: 'put',
-      data: { business_website: form.business_website },
+      data: { business_website: autoPrefixUrls(form.business_website) },
     }).then(response => {
       if (response.success) {
         //update user session details
@@ -42,6 +45,11 @@ class EditWebsiteDetails extends Component {
           mode: this.props.mode,
         });
 
+        this.props.onWebsiteAdd && this.props.onWebsiteAdd();
+        showNotification({
+          type: 'success',
+          message: 'Thank you for providing website.',
+        });
         this.props.onClose();
       }
     });
