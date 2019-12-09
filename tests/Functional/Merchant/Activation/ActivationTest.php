@@ -97,6 +97,7 @@ class ActivationTest extends TestCase
         $this->assertFalse($merchant->merchantDetail->isSubmitted());
 
         $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+        $this->assertEquals($merchant->getBillingLabel(), 'tsest123');
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 

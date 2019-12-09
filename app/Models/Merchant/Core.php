@@ -2211,6 +2211,11 @@ class Core extends Base\Core
             $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
         }
 
+        if (isset($input[Detail\Entity::BUSINESS_DBA]) === true)
+        {
+            $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
+        }
+
         if (empty($merchantInput) === true)
         {
             return $merchant;
