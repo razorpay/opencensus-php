@@ -93,6 +93,15 @@ class Gateway
     ];
 
     /**
+     * Columns of CPS authorization table.
+     * To be used while force authorizing failed payment
+     */
+    const RRN           = 'rrn';
+    const AUTH_CODE     = 'auth_code';
+    const RECON_ID      = 'recon_id';
+    const PAYMENT_ID    = 'payment_id';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
