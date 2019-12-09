@@ -29,7 +29,7 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
-    public function generateCustomerOtp($payoutLinkId, $input)
+    public function generateAndSendCustomerOtp($payoutLinkId, $input)
     {
         $validator = (new Entity())->getValidator();
 
@@ -42,6 +42,6 @@ class Service extends Base\Service
                            $input
         );
 
-        return $this->core->generateCustomerOtp($payoutLinkId);
+        return $this->core->generateAndSendCustomerOtp($payoutLinkId);
     }
 }

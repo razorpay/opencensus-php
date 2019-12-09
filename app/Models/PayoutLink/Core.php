@@ -4,19 +4,33 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class Core extends Base\Core
 {
-    const LONG_URL_FORMAT = '%s/payout-links/%s/view';
+    const CONTEXT                 = 'context';
+    const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
+    const OTP                     = 'otp';
+    const PARAMS                  = 'params';
+    const CUSTOMER_NAME           = 'customer_name';
+    const TEMPLATE                = 'template';
+    const SOURCE                  = 'source';
+    const RECEIVER                = 'receiver';
+    const SMS_TEMPLATE            = 'sms.payout_link.otp';
+    const API_PAYOUT_LINK_SRC_STR = 'api.payout-link';
 
     protected $elfin;
+
+    protected $raven;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->elfin = $this->app['elfin'];
+
+        $this->raven = $this->app['raven'];
     }
 
     public function create(array $input): Entity
@@ -56,7 +70,7 @@ class Core extends Base\Core
         return $payoutLink;
     }
 
-    public function generateCustomerOtp($payoutLinkId)
+    public function generateAndSendCustomerOtp(string $payoutLinkId)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
@@ -70,13 +84,52 @@ class Core extends Base\Core
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         $contact = $payoutLink->contact;
-        return $contact;
 
-        # todo: pl request for otp
-        # todo: pl send otp to mobile
-            # todo: pl make changes in the raven thingy to add the new template ....
-        # todo: pl   # ask design for the new email template for OTP
+        $otp = $this->generateOtp($contact->getContact(), $payoutLinkId);
 
+        $this->sendCustomerOtpSms($contact, $otp);
+
+        $this->sendCustomerOtpEmail($contact, $otp);
+
+    }
+
+    protected function sendCustomerOtpEmail(ContactEntity $contactEntity, string $otp)
+    {
+        #todo, pl, the email template is not yet decided on.
+        # Also this will be a silent fail, with a log ?
+    }
+
+    protected function sendCustomerOtpSms(ContactEntity $contactEntity, string $otp)
+    {
+        $payload = [
+            self::PARAMS   => [
+                self::CUSTOMER_NAME => $contactEntity->getName(),
+                self::OTP           => $otp
+            ],
+            self::TEMPLATE => self::SMS_TEMPLATE,
+            self::SOURCE   => self::API_PAYOUT_LINK_SRC_STR,
+            self::RECEIVER => $contactEntity->getContact()
+        ];
+
+        $this->raven->sendSms($payload);
+    }
+
+    protected function generateOtp(string $phoneNumber, string $payoutLinkId)
+    {
+        $payload = [
+            self::RECEIVER => $phoneNumber,
+            self::CONTEXT  => $payoutLinkId,
+            self::SOURCE   => "api.{$this->mode}.payment_link"
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_REQUEST,
+            $payload
+        );
+
+        $response = $this->raven->generateOtp($payload);
+
+        return $response[self::OTP];
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)

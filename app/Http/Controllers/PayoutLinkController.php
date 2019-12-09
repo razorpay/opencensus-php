@@ -18,9 +18,9 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
-    public function generateCustomerOtp(string $payoutLinkId)
+    public function generateAndSendCustomerOtp(string $payoutLinkId)
     {
-        $response = $this->service()->generateCustomerOtp($payoutLinkId, $this->input);
+        $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);
 
         return ApiResponse::json($response);
 

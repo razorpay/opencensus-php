@@ -837,7 +837,7 @@ final class Route
         'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
         'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
-        'payout_links_generate_end_user_otp'       => ['get',       'payout-links/{x_entity_id}/generate-customer-otp','PayoutLinkController@generateCustomerOtp'                           ],
+        'payout_links_generate_end_user_otp'       => ['get',       'payout-links/{x_entity_id}/get-customer-otp',   'PayoutLinkController@generateAndSendCustomerOtp'                    ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
