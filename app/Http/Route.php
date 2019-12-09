@@ -363,6 +363,7 @@ final class Route
         'merchant_activation_reviewers'            => ['get',      'merchant/activation/reviewers',                  'MerchantController@getMerchantActivationReviewers'                 ],
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
+        'merchant_activation_update_website_status'=> ['get',      'merchant/activation/websites/status',            'MerchantController@getWebsiteStatus'                               ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
@@ -402,6 +403,7 @@ final class Route
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
+        'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
         'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
         'setl_fixer'                               => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
@@ -1127,8 +1129,8 @@ final class Route
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
-        'partner_referral_fetch'                   => ['get',      'merchant/{id}/referral',                         'MerchantController@fetchReferral'                                  ],
-        'partner_referral_create'                  => ['post',     'merchant/{id}/referral',                         'MerchantController@createReferral'                                 ],
+        'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
+        'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
 
 
 
@@ -1366,7 +1368,10 @@ final class Route
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                    ],
+
+        //route to add additional website through admin dashboard
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
     ];
 
     public static $public = [
@@ -1676,6 +1681,7 @@ final class Route
         'merchant_activation_status_partner',
         'merchant_fetch_schedule_tasks',
         'setl_holidays',
+        'fb_setl_fetch_transactions',
     ];
 
     // Only routes defined in internalApps go here
@@ -1900,10 +1906,12 @@ final class Route
         // submerchants to use only one set of credentials everywhere
         'mpans_issue',
         'mpans_fetch',
-        'payment_fetch_by_id'
+        'payment_fetch_by_id',
+        'fb_setl_fetch_transactions',
     ];
 
     public static $proxy = [
+        'merchant_activation_update_website_status',
         'reminder_next_run',
         'reminder_service',
         'fetch_partner_intent',
@@ -2144,6 +2152,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'add_additional_website',
         'reminder_admin',
         'merchant_document_admin_fetch',
         'org_get',
@@ -2626,6 +2635,9 @@ final class Route
     ];
 
     public static $routePermission = [
+        'merchant_activation_update_website_status'=> '*',
+        'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        'add_additional_website'                   => '*',
         'pricing_add_plan_rule_bulk'               => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',

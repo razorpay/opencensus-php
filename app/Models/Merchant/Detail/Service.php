@@ -937,4 +937,24 @@ class Service extends Base\Service
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
     }
+
+    /**
+     * @param $merchantId
+     * @param $input
+     *
+     * @return mixed
+     * @throws \Throwable
+     */
+    Public function putAdditionalWebsite($merchantId, $input)
+    {
+        $core = new Core();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $core->getMerchantDetails($merchant);
+
+        $response = $core->addAdditionalWebsiteDetails($merchantDetails, $input);
+
+        return $response;
+    }
 }

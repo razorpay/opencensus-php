@@ -227,8 +227,6 @@ trait Authorize
             return $request;
         }
 
-        $this->runShieldCheck($payment);
-
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -279,7 +277,6 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
-
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
@@ -498,8 +495,6 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
-
-        $this->runShieldCheck($this->payment);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -2129,7 +2124,14 @@ trait Authorize
             // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
 
-            $shouldRunFraudDetectionV2 = (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+            $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'shield_risk_evaluation', $this->mode);
+
+            $this->trace->info(TraceCode::RAZORX_VARIANT_SHIELD, [
+                'payment_id'     => $payment->getId(),
+                'razorx_variant' => $razorxResult,
+            ]);
+
+            $shouldRunFraudDetectionV2 = (($razorxResult === 'shield_on') and
                                           ($payment->shouldRunShieldChecks() === true));
 
             if ($shouldRunFraudDetectionV2 === true)
@@ -2147,6 +2149,10 @@ trait Authorize
                 catch (\Requests_Exception $exception)
                 {
                     $fallbacktoV1Flow = true;
+                }
+                finally
+                {
+                    $payment->setMetadataKey('shield_risk_execution', $razorxResult);
                 }
             }
 
@@ -2192,6 +2198,8 @@ trait Authorize
     }
 
     /**
+     * @deprecated
+     *
      * This is called in 2 places, both after creation for payment/payment analytics
      * as both entity should have persisted at this time
      *
@@ -2207,7 +2215,7 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        if ($payment->getMetadata('shield_risk_execution') === 'on')
         {
             return;
         }

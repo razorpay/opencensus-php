@@ -105,9 +105,15 @@ class Core extends Base\Core
         {
             if (Files::exists($key) === true)
             {
-                $diff[$key] = (function($value) use ($fileStoreCore, $merchantId)
-                {
-                    return $fileStoreCore->getSignedUrl($value, $merchantId);
+                $diff[$key] = (function($value) use ($fileStoreCore, $merchantId) {
+
+                    if (empty($value) === false)
+                    {
+                        return $fileStoreCore->getSignedUrl($value, $merchantId);
+                    }
+
+                    return "";
+
                 })($value);
             }
         }

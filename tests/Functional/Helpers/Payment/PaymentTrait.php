@@ -1331,6 +1331,18 @@ trait PaymentTrait
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function fetchRefundsForPayment($paymentId)
     {
         $request['url'] = '/payments/'.$paymentId.'/refunds';
@@ -2138,19 +2150,19 @@ trait PaymentTrait
         });
     }
 
-    protected function mockExpressSendRequest($closure, $times = 1)
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
     {
-        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
 
-        $express->shouldAllowMockingProtectedMethods();
+        $mozart->shouldAllowMockingProtectedMethods();
 
-        $express->shouldReceive('sendRequest')
+        $mozart->shouldReceive('translateWebhook')
                 ->times($times)
                 ->andReturnUsing($closure);
 
-        $this->app->instance('express', $express);
+        $this->app->instance('mozart', $mozart);
 
-        return $express;
+        return $mozart;
     }
 
     protected function mockShield()

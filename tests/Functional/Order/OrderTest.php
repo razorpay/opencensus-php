@@ -781,8 +781,7 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithOffer()
     {
-        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"],
-            'error_message' => 'Offer Payment Method is not same as Selected Payment Method']);
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -1130,7 +1129,7 @@ class OrderTest extends TestCase
         $offer = $this->fixtures->create('offer', [
             'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'international' => true,
-            'error_message' => 'Selected Card is not international but offer applied requires international card'
+            'error_message' => 'Offer applicable only on international cards.'
         ]);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
@@ -1159,7 +1158,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->merchant->enableMobikwik();
 
-        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Offer Payment Method is not same as Selected Payment Method']);
+        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
             'force_offer' => true,
@@ -1219,8 +1218,7 @@ class OrderTest extends TestCase
             'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'iins'          => ['411111'],
             'issuer'        => 'HDFC',
-            'error_message' => 'Selected card does not belong to offer iins',
-            'type'          => 'already_discounted'
+            'error_message' => 'Custom error message'
         ]);
 
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
@@ -1454,7 +1452,6 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
-            'type'   => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer);
@@ -1480,7 +1477,6 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
-            'type' => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
@@ -1514,7 +1510,6 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
-            'type'      => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
@@ -1549,7 +1544,6 @@ class OrderTest extends TestCase
             'max_payment_count' => 1,
             'iins' => ['401200'],
             'starts_at' => time(),
-            'type'      => 'already_discounted'
         ]);
 
         $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer1);
@@ -1712,7 +1706,7 @@ class OrderTest extends TestCase
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])
     {
         $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
-            'force_offer' => true
+            'force_offer' => true,
         ]);
 
         $payment = $this->getDefaultPaymentArray();

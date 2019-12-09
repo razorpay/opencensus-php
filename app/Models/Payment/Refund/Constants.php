@@ -53,6 +53,7 @@ class Constants
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
+    const RESPONSE_DATA          = 'data';
 
     const ISSUER        = 'issuer';
     const METHOD        = 'method';
@@ -61,10 +62,25 @@ class Constants
     const AMOUNT        = 'amount';
 
     /**
-     * Instant Refunds mode level pricing/decisioning razorx experiments related constants
+     * razorx experiments related constants
      */
     const RAZORX_VARIANT_ON = 'on';
 
     // Used to ack scrooge that update status request came from fta status update
     const FTA_UPDATE = 'fta_update';
+
+    /**
+     * Scrooge File Based Refunds request related constants
+     */
+    const SCROOGE_GT          = 'gt';
+    const SCROOGE_GTE         = 'gte';
+    const SCROOGE_LTE         = 'lte';
+    const SCROOGE_BANK        = 'bank';
+    const SCROOGE_SKIP        = 'skip';
+    const SCROOGE_COUNT       = 'count';
+    const SCROOGE_QUERY       = 'query';
+    const SCROOGE_REFUNDS     = 'refunds';
+    const SCROOGE_GATEWAY     = 'gateway';
+    const SCROOGE_CREATED_AT  = 'created_at';
+    const SCROOGE_BASE_AMOUNT = 'base_amount';
 }

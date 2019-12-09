@@ -7,7 +7,6 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Payment\Entity;
 
 class Service extends Base\Service
 {

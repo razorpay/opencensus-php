@@ -427,8 +427,6 @@ class Core extends Base\Core
 
             $fta = $this->updateFtaWithInput($input, $fta);
 
-            $fta->fill($input);
-
             if (method_exists($fta->source, 'setFTSTransferId') === true)
             {
                 $fta->source->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
@@ -598,7 +596,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateSourceEntityByFta(Entity $fta, array $input)
+    public function updateSourceEntityByFta(Entity $fta, array $input = [])
     {
         $extraInfo = $input['extra_info'] ?? [];
 
@@ -753,6 +751,22 @@ class Core extends Base\Core
             $this->updateExtraInfo($input['extra_info'], $fta);
         }
 
+        if (empty($input[Entity::STATUS]) === false) {
+            $fta->setStatus($input[Entity::STATUS]);
+        }
+
+        if (empty($input[Entity::FAILURE_REASON]) === false) {
+            $fta->setFailureReason($input[Entity::FAILURE_REASON]);
+        }
+
+        if (empty($input[Entity::BANK_STATUS_CODE]) === false) {
+            $fta->setBankStatusCode($input[Entity::BANK_STATUS_CODE]);
+        }
+
+        if (empty($input[Entity::REMARKS]) === false) {
+            $fta->setRemarks($input[Entity::REMARKS]);
+        }
+
         return $fta;
     }
 
@@ -861,22 +875,33 @@ class Core extends Base\Core
         return [false, Settlement\Channel::YESBANK];
     }
 
-    protected function getChannelForFundAccountValidation(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    protected function getChannelForFundAccountValidation(Base\PublicEntity $source,
+                                                          string $accountType,
+                                                          CardEntity $card = null): array
     {
-        if ($accountType === E::CARD)
+        $key = 'fts_penny_testing_' . strtolower($accountType);
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_INIT, ['key' => $key]);
+
+        $rampingOnPennyTesting = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_COMPLETE,
+            [
+                'key'           => $key,
+                'mode'          => $this->mode,
+                'ramp_status'   => $rampingOnPennyTesting,
+            ]);
+
+        if(strtolower($rampingOnPennyTesting) === 'on')
         {
-            throw new LogicException('Penny testing on card not supported via FTA flow');
+            return [false, Settlement\Channel::YESBANK];
         }
 
-        // TODO: Need to refactor this and use razorx for ramping
-        $rampingEnabled = $this->getRampingStatus($source);
-
-        if ($rampingEnabled === true)
-        {
-            return [true, Settlement\Channel::ICICI];
-        }
-
-        return [false, Settlement\Channel::YESBANK];
+        return [true, Settlement\Channel::ICICI];
     }
 
     protected function getRampingStatus(Base\PublicEntity $source, string $key = ConfigKey::FTS_TEST_MERCHANT)

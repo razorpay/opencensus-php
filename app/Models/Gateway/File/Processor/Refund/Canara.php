@@ -36,7 +36,6 @@ class Canara extends Base
 
     protected function formatDataForFile(array $data)
     {
-
         $content = [];
 
         foreach ($data as $row)

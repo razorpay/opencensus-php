@@ -151,6 +151,9 @@ return [
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',

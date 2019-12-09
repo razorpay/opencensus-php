@@ -5546,3 +5546,6 @@ ALTER TABLE external
 
 ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
+
+ALTER TABLE merchant_details
+	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
