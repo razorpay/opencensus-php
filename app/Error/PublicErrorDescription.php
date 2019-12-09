@@ -415,6 +415,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                             = 'Payment cancelled by customer';
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
+    const BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED                            = 'User is not registered for NetBanking payments.';
 
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
