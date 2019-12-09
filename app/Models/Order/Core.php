@@ -106,7 +106,11 @@ class Core extends Base\Core
 
     protected function associateOffers(Entity $order, array $input)
     {
-        $this->associateDefaultOffers( $order);
+        if(isset($input[Entity::FORCE_OFFER]) === false ||
+            (isset($input[Entity::FORCE_OFFER]) === true && !$input[Entity::FORCE_OFFER]))
+        {
+            $this->associateDefaultOffers( $order);
+        }
 
         if (isset($input[Entity::OFFERS]) === false)
         {
@@ -134,17 +138,12 @@ class Core extends Base\Core
 
         foreach($defaultOffers as $offer)
         {
-            $this->validateAndAssociateDefaultOffer($order, $offer);
-        }
-    }
+            $offer = (new Offer\Core)->validateDefaultOfferForOrder($order, $offer);
 
-    protected function validateAndAssociateDefaultOffer(Entity $order,  offer\Entity $offer)
-    {
-        $offer = (new Offer\Core)->validateDefaultOfferForOrder($order, $offer);
-
-        if($offer !== null)
-        {
-            $this->associateOffer($order, $offer);
+            if($offer !== null)
+            {
+                $this->associateOffer($order, $offer);
+            }
         }
     }
 

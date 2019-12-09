@@ -121,16 +121,17 @@ class Checker extends Base\Core
 
     protected function checkPaymentMethod(): bool
     {
-        $result = true;
 
         $paymentMethod = $this->payment->getMethod();
 
         $offerPaymentMethod = $this->offer->getPaymentMethod();
 
-        if ($offerPaymentMethod !== null)
+        if($offerPaymentMethod === null)
         {
-            $result = ($offerPaymentMethod === $paymentMethod);
+            return true;
         }
+
+        $result = ($offerPaymentMethod === $paymentMethod);
 
         if(!$result)
         {
@@ -235,8 +236,6 @@ class Checker extends Base\Core
 
     protected function checkEmiDurations()
     {
-        $result = true;
-
         $emiDurations = $this->offer->getEmiDurations();
 
         if (empty($emiDurations) === true)
@@ -450,17 +449,18 @@ class Checker extends Base\Core
     //not exceed the max offer usage count
     protected function checkMaxOfferUsage(): bool
     {
-        $result = true;
-
-        if($this->offer->getMaxOfferUsage() !== NULL)
+        if($this->offer->getMaxOfferUsage() === NULL)
         {
-            $core = new \RZP\Models\Offer\Core();
+            return true;
+        }
 
-            $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
+        $core = new \RZP\Models\Offer\Core();
 
-            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+        $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
-            $this->traceCheckResult(
+        $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+
+        $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,
                 [
                     'result' => $result,
@@ -468,10 +468,9 @@ class Checker extends Base\Core
                     'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                 ]);
 
-            if(!$result)
-            {
-                $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
-            }
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
         }
 
         return $result;
@@ -498,18 +497,18 @@ class Checker extends Base\Core
 
     protected function checkMinAmount(): bool
     {
-        $result = true;
-
-        if($this->offer->getMinAmount() !== null)
+        if($this->offer->getMinAmount() === null)
         {
-            $result = $this->order->getAmount() >= $this->offer->getMinAmount();
-
-            $this->traceCheckResult(
-                TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
-                [
-                    'result' => $result,
-                ]);
+            return true;
         }
+
+        $result = $this->order->getAmount() >= $this->offer->getMinAmount();
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
+            [
+                    'result' => $result,
+            ]);
 
         if(!$result)
         {
@@ -521,19 +520,18 @@ class Checker extends Base\Core
 
     protected function checkMaxOrderAmount(): bool
     {
-        $result = true;
-
-        if($this->offer->getMaxOrderAmount() !== null)
+        if($this->offer->getMaxOrderAmount()=== null)
         {
-
-            $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
-
-            $this->traceCheckResult(
-                TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
-                [
-                    'result' => $result,
-                ]);
+            return true;
         }
+
+        $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
+            [
+                'result' => $result,
+            ]);
 
         if(!$result)
         {

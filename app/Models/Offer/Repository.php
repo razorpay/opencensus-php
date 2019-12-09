@@ -73,6 +73,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
             ->where(Entity::DEFAULT_OFFER, '=', true)
+            ->where(Entity::ACTIVE, '=', true)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->get();
     }
