@@ -44,4 +44,10 @@ class Action
         self::VERIFY,
         self::DEBIT,
     ];
+
+    public static $netbankingPaymentsSupportedActions = [
+        self::AUTHORIZE,
+        self::CALLBACK,
+        self::VERIFY,
+    ];
 }
