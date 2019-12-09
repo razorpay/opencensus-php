@@ -643,6 +643,7 @@ class Gateway
         Payment\Gateway::NETBANKING_CORPORATION,
         Payment\Gateway::NETBANKING_RBL,
         Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SIB,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -652,6 +653,7 @@ class Gateway
         Payment\Gateway::NETBANKING_CORPORATION => 1575484200,
         Payment\Gateway::NETBANKING_RBL         => 1575916200,
         Payment\Gateway::NETBANKING_CUB         => 1575916200,
+        Payment\Gateway::NETBANKING_SIB         => 1575916200,
     ];
 
     public static $channels = [
