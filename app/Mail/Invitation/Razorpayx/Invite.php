@@ -22,7 +22,7 @@ class Invite extends Mailable
 
     protected $senderName;
 
-    public function __construct($invitationId, $senderName = null)
+    public function __construct($invitationId, $senderName)
     {
         parent::__construct();
 
@@ -75,12 +75,10 @@ class Invite extends Mailable
 
         $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
 
-        $senderName = ($this->senderName === null) ? $invitation->merchant->getName() : $this->senderName;
-
         $this->with(
             [
                 'business_name' => $this->getBusinessName(),
-                'sender_name'   => $senderName,
+                'sender_name'   => $this->senderName,
                 'role'          => $invitation->getRole(),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,

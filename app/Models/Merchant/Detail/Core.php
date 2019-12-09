@@ -497,16 +497,21 @@ class Core extends Base\Core
 
     protected function sendL2FormSubmissionEmail(Merchant\Entity $merchant)
     {
-        $activationFlow = $merchant->merchantDetail->getActivationFlow();
+        $product = $this->auth->getRequestOriginProduct();
 
-        if (($activationFlow === ActivationFlow::WHITELIST) and
-            ($merchant->hasBankingAccounts() === true) )
+        if($product === Product::BANKING)
         {
-            Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
-        }
-        else if ($activationFlow === ActivationFlow::GREYLIST)
-        {
-            Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+            $activationFlow = $merchant->merchantDetail->getActivationFlow();
+
+            if (($activationFlow === ActivationFlow::WHITELIST) and
+                ($merchant->hasBankingAccounts() === true))
+            {
+                Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
+            }
+            else if ($activationFlow === ActivationFlow::GREYLIST)
+            {
+                Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+            }
         }
     }
 

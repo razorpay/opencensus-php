@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use Mail;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\Entity;
 use RZP\Mail\Merchant\RazorpayX\RequestKyc;
 
@@ -36,10 +37,12 @@ class Greylist extends Base implements ActivationFlowInterface
 
     public function sendKycRequestEmail(Entity $merchant)
     {
-        Mail::queue(
-            new RequestKyc($merchant->getEntityName(),
-                           $merchant->getEmail())
-        );
+        $product = $this->auth->getRequestOriginProduct();
+
+        if($product === Product::BANKING)
+        {
+            Mail::queue(new RequestKyc($merchant->getEntityName(), $merchant->getEmail()));
+        }
     }
 
     /**

@@ -10,15 +10,29 @@ use RZP\Exception\BadRequestException;
 
 class AccountActivationConfirmation extends Mailable
 {
-    const GUIDE_TO_GO_LIVE_URL = 'https://razorpay.com/docs/razorpayx/api/';
+    const GUIDE_TO_GO_LIVE_URL  = 'https://razorpay.com/docs/razorpayx/api/';
 
-    const SUPPORT_URL          = 'https://x.razorpay.com/?support=ticket';
+    const SUPPORT_URL_VALUE     = 'https://x.razorpay.com/?support=ticket';
 
-    const LEARN_MORE_URL       = 'https://razorpay.com/docs/razorpayx/';
+    const LEARN_MORE_URL        = 'https://razorpay.com/docs/razorpayx/';
 
-    const SUBJECT              = 'Your RazorpayX account is now live';
+    const SUBJECT               = 'Your RazorpayX account is now live';
 
-    const TEMPLATE_PATH        = 'emails.merchant.razorpayx.account_activation_confirmation';
+    const TEMPLATE_PATH         = 'emails.merchant.razorpayx.account_activation_confirmation';
+
+    const BENEFICIARY_NAME      = 'beneficiary_name';
+
+    const ACCOUNT_NUMBER        = 'account_number';
+
+    const ACCOUNT_IFSC          = 'account_ifsc';
+
+    const DASHBOARD_URL         = 'dashboard_url';
+
+    const LEARN_MORE            = 'learn_more_url';
+
+    const GUIDE_TO_GO_LIVE      = 'guide_to_go_live_url';
+
+    const SUPPORT_URL           = 'support_url';
 
     protected $bankingAccount;
 
@@ -74,13 +88,13 @@ class AccountActivationConfirmation extends Mailable
         $bankingAccount = $this->getBankingAccount();
 
         $data = [
-            'beneficiary_name'     => $bankingAccount->getBeneficiaryName(),
-            'account_number'       => $bankingAccount->getAccountNumber(),
-            'account_ifsc'         => $bankingAccount->getAccountIfsc(),
-            'dashboard_url'        => $config['applications.banking_service_url'],
-            'learn_more_url'       => self::LEARN_MORE_URL,
-            'guide_to_go_live_url' => self::GUIDE_TO_GO_LIVE_URL,
-            'support_url'          => self::SUPPORT_URL
+            self::BENEFICIARY_NAME => $bankingAccount->getBeneficiaryName(),
+            self::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+            self::ACCOUNT_IFSC     => $bankingAccount->getAccountIfsc(),
+            self::DASHBOARD_URL    => $config['applications.banking_service_url'],
+            self::LEARN_MORE       => self::LEARN_MORE_URL,
+            self::GUIDE_TO_GO_LIVE => self::GUIDE_TO_GO_LIVE_URL,
+            self::SUPPORT_URL      => self::SUPPORT_URL_VALUE
         ];
 
         $this->with($data);

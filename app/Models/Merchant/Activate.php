@@ -126,8 +126,6 @@ class Activate extends Base\Core
 
         $this->sendMerchantActivatedEvents($merchant);
 
-        $this->sendMerchantActivationNotification($merchant);
-
         return $merchantDetail;
     }
 
@@ -253,8 +251,6 @@ class Activate extends Base\Core
 
         $this->sendMerchantActivatedEvents($merchant);
 
-        $this->sendMerchantActivationNotification($merchant);
-
         return $merchantDetail;
     }
 
@@ -356,36 +352,45 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        $product = $this->auth->getRequestOriginProduct();
 
-        $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
-
-        $data = [
-            'merchant' => [
-                'name'                               => $merchant->getName(),
-                'website'                            => $merchant->getWebsite(),
-                'billing_label'                      => $merchant->getBillingLabel(),
-                'email'                              => $merchant->getEmail(),
-                'activation_source'                  => $merchant->getActivationSource(),
-                Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
-                'org'                                => [
-                    'business_name' => $org->getBusinessName(),
-                    'custom_code'   => $org->getCustomCode(),
-                ],
-            ],
-        ];
-
-        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-        // For marketplace accounts, send this email to the parent merchant
-        if ($merchant->isLinkedAccount() === true)
+        if($product === Product::PRIMARY)
         {
-            $data['merchant']['email'] = $merchant->parent->getEmail();
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+            $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
+
+            $data = [
+                'merchant' => [
+                    'name'                               => $merchant->getName(),
+                    'website'                            => $merchant->getWebsite(),
+                    'billing_label'                      => $merchant->getBillingLabel(),
+                    'email'                              => $merchant->getEmail(),
+                    'activation_source'                  => $merchant->getActivationSource(),
+                    Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
+                    'org'                                => [
+                        'business_name' => $org->getBusinessName(),
+                        'custom_code'   => $org->getCustomCode(),
+                    ],
+                ],
+            ];
+
+            $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
+
+            // For marketplace accounts, send this email to the parent merchant
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $data['merchant']['email'] = $merchant->parent->getEmail();
+            }
+
+            $activationMail = new ActivationMail($data, $org->toArray());
+
+            Mail::queue($activationMail);
         }
-
-        $activationMail = new ActivationMail($data, $org->toArray());
-
-        Mail::queue($activationMail);
+        else if ($product === Product::BANKING)
+        {
+            $this->sendRazorPayXMerchantActivationNotification($merchant);
+        }
     }
 
     public function notifyMerchantForInstantActivation(Entity $merchant)
@@ -494,7 +499,7 @@ class Activate extends Base\Core
         return $merchant;
     }
 
-    protected function sendMerchantActivationNotification(Entity $merchant)
+    protected function sendRazorPayXMerchantActivationNotification(Entity $merchant)
     {
         if ($merchant->hasBankingAccounts() === false)
         {
@@ -505,9 +510,7 @@ class Activate extends Base\Core
         }
         else
         {
-            Mail::queue(
-                new AccountActivationConfirmation($merchant->getId())
-            );
+            Mail::queue(new AccountActivationConfirmation($merchant->getId()));
         }
     }
 
