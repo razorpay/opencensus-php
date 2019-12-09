@@ -25,6 +25,8 @@ export default props => {
     trackClickPaymentMethod,
     trackReceivedNACHForm,
     trackNACHToolTipHover,
+    formReference1,
+    formReference2,
   } = props;
 
   return (
@@ -58,6 +60,8 @@ export default props => {
           bankAccountNumber={bankAccountNumber}
           trackReceivedNACHForm={trackReceivedNACHForm}
           trackNACHToolTipHover={trackNACHToolTipHover}
+          formReference1={formReference1}
+          formReference2={formReference2}
         />
       )}
 

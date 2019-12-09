@@ -1,14 +1,15 @@
+import { set, merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
-import { makeEntityReducer } from 'merchant_common/reducers/entity';
 
 const REGISTRATION_LINK_FETCH = 'REGISTRATION_LINK_FETCH';
 const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
+const REGISTRATION_LINK_CANCEL = 'REGISTRATION_LINK_CANCEL';
 
 export const notifyCustomer = (id, type) => {
   return merchantFetch({
-    url: `subscription_registration/auth_links/${id}/notify/${type}`,
+    url: `subscription_registration/auth_links/${id}/notify_by/${type}`,
     method: 'post',
   });
 };
@@ -24,6 +25,15 @@ export const createRegistrationLink = params => ({
   type: REGISTRATION_LINK_CREATE,
   payload: new RegistrationLink().save(params),
 });
+
+export const cancelRegistrationLink = params => {
+  let registrationLink = new RegistrationLink(params);
+
+  return {
+    type: REGISTRATION_LINK_CANCEL,
+    payload: registrationLink.cancel(),
+  };
+};
 
 export const validateNachFile = (file, id) => {
   let formData = new FormData();
@@ -66,4 +76,33 @@ export const downloadSignedNACHFile = data => {
   });
 };
 
-export default makeEntityReducer(REGISTRATION_LINK_FETCH);
+let initialState = {
+  loading: true,
+  entity: {},
+  error: null,
+};
+
+export default function(state = initialState, action) {
+  switch (action.type) {
+    case `${REGISTRATION_LINK_FETCH}::PENDING`:
+      return set(state, 'loading', true);
+
+    case `${REGISTRATION_LINK_CANCEL}::SUCCESS`:
+    case `${REGISTRATION_LINK_FETCH}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        entity: action.payload,
+        error: null,
+      });
+
+    case `${REGISTRATION_LINK_FETCH}::ERROR`:
+      return merge(state, {
+        loading: false,
+        error: action.payload.errors,
+        entity: initialState.entity,
+      });
+
+    default:
+      return state;
+  }
+}

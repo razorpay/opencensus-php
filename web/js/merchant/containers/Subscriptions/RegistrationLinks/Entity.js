@@ -6,6 +6,7 @@ import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Tooltip from 'common/ui/Tooltip';
+import Button from 'common/new-ui/Button';
 
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
@@ -19,6 +20,7 @@ import {
   notifyCustomer,
   fetchRegistrationLink,
   downloadSignedNACHFile,
+  cancelRegistrationLink,
 } from 'merchant/reducers/registration_link';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -39,12 +41,17 @@ import {
   }),
   {
     fetchRegistrationLink,
+    cancelRegistrationLink,
     showNotification,
     openModal,
     closeModal,
   }
 )
 export default class RegistrationLinkEntityContainer extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   get paymentMethod() {
     return (
       this.props.entity.subscription_registration &&
@@ -136,6 +143,39 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     });
   };
 
+  cancelRegistrationLink = () => {
+    this.context.confirm({
+      header: 'Cancel Link?',
+      message: () => (
+        <div class="text-semi-muted">
+          <p>
+            The Link will be cancelled and the customer will not be able to pay
+            for it.
+          </p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Cancel',
+      affirmativePendingLabel: 'Cancelling...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return this.props
+          .cancelRegistrationLink(this.props.entity)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Link cancelled!',
+            });
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      },
+    });
+  };
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
 
@@ -143,7 +183,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
         entity.sms_status === 'sent' || entity.email_status === 'sent',
       isIssued = entity.status === 'issued',
       isTotalAmountPaid = entity.amount === entity.amount_paid,
-      showReResendLink = isIssued && !isTotalAmountPaid;
+      isIssuedAndTotalAmountNotPaid = isIssued && !isTotalAmountPaid;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -155,8 +195,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           <div class="panel panel-default SliderPanel RegistrationLinks--Details">
             <div class="panel-heading">
               {entity.id}
-
-              {showReResendLink && (
+              {isIssuedAndTotalAmountNotPaid && (
                 <div class="btn-toolbar pull-right">
                   <button
                     onClick={this.openResendLinkModal}
@@ -179,6 +218,15 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                     {/* status of Registration Link */}
                     <EntityDetailRow label="Status">
                       <InvoiceStatusLabel status={entity.status} />
+
+                      {isIssuedAndTotalAmountNotPaid && (
+                        <Button.Transparent
+                          class="Button--Link cancel-link"
+                          onClick={this.cancelRegistrationLink}
+                        >
+                          Cancel Link
+                        </Button.Transparent>
+                      )}
                     </EntityDetailRow>
 
                     {/* amount of entity */}
