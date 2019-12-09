@@ -390,11 +390,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getPincode()
-    {
-        return $this->getAttribute(self::PINCODE);
-    }
-
     public function isAlreadyActivated()
     {
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));

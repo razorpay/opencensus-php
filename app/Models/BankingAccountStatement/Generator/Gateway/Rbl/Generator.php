@@ -7,9 +7,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankInfo;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
+use RZP\Models\Transaction\Statement\Entity as StatementEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl\Constants\{Statement,
                                                                         AccountOwnerInfo,
                                                                         StatementSummary,
@@ -101,17 +101,17 @@ abstract class Generator extends Base
 
             $creditCount = 0;
 
-            foreach ($bankAccountStatements as $transaction)
+            foreach ($bankAccountStatements as $statement)
             {
-                $lineItem = $this->convertToLineItem($transaction);
+                $lineItem = $this->convertToLineItem($statement);
 
                 array_push($transactions, $lineItem);
 
-                if ($transaction->isCredit() === true)
+                if ($statement->isCredit() === true)
                 {
                     $creditCount++;
                 }
-                else if ($transaction->isDebit() === true)
+                else if ($statement->isDebit() === true)
                 {
                     $debitCount++;
                 }
@@ -142,12 +142,12 @@ abstract class Generator extends Base
         return $response;
     }
 
-    protected function convertToLineItem(TransactionEntity $transaction)
+    protected function convertToLineItem(StatementEntity $statement)
     {
-        $formattedTransactionDate = Carbon::createFromTimestamp($transaction->getCreatedAt(), Timezone::IST)
+        $formattedTransactionDate = Carbon::createFromTimestamp($statement->getCreatedAt(), Timezone::IST)
                                           ->format(TransactionLineItem::ITEM_DATE_FORMAT);
 
-        $description = $this->extractDescription($transaction);
+        $description = $this->extractDescription($statement);
 
         $lineItem = [
             TransactionLineItem::TRANSACTION_DATE    => $formattedTransactionDate,
@@ -158,18 +158,18 @@ abstract class Generator extends Base
 
             TransactionLineItem::VALUE_DATE          => $formattedTransactionDate,
 
-            TransactionLineItem::BALANCE             => (float) $transaction->getBalance() / 100
+            TransactionLineItem::BALANCE             => (float) $statement->getBalance() / 100
         ];
 
-        $transactionAmount = (float) $transaction->getAmount() / 100;
+        $transactionAmount = (float) $statement->getAmount() / 100;
 
-        if ($transaction->isDebit() === true)
+        if ($statement->isDebit() === true)
         {
             $lineItem[TransactionLineItem::WITHDRAWAL_AMOUNT] = $transactionAmount;
 
             $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = null;
         }
-        else if ($transaction->isCredit() === true)
+        else if ($statement->isCredit() === true)
         {
             $lineItem[TransactionLineItem::DEPOSIT_AMOUNT] = $transactionAmount;
 
@@ -179,17 +179,14 @@ abstract class Generator extends Base
         return $lineItem;
     }
 
-    protected function extractDescription(TransactionEntity $transaction)
+    protected function extractDescription(StatementEntity $statement)
     {
-        $source = $transaction->source;
+        $bas = $statement->bankingAccountStatement;
 
-        if ((empty($source) === false) and
-            (method_exists($source, 'getDescription') === true))
+        if ($bas !== null)
         {
-            return $source->getDescription();
+            return $bas->getDescription();
         }
-
-        return null;
     }
 
     /**
