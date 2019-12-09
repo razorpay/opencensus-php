@@ -811,7 +811,7 @@ app
       $scope.onCreateClick = function() {
         window.rzpQ.push(
           window.rzpQ
-            // .now()
+            .now()
             .onbr()
             .initiated('signup.create_account', { mode: $scope.eventsMode })
         );
@@ -825,7 +825,7 @@ app
         var toRoute = 'access.signin';
         window.rzpQ.push(
           window.rzpQ
-            // .now()
+            .now()
             .onbr()
             .success('signup.click_other_links', {
               source: 'sign_in',
