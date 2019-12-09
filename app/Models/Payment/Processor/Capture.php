@@ -1277,16 +1277,6 @@ trait Capture
 
     public function shouldProcessOrderTransfer(Payment\Entity $payment)
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
-                                                    $this->mode
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            return false;
-        }
-
         if ($payment->isCaptured() !== true or
             $payment->hasOrder() !== true)
         {
