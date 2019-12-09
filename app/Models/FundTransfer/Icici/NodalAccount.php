@@ -16,6 +16,7 @@ use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
@@ -28,6 +29,8 @@ class NodalAccount extends NodalBase\FileProcessor
     const SIGNED_URL_DURATION = '1440';
 
     const DEBIT_ACCOUNT_NO = '000205025290';
+
+    const RZP_FILE_MIME_TYPE  = 'application/octet-stream';
 
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
@@ -220,21 +223,42 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $creator = new FileStore\Creator;
 
-        $file = $creator->extension(FileStore\Format::ENC)
-                        ->content($txt)
-                        ->name($fileName)
-                        ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                        ->id($this->id)
-                        ->headers(false)
-                        ->metadata($metadata)
-                        ->encrypt(
-                            Type::AES_ENCRYPTION,
-                            [
-                                AESEncryption::MODE   => AES::MODE_ECB,
-                                AESEncryption::SECRET => self::ENCRYPTION_KEY
-                            ])
-                        ->save();
+        try
+        {
+            $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_INIT);
+
+            $file = $creator->extension(FileStore\Format::ENC)
+                            ->mime(self::RZP_FILE_MIME_TYPE)
+                            ->content($txt)
+                            ->name($fileName)
+                            ->store(FileStore\Store::S3)
+                            ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                            ->id($this->id)
+                            ->headers(false)
+                            ->metadata($metadata)
+                            ->encrypt(
+                                Type::AES_ENCRYPTION,
+                                [
+                                    AESEncryption::MODE   => AES::MODE_ECB,
+                                    AESEncryption::SECRET => self::ENCRYPTION_KEY
+                                ])
+                            ->save();
+
+            $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_COMPLETE);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FUND_TRANSFER_FILE_UPLOAD_FAILED,
+                [
+                    'file'    => $fileName,
+                    'channel' => $this->channel,
+                ]);
+
+            throw  $exception;
+        }
 
         return $file;
     }

@@ -184,9 +184,11 @@ class Status extends Base
 
         $product = $this->entity->getSourceType();
 
-        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), ValidStatus::FAILED, $subCode);
+        $bankStatusCode = ($subCode === 'ns:E400') ? ValidStatus::PENDING : ValidStatus::FAILED;
 
-        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), ValidStatus::FAILED, $subCode);
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), $bankStatusCode, $subCode);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $bankStatusCode, $subCode);
 
         $mode = $this->entity->getMode();
 
@@ -196,13 +198,13 @@ class Status extends Base
             $isFailure,
             $isSuccess,
             $mode,
-            ValidStatus::FAILED,
+            $bankStatusCode,
             $subCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
             ReconConstants::UTR                  => null,
-            ReconConstants::BANK_STATUS_CODE     => ValidStatus::FAILED,
+            ReconConstants::BANK_STATUS_CODE     => $bankStatusCode,
             ReconConstants::REMARKS              => $remark,
             ReconConstants::BANK_SUB_STATUS_CODE => $subCode,
             ReconConstants::PAYMENT_DATE         => null,

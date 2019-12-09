@@ -41,7 +41,6 @@ class ConfigKey
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
     const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
     const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
-    const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const FTS_PAYOUT_VPA                        = self::PREFIX . 'fts_payout_vpa';
     const FTS_PAYOUT_CARD                       = self::PREFIX . 'fts_payout_card';
     const FTS_TRANSFER_SLA                      = self::PREFIX . 'fts_transfer_sla';

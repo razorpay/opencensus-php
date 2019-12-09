@@ -482,8 +482,6 @@ class RblBankingAccountStatementTest extends TestCase
 
     protected function setupForRblPayout($channel = Channel::RBL)
     {
-        $this->setupRedis($channel);
-
         $this->ba->privateAuth();
 
         $this->createContact();
@@ -514,20 +512,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertPushed(FtsFundTransfer::class, 1);
-    }
-
-    protected function setupRedis($channel)
-    {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-            ->getMock();
-
-        Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-            ->method('hget')
-            ->with('config:fts_channels', $channel)
-            ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
     }
 
     protected function getRblDataResponse()

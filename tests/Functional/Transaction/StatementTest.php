@@ -219,7 +219,6 @@ class StatementTest extends TestCase
         $this->assertEquals("fund_account.validation", $txn['source']['entity']);
         $this->assertEquals("fund_account", $txn['source']['fund_account']['entity']);
         $this->assertEquals("bank_account", $txn['source']['fund_account']['account_type']);
-        $this->assertEquals("111000111", $txn['source']['fund_account']['details']['account_number']);
         $this->assertEquals("111000111", $txn['source']['fund_account']['bank_account']['account_number']);
     }
 

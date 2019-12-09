@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\SubscriptionRegistration;
 
 use Mail;
+use Mockery;
 use Queue;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Services\BatchMicroService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -443,5 +445,117 @@ class SubscriptionRegistrationTest extends TestCase
         ];
 
         return $payment;
+    }
+
+    public function testCancelAuthLinkWithCardMandate()
+    {
+        $subrAttributes = ['method' => 'card', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals($subr['method'], 'card');
+    }
+
+    public function testCancelAuthLinkWithBankMandate()
+    {
+        $subrAttributes = ['method' => 'emandate', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals($subr['method'], 'emandate');
+    }
+
+    public function testCancelAuthLinksViaBatch()
+    {
+        $batchAttributes = [
+            'id' => '100000000batch',
+            'type' => 'auth_link',
+            'status' => 'processed',
+        ];
+
+        $batch = $this->fixtures->create('batch', $batchAttributes);
+
+        $this->ba->adminAuth();
+
+        $this->mockBatchService();
+
+        $this->startTest();
+    }
+
+    protected function mockBatchService()
+    {
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+
+        $this->app->instance('batchService', $mock);
+
+        $mock->shouldAllowMockingMethod('getBatchesFromBatchService')
+             ->shouldReceive('getBatchesFromBatchService')
+             ->andReturnNull();
+    }
+
+    public function testResendAuthLinkViaSms()
+    {
+        $subrAttributes = ['method' => 'card', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
+    }
+
+    public function testResendAuthLinkViaEmail()
+    {
+        $subrAttributes = ['method' => 'emandate', 'notes' => []];
+
+        $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subr->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $this->startTest();
     }
 }

@@ -171,15 +171,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Refund currency mismatch',
+                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'payment_id'        => $this->refund->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

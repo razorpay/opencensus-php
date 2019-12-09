@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
     const AADHAAR_NUMBER            = 'aadhaar_number';
     const AADHAAR_VID               = 'aadhaar_vid';
     const CONFIRMED_AT              = 'confirmed_at';
+    const START_TIME                = 'start_time';
     const REJECTED_AT               = 'rejected_at';
     const INITIATED_AT              = 'initiated_at';
     const ACKNOWLEDGED_AT           = 'acknowledged_at';
@@ -114,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::AADHAAR_VID,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
+        self::START_TIME,
     ];
 
     protected $visible = [
@@ -150,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::START_TIME,
     ];
 
     protected $public = [
@@ -169,7 +172,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::BANK_DETAILS,
         self::MAX_AMOUNT,
-        self::EXPIRED_AT
+        self::EXPIRED_AT,
+        self::START_TIME,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -193,6 +197,7 @@ class Entity extends Base\PublicEntity
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
+        self::START_TIME                => null,
     ];
 
     protected $publicSetters = [
@@ -204,7 +209,8 @@ class Entity extends Base\PublicEntity
         // TODO: Remove this after deciding on how to expose
         self::RECURRING_DETAILS,
         self::MAX_AMOUNT,
-        self::EXPIRED_AT
+        self::EXPIRED_AT,
+        self::START_TIME,
     ];
 
     protected $appends = [
@@ -243,6 +249,13 @@ class Entity extends Base\PublicEntity
     public function terminal()
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity');
+    }
+
+    public function nachPayments()
+    {
+        return $this->hasMany('RZP\Models\Payment\Entity')
+                    ->where(Payment\Entity::METHOD, Payment\Method::NACH)
+                    ->limit(5);
     }
 
     public function hasCard()
@@ -335,6 +348,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRED_AT);
     }
 
+    public function getStartTime()
+    {
+        return $this->getAttribute(self::START_TIME);
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -400,6 +418,11 @@ class Entity extends Base\PublicEntity
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setStartTime($startTime)
+    {
+        $this->setAttribute(self::START_TIME, $startTime);
     }
 
     public function setRecurringStatus($recurringStatus)
@@ -541,6 +564,14 @@ class Entity extends Base\PublicEntity
         if ($this->hasCard())
         {
             $array[self::CARD] = $this->card->toArrayToken();
+        }
+    }
+
+    protected function setPublicStartTimeAttribute(array & $array)
+    {
+        if ($this->getMethod() !== Payment\Method::UPI)
+        {
+            unset($array[self::START_TIME]);
         }
     }
 

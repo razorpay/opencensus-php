@@ -181,12 +181,41 @@ class Validator extends Base\Validator
         $this->validateOrderBank($payment->getBank());
 
         $this->validateOrderMethod($payment->getMethod());
+
+        $this->validateOrderForNachMethod();
+    }
+
+    public function validateOrderForNachMethod()
+    {
+        if ($this->entity->getMethod() !== SubscriptionRegistration\Method::NACH)
+        {
+            return;
+        }
+
+        $payments = $this->entity->payments;
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->isFailed() !== true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'payment ' . $payment->getPublicId() . ' is not failed for the given order which is of method nach, can\'t create one more'
+                );
+            }
+        }
+
+        $tokenRegistration = $this->entity->getTokenRegistration();
+
+        if ($tokenRegistration !== null)
+        {
+            $tokenRegistration->getValidator()->validatePaymentCreation();
+        }
     }
 
     /**
      * Validates that order is not already paid.
      */
-    protected function validateOrderNotPaid()
+    public function validateOrderNotPaid()
     {
         $order = & $this->entity;
 

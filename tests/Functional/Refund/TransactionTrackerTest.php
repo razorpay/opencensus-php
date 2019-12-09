@@ -1189,6 +1189,263 @@ class TransactionTrackerTest extends TestCase
         $this->assertRefundResponses(__FUNCTION__, $rzpPayment, $order, $refunds, $merchantTransactionId);
     }
 
+    public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCase()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        // Processed Refund < t + 7
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ],
+            'order_id' => $order['id'],
+        ]);
+
+        $rzpPayment = $this->getLastEntity('payment', true);
+
+        $merchantTransactionId = 'GOBUSANDe2c92f0f46';
+
+        $refund = $this->refundPayment($rzpPayment['id'], $rzpPayment['amount'],['notes' =>
+            ['pay_session_id' => '36752930', 'pay_txn_id' => '40982005', 'txnid' => $merchantTransactionId]]);
+
+        $this->fixtures->refund->edit($refund['id'], ['status' => 'created']);
+
+        $refundEntity = $this->getDbEntityById('refund', $refund['id']);
+
+        $refund['secondary_message'] = 'The refund for ₹ 500 done on '.
+            $refundEntity->merchant->getBillingLabel().
+            ' is being processed and is taking longer than usual due to a technical issue at the bank\'s side.';
+
+        $refunds = [$refund];
+
+        $this->setUpEsMockForRefundNotes($refund);
+
+        $this->assertRefundResponses(__FUNCTION__, $rzpPayment, $order, $refunds, $merchantTransactionId);
+    }
+
+    public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdFailedRefundCaseTimePassed()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        // Processed Refund < t + 7
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ],
+            'order_id' => $order['id'],
+        ]);
+
+        $rzpPayment = $this->getLastEntity('payment', true);
+
+        $merchantTransactionId = 'GOBUSANDe2c92f0f46';
+
+        $refund = $this->refundPayment($rzpPayment['id'], $rzpPayment['amount'],['notes' =>
+            ['pay_session_id' => '36752930', 'pay_txn_id' => '40982005', 'txnid' => $merchantTransactionId]]);
+
+        $time = Holidays::getNthWorkingDayFrom(Carbon::now(Timezone::IST), 7, true);
+
+        Carbon::setTestNow($time);
+
+        $this->fixtures->refund->edit($refund['id'], ['status' => 'created']);
+
+        $refundEntity = $this->getDbEntityById('refund', $refund['id']);
+
+        $refund['secondary_message'] = 'The refund for the transaction of ' . $refundEntity->getFormattedAmount() .
+            ' has been initiated';
+
+        $refunds = [$refund];
+
+        $this->setUpEsMockForRefundNotes($refund);
+
+        $this->assertRefundResponses(__FUNCTION__, $rzpPayment, $order, $refunds, $merchantTransactionId);
+    }
+
+    public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCaseTimePassed()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        // Processed Refund < t + 7
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ],
+            'order_id' => $order['id'],
+        ]);
+
+        $rzpPayment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $merchantTransactionId = 'GOBUSANDe2c92f0f46';
+
+        $refund = $this->refundPayment($rzpPayment['id'], $rzpPayment['amount'],['notes' =>
+            ['pay_session_id' => '36752930', 'pay_txn_id' => '40982005', 'txnid' => $merchantTransactionId]]);
+
+        $time = Holidays::getNthWorkingDayFrom(Carbon::now(Timezone::IST), 7, true);
+
+        Carbon::setTestNow($time);
+
+        $refundEntity = $this->getDbEntityById('refund', $refund['id']);
+
+        $refund['secondary_message'] = 'Your refund for ' . $refundEntity->getFormattedAmount() .
+            ' has been processed. If you have not received the refund credit yet, please contact our team by raising a request';
+
+        $refunds = [$refund];
+
+        $this->setUpEsMockForRefundNotes($refund);
+
+        $this->assertRefundResponses(__FUNCTION__, $rzpPayment, $order, $refunds, $merchantTransactionId);
+    }
+
+    public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCase()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        // Processed Refund < t + 7
+        $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ],
+            'order_id' => $order['id'],
+        ]);
+
+        $rzpPayment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $merchantTransactionId = 'GOBUSANDe2c92f0f46';
+
+        $refund = $this->refundPayment($rzpPayment['id'], $rzpPayment['amount'],['notes' =>
+            ['pay_session_id' => '36752930', 'pay_txn_id' => '40982005', 'txnid' => $merchantTransactionId]]);
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addDay(3);
+
+        Carbon::setTestNow($time);
+
+        $createdAtDate = Carbon::createFromTimestamp($refund['created_at'], Timezone::IST);
+        $expectedDate = Holidays::getNthWorkingDayFrom($createdAtDate, 7, true);
+
+        $refundEntity = $this->getDbEntityById('refund', $refund['id']);
+
+        $refund['secondary_message'] = 'Your refund for '.
+            $refundEntity->getFormattedAmount().' has been processed by ' . $refundEntity->merchant->getBillingLabel() .
+            '. '. 'The amount will be deposited in your bank account by ' . $expectedDate->toFormattedDateString() ;
+
+        $refunds = [$refund];
+
+        $this->setUpEsMockForRefundNotes($refund);
+
+        $this->assertRefundResponses(__FUNCTION__, $rzpPayment, $order, $refunds, $merchantTransactionId);
+    }
+
     public function testCustomerFetchIdNotFound()
     {
         $this->assertResponsesNotFound(__FUNCTION__, 'CCPjoWzlDJG0g7');

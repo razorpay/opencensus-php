@@ -83,16 +83,20 @@ class Shield
             case ShieldConstants::ACTION_BLOCK:
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
                 $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD;
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
 
                 break;
 
             case ShieldConstants::ACTION_REVIEW:
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
                 $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
 
                 break;
 
             default:
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
+
                 break;
         }
 

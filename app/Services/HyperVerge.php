@@ -117,6 +117,10 @@ class HyperVerge
                     [
                         'name'     => 'enableOutputJPEG',
                         'contents' => 'yes'
+                    ],
+                    [
+                        'name'     => PaperMandate\HyperVerge::DETECT_FORM_CHECKSUM,
+                        'contents' => 'yes'
                     ]
                 ],
                 'headers'   => $headers,

@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Document as Document;
+use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -368,6 +369,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->core()->markSubmittedAndLock($merchant->merchantDetail);
+
         $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
 
         return $merchantDetails->toArrayPublic();
@@ -700,6 +703,8 @@ class Service extends Base\Service
 
         $this->applyCoupon($input);
 
+        $this->applyReferralPartner($input);
+
         $this->saveMerchantDetailForPreSignUp($input);
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
@@ -757,6 +762,39 @@ class Service extends Base\Service
         $this->trace->count(Merchant\Metric::SIGNUP_COUPON_TOTAL);
 
         unset($input[Entity::COUPON_CODE]);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    private function applyReferralPartner(array &$input)
+    {
+        if ((isset($input[Entity::REFERRAL_CODE]) === false) or (empty($input[Entity::REFERRAL_CODE]) === true))
+        {
+            return;
+        }
+
+        $refCode = $input[Entity::REFERRAL_CODE];
+
+        $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
+
+        $subMerchant = $this->app['basicauth']->getMerchant();
+
+        $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
+
+        if (empty($referral) === false)
+        {
+            $partnerId = $referral[Referral\Entity::MERCHANT_ID];
+
+            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+        }
+
+        unset($input[Entity::REFERRAL_CODE]);
     }
 
     private function getZapierData($merchant, $input)
@@ -900,5 +938,25 @@ class Service extends Base\Service
         }
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
+    }
+
+    /**
+     * @param $merchantId
+     * @param $input
+     *
+     * @return mixed
+     * @throws \Throwable
+     */
+    Public function putAdditionalWebsite($merchantId, $input)
+    {
+        $core = new Core();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $core->getMerchantDetails($merchant);
+
+        $response = $core->addAdditionalWebsiteDetails($merchantDetails, $input);
+
+        return $response;
     }
 }

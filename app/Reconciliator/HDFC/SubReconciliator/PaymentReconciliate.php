@@ -194,7 +194,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_column'   => $amountColumn,
                     'amount'            => $this->payment->getBaseAmount(),
                     'currency'          => $this->payment->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -247,7 +246,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the service tax!',
-                    'row'             => $row,
+                    'payment_id'      => $this->payment->getId(),
                     'gateway'         => $this->gateway
                 ]);
 
@@ -473,6 +472,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
+                    'payment_id'        => $this->payment->getId(),
                     'gateway'           => $this->gateway
                 ]);
 
@@ -528,6 +528,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'message'         => 'Unable to figure out the card locale (domestic/international).',
                     'recon_card_type' => $cardType,
                     'row'             => $row,
+                    'payment_id'      => $this->payment->getId(),
                     'gateway'         => $this->gateway
                 ]);
 

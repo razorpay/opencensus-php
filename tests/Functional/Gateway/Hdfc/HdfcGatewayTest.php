@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Hdfc;
 
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
@@ -31,6 +33,25 @@ class HdfcGatewayTest extends TestCase
         $this->mockCardVault();
 
         $this->fixtures->merchant->enableInternational();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'secure_3d_international')
+                        {
+                            return 'v2';
+                        }
+
+                        return 'v1';
+                    }));
 
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
 
@@ -148,6 +169,139 @@ class HdfcGatewayTest extends TestCase
         {
             $this->defaultAuthPayment($payment);
         });
+    }
+
+    public function testInternationalPaymentFailureForRisk()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockShield();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'US',
+            'network' => 'Visa',
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'shield_risk_evaluation')
+                        {
+                            return 'shield_on';
+                        }
+
+                        if ($feature === 'secure_3d_international')
+                        {
+                            return 'v2';
+                        }
+
+                        return 'shield_off';
+                    }));
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->defaultAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_FAILED_RISK_CHECK_IN_GATEWAY', $riskEntity['reason']);
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
+
+        $this->assertEquals('shield_v2', $paymentAnalytic['risk_engine']);
+    }
+
+    public function testPaymentForAuthorizationTerminalWithShieldRiskMock()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockShield();
+
+        $this->fixtures->iin->create([
+            'iin'     => '426451',
+            'country' => 'US',
+            'network' => 'Visa',
+        ]);
+
+        $payment = [
+            'card' => [
+                'number'       => '4264511038488895',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $payment = $this->defaultAuthPayment($payment);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('Y', $hdfc['enroll_result']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('hdfc', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHdfcPaymentEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // After capture verify_at is set to current_time()
+        // $this->assertNull($payment['verify_at']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
     }
 
     public function testPaymentForAuthorizationTerminalFailure()
@@ -545,6 +699,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinAuthPayment()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',
@@ -584,6 +750,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinAuthorizeFailed()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',
@@ -636,6 +814,18 @@ class HdfcGatewayTest extends TestCase
 
     public function testDebitPinVerifyFailed()
     {
+        // after addition of shared terminal filter in filtering there is no terminal in applicable terminals list
+        // hence adding direct terminal so that it does not gets filtered out and payment flow can be tested
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
             'id' => 'SharedHdfcTrml',
             'gateway_acquirer' => 'hdfc',

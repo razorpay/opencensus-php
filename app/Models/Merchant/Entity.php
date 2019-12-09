@@ -163,6 +163,11 @@ class Entity extends Base\PublicEntity
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,
@@ -213,6 +218,8 @@ class Entity extends Base\PublicEntity
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
+
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
 
     protected $entity = 'merchant';
 
@@ -505,6 +512,11 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
     }
 
     public function isFeeBearerCustomer()
@@ -2221,6 +2233,7 @@ class Entity extends Base\PublicEntity
             self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
             self::EMAIL          => $this->getAttribute(self::EMAIL),
             self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ACTIVATED_AT   => $this->getAttribute(self::ACTIVATED_AT),
             self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),

@@ -15,6 +15,8 @@ final class Constants
     const SIGNUP_DATE                             = 'signup_date';
     const SUSPEND                                 = 'suspend';
     const UNSUSPEND                               = 'unsuspend';
+    const PAYMENT_TIMEOUT_WINDOW                  = 'payment_timeout_window';
+
 
     // Used for pagination in submerchant listing for partners
     const TO                                      = 'to';
@@ -30,6 +32,7 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
+    const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
 
     const DOCUMENT_TYPE                           = 'document_type';
 

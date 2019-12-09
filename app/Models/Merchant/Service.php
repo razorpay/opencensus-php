@@ -23,6 +23,7 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -38,10 +39,12 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
+use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
@@ -58,6 +61,8 @@ class Service extends Base\Service
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
+
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
 
     /**
      * Creates a merchant and saves in database
@@ -1129,8 +1134,36 @@ class Service extends Base\Service
             return false;
         }
 
-        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
             $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getWebsiteStatus()
+    {
+        $oldMerchantDetail = $this->merchant->merchantDetail;
+
+        if (empty($oldMerchantDetail) === true)
+        {
+            return false;
+        }
+
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
+            $oldMerchantDetail->getMerchantId(),
+            $oldMerchantDetail->getEntity(),
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL);
 
         $actions = $actions->toArray();
 
@@ -1429,7 +1462,8 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        (new Validator)->validateInput('holiday_notify', $input);
+
         RuntimeManager::setTimeLimit(300);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
@@ -1719,16 +1753,48 @@ class Service extends Base\Service
     {
         $pricingPlanId = $this->merchant->getPricingPlanId();
 
-        $scheduledPricing = $this->repo->pricing->getFirstPricingPlanByIdAndFeatureWithoutOrgId($pricingPlanId, PricingFeature::ESAUTOMATIC);
+        $scheduledPricings = $this->repo->pricing
+                                  ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId(
+                                   $pricingPlanId,
+                                   PricingFeature::ESAUTOMATIC,
+                                   false);
 
-        if ($scheduledPricing === null)
+        if ($scheduledPricings->isEmpty() === true)
         {
             throw new Exception\LogicException(
                 'ES scheduled Pricing has not been assigned to the merchant.',
                 ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND);
         }
 
-        return $scheduledPricing->toArrayPublic();
+        $finalSchedulePricing = new Pricing\Entity();
+
+        foreach ($scheduledPricings as $scheduledPricing)
+        {
+            if($scheduledPricing->getPercentRate() >= $finalSchedulePricing->getPercentRate())
+            {
+                $finalSchedulePricing = $scheduledPricing;
+            }
+        }
+
+        if ($finalSchedulePricing->getPercentRate() === 0)
+        {
+            throw new Exception\LogicException(
+                'Invalid ES pricing was assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_INVALID_ES_PRICING,
+                [
+                    'plan_id' => $scheduledPricings->getId()
+                ]);
+        }
+
+        $this->trace->info(
+            TraceCode::ES_PRICING_SHOWN_TO_MERCHANT,
+            [
+                'id' => $finalSchedulePricing->getId(),
+                'percent_rate' => $finalSchedulePricing->getPercentRate()
+            ]
+        );
+
+        return $finalSchedulePricing->toArrayPublic();
     }
 
     public function enableScheduledEs(): array
@@ -2130,7 +2196,6 @@ class Service extends Base\Service
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
-
 
     protected function sendPayoutMail(string $merchantId, string $email = null)
     {
@@ -2953,6 +3018,10 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('list_submerchants', $input);
 
+        // add default params
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();
@@ -2977,6 +3046,8 @@ class Service extends Base\Service
 
             $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
     }
 
     /**
@@ -3558,5 +3629,36 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    /**
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchReferral(): array
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+
+        return $referrals->toArrayPublic();
+    }
+
+    /**
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createReferral(): array
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $partner = $this->fetchPartner();
+
+        (new Referral\Validator)->validateForReferral($partner);
+
+        $referral = (new Referral\Core)->createOrFetch($merchant);
+
+        return $referral->toArrayPublic();
     }
 }

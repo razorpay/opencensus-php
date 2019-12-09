@@ -56,15 +56,49 @@ class Service extends Base\Service
         return [$responseKey => $recurring];
     }
 
-    public function migtateCardVaultToken($cardId)
+    public function migtateCardVaultToken($cardId, $bulkUpdate = false)
     {
         $card = $this->repo->card->find($cardId);
+
+        if ($bulkUpdate == true)
+        {
+            $this->updateVaultTokenBulk($card);
+            return;
+        }
 
         $this->updateVaultToken($card);
 
         if ($card->hasGlobalCard() === true)
         {
             $this->updateVaultToken($card->globalCard);
+        }
+    }
+
+    public function updateVaultTokenBulk(Entity $card)
+    {
+        $cardVault = new CardVault;
+
+        $token = $card->getVaultToken();
+        $vault = $card->getVault();
+
+        if (($token === null) or ($vault !== Vault::RZP_VAULT))
+        {
+            return;
+        }
+        elseif (starts_with($token, "pay_"))
+        {
+            #Reset Invalid tokens to null.
+            $this->repo->card->resetCardVaultToken($token);
+        }
+        else
+        {
+            $vaultResponse = $cardVault->getVaultTokenFromTempToken($token);
+
+            $vaultToken = $vaultResponse['token'];
+
+            $fingerprint = $vaultResponse['fingerprint'];
+
+            $this->repo->card->migrateCardVaultTokenBulk($token, $vaultToken, $fingerprint);
         }
     }
 

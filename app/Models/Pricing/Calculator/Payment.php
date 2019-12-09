@@ -117,6 +117,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForPayLater($rules);
         }
+        else if ($method === PaymentModel\Method::NACH)
+        {
+            $rule = $this->getRelevantPricingRuleForNach($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -329,6 +333,11 @@ class Payment extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForNach($rules)
+    {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

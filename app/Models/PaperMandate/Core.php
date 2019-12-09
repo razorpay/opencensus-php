@@ -7,12 +7,18 @@ use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 
 class Core extends Base\Core
 {
@@ -36,13 +42,14 @@ class Core extends Base\Core
 
     public function create(array $input, Customer\Entity $customer): Entity
     {
+        $traceInput = $input;
+        unset($traceInput[Entity::BANK_ACCOUNT]);
+
         $this->trace->info(TraceCode::PAPER_MANDATE_CREATE_REQUEST,
             [
-                'input' => $input,
-                'customer' => $customer->toArray()
+                'input'       => $traceInput,
+                'customer_id' => $customer->getId()
             ]);
-
-        (new Validator)->validateCustomerToCreatePaperMandate($customer);
 
         $paperMandate = (new Entity)->generateId();
 
@@ -51,6 +58,8 @@ class Core extends Base\Core
         $paperMandate->customer()->associate($customer);
 
         $this->setDefaultValuesForPaperMandate($paperMandate);
+
+        $this->setTerminalDataForPaperMandate($paperMandate);
 
         $paperMandate->build($input);
 
@@ -66,7 +75,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PAPER_MANDATE_CREATED,
             [
-                'paper_mandate' => $paperMandate->toArray(),
+                'paper_mandate' => $paperMandate->toArrayPublic(),
             ]);
 
         return $paperMandate;
@@ -87,11 +96,9 @@ class Core extends Base\Core
 
         $validationResult = $data[Entity::VALIDATION_RESULT];
 
-        if (empty($validationResult['errors']) === true)
+        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === true)
         {
             $paperMandate->setUploadedFileId($uploadedFileId);
-
-            $paperMandate->setStatus(Status::AUTHENTICATED);
 
             $paperMandate->saveOrFail();
         }
@@ -104,7 +111,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAPER_MANDATE_AUTHENTICATE_REQUEST,
             [
-                'paper_mandate' => $paperMandate->toArray(),
+                'paper_mandate' => $paperMandate->toArrayPublic(),
             ]
         );
 
@@ -146,6 +153,43 @@ class Core extends Base\Core
         $paperMandate->setStartAt($startAt->timestamp);
     }
 
+    protected function setTerminalDataForPaperMandate(Entity $paperMandate)
+    {
+        $terminal = $this->getTerminalForNachMethod();
+
+        if ($terminal === null)
+        {
+            throw new LogicException(
+                'terminal selected can\'t be null'
+            );
+        }
+
+        $paperMandate->setTerminalId($terminal->getId());
+
+        if (($this->mode !== Mode::LIVE) and
+            ($terminal->getId() === Terminal\Shared::SHARP_RAZORPAY_TERMINAL))
+        {
+            $paperMandate->setUtilityCode('NACH00000000010000');
+
+            $paperMandate->setSponsorBankCode('RANDOMBANK');
+        }
+        else
+        {
+            $paperMandate->setUtilityCode($terminal->getGatewayMerchantId());
+
+            $paperMandate->setSponsorBankCode($terminal->getGatewayAccessCode());
+        }
+    }
+
+    protected function getTerminalForNachMethod()
+    {
+        $paymentArray = (new Payment\Entity)->getDummyPaymentArray(Payment\Method::NACH);
+
+        $paymentProcessor = new PaymentProcessor($this->merchant);
+
+        return $paymentProcessor->processAndReturnTerminal($paymentArray);
+    }
+
     protected function validateExtractedData(array & $extractedPaperMandateData, Entity $paperMandate)
     {
         $errors = [];
@@ -167,7 +211,7 @@ class Core extends Base\Core
             $errors[self::NOT_MATCHING] = $notMatching;
         }
 
-        return ['errors' => $errors, Entity::EXTRACTED_DATA => $extractedData];
+        return [SubscriptionRegistrationConstants::ERRORS => $errors, Entity::EXTRACTED_DATA => $extractedData];
     }
 
     protected function validateExtractedPaperMandateData(array $extractedPaperMandateData, Entity $paperMandate, array & $extractedData): array
@@ -188,6 +232,20 @@ class Core extends Base\Core
                 ($paperMandate[$key] !== $extractedPaperMandateData[$key]))
             {
                 $notMatching[] = $key;
+            }
+        }
+
+        if (empty($paperMandate[Entity::FORM_CHECKSUM]) === false)
+        {
+            $extractedData[] = [
+                self::KEY             => Entity::FORM_CHECKSUM,
+                self::EXPECTED_VALUE  => $paperMandate[Entity::FORM_CHECKSUM],
+                self::EXTRACTED_VALUE => $extractedPaperMandateData[Entity::FORM_CHECKSUM]
+            ];
+
+            if ($paperMandate[Entity::FORM_CHECKSUM] !== $extractedPaperMandateData[Entity::FORM_CHECKSUM])
+            {
+                $notMatching[] = Entity::FORM_CHECKSUM;
             }
         }
 
@@ -381,9 +439,9 @@ class Core extends Base\Core
             return;
         }
 
-        $generatedMandateForm = (new HyperVerge)->generatePaperMandateForm($paperMandate);
+        $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
-        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $generatedMandateForm);
+        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $data[Entity::GENERATED_IMAGE]);
 
         $this->trace->info(
             TraceCode::PAPER_MANDATE_FORM_GENERATED,
@@ -393,6 +451,8 @@ class Core extends Base\Core
             ]);
 
         $paperMandate->setGeneratedFileId($generatedFileId);
+
+        $paperMandate->setFormChecksum($data[Entity::FORM_CHECKSUM]);
 
         $paperMandate->saveOrFail();
     }

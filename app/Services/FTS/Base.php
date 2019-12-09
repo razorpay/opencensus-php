@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -45,6 +46,8 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
     const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
 
     const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
@@ -59,9 +62,11 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
 
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/admin/attempts/verify';
+
     // Headers
     const ACCEPT        = 'Accept';
-    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const ADMIN_EMAIL   = 'admin_email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
 
@@ -146,6 +151,8 @@ class Base
 
     /**
      * Generates request using the given params
+     * Issue with DELETE method: https://github.com/rmccue/Requests/issues/91
+     * Fix for DELETE method: https://github.com/rmccue/Requests/pull/188
      *
      * @param string $endpoint
      * @param string $method
@@ -158,7 +165,7 @@ class Base
         $url = $this->baseUrl . $endpoint;
 
         // json encode if data is must, else ignore.
-        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT, Requests::DELETE], true) === true)
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
@@ -170,6 +177,11 @@ class Base
                 $this->secret,
             ],
         ];
+
+        if ($method === Requests::DELETE)
+        {
+            $options += [ 'data_format' => 'body' ];
+        }
 
         return [
             'url'       => $url,
@@ -187,8 +199,8 @@ class Base
     {
         $headers = [];
 
-        $headers[self::ACCEPT]        = 'application/json';
-        $headers[self::CONTENT_TYPE]  = 'application/json';
+        $headers[self::ACCEPT]       = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
 
         $this->headers = $headers;
     }
@@ -258,7 +270,7 @@ class Base
             $code = $response->status_code;
         }
 
-        if (in_array($code, [200, 201, 204], true) === false)
+        if (in_array($code, [200, 201, 204, 400], true) === false)
         {
             throw new Exception\RuntimeException(
                 'Unexpected response code received from FTS.',
@@ -311,10 +323,22 @@ class Base
         return $response;
     }
 
-    protected function setDashboardAuth()
+    protected function setDashboardAuthAndAdminHeader()
     {
         $this->key     = $this->config[$this->mode]['fts_dashboard_key'];
 
         $this->secret  = $this->config[$this->mode]['fts_dashboard_secret'];
+
+        $this->setAdminHeader();
+    }
+
+    protected function setAdminHeader()
+    {
+        $this->headers[RequestHeader::X_DASHBOARD_ADMIN_EMAIL] = $this->getAdminEmail();
+    }
+
+    protected function getAdminEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? 'EMAIL_NOT_FOUND';
     }
 }

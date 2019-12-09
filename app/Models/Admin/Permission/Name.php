@@ -158,6 +158,7 @@ class Name
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
     const REMINDER_OPERATION                  = 'reminder_operation';
+    const GATEWAY_PVT                         = 'gateway_pvt';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
@@ -261,6 +262,8 @@ class Name
     // Permissions for P2P Service
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
+    const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
@@ -278,7 +281,6 @@ class Name
         Merchant\Action::FORCE_ACTIVATE                     => self::EDIT_MERCHANT_FORCE_ACTIVATION,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_AUTHORIZED => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_CAPTURED   => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT
-
     ];
 
     /**

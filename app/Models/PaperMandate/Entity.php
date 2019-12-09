@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const EXTRACTED_DATA              = 'extracted_data';
 
     const GENERATE_FORM               = 'generate_form';
+    const GENERATED_IMAGE             = 'generated_image';
 
     const DEFAULT_AMOUNT              = 10000000;
 
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::END_AT,
         self::SECONDARY_ACCOUNT_HOLDER,
         self::TERTIARY_ACCOUNT_HOLDER,
+        self::TERMINAL_ID,
     ];
 
     protected $visible = [
@@ -99,6 +101,10 @@ class Entity extends Base\PublicEntity
         self::END_AT,
         self::SECONDARY_ACCOUNT_HOLDER,
         self::TERTIARY_ACCOUNT_HOLDER,
+        self::TERMINAL_ID,
+        self::FORM_CHECKSUM,
+        self::GENERATED_FILE_ID,
+        self::UPLOADED_FILE_ID,
         self::CREATED_AT,
     ];
 
@@ -115,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::FREQUENCY,
         self::REFERENCE_1,
         self::REFERENCE_2,
+        self::FORM_CHECKSUM,
         self::START_AT,
         self::END_AT,
         self::CREATED_AT,
@@ -134,10 +141,9 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_1              => null,
         self::REFERENCE_2              => null,
         self::END_AT                   => null,
-        self::SPONSOR_BANK_CODE        => 'RATN0TREASU', // dummy value, will be removed in payment/nach PR
-        self::UTILITY_CODE             => 'NACH00000000013149', // dummy value, will be removed in payment/nach PR
         self::SECONDARY_ACCOUNT_HOLDER => null,
         self::TERTIARY_ACCOUNT_HOLDER  => null,
+        self::FORM_CHECKSUM            => null,
     ];
 
     public function getStatus()
@@ -152,7 +158,7 @@ class Entity extends Base\PublicEntity
 
     public function getReference2()
     {
-        return $this->getAttribute(self::REFERENCE_1);
+        return $this->getAttribute(self::REFERENCE_2);
     }
 
     public function getGeneratedFileID()
@@ -174,7 +180,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedUrl($generatedFileId);
+        return (new FileUploader)->getSignedShortUrl($generatedFileId);
     }
 
     public function getUploadedFormUrl()
@@ -186,7 +192,22 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedUrl($uploadedFileId);
+        return (new FileUploader)->getSignedShortUrl($uploadedFileId);
+    }
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getStartAt()
+    {
+        return $this->getAttribute(self::START_AT);
+    }
+
+    public function getEndAt()
+    {
+        return $this->getAttribute(self::END_AT);
     }
 
     public function setStatus(string $status)
@@ -207,6 +228,26 @@ class Entity extends Base\PublicEntity
     public function setStartAt(int $timestamp)
     {
         $this->setAttribute(self::START_AT, $timestamp);
+    }
+
+    public function setUtilityCode($utilityCode)
+    {
+        $this->setAttribute(self::UTILITY_CODE, $utilityCode);
+    }
+
+    public function setSponsorBankCode($sponsorBankCode)
+    {
+        $this->setAttribute(self::SPONSOR_BANK_CODE, $sponsorBankCode);
+    }
+
+    public function setTerminalId($terminalId)
+    {
+        $this->setAttribute(self::TERMINAL_ID, $terminalId);
+    }
+
+    public function setFormChecksum($checksum)
+    {
+        $this->setAttribute(self::FORM_CHECKSUM, $checksum);
     }
 
     public function merchant()

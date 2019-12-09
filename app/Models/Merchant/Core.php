@@ -22,6 +22,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Models\User\Role;
 use RZP\Constants\Product;
 use RZP\Jobs\MerchantSync;
@@ -38,7 +39,10 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -191,7 +195,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($subMerchant);
 
-        $this->addMerchantSupportingEntities($subMerchant);
+        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
@@ -231,13 +235,13 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    protected function addMerchantSupportingEntities(Entity $merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
         $this->createBalance($merchant, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
-        (new Methods\Core)->setDefaultMethods($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
 
         (new Detail\Core)->createMerchantDetails($merchant);
 
@@ -509,6 +513,22 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $mode);
+
+        // Avoid Creating a new Balance of type Primary if already exists for the merchant,
+        // This a Safety Check to avoid multiple primary balances being created,
+        // applicable (rare scenarios, due to unknown bug) when a Whitelist Merchant is instantly activated
+        // with primary balance is created but activated flag not set
+        if ($merchantBalance !== null)
+        {
+            $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
+                               [
+                                   "balance_id" => $merchantBalance->getId()
+                               ]);
+
+            return $merchantBalance;
+        }
+
         $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
@@ -1164,7 +1184,7 @@ class Core extends Base\Core
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+        $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
         {
             $partner = $this->markAsPartner($merchant, $partnerType);
 
@@ -1177,14 +1197,30 @@ class Core extends Base\Core
                 PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
             ];
 
-            $config = (new PartnerConfig\Core)->create($application, $config);
+            (new PartnerConfig\Core)->create($application, $config);
 
+            return $partner;
         });
+
+        $this->sendPartnerOnBoardedEmail($partner);
 
         return [
             'partner_type'              => $partnerType,
             'has_commission_configs'    => true,
         ];
+    }
+
+    protected function sendPartnerOnBoardedEmail(Entity $partner)
+    {
+        $data = [
+            'name'         => $partner->getName(),
+            'email'        => $partner->getEmail(),
+            'partner_type' => $partner->getPartnerType(),
+        ];
+
+        $email = new PartnerOnBoarded($data);
+
+        Mail::queue($email);
     }
 
     /**
@@ -1250,6 +1286,8 @@ class Core extends Base\Core
 
             return $accessMap;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($submerchant->getId());
 
         return $accessMap->toArrayPublic();
     }
@@ -1636,6 +1674,13 @@ class Core extends Base\Core
     public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
     {
         $appIds = $this->getPartnerApplicationIds($partner);
+
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+            [
+                'partner_id' => $partner->getId(),
+                'app_ids'    => $appIds,
+                'params'     => $params,
+            ]);
 
         if (empty($params[Constants::APPLICATION_ID]) === false)
         {
@@ -2149,13 +2194,16 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
+    public function syncMerchantEntityFields(Entity $merchant, array $input): Entity
     {
         $merchantInput = [];
 
-        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
+        if ((isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true) and
+            ($merchant->getWebsite() !== $input[Detail\Entity::BUSINESS_WEBSITE]))
         {
             $merchantInput[Entity::WEBSITE] = $input[Detail\Entity::BUSINESS_WEBSITE];
+
+            $this->updateWhitelistedDomain($merchant, $merchantInput);
         }
 
         if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
@@ -2178,6 +2226,76 @@ class Core extends Base\Core
         });
 
         return $merchant;
+    }
+
+    /**
+     * Extract domain and add it in whitelisted domain
+     * if previously website is present then remove it's domain from whitelisted_domain
+     * and update website in business website.
+     *
+     * @param Entity $merchant
+     * @param array  $merchantInput
+     */
+    public function updateWhitelistedDomain(Entity $merchant, array $merchantInput)
+    {
+        $website = $merchantInput[Entity::WEBSITE];
+
+        $domain = (new TLDExtract)->getEffectiveTLDPlusOne($website);
+
+        $oldWebsite = $merchant->getWebsite();
+
+        if ($oldWebsite !== null)
+        {
+            $oldDomain = (new TLDExtract)->getEffectiveTLDPlusOne($oldWebsite);
+
+            $this->removeDomainFromWhitelistedDomain($merchant, $oldDomain);
+        }
+
+        $this->addDomainInWhitelistedDomain($merchant, $domain);
+    }
+
+    /**
+     * add domain in whitelisted domain if domain is not in autoWhitelisted domain array
+     *
+     * @param Entity      $merchant
+     * @param string|null $domain
+     */
+    public function addDomainInWhitelistedDomain(Entity $merchant, string $domain = null)
+    {
+        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
+
+        if ((in_array($domain, Entity::AUTO_WHITELISTED_DOMAINS) === false) and
+            (in_array($domain, $whitelistedDomains) === false) and
+            (empty($domain) === false))
+        {
+            array_push($whitelistedDomains, $domain);
+
+            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
+
+            $merchant->edit($merchantInput);
+        }
+    }
+
+    /**
+     * remove domain from whitelisted domain column
+     *
+     * @param Entity      $merchant
+     * @param string|null $domain
+     */
+    public function removeDomainFromWhitelistedDomain(Entity $merchant, string $domain = null)
+    {
+        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
+
+        $key = array_search($domain, $whitelistedDomains);
+
+        if ($key !== false)
+        {
+            unset($whitelistedDomains[$key]);
+
+            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
+
+            $merchant->edit($merchantInput);
+        }
     }
 
     /**
@@ -2227,6 +2345,19 @@ class Core extends Base\Core
         return (int) $amount;
     }
 
+    public function getPaymentTimeoutWindow(Entity $merchant)
+    {
+        $accessor = Accessor::for($merchant, Settings\Module::MERCHANT);
+
+        if ($accessor->exists(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW) === false)
+        {
+            return null;
+        }
+
+        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+    }
+
+
     /**
      * Enable international and set convert currency as false, if applicable
      *
@@ -2254,6 +2385,48 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::INTERNATIONAL_ACTIVATION);
         }
+    }
+
+    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload): array
+    {
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        // submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return [
+                'headers' => [],
+                'content' => $payload,
+            ];
+        }
+
+        $translationGateway = $this->getTranslateWebhookGateway($partner);
+
+        if (empty($translationGateway) === true)
+        {
+            return [
+                'headers' => [],
+                'content' => $payload,
+            ];
+        }
+
+        $this->trace->info(TraceCode::PARTNER_WEBHOOK_TRANSLATION,
+            [
+                'translation_gateway' => $translationGateway,
+                'partner_id'          => $partner->getId(),
+            ]);
+
+        return $this->app['mozart']->translateWebhook($translationGateway, $payload);
+    }
+
+    protected function getTranslateWebhookGateway(Entity $partner)
+    {
+        return (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::TRANSLATE_WEBHOOK_GATEWAY, $partner);
     }
 
     /**

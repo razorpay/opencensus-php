@@ -10,10 +10,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Mail\User\Otp;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
-use RZP\Services\HubspotClient;
 use RZP\Services\RazorXClient;
+use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -1834,5 +1835,46 @@ class UserTest extends TestCase
         $this->assertEquals($userDB['contact_mobile_verified'], false);
 
         $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
+    }
+
+    public function testGetForUsersWithBusinessBankingEnabled()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'        => 1,
+            'activated_at'     => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code'     => 'hello1234567',
+            'business_banking' => 1,
+        ]);
+
+        $this->fixtures->create('balance',
+                                [
+                                    'merchant_id'    => '10000000000000',
+                                    'type'           => 'banking',
+                                    'account_number' => '2224440041626905',
+                                    'balance'        => 100000,
+                                ]);
+
+        $this->fixtures->create('bank_account',
+                                [
+                                    'merchant_id'    => '10000000000000',
+                                    'type'           => 'virtual_account',
+                                    'ifsc_code'      => 'RAZRB000000',
+                                    'account_number' => '2224440041626905',
+                                ]);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
     }
 }

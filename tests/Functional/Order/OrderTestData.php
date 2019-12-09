@@ -50,7 +50,7 @@ return [
     'testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount' => [
         'request'   => [
             'content' => [
-                'amount'   => 1000001,
+                'amount'   => 2500001,
                 'currency' => 'INR',
                 'receipt'  => 'rcptid42',
             ],
@@ -668,6 +668,7 @@ return [
                     'method'                => 'emandate',
                     'expire_at'             => 1880118306,
                     'first_payment_amount'  => 100,
+                    'auth_type'             => 'netbanking',
                     'bank_account' => [
                         'bank_name'          => 'HDFC Bank',
                         'ifsc_code'          => 'HDFC0001233',
@@ -1028,6 +1029,21 @@ return [
         ],
     ],
 
+    'testPreferencesForOrderWithAuthType' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'auth_type' => 'netbanking',
+                ],
+            ],
+        ],
+    ],
+
     'testCreateOrderWithOffer' => [
         'request' => [
             'content' => [
@@ -1319,7 +1335,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1335,7 +1351,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1351,7 +1367,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400

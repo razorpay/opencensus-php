@@ -921,6 +921,18 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function getWebsiteStatus()
+    {
+        $response = $this->service(E::MERCHANT)->getWebsiteStatus();
+
+        return ApiResponse::json($response);
+    }
+
     public function getBusinessCategories()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
@@ -1436,5 +1448,43 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $this->service()->removeSuspendedMerchantsFromMailingList($input);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function fetchReferral()
+    {
+        $response = $this->service()->fetchReferral();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function createReferral()
+    {
+        $response = $this->service()->createReferral();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function putAdditionalWebsite(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->putAdditionalWebsite($merchantId, $input);
+
+        return ApiResponse::json($response);
     }
 }

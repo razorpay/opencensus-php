@@ -66,35 +66,6 @@ class BucketingTest extends TestCase
         $this->createPaymentAndAssert(10000000000000, 1569195000, 1569195000);
     }
 
-    public function testPaymentRefundSettlementBucketing()
-    {
-        $this->setTestTime();
-
-        $this->createPaymentAndAssert(10000000000000, 1569195000, 1569195000);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $refundParam = [
-                'payment_id' => $payment['id'],
-                'notes'      => ['a' => 'b'],
-                'receipt'    => '2544325',
-            ];
-
-        $timestamp = Carbon::create(2019, 9, 25, 9, 30, 0, Timezone::IST);
-
-        $this->setTestTime($timestamp);
-
-        $this->refund($refundParam);
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $bucket = $this->getLastEntity('settlement_bucket', true);
-
-        $this->assertEquals(1569195000, $txn['settled_at']);
-
-        $this->assertEquals(1569384000, $bucket['bucket_timestamp']);
-    }
-
     public function testEarlySettlement9AMBucket()
     {
         $timestamp = Carbon::create(2019, 9, 19, 8, 30, 0, Timezone::IST);

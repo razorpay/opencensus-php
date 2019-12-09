@@ -126,7 +126,15 @@ class GatewayController extends Controller
 
                 $paymentId = Payment\Entity::getSignedId($paymentId);
 
-                $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                if ((in_array($gatewayDriver, Payment\Gateway::$s2sMandateCallbackGateways, true) === true) and
+                    ($gateway->isMandateUpdateCallback($input) === true))
+                {
+                    $data = (new Payment\Service)->mandateUpdateCallback($paymentId, $input);
+                }
+                else
+                {
+                    $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                }
             }
 
             $response = $gateway->postProcessServerCallback($postInput);
@@ -222,6 +230,18 @@ class GatewayController extends Controller
 
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
+
+                $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
+            case Gateway::UPI_JUSPAY:
+
+                $input = [
+                    'headers' => Request::header(),
+                    'raw'     => Request::getContent(),
+                    'body'    => $input,
+                ];
 
                 $data = $this->processServerCallback($input, $gateway);
 
