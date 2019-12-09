@@ -45,7 +45,8 @@ class Action
         self::DEBIT,
     ];
 
-    public static $netbankingPaymentsSupportedActions = [
+    // TODO: extend for other flows
+    public static $nbPlusSupportedActions = [
         self::AUTHORIZE,
         self::CALLBACK,
         self::VERIFY,
