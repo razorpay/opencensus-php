@@ -14,7 +14,7 @@ import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 
 // TODO: Remove dependency from here
-import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/preAddedFields';
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';

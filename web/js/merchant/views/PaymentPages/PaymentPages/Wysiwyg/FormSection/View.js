@@ -11,8 +11,8 @@ import {
   isFormItemOfTypeAmount,
   reorderFormItems,
 } from 'merchant/reducers/wysiwyg';
-import { constructFieldSchema } from '../UDF_Fields/V3';
-import { constructAmountField } from '../Amount_Fields/V3';
+import { constructFieldSchema } from './UDF/helpers';
+import { constructAmountField } from './Amount/helpers';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 
 const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);

@@ -15,7 +15,7 @@ import EmptyList from 'merchant/components/EmptyList';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
-import PaymentPagesV3List from './V3';
+import List from './List';
 
 import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
 import {
@@ -255,7 +255,7 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
           </ListFilter>
-          <PaymentPagesV3List loading={loading} paymentPages={paymentPages} />
+          <List loading={loading} paymentPages={paymentPages} />
           {!loading &&
             !!paymentPages.length && (
               <Pager

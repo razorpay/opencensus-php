@@ -1,6 +1,6 @@
 import Button from 'common/new-ui/Button';
-import FieldsDropdown from '../../FieldsDropdown';
-import { getFieldTypes } from '../../UDF_Fields/V3';
+import FieldsDropdown from '../FieldsDropdown';
+import { getFieldTypes } from '../UDF/helpers';
 import CreatorManager from './CreatorManager';
 
 class AddUDFButton extends React.PureComponent {

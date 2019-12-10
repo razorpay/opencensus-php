@@ -2,8 +2,8 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
-import { mapFieldToIndex } from '../../UDF_Fields/V3';
-import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
+import { mapFieldToIndex } from '../UDF/helpers';
+import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {

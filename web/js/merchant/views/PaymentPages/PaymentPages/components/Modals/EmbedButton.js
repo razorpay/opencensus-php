@@ -152,8 +152,6 @@ class PreviewPaymentPageButton extends React.Component {
           ? '#fff'
           : 'rgba(0, 0, 0, 0.85)';
 
-      console.log('....', textColor);
-
       this.setState({
         textColor,
       });
