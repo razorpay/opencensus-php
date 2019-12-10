@@ -3167,10 +3167,10 @@ final class Route
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
 
-        'create_merchant_options_admin'             => '*',
-        'read_merchant_options_admin'               => '*',
-        'update_merchant_options_admin'             => '*',
-        'delete_merchant_options_admin'             => '*',
+        'create_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
+        'read_merchant_options_admin'               => Permission::MANAGE_RENDERING_PREFERENCES,
+        'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
+        'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
