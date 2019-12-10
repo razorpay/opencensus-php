@@ -14,6 +14,7 @@ class Validator extends Base\Validator
 
     const COMPOSITE_CREATE_RULE = 'composite_create';
     const PAYOUT_LINK_ID_RULE   = 'payout_link_id';
+    const VERIFY_OTP            = 'verify_otp';
 
     protected static $payoutLinkIdRules = [
         Entity::ID => 'sometimes|public_id|size:19',
@@ -39,5 +40,9 @@ class Validator extends Base\Validator
         'contact.email'         => 'nullable|email|filled',
         'contact.contact'       => 'nullable|contact_syntax|filled',
         'contact.type'          => 'nullable|max:40|alpha_dash_space|filled',
+    ];
+
+    protected static $verifyOtpRules = [
+        'otp' => 'required|string|max:6'
     ];
 }

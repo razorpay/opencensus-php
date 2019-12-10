@@ -174,6 +174,11 @@ class Entity extends Base\PublicEntity
         return $this->contact;
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     // ----------------------------------------- Getters ------------------------------
 
     // -------------------------------------- End Getters -----------------------------

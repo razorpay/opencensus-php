@@ -837,7 +837,8 @@ final class Route
         'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
         'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
-        'payout_links_generate_end_user_otp'       => ['get',       'payout-links/{x_entity_id}/generate-customer-otp',   'PayoutLinkController@generateAndSendCustomerOtp'                    ],
+        'payout_links_generate_end_user_otp'       => ['post',       'payout-links/{x_entity_id}/generate-customer-otp','PayoutLinkController@generateAndSendCustomerOtp'                    ],
+        'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}/verify-customer-otp', 'PayoutLinkController@verifyCustomerOtp'                                        ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
@@ -1433,7 +1434,8 @@ final class Route
         'contact_get_public',
         'auth_link_paper_mandate_authenticate',
         'auth_link_paper_mandate_validate',
-        'payout_links_generate_end_user_otp'
+        'payout_links_generate_end_user_otp',
+        'payout_links_verify_customer_otp'
     ];
 
     public static $device = [

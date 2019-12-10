@@ -8,21 +8,29 @@ use RZP\Mail\Base\Constants;
 
 class CustomerOtp extends Mailable
 {
-    const SUBJECT = 'Otp for Payout Link';
+    const EMAIL_TEMPLATE = 'emails.payout_link.customer_otp';
 
-    protected $customerEmail;
+    const SUBJECT = 'One Time Password (OTP) for verification';
 
     protected $otp;
 
-    const EMAIL_TEMPLATE = 'emails.payout_link.customer_otp';
+    protected $description;
 
-    public function __construct(string $customerEmail, string $otp)
+    protected $merchantName;
+
+    protected $customerEmail;
+
+    public function __construct(string $customerEmail, string $otp, $merchantName, $description)
     {
         parent::__construct();
 
         $this->customerEmail = $customerEmail;
 
         $this->otp = $otp;
+
+        $this->description = $description;
+
+        $this->merchantName = $merchantName;
     }
 
     protected function addRecipients()
@@ -64,7 +72,9 @@ class CustomerOtp extends Mailable
     protected function addMailData()
     {
         $data = [
-            'otp' => $this->otp
+            'otp'           => $this->otp,
+            'merchant_name' => $this->merchantName,
+            'description'   => $this->description,
         ];
 
         $this->with($data);

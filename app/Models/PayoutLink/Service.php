@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 class Service extends Base\Service
 {
     use Base\Traits\ServiceHasCrudMethods;
+    const OTP = 'otp';
 
     /**
      * @var Core
@@ -43,5 +44,14 @@ class Service extends Base\Service
         );
 
         return $this->core->generateAndSendCustomerOtp($payoutLinkId);
+    }
+
+    public function verifyCustomerOtp($payoutLinkId, $input)
+    {
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::VERIFY_OTP, $input);
+
+        return $this->core->verifyCustomerOtp($payoutLinkId, $input[self::OTP]);
     }
 }

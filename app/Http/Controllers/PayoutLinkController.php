@@ -26,4 +26,10 @@ class PayoutLinkController extends Controller
 
     }
 
+    public function verifyCustomerOtp(string $payoutLinkId)
+    {
+        $response = $this->service()->verifyCustomerOtp($payoutLinkId, $this->input);
+
+        return ApiResponse::json($response);
+    }
 }

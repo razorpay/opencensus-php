@@ -1,1 +1,2 @@
-Yo bro!
+{{ $otp }} is your One Time Password generate by Razorpay for verification for {{ $merchant_name }}’s {{ $description }}.
+Please use within 5 mins and do not share it with anyone.

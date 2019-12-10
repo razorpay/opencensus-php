@@ -27,13 +27,17 @@ class Core extends Base\Core
     const RECEIVER                = 'receiver';
     const SMS_TEMPLATE            = 'sms.payout_link.otp';
     const API_PAYOUT_LINK_SRC_STR = 'api.payout-link';
-    const API_POUT_LNK_SCR        = 'api.pout_lnk';
+    const API_POUT_LNK_SCR        = 'api.pout_l';
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
+
+    const TOKEN_EXPIRE_IN_SECONDS = 900; //15 minutes
 
     protected $elfin;
 
     protected $raven;
+
+    protected $redis;
 
     public function __construct()
     {
@@ -42,6 +46,8 @@ class Core extends Base\Core
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
+
+        $this->redis = $this->app['redis']->connection();
     }
 
     public function create(array $input): Entity
@@ -105,10 +111,32 @@ class Core extends Base\Core
 
     public function verifyCustomerOtp($payoutLinkId, $otp)
     {
-        //todo, pl add verification code here.
-        // Store the below token in redis before sending it to the front-end
+        $payoutLink = $this->repo
+            ->payout_link
+            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $contact = $payoutLink->contact;
+
+        $receiver = $this->getReceiver($contact, $payoutLinkId);
+
+        $payload = [
+            self::RECEIVER => $receiver,
+            self::CONTEXT  => $payoutLinkId,
+            self::SOURCE   => self::API_POUT_LNK_SCR,
+            self::OTP      => $otp
+        ];
+
+        // todo, pl check if its ok to log OTP
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
+            $payload
+        );
+
+        $this->raven->verifyOtp($payload);
 
         $uniqueToken = $this->generateUniqueRequestToken($payoutLinkId);
+
+        $this->redis->set($uniqueToken, '', 'ex', self::TOKEN_EXPIRE_IN_SECONDS);
 
         return [
             'token' => $uniqueToken
@@ -116,7 +144,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Timestamp + payout_link_id
+     * This will be stored in redis after OTP verification
+     * and will be used in subsequent api calls
      */
     protected function generateUniqueRequestToken($payoutLinkId): string
     {
@@ -167,7 +196,10 @@ class Core extends Base\Core
 
         if ($email !== null)
         {
-            $customerEmailOtp = new CustomerOtp($email, $otp);
+            $customerEmailOtp = new CustomerOtp($email,
+                                                $otp,
+                                                $this->merchant->getName(),
+                                                $payoutLink->getDescription());
             try
             {
                 Mail::queue($customerEmailOtp);
@@ -222,21 +254,13 @@ class Core extends Base\Core
 
     protected function generateOtp(ContactEntity $contact, string $payoutLinkId)
     {
-        $phoneNumber = $contact->getContact();
+        $receiver = $this->getReceiver($contact, $payoutLinkId);
 
-        if ($phoneNumber === null)
-        {
-            #todo, pl how will we handle OTP creation when we do not have a phone-number
-            $x = 1;
-        }
-        else
-        {
-            $payload = [
-                self::RECEIVER => $phoneNumber,
-                self::CONTEXT  => $payoutLinkId,
-                self::SOURCE   => self::API_POUT_LNK_SCR
-            ];
-        }
+        $payload = [
+            self::RECEIVER => $receiver,
+            self::CONTEXT  => $payoutLinkId,
+            self::SOURCE   => self::API_POUT_LNK_SCR
+        ];
 
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_REQUEST,
@@ -249,6 +273,7 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_RESPONSE,
             $response
         );
+
         if (key_exists(self::OTP, $response) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
@@ -297,5 +322,42 @@ class Core extends Base\Core
         }
 
         $payoutLink->setShortUrl($shortUrl);
+    }
+
+    /**
+     * @param ContactEntity $contact
+     * @param string $payoutLinkId
+     * @return mixed|null
+     * @throws BadRequestException
+     */
+    protected function getReceiver(ContactEntity $contact, string $payoutLinkId): string
+    {
+        $phoneNumber = $contact->getContact();
+
+        $email = $contact->getEmail();
+
+        if (($phoneNumber === null) and ($email === null))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                                          [
+                                              ContactEntity::ID      => $contact->getPublicId(),
+                                              ContactEntity::NAME    => $contact->getName(),
+                                              ContactEntity::CONTACT => $contact->getContact(),
+                                              ContactEntity::EMAIL   => $contact->getEmail(),
+                                              self::PAYOUT_LINK_ID   => $payoutLinkId
+                                          ]
+            );
+        }
+
+        if ($phoneNumber !== null)
+        {
+            $receiver = $phoneNumber;
+        }
+        else
+        {
+            $receiver = $email;
+        }
+
+        return $receiver;
     }
 }
