@@ -149,12 +149,16 @@ app
               value: 6,
             },
             9: {
-              name: 'Trust / Society / NGO',
+              name: 'Trust',
               value: 9,
             },
             10: {
-              name: "I'm not sure",
-              value: 12,
+              name: 'Society',
+              value: 10,
+            },
+            11: {
+              name: 'NGO',
+              value: 7,
             },
           },
 
@@ -165,7 +169,6 @@ app
             4: '25 Lacs to 50 Lacs',
             5: '50 Lacs to 1 Crore',
             6: 'More than 1 Crore',
-            7: "I'm not sure",
           },
 
           department: {
@@ -180,10 +183,6 @@ app
             3: {
               name: 'Business',
               value: '3',
-            },
-            4: {
-              name: "I'm not sure",
-              value: '4',
             },
           },
         },
