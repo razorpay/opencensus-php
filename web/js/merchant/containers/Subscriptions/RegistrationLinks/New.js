@@ -29,8 +29,6 @@ import PaymentDetailsForm, {
 import TokenDetailsForm from 'merchant/components/Subscriptions/RegistrationLinksForm/TokenDetails';
 import {
   trackClickPaymentMethod,
-  trackReceivedNACHForm,
-  trackNACHToolTipHover,
   trackClickNext,
   trackSkipBankDetails,
   trackSubmitCreateForm,
@@ -95,7 +93,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         customerContact: '',
         configSmsNotify: '',
         configEmailNotify: '',
-        isNachFormAval: '',
         mandateMethod: '',
         bankName: '',
         skipBankDetails: '',
@@ -352,14 +349,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       .then(response => {
         const entityId = response.id;
 
-        if (this.state.formFields.isNachFormAval) {
-          setTimeout(() => {
-            const redirectUrl = `/registration_links/${entityId}/upload_nach`;
-
-            this.props.history.push(redirectUrl);
-          }, 500);
-        }
-
         if (this.props.onClose) {
           this.props.luminateRow(entityId);
 
@@ -473,7 +462,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             avlblMethods={this.state.avlblMethods}
             mandateMethod={formFields.mandateMethod}
             emandateBanks={this.state.emandateBanks}
-            isNachFormAval={formFields.isNachFormAval}
             bankName={formFields.bankName}
             skipBankDetails={formFields.skipBankDetails}
             beneficiaryName={formFields.beneficiaryName}
@@ -484,8 +472,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             isEmandatePayment={this.isEmandatePayment}
             handleNotesChange={this.handleNotesChange}
             trackClickPaymentMethod={trackClickPaymentMethod}
-            trackReceivedNACHForm={trackReceivedNACHForm}
-            trackNACHToolTipHover={trackNACHToolTipHover}
             trackSkipBankDetails={trackSkipBankDetails}
             formReference1={formFields.formReference1}
             formReference2={formFields.formReference2}
