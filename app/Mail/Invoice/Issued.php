@@ -12,6 +12,7 @@ class Issued extends Base
         Type::ECOD                         => ' Requesting payment of %s %s (via Razorpay)',
         Type::INVOICE                      => ' Invoice from %s',
         Preferences::MID_RBL_RETAIL_ASSETS => ' Mandate registration link from RBL Bank',
+        Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
     ];
 
     protected $fileData;
@@ -38,6 +39,15 @@ class Issued extends Base
             case Preferences::MID_BAGIC:
 
                 $this->view('emails.invoice.customer.custom.bagic');
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                if ($this->data['invoice']['type'] === 'subscription_registration')
+                {
+                    $this->view('emails.invoice.customer.custom.rbl_interim_process2');
+                }
 
                 break;
 

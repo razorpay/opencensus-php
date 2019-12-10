@@ -146,6 +146,15 @@ class Base extends Mailable
 
                 break;
 
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                if ($type === 'subscription_registration')
+                {
+                    $template = static::SUBJECT_TEMPLATES[$merchantId];
+
+                    $args = [];
+                }
+
             default:
 
                 break;

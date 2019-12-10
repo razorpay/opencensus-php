@@ -3,7 +3,7 @@
 <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 
-    @extends('emails.invoice.customer.custom.rbl_custom_notification')
+    @extends('emails.invoice.customer.custom.rbl_interim_process2_notification')
 
     @php
         $status    = $invoice['status'];
