@@ -42,6 +42,7 @@ class Limit
         TYPE::IIN_HITACHI_VISA                      => 500000,
         TYPE::IIN_MC_MASTERCARD                     => 500000,
         TYPE::PRICING_RULE                          => 50000,
+        Type::ADMIN_BATCH                           => 5000,
     ];
 
     /**
