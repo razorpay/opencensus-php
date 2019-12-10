@@ -155,6 +155,8 @@ class Base extends Mailable
                     $args = [];
                 }
 
+                break;
+
             default:
 
                 break;
