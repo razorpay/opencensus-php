@@ -413,11 +413,6 @@ export default class User {
     return this.getExpStatus('sellerapp_plus');
   }
 
-  // Payment pages multiple line items
-  get isPPMLIEnabled() {
-    return this.getExpStatus('paymentpages_mli');
-  }
-
   get isMobileHotjarSurveyEnabled() {
     return this.getExpStatus('mobile_hotjar_survey');
   }
