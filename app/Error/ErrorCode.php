@@ -332,10 +332,10 @@ class ErrorCode
     const BAD_REQUEST_CONTACT_ADD_FAILED                                            = 'BAD_REQUEST_CONTACT_ADD_FAILED';
 
     //payout links
-    const BAD_REQUEST_CUSTOMER_OTP_SMS_FAILED                                        = 'BAD_REQUEST_CUSTOMER_OTP_SMS_FAILED';
+    const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                                   = 'BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                                 = 'BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED';
 
-    const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED';
+    const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                         = 'BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED';
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';

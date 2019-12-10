@@ -14,9 +14,9 @@ class CustomerOtp extends Mailable
 
     protected $otp;
 
-    const EMAIL_TEMPLATE = '';
+    const EMAIL_TEMPLATE = 'emails.payout_link.customer_otp';
 
-    public function __construct(array $customerEmail, string $otp)
+    public function __construct(string $customerEmail, string $otp)
     {
         parent::__construct();
 

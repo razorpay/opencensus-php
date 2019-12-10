@@ -2,11 +2,15 @@
 
 namespace RZP\Models\PayoutLink;
 
+use Mail;
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
@@ -23,6 +27,9 @@ class Core extends Base\Core
     const RECEIVER                = 'receiver';
     const SMS_TEMPLATE            = 'sms.payout_link.otp';
     const API_PAYOUT_LINK_SRC_STR = 'api.payout-link';
+    const API_POUT_LNK_SCR        = 'api.pout_lnk';
+    const OK                      = 'OK';
+    const PAYOUT_LINK_ID          = 'payout_link_id';
 
     protected $elfin;
 
@@ -79,7 +86,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
             [
-                'payout_link_id' => $payoutLinkId
+                self::PAYOUT_LINK_ID => $payoutLinkId
             ]
         );
 
@@ -91,9 +98,15 @@ class Core extends Base\Core
 
         $otp = $this->generateOtp($contact, $payoutLinkId);
 
-        $this->sendCustomerOtpSms($contact, $otp);
+        $this->deliverOtp($payoutLink, $contact, $otp);
 
-        $this->sendCustomerOtpEmail($contact, $otp);
+        return self::OK;
+    }
+
+    public function verifyCustomerOtp($payoutLinkId, $otp)
+    {
+        //todo, pl add verification code here.
+        // Store the below token in redis before sending it to the front-end
 
         $uniqueToken = $this->generateUniqueRequestToken($payoutLinkId);
 
@@ -114,21 +127,85 @@ class Core extends Base\Core
 
     /**
      * Returns true, if atkleast one delivery worked. else returns false
+     * @param Entity $payoutLink
      * @param ContactEntity $contact
-     * @return bool
+     * @param string $otp
+     * @return void
+     * @throws BadRequestException
      */
-    protected function deliverOtp(ContactEntity $contact, string $otp): bool
+    protected function deliverOtp(Entity $payoutLink, ContactEntity $contact, string $otp)
     {
-        # get the phone-number
-        # send SMS
+        $successfulChannelPushCount = 0;
+
+        $phoneNumber = $contact->getContact();
+
+        if ($phoneNumber !== null)
+        {
+            $payload = $this->getSmspayload($contact, $otp);
+
+            try
+            {
+                $this->raven->sendSms($payload);
+
+                $successfulChannelPushCount++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                                             Trace::ERROR,
+                                             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED,
+                                             [
+                                                 ContactEntity::ID      => $contact->getPublicId(),
+                                                 ContactEntity::NAME    => $contact->getName(),
+                                                 ContactEntity::CONTACT => $contact->getContact(),
+                                                 self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                                             ]);
+            }
+        }
+
+        $email = $contact->getEmail();
+
+        if ($email !== null)
+        {
+            $customerEmailOtp = new CustomerOtp($email, $otp);
+            try
+            {
+                Mail::queue($customerEmailOtp);
+
+                $successfulChannelPushCount++;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e,
+                                             Trace::ERROR,
+                                             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED,
+                                             [
+                                                 ContactEntity::ID    => $contact->getPublicId(),
+                                                 ContactEntity::NAME  => $contact->getName(),
+                                                 ContactEntity::EMAIL => $contact->getEmail(),
+                                                 self::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                                             ]);
+            }
+
+        }
+
+        if ($successfulChannelPushCount === 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+                null,
+                [
+                    ContactEntity::ID      => $contact->getPublicId(),
+                    ContactEntity::NAME    => $contact->getName(),
+                    ContactEntity::CONTACT => $contact->getContact(),
+                    ContactEntity::EMAIL   => $contact->getEmail(),
+                    self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                ]
+            );
+        }
     }
 
-    protected function sendCustomerOtpEmail(ContactEntity $contactEntity, string $otp)
-    {
-
-    }
-
-    protected function sendCustomerOtpSms(ContactEntity $contactEntity, string $otp)
+    protected function getSmsPayload(ContactEntity $contactEntity, string $otp)
     {
         $payload = [
             self::PARAMS   => [
@@ -140,18 +217,7 @@ class Core extends Base\Core
             self::RECEIVER => $contactEntity->getContact()
         ];
 
-        try
-        {
-            $this->raven->sendSms($payload);
-        }
-        catch(\Exception $e)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_CUSTOMER_OTP_SMS_FAILED,
-                null,
-                $payload
-            );
-        }
+        return $payload;
     }
 
     protected function generateOtp(ContactEntity $contact, string $payoutLinkId)
@@ -161,13 +227,14 @@ class Core extends Base\Core
         if ($phoneNumber === null)
         {
             #todo, pl how will we handle OTP creation when we do not have a phone-number
+            $x = 1;
         }
         else
         {
             $payload = [
                 self::RECEIVER => $phoneNumber,
                 self::CONTEXT  => $payoutLinkId,
-                self::SOURCE   => 'api.pout_lnk'
+                self::SOURCE   => self::API_POUT_LNK_SCR
             ];
         }
 
@@ -223,8 +290,8 @@ class Core extends Base\Core
                 null,
                 TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
                 [
-                    'message'        => $e->getMessage(),
-                    'payout_link_id' => $payoutLink->getId(),
+                    'message'            => $e->getMessage(),
+                    self::PAYOUT_LINK_ID => $payoutLink->getId(),
                 ]
             );
         }
