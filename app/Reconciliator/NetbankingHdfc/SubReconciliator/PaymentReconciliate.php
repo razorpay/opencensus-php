@@ -33,6 +33,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'gateway'    => $this->gateway
                 ]);
 
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_PAYMENT_FAILED);
+
             return null;
         }
 
