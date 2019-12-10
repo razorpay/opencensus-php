@@ -6,33 +6,35 @@ class Constants
 {
     const RECON_PUBLIC_DESCRIPTIONS = [
 
-        InfoCode::RECONCILED                => 'Reconciled Successfully',
+        InfoCode::RECONCILED                    => 'Reconciled Successfully',
 
-        InfoCode::ALREADY_RECONCILED        => 'Already Reconciled',
+        InfoCode::ALREADY_RECONCILED            => 'Already Reconciled',
 
-        InfoCode::RECON_FAILED              => 'Recon failed',
+        InfoCode::RECON_FAILED                  => 'Recon failed',
 
-        InfoCode::RECON_UNPROCESSED_SUCCESS => 'Row has not been considered for reconciliation',
+        InfoCode::RECON_UNPROCESSED_SUCCESS     => 'Row has not been considered for reconciliation',
 
-        InfoCode::PAYMENT_ID_NOT_FOUND      => 'Payment ID could not be found for the MIS row',
+        InfoCode::PAYMENT_ID_NOT_FOUND          => 'Payment ID could not be found for the MIS row',
 
-        InfoCode::REFUND_ID_NOT_FOUND       => 'Refund ID could not be found for the MIS row',
+        InfoCode::REFUND_ID_NOT_FOUND           => 'Refund ID could not be found for the MIS row',
 
-        InfoCode::REFUND_ID_NOT_AS_EXPECTED => 'Refund ID being sent in the file is not as expected',
+        InfoCode::REFUND_ID_NOT_AS_EXPECTED     => 'Refund ID being sent in the file is not as expected',
 
-        InfoCode::MIS_FILE_PAYMENT_FAILED   => 'Payment status in the mis row is failed',
+        InfoCode::PAYMENT_ID_NOT_AS_EXPECTED    => 'Payment ID being sent in the file is not as expected',
 
-        InfoCode::MIS_FILE_REFUND_FAILED    => 'Refund status in the mis row is failed',
+        InfoCode::MIS_FILE_PAYMENT_FAILED       => 'Payment status in the mis row is failed',
 
-        InfoCode::REFUND_PAYMENT_FAILED     => 'Corresponding payment for the refund is in failed state in the system',
+        InfoCode::MIS_FILE_REFUND_FAILED        => 'Refund status in the mis row is failed',
 
-        InfoCode::AMOUNT_MISMATCH           => 'Amount in the recon file does not match with the one stored in API.',
+        InfoCode::REFUND_PAYMENT_FAILED         => 'Corresponding payment for the refund is in failed state in the system',
 
-        InfoCode::CURRENCY_MISMATCH         => 'Currency in the recon file does not match with the one stored in API.',
+        InfoCode::AMOUNT_MISMATCH               => 'Amount in the recon file does not match with the one stored in API.',
 
-        InfoCode::PAYMENT_ABSENT            => 'Payment not found in DB',
+        InfoCode::CURRENCY_MISMATCH             => 'Currency in the recon file does not match with the one stored in API.',
 
-        InfoCode::REFUND_ABSENT             => 'Refund not found in DB',
+        InfoCode::PAYMENT_ABSENT                => 'Payment not found in DB',
+
+        InfoCode::REFUND_ABSENT                 => 'Refund not found in DB',
 
         InfoCode::REFUND_TRANSACTION_ABSENT                     => 'Refund transaction is missing, failed to create one',
 

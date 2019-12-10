@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
         Entity::NOTES                           => 'sometimes|notes',
     ];
@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',

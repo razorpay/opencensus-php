@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Hitachi;
 
+use App;
+use Queue;
+
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Exception;
@@ -21,10 +24,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Mpi\Base\Eci;
+use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Reconciliator\Base\Reconciliate;
 
@@ -44,6 +50,8 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
     const DEFAULT_CVV_VALUE         = '000';
+
+    const STATUS                    = 'status';
 
     const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
 
@@ -181,7 +189,7 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
-// Risk validation for international payments after authentication response 'N'
+        // Risk validation for international payments after authentication response 'N'
         if (isset($input['payment_analytics']['risk_score']) === true )
         {
             if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
@@ -572,6 +580,8 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($hitachiEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $this->getAcquirerData($input, $hitachiEntity);
     }
 
     // used only by paysecure authorized Rupay payment to capture payments
@@ -1655,6 +1665,11 @@ class Gateway extends Base\Gateway
 
     public function forceAuthorizeFailed(array $input)
     {
+        if ($this->isRoutedThroughCardPayments($input))
+        {
+            return $this->forceAuthorizeFailedViaCps($input);
+        }
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
         if (($gatewayPayment[Entity::RESPONSE_CODE] === Status::SUCCESS_CODE) and
@@ -1674,6 +1689,99 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attr);
 
         $gatewayPayment->saveOrFail();
+
+        return true;
+    }
+
+    public function isRoutedThroughCardPayments($input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * card payment service or not.
+         */
+        if ((is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * For CPS payments, we dont have entry in Hitachi table.
+     * so push the relevant param in the CPS queue to that
+     * CPS service can mark the payment as authorized.
+     */
+    protected function forceAuthorizeFailedViaCps(array $input)
+    {
+        // Fetch auth response and check authorize status
+        // in CPS gateway entity
+        $paymentId = $input['payment']['id'];
+
+        $request = [
+            'fields'        => [self::STATUS],
+            'payment_ids'   => [$paymentId],
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_RECON_QUEUE_CPS_REQUEST,
+            $request
+        );
+
+        $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'     => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                'response'      => $response,
+            ]);
+
+        if (empty($response[$paymentId]) === false)
+        {
+            if ($response[$paymentId][self::STATUS] === Status::FAILED)
+            {
+                // Push to queue in order to update/force auth
+                // Note : This push part we can do in async way and
+                // just return true here, as there is no failure case ahead.
+
+                $attr = [
+                    self::PAYMENT_ID    =>  $paymentId,
+                    self::RRN           =>  $input['gateway'][Entity::RRN],
+                    self::AUTH_CODE     =>  $input['gateway'][Entity::AUTH_ID],
+                    self::RECON_ID      =>  $input['gateway'][Entity::MERCHANT_REFERENCE],
+                ];
+
+                $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
+
+                Queue::pushRaw(json_encode($attr), $queueName);
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                        'message'   => 'Update gateway data in order to Force Authorize payment',
+                        'payment_id'=> $paymentId,
+                        'queue'     => $queueName,
+                        'payload'   => json_encode($attr),
+                    ]
+                );
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => RequestProcessor\Base::HITACHI,
+                ]);
+
+            return false;
+        }
 
         return true;
     }

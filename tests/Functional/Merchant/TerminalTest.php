@@ -1290,7 +1290,7 @@ class TerminalTest extends TestCase
         $url = '/merchants/10000000000000/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-        
+
         $this->startTest();
     }
 
@@ -1299,11 +1299,12 @@ class TerminalTest extends TestCase
         $terminal = $this->fixtures->create('terminal:upi_juspay_terminal');
 
         $tid = $terminal['id'];
-        
+
         $data = [
-            'gateway_terminal_password2'       => 'random'
+            'category' => '1411',
+            'vpa'      => 'some@asd'
         ];
-        
+
         $this->editTerminal($tid, $data);
     }
 }

@@ -167,9 +167,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::VPA                        => 'required|string',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
@@ -468,11 +467,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $upiJuspayEditTerminalRules = [
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::VPA                        => 'sometimes|string',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [

@@ -59,6 +59,41 @@ class BucketingTest extends TestCase
         $this->assertEquals(1568867400, $bucket['bucket_timestamp']);
     }
 
+    public function testMerchantReleaseFundsBucketing()
+    {
+        $timestamp = Carbon::create(2019, 9, 19, 9, 30, 0, Timezone::IST);
+
+        $this->setTestTime($timestamp);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'hold_funds',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'release_funds',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bucket = $this->getLastEntity('settlement_bucket', true);
+
+        $this->assertEquals(10000000000000, $bucket['merchant_id']);
+
+        $this->assertEquals(1568867400, $bucket['bucket_timestamp']);
+    }
+
     public function testPaymentSettlementBucketing()
     {
         $this->setTestTime();

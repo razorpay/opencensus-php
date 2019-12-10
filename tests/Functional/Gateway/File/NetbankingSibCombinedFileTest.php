@@ -5,16 +5,19 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Gateway\File\Processor\Refund\Sib;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingSibCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -47,10 +50,52 @@ class NetbankingSibCombinedFileTest extends TestCase
 
         $payment1     = $this->doAuthAndCapturePayment($paymentArray);
         $refundFull   = $this->refundPayment($payment1['id']);
+        $refundEntity1 = $this->getDbLastEntity('refund');
 
         //partial refund
         $payment2        = $this->doAuthAndCapturePayment($paymentArray);
         $refundPartial   = $this->refundPayment($payment2['id'], 500);
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [
+                    [
+                        'id'          => $refundEntity1['id'],
+                        'amount'      => $refundEntity1['amount'],
+                        'base_amount' => $refundEntity1['base_amount'],
+                        'payment_id'  => $refundEntity1['payment_id'],
+                        'bank'        => $refundEntity1->payment['bank'],
+                        'gateway'     => $refundEntity1['gateway'],
+                        'currency'    => $refundEntity1['currency'],
+                        'method'      => $refundEntity1->payment['method'],
+                        'created_at'  => $refundEntity1['created_at'],
+                    ],
+                    [
+                        'id'          => $refundEntity2['id'],
+                        'amount'      => $refundEntity2['amount'],
+                        'base_amount' => $refundEntity2['base_amount'],
+                        'payment_id'  => $refundEntity2['payment_id'],
+                        'bank'        => $refundEntity2->payment['bank'],
+                        'gateway'     => $refundEntity2['gateway'],
+                        'currency'    => $refundEntity2['currency'],
+                        'method'      => $refundEntity2->payment['method'],
+                        'created_at'  => $refundEntity2['created_at'],
+                    ],
+                ],
+            ],
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
 
         $this->ba->adminAuth();
 
@@ -94,7 +139,7 @@ class NetbankingSibCombinedFileTest extends TestCase
             $this->checkRefundsFile(
                                     $mail->viewData['refundsFile'],
                                     $payment1['id'],
-                                    [$refundFull['amount'], $refundPartial['amount']]);
+                                    [$refundFull['amount'], $refundPartial['amount']], 2);
 
             $this->assertCount(1, $mail->attachments);
 
@@ -102,12 +147,175 @@ class NetbankingSibCombinedFileTest extends TestCase
         });
     }
 
+    public function testNetbankingSibCombinedFileOnScroogeGolive()
+    {
+        Mail::fake();
 
-    protected function checkRefundsFile(array $refundFileData, $paymentId, $refundAmts)
+        $scroogeGoliveTimestamp = Carbon::createFromTimestamp(1575916200, Timezone::IST);
+
+        Carbon::setTestNow($scroogeGoliveTimestamp);
+
+        // full refund
+        $paymentArray    = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        // refund on scrooge - returned
+        $payment1      = $this->doAuthAndCapturePayment($paymentArray);
+        $refundFull    = $this->refundPayment($payment1['id']);
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
+        // partial refund on scrooge - not returned considering as TPV refund
+        $payment2         = $this->doAuthAndCapturePayment($paymentArray);
+        $refundPartial1   = $this->refundPayment($payment2['id'], 500);
+
+        $scroogeGolivePreviousDayTimestamp = Carbon::createFromTimestamp(1575916200-43200, Timezone::IST);
+
+        Carbon::setTestNow($scroogeGolivePreviousDayTimestamp);
+
+        // partial refund on API - returned
+        $refundPartial2   = $this->refundPayment($payment2['id'], 500);
+        $refundEntity3    = $this->getDbLastEntity('refund');
+        $this->fixtures->edit('refund', $refundEntity3['id'], ['is_scrooge' => 0]);
+
+        // partial refund on API - returned
+        $refundPartial3   = $this->refundPayment($payment2['id'], 10000);
+        $refundEntity4    = $this->getDbLastEntity('refund');
+        $this->fixtures->edit('refund', $refundEntity4['id'], ['is_scrooge' => 0]);
+
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [
+                    [
+                        'id'          => $refundEntity1['id'],
+                        'amount'      => $refundEntity1['amount'],
+                        'base_amount' => $refundEntity1['base_amount'],
+                        'payment_id'  => $refundEntity1['payment_id'],
+                        'bank'        => $refundEntity1->payment['bank'],
+                        'gateway'     => $refundEntity1['gateway'],
+                        'currency'    => $refundEntity1['currency'],
+                        'method'      => $refundEntity1->payment['method'],
+                        'created_at'  => $refundEntity1['created_at'],
+                    ],
+                ],
+            ],
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFilesContent = [
+            'type'      => 'sib_netbanking_refund',
+            'extension' => 'txt'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
+
+        // Not using $refundPartial1 since it is not to be returned
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $payment2, $refundFull, $refundPartial2, $refundPartial3)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Sib Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => '1000.00',
+                    'refunds' => '605.00',
+                    'total'   => '395.00'
+                ],
+                'count' => [
+                    'claims'  => 2,
+                    'refunds' => 3,
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $refundFileData = $mail->viewData['refundsFile'];
+
+            $refundsFileContents = file($refundFileData['url']);
+
+            $this->assertCount(3, $refundsFileContents);
+
+            $fullRefundRowData = explode('||', $refundsFileContents[0]);
+            $fullRefundRowData = array_combine(self::REFUND_FIELDS, $fullRefundRowData);
+
+            $partialRefundRowData1 = explode('||',$refundsFileContents[1]);
+            $partialRefundRowData1 = array_combine(self::REFUND_FIELDS, $partialRefundRowData1);
+
+            $partialRefundRowData2 = explode('||',$refundsFileContents[2]);
+            $partialRefundRowData2 = array_combine(self::REFUND_FIELDS, $partialRefundRowData2);
+
+            $this->assertCount(6, $fullRefundRowData);
+            $this->assertCount(6, $partialRefundRowData1);
+            $this->assertCount(6, $partialRefundRowData2);
+
+            $paymentId1 = $payment1['id'];
+            $paymentId2 = $payment2['id'];
+
+            $this->fixtures->stripSign($paymentId1);
+            $this->fixtures->stripSign($paymentId2);
+
+            $expectedPaymentIds = [$paymentId1, $paymentId2, $paymentId2];
+
+            $actualPaymentIds = [
+                $fullRefundRowData[Sib::PAYMENT_ID],
+                $partialRefundRowData1[Sib::PAYMENT_ID],
+                $partialRefundRowData2[Sib::PAYMENT_ID]
+            ];
+
+            $expectedAmounts = [
+                number_format(($refundFull['amount']) / 100, 2, '.', ''),
+                number_format(($refundPartial2['amount']) / 100, 2, '.', ''),
+                number_format(($refundPartial3['amount']) / 100, 2, '.', '')];
+
+            $actualAmounts = [
+                $fullRefundRowData[Sib::REFUND_AMOUNT],
+                $partialRefundRowData1[Sib::REFUND_AMOUNT],
+                $partialRefundRowData2[Sib::REFUND_AMOUNT]
+            ];
+
+            $assertPaymentIds = (($expectedPaymentIds === array_intersect($expectedPaymentIds, $actualPaymentIds)) &&
+                                 ($actualPaymentIds === array_intersect($actualPaymentIds, $expectedPaymentIds)));
+
+            $assertRefundAmounts = (($expectedAmounts === array_intersect($expectedAmounts, $actualAmounts)) &&
+                                    ($actualAmounts === array_intersect($actualAmounts, $expectedAmounts)));
+
+            $this->assertEquals(true, $assertPaymentIds);
+            $this->assertEquals(true, $assertRefundAmounts);
+
+            $this->assertCount(1, $mail->attachments);
+
+            return true;
+        });
+
+        Carbon::setTestNow();
+    }
+
+    protected function checkRefundsFile(array $refundFileData, $paymentId, $refundAmts, $expectedRefundCount)
     {
         $refundsFileContents = file($refundFileData['url']);
 
-        $this->assertCount(2, $refundsFileContents);
+        $this->assertCount($expectedRefundCount, $refundsFileContents);
 
         $fullRefundRowData = explode('||',$refundsFileContents[0]);
         $fullRefundRowData = array_combine(self::REFUND_FIELDS, $fullRefundRowData);
@@ -120,7 +328,6 @@ class NetbankingSibCombinedFileTest extends TestCase
         $this->fixtures->stripSign($paymentId);
 
         $this->assertEquals($paymentId, $fullRefundRowData[Sib::PAYMENT_ID]);
-
 
         // validating if partial refund amount is reflected in the file
         $refundAmount = number_format(($refundAmts[0]) / 100, 2, '.', '');

@@ -334,7 +334,7 @@ class Base
 
     protected function setAdminHeader()
     {
-        $this->headers[RequestHeader::X_DASHBOARD_ADMIN_EMAIL] = $this->getAdminEmail();
+        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
     }
 
     protected function getAdminEmail(): string

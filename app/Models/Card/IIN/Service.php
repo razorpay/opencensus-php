@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment\AuthType as AuthType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Http\RequestHeader;
@@ -168,13 +169,42 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bin_list_validation', $input);
 
-        $iins = $this->repo->iin->findOtpEnabledIins();
+        $iins = $this->getIinsWithMerchantFeatures($input);
 
         $response['count'] = count($iins);
 
         $response['iins'] = $iins;
 
         return $response;
+    }
+
+    protected function getIinsWithMerchantFeatures(array $input): array
+    {
+        $collectiveIins = [];
+
+        $exposedFlow = $input['flow'];
+
+        foreach (AuthType::$featureToAuthMap[$exposedFlow] as $feature)
+        {
+            if ($this->merchant->isFeatureEnabled($feature) === true)
+            {
+                $flowValue = Flow::$flows[Flow::$featureToFlowMappings[$exposedFlow][$feature]];
+
+                $iins = $this->repo->iin->findIinsByFlows($flowValue);
+
+                $collectiveIins =  array_merge($collectiveIins, $iins);
+            }
+        }
+
+        if (($exposedFlow === Flow::OTP) and
+            ($this->merchant->isHeadlessEnabled() === true))
+        {
+            $iins = $this->repo->iin->findIinsByFlows(Flow::$flows[Flow::HEADLESS_OTP]);
+
+            $collectiveIins =  array_merge($collectiveIins, $iins);
+        }
+
+        return array_unique(array_values($collectiveIins));
     }
 
     public function addorUpdateMultiple($iinMin, $iinMax, $input)

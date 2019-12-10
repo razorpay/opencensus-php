@@ -1280,6 +1280,11 @@ final class Route
         'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                          'GovernorController@proxy'              ],
         'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                          'GovernorController@proxy'              ],
 
+        // Governor Proxy APIs New - Template
+        'governor_create_template_v1'             => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/templates',        'GovernorController@proxy'              ],
+        'governor_list_template_v1'               => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/templates',        'GovernorController@proxy'              ],
+        'governor_update_template_v1'             => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/templates/{id}',   'GovernorController@proxy'              ],
+
         // Governor Proxy APIs New - Rule
         'governor_create_rule_v1'                 => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',            'GovernorController@proxy'              ],
         'governor_list_rule_v1'                   => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}/rules',            'GovernorController@proxy'              ],
@@ -2552,6 +2557,9 @@ final class Route
         'governor_get_namespace_v1',
         'governor_update_namespace_v1',
         'governor_delete_namespace_v1',
+        'governor_create_template_v1',
+        'governor_list_template_v1',
+        'governor_update_template_v1',
         'governor_create_rule_v1',
         'governor_list_rule_v1',
         'governor_get_rule_v1',
@@ -3086,6 +3094,9 @@ final class Route
         'governor_get_namespace_v1'                => Permission::VIEW_GATEWAY_RULE,
         'governor_update_namespace_v1'             => Permission::EDIT_GATEWAY_RULE,
         'governor_delete_namespace_v1'             => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_template_v1'              => Permission::CREATE_GATEWAY_RULE,
+        'governor_list_template_v1'                => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_template_v1'              => Permission::CREATE_GATEWAY_RULE,
         'governor_create_rule_v1'                  => Permission::CREATE_GATEWAY_RULE,
         'governor_list_rule_v1'                    => Permission::VIEW_GATEWAY_RULE,
         'governor_get_rule_v1'                     => Permission::VIEW_GATEWAY_RULE,
@@ -3156,10 +3167,10 @@ final class Route
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',
 
-        'create_merchant_options_admin'             => '*',
-        'read_merchant_options_admin'               => '*',
-        'update_merchant_options_admin'             => '*',
-        'delete_merchant_options_admin'             => '*',
+        'create_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
+        'read_merchant_options_admin'               => Permission::MANAGE_RENDERING_PREFERENCES,
+        'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
+        'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,

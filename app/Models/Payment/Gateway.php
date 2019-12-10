@@ -641,6 +641,9 @@ class Gateway
         Payment\Gateway::NETBANKING_OBC,
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_CORPORATION,
+        Payment\Gateway::NETBANKING_RBL,
+        Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SIB,
         Payment\Gateway::NETBANKING_ALLAHABAD,
     ];
 
@@ -649,6 +652,10 @@ class Gateway
         Payment\Gateway::NETBANKING_OBC         => 1575484200,
         Payment\Gateway::NETBANKING_CANARA      => 1575484200,
         Payment\Gateway::NETBANKING_CORPORATION => 1575484200,
+        Payment\Gateway::NETBANKING_RBL         => 1575973800,
+        Payment\Gateway::NETBANKING_CUB         => 1575973800,
+        Payment\Gateway::NETBANKING_SIB         => 1575973800,
+        Payment\Gateway::NETBANKING_SCB         => 1575973800,
         Payment\Gateway::NETBANKING_ALLAHABAD   => 1575484200,
     ];
 
