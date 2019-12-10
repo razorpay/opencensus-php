@@ -238,7 +238,9 @@ class GatewayController extends Controller
             case Gateway::UPI_JUSPAY:
 
                 $input = [
-                    'headers' => Request::header(),
+                    'headers' => [
+                        'x-merchant-payload-signature' => Request::header('X-Merchant-Payload-Signature')
+                    ],
                     'raw'     => Request::getContent(),
                     'body'    => $input,
                 ];

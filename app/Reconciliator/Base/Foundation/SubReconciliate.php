@@ -556,7 +556,14 @@ class SubReconciliate extends Base\Core
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
 
-        if (empty($errorCode) === false)
+        //
+        // For error codes, we don't want to overwrite it, because the first point
+        // where we set the error code, that is very specific to the issue.
+        //
+        $existingErrorCode = static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG];
+
+        if ((empty($errorCode) === false) and
+            (empty($existingErrorCode) === true))
         {
             static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }

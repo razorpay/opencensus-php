@@ -72,6 +72,7 @@ class NetbankingObcCombinedFileTest extends TestCase
                         'gateway'     => $refundEntity1['gateway'],
                         'currency'    => $refundEntity1['currency'],
                         'method'      => $refundEntity1->payment['method'],
+                        'created_at'  => $refundEntity1['created_at'],
                     ],
                     [
                         'id'          => $refundEntity2['id'],
@@ -82,6 +83,7 @@ class NetbankingObcCombinedFileTest extends TestCase
                         'gateway'     => $refundEntity2['gateway'],
                         'currency'    => $refundEntity2['currency'],
                         'method'      => $refundEntity2->payment['method'],
+                        'created_at'  => $refundEntity2['created_at'],
                     ],
                 ],
             ],

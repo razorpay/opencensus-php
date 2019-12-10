@@ -608,14 +608,12 @@ class Repository extends Base\Repository
     {
         //
         // To make use of existing function (buildQueryToFetchSubmerchantsByAppIds) which uses an array for appIds,
-        // we convert the only app id that we have to an array.
+        // we convert the only app id and submerchant id that we have to an array.
         //
-        $appIds = [$appId];
+        $appIds         = [$appId];
+        $submerchantIds = [$submerchantId];
 
-        $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
-
-        $submerchant = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
-                            ->where($accessMapsMerchantId, $submerchantId)
+        $submerchant = $this->buildQueryToFetchSubmerchantsByAppIds($appIds, $submerchantIds)
                             ->firstOrFail();
 
         return $submerchant;
@@ -631,7 +629,11 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
-        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds, $relations);
+        $submerchantIds = $params[Entity::MERCHANT_ID] ?? [];
+
+        unset($params[Entity::MERCHANT_ID]);
+
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds, $submerchantIds, $relations);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -661,11 +663,13 @@ class Repository extends Base\Repository
     /**
      * @param array $applicationIds
      *
+     * @param array $submerchantIds
+     *
      * @param array $relations
      *
      * @return Base\BuilderEx
      */
-    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds, array $relations = [])
+    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds, array $submerchantIds = [], array $relations = [])
     {
         $accessMapRepo       = $this->repo->merchant_access_map;
         $merchantDetailsRepo = $this->repo->merchant_detail;
@@ -700,6 +704,11 @@ class Repository extends Base\Repository
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
                       ->whereIn($accessMapsEntityId, $applicationIds)
                       ->whereNull($accessMapsDeletedAt);
+
+        if (empty($submerchantIds) === false)
+        {
+            $query->whereIn($accessMapsMerchantId, $submerchantIds);
+        }
 
         return $query;
     }
