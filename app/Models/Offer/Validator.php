@@ -419,7 +419,7 @@ class Validator extends Base\Validator
         if($isInsuranceCategory)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Offer creation is not allowed for this category Merchant ');
+                'Offer creation is not allowed for this Merchant category');
         }
     }
 
@@ -430,7 +430,7 @@ class Validator extends Base\Validator
         if($hasBlockingFeature)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Offer creation is not allowed for Merchant ');
+                'Offer creation is not allowed for Merchant');
         }
     }
 }
