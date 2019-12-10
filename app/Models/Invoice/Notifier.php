@@ -865,6 +865,19 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                $sender = 'RBLBNK';
+
+                $template = 'sms.custom_invoice.rbl_interim_process2';
+
+                $params = [
+                    'receipt'           => $receipt,
+                    'invoice_link'      => $invoiceLink,
+                ];
+
+                break;
+
             default:
 
                 $subscriptionRegistration = $this->invoice->entity;
