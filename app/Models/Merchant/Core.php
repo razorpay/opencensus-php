@@ -35,6 +35,7 @@ use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
@@ -630,6 +631,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        if($action === Merchant\Action::RELEASE_FUNDS)
+        {
+            $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
+        }
+
         if($action === Constants::SUSPEND)
         {
             $this->removeMerchantEmailToMailingList($merchant);
@@ -646,6 +652,24 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /**
+     * Adds merchant to settlement bucket when funds are released for the merchant.
+     *
+     * @param Merchant\Entity $merchant
+     */
+    protected function addMerchantToSettlementBucketOnFundsRelease(Merchant\Entity $merchant)
+    {
+        $settlementTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new Bucket\Core())->addMerchantToSettlementBucket('', $merchant->getId(), $settlementTime);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
     }
 
     /**
