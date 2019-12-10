@@ -256,19 +256,23 @@ class Gateway extends Base\Gateway
     // ------------ Auth request helpers -----------------
     protected function updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response)
     {
-        $redirectUrl = $response[Fields::REDIRECT_URL];
-
-        $parsed = parse_url($redirectUrl);
 
         $content = $this->getMappedAttributes($response);
 
-        if (isset($parsed['query']) === true)
+        if (isset($response[Fields::REDIRECT_URL]) === true)
         {
-            parse_str($parsed['query'], $parsed);
+            $redirectUrl = $response[Fields::REDIRECT_URL];
 
-            $hkey = $parsed[Fields::ACCU_HKEY];
+            $parsed = parse_url($redirectUrl);
 
-            $content[Entity::HKEY] = $hkey;
+            if (isset($parsed['query']) === true)
+            {
+                parse_str($parsed['query'], $parsed);
+
+                $hkey = $parsed[Fields::ACCU_HKEY];
+
+                $content[Entity::HKEY] = $hkey;
+            }
         }
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
