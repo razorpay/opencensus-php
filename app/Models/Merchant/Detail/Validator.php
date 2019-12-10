@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -114,6 +115,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $editRules = [
@@ -126,6 +129,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -199,6 +203,8 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $preSignupRules = [
@@ -274,6 +280,10 @@ class Validator extends Base\Validator
 
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+    ];
+
+    protected static $additionalWebsitesRules = [
+        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
     ];
 
     protected static $patchMerchantDetailsRules = [

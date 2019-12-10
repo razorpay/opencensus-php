@@ -185,7 +185,29 @@ class HdfcGatewayTest extends TestCase
             'network' => 'Visa',
         ]);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'shield_risk_evaluation')
+                        {
+                            return 'shield_on';
+                        }
+
+                        if ($feature === 'secure_3d_international')
+                        {
+                            return 'v2';
+                        }
+
+                        return 'shield_off';
+                    }));
 
         $payment = [
             'card' => [

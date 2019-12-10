@@ -107,4 +107,9 @@ class Constants
         self::B2C,
         self::B2BC,
     ];
+
+    public static $validAddressTypes = [
+        self::REGISTERED,
+        self::OPERATION,
+    ];
 }

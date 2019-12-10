@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -65,7 +66,7 @@ class Base
 
     // Headers
     const ACCEPT        = 'Accept';
-    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const ADMIN_EMAIL   = 'admin_email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
 
@@ -198,8 +199,8 @@ class Base
     {
         $headers = [];
 
-        $headers[self::ACCEPT]        = 'application/json';
-        $headers[self::CONTENT_TYPE]  = 'application/json';
+        $headers[self::ACCEPT]       = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
 
         $this->headers = $headers;
     }
@@ -322,10 +323,22 @@ class Base
         return $response;
     }
 
-    protected function setDashboardAuth()
+    protected function setDashboardAuthAndAdminHeader()
     {
         $this->key     = $this->config[$this->mode]['fts_dashboard_key'];
 
         $this->secret  = $this->config[$this->mode]['fts_dashboard_secret'];
+
+        $this->setAdminHeader();
+    }
+
+    protected function setAdminHeader()
+    {
+        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
+    }
+
+    protected function getAdminEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? 'EMAIL_NOT_FOUND';
     }
 }

@@ -102,6 +102,8 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create_account', $input);
 
+        $input = Helper::modifyAccountInput($input);
+
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
@@ -128,6 +130,8 @@ class Core extends Merchant\Core
     public function editAccount(Merchant\Entity $partner, string $accountId, array $input)
     {
         (new Validator)->validateInput('edit_account', $input);
+
+        $input = Helper::modifyAccountInput($input);
 
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
         {

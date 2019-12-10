@@ -5,15 +5,18 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingVijayaCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -44,6 +47,37 @@ class NetbankingVijayaCombinedFileTest extends TestCase
         ]);
 
         $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [
+                    [
+                        'id'          => $refundEntity['id'],
+                        'amount'      => $refundEntity['amount'],
+                        'base_amount' => $refundEntity['base_amount'],
+                        'payment_id'  => $refundEntity['payment_id'],
+                        'bank'        => $refundEntity->payment['bank'],
+                        'gateway'     => $refundEntity['gateway'],
+                        'currency'    => $refundEntity['currency'],
+                        'method'      => $refundEntity->payment['method'],
+                        'created_at'  => $refundEntity['created_at'],
+                    ],
+                ],
+            ],
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
 
         $this->ba->adminAuth();
 

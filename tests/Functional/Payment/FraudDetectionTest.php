@@ -8,6 +8,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Models\Feature;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -159,7 +160,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -188,7 +189,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -219,7 +220,7 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -264,7 +265,7 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $this->fixtures->merchant->enableUpi();
 
@@ -273,5 +274,109 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('payment_id', $response);
+    }
+
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'shield_risk_evaluation')
+                        {
+                            return 'shield_on';
+                        }
+
+                        return 'shield_off';
+                    }));
+    }
+
+    protected function runPlatformTest($platform, $value)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        // Bootstrap to call shield code
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        if ($platform !== null)
+        {
+            $payment['_'] = ['platform' => $platform];
+        }
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($value) {
+                return [
+                    "action" => (($payload['input']['platform'] === $value) ? 'allow': 'block'),
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    /*
+     * In these 6 tests we are trying to check if the parameter platform is getting passed
+     * to the shield service correctly or not.
+     *
+     * For that we have created a payment and mocked razorx and shield client.
+     *
+     * Then for each value of platform we would block the payment if the platform value
+     * in the received payload doesn't match the actual platform value which we passed.
+     *
+     * This ensures the correct testing of this parameter in the actual payment flow
+     * upto and after the shield client has been used.
+     *
+     * The only reason for separate tests is that binding mock services to app can occur only
+     * once in a test, and we had to create different mock services for different parameters.
+     */
+
+    public function testFraudDetectionWithPlatformNull()
+    {
+        $this->runPlatformTest(null, null);
+    }
+
+    public function testFraudDetectionWithPlatformBrowser()
+    {
+        $this->runPlatformTest('browser', 'browser');
+    }
+
+    public function testFraudDetectionWithPlatformMobileSdk()
+    {
+        $this->runPlatformTest('mobile_sdk', 'mobile_sdk');
+    }
+
+    public function testFraudDetectionWithPlatformCordova()
+    {
+        $this->runPlatformTest('cordova', 'cordova');
+    }
+
+    public function testFraudDetectionWithPlatformServer()
+    {
+        $this->runPlatformTest('server', 'server');
+    }
+
+    public function testFraudDetectionWithPlatformRandom()
+    {
+        $this->runPlatformTest('xyz', 'others');
     }
 }

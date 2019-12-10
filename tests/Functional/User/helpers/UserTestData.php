@@ -1368,4 +1368,31 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testGetForUsersWithBusinessBankingEnabled' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'            => true,
+                        'banking_activated_at' => 1563692021,
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
+        ],
+    ],
 ];

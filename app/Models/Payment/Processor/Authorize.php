@@ -115,12 +115,29 @@ trait Authorize
 
         $this->updateTokenOnCreatedIfRequired($payment, $ret);
 
+        $data = [];
+
+        // For those payments which does auth in a single step, we need to store the acquirer data
+        // If `request` is set from gateway response, we should not
+        if ((isset($ret['request']) === false) AND
+            (isset($ret['acquirer']) === true))
+        {
+            $data['acquirer'] = $ret['acquirer'];
+            unset($ret['acquirer']);
+
+            // To set ret to null instead of keeping it as an empty array
+            if (empty($ret) === true)
+            {
+                $ret = null;
+            }
+        }
+
         if ($ret !== null)
         {
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment, $gatewayInput);
+        return $this->processPaymentFinal($payment, $gatewayInput, $data);
     }
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
@@ -227,18 +244,36 @@ trait Authorize
             return $request;
         }
 
-        $this->runShieldCheck($payment);
-
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
         if ($request !== null)
         {
-            return $this->getPaymentGatewayRequestData($request, $payment);
+            //
+            // If the request contains the acquirer field, we do not need corpoto here
+            // Instead, we store this acquirer data in payment entity and proceeds to authorize the payment.
+            // We DO NOT support both coproto and setting acquirer data together in auth response from
+            // gateway as of now.
+            //
+            if (isset($request['acquirer']) === true)
+            {
+                return $request;
+            }
+            else
+            {
+                //
+                // If $request is not null, then payment is two-step process
+                // where client needs to provide additional info via his browser.
+                //
+                $request = $this->getPaymentGatewayRequestData($request, $payment);
+
+                return $request;
+            }
         }
 
         return null;
+
     }
 
     protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array & $gatewayInput)
@@ -279,7 +314,6 @@ trait Authorize
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
-
 
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
@@ -498,8 +532,6 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
-
-        $this->runShieldCheck($this->payment);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -517,11 +549,12 @@ trait Authorize
      *
      * @param Payment\Entity $payment
      *
+     * @param array $data Acquirer data to be saved in payment entity
      * @return array
      */
-    public function processAuth(Payment\Entity $payment): array
+    public function processAuth(Payment\Entity $payment, array $data = []): array
     {
-        $this->updateAndNotifyPaymentAuthorized();
+        $this->updateAndNotifyPaymentAuthorized($data);
 
         $this->updateTwoFactorAuthForOneStepPayment();
 
@@ -573,7 +606,7 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
@@ -591,7 +624,7 @@ trait Authorize
             return $this->processNachPaymentCreated($payment);
         }
 
-        return $this->processAuth($payment);
+        return $this->processAuth($payment, $data);
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
@@ -2129,7 +2162,14 @@ trait Authorize
             // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
 
-            $shouldRunFraudDetectionV2 = (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+            $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'shield_risk_evaluation', $this->mode);
+
+            $this->trace->info(TraceCode::RAZORX_VARIANT_SHIELD, [
+                'payment_id'     => $payment->getId(),
+                'razorx_variant' => $razorxResult,
+            ]);
+
+            $shouldRunFraudDetectionV2 = (($razorxResult === 'shield_on') and
                                           ($payment->shouldRunShieldChecks() === true));
 
             if ($shouldRunFraudDetectionV2 === true)
@@ -2147,6 +2187,10 @@ trait Authorize
                 catch (\Requests_Exception $exception)
                 {
                     $fallbacktoV1Flow = true;
+                }
+                finally
+                {
+                    $payment->setMetadataKey('shield_risk_execution', $razorxResult);
                 }
             }
 
@@ -2192,6 +2236,8 @@ trait Authorize
     }
 
     /**
+     * @deprecated
+     *
      * This is called in 2 places, both after creation for payment/payment analytics
      * as both entity should have persisted at this time
      *
@@ -2207,7 +2253,7 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        if ($payment->getMetadata('shield_risk_execution') === 'on')
         {
             return;
         }
@@ -5944,8 +5990,6 @@ trait Authorize
         }
 
         $input['payment']['id'] = $payment->getId();
-
-        $cache = Cache::getFacadeRoot();
 
         if ($type === 'fallback')
         {

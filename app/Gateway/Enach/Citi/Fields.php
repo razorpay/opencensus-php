@@ -46,6 +46,7 @@ class Fields
     const USER_BANK_ACCOUNT_NUMBER_HEADING                = '00000000000000000000000000000000000';
     const SETTLEMENT_CYCLE_HEADING                        = '  ';
     const FILLER_57                                       = '                                                         ';
+    const CLIENT_CODE                                     = 'CTRAZORPAY';
 
     const ACCOUNT_TYPE_VALUE                             =  'accountType' ;
     const ACCOUNT_NAME                                   =  'accountName';
@@ -96,12 +97,10 @@ class Fields
 
         $endDate = $paperMandate->getEndAt();
 
-        $terminal = $token->terminal;
-
         return [
             NachRegisterFileHeadings::CATEGORY_CODE                 => $categoryCode,
             NachRegisterFileHeadings::CATEGORY_DESCRIPTION          => $categoryDescription,
-            NachRegisterFileHeadings::CLIENT_CODE                   => $terminal->getGatewayTerminalId(),
+            NachRegisterFileHeadings::CLIENT_CODE                   => self::CLIENT_CODE,
             NachRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,
             NachRegisterFileHeadings::CUSTOMER_ACCOUNT_NUMBER       => $accountNumber,
             NachRegisterFileHeadings::CUSTOMER_NAME                 => $customerName,
