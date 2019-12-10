@@ -7,7 +7,7 @@ import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { DateField } from 'merchant/containers/PaymentLinks/Edit/EditExpiry';
 import { trackPageSettingsData } from '../../ga';
 
-import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/EmbedButton';
+import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 
 export default class extends React.Component {
   state = this.initState();
@@ -48,7 +48,7 @@ export default class extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <PPEmbedButtonView shortUrl={this.props.paymentPageEntity.short_url} />
+        <CreateEmbedButton shortUrl={this.props.paymentPageEntity.short_url} />
       ),
     });
   };

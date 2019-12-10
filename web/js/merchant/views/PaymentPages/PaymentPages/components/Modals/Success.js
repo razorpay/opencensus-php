@@ -2,33 +2,19 @@ import { Link } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Input from 'common/new-ui/Input';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import PPEmbedButtonView from './EmbedButton';
+import CreateEmbedButton from './CreateEmbedButton';
 
 import { isEmail, isPhone } from 'common/utils/validators';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-
-const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
-const twitterBase = 'https://twitter.com/share?url=';
-let whatsappBase;
-
-if (isMobileAndTablet()) {
-  whatsappBase = 'whatsapp://send?text=';
-} else {
-  whatsappBase = 'https://web.whatsapp.com//send?text=';
-}
+import SocialShareOptions from './Share/SocialShareOptions';
 
 export default class extends React.PureComponent {
   state = {};
-
-  componentDidMount() {
-    this.getDescription();
-  }
 
   onSubmit = formData => {
     const reqPayload = {};
@@ -86,68 +72,10 @@ export default class extends React.PureComponent {
       });
   };
 
-  mediaWindowUrl = e => {
-    const { title, url } = this.props;
-    const type = e.target.dataset['type'];
-    let mediaUrl;
-
-    const mediaMsg = _shareMessage(title, this.state.description);
-
-    switch (type) {
-      case 'fb':
-        mediaUrl = fbBase + url + '&quote=' + mediaMsg;
-
-        window.open(mediaUrl, 'facebook-share', 'width=550,height=235');
-        break;
-
-      case 'twitter':
-        mediaUrl = twitterBase + url + '&text=' + mediaMsg;
-
-        window.open(mediaUrl, 'twitter-share', 'width=550,height=235');
-        break;
-
-      case 'whatsapp':
-        mediaUrl = whatsappBase + mediaMsg + ' ' + url;
-
-        window.open(mediaUrl);
-        break;
-    }
-
-    this.props.trackerFn('Click Social Media', type);
-
-    return false;
-  };
-
-  getDescription() {
-    const desc = this.props.description;
-
-    if (desc) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.quilljs.com/1.3.6/quill.min.js';
-      script.onload = () => {
-        const node = document.createElement('article');
-        const quill = new window.Quill(node, {});
-
-        quill.setContents(JSON.parse(desc));
-        // Replace # with ''. Repace new line with '. ';
-        this.setState({
-          description: quill
-            .getText()
-            .replace(/(#)/gm, '')
-            .replace(/(\r\n|\n|\r)/gm, '. '),
-        });
-      };
-
-      document.head.appendChild(script);
-    } else {
-      this.setState({ description: '' });
-    }
-  }
-
   openEmbedButtonView = () => {
     this.props.openModal({
       size: 'small',
-      component: <PPEmbedButtonView shortUrl={this.props.url} />,
+      component: <CreateEmbedButton shortUrl={this.props.url} />,
     });
   };
 
@@ -280,25 +208,11 @@ export default class extends React.PureComponent {
               <span class="label--faded">
                 <i class="i i-share-circle" /> Share{' '}
               </span>
-              {this.state.description && (
-                <div class="social-media" style={{ display: 'inline-block' }}>
-                  <a onClick={this.mediaWindowUrl} data-type="fb">
-                    <img src="/img/social-media/fb.png" alt="Facebook share" />
-                  </a>
-                  <a onClick={this.mediaWindowUrl} data-type="twitter">
-                    <img
-                      src="/img/social-media/twitter.png"
-                      alt="Twitter share"
-                    />
-                  </a>
-                  <a onClick={this.mediaWindowUrl} data-type="whatsapp">
-                    <img
-                      src="/img/social-media/whatsapp.png"
-                      alt="Whatsapp share"
-                    />
-                  </a>
-                </div>
-              )}
+              <SocialShareOptions
+                msgInPost={this.props.title}
+                linkInPost={this.props.url}
+                trackerFn={this.props.trackerFn}
+              />
             </div>
 
             <Form class="Share-section" onSubmit={this.onSubmit}>
@@ -363,17 +277,4 @@ export default class extends React.PureComponent {
       </div>
     );
   }
-}
-
-function _shareMessage(title, description) {
-  let msg = `"${title}"`;
-  if (description) {
-    msg += ': ' + description;
-  }
-
-  if (msg.length > 200) {
-    msg = msg.substring(0, 200) + '...';
-  }
-
-  return msg;
 }

@@ -27,7 +27,7 @@ import {
   EditNotes,
 } from 'merchant/containers/PaymentLinks/Edit/index';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
-import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/EmbedButton';
+import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 
 import PaymentsList from './PaymentsList';
 
@@ -148,7 +148,7 @@ export default class PaymentPagesV3Entity extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <PPEmbedButtonView
+        <CreateEmbedButton
           handleClose={this.props.closeModal}
           trackerFn={function() {}}
           url={this.props.paymentPageEntity.short_url}

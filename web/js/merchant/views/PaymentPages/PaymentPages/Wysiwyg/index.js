@@ -12,7 +12,7 @@ import FormSection from './FormSection';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
-import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
+import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
 import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
@@ -251,11 +251,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormSection />, document.getElementById('form-section'));
   };
 
-  openPPShareView = (id, shortUrl, title, description, isEditExistingId) => {
+  openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
     this.props.openModal({
       size: 'small',
       component: (
-        <PPShareView
+        <Success
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
           handleAction={sendLink.bind(null, id)}
@@ -541,7 +541,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           const entityId = resp.data.id;
 
           this.props.history.push(`/paymentpages/${entityId}/edit`);
-          this.openPPShareView(
+          this.openSuccessView(
             entityId,
             resp.data.short_url,
             resp.data.title,
