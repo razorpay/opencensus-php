@@ -29,7 +29,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
-import { validateUISchema as validateUISchemaV2 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V2';
 import { validateUISchema as validateUISchemaV3 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V3';
 
 import { rupeesToPaise } from 'common/utils/rzp-utils';
@@ -425,9 +424,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
-    const isValidSchema = isPPMLIEnabled
-      ? validateUISchemaV3(udf_schema)
-      : validateUISchemaV2(udf_schema);
+    const isValidSchema = validateUISchemaV3(udf_schema);
 
     // console.log('udf_schema......', udf_schema);
 
