@@ -423,6 +423,12 @@ class Service extends Base\Service
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
+            //
+            // This is temporary code to get merchant waitlist
+            // This code will be removed, in few weeks
+            //
+            $data['current_account_waitlist_number'] = Merchant\Constants::MERCHANT_WAITLIST[$currentMerchantId] ?? null;
+
             $merchantService = new Merchant\Service;
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
