@@ -151,7 +151,7 @@ class NetbankingSibCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $scroogeGoliveTimestamp = Carbon::createFromTimestamp(1575916200, Timezone::IST);
+        $scroogeGoliveTimestamp = Carbon::createFromTimestamp(1575982238, Timezone::IST);
 
         Carbon::setTestNow($scroogeGoliveTimestamp);
 
@@ -167,7 +167,7 @@ class NetbankingSibCombinedFileTest extends TestCase
         $payment2         = $this->doAuthAndCapturePayment($paymentArray);
         $refundPartial1   = $this->refundPayment($payment2['id'], 500);
 
-        $scroogeGolivePreviousDayTimestamp = Carbon::createFromTimestamp(1575916200-43200, Timezone::IST);
+        $scroogeGolivePreviousDayTimestamp = Carbon::createFromTimestamp(1575982238-43200, Timezone::IST);
 
         Carbon::setTestNow($scroogeGolivePreviousDayTimestamp);
 
