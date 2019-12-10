@@ -923,9 +923,9 @@ class PublicErrorDescription
     //Offer
     const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
     const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
-    const PAYMENT_METHOD_NOT_SAME                                                   = 'Offer Payment Method is not same as Selected Payment Method';
-    const PAYMENT_METHOD_TYPE_NOT_SAME                                              = 'Offer Payment Method Type is not same as Selected Payment Method Type';
-    const PAYMENT_NETWORK_NOT_SAME                                                  = 'Offer Payment Method Network is not same as Selected Payment Method Network';
+    const PAYMENT_METHOD_NOT_AVAILABLE                                              = 'Payment Method is not available for this Offer';
+    const CARD_TYPE_DOES_NOT_MATCH                                                  = 'Card type entered does not match the Offers parameters';
+    const PAYMENT_NETWORK_NOT_AVAILABLE                                             = 'Offer Payment Method Network is not same as Selected Payment Method Network';
     const EMI_DURATION_NOT_SAME                                                     = 'Offer Emi duration is not same as Selected Emi duration';
     const OFFER_CARD_INTERNATIONAL                                                  = 'Selected Card is not international but offer applied requires international card';
     const IINS_DOES_NOT_MATCH                                                       = 'Selected card does not belong to offer iins';
@@ -933,7 +933,7 @@ class PublicErrorDescription
     const OFFER_PERIOD_NOT_ACTIVE                                                   = 'Offer Applied is not active for this time period';
     const ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT                                        = 'Order Amount is less than Offer Minimum amount';
     const ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT                                     = 'Order Amount is greater than Offer Maximum amount';
-    const OFFER_NOT_ACTIVE                                                          = 'Offer Selected is inactive';
+    const OFFER_NOT_ACTIVE                                                          = 'Offer is inactive';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';

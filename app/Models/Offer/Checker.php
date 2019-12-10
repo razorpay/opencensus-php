@@ -135,7 +135,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_NOT_SAME);
+            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_NOT_AVAILABLE);
         }
 
         return $result;
@@ -165,7 +165,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_TYPE_NOT_SAME);
+            $this->offer->setErrorMessage(PublicErrorDescription::CARD_TYPE_DOES_NOT_MATCH);
         }
 
         return $result;
@@ -194,7 +194,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_NETWORK_NOT_SAME);
+            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_NETWORK_NOT_AVAILABLE);
         }
 
         return $result;
