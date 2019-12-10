@@ -85,6 +85,8 @@ class Type
 
     const MPAN                  = 'mpan';
 
+    const ADMIN_BATCH           = 'admin_batch';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -111,6 +113,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::ADMIN_BATCH,
     ];
 
     /**
@@ -175,6 +178,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::ADMIN_BATCH,
     ];
 
     /**
