@@ -214,5 +214,7 @@ class Shield
         $payloadDetails[ShieldConstants::OS_VERSION]       = $paymentAnalytics->getOsVersion();
         $payloadDetails[ShieldConstants::DEVICE]           = $paymentAnalytics->getDevice();
         $payloadDetails[ShieldConstants::ATTEMPTS]         = $paymentAnalytics->getAttempts();
+        $payloadDetails[ShieldConstants::PLATFORM]         = $paymentAnalytics->getPlatform();
+        $payloadDetails[ShieldConstants::PLATFORM_VERSION] = $paymentAnalytics->getPlatformVersion();
     }
 }

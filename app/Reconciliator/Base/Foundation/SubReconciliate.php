@@ -556,8 +556,9 @@ class SubReconciliate extends Base\Core
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
 
-        if (empty($errorCode) === false)
+        if ($errorCode !== null)
         {
+            // Sometimes we intentionally pass '' to reset the error to blank, i.e. unprocessed success row
             static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
     }
@@ -620,7 +621,7 @@ class SubReconciliate extends Base\Core
         else
         {
             // update the recon status in the output file
-            $this->setRowReconStatusAndError(InfoCode::RECON_UNPROCESSED_SUCCESS);
+            $this->setRowReconStatusAndError(InfoCode::RECON_UNPROCESSED_SUCCESS, '');
 
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
