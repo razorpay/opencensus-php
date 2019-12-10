@@ -63,6 +63,7 @@ class NetbankingVijayaCombinedFileTest extends TestCase
                         'gateway'     => $refundEntity['gateway'],
                         'currency'    => $refundEntity['currency'],
                         'method'      => $refundEntity->payment['method'],
+                        'created_at'  => $refundEntity['created_at'],
                     ],
                 ],
             ],

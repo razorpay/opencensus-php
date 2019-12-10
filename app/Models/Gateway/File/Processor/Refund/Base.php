@@ -410,7 +410,9 @@ class Base extends BaseProcessor
                 ]);
         }
 
-        $this->scroogeRefunds = $refunds;
+        $this->scroogeRefunds = array_sort($refunds, function ($refund1, $refund2) {
+            return $refund1['created_at'] <=> $refund2['created_at'];
+        });
     }
 
     // Returns data, success - if scrooge calls fail - success is false
