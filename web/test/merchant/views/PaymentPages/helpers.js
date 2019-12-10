@@ -106,8 +106,9 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys check
 });
 
 describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in constructed schema', function() {
+  // Total 11 FIELD_TYPES exist in UDF dropdown
   const validFieldSchemas = [
-    constructFieldSchema({ title: 'Test title', field_type: '0 1' }),
+    constructFieldSchema({ title: 'Test title', field_type: '0' }),
     constructFieldSchema({
       title: 'Test title',
       field_type: 1,
@@ -115,20 +116,44 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 2',
+      field_type: '1',
       required: false,
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 3',
+      field_type: '2',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 4',
+      field_type: '3',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 5',
+      field_type: '4',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '5',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '6',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '7',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '8',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '9',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '10',
     }),
   ];
 
@@ -144,10 +169,8 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
 
   const invalidFieldSchemas = [
     constructFieldSchema({ title: 'Test title' }), // Missing field_type
-    constructFieldSchema({ title: 'Test title', field_type: '01' }), // This technically seems right but we strictly expect '1' / 1 to be a valid field_type instead of '01'.
-    constructFieldSchema({ title: 'Test title', field_type: '11' }), // Field is not present
-    constructFieldSchema({ title: 'Test title', field_type: '0' }), // This will fail because 0th options has multiple options, so 0 is invalid field_type
-    constructFieldSchema({ title: 'Test title', field_type: '2' }), // '2' doesn't exist in FIELD_TYPES
+    constructFieldSchema({ title: 'Test title', field_type: '-1' }), // Bad field_type
+    constructFieldSchema({ title: 'Test title', field_type: '11' }), // '11' is 12th field and total FIELD_TYPES is only 11.
     constructFieldSchema({
       title: 'Test title',
       field_type: '06', // Doens't exist
@@ -178,6 +201,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
     next
   ) {
     const result = _areBaseKeysPresent(schema);
+
     expect(result).to.eql(false);
 
     next();
