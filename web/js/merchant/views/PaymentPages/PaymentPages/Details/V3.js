@@ -5,7 +5,6 @@ import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/utils/rzp-utils';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
-import { sendLink } from '../../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -17,8 +16,8 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { trackDetailViewEdits, trackShareActions } from '../../ga';
-import { exportReportCSV } from '../../model';
+import { trackDetailViewEdits, trackShareActions } from '../ga';
+import { sendLink, exportReportCSV } from '../model';
 
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
@@ -32,7 +31,6 @@ import PPEmbedButtonView from 'merchant/views/PaymentPages/PaymentPages/componen
 import PaymentsList from './PaymentsList';
 
 import Button from 'common/new-ui/Button';
-import Tooltip from 'common/ui/Tooltip';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 

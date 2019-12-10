@@ -23,13 +23,12 @@ import { trackDetailViewEdits, trackShareActions } from '../ga';
 
 import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 
-import PaymentPagesV2Entity from './V2';
 import PaymentPagesV3Entity from './V3';
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 @withRouter
-@connect(state => ({ user: state.session.user }), {
+@connect(state => ({}), {
   updatePPInReduxList,
   showNotification,
   closeModal,
@@ -420,18 +419,8 @@ export default class extends React.Component {
       );
     }
 
-    return this.props.user.isPPMLIEnabled ? (
+    return (
       <PaymentPagesV3Entity
-        {...this.props}
-        {...this.state}
-        fetchEntity={this.fetchEntity}
-        fetchEntityPayments={this.fetchEntityPayments}
-        editPaymentPage={this.editPaymentPage}
-        toggleManualActivation={this.toggleManualActivation}
-        reActivateLink={this.reActivateLink}
-      />
-    ) : (
-      <PaymentPagesV2Entity
         {...this.props}
         {...this.state}
         fetchEntity={this.fetchEntity}
