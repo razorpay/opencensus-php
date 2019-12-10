@@ -1,6 +1,8 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 
 return [
@@ -35,6 +37,7 @@ return [
             ]
         ]
     ],
+
     'testPostRequestForCreatingPayoutLinkWithContactId' => [
         'request'  => [
             'method'  => 'POST',
@@ -64,6 +67,7 @@ return [
             ]
         ]
     ],
+
     'testShortUrlGenerationSuccessful'                => [
         'request'  => [
             'method'  => 'POST',
@@ -84,6 +88,7 @@ return [
             ]
         ]
     ],
+
     'testPayoutLinkFailedDueToContactCreationFailure' => [
         'request'  => [
             'method'  => 'POST',
@@ -107,6 +112,7 @@ return [
             ]
         ]
     ],
+
     'testShortUrlGenerationExceptionThrown' => [
         'request'  => [
             'method'  => 'POST',
@@ -127,6 +133,7 @@ return [
             ]
         ]
     ],
+
     'testGetPayoutLinkById' => [
         'request'  => [
             'method' => 'GET',
@@ -147,6 +154,7 @@ return [
             ]
         ]
     ],
+
     'testListPayoutLink' => [
         'request'  => [
             'method' => 'GET',
@@ -154,6 +162,7 @@ return [
         ],
         'response' => ['content' => []]
     ],
+
     'testListPayoutLinkWithSearchParameter' => [
         'request'  => [
             'method' => 'GET',
@@ -164,4 +173,118 @@ return [
             ]
         ]
     ],
+
+    'testGenerateOtpForOnlyPhoneContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/plnk_DnhDjMDHlQEjgM/generate-customer-otp',
+
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testGenerateOtpForOnlyEmailContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/plnk_DnhDjMDHlQEjgM/generate-customer-otp',
+
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testVerifyOtpSuccessful' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/plnk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => ['otp' => '0007']
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testVerifyOtpFailedByInvalidOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/plnk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => ['otp' => '1234']
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/plnk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+        ]
+    ],
+
+    'testExceptionWhenOnlyPhoneIsPresentAndSmsFails' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/plnk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+        ]
+    ],
+
+    'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/plnk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+        ]
+    ]
 ];

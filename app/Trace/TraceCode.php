@@ -1951,8 +1951,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
     const PAYOUT_CUSTOMER_OTP_REQUEST                           = 'PAYOUT_CUSTOMER_OTP_REQUEST';
 
-
-
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';

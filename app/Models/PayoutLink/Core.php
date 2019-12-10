@@ -32,6 +32,8 @@ class Core extends Base\Core
     const PAYOUT_LINK_ID          = 'payout_link_id';
 
     const TOKEN_EXPIRE_IN_SECONDS = 900; //15 minutes
+    const MESSAGE                 = 'message';
+    const SUCCESS                 = 'success';
 
     protected $elfin;
 
@@ -106,7 +108,7 @@ class Core extends Base\Core
 
         $this->deliverOtp($payoutLink, $contact, $otp);
 
-        return self::OK;
+        return [self::SUCCESS => self::OK];
     }
 
     public function verifyCustomerOtp($payoutLinkId, $otp)
@@ -168,12 +170,13 @@ class Core extends Base\Core
 
         $phoneNumber = $contact->getContact();
 
-        if ($phoneNumber !== null)
+        if (empty($phoneNumber) === false)
         {
-            $payload = $this->getSmspayload($contact, $otp);
+            $payload = $this->getSmsPayload($contact, $otp);
 
             try
             {
+
                 $this->raven->sendSms($payload);
 
                 $successfulChannelPushCount++;
@@ -194,7 +197,7 @@ class Core extends Base\Core
 
         $email = $contact->getEmail();
 
-        if ($email !== null)
+        if (empty($email) === false)
         {
             $customerEmailOtp = new CustomerOtp($email,
                                                 $otp,
@@ -315,7 +318,7 @@ class Core extends Base\Core
                 null,
                 TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
                 [
-                    'message'            => $e->getMessage(),
+                    self::MESSAGE        => $e->getMessage(),
                     self::PAYOUT_LINK_ID => $payoutLink->getId(),
                 ]
             );
@@ -336,7 +339,7 @@ class Core extends Base\Core
 
         $email = $contact->getEmail();
 
-        if (($phoneNumber === null) and ($email === null))
+        if ((empty($phoneNumber) === true) and (empty($email) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
                                           [
@@ -349,7 +352,7 @@ class Core extends Base\Core
             );
         }
 
-        if ($phoneNumber !== null)
+        if (empty($phoneNumber) === false)
         {
             $receiver = $phoneNumber;
         }
