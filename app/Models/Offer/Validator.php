@@ -99,6 +99,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        self::MERCHANT_CATEGORY,
+        self::OFFER_FEATURE_BLOCK,
         self::CASHBACK_CRITERIA,
         self::OFFER_PERIOD,
         Entity::PAYMENT_NETWORK,
@@ -107,8 +109,6 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
-        self::MERCHANT_CATEGORY,
-        self::OFFER_FEATURE_BLOCK,
     ];
 
     protected static $emiSubventionValidators = [

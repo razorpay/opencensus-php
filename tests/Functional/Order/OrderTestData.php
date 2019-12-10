@@ -1255,7 +1255,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Offer Payment Method is not same as Selected Payment Method',
+                    'description' => 'Payment Method is not available for this Offer',
                 ],
             ],
             'status_code' => 400,
@@ -1303,7 +1303,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Offer Payment Method is not same as Selected Payment Method',
+                    'description' => 'Payment Method is not available for this Offer',
                 ],
             ],
             'status_code' => 400,
