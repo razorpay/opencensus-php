@@ -219,6 +219,10 @@ export default class SubMerchantsList extends ListContainer {
               <div>
                 <HeaderAction>
                   <>
+                    <button class="btn btn-link">
+                      <i className="i i-share" />
+                      <span> Share Referral Link</span>
+                    </button>
                     <button
                       class="btn btn-default"
                       onClick={this.onDownload}
@@ -250,33 +254,98 @@ export default class SubMerchantsList extends ListContainer {
                   </>
                 </HeaderAction>
               </div>
-              <div class="content-wrapper">
-                <ListFilter
-                  form="SubmerchantListFilter"
-                  type="link"
-                  count={this.state.count}
-                  onSubmit={this.search}
-                  onSearchAnalytics={trackSearchAnalytics}
-                  onClearAnalytics={trackClearAnalytics}
-                  showAppIdFilter={user.isPartner('pure_platform')}
-                />
-                <DataTable
-                  title="Sub Merchants"
-                  count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={this.paginate}
-                  columns={[
-                    name(user.isPartner('pure_platform')),
-                    id,
-                    email,
-                    ...appIdColumn,
-                    addedOn,
-                    activationStatus,
-                    ...switchMerchantColumn,
-                  ]}
-                  {...this.props}
-                />
-              </div>
+              {Array.isArray(this.props.items) &&
+                this.props.items.length > 0 && (
+                  <div class="content-wrapper">
+                    <ListFilter
+                      form="SubmerchantListFilter"
+                      type="link"
+                      count={this.state.count}
+                      onSubmit={this.search}
+                      onSearchAnalytics={trackSearchAnalytics}
+                      onClearAnalytics={trackClearAnalytics}
+                      showAppIdFilter={user.isPartner('pure_platform')}
+                    />
+                    <DataTable
+                      title="Sub Merchants"
+                      count={this.state.count}
+                      skip={this.state.skip}
+                      paginate={this.paginate}
+                      columns={[
+                        name(user.isPartner('pure_platform')),
+                        id,
+                        email,
+                        ...appIdColumn,
+                        addedOn,
+                        activationStatus,
+                        ...switchMerchantColumn,
+                      ]}
+                      {...this.props}
+                    />
+                  </div>
+                )}
+              {Array.isArray(this.props.items) &&
+                this.props.items.length == 0 && (
+                  <div class="content-wrapper partner-welcome">
+                    <div style={{ flex: 2, textAlign: 'center' }}>
+                      <div>
+                        <h1 class="main-title">
+                          {' '}
+                          Welcome to Partner Dashboard
+                        </h1>
+                        <h3 class="sub-title">
+                          Get started by adding merchants to Razorpay
+                        </h3>
+                      </div>
+                    </div>
+                    <div style={{ flex: 3 }} class="action-area">
+                      <div>
+                        <div>
+                          <div>
+                            <img src="/dist/css/assets/onboarding/add-new-sub-merchants.png" />
+                          </div>
+                          <p>
+                            <strong>Invite a merchant</strong> by adding their
+                            details
+                          </p>
+                          <div style={{ paddingTop: '20px' }}>
+                            <button
+                              class="btn btn-primary pull-right m-l"
+                              onClick={this.handleAddMerchant}
+                            >
+                              <i class="i i-plus" />
+                              Add New Merchant
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                          </div>
+                          <p>
+                            Share the <strong>invite link</strong> on social
+                            media
+                          </p>
+                          <div
+                            class="social-share-btn-grp"
+                            style={{ paddingTop: '20px' }}
+                          >
+                            <button
+                              class="btn btn-primary pull-right m-l"
+                              onClick={() => {}}
+                            >
+                              <i class="i i-link" />
+                              Copy Link
+                            </button>
+                            <img src="/dist/css/assets/onboarding/facebook.png" />
+                            <img src="/dist/css/assets/onboarding/twitter.png" />
+                            <img src="/dist/css/assets/onboarding/whatsapp.png" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
           </content>
         </tabbed-container>
