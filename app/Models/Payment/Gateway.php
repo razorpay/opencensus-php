@@ -654,6 +654,7 @@ class Gateway
         Payment\Gateway::NETBANKING_RBL         => 1575973800,
         Payment\Gateway::NETBANKING_CUB         => 1575973800,
         Payment\Gateway::NETBANKING_SIB         => 1575973800,
+        Payment\Gateway::NETBANKING_SCB         => 1575973800,
     ];
 
     public static $channels = [
