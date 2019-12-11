@@ -24,7 +24,7 @@
     function noop() {}
 
     window.rzpQ = {
-        initiated: noop,
+        interaction: noop,
         push: noop,
         now: function() {
             return window.rzpQ;
@@ -45,8 +45,36 @@
         });
 
         if (window.analytics.createQ) {
-            window.rzpQ = window.analytics.createQ({ pollFreq:500 });
+            window.rzpQ = window.analytics.createQ({ pollFreq: 500 });
         }
+
+        window.rzpQ.defineEventModifiers({
+            'authLink':[
+                { propertyName:'event_type',
+                    value:'charge_at_will'
+                },
+                {
+                    propertyName:'event_group',
+                    value:'charge_at_will_hosted_page'
+                }
+            ]
+        });
+
+        window.rzpQ.push(
+            window.rzpQ
+            .now()
+            .authLink()
+            .interaction('auth_link.payment.landed')
+        );
+    }
+
+    window.trackLink = function() {
+        window.rzpQ.push(
+            window.rzpQ
+            .now()
+            .authLink()
+            .interaction('auth_link.payment.redirect', { type: 'footer' })
+        );
     }
 </script>
 <script type="text/javascript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
