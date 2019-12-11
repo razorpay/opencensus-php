@@ -1,0 +1,30 @@
+user www-data;
+worker_processes  auto;
+pid /run/openresty.pid;
+
+events {
+    worker_connections  1024;
+}
+
+# These environment variables(with defaults) are made available to lua module.
+env RESTY_REDIS_TIMEOUT;
+env RESTY_REDIS_HOST";
+env RESTY_REDIS_PORT;
+env RESTY_REDIS_MAX_IDLE_MS;
+env RESTY_REDIS_POOL_SIZE;
+
+http {
+    resolver 127.0.0.1;
+    include mime.types;
+    default_type application/octet-stream;
+
+    access_log /var/log/openresty/access.log;
+    error_log /var/log/openresty/error.log;
+
+    sendfile on;
+    #tcp_nopush on;
+    keepalive_timeout 65;
+    #gzip on;
+
+    include ../sites/*;
+}
