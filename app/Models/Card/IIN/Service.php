@@ -204,7 +204,7 @@ class Service extends Base\Service
             $collectiveIins =  array_merge($collectiveIins, $iins);
         }
 
-        return array_unique(array_values($collectiveIins));
+        return array_values(array_unique($collectiveIins));
     }
 
     public function addorUpdateMultiple($iinMin, $iinMax, $input)

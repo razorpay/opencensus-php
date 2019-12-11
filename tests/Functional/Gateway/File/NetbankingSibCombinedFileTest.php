@@ -155,6 +155,13 @@ class NetbankingSibCombinedFileTest extends TestCase
 
         Carbon::setTestNow($scroogeGoliveTimestamp);
 
+        // Setting begin and end timestamps
+        $this->testData['testNetbankingSibCombinedFileOnScroogeGolive']['request']['content']['begin'] =
+            Carbon::today(Timezone::IST)->getTimestamp()-43200;
+
+        $this->testData['testNetbankingSibCombinedFileOnScroogeGolive']['request']['content']['end'] =
+            Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
         // full refund
         $paymentArray    = $this->getDefaultNetbankingPaymentArray($this->bank);
 
