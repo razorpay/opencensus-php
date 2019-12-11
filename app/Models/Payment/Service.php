@@ -912,6 +912,15 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
+    public function mandateUpdateCallback($id, $input)
+    {
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->mandateUpdateCallback($payment, $input);
+    }
+
     public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);
@@ -1847,6 +1856,11 @@ class Service extends Base\Service
         $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
+    }
+
+    public function mandateUpdate($id, $token, $input)
+    {
+        $data = $this->getNewProcessor()->mandateUpdate($id, $token, $input);
     }
 
     public function validateEntity(array $input)

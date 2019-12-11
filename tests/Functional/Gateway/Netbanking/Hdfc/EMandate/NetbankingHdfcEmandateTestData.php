@@ -264,15 +264,15 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         ],
     ],
 

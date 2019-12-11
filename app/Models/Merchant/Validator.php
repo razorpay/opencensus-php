@@ -254,6 +254,7 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+        Entity::MERCHANT_ID              => 'sometimes|array',
     ];
 
     protected static $partnerSubmerchantMapRules = [

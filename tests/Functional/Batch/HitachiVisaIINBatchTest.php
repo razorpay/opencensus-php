@@ -22,27 +22,27 @@ class HitachiVisaIINBatchTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function testBulkIinVisaUpdate()
-    {
-        $text = $this->getFileText();
-
-        $this->createAndPutTxtFileInRequest('file.txt', $text, __FUNCTION__);
-
-        $this->ba->adminAuth();
-
-        $response = $this->startTest();
-
-        $batch = $this->getLastEntity('batch', true);
-
-        $this->assertEquals(21, $batch['processed_count']);
-        $this->assertEquals(21, $batch['success_count']);
-        $this->assertEquals(0, $batch['failure_count']);
-        $this->assertEquals('processed', $batch['status']);
-
-        $iin = $this->getEntityById('iin', '000055', true);
-
-        $this->assertEquals(null, $iin['issuer']);
-    }
+//    public function testBulkIinVisaUpdate()
+//    {
+//        $text = $this->getFileText();
+//
+//        $this->createAndPutTxtFileInRequest('file.txt', $text, __FUNCTION__);
+//
+//        $this->ba->adminAuth();
+//
+//        $response = $this->startTest();
+//
+//        $batch = $this->getLastEntity('batch', true);
+//
+//        $this->assertEquals(21, $batch['processed_count']);
+//        $this->assertEquals(21, $batch['success_count']);
+//        $this->assertEquals(0, $batch['failure_count']);
+//        $this->assertEquals('processed', $batch['status']);
+//
+//        $iin = $this->getEntityById('iin', '000055', true);
+//
+//        $this->assertEquals(null, $iin['issuer']);
+//    }
 
     public function testBulkIinViaBatchService()
     {

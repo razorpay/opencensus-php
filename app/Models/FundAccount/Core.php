@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -56,6 +57,11 @@ class Core extends Base\Core
             }
         }
 
+        if (($merchant->getId() === Merchant\Account::MEDLIFE) or
+            ($merchant->getId() === Merchant\Account::OKCREDIT))
+        {
+            $this->modifyRequestForBackwardCompatibility($input);
+        }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
@@ -106,6 +112,11 @@ class Core extends Base\Core
             });
 
         $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED,
+            [
+                E::FUND_ACCOUNT => $fundAccount->getId(),
+            ]);
 
         return $fundAccount;
     }

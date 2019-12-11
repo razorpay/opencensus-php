@@ -74,6 +74,9 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
+    const BAD_REQUEST_TOKEN_UPDATION_OPERATION_IN_PROGRESS                      = 'Request failed because token updation is in progress';
+    const BAD_REQUEST_UPDATE_EXPIRED_TOKEN                                      = 'Token updation failed because token is expired';
+    const BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN                                = 'Token updation failed because token is not confirmed';
     const BAD_REQUEST_ANOTHER_FTA_RECONCILIATION_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';
     const BAD_REQUEST_ANOTHER_FTA_TRANSFER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
@@ -194,6 +197,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
+
+    const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
+
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -400,6 +406,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
+    const BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID                                 = 'Payment has already been done for this token';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                         = 'Payment failed because account withdrawal are frozen';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                   = 'Payment failed because of invalid account';
@@ -408,6 +415,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                             = 'Payment cancelled by customer';
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
+    const BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED                            = 'User is not registered for NetBanking payments.';
 
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
@@ -522,6 +530,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE              = 'The fees calculated for fund account validation is greater than available fee credits or balance.';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE             = 'Penny Testing is not supported for the given account number.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';

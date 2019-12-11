@@ -631,11 +631,32 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
+        Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::NETBANKING_OBC,
+        Payment\Gateway::NETBANKING_CANARA,
+        Payment\Gateway::NETBANKING_CORPORATION,
+        Payment\Gateway::NETBANKING_RBL,
+        Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SIB,
+        Payment\Gateway::NETBANKING_ALLAHABAD,
+    ];
+
+    public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
+        Payment\Gateway::NETBANKING_VIJAYA      => 1575484200,
+        Payment\Gateway::NETBANKING_OBC         => 1575484200,
+        Payment\Gateway::NETBANKING_CANARA      => 1575484200,
+        Payment\Gateway::NETBANKING_CORPORATION => 1575484200,
+        Payment\Gateway::NETBANKING_RBL         => 1575982238,
+        Payment\Gateway::NETBANKING_CUB         => 1575982238,
+        Payment\Gateway::NETBANKING_SIB         => 1575982238,
+        Payment\Gateway::NETBANKING_SCB         => 1576002600,
+        Payment\Gateway::NETBANKING_ALLAHABAD   => 1576002600,
     ];
 
     public static $channels = [
@@ -1180,6 +1201,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
     ];
 
@@ -1384,6 +1406,15 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+    ];
+
+    /**
+     * List of gateways which support S2S mandate callbacks.
+     *
+     * @var array
+     */
+    public static $s2sMandateCallbackGateways = [
+        Gateway::UPI_MINDGATE
     ];
 
     /**

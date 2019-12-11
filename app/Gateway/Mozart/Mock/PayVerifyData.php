@@ -452,4 +452,59 @@ class PayVerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function  upi_mindgate($entities)
+    {
+        switch ($entities['gateway']['redirect']['mandateDtls'][0]['callback_type'])
+        {
+            case 'MANDATE_STATUS':
+                return $this->mandateCreateCallbackDataUpiMindgate($entities);
+            case 'MANDATE_UPDATE':
+                return $this->mandateUpdateCallbackDataUpiMindgate($entities);
+            default:
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for prcessing S2S callback');
+        }
+    }
+
+    protected function mandateCreateCallbackDataUpiMindgate($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['payment']['id'],
+                'bank_payment_id' => '999999',
+                'amount'          => $entities['payment']['amount'] / 100,
+                'status'          => 'callback_successful',
+            ],
+        ];
+
+        return $response;
+    }
+
+    protected function mandateUpdateCallbackDataUpiMindgate($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['payment']['id'],
+                'bank_payment_id' => '999999',
+                'amount'          => 70000,
+                'status'          => 'callback_successful',
+                'start_time'      => 1893456000,
+            ],
+        ];
+
+        return $response;
+    }
 }

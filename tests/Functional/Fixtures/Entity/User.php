@@ -77,6 +77,25 @@ class User extends Base
         return $user;
     }
 
+    public function createBankingUserForMerchant(string $merchantId = '10000000000000',
+                                          array $attributes = [],
+                                          $role = 'owner',
+                                          $mode = 'test')
+    {
+        $user = $this->createEntityInTestAndLive('user', $attributes);
+
+        $mappingData = [
+            'merchant_id' => $merchantId,
+            'user_id'     => $user['id'],
+            'role'        => $role,
+            'product'     => 'banking'
+        ];
+
+        $this->createUserMerchantMapping($mappingData, $mode);
+
+        return $user;
+    }
+
     /**
      * @param string $merchantId
      * @param string $userId

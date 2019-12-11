@@ -2600,6 +2600,21 @@ return [
         ],
     ],
 
+    'testUpdateTerminalOnboardingStatus' => [
+        'request'   => [
+            'url'     => '/terminal_onboarding_update_status',
+            'content' => [
+                ['termianl_ids_array']
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ]
+    ],
+
     'testCreateJuspayTerminal'                => [
         'request' => [
             'content' => [
@@ -2608,10 +2623,9 @@ return [
                 'category'                      => '1234',
                 'gateway_merchant_id'           => 'MER0000000000111',
                 'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
-                'gateway_terminal_password'     => env('UPI_JUSPAY_MERCHANT_PRIVATE_KEY'),
-                'gateway_terminal_password2'    => env('UPI_JUSPAY_BANK_PUBLIC_KEY'),
                 'gateway_secure_secret'         => 'NotUsedAsOfNow',
                 'upi'                           => 1,
+                'vpa'                           => 'abcd@some'
             ],
             'method' => 'POST'
         ],
@@ -2628,10 +2642,8 @@ return [
         'request' => [
             'content' => [
                 'category'                      => '1234',
-                'gateway_terminal_password'     => 'somekey',
-                'gateway_terminal_password2'    => 'somepublic',
                 'gateway_secure_secret'         => 'NotUsedAsOfNow',
-
+                'vpa'                           => 'abcd@some'
             ],
             'method' =>  'POST'
         ],

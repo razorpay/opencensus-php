@@ -56,6 +56,18 @@ class Repository extends Base\Repository
         return $account;
     }
 
+    protected function addQueryParamCustomerId($query, $params)
+    {
+        $query->where(Entity::SOURCE_ID, $params[Entity::CUSTOMER_ID])
+            ->where(Entity::SOURCE_TYPE, E::CUSTOMER);
+    }
+
+    protected function addQueryParamContactId($query, $params)
+    {
+        $query->where(Entity::SOURCE_ID, $params[Entity::CONTACT_ID])
+            ->where(Entity::SOURCE_TYPE, E::CONTACT);
+    }
+
     public function fetchByIdempotentKey(string $idempotentKey,
                                          string $merchantId,
                                          string $batchId)

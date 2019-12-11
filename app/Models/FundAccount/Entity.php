@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::CUSTOMER,
         self::ACCOUNT_TYPE,
+        self::DETAILS,
         self::BANK_ACCOUNT,
         self::CARD,
         self::BATCH_ID,
@@ -90,6 +91,7 @@ class Entity extends Base\PublicEntity
         self::BANK_ACCOUNT,
         self::VPA,
         self::CARD,
+        self::DETAILS,
     ];
 
     protected $publicAuth = [
@@ -234,6 +236,25 @@ class Entity extends Base\PublicEntity
         {
             $attributes[$sourceType] = $source;
         }
+    }
+
+    public function setPublicDetailsAttribute(array & $array)
+    {
+        if (($this->getMerchantId() !== Merchant\Account::MEDLIFE) and
+            ($this->getMerchantId() !== Merchant\Account::OKCREDIT))
+        {
+            unset ($array[self::DETAILS]);
+
+            return;
+        }
+
+        $accountType = array_get($array, self::ACCOUNT_TYPE);
+
+        $accountAttributes = $this->getAccountDetails($accountType);
+
+        $array[self::DETAILS] = $accountAttributes;
+
+        $array[$accountType] = $accountAttributes;
     }
 
     public function setPublicBankAccountAttribute(array & $array)

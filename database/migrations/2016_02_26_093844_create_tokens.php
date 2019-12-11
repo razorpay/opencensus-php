@@ -88,6 +88,9 @@ class CreateTokens extends Migration
             $table->text(Token::RECURRING_FAILURE_REASON)
                   ->nullable();
 
+            $table->integer(Token::START_TIME)
+                  ->nullable();
+
             $table->integer(Token::CONFIRMED_AT)
                   ->nullable();
 

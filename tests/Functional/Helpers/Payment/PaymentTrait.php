@@ -1331,6 +1331,18 @@ trait PaymentTrait
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function fetchRefundsForPayment($paymentId)
     {
         $request['url'] = '/payments/'.$paymentId.'/refunds';
@@ -1460,6 +1472,25 @@ trait PaymentTrait
         $payment['auth_type'] = Payment\AuthType::NETBANKING;
 
         $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getOtmInitialPaymentArray()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        unset($payment['card']);
+
+        $payment['recurring'] = 1;
+        $payment['amount'] = 0;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['recurring_token']['max_amount'] = 4000;
+
+        $payment['recurring_token']['expire_by'] = Carbon::now()->addDays(3)->getTimestamp();
+
+        $payment['recurring_token']['start_time'] = Carbon::now()->getTimestamp();
 
         return $payment;
     }
@@ -2119,19 +2150,19 @@ trait PaymentTrait
         });
     }
 
-    protected function mockExpressSendRequest($closure, $times = 1)
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
     {
-        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
 
-        $express->shouldAllowMockingProtectedMethods();
+        $mozart->shouldAllowMockingProtectedMethods();
 
-        $express->shouldReceive('sendRequest')
+        $mozart->shouldReceive('translateWebhook')
                 ->times($times)
                 ->andReturnUsing($closure);
 
-        $this->app->instance('express', $express);
+        $this->app->instance('mozart', $mozart);
 
-        return $express;
+        return $mozart;
     }
 
     protected function mockShield()

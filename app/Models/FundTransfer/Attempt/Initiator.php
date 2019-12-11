@@ -717,26 +717,6 @@ class Initiator extends Base\Core
     {
         try
         {
-            if ($fta->shouldUseGateway() === true)
-            {
-                return false;
-            }
-
-            $redis = $this->app['redis']->connection();
-
-            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
-
-            if (empty($ftsChannelMode) === true)
-            {
-                $this->trace->info(
-                    TraceCode::FTS_INVALID_CHANNEL,
-                    [
-                        'channel' => $fta->getChannel(),
-                    ]);
-
-                return false;
-            }
-
             FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(

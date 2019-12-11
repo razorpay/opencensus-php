@@ -655,6 +655,35 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedOtmMindgateTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::UPI_MINDGATE_OTM_TERMINAL;
+
+        $default = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_mindgate',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'payumoney_auth_code',
+            'gateway_terminal_id'       => 'payumoney_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes['type'] = [
+            Type::RECURRING_3DS     => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedOlamoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
