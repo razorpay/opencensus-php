@@ -1098,7 +1098,7 @@ class Processor
             }
         }
 
-        if (Payment\Gateway::isNbPlusServiceGateway($payment->getGateway() === true))
+        if (Payment\Gateway::isNbPlusServiceGateway($payment->getGateway()) === true)
         {
             $this->handleNbPlusServiceGateways($payment, $gatewayInput);
 
