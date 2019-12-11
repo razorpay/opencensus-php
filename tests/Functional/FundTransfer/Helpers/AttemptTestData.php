@@ -71,7 +71,7 @@ return [
     'matchAttemptForReconSuccessKotak' => [
         'version'           => 'V3',
         'bank_status_code'  => 'P',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'remarks'           => '',
         'failure_reason'    => null,
     ],
@@ -79,7 +79,7 @@ return [
     'matchAttemptForReconSuccessIcici' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Paid',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
@@ -100,28 +100,28 @@ return [
     'matchAttemptForReconSuccessHdfc' => [
         'version'           => 'V3',
         'bank_status_code'  => 'E',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessAxis' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Settled',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
     'matchAttemptForReconFailureRbl' => [
@@ -134,7 +134,7 @@ return [
     'matchAttemptForReconSuccessYesbank' => [
         'version'           => 'V3',
         'bank_status_code'  => YesbankStatus::COMPLETED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
