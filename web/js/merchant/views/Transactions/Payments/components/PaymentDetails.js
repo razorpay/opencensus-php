@@ -205,6 +205,14 @@ export default props => {
                         </span>
                         <SettlementOverview payment={payment} />
                       </ContentToggler>
+                    ) : payment.transaction.settled_at ? (
+                      <span class="link">
+                        To be settled on{' '}
+                        <Time
+                          value={payment.transaction.settled_at}
+                          format="DD MMM YYYY"
+                        />
+                      </span>
                     ) : (
                       '--'
                     )}
