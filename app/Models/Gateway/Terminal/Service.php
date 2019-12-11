@@ -180,6 +180,12 @@ class Service extends Base\Service
 
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
+	$isQA = $this->app->environment(Environment::FUNC);
+                                                                           
+	if($isQA == true){
+            return false;                                                          
+        }
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
