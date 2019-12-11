@@ -6,17 +6,20 @@ use Mail;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Gateway\Mozart\NetbankingKvb\RefundFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingKvbCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -64,8 +67,52 @@ class NetbankingKvbCombinedFileTest extends TestCase
         // full refund
         $refundFull = $this->refundPayment($payment1['id']);
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         //partial refund
         $refundPartial = $this->refundPayment($payment2['id'], 500);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [
+                    [
+                        'id'          => $refundEntity1['id'],
+                        'amount'      => $refundEntity1['amount'],
+                        'base_amount' => $refundEntity1['base_amount'],
+                        'payment_id'  => $refundEntity1['payment_id'],
+                        'bank'        => $refundEntity1->payment['bank'],
+                        'gateway'     => $refundEntity1['gateway'],
+                        'currency'    => $refundEntity1['currency'],
+                        'method'      => $refundEntity1->payment['method'],
+                        'created_at'  => $refundEntity1['created_at'],
+                    ],
+                    [
+                        'id'          => $refundEntity2['id'],
+                        'amount'      => $refundEntity2['amount'],
+                        'base_amount' => $refundEntity2['base_amount'],
+                        'payment_id'  => $refundEntity2['payment_id'],
+                        'bank'        => $refundEntity2->payment['bank'],
+                        'gateway'     => $refundEntity2['gateway'],
+                        'currency'    => $refundEntity2['currency'],
+                        'method'      => $refundEntity2->payment['method'],
+                        'created_at'  => $refundEntity2['created_at'],
+                    ],
+                ],
+            ],
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
 
         $this->ba->adminAuth();
 
