@@ -1,6 +1,8 @@
-import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
+import { deepClone } from 'common/utils/rzp-utils';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -8,15 +10,19 @@ import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 
+import Offer from 'merchant/models/Offer';
+
 @withRouter
 @connect(state => ({
   user: state.session.user,
 }))
-export default class CreateOfferWizard extends Component {
+@RTracking(() => window.rzpQ.component('NewOfferForm'))
+export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
     starts_at: moment(),
     ends_at: moment().add(1, 'days'),
+    block: 'Block Payment',
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
@@ -25,6 +31,13 @@ export default class CreateOfferWizard extends Component {
     internals: {},
     allPaymentMethodsAllowed: false,
   };
+
+  stringToInt(subject) {
+    if (subject === null) {
+      return null;
+    }
+    return subject.toLowerCase() === 'true' ? 1 : 0;
+  }
 
   getFormElementValidations = elementName => {
     return {
@@ -37,6 +50,14 @@ export default class CreateOfferWizard extends Component {
         }
       },
       display_text: val => {
+        if (!val || val.length < 4) {
+          return 'Short description should be at least of 4 characters';
+        }
+        if (val.length > 250) {
+          return 'Short description should not exceed 250 characters';
+        }
+      },
+      terms: val => {
         if (!val || val.length < 4) {
           return 'Short description should be at least of 4 characters';
         }
@@ -83,7 +104,7 @@ export default class CreateOfferWizard extends Component {
   isTabDataValid = tabNumber => {
     switch (tabNumber) {
       case 0:
-        return this.areGivenFormElementsValid('name', 'display_text');
+        return this.areGivenFormElementsValid('name', 'display_text', 'terms');
       case 1:
         return true;
       case 2:
@@ -188,6 +209,15 @@ export default class CreateOfferWizard extends Component {
           required
           defaultValue={this.state.display_text}
           validator={this.getFormElementValidations('display_text')}
+        />
+        <Input.Textarea
+          label="Terms"
+          name="terms"
+          placeholder="Terms and conditions for offer"
+          defaultValue={this.state.terms}
+          onChange={this.getFormOnChangeHandler()}
+          validator={this.getFormElementValidations('terms')}
+          required
         />
       </React.Fragment>
     );
@@ -427,7 +457,7 @@ export default class CreateOfferWizard extends Component {
             <AsyncBtn.Primary
               pendingState="Creating..."
               type="submit"
-              onClick={() => {}}
+              onClick={this.onCreate}
               disabled={[0, 1, 2, 3].some(tab => !this.isTabDataValid(tab))}
             >
               Create Subscription Link
@@ -437,6 +467,126 @@ export default class CreateOfferWizard extends Component {
       </div>
     );
   }
+
+  tranformFormFields(form) {
+    const transformed = deepClone(form);
+    const amountFields = [
+      'max_cashback',
+      'flat_cashback',
+      'min_amount',
+      'percent_rate',
+    ];
+    const dateFields = ['starts_at', 'ends_at'];
+    const fieldsTobeDeleted = [
+      'discount_type',
+      'errors',
+      'parentFormLock',
+      'disableSubmit',
+      'currentTab',
+      'validTabs',
+      'fields',
+      'allPaymentMethodsAllowed',
+      'block',
+    ];
+
+    dateFields.forEach(field => {
+      transformed[field] = form[field].unix();
+    });
+
+    //Convert rupees to paisa
+    amountFields.forEach(field => {
+      transformed[field] *= 100;
+    });
+    // get additional fields to be deleted based on the discount_type
+    if (transformed.discount_type === 'flat') {
+      fieldsTobeDeleted.push('max_cashback');
+      fieldsTobeDeleted.push('percent_rate');
+    } else {
+      fieldsTobeDeleted.push('flat_cashback');
+    }
+    if (!this.isSelectedPaymentMethod('card', 'emi')) {
+      fieldsTobeDeleted.push('max_payment_count');
+    }
+    if (transformed.min_amount === null || isNaN(transformed.min_amount)) {
+      fieldsTobeDeleted.push('min_amount');
+    }
+    //fields to be deleted
+    fieldsTobeDeleted.forEach(field => {
+      if (field in transformed) {
+        delete transformed[field];
+      }
+    });
+    // transformed.block = this.stringToInt(transformed.block);
+    return transformed;
+  }
+
+  onCreate = () => {
+    let form = this.tranformFormFields(this.state);
+    console.warn(form);
+    let offer = new Offer(form);
+    return offer
+      .save(form)
+      .then(savedOffer => {
+        this.setState({
+          parentFormLock: false,
+        });
+
+        if (savedOffer && savedOffer.id) {
+          this.props.showNotification({
+            type: 'success',
+            message: SUCCESS_NOTIFICATION,
+          });
+
+          //analytics event tracking
+          this.props.tracking.trackEvent(
+            window.rzpQ.merchantActions().success('Offer_create')
+          );
+
+          const entityId = savedOffer.id;
+
+          if (this.IS_MODAL_VIEW) {
+            this.props.appendOfferInReduxList(savedOffer);
+            this.props.luminateRow(entityId); // Make it promise based
+            setTimeout(this.props.onClose, 50);
+          } else {
+            const redirectUrl = '/offers/' + entityId;
+
+            this.props.history.push(redirectUrl);
+          }
+        } else {
+          //analytics event tracking
+          this.props.tracking.trackEvent(
+            window.rzpQ.merchantActions().failed('Offer_create', {
+              error: resp.errors,
+            })
+          );
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some network error has occured`;
+        }
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  };
 
   render() {
     const isModalView = this.props.onClose;
