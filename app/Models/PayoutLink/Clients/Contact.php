@@ -62,6 +62,7 @@ class Contact
         {
             $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
                                $contact);
+
             if ((empty($contact['email']) === true) and
                 (empty($contact['contact']) === true))
             {

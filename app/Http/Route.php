@@ -847,9 +847,9 @@ final class Route
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
         // Payout Links
-        'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
+        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
-        'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
+        'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                        ],
 
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
