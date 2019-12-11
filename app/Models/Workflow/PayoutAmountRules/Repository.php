@@ -12,38 +12,41 @@ class Repository extends Base\Repository
 {
     protected $entity = 'workflow_payout_amount_rules';
 
+    const DEFAULT_FETCH_LIMIT = 10;
+    const DEFAULT_FETCH_OFFSET = 0;
+
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         return $this->newQuery()
-            ->merchantId($merchantId)
-            ->get();
+                    ->merchantId($merchantId)
+                    ->get();
     }
 
-    public function fetchAllWorkflowRulesForOrg($params, $orgId)
+    public function fetchAllWorkflowRulesForOrg($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
         // which cannot be filtered further according to merchant to which it belongs which is required here.
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
-        $limit = $params[self::COUNT] ?? Entity::DEFAULT_FETCH_LIMIT;
+        $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
-        $offset = $params[self::SKIP] ?? Entity::DEFAULT_FETCH_OFFSET;
+        $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
         $query = $this->newQuery()
-            ->with('steps','steps.role')
-            ->whereHas('workflow', function($q) use($orgId)
-            {
-                $q->where(Entity::ORG_ID, $orgId);
-            });
+                      ->with('steps','steps.role')
+                      ->whereHas('workflow', function($q) use($orgId)
+                                             {
+                                                 $q->where(Entity::ORG_ID, $orgId);
+                                             });
 
         // Filter by merchant if merchant id passed as query parameter
-        if($merchantId)
+        if (empty($merchantId) === false)
         {
             $query = $query->merchantId($merchantId);
         }
 
         $results = $query->get()
-            ->groupBy(Entity::MERCHANT_ID);
+                         ->groupBy(Entity::MERCHANT_ID);
 
         // Implementing pagination
         $results = $results->slice($offset,$limit);

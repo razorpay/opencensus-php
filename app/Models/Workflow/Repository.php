@@ -11,25 +11,28 @@ class Repository extends Base\Repository
 {
     protected $entity = 'workflow';
 
+    const DEFAULT_FETCH_LIMIT = 10;
+    const DEFAULT_FETCH_OFFSET = 0;
+
     protected $adminFetchParamRules = [
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
-    public function findByOrgId($params, string $orgId)
+    public function findByOrgId(string $orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
         // which cannot be filtered further according to permission attached which is required here.
         $permission = $params[Entity::PERMISSIONS] ?? null;
 
-        $limit = $params[self::COUNT] ?? Entity::DEFAULT_FETCH_LIMIT;
+        $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
-        $offset = $params[self::SKIP] ?? Entity::DEFAULT_FETCH_OFFSET;
+        $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
         $query =  $this->newQuery()
-                ->where(Entity::ORG_ID, '=', $orgId);
+                       ->where(Entity::ORG_ID, '=', $orgId);
 
         // Filter by permission if the permission name has been passed as a query parameter
-        if($permission)
+        if (empty($permission) === false)
         {
             $query = $query->whereHas('permissions', function($q) use($permission)
             {
@@ -37,8 +40,7 @@ class Repository extends Base\Repository
             });
         }
 
-        $results  = $query
-               ->get();
+        $results  = $query->get();
 
         // Implementing pagination
         $results = $results->slice($offset,$limit);

@@ -18,40 +18,40 @@ class Validator extends Base\Validator
 
     public function checkForValidAmountRanges($rules)
     {
-
         usort($rules, function($a, $b) {
             return $a['min_amount'] <=> $b['min_amount'];
         });
 
         $presentAmount = 0;
 
-        foreach($rules as $rule)
+        for($index = 0; $index < count($rules); $index++)
         {
-            if($rule['min_amount'] < $presentAmount)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Ranges specified are overlapping'
-                );
-            }
-            else if($rule['min_amount'] > $presentAmount)
+            $rule = $rules[$index];
+
+            if($rule['min_amount'] != $presentAmount)
             {
                 break;
             }
-            if($rule['max_amount'] && $rule['max_amount'] != PHP_INT_MAX)
+            if(empty($rule['max_amount']) === false)
             {
                 $presentAmount = $rule['max_amount'];
             }
             else
             {
-                return;
+                $index++;
+                break;
             }
         }
 
-        throw new BadRequestValidationFailureException(
-            'Ranges specified are leaving gaps'
-        );
+        if($index !== count($rules))
+        {
+            throw new BadRequestValidationFailureException(
+                'Ranges provided are not continuous and complete'
+            );
+        }
     }
 
+    // Ensure that every workflow payout amount range is attached to only one workflow
     public function ensureDistinctWorkflowIds($rules)
     {
         if(count($rules) != count(array_unique(array_column($rules, 'workflow_id'))))

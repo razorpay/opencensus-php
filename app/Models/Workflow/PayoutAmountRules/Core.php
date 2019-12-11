@@ -60,21 +60,27 @@ class Core extends Base\Core
     public function create($rules, $merchantId): array
     {
         // Insert all rules together into database
-        $this->repo->transaction( function() use ($rules, $merchantId){
+        $insertedPayoutAmountRules = $this->repo->transaction( function() use ($rules, $merchantId){
+
+            $insertedPayoutAmountRules = new Base\PublicCollection();
+
             foreach($rules as $rule)
             {
                 $rule[Entity::MERCHANT_ID] = $merchantId;
+
                 $payoutAmountRules = new Entity();
+
                 $payoutAmountRules->build($rule);
+
+                $insertedPayoutAmountRules->push($payoutAmountRules);
 
                 $this->repo->saveOrFail($payoutAmountRules);
             }
+
+            return $insertedPayoutAmountRules;
         });
 
-        // Return inserted elements
-        $response = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArrayWithitems();
-
-        return $response;
+        return $insertedPayoutAmountRules->toArrayWithItems();
     }
 
     public function getWorkflowRules($merchantId = null)
@@ -99,13 +105,5 @@ class Core extends Base\Core
             // Returns in a format including containing more fields like id in database useful for admin
             return $amountRules->toArrayWithItems();
         }
-    }
-
-    public function getAllWorkflowRulesForOrg($input, $orgId)
-    {
-        return $this->repo
-            ->workflow_payout_amount_rules
-            ->fetchAllWorkflowRulesForOrg($input, $orgId)
-            ->toArrayWithItems();
     }
 }
