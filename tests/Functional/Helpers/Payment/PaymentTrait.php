@@ -39,6 +39,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
+    use PaymentGetsimplTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;

@@ -59,6 +59,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Gateway\Mozart\GetSimpl\Constants;
 
 
 trait Authorize
@@ -940,6 +941,14 @@ trait Authorize
 
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
     {
+        //
+        // For simpl redirection flow OTT is dummy value
+        //
+        if($input['ott'] === Constants::GETSIMPLTOKEN)
+        {
+            return;
+        }
+
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);

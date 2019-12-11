@@ -768,6 +768,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createGetsimplTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        =>  '1ShrdSimplTrml',
+            'merchant_id'               =>  $sharedMerchantAccount,
+            'gateway'                   =>  'paylater',
+            'gateway_acquirer'          =>  'getsimpl',
+            'shared'                    =>  0,
+            'paylater'                  =>  1,
+            'gateway_merchant_id'       =>  'RazorpayGetsimpl',
+            'gateway_terminal_password' =>  'terminal_password',
+            'mode'                      =>  '2',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedMpesaTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::MPESA_RAZORPAY_TERMINAL;
