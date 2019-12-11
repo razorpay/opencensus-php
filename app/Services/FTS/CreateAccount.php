@@ -4,8 +4,10 @@ namespace RZP\Services\FTS;
 
 use Razorpay\Trace\Logger as Trace;
 
+use Requests;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
@@ -16,6 +18,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\NodalBeneficiary;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\FTS\CreateAccount as Account;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Type as Product;
@@ -441,5 +444,69 @@ class CreateAccount extends Base
         }
 
         return $iin->getIssuer();
+    }
+
+    public function createAccountMappingForFts(array $input)
+    {
+        (new Validator)->validateInput('create_source_account', $input);
+
+        $result = [];
+
+        try
+        {
+            $this->initialize($input['id'], $input['type'], $input['product']);
+
+            $response = $this->createFundAccount();
+
+            if (empty($response[Constants::BODY][Constants::FUND_ACCOUNT_ID]) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
+                    null,
+                    ['response' => $response],
+                    'FTS fund Account Id could not stored, Please try again!'
+                );
+            }
+
+            $content = $this->generateRequestForSourceAccount($input);
+
+            $data = $this->createSourceAccount(
+                $input['id'],
+                $response[Constants::BODY][Constants::FUND_ACCOUNT_ID],
+                $content,
+                $input['product'],
+                $input['channel']);
+
+            $result = $response + $data;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION,
+                $input);
+        }
+
+        return $result;
+    }
+
+    protected function generateRequestForSourceAccount(array $input)
+    {
+        return [
+            Constants::CREDENTIALS       => $input['credentials'],
+            Constants::MOZART_IDENTIFIER => $input['mozartIdentifier'],
+            Constants::CONFIGURATION     => $input['config'],
+        ];
+    }
+
+    public function deleteSourceAccount(array $input)
+    {
+        (new Validator)->validateInput('delete_source_account', $input);
+
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT_DELETE_URI,
+            Requests::DELETE,
+            $input);
     }
 }

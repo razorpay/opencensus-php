@@ -145,4 +145,8 @@ final class Constants
     const BENEFICIARY_STATUS             = 'beneficiary_status';
 
     const COMPLETED                      = 'COMPLETED';
+
+    const VALIDATION_ERROR               = 'VALIDATION_ERROR';
+
+    const STATUS_FAILED                  = 'failed';
 }

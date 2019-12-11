@@ -5,7 +5,6 @@ namespace RZP\Services\FTS;
 use App;
 use Requests;
 
-
 class FtsAdminClient extends Base
 {
 
@@ -23,7 +22,7 @@ class FtsAdminClient extends Base
 
         parent::__construct($app);
 
-        $this->setDashboardAuth();
+        $this->setDashboardAuthAndAdminHeader();
     }
 
     public function fetchMultiple(string $entity, array $input)

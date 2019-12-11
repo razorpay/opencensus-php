@@ -653,6 +653,73 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($updatedTerminalOnboardingDetail['error_description'], 'Duplicate MVISAPAN');
     }
 
+    public function testUpdateTerminalOnboardingStatus()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'status'    =>  'created',
+        ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'queued',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'status'    =>  'failed',
+        ]);
+
+        $terminalOnboardingDetail2 = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal2->getId(),
+            'status'            => 'failed',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+        
+        $this->testData[__FUNCTION__]['request']['content'] = [$terminalOnboardingDetail['id'], $terminalOnboardingDetail2['id']];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['updated_terminal_onboarding_ids'], [$terminalOnboardingDetail['id']] );
+
+        $this->assertEquals($response['not_applicable_terminal_onboarding_ids'], [$terminalOnboardingDetail2['id']] );
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal->getId(),
+            true
+        );
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $this->assertEquals($updatedTerminal['status'], 'created');
+
+        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'created');
+
+        $updatedTerminal2 = $this->getEntityById(
+            'terminal',
+            $terminal2->getId(),
+            true
+        );
+
+        $updatedTerminalOnboardingDetail2 = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail2->getId(),
+            true
+        );
+
+        $this->assertEquals($updatedTerminal2['status'], 'failed');
+
+        $this->assertEquals($updatedTerminalOnboardingDetail2['status'], 'failed');
+    }        
+
     protected function setUpTerminalOnboardingFailureCases()
     {
         $subMerchant = $this->fixtures->create('merchant');

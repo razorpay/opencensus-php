@@ -4,8 +4,11 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use Queue;
 use \RZP\Constants;
+use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -43,6 +46,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithFundAccountId()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         // enabling the feature here for test merchant
@@ -99,6 +104,8 @@ class FundAccountValidationTest extends TestCase
     {
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
+        $this->enableRazorXTreatmentForRazorX();
+
         // remove features is not required as by default feature would be disabled
         //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
 
@@ -126,6 +133,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithFundAccountEntity()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -146,6 +155,8 @@ class FundAccountValidationTest extends TestCase
         // Transaction is always created for Fee Bearer: Platform.
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
 
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -157,6 +168,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testGetValidations()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $this->ba->privateAuth();
@@ -167,6 +180,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationOnPrepaidModelWithFeeCredits()
     {
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->privateAuth();
 
@@ -184,6 +199,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringRecon()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -230,6 +247,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPostpaidModelWithFeeCredits()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->ba->privateAuth();
@@ -254,6 +273,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCredits()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->createValidationWithFundAccountEntity();
@@ -301,6 +322,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationRetry()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -377,6 +400,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationRetryWithCron()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -426,6 +451,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringReconWithNonInternalError()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -537,6 +564,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFixTransactionSettledAt()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -552,4 +581,66 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(false, $txn['settled']);
     }
 
+    public function testFundAccValidationBankingFailedAccountTypeDirect()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
+
+        $this->createFAVBankingPricingPlan();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedAmountVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedCurrencyVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedMissingFundAccountId()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationFailedFundAccountCardType()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->mockCardVault();
+
+        $fundAccountResponse = $this->createFundAccountCard();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
 }

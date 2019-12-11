@@ -56,6 +56,8 @@ class Entity extends Base\PublicEntity
     // input key
     const ACCOUNT_NUMBER = 'account_number';
 
+    const RESPONSE_CODE   = 'response_code';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -86,6 +88,9 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE,
         self::BATCH_ID,
+        self::BANK_ACCOUNT,
+        self::VPA,
+        self::CARD,
         self::DETAILS,
     ];
 
@@ -141,6 +146,11 @@ class Entity extends Base\PublicEntity
     public function getBatchId()
     {
         return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function getIdempotencyKey()
+    {
+        return $this->getAttribute(self::IDEMPOTENCY_KEY);
     }
 
     public function getActive(): bool
@@ -230,6 +240,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicDetailsAttribute(array & $array)
     {
+        if (($this->getMerchantId() !== Merchant\Account::MEDLIFE) and
+            ($this->getMerchantId() !== Merchant\Account::OKCREDIT))
+        {
+            unset ($array[self::DETAILS]);
+
+            return;
+        }
+
         $accountType = array_get($array, self::ACCOUNT_TYPE);
 
         $accountAttributes = $this->getAccountDetails($accountType);
@@ -237,6 +255,36 @@ class Entity extends Base\PublicEntity
         $array[self::DETAILS] = $accountAttributes;
 
         $array[$accountType] = $accountAttributes;
+    }
+
+    public function setPublicBankAccountAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::BANK_ACCOUNT)
+        {
+            $accountAttributes = $this->getAccountDetails(self::BANK_ACCOUNT);
+
+            $array[self::BANK_ACCOUNT] = $accountAttributes;
+        }
+    }
+
+    public function setPublicVpaAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::VPA)
+        {
+            $accountAttributes = $this->getAccountDetails(self::VPA);
+
+            $array[self::VPA] = $accountAttributes;
+        }
+    }
+
+    public function setPublicCardAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::CARD)
+        {
+            $accountAttributes = $this->getAccountDetails(self::CARD);
+
+            $array[self::CARD] = $accountAttributes;
+        }
     }
 
     public function setPublicBatchIdAttribute(array & $attributes)

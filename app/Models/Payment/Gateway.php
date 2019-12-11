@@ -88,6 +88,7 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const UPI_CITI               = 'upi_citi';
+    const UPI_JUSPAY             = 'upi_juspay';
 
     const CARD_FSS               = 'card_fss';
 
@@ -173,6 +174,7 @@ class Gateway
         self::PAYLATER     => [PayLater::EPAYLATER],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
     const POWER_WALLETS = [
@@ -629,11 +631,32 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::NETBANKING_SCB,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
+        Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::NETBANKING_OBC,
+        Payment\Gateway::NETBANKING_CANARA,
+        Payment\Gateway::NETBANKING_CORPORATION,
+        Payment\Gateway::NETBANKING_RBL,
+        Payment\Gateway::NETBANKING_CUB,
+        Payment\Gateway::NETBANKING_SIB,
+        Payment\Gateway::NETBANKING_ALLAHABAD,
+    ];
+
+    public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
+        Payment\Gateway::NETBANKING_VIJAYA      => 1575484200,
+        Payment\Gateway::NETBANKING_OBC         => 1575484200,
+        Payment\Gateway::NETBANKING_CANARA      => 1575484200,
+        Payment\Gateway::NETBANKING_CORPORATION => 1575484200,
+        Payment\Gateway::NETBANKING_RBL         => 1575982238,
+        Payment\Gateway::NETBANKING_CUB         => 1575982238,
+        Payment\Gateway::NETBANKING_SIB         => 1575982238,
+        Payment\Gateway::NETBANKING_SCB         => 1576002600,
+        Payment\Gateway::NETBANKING_ALLAHABAD   => 1576002600,
     ];
 
     public static $channels = [
@@ -785,6 +808,7 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_AIRTEL,
             self::UPI_CITI,
+            self::UPI_JUSPAY,
         ],
 
         Method::AEPS => [
@@ -903,6 +927,7 @@ class Gateway
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
         self::UPI_CITI,
+        self::UPI_JUSPAY,
         self::WALLET_PHONEPE,
     ];
 
@@ -1176,6 +1201,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
         Gateway::ENACH_NPCI_NETBANKING,
+        Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
     ];
 
@@ -1205,6 +1231,10 @@ class Gateway
         self::UPI_MINDGATE,
         self::ISG,
         self::WORLDLINE,
+    ];
+
+    public static $upiTransferGateway = [
+        self::UPI_MINDGATE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -1375,6 +1405,16 @@ class Gateway
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
+        Gateway::UPI_JUSPAY,
+    ];
+
+    /**
+     * List of gateways which support S2S mandate callbacks.
+     *
+     * @var array
+     */
+    public static $s2sMandateCallbackGateways = [
+        Gateway::UPI_MINDGATE
     ];
 
     /**
@@ -1837,6 +1877,11 @@ class Gateway
     public static function isValidBharatQrGateway($gateway)
     {
         return in_array($gateway , self::$bharatQrGateways, true);
+    }
+
+    public static function isValidUpiTransferGateway($gateway)
+    {
+        return in_array($gateway , self::$upiTransferGateway, true);
     }
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)

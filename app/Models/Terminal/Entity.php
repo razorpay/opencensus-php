@@ -1316,6 +1316,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
     }
 
+    public function isUpiTransfer()
+    {
+        return ($this->isTypeApplicable(Type::UPI_TRANSFER) === true);
+    }
+
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
@@ -1355,6 +1360,15 @@ class Entity extends Base\PublicEntity
     public function isDomestic()
     {
         return ($this->isCardEnabled() === true);
+    }
+
+    public  function isValidVirtualVpaForTerminal(string $virtualVpa)
+    {
+        $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
+
+        $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
+
+        return (substr($virtualVpa, 0, strlen($prefix)) === $prefix) && (substr($virtualVpa, -strlen($handle), strlen($virtualVpa)) === $handle);
     }
 
     /**

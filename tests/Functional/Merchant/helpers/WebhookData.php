@@ -1404,7 +1404,7 @@ return [
             'url'     => '/settings/partner',
             'method'  => 'post',
             'content' => [
-                'translate_webhook_url'       => 'http://www.facebook.com/',
+                'translate_webhook_gateway'       => 'facebook',
             ]
         ],
         'response' => [

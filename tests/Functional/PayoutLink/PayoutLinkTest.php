@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\PayoutLink;
 use Mail;
 use Mockery;
 use Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
@@ -17,7 +16,6 @@ use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class PayoutLinkTest extends TestCase
 {

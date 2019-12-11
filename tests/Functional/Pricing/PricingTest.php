@@ -1715,4 +1715,13 @@ class PricingTest extends TestCase
 
         $this->assertEquals('20', $paymentObj['fee']);
     }
+
+    public function testAddPricingPlanRuleWithVpaReceiver()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
 }

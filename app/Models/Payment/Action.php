@@ -46,6 +46,7 @@ class Action
     const CHECK_ACCOUNT                 = 'check_account';
     const FETCH_TOKEN                   = 'fetch_token';
     const OMNI_PAY                      = 'omni_pay';
+    const MANDATE_UPDATE                = 'mandate_update';
 
     protected $merchant;
 

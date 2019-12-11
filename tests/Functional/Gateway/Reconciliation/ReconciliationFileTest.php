@@ -1805,6 +1805,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
 
         $this->fixtures->on('live')->create('terminal', [
@@ -1867,6 +1869,56 @@ class ReconciliationFileTest extends TestCase
 
         // set the payment status to 'failed' and try to reconcile it with force authorize
         $this->fixtures->edit('payment', $gatewayPayment1['payment_id'], ['status' => Payment\Status::FAILED]);
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($updatedPayment['status'], Payment\Status::FAILED);
+
+        $this->runForFiles([$file], 'Hitachi', [], [$payment['id']]);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
+
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // For payments being routed via Card Payment Service
+    public function testHitachiForceAuthorizeFailedCpsPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment['reference2']]);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        // set the payment cps_route to 2 and status to 'failed' and
+        // try to reconcile it with force authorize
+        $this->fixtures->edit(
+            'payment',
+            $gatewayPayment1['payment_id'],
+            [
+                'status'    => Payment\Status::FAILED,
+                'cps_route' => 2,
+            ]);
 
         $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
 

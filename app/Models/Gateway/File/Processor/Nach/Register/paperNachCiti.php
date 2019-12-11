@@ -32,6 +32,8 @@ class PaperNachCiti extends Base
     const FILE_EXTENSION = FileStore\Format::ZIP;
     const FILE_TYPE      = FileStore\Type::CITI_NACH_REGISTER;
 
+    const UNTIL_CANCELLED = 'Until cancelled';
+
     protected $gateway  = Payment\Gateway::NACH_CITI;
 
     protected $fileStore;
@@ -169,13 +171,27 @@ class PaperNachCiti extends Base
 
             $utilityCode = $token->terminal->getGatewayMerchantId();
 
-            $data = Fields::getNachRegistrationData($token, $paymentId, $token->merchant);
+            $subscriptionRegistration = $this->repo
+                                             ->subscription_registration
+                                             ->findByTokenIdAndMerchant($token->getId(), $token->merchant->getId());
+
+            $paperMandate = $subscriptionRegistration->paperMandate;
+
+            $data = Fields::getNachRegistrationData($token, $paymentId, $token->merchant, $paperMandate);
 
             $startDate = Carbon::createFromTimestamp($data[Fields::START_TIMESTAMP], Timezone::IST)
                 ->format('d/m/Y');
 
-            $endDate = Carbon::createFromTimestamp($data[Fields::END_TIMESTAMP], Timezone::IST)
-                ->format('d/m/Y');
+
+            if (empty($data[Fields::END_TIMESTAMP]) === false)
+            {
+                $endDate = Carbon::createFromTimestamp($data[Fields::END_TIMESTAMP], Timezone::IST)
+                                    ->format('d/m/Y');
+            }
+            else
+            {
+                $endDate = self::UNTIL_CANCELLED;
+            }
 
             if (isset($count[$utilityCode]) === true)
             {

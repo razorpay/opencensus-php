@@ -2,8 +2,8 @@
 
 use RZP\Models\Batch;
 use RZP\Constants\Table;
+use RZP\Models\PaymentLink;
 use RZP\Models\PayoutLink\Entity;
-use RZP\Models\Currency\Currency;
 use RZP\Models\User\Entity as User;
 use Illuminate\Support\Facades\Schema;
 use RZP\Models\Contact\Entity as Contact;
@@ -28,8 +28,11 @@ class CreatePayoutLinksTable extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            // This is nullable in the database, but will be handled on the app level.
+            // We will not be creating payout_links entity, without generating short_url first
+
             $table->string(Entity::SHORT_URL, 255)
-                   ->nullable();
+                  ->nullable();
 
             $table->char(Entity::CONTACT_ID, Contact::ID_LENGTH);
 
@@ -51,7 +54,8 @@ class CreatePayoutLinksTable extends Migration
 
             $table->bigInteger(Entity::AMOUNT);
 
-            $table->text(Entity::NOTES);
+            $table->text(Entity::NOTES)
+                  ->nullable();
 
             $table->char(Entity::DESCRIPTION, 255)
                   ->nullable();
@@ -59,7 +63,7 @@ class CreatePayoutLinksTable extends Migration
             $table->string(Entity::RECEIPT, 40)
                   ->nullable();
 
-            $table->string(\RZP\Models\PaymentLink\Entity::CURRENCY, 3);
+            $table->string(PaymentLink\Entity::CURRENCY, 3);
 
             $table->integer(Entity::CANCELLED_AT)
                   ->nullable();
@@ -76,8 +80,6 @@ class CreatePayoutLinksTable extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::CANCELLED_AT);
-
-            $table->index(Entity::ID);
 
             $table->index(Entity::RECEIPT);
 
@@ -107,6 +109,6 @@ class CreatePayoutLinksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payout_links');
+        Schema::dropIfExists(Table::PAYOUT_LINK);
     }
 }
