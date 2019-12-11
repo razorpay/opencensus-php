@@ -690,7 +690,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->reconcileEntitiesForChannel($channel);
+//        $this->reconcileEntitiesForChannel($channel);
 
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
@@ -809,7 +809,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals(Status::RETURNSETTLED, $fta['bank_status_code']);
 
-        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
 
         $this->reconcileEntitiesForChannel(Channel::AXIS);
 

@@ -216,7 +216,7 @@ trait AttemptTrait
 
         $attempt = $this->getLastEntity(Entity::FUND_TRANSFER_ATTEMPT, true);
 
-        $batchTestData = 'testFileCreation' . ucfirst($sourceType);
+        $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Api';
 
         // for VPA recon happens instantly
         if (empty($attempt['vpa_id']) === false)
