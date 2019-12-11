@@ -180,9 +180,9 @@ class Service extends Base\Service
 
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
-	$isFunc = $this->app->environment(Environment::FUNC);
-                                                                           
-	if($isFunc == true){
+        $isFunc = $this->app->environment(Environment::FUNC);
+                                                                   
+        if($isFunc == true){
             return false;                                                          
         }
 
