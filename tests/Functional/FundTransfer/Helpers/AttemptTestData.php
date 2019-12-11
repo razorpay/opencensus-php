@@ -35,6 +35,17 @@ return [
         'type'              => 'settlement',
     ],
 
+    'testFileCreationSettlementApiFailure' => [
+        'amount'            => 1952600,
+        'fees'              => 47200,
+        'tax'               => 7200,
+        'processed_amount'  => 0,
+        'processed_count'   => 0,
+        'total_count'       => 1,
+        'transaction_count' => 4,
+        'type'              => 'settlement',
+    ],
+
     'testFileCreationPayoutVpa' => [
         'amount'            => 1000,
         'fees'              => 602,

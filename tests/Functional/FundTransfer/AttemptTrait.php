@@ -216,12 +216,14 @@ trait AttemptTrait
 
         $attempt = $this->getLastEntity(Entity::FUND_TRANSFER_ATTEMPT, true);
 
-        $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Api';
+        $suffix = ($failureTest === true) ? 'Failure' : '';
+
+        $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Api' . $suffix;
 
         // for VPA recon happens instantly
         if (empty($attempt['vpa_id']) === false)
         {
-            $batchTestData = $batchTestData . 'Vpa';
+            $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Vpa';
         }
 
         $this->assertTestResponse($batch, $batchTestData);
@@ -235,7 +237,7 @@ trait AttemptTrait
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
 
-            $expectedStatus = $failureTest ? Attempt\Status::FAILED : Attempt\Status::PROCESSED;
+            $expectedStatus = ($failureTest === true) ? Attempt\Status::FAILED : Attempt\Status::PROCESSED;
 
             if ($sourceType === Entity::PAYOUT)
             {
@@ -253,7 +255,7 @@ trait AttemptTrait
         {
             $expectedStatus = (empty($attempt['vpa_id']) === false) ?
                 Payout\Status::PROCESSED:
-                ($failureTest ? Attempt\Status::FAILED : Attempt\Status::PROCESSED);
+                (($failureTest === true) ? Attempt\Status::FAILED : Attempt\Status::PROCESSED);
 
             $this->assertEquals($batch['id'], $fta['batch_fund_transfer_id']);
             $this->assertEquals($expectedStatus, $fta[Attempt\Entity::STATUS]);
