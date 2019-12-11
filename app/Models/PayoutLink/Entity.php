@@ -155,7 +155,7 @@ class Entity extends Base\PublicEntity
 
     public function contact()
     {
-        return $this->hasOne(Contact\Entity::class);
+        return $this->belongsTo(Contact\Entity::class);
     }
 
     public function payouts()
@@ -173,7 +173,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        #todo:pl, need to fill this function
+        $this->setAttribute(self::STATUS, Status::ISSUED);
     }
 
     // -------------------------------------- End Setters -----------------------------

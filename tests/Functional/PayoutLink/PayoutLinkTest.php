@@ -1,11 +1,9 @@
 <?php
 
-use RZP\Models\P2p\Entity;
-use \RZP\Tests\Functional\TestCase;
-use RZP\Models\BankingAccount\Channel;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\PayoutLink\Entity as PayoutLink;
+use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -36,15 +34,18 @@ class PayoutLinkTest extends TestCase
     public function testPayoutLinkCreation()
     {
         $input = [
-            PayoutLink::CONTACT_ID      => $this->contact->getId(),
-            PayoutLink::FUND_ACCOUNT_ID => $this->fundAccount->getId(),
-            PayoutLink::SHORT_URL       => 'http://rzp.io/faking_url',
-            PayoutLink::MERCHANT_ID     => '10000000000000',
-            PayoutLink::STATUS          => Status::ISSUED,
-            PayoutLink::AMOUNT          => 1000,
+            PayoutLink::AMOUNT     => 1000,
+            PayoutLink::CURRENCY   => Currency::INR,
+            PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
         ];
 
         $payout_link = (new PayoutLink)->build($input);
+
+        $payout_link->merchant()->associate($this->contact->merchant);
+
+        $payout_link->contact()->associate($this->contact);
+
+        $payout_link->setStatus(Status::ISSUED);
 
         $payout_link->saveOrFail();
     }
