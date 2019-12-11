@@ -1,18 +1,16 @@
 import Input from 'common/new-ui/Input';
 
-export default props => {
-  const {
-    allPaymentMethodsAllowed,
-    getFormOnChangeHandler,
-    isSelectedPaymentMethod,
-    iins,
-    paymentNetwork,
-    maxPaymentCount,
-    paymentMethodType,
-    issuer,
-    paymentMethod,
-  } = props;
-
+export default ({
+  allPaymentMethodsAllowed,
+  getFormOnChangeHandler,
+  isSelectedPaymentMethod,
+  iins,
+  paymentNetwork,
+  maxPaymentCount,
+  paymentMethodType,
+  issuer,
+  paymentMethod,
+}) => {
   const paymentMethods = [
     { label: 'Select Payment method', name: '' },
     { label: 'Card', name: 'card' },

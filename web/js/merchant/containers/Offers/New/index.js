@@ -14,6 +14,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Offer from 'merchant/models/Offer';
 
 import PaymentMethods from './paymentMethods';
+import OfferDescription from './offerDescription';
 
 @withRouter
 @connect(state => ({
@@ -196,34 +197,12 @@ export default class CreateOfferWizard extends React.Component {
 
   renderOfferDescriptionFormInputs() {
     return (
-      <React.Fragment>
-        <Input
-          label="Offer Name"
-          name="name"
-          placeholder="Offer Short name"
-          autoFocus={true}
-          defaultValue={this.state.name}
-          required
-          validator={this.getFormElementValidations('name')}
-        />
-        <Input
-          label="Display Text"
-          name="display_text"
-          placeholder="Display text for offer"
-          required
-          defaultValue={this.state.display_text}
-          validator={this.getFormElementValidations('display_text')}
-        />
-        <Input.Textarea
-          label="Terms"
-          name="terms"
-          placeholder="Terms and conditions for offer"
-          defaultValue={this.state.terms}
-          onChange={this.getFormOnChangeHandler()}
-          validator={this.getFormElementValidations('terms')}
-          required
-        />
-      </React.Fragment>
+      <OfferDescription
+        name={this.state.name}
+        getFormElementValidations={this.getFormElementValidations}
+        displayText={this.state.display_text}
+        terms={this.state.terms}
+      />
     );
   }
 
