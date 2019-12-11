@@ -42,8 +42,6 @@ return [
             'content' => [
                 'type'     => 'combined',
                 'targets'  => ['sib'],
-                'begin'    => Carbon::today(Timezone::IST)->getTimestamp()-43200,
-                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
