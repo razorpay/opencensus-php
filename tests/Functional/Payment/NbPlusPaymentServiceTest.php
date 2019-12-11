@@ -65,6 +65,31 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals($this->terminal->getId(), $payment['terminal_id']);
     }
 
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
+    }
+
+    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
+    {
+        $request = array(
+            'url' => $url,
+            'method' => strtoupper($method),
+            'content' => $content);
+
+        $response = $this->makeRequestParent($request);
+
+        return $response;
+    }
+
     /*public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponse()
     {
         $this->nbPlusService->shouldReceive('sendRequest')
@@ -188,31 +213,6 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testAuthorizeViaCpsS2SAuthorize()
     {
-    }
-
-    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
-    {
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
-
-        $response = $this->mockCallbackFromGateway($url, $method, $content);
-
-        $data = $this->getPaymentJsonFromCallback($response->getContent());
-
-        $response->setContent($data);
-
-        return $response;
-    }
-
-    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
-    {
-        $request = array(
-            'url' => $url,
-            'method' => strtoupper($method),
-            'content' => $content);
-
-        $response = $this->makeRequestParent($request);
-
-        return $response;
     }
 
     protected function mockServerContentFunction()
