@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use RZP\Exception;
 use Requests_Session;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -118,6 +119,11 @@ class NbPlusPaymentService
 
         $this->input = $input;
 
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+        }
+
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
@@ -126,9 +132,12 @@ class NbPlusPaymentService
             //$input[Entity::TERMINAL] = $this->updateTerminalFromConfig($input);
         }
 
-        if ($this->action === Action::AUTHORIZE)
+        foreach ($input as $key => $data)
         {
-            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+            if ((is_object($data) === true) and ($data instanceof PublicEntity))
+            {
+                $input[$key] = $data->toArray();
+            }
         }
 
         $content = [
