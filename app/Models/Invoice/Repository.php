@@ -117,9 +117,14 @@ class Repository extends Base\Repository
 
         $query = $this->getQueryForFindWithParams($input);
 
-        $invoice = $query->merchantId($merchant->getId())
-                         ->where(Entity::ENTITY_TYPE, $entityType)
-                         ->findOrFailPublic($id);
+        $query = $query->merchantId($merchant->getId());
+
+        if (empty($entityType) === false)
+        {
+            $query = $query->where(Entity::ENTITY_TYPE, $entityType);
+        }
+
+        $invoice = $query->findOrFailPublic($id);
 
         $invoice->merchant()->associate($merchant);
 

@@ -25,10 +25,12 @@ class Limit
         'emandate_register_hdfc'                    => 50000,
         'emandate_register_enach_rbl'               => 10000,
         'emandate_register_enach_npci_netbanking'   => 10000,
+        'emandate_register_sbi'                     => 10000,
         'emandate_debit_hdfc'                       => 10000,
         'emandate_debit_axis'                       => 10000,
         'emandate_debit_enach_rbl'                  => 10000,
         'emandate_debit_enach_npci_netbanking'      => 10000,
+        'emandate_debit_sbi'                        => 10000,
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
@@ -40,6 +42,7 @@ class Limit
         TYPE::IIN_HITACHI_VISA                      => 500000,
         TYPE::IIN_MC_MASTERCARD                     => 500000,
         TYPE::PRICING_RULE                          => 50000,
+        Type::ADMIN_BATCH                           => 5000,
     ];
 
     /**

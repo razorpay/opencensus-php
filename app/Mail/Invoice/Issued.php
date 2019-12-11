@@ -35,6 +35,12 @@ class Issued extends Base
 
                 break;
 
+            case Preferences::MID_BAGIC:
+
+                $this->view('emails.invoice.customer.custom.bagic');
+
+                break;
+
             default:
 
                 $this->view('emails.invoice.customer.notification');

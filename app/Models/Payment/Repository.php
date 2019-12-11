@@ -1522,10 +1522,15 @@ class Repository extends Base\Repository
                               ->virtual_account
                               ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
-        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+        $vpaId = $this->repo
+                      ->virtual_account
+                      ->dbColumn(VirtualAccount\Entity::VPA_ID);
+
+        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
                     {
                         $join->on($paymentReceiverId, '=', $qrcodeId);
                         $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        $join->orOn($paymentReceiverId, '=', $vpaId);
                     })
               ->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
@@ -1727,12 +1732,28 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN_ID, $tokenId)
+                    ->where(Entity::CUSTOMER_ID, $customerId)
+                    ->first();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPaymentsGivenIds(array $paymentIds, int $limit)
+    {
+        return $this->newQuery()
+                    ->whereIn(Payment\Entity::ID, $paymentIds)
+                    ->limit($limit)
                     ->get();
     }
 

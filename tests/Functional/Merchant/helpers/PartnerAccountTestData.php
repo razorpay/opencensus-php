@@ -962,7 +962,7 @@ return [
                 'profile'         => [
                     'addresses' => [
                         [
-                            'type'          => 'registered',
+                            'type'          => 'REGISTERED',
                             'line1'         => 'registered',
                             'line2'         => 'near Jamnalal Police Stn',
                             'city'          => 'BENGALURU',

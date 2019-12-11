@@ -17,7 +17,7 @@ class Core extends Base\Core
 
         $vpa->merchant()->associate($merchant);
 
-        $vpa->entity()->associate($source);
+        $vpa->source()->associate($source);
 
         $this->repo->saveOrFail($vpa);
 

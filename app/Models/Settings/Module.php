@@ -17,6 +17,7 @@ class Module
     const USER                  = 'user';
     const BATCH                 = 'batch';
     const PARTNER               = 'partner';
+    const MERCHANT              = 'merchant';
     const ONBOARDING            = 'onboarding';
     const OPENWALLET            = 'openwallet';
     const SUBSCRIPTIONS         = 'subscriptions';

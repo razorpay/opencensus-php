@@ -100,8 +100,6 @@ class Core extends Base\Core
         {
             $paperMandate->setUploadedFileId($uploadedFileId);
 
-            $paperMandate->setStatus(Status::AUTHENTICATED);
-
             $paperMandate->saveOrFail();
         }
 
@@ -234,6 +232,20 @@ class Core extends Base\Core
                 ($paperMandate[$key] !== $extractedPaperMandateData[$key]))
             {
                 $notMatching[] = $key;
+            }
+        }
+
+        if (empty($paperMandate[Entity::FORM_CHECKSUM]) === false)
+        {
+            $extractedData[] = [
+                self::KEY             => Entity::FORM_CHECKSUM,
+                self::EXPECTED_VALUE  => $paperMandate[Entity::FORM_CHECKSUM],
+                self::EXTRACTED_VALUE => $extractedPaperMandateData[Entity::FORM_CHECKSUM]
+            ];
+
+            if ($paperMandate[Entity::FORM_CHECKSUM] !== $extractedPaperMandateData[Entity::FORM_CHECKSUM])
+            {
+                $notMatching[] = Entity::FORM_CHECKSUM;
             }
         }
 
@@ -427,9 +439,9 @@ class Core extends Base\Core
             return;
         }
 
-        $generatedMandateForm = (new HyperVerge)->generatePaperMandateForm($paperMandate);
+        $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
-        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $generatedMandateForm);
+        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $data[Entity::GENERATED_IMAGE]);
 
         $this->trace->info(
             TraceCode::PAPER_MANDATE_FORM_GENERATED,
@@ -439,6 +451,8 @@ class Core extends Base\Core
             ]);
 
         $paperMandate->setGeneratedFileId($generatedFileId);
+
+        $paperMandate->setFormChecksum($data[Entity::FORM_CHECKSUM]);
 
         $paperMandate->saveOrFail();
     }

@@ -86,6 +86,7 @@ class Table
     const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
+    const UPI_TRANSFER               = 'upi_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
     const SCHEDULE_TASK              = 'schedule_tasks';
     const PARTNER_CONFIG             = 'partner_configs';

@@ -320,13 +320,6 @@ class Core extends Base\Core
 
     protected function invalidateStorkCache(string $ownerId)
     {
-        try
-        {
-            (new Stork)->invalidateCache($ownerId, $this->mode);
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->traceException($e);
-        }
+        (new Stork)->invalidateCacheWithoutFail($ownerId, $this->mode);
     }
 }

@@ -6,12 +6,14 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use RZP\Gateway\Mpi\Base as Mpi;
 use RZP\Models\Admin\ConfigKey;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
 use Requests_Hooks;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -89,6 +91,15 @@ class Gateway
         Action::OTP_GENERATE,
         Action::VALIDATE_VPA,
     ];
+
+    /**
+     * Columns of CPS authorization table.
+     * To be used while force authorizing failed payment
+     */
+    const RRN           = 'rrn';
+    const AUTH_CODE     = 'auth_code';
+    const RECON_ID      = 'recon_id';
+    const PAYMENT_ID    = 'payment_id';
 
     /**
      * The application instance.
@@ -311,6 +322,16 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::AUTHORIZE;
+
+     // Risk validation for gateways using this function before authenticate and Authorize of the payment.
+        if (isset($input['payment_analytics']['risk_score']) === true)
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->validateRiskScore($input);
+            }
+        }
     }
 
     /**
@@ -681,6 +702,45 @@ class Gateway
             [$request],
             [$this, 'shouldRetry'],
             [$this, 'getMaxRetryCount']);
+    }
+
+    //
+    // TODO: Move this to base card gateway from here
+    //
+    protected function decideRiskValidationStep($input, $authResponse)
+    {
+        $eci = $authResponse[Mpi\Entity::ECI];
+
+        $networkCode = Card\Network::getCode($input['card']['network']);
+
+        $isInternational = $input['card']['international'];
+
+        if (($isInternational !== true) or
+            ((($networkCode === Card\Network::VISA) and ($eci !== '06')) or
+             (($networkCode === Card\Network::MC) and ($eci !== '01'))))
+        {
+            return;
+        }
+
+        $this->validateRiskScore($input);
+    }
+
+    protected function validateRiskScore($input)
+    {
+        $riskScore = $input['payment_analytics']['risk_score'];
+
+        if (($riskScore > $input['merchant']->getRiskThreshold()) and
+            (($input['card'][Card\Entity::INTERNATIONAL] === true) or
+             ($input['card'][Card\Entity::NETWORK] === Card\Network::AMEX)))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+                null,
+                null,
+                ['riskScore' => $riskScore],
+                null,
+                Action::AUTHENTICATE);
+        }
     }
 
     protected function sendExternalRequest($request)
@@ -1591,6 +1651,12 @@ class Gateway
                 ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
+    protected function isUpiTransferPayment(): bool
+    {
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::VPA));
+    }
+
     /**
      * Returns the external mock url
      * Used for gateway testing using mock in func
@@ -1701,7 +1767,7 @@ class Gateway
     {
         $url = $this->getMozartApiUrl($input);
 
-        $passwordConfig = 'applications.mozart.' . $this->mode . '.password'; 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
 
         $authentication = [
             'api',
@@ -1777,5 +1843,10 @@ class Gateway
                 null,
                 $this->action);
         }
+    }
+
+    public function isMandateUpdateCallback($input)
+    {
+        return false;
     }
 }

@@ -1044,8 +1044,9 @@ class Entity extends Base\PublicEntity
         $messageEntity = Constants::REFUND;
         $messageSlaDone = ($days < 0 === true) ? false : true;
         $messageStatus = ($this->isProcessed() === true) ? Status::PROCESSED: Status::INITIATED;
+        $messageVoidRefund = !$this->payment->isGatewayCaptured();
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }
@@ -1142,9 +1143,7 @@ class Entity extends Base\PublicEntity
             $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
         }
 
-        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
-
-        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
         $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
                                  (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));

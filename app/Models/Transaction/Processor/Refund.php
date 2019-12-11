@@ -46,8 +46,6 @@ class Refund extends Base
         $this->checkAndSetTxnReconciliation();
 
         $this->repo->saveOrFail($this->txn);
-
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     protected function checkAndSetTxnReconciliation()
@@ -63,14 +61,21 @@ class Refund extends Base
     protected function getSettledAtTimestampForRefund()
     {
         $payment = $this->source->payment;
+        $refund  = $this->source;
+
+        $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ($payment->hasBeenCaptured())
         {
             $paymentTxn = $payment->transaction;
 
-            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
+        }
+
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            return $nowTimestamp;
         }
 
         return null;
@@ -81,13 +86,18 @@ class Refund extends Base
         $payment = $this->source->payment;
         $refund  = $this->source;
 
-        if (($payment->isAuthorized() === true) and
-            ($refund->isDirectSettlementWithoutRefund() === false))
+        if ($payment->isCaptured() === true)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getNetAmount()

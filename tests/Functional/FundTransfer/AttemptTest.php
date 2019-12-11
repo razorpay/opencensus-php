@@ -389,100 +389,6 @@ class AttemptTest extends TestCase
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 
-    public function testRblPayoutSuccessWithoutMode()
-    {
-        $now = Carbon::create(2019, 10, 16, 10, 0, 0, Timezone::IST);
-
-        Carbon::setTestNow($now);
-
-        $channel = Channel::RBL;
-
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-              ->andReturn($redisMock);
-
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
-        $this->ba->privateAuth();
-
-        $this->setUpMerchantForBusinessBanking(
-            false,
-            9000000,
-            AccountType::DIRECT,
-            $channel);
-
-        $this->createContact();
-
-        $this->createFundAccount();
-
-        $content = [
-            'account_number'  => '2224440041626905',
-            'amount'          => 200000,
-            'currency'        => 'INR',
-            'purpose'         => 'payout',
-            'narration'       => 'Rbl account payout',
-            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
-            'notes'           => [
-                'abc' => 'xyz',
-            ],
-        ];
-
-        $request = [
-            'url'       => '/payouts',
-            'method'    => 'POST',
-            'content'   => $content
-        ];
-
-        Queue::fake();
-
-        $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals($channel, $payout['channel']);
-        $this->assertEquals($channel, $attempt['channel']);
-        $this->assertEquals(1, $attempt['is_fts']);
-        $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
-        $this->assertEquals(Attempt\Status::CREATED, $attempt['status']);
-
-        $this->fixtures->stripSign($attempt['id']);
-
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-
-        $this->assertNull($payout['transaction_id']);
-    }
-
     public function testRblPayoutFailed()
     {
         $now = Carbon::create(2019, 10, 16, 10, 0, 0, Timezone::IST);
@@ -491,17 +397,6 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(
@@ -520,6 +415,7 @@ class AttemptTest extends TestCase
             'currency'        => 'INR',
             'purpose'         => 'payout',
             'narration'       => 'Rbl account payout',
+            'mode'            => 'NEFT',
             'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
             'notes'           => [
                 'abc' => 'xyz',
@@ -584,18 +480,6 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)
-                          ->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(
@@ -614,6 +498,7 @@ class AttemptTest extends TestCase
             'currency'        => 'INR',
             'purpose'         => 'payout',
             'narration'       => 'Rbl account payout',
+            'mode'            => 'NEFT',
             'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
             'notes'           => [
                 'abc' => 'xyz',
@@ -672,24 +557,13 @@ class AttemptTest extends TestCase
         $this->assertNull($payout['transaction_id']);
     }
 
-    public function testRblPayoutSuccessWithMode()
+    public function testRblPayoutSuccess()
     {
         $now = Carbon::create(2019, 10, 16, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);
 
         $channel = Channel::RBL;
-
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
 
         $this->ba->privateAuth();
 

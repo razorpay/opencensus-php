@@ -1,7 +1,3 @@
-ALTER TABLE payouts
-    ADD COLUMN payout_link_id varchar(14) null,
-    ADD INDEX (`payout_link_id`);
-
 ALTER TABLE cards
     ADD merchant_id varchar(14) after id;
 
@@ -5418,6 +5414,10 @@ ALTER TABLE settlement_bucket
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
 
+ALTER TABLE offers
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
 # adds fee_bearer column for payments (renaming the existing column 'reference12')
 ALTER TABLE payments
     CHANGE COLUMN reference12 fee_bearer BIGINT;
@@ -5531,6 +5531,9 @@ ALTER TABLE `mozart`
 ALTER TABLE `terminals`
     ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
 
+ALTER TABLE `tokens`
+    ADD COLUMN `start_time` INTEGER UNSIGNED DEFAULT NULL AFTER `recurring_failure_reason`;
+
 ALTER TABLE banking_account_statement
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
     ADD INDEX banking_account_statement_utr_index (utr);
@@ -5541,3 +5544,10 @@ ALTER TABLE external
 
 ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
+
+ALTER TABLE merchant_details
+	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE payouts
+    ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+    ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);

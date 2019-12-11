@@ -43,7 +43,33 @@ class NetbankingSbiCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->createClaimAndRefundPayment();
+        $this->bank = "SBIN";
+
+        $this->createClaimAndRefundPayment($this->bank);
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
+
+        $content = $this->generateFiles();
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $this->performPostFileGenerationAssertions();
+    }
+
+    public function testGenerateCombinedFileForSubsidiaryBanks()
+    {
+        Mail::fake();
+
+        $bank = "SBBJ";
+
+        $this->createClaimAndRefundPayment($bank);
 
         $refund = $this->getDbLastEntity('refund');
 
@@ -130,9 +156,9 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->assertEquals($refundsFileRow[4], 500);
     }
 
-    protected function createClaimAndRefundPayment()
+    protected function createClaimAndRefundPayment($bank = "SBIN")
     {
-        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
         $payment = $this->doAuthAndCapturePayment($payment);
 

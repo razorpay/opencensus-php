@@ -244,7 +244,6 @@ class VerifyData extends Base\Mock\Server
                         '0' => [
                             'DEALID' => 'CS905114097404',
                             'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
                             'ORDERNO' => '104',
                             'REQUESTID' => '1234',
                             'RESPONSECODE' => '0'
@@ -256,9 +255,7 @@ class VerifyData extends Base\Mock\Server
                     'rescode' => '00',
                     'rqtype' => 'AUTH',
                     'status' => 'verification_successful',
-                    'valkey' => $entities['terminal']['gateway_secure_secret'],
                     'errdesc' => 'SUCCESS',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
                     '_raw' => '',
                 ],
             'error'             => null,

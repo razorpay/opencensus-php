@@ -31,6 +31,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
+use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
@@ -50,6 +51,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property UpiTransfer\Entity     $upiTransfer
  * @property PaymentLink\Entity     $paymentLink
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
@@ -172,6 +174,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
@@ -204,6 +207,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
 
     // payment services
@@ -339,6 +343,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
+        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -352,6 +357,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
+        self::REFUNDS,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
@@ -379,6 +385,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+        self::OFFER_ID,
     ];
 
     /**
@@ -441,6 +448,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
+        self::OFFER_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1296,9 +1304,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+
+    public function setOfferId(string $offerId)
+    {
+        $this->setAttribute(self::OFFER_ID, $offerId);
+
+    }
+
     public function setFeeBearer($feeBearer)
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
+
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -1780,6 +1796,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
+    public function isUpiRecurring()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::UPI) and
+                ($this->getAttribute(self::RECURRING) === true));
+    }
+
     public function isTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
@@ -1799,12 +1821,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return ($this->isBankTransfer() === true) or
                ($this->isBharatQr() === true) or
+               ($this->isUpiTransfer() === true) or
                ($this->isUpi() === true);
     }
 
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
+    /**
+     * UPI transfer is the case of smart collect where payment method is UPI and
+     * receiver type will be VPA and is different from normal UPI transactions.
+     *
+     * @return bool
+     */
+    public function isUpiTransfer()
+    {
+        return (($this->isUpi() === true) and
+                ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
     public function isGateway($gateway)
@@ -2593,6 +2628,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicOfferIdAttribute(array & $array)
+    {
+        if (isset($array[self::OFFER_ID]))
+        {
+            $array[self::OFFER_ID] =
+                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
+        }
+    }
+
     public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
@@ -2739,6 +2783,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
+
+        return $data;
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        $data =  parent::toArrayPublicWithExpand();
+
+        if ($this->getCurrency() !== Currency\Currency::INR)
+        {
+            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
+
+            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
+        }
 
         return $data;
     }
@@ -2897,6 +2955,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hasOne('RZP\Models\BharatQr\Entity');
     }
 
+    public function upiTransfer()
+    {
+        return $this->hasOne('RZP\Models\UpiTransfer\Entity');
+    }
+
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity');
@@ -3004,6 +3067,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         // Creates row in entity_offers table
         $this->offers()->attach($offer);
+    }
+
+    public function dissociateOffer(Offer\Entity $offer)
+    {
+        $this->offers()->detach($offer);
     }
 
     /**
@@ -3195,7 +3263,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $gateway = $this->getGateway();
 
         // default is 9 mins
-        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+        $timeWindow = (new Merchant\Core)->getPaymentTimeoutWindow($this->merchant) ?? self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
         {
@@ -3484,11 +3552,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     private function getMessageForTransactionTracker(TransactionTrackerMessages $transactionTrackerMessages, Carbon $expectedDate, $messageType): string
     {
         $messageSlaDone = null;
+        $messageVoidRefund = null;
         $messageEntity = Refund\Constants::PAYMENT;
         $messageStatus = $this->getStatus();
         $messageLateAuth = ($this->isLateAuthorized() === true);
 
-        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth);
+        $message = $transactionTrackerMessages->getMessage($messageEntity, $messageStatus, $messageType, $messageSlaDone, $messageLateAuth, $messageVoidRefund);
 
         return $this->populateTransactionTrackerMessages($message, $expectedDate);
     }

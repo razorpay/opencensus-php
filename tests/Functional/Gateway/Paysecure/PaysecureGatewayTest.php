@@ -91,7 +91,6 @@ class PaysecureGatewayTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
