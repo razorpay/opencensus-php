@@ -21,8 +21,35 @@
         }
     }
 
+    function noop() {}
+
+    window.rzpQ = {
+        initiated: noop,
+        push: noop,
+        now: function() {
+            return window.rzpQ;
+        },
+        defineEventModifiers:noop,
+        authLink: function() {
+            return window.rzpQ;
+        }
+    };
+
+    function initAnalytics() {
+        if (!window.analytics || window.location.hostname.indexOf('razorpay.com') < 0) {
+            return;
+        }
+
+        window.analytics.init(['la'], {
+            la: '96df432a283745908a06f711acd9e5eb'
+        });
+
+        if (window.analytics.createQ) {
+            window.rzpQ = window.analytics.createQ({ pollFreq:500 });
+        }
+    }
 </script>
 <script type="text/javascript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="text/javascript" src="{{env('AWS_CF_CDN_URL')}}/static/auth_link/bundle.js"></script>
-<script type="text/javascript" src='https://cdn.razorpay.com/static/analytics/bundle.js' async></script>
+<script type="text/javascript" onload="initAnalytics()" src='https://cdn.razorpay.com/static/analytics/bundle.js' async></script>
 </html>
