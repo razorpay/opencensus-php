@@ -258,32 +258,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         <Success
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          isPaymentPagesV2={true}
+          handleSendLink={sendLink.bind(null, id)}
           showNotification={this.props.showNotification}
           url={shortUrl}
           title={title}
-          description={description}
           trackerFn={function() {}}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
-          AddonAction={
-            <div class="label--faded m-t">
-              You can customize this url from{' '}
-              <Button.Transparent
-                type="submit"
-                class="Button--Link"
-                onClick={() => {
-                  trackPageSettingsClick();
-                  this.props.closeModal();
-                  this.setState({ isSettingsOpened: true });
-                }}
-              >
-                Page Settings
-              </Button.Transparent>
-            </div>
-          }
+          openSettingsModal={_ => {
+            trackPageSettingsClick();
+            this.props.closeModal();
+            this.setState({ isSettingsOpened: true });
+          }}
         />
       ),
     });

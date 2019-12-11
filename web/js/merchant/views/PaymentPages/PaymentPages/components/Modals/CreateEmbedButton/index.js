@@ -85,7 +85,6 @@ export default class extends React.Component {
               <div class="Input-label">Preview</div>
               <PreviewEmbedButton
                 url={shortUrl}
-                textClr={this.state.textClr}
                 btnSize={btnSize}
                 btnLabel={btnLabel}
               />

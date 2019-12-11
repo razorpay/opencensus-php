@@ -7,11 +7,13 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import CreateEmbedButton from './CreateEmbedButton';
+import PreviewEmbedButton from './CreateEmbedButton/PreviewEmbedButton';
 
 import { isEmail, isPhone } from 'common/utils/validators';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import SocialShareOptions from './Share/SocialShareOptions';
+import Collapsible from 'merchant/components/Collapsible';
 
 export default class extends React.PureComponent {
   state = {};
@@ -33,7 +35,7 @@ export default class extends React.PureComponent {
     }
 
     return this.props
-      .handleAction(formData)
+      .handleSendLink(formData)
       .then(resp => {
         if (resp.data) {
           this.props.showNotification({
@@ -81,56 +83,30 @@ export default class extends React.PureComponent {
 
   render() {
     const {
-      isNew,
-      isPaymentPagesV2,
       isEditExistingId,
       handleClose,
       url,
-      AddonAction,
+      openSettingsModal,
       closeModal,
     } = this.props;
-
-    const askToShare = (
-      <React.Fragment>
-        <span class="label--faded" style={{ float: 'left' }}>
-          Share via SMS or email
-        </span>
-        <Button.Transparent
-          style={{ float: 'right' }}
-          type="submit"
-          class="Button--Link"
-        >
-          <b>
-            Send
-            <i class="i i-arrow-forward" />
-          </b>
-        </Button.Transparent>
-      </React.Fragment>
-    );
 
     return (
       <div>
         <ModalHeader
           title={
-            isNew ? (
-              <span>
-                <i
-                  class="i i-done text-success"
-                  style={{
-                    fontSize: 16,
-                    verticalAlign: 'middle',
-                    marginRight: 8,
-                  }}
-                />
-                {isPaymentPagesV2
-                  ? isEditExistingId
-                    ? 'Page updated successfully'
-                    : 'Page created successfully'
-                  : 'Link created successfully'}
-              </span>
-            ) : (
-              'Share Link'
-            )
+            <span>
+              <i
+                class="i i-done text-success"
+                style={{
+                  fontSize: 16,
+                  verticalAlign: 'middle',
+                  marginRight: 8,
+                }}
+              />
+              {isEditExistingId
+                ? 'Page updated successfully'
+                : 'Page created successfully'}
+            </span>
           }
           onCloseClick={() => {
             this.props.trackerFn('Close');
@@ -140,138 +116,115 @@ export default class extends React.PureComponent {
 
         <div class="modal-body" style={{ paddingTop: 0 }}>
           <div class="ModalForm ModalForm--Share">
-            {isNew && (
-              <div class="Share-section">
-                {!isPaymentPagesV2 && (
-                  <div class="label--faded m-b">
-                    Use the following url to accept payments.
-                  </div>
-                )}
-                <div>
-                  <CustomClipboard
+            <div>
+              <div>
+                <CustomClipboard
+                  value={url}
+                  onCopy={() => {
+                    const ele = document.getElementsByName('short_url');
+                    ele[0] && ele[0].focus();
+                    this.props.trackerFn('Click Copy URL');
+                  }}
+                >
+                  <Input
+                    name="short_url"
                     value={url}
-                    onCopy={() => {
-                      const ele = document.getElementsByName('short_url');
-                      ele[0] && ele[0].focus();
-                      this.props.trackerFn('Click Copy URL');
-                    }}
-                  >
-                    <Input
-                      name="short_url"
-                      value={url}
-                      readOnly={true}
-                      class="Input--inline is-focused"
-                    />
-                    <Button.Primary class="Button--input--right">
-                      Copy URL
-                    </Button.Primary>
-                  </CustomClipboard>
-                </div>
-                {AddonAction}
+                    readOnly={true}
+                    class="Input--inline is-focused"
+                  />
+                  <Button.Primary>Copy URL</Button.Primary>
+                </CustomClipboard>
+                <Button onClick={openSettingsModal}>Customise URL</Button>
               </div>
-            )}
 
-            {isPaymentPagesV2 &&
-              isNew && (
-                <div class="Share-section">
-                  <span class="label--faded">
-                    <i class="i i-embed-btn" />
-                    Embed Payment Button
-                  </span>
-                  <div style={{ display: 'inline-block' }}>
-                    <span class="help-content">
-                      <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                      <Popover
-                        align="top"
-                        theme="dark"
-                        parentQuerySelector=".ReactModal__Content"
+              <div>
+                {/* Social share options */}
+                <SocialShareOptions
+                  msgInPost={this.props.title}
+                  linkInPost={this.props.url}
+                  trackerFn={this.props.trackerFn}
+                />
+
+                {/* Collapsible phone and email fields */}
+                <Collapsible
+                  title={() => (
+                    <span className="text-primary">Share via SMS, Email</span>
+                  )}
+                  childrenPosition="bottom"
+                  class="CollapsibleFields"
+                >
+                  <Form class="Share-section" onSubmit={this.onSubmit}>
+                    <Input
+                      name="contact"
+                      type="tel"
+                      placeholder="Mobile"
+                      addonBefore={<i class="i i-phone" />}
+                      validator={val => {
+                        if (!isPhone(val)) {
+                          return 'Invalid phone';
+                        }
+                      }}
+                    />
+
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      addonBefore={<i class="i i-email" />}
+                      validator={val => {
+                        if (!isEmail(val)) {
+                          return 'Invalid email';
+                        }
+                      }}
+                    />
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        marginBottom: 8,
+                        overflow: 'auto',
+                      }}
+                    >
+                      <Button.Transparent
+                        style={{ float: 'right' }}
+                        type="submit"
+                        class="Button--Link"
                       >
-                        <PopoverBody>
-                          Your customers can pay from your website by clicking
-                          on this Payment Button
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                  <Button.Transparent
-                    type="button"
-                    class="Button--Link"
-                    onClick={this.openEmbedButtonView}
-                    style={{ float: 'right' }}
-                  >
-                    <b>Create</b>
-                  </Button.Transparent>
-                </div>
-              )}
-
-            <div class="Share-section">
-              <span class="label--faded">
-                <i class="i i-share-circle" /> Share{' '}
-              </span>
-              <SocialShareOptions
-                msgInPost={this.props.title}
-                linkInPost={this.props.url}
-                trackerFn={this.props.trackerFn}
-              />
+                        <b>
+                          Send Link <i class="i i-arrow-forward" />
+                        </b>
+                      </Button.Transparent>
+                    </div>
+                  </Form>
+                </Collapsible>
+              </div>
             </div>
 
-            <Form class="Share-section" onSubmit={this.onSubmit}>
-              {isPaymentPagesV2 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    marginBottom: 8,
-                    overflow: 'auto',
-                  }}
-                >
-                  {askToShare}
-                </div>
-              )}
-              <Input
-                name="contact"
-                type="tel"
-                placeholder="Mobile"
-                addonBefore={<i class="i i-phone" />}
-                validator={val => {
-                  if (!isPhone(val)) {
-                    return 'Invalid phone';
-                  }
-                }}
-              />
+            {/* Preview section for embed button */}
 
-              <Input
-                name="email"
-                type="email"
-                placeholder="Email"
-                addonBefore={<i class="i i-email" />}
-                validator={val => {
-                  if (!isEmail(val)) {
-                    return 'Invalid email';
-                  }
-                }}
-              />
-              {!isPaymentPagesV2 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    marginBottom: 16,
-                    overflow: 'auto',
-                  }}
-                >
-                  {askToShare}
-                </div>
-              )}
-              {isPaymentPagesV2 && (
-                <Link
-                  class="Button Button--primary"
-                  to="/paymentpages"
-                  style={{ marginTop: 20, width: '100%', textAlign: 'center' }}
-                  onClick={closeModal}
-                >
-                  Back to Dashboard
-                </Link>
-              )}
-            </Form>
+            <div class="Input Input--vTop Input--radio">
+              <div class="Input-label">Preview</div>
+
+              <PreviewEmbedButton url={this.props.url} />
+
+              <div>
+                Your customers can pay from your website by clicking on this
+                Payment Button
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div>
+              <Link class="Button" to="/paymentpages" onClick={closeModal}>
+                Back to Dashboard
+              </Link>
+
+              <Button.Primary
+                onClick={this.openEmbedButtonView}
+                style={{ float: 'right' }}
+              >
+                Get Payment Button
+              </Button.Primary>
+            </div>
           </div>
         </div>
       </div>
