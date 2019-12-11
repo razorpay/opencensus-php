@@ -86,15 +86,15 @@ return [
     'matchAttemptForReconFlipStatusIcici' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Cancelled',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconFlipStatusAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'REJECTED',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessHdfc' => [

@@ -104,7 +104,7 @@ trait AttemptTrait
     }
 
     protected function createDataAndAssertInitiateOnlineTransferResponse(
-        string $channel, string $purpose, int $setlCount, string $sourceType, bool $failureTest)
+        string $channel, string $purpose, int $setlCount, string $sourceType, $failureTest)
     {
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 

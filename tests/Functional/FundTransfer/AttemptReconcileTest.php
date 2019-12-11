@@ -275,7 +275,7 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $this->verifySettlementReconFileProcessForIcici(true);
 
-        $this->reconcileEntitiesForChannel(Channel::ICICI);
+//        $this->reconcileEntitiesForChannel(Channel::ICICI);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
 
@@ -396,7 +396,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifySettlementReconProcessForRbl();
 
-        $this->reconcileEntitiesForChannel(Channel::RBL);
+//        $this->reconcileEntitiesForChannel(Channel::RBL);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
@@ -405,7 +405,7 @@ class AttemptReconcileTest extends TestCase
     {
         $this->verifySettlementReconProcessForYesbank();
 
-        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
@@ -848,11 +848,9 @@ class AttemptReconcileTest extends TestCase
             Attempt\Purpose::SETTLEMENT,
             1,
             Attempt\Type::SETTLEMENT,
-            false);
+            $failure);
 
         $this->reconcileOnlineSettlements($channel, $failure);
-
-        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
