@@ -120,7 +120,7 @@ app
         details: {
           business_type: {
             1: {
-              name: 'Not Yet Registered',
+              name: 'Not Registered',
               value: 11,
             },
             // 2: {
