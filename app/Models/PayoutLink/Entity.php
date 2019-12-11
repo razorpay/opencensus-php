@@ -47,7 +47,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::ID,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
@@ -102,11 +101,17 @@ class Entity extends Base\PublicEntity
 
     protected $publicAuth = [
         self::ID,
+        self::ENTITY,
+        self::CONTACT_ID,
+        self::FUND_ACCOUNT_ID,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
+        self::NOTES,
+        self::SHORT_URL,
+        self::CREATED_AT,
         self::CANCELLED_AT
     ];
 

@@ -96,7 +96,6 @@ trait TestsBusinessBanking
         $this->bankingBalance = $bankingBalance;
         $this->virtualAccount = $virtualAccount;
         $this->bankAccount    = $bankAccount;
-
     }
 
     protected function setUpMerchantForBusinessBankingLive(

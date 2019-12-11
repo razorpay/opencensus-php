@@ -28,6 +28,9 @@ class CreatePayoutLinksTable extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            // This is nullable in the database, but will be handled on the app level.
+            // We will not be creating payout_links entity, without generating short_url first
+
             $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
 
@@ -51,7 +54,8 @@ class CreatePayoutLinksTable extends Migration
 
             $table->bigInteger(Entity::AMOUNT);
 
-            $table->text(Entity::NOTES);
+            $table->text(Entity::NOTES)
+                  ->nullable();
 
             $table->char(Entity::DESCRIPTION, 255)
                   ->nullable();

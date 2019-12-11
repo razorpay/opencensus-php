@@ -1,7 +1,3 @@
-ALTER TABLE payouts
-    ADD COLUMN payout_link_id varchar(14) null,
-    ADD INDEX (`payout_link_id`);
-
 ALTER TABLE cards
     ADD merchant_id varchar(14) after id;
 
@@ -5551,3 +5547,7 @@ ALTER TABLE partner_configs
 
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE payouts
+    ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+    ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);
