@@ -32,6 +32,6 @@ trait NbPlusService
             );
         }
 
-        $response = $this->app['nbplus.payments']->checkForErrors($response);
+        $this->app['nbplus.payments']->checkForErrors($response);
     }
 }
