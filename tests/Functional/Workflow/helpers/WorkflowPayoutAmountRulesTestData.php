@@ -34,19 +34,16 @@ return [
                 'items'     => [
                     [
                         'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
                         'min_amount'    =>  0,
                         'max_amount'    =>  100000
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
                         'min_amount'    =>  100000,
                         'max_amount'    =>  1000000
                     ],
                     [
                         'merchant_id'   => '10000000000000',
-                        'condition'     => null,
                         'min_amount'    => 1000000,
                         'max_amount'    => null
                     ]
@@ -81,7 +78,7 @@ return [
 
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Ranges specified are overlapping',
+                    'description' => 'Ranges provided are not continuous and complete',
                 ],
             ],
             'status_code' => 400,
@@ -118,7 +115,7 @@ return [
 
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Ranges specified are leaving gaps',
+                    'description' => 'Ranges provided are not continuous and complete',
                 ]
             ],
             'status_code' => 400,

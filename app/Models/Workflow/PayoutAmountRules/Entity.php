@@ -78,9 +78,6 @@ class Entity extends Base\Entity
         self::MAX_AMOUNT => 'int',
     ];
 
-    const DEFAULT_FETCH_LIMIT = 10;
-    const DEFAULT_FETCH_OFFSET = 0;
-
     public function workflow()
     {
         return $this->belongsTo(Workflow\Entity::class);

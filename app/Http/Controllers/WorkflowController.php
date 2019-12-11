@@ -96,7 +96,7 @@ class WorkflowController extends Controller
                       ->getAdmin()
                       ->getPublicOrgId();
 
-        $data = $this->service()->fetchMultiple($input, $orgId);
+        $data = $this->service()->fetchMultiple($orgId, $input);
 
         return ApiResponse::json($data);
     }

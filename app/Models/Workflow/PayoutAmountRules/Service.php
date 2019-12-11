@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission\Name;
 
 class Service extends Base\Service
 {
@@ -22,7 +23,7 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $results = $this->core()->getAllWorkflowRulesForOrg($input, $orgId);
+        $results = $this->repo->workflow_payout_amount_rules->fetchAllWorkflowRulesForOrg($orgId, $input)->toArrayWithItems();
 
         $results = $this->convertToDashboardFormat($results);
 
@@ -58,21 +59,24 @@ class Service extends Base\Service
     {
         $rules = $input['rules'];
 
-        for($index = 0; $index < count($rules); $index++)
-        {
-            \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
-        }
-
         $merchantId = null;
 
         // Check if workflow exists and belongs to merchant in context
-        foreach ($rules as $rule)
+        for($index = 0; $index < count($rules); $index++)
         {
+
+            \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
+
+            $rule = $rules[$index];
+
             $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID]);
 
-            $permissionNames = (array_column($workflow->permissions->toArrayPublic()['items'], 'name'));
+            $workflowPermissionsArray = $workflow->permissions->toArrayPublic();
 
-            if (in_array('create_payout', $permissionNames, true) === false)
+            $permissionNames = (array_column($workflowPermissionsArray['items'], 'name'));
+
+            // Ensure that given workflows have create_payout permission
+            if (in_array(Name::CREATE_PAYOUT, $permissionNames, true) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
@@ -80,16 +84,19 @@ class Service extends Base\Service
                     ['id' => $rule[Entity::WORKFLOW_ID]]);
             }
 
-            if($merchantId && $merchantId != $workflow->toArray()[Entity::MERCHANT_ID])
+            $workflowsArray = $workflow->toArray();
+
+            // Ensure that all merchants are the same
+            if((empty($merchantId) === false) and ($merchantId !== $workflowsArray[Entity::MERCHANT_ID]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
                     null,
                     ['id' => $rule[Entity::WORKFLOW_ID]]);
             }
-            elseif (!$merchantId)
+            elseif (empty($merchantId) === true)
             {
-                $merchantId = $workflow->toArray()[Entity::MERCHANT_ID];
+                $merchantId = $workflowsArray[Entity::MERCHANT_ID];
             }
         }
 
