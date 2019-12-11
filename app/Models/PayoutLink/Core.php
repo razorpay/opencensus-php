@@ -54,8 +54,6 @@ class Core extends Base\Core
 
     public function create(array $input): Entity
     {
-        array_pull($input, 'XDEBUG_SESSION_START');
-
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CREATE_REQUEST,
             $input);

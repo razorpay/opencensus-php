@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Core as ContactCore;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Contact
@@ -16,6 +17,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  * Ideally these should be API calls, but as they are in the same repo, we will be making direct function calls
  * When this module moves out, we will replace function calls with API calls
  */
+
 class Contact
 {
     protected $trace;
@@ -31,6 +33,7 @@ class Contact
 
     /**
      * Calls the Contact Core, to create the contact and return the Contact Entity
+     *
      * @param array $contact
      * @param MerchantEntity $merchant
      * @return ContactEntity
@@ -38,16 +41,37 @@ class Contact
      */
     public function processContact(array $contact, MerchantEntity $merchant): ContactEntity
     {
-        $contactId = array_pull($contact, 'contact_id');
+        $contactId = array_pull($contact, 'id');
 
         if ($contactId !== null)
         {
             $contact = $this->repo->contact->findByIdAndMerchant($contactId, $merchant);
+
+            if ((empty($contact->getEmail()) === true) and
+                (empty($contact->getContact()) === true))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                                              null,
+                                              [
+                                                  'merchant_id' => $merchant->getPublicId(),
+                                                  'contact'     => $contact
+                                              ]);
+            }
         }
         else
         {
             $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
                                $contact);
+            if ((empty($contact['email']) === true) and
+                (empty($contact['contact']) === true))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                                              null,
+                                              [
+                                                  'merchant_id' => $merchant->getPublicId(),
+                                                  'contact'     => $contact
+                                              ]);
+            }
 
             try
             {
@@ -65,6 +89,7 @@ class Contact
                 );
             }
         }
+
         return $contact;
     }
 }

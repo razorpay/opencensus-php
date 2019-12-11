@@ -5,19 +5,16 @@ namespace RZP\Tests\Functional\PayoutLink;
 use Mail;
 use Mockery;
 use Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
-use RZP\Exception\BadRequestException;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
 
 class PayoutLinkTest extends TestCase
 {
@@ -246,20 +243,42 @@ class PayoutLinkTest extends TestCase
      */
     public function testPayoutLinkFailedDueToContactCreationFailure()
     {
-        // mocking Contact Core, so that I can throw exception when contacts->create is called
         $mockedContactCore = Mockery::mock('overload:RZP\Models\Contact\Core');
 
         $mockedContactCore->shouldReceive('create')
                           ->once()
                           ->andThrow(new Exception('I failed for the sake of testing'));
 
-        $contactClient = new ContactClient();
+        $this->ba->privateAuth();
 
-        $this->expectException(BadRequestException::class);
+        $this->startTest();
+    }
 
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED);
+    public function testContactAddFailsWhenEmailAndPhoneNumberBothMissing()
+    {
+        $this->ba->privateAuth();
 
-        $contactClient->processContact(['contact_id' => null], $this->contact->merchant);
+        $this->startTest();
+    }
+
+    public function testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name'    => 'Test Contact',
+                                               'email'   => '',
+                                               'contact' => ''
+                                           ]);
+
+        $testData = $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'];
+
+        $testData['request']['content']['contact']['id'] = $contact->getId();
+
+        $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'] = $testData;
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function testGenerateOtpForOnlyPhoneContact()
