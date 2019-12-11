@@ -178,13 +178,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Setters ------------------------------
 
-    public function setShortUrl($shortUrl)
+    public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
-    public function setStatus($status)
+    public function setStatus(string $status)
     {
+        // todo. pl add Status validation logic here, and fail accordingly
         $this->setAttribute(self::STATUS, $status);
     }
 
