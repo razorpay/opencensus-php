@@ -15,6 +15,7 @@ import Offer from 'merchant/models/Offer';
 
 import PaymentMethods from './paymentMethods';
 import OfferDescription from './offerDescription';
+import OfferDiscount from './offerDiscount';
 
 @withRouter
 @connect(state => ({
@@ -169,32 +170,6 @@ export default class CreateOfferWizard extends React.Component {
     );
   };
 
-  renderDiscountFormInputs() {
-    return (
-      <React.Fragment>
-        <strong>Instant Discount</strong>
-        <p>The customer will pay the discounted price for the product</p>
-        <div>
-          <Input.Select
-            name="discount_type"
-            label="Discount Type"
-            placeholder="Discount Type"
-            onChange={this.getFormOnChangeHandler()}
-            required
-            defaultValue={this.state.discount_type}
-            options={[
-              { label: 'Select Type', name: '' },
-              { label: 'Flat', name: 'flat' },
-              { label: 'Percentage', name: 'percent' },
-            ]}
-            validator={this.getFormElementValidations('discount_type')}
-          />
-          {this.renderDiscountDetailsSection()}
-        </div>
-      </React.Fragment>
-    );
-  }
-
   renderOfferDescriptionFormInputs() {
     return (
       <OfferDescription
@@ -265,6 +240,18 @@ export default class CreateOfferWizard extends React.Component {
       );
     }
   }
+
+  renderDiscountFormInputs = () => {
+    return (
+      <OfferDiscount
+        percentRate={this.state.percent_rate}
+        maxCashback={this.state.max_cashback}
+        flatCashback={this.state.flat_cashback}
+        discountType={this.state.discount_type}
+        getFormElementValidations={this.getFormElementValidations}
+      />
+    );
+  };
 
   renderForm() {
     const { currentTab, discount_type, starts_at, ends_at } = this.state;
