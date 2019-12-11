@@ -139,7 +139,7 @@ trait AttemptTrait
 
         $this->createDataAndAssertInitiateOnlineTransferResponse($channel, $purpose, $setlCount, $sourceType, $failureTest);
 
-        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
+        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount, $failureTest);
     }
 
     protected function createDataAndAssertInitiateOnlineTransferSuccessForVpa(string $channel, int $setlCount, string $sourceType, bool $failureTest)
@@ -148,7 +148,7 @@ trait AttemptTrait
 
         $this->createDataAndAssertInitiateOnlineTransferResponseForVpa($channel, $purpose, $setlCount, $sourceType, $failureTest);
 
-        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
+        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount, $failureTest);
     }
 
     protected function assertEntitiesAfterInitiateTransfer(
@@ -209,7 +209,7 @@ trait AttemptTrait
     }
 
     protected function assertEntitiesAfterInitiateOnlineTransfer(
-        string $channel, string $purpose, string $sourceType, int $sourceCount)
+        string $channel, string $purpose, string $sourceType, int $sourceCount, bool $failureTest = false)
     {
         // Verify Batch
         $batch = $this->getLastEntity(Entity::BATCH_FUND_TRANSFER, true);
@@ -235,7 +235,7 @@ trait AttemptTrait
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
 
-            $expectedStatus = Attempt\Status::INITIATED;
+            $expectedStatus = $failureTest ? Attempt\Status::FAILED : Attempt\Status::PROCESSED;
 
             if ($sourceType === Entity::PAYOUT)
             {
@@ -253,7 +253,7 @@ trait AttemptTrait
         {
             $expectedStatus = (empty($attempt['vpa_id']) === false) ?
                 Payout\Status::PROCESSED:
-                Payout\Status::INITIATED;
+                ($failureTest ? Attempt\Status::FAILED : Attempt\Status::PROCESSED);
 
             $this->assertEquals($batch['id'], $fta['batch_fund_transfer_id']);
             $this->assertEquals($expectedStatus, $fta[Attempt\Entity::STATUS]);

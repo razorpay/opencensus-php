@@ -127,8 +127,8 @@ return [
     'matchAttemptForReconFailureRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Failure',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessYesbank' => [
@@ -141,8 +141,8 @@ return [
     'matchAttemptForReconFailureYesbank' => [
         'version'           => 'V3',
         'bank_status_code'  => 'FAILED',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessYesbankVpa' => [
@@ -158,7 +158,7 @@ return [
         'bank_status_code'   => 'F',
         'bank_response_code' => 'FAILED',
         'status'             => AttemptStatus::FAILED,
-        'failure_reason'     => null,
+        'failure_reason'     => 'Reconciliation',
     ],
 
     'matchSummaryForReconFile' => [
@@ -170,7 +170,7 @@ return [
         'channel'           => Channel::KOTAK,
         'version'           => 'V3',
         'bank_status_code'  => KotakStatus::PROCESSED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
         'remarks'           => 'Some failure.',
     ],
 
@@ -178,21 +178,21 @@ return [
         'channel'           => Channel::ICICI,
         'version'           => 'V3',
         'bank_status_code'  => IciciStatus::CANCELLED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'matchAttemptForReconFailureHdfc' => [
         'channel'           => Channel::HDFC,
         'version'           => 'V3',
         'bank_status_code'  => HdfcStatus::CANCELLED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'matchAttemptForReconFailureAxis' => [
         'channel'           => Channel::AXIS,
         'version'           => 'V3',
         'bank_status_code'  => AxisStatus::REJECTED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'fetchAndMatchReconSuccessForPayout' => [
