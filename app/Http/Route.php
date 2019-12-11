@@ -846,7 +846,7 @@ final class Route
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
-        //Payout Links
+        // Payout Links
         'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
         'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
@@ -2159,9 +2159,6 @@ final class Route
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
-        'payout_links_fetch_multiple',
-        'payout_links_fetch_by_id',
-        'payout_links_create'
         ];
 
     //

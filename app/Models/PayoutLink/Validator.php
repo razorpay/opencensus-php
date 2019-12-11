@@ -23,16 +23,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $compositeCreateRules = [
-        Entity::AMOUNT          => 'required|integer',
-        Entity::CURRENCY        => 'required|size:3',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::DESCRIPTION     => 'required|string|max:255',
-        Entity::RECEIPT         => 'sometimes|string|max:40',
-        'contact'               => 'required|array',
-        'contact.contact_id'    => 'present|nullable|string|size:14',
-        'contact.name'          => 'required_without:contact.contact_id|string|max:50',
-        'contact.email'         => 'nullable|email|filled',
-        'contact.contact'       => 'nullable|contact_syntax|filled',
-        'contact.type'          => 'nullable|max:40|alpha_dash_space|filled',
+        Entity::AMOUNT      => 'required|integer',
+        Entity::CURRENCY    => 'required|size:3|in:INR',
+        Entity::NOTES       => 'sometimes|notes',
+        Entity::DESCRIPTION => 'required|string|max:255',
+        Entity::RECEIPT     => 'sometimes|string|max:40',
+        'contact'           => 'required|array',
+        'contact.id'        => 'sometimes|nullable|string|size:14',
+        'contact.name'      => 'required_without:contact.id|string|max:50',
+        'contact.email'     => 'nullable|email|filled',
+        'contact.contact'   => 'nullable|contact_syntax|filled',
+        'contact.type'      => 'nullable|max:40|alpha_dash_space|filled',
     ];
 }

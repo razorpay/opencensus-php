@@ -1,10 +1,12 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 
 return [
-    'testPostRequestForCreatingPayoutLink'              => [
+    'testPostRequestForCreatingPayoutLink' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payout-links',
@@ -13,10 +15,9 @@ return [
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
                 'contact'     => [
-                    'contact_id' => null,
                     'name'       => 'cskdsds',
                     'email'      => 'dsknlds@gmail.com',
-                    'contact'    => '12323sddskl'
+                    'contact'    => '1231231231'
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -44,7 +45,7 @@ return [
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
                 'contact'     => [
-                    'contact_id' => '1000010contact',
+                    'id' => '1000010contact',
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -73,7 +74,7 @@ return [
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
                 'contact'     => [
-                    'contact_id' => '1000010contact',
+                    'id' => '1000010contact',
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -93,10 +94,9 @@ return [
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
                 'contact'     => [
-                    'contact_id' => null,
-                    'name'       => 'cskdsds',
+                    'name'       => 'cskdsdssdklifnjs',
                     'email'      => 'dsknlds@gmail.com',
-                    'contact'    => '12323sddskl'
+                    'contact'    => '1231231231'
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -104,9 +104,79 @@ return [
         ],
         'response' => [
             'content' => [
-            ]
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_ADD_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
         ]
     ],
+
+    'testContactAddFailsWhenEmailAndPhoneNumberBothMissing' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'contact'     => [
+                    'name'       => 'cskdsdssdklifnjs'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+        ]
+    ],
+
+    'testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'contact'     => [
+                    'id'    => 'id_for_a_contact_without_both_phone_and_email'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+        ]
+    ],
+
     'testShortUrlGenerationExceptionThrown' => [
         'request'  => [
             'method'  => 'POST',
@@ -116,7 +186,7 @@ return [
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
                 'contact'     => [
-                    'contact_id' => '1000010contact',
+                    'id' => '1000010contact',
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -134,7 +204,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'plnk_DnhDjMDHlQEjgM',
+                'id'          => 'pyol_DnhDjMDHlQEjgM',
                 'amount'      => 1000,
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
