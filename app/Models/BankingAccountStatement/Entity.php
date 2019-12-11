@@ -139,6 +139,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Transaction\Entity::class);
     }
 
+    public function statement()
+    {
+        return $this->belongsTo(Transaction\Statement\Entity::class);
+    }
+
     public function source()
     {
         return $this->morphTo(self::SOURCE, self::ENTITY_TYPE, self::ENTITY_ID);

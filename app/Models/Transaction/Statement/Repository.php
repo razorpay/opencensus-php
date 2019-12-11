@@ -13,7 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
-
+use RZP\Models\BankingAccountStatement\Entity as BankingAccountStatementEntity;
 
 /**
  * Class Repository
@@ -100,9 +100,8 @@ class Repository extends Transaction\Repository
 
     /**
      * TODO : https://razorpay.atlassian.net/browse/RX-536
-
      * @param $merchantId
-     * @param $accountNumber
+     * @param $balanceId
      * @param $fromDate
      * @param $toDate
      * @return mixed
@@ -115,6 +114,7 @@ class Repository extends Transaction\Repository
                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->orderBy(Entity::ID, 'desc')
+                    ->with('bankingAccountStatement')
                     ->get();
     }
 
