@@ -178,7 +178,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        $this->setAttribute(self::STATUS, Status::ISSUED);
+        $this->setAttribute(self::STATUS, $status);
     }
 
     // -------------------------------------- End Setters -----------------------------
