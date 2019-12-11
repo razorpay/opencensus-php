@@ -79,7 +79,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_CHANNELS                     => 'filled|array',
         ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
@@ -96,12 +95,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateRedisKeysRules = [
-        'key'   => 'required|in:config:fts_channels,config:heartbeat_routes',
+        'key'   => 'required|in:config:heartbeat_routes',
         'value' => 'array',
     ];
 
     protected static $getRedisKeyRules = [
-        'key'   => 'required|in:config:fts_channels,config:heartbeat_routes'
+        'key'   => 'required|in:config:heartbeat_routes'
     ];
 
     protected static $scorecardRules = [
@@ -159,9 +158,10 @@ class Validator extends Base\Validator
 
     protected static $mozartGatewayPvtRules = [
         'gateway'            => 'required|string|in:citi,icici,yesbank_upi',
-        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register',
+        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
         'payload.entities'   => 'required|array',
+        'version'            => 'required|string|in:v1,v2',
     ];
 }

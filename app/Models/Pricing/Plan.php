@@ -253,6 +253,18 @@ class Plan extends PublicCollection
         return false;
     }
 
+    public function hasVpaReceiver()
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getReceiverType() === Receiver::VPA)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function hasMethod($method)
     {
         /** @var Entity $rule */

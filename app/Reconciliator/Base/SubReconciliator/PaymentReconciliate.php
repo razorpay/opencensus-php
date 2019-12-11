@@ -13,6 +13,7 @@ use RZP\Reconciliator\Base;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -60,7 +61,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::AMEX,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
         RequestProcessor\Base::NETBANKING_BOB_V2,
-        RequestProcessor\Base::PAYPAL
+        RequestProcessor\Base::PAYPAL,
+        RequestProcessor\Base::BAJAJFINSERV,
     ];
 
     /**
@@ -824,10 +826,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             return null;
         }
 
-        $referenceNumber = $this->getReferenceNumber($row);
-
-        $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
-
         $this->setPaymentAndTransaction($row, $paymentId);
 
         //If payment is not found, dont throw. mark it as Unprocessed. returning null will do that.
@@ -841,6 +839,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
         //
         $this->setAllowForceAuthorization($this->payment);
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -914,6 +916,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function setPaymentAndTransaction($row, $paymentId)
     {
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ID_NOT_AS_EXPECTED);
+
+            return null;
+        }
+
         try
         {
             $this->payment = null; //For every row $this->payment should be initialized to null.
@@ -945,7 +954,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
-                    'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
+                    'message'    => 'Payment not found in DB. -> ' . $ex->getCode(),
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);

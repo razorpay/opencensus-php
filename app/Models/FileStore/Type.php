@@ -519,6 +519,9 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
         ],
 

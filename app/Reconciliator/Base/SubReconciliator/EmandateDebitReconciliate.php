@@ -34,7 +34,6 @@ class EmandateDebitReconciliate extends PaymentReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
-                    'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);

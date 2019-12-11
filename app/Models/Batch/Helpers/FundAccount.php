@@ -26,7 +26,7 @@ class FundAccount
         switch ($entry[Header::FUND_ACCOUNT_TYPE])
         {
             case FundAccountModel\Type::BANK_ACCOUNT:
-                $input[FundAccountModel\Entity::DETAILS] = [
+                $input[FundAccountModel\Entity::BANK_ACCOUNT] = [
                     BankAccount\Entity::IFSC           => $entry[Header::FUND_ACCOUNT_IFSC],
                     BankAccount\Entity::ACCOUNT_NUMBER => $entry[Header::FUND_ACCOUNT_NUMBER],
                     BankAccount\Entity::NAME           => $entry[Header::FUND_ACCOUNT_NAME],
@@ -34,7 +34,7 @@ class FundAccount
                 break;
 
             case FundAccountModel\Type::VPA:
-                $input[FundAccountModel\Entity::DETAILS] = [
+                $input[FundAccountModel\Entity::VPA] = [
                     Vpa\Entity::ADDRESS => $entry[Header::FUND_ACCOUNT_VPA],
                 ];
                 break;

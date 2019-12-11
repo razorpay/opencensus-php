@@ -137,8 +137,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        Mode::validateModeOfAccountType($mode, $destinationType);
-
         if ($destinationType === Constants\Entity::CARD)
         {
             $cardIssuer = $attempt->card->getIssuer();
@@ -148,7 +146,21 @@ class Validator extends Base\Validator
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
-        Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+
+        if ($valid === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ],
+                $mode . ' is not supported'
+            );
+        }
 
         $amount = $attempt->source->getAmount();
 

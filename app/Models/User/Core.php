@@ -365,7 +365,7 @@ class Core extends Base\Core
         $this->checkIfUserCanHitSetup2faRoute($user);
 
         $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
-        
+
         $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
 
         $this->repo->saveOrFail($user);
@@ -420,7 +420,7 @@ class Core extends Base\Core
      * Checks if the user can hit this route. Only a user
      * which doesn't belong to non-restrcited can hit this route.
      * User should not already have a verified mobile number.
-     * 
+     *
      * @param  Entity $user
      * @throws Exception\BadRequestException
      */
@@ -582,6 +582,7 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
+                /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
                     $merchant['id'],
                     Merchant\Balance\Type::BANKING,
@@ -598,9 +599,14 @@ class Core extends Base\Core
 
                 return $merchant +
                     [
-                        Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
-                        Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
-                        Merchant\Entity::ACCOUNTS        => $this->fetchBankingAccountWithBalance($merchant['id']),
+                        // balance for business banking activated at should have account_type shared
+                        // Relevant slack thread : https://razorpay.slack.com/archives/CE4DMABE3/p1574075046102400
+
+                        Merchant\Entity::BANKING_ACTIVATED_AT => $balance->getCreatedAt(),
+                        Merchant\Entity::BANKING_BALANCE      => $balance->only([Merchant\Balance\Entity::BALANCE,
+                                                                                 Merchant\Balance\Entity::CURRENCY]),
+                        Merchant\Entity::BANKING_ACCOUNT      => $bankAccount->toArrayHosted(),
+                        Merchant\Entity::ACCOUNTS             => $this->fetchBankingAccountWithBalance($merchant['id']),
                     ];
             },
             $merchants);

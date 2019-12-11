@@ -28,6 +28,8 @@ class RecurringStatus
      */
     const NOT_APPLICABLE    = 'not_applicable';
 
+    const PAID              = 'paid';
+
     public static $webhookStatuses = [
         self::CONFIRMED,
         self::REJECTED

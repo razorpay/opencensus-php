@@ -64,9 +64,10 @@ class Core extends Base\Core
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Entity::STATUS      => Status::PROCESSED,
-                        Entity::REFERENCE1  => $refund->getReference1(),
-                        Entity::MODE        => $ftaData['mode'] ?? '',
+                        Entity::STATUS        => Status::PROCESSED,
+                        Entity::REFERENCE1    => $refund->getReference1(),
+                        Entity::MODE          => $ftaData['mode'] ?? '',
+                        Constants::FTA_UPDATE => true,
                     ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);
@@ -84,20 +85,29 @@ class Core extends Base\Core
                 {
                     // Not sending reference1 in cases of failure
                     $data = [
-                        Entity::STATUS      => Status::FAILED,
-                        Entity::REFERENCE2  => $refund->getReference2(),
+                        Entity::STATUS        => Status::FAILED,
+                        Entity::REFERENCE2    => $refund->getReference2(),
+                        Constants::FTA_UPDATE => true,
                     ];
+
+                    $event = Refund\ScroogeEvents::FILE_INIT_EVENT;
 
                     //
                     // If fta gets failed, resetting fta related data here. This can be processed by payment gateway
                     // later.
                     //
+
+                    if ($refund->isProcessed() === true)
+                    {
+                        $event = Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT;
+                    }
+
                     $refund->setBatchFundTransferId(null);
                     $refund->setUtr(null);
                     $refund->setRemarks(null);
                     $this->repo->saveOrFail($refund);
 
-                    (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
+                    (new Service)->makeScroogeEditRefundRequest($refund, $data, $event);
                 }
                 else
                 {
@@ -148,9 +158,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     public static function getRefundsPublicStatusMerchantsViaScrooge(): array

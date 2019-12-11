@@ -1514,7 +1514,8 @@ class Core extends Base\Core
      */
     public function dispatchForSettlementBucketing(Entity $txn, $settledAt = null)
     {
-        if ($settledAt === null)
+        if (($settledAt === null) or
+            ($txn->isOnHold() === true))
         {
             return;
         }

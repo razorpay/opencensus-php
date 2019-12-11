@@ -12,7 +12,7 @@ namespace RZP\Models\Options\Helpers;
 class PaymentLinkDefaultOption implements DefaultOption
 {
 
-    // Refer https://jsonbin.io/5dc2bda6a5f7237736c23e21/11 for JSON structure
+    // Refer https://jsonbin.io/5dc2bda6a5f7237736c23e2/1 for JSON structure
     // Few fields are commented below. Do not remove fields.
     // Change if a default value is needed in them in future.
     public function get()
@@ -43,50 +43,50 @@ class PaymentLinkDefaultOption implements DefaultOption
                         ),
                     'method' =>
                         array (
-                            'card' => true,
-                            'netbanking' => true,
-                            'wallet' => true,
-                            'upi' => true,
-                            'emi' => true,
-                            'upi_intent' => false,
-                            'qr' => false
+                            'card' => "1",
+                            'netbanking' => "1",
+                            'wallet' => "1",
+                            'upi' => "1",
+                            'emi' => "1",
+                            'upi_intent' => "0",
+                            'qr' => "0"
                         ),
                     'features' =>
                         array (
-                            'cardsaving' => true,
+                            'cardsaving' => "1",
                         ),
                     'readonly' =>
                         array (
-                            'contact' => false,
-                            'email' => false,
-                            'name' => false
+                            'contact' => "0",
+                            'email' => "0",
+                            'name' => "0"
                         ),
                     'hidden' =>
                         array (
-                            'contact' => false,
-                            'email' => false
+                            'contact' => "0",
+                            'email' => "0"
                         ),
                     'theme' =>
                         array (
-                            'hide_topbar' => false,
-                            'image_padding' => true,
-                            'image_frame' => true,
-                            'close_button' => true,
-                            'close_method_back' => false,
+                            'hide_topbar' => "0",
+                            'image_padding' => "1",
+                            'image_frame' => "1",
+                            'close_button' => "0",
+                            'close_method_back' => "0",
 //                                    'color' => 'Use if sent : Merchant Profile',
 //                                    'backdrop_color' => 'Use if sent : Merchant Profile',
-                            'debit_card' => false
+                            'debit_card' => "0"
                         ),
                     'modal' =>
                         array (
-                            'confirm_close' => false,
+                            'confirm_close' => "0",
 //                                    'ondismiss' => 'Use if sent : function()',
 //                                    'onhidden' => 'Use if sent : function()',
-                            'escape' => true,
-                            'animation' => true,
-                            'backdropclose' => false,
-                            'handleback' => true,
-                            'select_partial' => false
+                            'escape' => "1",
+                            'animation' => "1",
+                            'backdropclose' => "0",
+                            'handleback' => "1",
+                            'select_partial' => "0"
                         ),
                     'partial_payment' =>
                         array (
@@ -109,23 +109,23 @@ class PaymentLinkDefaultOption implements DefaultOption
                 array (
                     'footer' =>
                         array (
-                            'razorpay_branding' => true,
-                            'security_branding' => true
+                            'razorpay_branding' => "1",
+                            'security_branding' => "1"
                         ),
                     'label' =>
                         array (
-                            'receipt' 				 => 'Receipt',
-                            'description' 		     => 'Payment For',
-                            'amount_payable' 		 => 'Amount Payable',
-                            'amount_paid'    		 => 'Amount Paid',
-                            'partial_amount_due'     => 'Due',
-                            'partial_amount_paid'    => 'Paid',
-                            'expire_by'  		     => 'Expire By',
-                            'expired_on'             => 'Expired On'
+                            'receipt' 				 => 'RECEIPT',
+                            'description' 		     => 'PAYMENT FOR',
+                            'amount_payable' 		 => 'AMOUNT PAYABLE',
+                            'amount_paid'    		 => 'AMOUNT PAID',
+                            'partial_amount_due'     => 'DUE',
+                            'partial_amount_paid'    => 'PAID',
+                            'expire_by'  		     => 'EXPIRE BY',
+                            'expired_on'             => 'EXPIRED ON'
                         ),
                     'show_preferences' =>
                         array (
-                            'issued_to'     => true
+                            'issued_to'     => "1"
                         )
                 )
         );

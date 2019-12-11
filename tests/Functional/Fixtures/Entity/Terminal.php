@@ -655,6 +655,35 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedOtmMindgateTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::UPI_MINDGATE_OTM_TERMINAL;
+
+        $default = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_mindgate',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'payumoney_auth_code',
+            'gateway_terminal_id'       => 'payumoney_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes['type'] = [
+            Type::RECURRING_3DS     => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedOlamoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
@@ -1556,19 +1585,21 @@ class Terminal extends Base
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
         $defaultValues = [
-            'id'                        => $termId,
-            'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'sharp',
-            'gateway_merchant_id'       => 'test_merchant_sharp',
-            'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
-            'card'                      => 1,
-            'emi'                       => 0,
-            'mc_mpan'                   => '1234560000000000',
-            'visa_mpan'                 => '1234560000000001',
-            'rupay_mpan'                => '1234560000000002',
-            'vpa'                       => 'random@razorpay',
-            'type'                      => [
+            'id'                         => $termId,
+            'merchant_id'                => '100000Razorpay',
+            'gateway'                    => 'sharp',
+            'gateway_merchant_id'        => 'test_merchant_sharp',
+            'gateway_terminal_id'        => 'abcde',
+            'gateway_terminal_password'  => 'abcdef',
+            'gateway_terminal_password2' => 'abcdef',
+            'gateway_secure_secret2'     => 'abcdef',
+            'card'                       => 1,
+            'emi'                        => 0,
+            'mc_mpan'                    => '1234560000000000',
+            'visa_mpan'                  => '1234560000000001',
+            'rupay_mpan'                 => '1234560000000002',
+            'vpa'                        => 'random@razorpay',
+            'type'                       => [
                 'non_recurring' => '1',
             ]
         ];
@@ -1713,14 +1744,16 @@ class Terminal extends Base
         $termId = \RZP\Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
 
         $defaultValues = [
-            'id'                        => $termId,
-            'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'hdfc',
-            'gateway_acquirer'          => 'hdfc',
-            'card'                      => 1,
-            'gateway_merchant_id'       => 'razorpay hdfc',
-            'gateway_terminal_id'       => 'account hdfc',
-            'gateway_terminal_password' => 'razorpay_password',
+            'id'                         => $termId,
+            'merchant_id'                => '100000Razorpay',
+            'gateway'                    => 'hdfc',
+            'gateway_acquirer'           => 'hdfc',
+            'card'                       => 1,
+            'gateway_merchant_id'        => 'razorpay hdfc',
+            'gateway_terminal_id'        => 'account hdfc',
+            'gateway_terminal_password'  => 'razorpay_password',
+            'gateway_terminal_password2' => 'razorpay_password',
+            'gateway_secure_secret2'     => 'razorpay_password',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -3312,6 +3345,63 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'netbanking_kvb_merchant_id',
             'netbanking'            => 1,
             'tpv'                   => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createVpaTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                          => '1VirtualVpaTrm',
+            'merchant_id'                 => '10000000000000',
+            'gateway_merchant_id'         => 'HDFCVPATEST',
+            'type'                        => [
+                Type::NON_RECURRING => '1',
+                Type::UPI_TRANSFER  => '1',
+            ],
+            'virtual_upi_root'            => 'rzp.',
+            'virtual_upi_merchant_prefix' => 'test.',
+            'virtual_upi_handle'          => 'hdfcbank',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createVpaSharedTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                          => 'VirtVpaShrdTrm',
+            'type'                        => [
+                Type::NON_RECURRING => '1',
+                Type::UPI_TRANSFER  => '1',
+            ],
+            'virtual_upi_root'            => 'rzp.',
+            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_handle'          => 'hdfcbank',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createUpiJuspayTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                         => Shared::UPI_JUSPAY_TERMINAL,
+            'merchant_id'                => '10000000000000',
+            'gateway'                    => Gateway::UPI_JUSPAY,
+            'gateway_merchant_id'        => 'MERCHANTid',
+            'gateway_merchant_id2'       => 'merchantid2',
+            'gateway_terminal_password'  => 'priv',
+            'gateway_terminal_password2' => 'pub',
+            'vpa'                        => 'some@abfspay',
+            'upi'                        =>  1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

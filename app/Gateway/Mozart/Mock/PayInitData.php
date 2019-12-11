@@ -43,6 +43,34 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'customerVpa' => '8123715658@upi',
+                    'gatewayResponseCode' => '00',
+                    'gatewayResponseMessage' => 'Accepted Collect Request',
+                    'gatewayTransactionId' => 'BJJ3d0c077f39c454a...',
+                    'merchantChannelId' => 'MERCHANT',
+                    'merchantId' => 'MERCHANT',
+                    'merchantRequestId' => $entities['payment']['id'],
+                    'responseCode' => 'SUCCESS',
+                    'responseMessage' => 'SUCCESS',
+                    'transactionTimestamp' => '2017-06-30T17:43:40+05:30',
+                    'udfParameters' => '{}',
+                    '_raw' => '{"responseCode":"SUCCESS","responseMessage":"SUCCESS","payload":{"merchantId":"MERCHANT","merchantChannelId":"MERCHANTAPP","merchantRequestId":"HEYYOU45","customerVpa":"8123715658@upi","transactionTimestamp":"2017-06-30T17:43:40+05:30","gatewayTransactionId":"BJJ3d0c077f39c454a...","gatewayResponseCode":"00","gatewayResponseMessage":"Accepted Collect Request"},"udfParameters":"{}"}',
+                    'status' => 'collect_inititated',
+                ],
+            'error' => NULL,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+        ];
+        return $response;
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];
@@ -434,6 +462,43 @@ class PayInitData extends Base\Mock\Server
             'success'           => true,
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function upi_mindgate($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'referenceNumber' => 'IFPO039F3940343',
+                    'pgMerchantId' => 'HDFC000006002278',
+                    'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',
+                    'amount' => 200,
+                    'custRefNo' => '920515212270',
+                    'mandateStatus' => 'COMPLETED',
+                    'reqStatus' => 'S',
+                    'message' => 'Transaction success',
+                    'payerVPA' => 'testvpa@yesb',
+                    'payeeVPA' => 'india.uber@hdfcbank',
+                    'credAcc' => '01601200021634',
+                    'endDate' => '26 Jul 2019',
+                    'txnId' => 'HDF542de25ds56ad9896ac96cef89475623',
+                    'creditIFSC' => 'HDFC0000160',
+                    'mcc' => '4121',
+                    'startDate' => '24 Jul 2019',
+                    'isVerified' => false,
+                    'respCode' => 'MD200',
+                    'umn' => 'MER5cb6b2b0640caa3d93d190095c003@hdfcbank',
+                    'status' => 'mandate_execution_successful',
+                    '_raw' => '',
+                    ''
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
         ];
 
         return $response;

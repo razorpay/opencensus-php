@@ -817,6 +817,15 @@ class ApiEventSubscriber extends Base\Core
             ];
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            $upiTransfer = $payment->upiTransfer;
+
+            $partialPayload[$upiTransfer->getEntity()] = [
+                'entity' => $upiTransfer->toArrayPublic(),
+            ];
+        }
+
         return $partialPayload;
     }
 
@@ -929,13 +938,28 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutPayload(Payout\Entity $payout): array
     {
-        $payload = [
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
+            ];
+        }
+
+        return [
             Constants\Entity::PAYOUT => [
-                'entity' => $payout->toArrayPublic(),
+                'entity' => $payout->toArrayWebhook(),
             ],
         ];
-
-        return $payload;
     }
 
     protected function getPaymentPayloadWithDispute($payment)

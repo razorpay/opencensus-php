@@ -46,16 +46,10 @@ trait Callback
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);
-        if (empty($gatewayInputLog['PaRes']) === false)
-        {
-            $gatewayInputLog['PaRes'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaRes']);
-        }
-
         if (empty($gatewayInputLog['PaReq']) === false)
         {
             $gatewayInputLog['PaReq'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaReq']);
         }
-
 
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
@@ -414,6 +408,13 @@ trait Callback
     protected function preProcessGatewayCallback(array &$input)
     {
         $payment = $this->payment;
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+
+            $input['payment_analytics'] = $pa ? $pa->toArray() : null;
+        }
 
         if (($payment->isMethodCardOrEmi() === true) and
             ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))

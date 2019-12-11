@@ -19,7 +19,24 @@ trait FraudDetector
     {
         $riskScore = $this->getRiskScore($payment);
 
-        if ($riskScore > $merchant->getRiskThreshold())
+        $variant = $this->getRiskEngineVersionVariant($merchant);
+
+        $this->trace->info(TraceCode::RAZORX_VARIANT_3DS, [
+            'payment_id'     => $payment->getId(),
+            'razorx_variant' => $variant,
+        ]);
+
+        $riskEngine = ($variant !== 'v2') ? Metadata::MAXMIND : Metadata::MAXMIND_V2;
+
+        $riskFields = [
+            'riskScore'   => $riskScore,
+            'riskEngine'  => $riskEngine,
+        ];
+
+        $this->setRiskMetadata($payment, $riskFields);
+
+        if (($variant !== 'v2') and
+            ($riskScore > $merchant->getRiskThreshold()))
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
@@ -51,8 +68,6 @@ trait FraudDetector
         if ((isset($riskFields) === true) and
             (isset($riskFields['riskScore']) === true))
         {
-            $this->setRiskMetadata($payment, $riskFields);
-
             return (float) $riskFields['riskScore'];
         }
 
@@ -84,16 +99,16 @@ trait FraudDetector
      */
     protected function setRiskMetadata(Payment\Entity $payment, array $riskFields)
     {
-        $paymentAnalytics = $payment->getMetaData("payment_analytics");
+        $paymentAnalytics = $payment->getMetaData('payment_analytics');
 
         if (is_null($paymentAnalytics) === false)
         {
             $paymentAnalytics->setRiskScore($riskFields['riskScore']);
-            $paymentAnalytics->setRiskEngine(Metadata::MAXMIND);
+            $paymentAnalytics->setRiskEngine($riskFields['riskEngine']);
         }
     }
 
-    protected function validateFraudDetectionV2(Payment\Entity $payment)
+    protected function validateFraudDetectionV2(Payment\Entity $payment, Merchant\Entity $merchant)
     {
         if (($this->app['config']->get('app.env') === Environment::PRODUCTION) and
             ($this->mode === Mode::TEST))
@@ -110,15 +125,44 @@ trait FraudDetector
             return;
         }
 
+        $variant = $this->getRiskEngineVersionVariant($merchant);
+
+        $this->trace->info(TraceCode::RAZORX_VARIANT_3DS, [
+            'payment_id'     => $payment->getId(),
+            'razorx_variant' => $variant,
+        ]);
+
+        $riskSource = Risk\Source::SHIELD;
+
+        $riskEngine = ($variant !== 'v2') ? Metadata::SHIELD : Metadata::SHIELD_V2;
+
         $riskData = $this->app['shield.service']->getRiskAssessment($payment);
 
-        if (empty($riskData) === false)
+        if (is_null($riskData['risk_score']) === false)
+        {
+            $riskFields = [
+                'riskScore'   => $riskData['risk_score'],
+                'riskEngine'  => $riskEngine,
+            ];
+
+            $this->setRiskMetadata($payment, $riskFields);
+
+            if (($variant !== 'v2') and
+                (($riskData['risk_score'] > $this->merchant->getRiskThreshold()) and
+                 (($this->payment->card->isInternational() === true) or ($this->payment->card->isAmex() === true))))
+            {
+                $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                $riskSource = Risk\Source::SHIELD;
+            }
+        }
+
+        if (empty($riskData[Risk\Entity::FRAUD_TYPE]) === false)
         {
             $payment->setMetadataKey(
                 'risk_entity',
                 [
-                    "source"    => Risk\Source::SHIELD,
-                    "risk_data" => $riskData,
+                    'source'    => $riskSource,
+                    'risk_data' => $riskData,
                 ]
             );
 
@@ -138,5 +182,10 @@ trait FraudDetector
                 throw $e;
             }
         }
+    }
+
+    protected function getRiskEngineVersionVariant(Merchant\Entity $merchant)
+    {
+        return $this->app->razorx->getTreatment($merchant->getId(), self::SECURE_3D_INTERNATIONAL, $this->mode);
     }
 }

@@ -17,13 +17,14 @@ class BatchHelper
     public static function getContactInput(array $entry): array
     {
         $input = [
-            Entity::TYPE         => $entry[self::CONTACT][self::TYPE],
-            Entity::NAME         => $entry[self::CONTACT][self::NAME],
-            Entity::EMAIL        => $entry[self::CONTACT][self::EMAIL],
-            Entity::CONTACT      => $entry[self::CONTACT][self::MOBILE],
-            Entity::REFERENCE_ID => $entry[self::CONTACT][self::REFERENCE_ID],
+            Entity::TYPE            => $entry[self::CONTACT][self::TYPE],
+            Entity::NAME            => $entry[self::CONTACT][self::NAME],
+            Entity::EMAIL           => $entry[self::CONTACT][self::EMAIL],
+            Entity::CONTACT         => $entry[self::CONTACT][self::MOBILE],
+            Entity::REFERENCE_ID    => $entry[self::CONTACT][self::REFERENCE_ID],
             // Notes is optional.
-            Entity::NOTES        => $entry[self::NOTES] ?? [],
+            Entity::NOTES           => $entry[self::NOTES] ?? [],
+            Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
         ];
 
         $input[Entity::NOTES] = self::formatNotesInput($input[Entity::NOTES]);
