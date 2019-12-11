@@ -142,6 +142,7 @@ class ErrorCodeMapping
         'AUTHENTICATION_FAILED'          => 'Payout failed. Contact support for help.',
         'RETURNED'                       => 'Payout failed. Contact support for help.',
         'REQUEST_NOT_FOUND'              => 'Payout failed. Contact support for help.',
+        'PBANK_CBS_REJECTED'             => 'Issue at partner bank. Reinitiate transfer after 30 min',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
