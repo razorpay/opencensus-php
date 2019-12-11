@@ -13,12 +13,7 @@ class Validator extends Base\Validator
     const CONTACT_NAME         = 'contact.name';
 
     const COMPOSITE_CREATE_RULE = 'composite_create';
-    const PAYOUT_LINK_ID_RULE   = 'payout_link_id';
     const VERIFY_OTP            = 'verify_otp';
-
-    protected static $payoutLinkIdRules = [
-        Entity::ID => 'sometimes|public_id|size:19',
-    ];
 
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',

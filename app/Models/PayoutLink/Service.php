@@ -32,13 +32,6 @@ class Service extends Base\Service
 
     public function generateAndSendCustomerOtp($payoutLinkId, $input)
     {
-        $validator = (new Entity())->getValidator();
-
-        $validator->validateInput(Validator::PAYOUT_LINK_ID_RULE,
-                                  [
-                                      Entity::ID => $payoutLinkId
-                                  ]);
-
         $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
                            $input
         );

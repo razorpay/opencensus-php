@@ -203,6 +203,7 @@ class Core extends Base\Core
                                                 $payoutLink->getDescription());
             try
             {
+                // Todo, pl update the template with the new html. Currently this is a plain test email
                 Mail::queue($customerEmailOtp);
 
                 $successfulChannelPushCount++;
