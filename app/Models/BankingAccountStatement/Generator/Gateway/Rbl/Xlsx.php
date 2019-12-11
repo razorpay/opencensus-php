@@ -92,7 +92,8 @@ class Xlsx extends Generator
 
     const LOGO_CELL_RANGE               = 'A1:E1';
 
-    const LOGO_PATH                     = 'views/bank_account_statement/RBL/rbllogo.png';
+    const LOGO_PATH                     = '/img/rbllogo.png';
+
 
     const LOGO_POSTITION                = 'E1';
 
@@ -280,7 +281,7 @@ class Xlsx extends Generator
     {
         $drawing = new Drawing();
 
-        $drawing->setPath(resource_path(self::LOGO_PATH));
+        $drawing->setPath(public_path(). self::LOGO_PATH);
 
         $drawing->setCoordinates(self::LOGO_POSTITION);
 

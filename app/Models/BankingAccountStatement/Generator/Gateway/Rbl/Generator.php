@@ -122,24 +122,23 @@ abstract class Generator extends Base
                                         ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT);
 
         $statementSummary = [
-            StatementSummary::OPENING_BALANCE          => (float) $openingBalance / 100,
-
-            StatementSummary::CLOSING_BALANCE          => (float) $closingBalance / 100,
-
-            StatementSummary::EFFECTIVE_BALANCE        => (float) $effectiveBalance / 100,
-
-            StatementSummary::LIEN_AMOUNT              => (float) $lienAmount / 100,
-
-            StatementSummary::DEBIT_COUNT              => (float) $debitCount,
-
+            StatementSummary::OPENING_BALANCE          => $this->getFormattedAmount($openingBalance),
+            StatementSummary::CLOSING_BALANCE          => $this->getFormattedAmount($closingBalance),
+            StatementSummary::EFFECTIVE_BALANCE        => $this->getFormattedAmount($effectiveBalance),
+            StatementSummary::LIEN_AMOUNT              => $this->getFormattedAmount($lienAmount),
+            StatementSummary::DEBIT_COUNT              => $debitCount,
             StatementSummary::CREDIT_COUNT             => $creditCount,
-
             StatementSummary::STATEMENT_GENERATED_DATE => $statementGeneratedDate
         ];
 
         $response = [$statementSummary, $transactions];
 
         return $response;
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount / 100, 2);
     }
 
     protected function convertToLineItem(StatementEntity $statement)
@@ -188,7 +187,19 @@ abstract class Generator extends Base
             return $bas->getDescription();
         }
     }
+    protected function getAddressLine2($bankingAccount)
+    {
+        $line2 = $bankingAccount->getBeneficiaryAddress2();
 
+        $line3 = $bankingAccount->getBeneficiaryAddress3();
+
+        if(empty($line3) === false)
+        {
+            $line2 = $line2 . ',' . $line3;
+        }
+
+        return $line2;
+    }
     /**
      * @param BankingAccountEntity $bankingAccount
      * @return array
@@ -210,9 +221,7 @@ abstract class Generator extends Base
 
         $bankInformation = (new BankInfo)->getBankInformation($ifscCode);
 
-        $customerAddressL2 =  $bankingAccount->getBeneficiaryAddress2() .
-                              ', ' .
-                              $bankingAccount->getBeneficiaryAddress3();
+        $customerAddressL2 =  $this->getAddressLine2($bankingAccount);
 
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $bankingAccount->getBeneficiaryName(),
