@@ -1143,9 +1143,7 @@ class Entity extends Base\PublicEntity
             $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
         }
 
-        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
-
-        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
         $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
                                  (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));

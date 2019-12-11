@@ -7,6 +7,8 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
@@ -190,40 +192,7 @@ class Service extends Base\Service
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        // Maps the transaction source to the entities to be fetched for it
-        $txnToRelationFetchMap = [
-            // Maps transaction source to entities that need to be fetched
-            E::PAYMENT  => [E::ORDER, E::CARD],
-            E::REFUND   => [
-                E::PAYMENT,
-                E::PAYMENT . '.' . E::CARD,
-                E::PAYMENT . '.' . E::ORDER,
-            ],
-            E::ADJUSTMENT   => [
-                Adjustment\Entity::ENTITY,
-                Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
-                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
-                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
-            ],
-            E::SETTLEMENT,
-        ];
-
-        $start = microtime(true);
-
-        $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
-
-        $timeTaken = get_diff_in_millisecond($start);
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_TRANSACTION_FETCH,
-            [
-                'merchantId'    => $this->merchant->getId(),
-                'settlement_id' => $id,
-                'txn_count'     => $txns->count(),
-                'time_taken'    => $timeTaken
-            ]);
-
-        return $txns->toArrayPublic();
+        return $this->getTransactionsForSettlement($id, $setl);
     }
 
     /**
@@ -486,6 +455,13 @@ class Service extends Base\Service
         return $this->getProcessDetails();
     }
 
+    /**
+     * This method is used to get the settlement Holiday List which is used in the settlement UI Dashboard
+     *
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     public function getHolidayListForYear(array $input)
     {
         (new Validator)->validateInput('settlement_holiday', $input);
@@ -500,5 +476,114 @@ class Service extends Base\Service
         $data = Holidays::getHolidayListForYear($year);
 
         return $data;
+    }
+
+    /**
+     * This method used for getApi for facebook payout-release, it is written to support the OAuth changes that
+     * Facebook is going to use. It simply modifies the response from the initial method to support the merchantId
+     * in the response.
+     *
+     * @param $id
+     * @param array $input
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     */
+    public function getSettlementTransactionsWithSettlementId($id, array $input = [])
+    {
+        $id = Entity::stripSignWithoutValidation($id);
+
+        $setl = $this->repo
+                     ->settlement
+                     ->findOrFailByPublicIdWithParams($id, $input);
+
+        $settlementMerchantId = $setl->getMerchantId();
+
+        if ($this->merchant->getId() !== $settlementMerchantId)
+        {
+            // if settlement merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($settlementMerchantId);
+        }
+
+        $entity = $this->getTransactionsForSettlement($id, $setl);
+
+        $entity = array_merge($entity, ['merchant_id' => $settlementMerchantId]);
+
+        return $entity;
+    }
+
+    /**
+     * This method is used to identify weather the request is done on behalf of the submerchant by the partner
+     *
+     * @param string $entityMerchantId
+     * @throws Exception\BadRequestException
+     */
+    protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)
+    {
+        if($this->merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($entityMerchantId);
+
+        //submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Merchant\Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (($partner === null) or
+            ($partner->getId() !== $this->merchant->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
+    }
+
+    /**
+     * This method is used to find all the transactions associated with the particular settlement id
+     *
+     * @param $id
+     * @param $setl
+     * @return mixed
+     */
+    public function getTransactionsForSettlement($id, $setl)
+    {
+        // Maps the transaction source to the entities to be fetched for it
+        $txnToRelationFetchMap = [
+            // Maps transaction source to entities that need to be fetched
+            E::PAYMENT  => [E::ORDER, E::CARD],
+            E::REFUND   => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::ADJUSTMENT   => [
+                Adjustment\Entity::ENTITY,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::SETTLEMENT,
+        ];
+
+        $start = microtime(true);
+
+        $txns = $this->repo->transaction->fetchBySettlement($setl, $txnToRelationFetchMap);
+
+        $timeTaken = get_diff_in_millisecond($start);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTION_FETCH,
+            [
+                'merchantId'    => $this->merchant->getId(),
+                'settlement_id' => $id,
+                'txn_count'     => $txns->count(),
+                'time_taken'    => $timeTaken
+            ]);
+
+        return $txns->toArrayPublic();
     }
 }

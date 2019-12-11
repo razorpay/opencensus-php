@@ -31,6 +31,16 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $creator = null): Entity
     {
+        //Need to be removed once the files are fixed
+        if( ($input['type'] === 'iin_hitachi_visa') === true or
+            ($input['type'] === 'iin_mc_mastercard') === true )
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE ,
+                "type",$input['type'],
+                "IIN Visa and MasterCard files are not be uploaded"
+            );
+        }
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
