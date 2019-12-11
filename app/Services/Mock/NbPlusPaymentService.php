@@ -9,7 +9,11 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
 {
     public function action(string $gateway, string $action, array $input): array
     {
-        return $this->$action($gateway, $input);
+        $response = $this->$action($gateway, $input);
+
+        $this->content($response, $action);
+
+        return $response;
     }
 
     public function fetchMultiple(string $entityName, array $input): array
@@ -48,5 +52,10 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
                 'two_factor_auth' => 'unavailable'
             ]
         ];
+    }
+
+    public function content(& $content, $action = '')
+    {
+        return $content;
     }
 }

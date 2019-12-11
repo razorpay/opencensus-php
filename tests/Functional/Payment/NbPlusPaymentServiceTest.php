@@ -45,7 +45,7 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->enableNbPlusConfig();
 
-        $this->nbPlusService = \Mockery::mock('RZP\Services\Mock\NbPlusPaymentService', [$this->app])->makePartial();
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlusPaymentService', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
@@ -90,24 +90,22 @@ class NbPlusPaymentServiceTest extends TestCase
         return $response;
     }
 
-    /*public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponse()
+    public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponse()
     {
-        $this->nbPlusService->shouldReceive('sendRequest')
-            ->with('POST', Mockery::type('string'), Mockery::type('array'))
-            ->andReturnUsing(function (string $method, string $url, array $input)
-            {
-                return [
-                    'data' => null,
-                    'payment' => [
-                    ],
-                    'error' => [
-                        'internal_error_code'       =>"BAD_REQUEST_PAYMENT_FAILED",
-                        'gateway_error_code'        =>"BAD_REQUEST_PAYMENT_FAILED",
-                        'gateway_error_description' =>"BAD_REQUEST_PAYMENT_FAILED",
-                        'description'               =>"BAD_REQUEST_PAYMENT_FAILED",
-                    ],
-                ];
-            });
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = [
+                'data' => null,
+                'payment' => [
+                ],
+                'error' => [
+                    'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
+                    'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
+                    'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
+                    'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                ],
+            ];
+        });
 
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -129,22 +127,20 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponseServerError()
     {
-        $this->nbPlusService->shouldReceive('sendRequest')
-            ->with('POST', Mockery::type('string'), Mockery::type('array'))
-            ->andReturnUsing(function (string $method, string $url, array $input)
-            {
-                return [
-                    'data' => null,
-                    'payment' => [
-                    ],
-                    'error' => [
-                        'internal_error_code'       =>"SERVER_ERROR",
-                        'gateway_error_code'        =>"SERVER_ERROR",
-                        'gateway_error_description' =>"SERVER_ERROR",
-                        'description'               =>"SERVER_ERROR",
-                    ],
-                ];
-            });
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = [
+                'data' => null,
+                'payment' => [
+                ],
+                'error' => [
+                    'internal_error_code'       => 'SERVER_ERROR',
+                    'gateway_error_code'        => 'SERVER_ERROR',
+                    'gateway_error_description' => 'SERVER_ERROR',
+                    'description'               => 'SERVER_ERROR',
+                ],
+            ];
+        });
 
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -167,21 +163,19 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponseGatewayError()
     {
-        $this->nbPlusService->shouldReceive('sendRequest')
-            ->with('POST', Mockery::type('string'), Mockery::type('array'))
-            ->andReturnUsing(function (string $method, string $url, array $input)
-            {
-                return [
-                    'data' => null,
-                    'payment' => [],
-                    'error' => [
-                        'internal_error_code'       =>"GATEWAY_ERROR_UNKNOWN_ERROR",
-                        'gateway_error_code'        =>"GATEWAY_ERROR_UNKNOWN_ERROR",
-                        'gateway_error_description' =>"GATEWAY_ERROR_UNKNOWN_ERROR",
-                        'description'               =>"GATEWAY_ERROR_UNKNOW_ERROR",
-                    ],
-                ];
-            });
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = [
+                'data' => null,
+                'payment' => [],
+                'error' => [
+                    'internal_error_code'       => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+                    'gateway_error_code'        => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+                    'gateway_error_description' => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+                    'description'               => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+                ],
+            ];
+        });
 
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -203,7 +197,7 @@ class NbPlusPaymentServiceTest extends TestCase
     }
 
     // TODO
-    public function testAuthorizeViaCpsCheckoutAuthorizePayment()
+    /*public function testAuthorizeViaCpsCheckoutAuthorizePayment()
     {
     }
 
@@ -213,15 +207,10 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testAuthorizeViaCpsS2SAuthorize()
     {
-    }
-
-    protected function mockServerContentFunction()
-    {
-        $this->nbPlusService->shouldReceive('sendRequest')
-            ->with('POST', Mockery::type('string'), Mockery::type('array'))
-            ->andReturnUsing(function (string $method, string $url, array $input)
-            {
-                sd('yo');
-            });
     }*/
+
+    protected function mockServerContentFunction($closure)
+    {
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing($closure);
+    }
 }
