@@ -84,4 +84,7 @@ class Constants
     const SCROOGE_GATEWAY     = 'gateway';
     const SCROOGE_CREATED_AT  = 'created_at';
     const SCROOGE_BASE_AMOUNT = 'base_amount';
+
+    // Fetch Entities Related Constants
+    const EXTRA_DATA = 'extra_data';
 }

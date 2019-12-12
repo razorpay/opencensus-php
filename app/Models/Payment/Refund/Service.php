@@ -15,6 +15,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
@@ -337,6 +338,9 @@ class Service extends Base\Service
      *               }
      *           }
      *       },
+     *   "extra_data":[
+     *       "ifsc_code"
+     *   ]
      *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
      * }
      *
@@ -366,6 +370,9 @@ class Service extends Base\Service
      *                }
      *            }
      *        }
+     *       "extra_data": {
+     *           "ifsc_code": "HDFC0000001"
+     *       }
      *    }
      *}
      */
@@ -474,6 +481,20 @@ class Service extends Base\Service
                         }
                     }
 
+                    if (isset($input[RefundConstants::EXTRA_DATA]) === true)
+                    {
+                        $res = [];
+
+                        foreach ($input[RefundConstants::EXTRA_DATA] as $paramKey)
+                        {
+                            $func = 'getExtraData' . studly_case($paramKey);
+
+                            $res[$paramKey] = (method_exists($this, $func)) ? $this->$func($refund) : null;
+                        }
+
+                        $response[RefundConstants::EXTRA_DATA] = $res;
+                    }
+
                     $responseArray[$id] = $response;
                 }
                 catch (\Exception $ex)
@@ -499,6 +520,11 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
 
         return $responseArray;
+    }
+
+    protected function getExtraDataIfscCode(Entity $refund)
+    {
+        return BankCodes::getIfscForBankCode($refund->payment->getBank());
     }
 
     public function fetchMultiple($input)
