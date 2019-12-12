@@ -16,6 +16,10 @@ import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
+import Amount from 'common/ui/Amount';
+import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
+import { openModal } from 'merchant_common/reducers/modals';
+import Time from 'common/ui/Time';
 
 @connect(
   state => {
@@ -24,7 +28,7 @@ import { fetchSettlementAmount } from 'merchant/reducers/home';
       settlement_amount: state.home.settlement_amount,
     };
   },
-  { fetchSettlementAmount }
+  { fetchSettlementAmount, openModal }
 )
 export default class TransactionsContainer extends Component {
   constructor(props) {
@@ -36,12 +40,15 @@ export default class TransactionsContainer extends Component {
   }
 
   render() {
+    console.log(this.props, 'propsss');
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
+    const isOnHold = !this.props.settlement_amount.data.next_settlement_time;
+
     return (
       <tabbed-container>
-        <header id="transactions-header">
+        <header id="transactions-header" class="flex">
           <NavLink to="/payments" exact>
             Payments
           </NavLink>
@@ -83,17 +90,43 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
-          <>
-            <strong>Rs. 3,45, 000</strong> will be settled by 3rd Dec{' '}
-            <span class="btn-link">Know more</span>
-          </>
+          {!isOnHold ? (
+            <div class="text-right w50">
+              <strong>
+                <Amount
+                  value={this.props.settlement_amount.data.settlement_amount}
+                  currency={'INR'}
+                />
+              </strong>{' '}
+              will be settled by
+              <Time
+                value={this.props.settlement_amount.data.next_settlement_time}
+                format={'DD MMM YYYY, hh:mm:ss a'}
+              />{' '}
+              <span class="btn-link">Know more</span>
+            </div>
+          ) : null}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
           <EnableSettlementsBanner />
         ) : (
           <TestModeBanner />
         )}
-        <OnHoldBanner />
+        {isOnHold ? (
+          <OnHoldBanner
+            ctaOnClick={() => {
+              this.props.openModal({
+                size: 'regular',
+                component: (
+                  <SettlementDetail
+                    settlementAmount={this.props.settlement_amount.data}
+                  />
+                ),
+              });
+            }}
+          />
+        ) : null}
+
         <content>
           <Switch>
             <Route path="/refunds/batchupload" component={BatchUpload} />

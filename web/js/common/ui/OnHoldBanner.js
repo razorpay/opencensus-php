@@ -5,7 +5,9 @@ export default ({ ctaOnClick }) => {
     <div class="TestModeBanner">
       <Banner>
         Your settlements are not being processed. They have been put on hold.{' '}
-        <span class="btn-link">View Details</span>
+        <span onClick={ctaOnClick} class="btn-link">
+          View Details
+        </span>
       </Banner>
     </div>
   );
