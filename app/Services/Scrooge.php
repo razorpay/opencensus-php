@@ -50,6 +50,7 @@ class Scrooge
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
+        'decisioning-helper'            => 'decisioning-helper',
         'instant_refunds_mode'          => 'instant_refunds_mode',
         'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
         'get_file_based_refunds'        => 'file_based_refunds',
@@ -287,32 +288,23 @@ class Scrooge
     }
 
     /**
-     * @param string $merchantId
      * @param array $params
-     * @return string
+     * @return array
      */
-    public function getInstantRefundsMode(string $merchantId, array $params): string
+    public function callDecisioningHelper(array $params): array
     {
-        $mode = '';
-
-        $scroogeResponse = $this->sendRequest(self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'], Requests::GET, $params);
+        $scroogeResponse = $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['decisioning-helper'], Requests::POST, $params);
 
         $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
 
         if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
         {
-            $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
-
-            $responseStatus = $scroogeResponseBody[self::RESPONSE_STATUS] ?? false;
-
-            // If the status is false or if the mode is empty we are decisioning the speed to normal
-            if ($responseStatus === true)
-            {
-                $mode = $scroogeResponseBody[self::MODE] ?? '';
-            }
+            return $scroogeResponse[self::RESPONSE_BODY];
         }
 
-        return $mode;
+        return [
+            'mode' => null
+        ];
     }
 
     /**

@@ -2823,15 +2823,16 @@ trait Refund
     protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
         //
-        // Calling Scrooge to fetch mode for a refund.
+        // Calling Scrooge to decide speed decisioning fetch mode for a refund.
         // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
         // with support for modes from FTA/FTS
         //
 
         $queryParams = [
-            RefundConstants::METHOD => $payment->getMethod(),
-            RefundConstants::AMOUNT => $payment->getAmount(),
-            RefundEntity::GATEWAY   => $payment->getGateway(),
+            RefundConstants::METHOD      => $payment->getMethod(),
+            RefundConstants::AMOUNT      => $payment->getAmount(),
+            RefundEntity::GATEWAY        => $payment->getGateway(),
+            RefundConstants::MERCHANT_ID => $payment->getMerchantId(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
@@ -2855,10 +2856,10 @@ trait Refund
             }
         }
 
-        $mode = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+        $response = $this->app['scrooge']->callDecisioningHelper($queryParams);
 
-        // If the status is false or if the mode is empty we are decisioning the speed to normal
-        (empty($mode) === false) ? $refund->setModeRequested($mode) :
+        // If the mode is empty we are decisioning the speed to normal
+        (empty($response['mode']) === false) ? $refund->setModeRequested($response['mode']) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 
