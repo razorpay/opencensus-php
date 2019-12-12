@@ -1951,6 +1951,47 @@ trait Refund
         return $data;
     }
 
+    protected function loadFTADataForScroogeRefund(
+        array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
+    {
+        if (isset($input['vpa']) === true)
+        {
+            $scroogeData['fta_data']['vpa'] = $input['vpa'];
+
+            return;
+        }
+
+        // Shouldn't enter this flow once instant refund fails and load fta data from input
+        if (($refund->isRefundSpeedInstant() === true) and ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
+        {
+            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $cardInput = $this->getCardIdInput($payment, $input);
+
+                if (empty($cardInput) === false)
+                {
+                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
+
+                    return;
+                }
+            }
+
+            if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
+
+                return;
+            }
+        }
+
+        $bankAccountInput = $this->getBankAccountInput($payment, $input);
+
+        if (empty($bankAccountInput) === false)
+        {
+            $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+        }
+    }
+
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         $refundData = $refund->toArray();
@@ -1980,40 +2021,12 @@ trait Refund
             $scroogeData['bank'] = $payment->getBank();
         }
 
-        if (isset($input['vpa']) === true)
-        {
-            $scroogeData['fta_data']['vpa'] = $input['vpa'];
-        }
-        else if ($refund->isRefundSpeedInstant() === true)
-        {
-            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $cardInput = $this->getCardIdInput($payment, $input);
-
-                if (empty($cardInput) === false)
-                {
-                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
-                }
-            }
-            else if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
-            }
-        }
-        else
-        {
-            $bankAccountInput = $this->getBankAccountInput($payment, $input);
-
-            if (empty($bankAccountInput) === false)
-            {
-                $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
-            }
-        }
-
         if (isset($input['refund'][RefundEntity::MODE_REQUESTED]) === true)
         {
             $scroogeData[RefundEntity::MODE_REQUESTED] = $input['refund'][RefundEntity::MODE_REQUESTED];
         }
+
+        $this->loadFTADataForScroogeRefund($scroogeData, $refund, $payment, $input);
 
         //
         // These attributes are already in scrooge, need to be reset before sending scrooge request
