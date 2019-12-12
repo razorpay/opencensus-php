@@ -44,11 +44,4 @@ class Action
         self::VERIFY,
         self::DEBIT,
     ];
-
-    // TODO: extend for other flows
-    public static $nbPlusSupportedActions = [
-        self::AUTHORIZE,
-        self::CALLBACK,
-        self::VERIFY,
-    ];
 }

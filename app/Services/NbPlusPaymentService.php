@@ -34,10 +34,22 @@ class NbPlusPaymentService
     const INPUT     = 'input';
     const DATA      = 'data';
     const ERROR     = 'error';
-    const AUTHORIZE = 'authorize';
+
+    // Supported Actions
+    const AUTHORIZE        = 'authorize';
+    const CALLBACK         = 'callback';
+    const VERIFY           = 'verify';
+    const AUTHORIZE_FAILED = 'authorize_failed';
 
     // admin path
     const ADMIN_PATH = 'admin/entities/';
+
+    const SUPPORTED_ACTIONS = [
+        self::AUTHORIZE,
+        self::CALLBACK,
+        self::VERIFY,
+        self::AUTHORIZE_FAILED
+    ];
 
     protected $baseUrl;
     protected $config;
@@ -228,7 +240,7 @@ class NbPlusPaymentService
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
-            if ($this->action === Action::VERIFY)
+            if ($this->action === self::VERIFY)
             {
                 return $this->processVerifyResponse($responseBody);
             }
