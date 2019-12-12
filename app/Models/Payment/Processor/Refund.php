@@ -2606,17 +2606,8 @@ trait Refund
         {
             $paymentId = $payment->getId();
 
-            $haystack = [
-                'A0DbFSFMubDEAy',
-                'AEYsLhL8DAQAeh',
-                'AFG1ItI8zwijGP',
-                'AGsXWuKUv6XiVU',
-                'AMqpPrSMsxKKPc',
-                'AQNG7kHM5tfk4G',
-                'ATCKgAcp7cswbo'
-            ];
-
-            if (in_array($paymentId, $haystack, true) === true)
+            // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
+            if ($paymentId === 'AQNG7kHM5tfk4G')
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
