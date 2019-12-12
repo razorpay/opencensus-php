@@ -32,6 +32,7 @@ use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -2612,6 +2613,15 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
+        // Currently, we dont get IFSC code or beneficiary name in recon files
+        // which is mandatory for NEFT transfers. So, disabling NEFT as mode for netbanking
+        // method of instant refunds. Adding the amount check here as sanity
+        // This Should be removed once we support NEFT for netbanking gateways
+        if ($refund->getAmount() > FtsConstants::IMPS_CUTOFF_AMOUNT)
+        {
+            return false;
+        }
+
         //
         // Check if any FTA to bank account already exists, not allowing fta to
         // bank account if any previous bank account fta exists. This is just a sanity check
