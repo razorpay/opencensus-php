@@ -39,6 +39,13 @@ class GatewayCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
@@ -109,7 +116,16 @@ class GatewayCombinedFileTest extends TestCase
         ]);
 
         $refund1 = $this->refundPayment($payment1['id']);
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         $refund2 = $this->refundPayment($payment2['id']);
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 
@@ -175,6 +191,13 @@ class GatewayCombinedFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
