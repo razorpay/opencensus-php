@@ -1,11 +1,13 @@
 -- rate_limit.lua
 -- Todo: Write comments.
 
-local redis_script_sha
+local M = {}
+
+local redis_script_sha = nil
 local redis_global_settings_key = "throttle:t"
 local redis_key_prefix = "throttle:t:"
 
-function get_redis_conn(redis_conf)
+local function get_redis_conn(redis_conf)
     local redis_lib = require "resty.redis"
     local redis = redis_lib:new()
     local timeout = redis_conf.timeout
@@ -15,7 +17,20 @@ function get_redis_conn(redis_conf)
     return redis, err
 end
 
-function get_req_ctx(ngx)
+local function get_redis_script_sha(redis)
+    if not redis_script_sha then
+        local sha, err = redis:script("LOAD", require("leaky_bucket")())
+        if err then
+            return nil, err
+        end
+
+        redis_script_sha = sha
+    end
+
+    return redis_script_sha, nil
+end
+
+local function get_req_ctx(ngx)
     local req_ctx = {
         user = nil,
         mode = nil,
@@ -27,12 +42,12 @@ function get_req_ctx(ngx)
     -- Sets req_ctx.{route,auth}.
     local method = ngx.var.request_method
     local uri = ngx.var.uri
-    require 'routes_meta'
-    for i=0,routes_meta_count-1 do
-        if routes_meta[i].methods[method] then
-            if string.find(uri, routes_meta[i].uri_regex) then
-                req_ctx.route = routes_meta[i].name
-                req_ctx.auth = routes_meta[i].auth
+    local rm = require 'routes_meta'
+    for i=0,rm.routes_meta_count-1 do
+        if rm.routes_meta[i].methods[method] then
+            if string.find(uri, rm.routes_meta[i].uri_regex) then
+                req_ctx.route = rm.routes_meta[i].name
+                req_ctx.auth = rm.routes_meta[i].auth
             end
         end
     end
@@ -58,26 +73,27 @@ function get_req_ctx(ngx)
     return req_ctx, nil
 end
 
-function get_rate_limit_args(redis, req_ctx)
+local function get_rate_limit_args(redis, req_ctx)
     local err
     local res
+    local mid
 
     local rate_limit_args = {
         skip = false,
         mock = true,
-        mid = nil,
+        identifier = nil,
         lrv = 2,
         lrd = 1,
         mbs = 30,
     }
 
-    -- Sets rate_limit_args.mid.
+    -- Sets mid.
     -- Assumption: We are only handling private and proxy auth rate limiting
     -- and that too for normal cases and not oauth and route etc.
     -- Talk to me personally for reasons!
     if req_ctx.auth == "private" then
         if req_ctx.proxy then
-            rate_limit_args.mid = string.sub(req_ctx.user, 10)
+            mid = string.sub(req_ctx.user, 10)
         else
             res, err = redis:get(redis_key_prefix .. req_ctx.user)
             if err then
@@ -86,23 +102,26 @@ function get_rate_limit_args(redis, req_ctx)
             if res == ngx.null then
                 return nil, "key<>mid mapping does not exists"
             end
-            rate_limit_args.mid = res
+            mid = res
         end
     else
         return {skip = true}, nil
     end
 
+    -- Sets rate_limit_args.identifier.
+    rate_limit_args.identifier = req_ctx.route .. ":" .. req_ctx.mode .. ":" .. req_ctx.auth .. ":" .. (req_ctx.proxy and 1 or 0) .. "::" .. mid .. "::"
+
     -- Loads global and mid specific settings.
     redis:init_pipeline()
     redis:hgetall(redis_global_settings_key)
-    redis:hgetall(redis_key_prefix .. rate_limit_args.mid)
+    redis:hgetall(redis_key_prefix .. mid)
     res, err = redis:commit_pipeline()
     if err then
         return nil, "failed to get settings from redis" .. err
     end
 
     -- In cascading fashion reads the settings out.
-    settings_keys = {"skip", "mock", "lrv", "lrd", "mbs"}
+    local settings_keys = {"skip", "mock", "lrv", "lrd", "mbs"}
     for k, v in pairs(settings_keys) do
         rate_limit_args[k] =
             -- Value for given mid/application id, mode, auth & route
@@ -128,8 +147,8 @@ function get_rate_limit_args(redis, req_ctx)
     return rate_limit_args, nil
 end
 
-function rate_limit(redis, rate_limit_args, now)
-    redis_script_sha, err = get_redis_script_sha(redis)
+local function rate_limit(redis, rate_limit_args, now)
+    local redis_script_sha, err = get_redis_script_sha(redis)
     if err then
         return nil, err
     end
@@ -137,7 +156,7 @@ function rate_limit(redis, rate_limit_args, now)
     local res, err = redis:evalsha(
         redis_script_sha,
         1,
-        redis_key_prefix .. rate_limit_args.mid,
+        redis_key_prefix .. rate_limit_args.identifier,
         rate_limit_args.mbs,
         rate_limit_args.lrv,
         rate_limit_args.lrd,
@@ -159,27 +178,14 @@ function rate_limit(redis, rate_limit_args, now)
     }
 end
 
-function release_redis_conn(redis, redis_conf)
+local function release_redis_conn(redis, redis_conf)
     local ok, err = redis:set_keepalive(redis_conf.max_idle_ms, redis_conf.pool_size)
 
     return err
 end
 
-function get_redis_script_sha(redis)
-    if not redis_script_sha then
-        local sha, err = redis:script("LOAD", require("leaky_bucket")())
-        if err then
-            return nil, err
-        end
-
-        redis_script_sha = sha
-    end
-
-    return redis_script_sha, nil
-end
-
-function rate_limit_ngx(ngx)
-    redis_conf = {
+function M.rate_limit_ngx(ngx)
+    local redis_conf = {
         timeout = os.getenv("RESTY_REDIS_TIMEOUT") or 1000,
         host = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
         port = os.getenv("RESTY_REDIS_PORT") or 6379,
@@ -187,21 +193,19 @@ function rate_limit_ngx(ngx)
         pool_size = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
     }
 
-    local err
-
-    redis, err = get_redis_conn(redis_conf)
+    local redis, err = get_redis_conn(redis_conf)
     if err then
         ngx.log(ngx.ERR, "failed to get redis conn: ", err)
         return
     end
 
-    req_ctx, err = get_req_ctx(ngx)
+    local req_ctx, err = get_req_ctx(ngx)
     if err then
         ngx.log(ngx.ERR, "failed to get request context: ", err)
         return
     end
 
-    rate_limit_args, err = get_rate_limit_args(redis, req_ctx)
+    local rate_limit_args, err = get_rate_limit_args(redis, req_ctx)
     if err then
         ngx.log(ngx.ERR, "failed to get rate_limit args: ", err)
         return
@@ -211,7 +215,7 @@ function rate_limit_ngx(ngx)
         return
     end
     rate_limit_args.now = ngx.now()
-    rate_limit_res, err = rate_limit(redis, rate_limit_args)
+    local rate_limit_res, err = rate_limit(redis, rate_limit_args)
     if err then
         ngx.log(ngx.ERR, "failed to rate_limit: ", err)
         return
@@ -234,3 +238,5 @@ function rate_limit_ngx(ngx)
         ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
     end
 end
+
+return M

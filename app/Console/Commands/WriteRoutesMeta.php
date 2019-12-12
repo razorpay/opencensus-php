@@ -67,19 +67,20 @@ class WriteRoutesMeta extends Command
         $content = '-- routes_meta.lua'.PHP_EOL;
         $content .= '-- Auto generated. Do not edit.'.PHP_EOL;
         $content .= PHP_EOL;
-        $content .= 'routes_meta = {'.PHP_EOL;
+        $content .= 'local M = {}'.PHP_EOL;
+        $content .= 'M.routes_meta = {'.PHP_EOL;
         foreach ($routesMeta as $index => $meta)
         {
             $content .= '   ['.$index.'] = {'.PHP_EOL;
             $content .= '       methods = {["'.implode('"] = true, ["', $meta['methods']).'"] = true},'.PHP_EOL;
-            $content .= '       uri_regex = "'.$regex.'",'.PHP_EOL;
+            $content .= '       uri_regex = "'.$meta['uri_regex'].'",'.PHP_EOL;
             $content .= '       name = "'.$meta['name'].'",'.PHP_EOL;
             $content .= '       auth = "'.$meta['auth'].'",'.PHP_EOL;
             $content .= '   },'.PHP_EOL;
         }
         $content .= '}'.PHP_EOL;
-        $content .= PHP_EOL;
-        $content .= 'routes_meta_count = '.count($routesMeta).PHP_EOL;
+        $content .= 'M.routes_meta_count = '.count($routesMeta).PHP_EOL;
+        $content .= 'return M'.PHP_EOL;
 
         file_put_contents(app_path().'/../etc/nginx/routes_meta.lua', $content);
     }
