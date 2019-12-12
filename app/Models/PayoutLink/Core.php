@@ -65,7 +65,7 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        // If already cancelled, then return the entity without any change. Making this call idempotent.
+        // If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
             return $payoutLink;

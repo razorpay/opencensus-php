@@ -4,11 +4,10 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Contact\Entity as ContactEntity;
 
 class Status
 {
-    // There is not Failed state, because in case of failures the customer can retry the Payout from his side
+    // There is no Failed state, because in case of failures the customer can retry the Payout from his side
     const ISSUED     = 'issued';
     const PROCESSING = 'processing';
     const PAID       = 'paid';
@@ -36,15 +35,15 @@ class Status
         self::PAID => [
             self::ISSUED    // in case of a reversal
         ],
-        self::CANCELLED => [] // This is a final state
+        self::CANCELLED => [] // this is a final state
     ];
 
     // Note: '?' before the type hint, means that a NULL is also allowed instead of a string.
-    // This is to handle the create entity flows, in which both the status and ID will be null toi start with
+    // This is to handle the create entity flows, in which both the Status and ID will be null to start with
     static function validateStatus(?string $payoutLinkId, ?string $currentStatus, string $nextStatus)
     {
-        // This will happen only in case of create, when there is no status set.
-        // We have to validate that the starting state is ISSUED and nothing else.
+        // This will happen only in case of create, when there is no status set
+        // We have to validate that the starting state is ISSUED and nothing else
         if (empty($currentStatus) === true and $nextStatus === self::ISSUED)
         {
             return;
