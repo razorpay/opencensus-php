@@ -35,6 +35,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import { trackInstantSettlementsBanner } from 'merchant/components/Announcements/ga';
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import SettlementDetail from './components/SettlementDetail';
 
 @withRouter
 @connect(
@@ -322,7 +323,7 @@ export default class SettlementsListContainer extends ListContainer {
                             onClick={() => {
                               this.props.openModal({
                                 size: 'regular',
-                                component: <SettlementSchedule />,
+                                component: <SettlementDetail />,
                               });
                             }}
                             class="btn-link pointer"
