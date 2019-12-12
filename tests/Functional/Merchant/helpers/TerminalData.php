@@ -2600,4 +2600,58 @@ return [
         ],
     ],
 
+    'testUpdateTerminalOnboardingStatus' => [
+        'request'   => [
+            'url'     => '/terminal_onboarding_update_status',
+            'content' => [
+                ['termianl_ids_array']
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testCreateJuspayTerminal'                => [
+        'request' => [
+            'content' => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some'
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testEditJuspayTerminal'                  => [
+        'request' => [
+            'content' => [
+                'category'                      => '1234',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'vpa'                           => 'abcd@some'
+            ],
+            'method' =>  'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'gateway_terminal_password'    => 'new_password',
+                'enabled'                      => true
+            ]
+        ]
+    ],
 ];

@@ -369,6 +369,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->core()->markSubmittedAndLock($merchant->merchantDetail);
+
         $merchantDetails = $this->core()->editMerchantDetailFields($merchant, $input);
 
         return $merchantDetails->toArrayPublic();
@@ -692,6 +694,8 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function editPreSignupDetails(array $input) : array
     {
@@ -700,6 +704,8 @@ class Service extends Base\Service
         $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
 
         $this->applyCoupon($input);
+
+        $this->handlePreSignUpOptionalFields( $input);
 
         $this->applyReferralPartner($input);
 
@@ -737,8 +743,27 @@ class Service extends Base\Service
     }
 
     /**
-     * Checks whether coupon_code is present in input and applies
+     * As part of experiment we want to remove company name in pre_Signup flow , so using contact name as company name
+     * This will be handled in L1 as we already take company name in L1 form
+     *
      * @param array $input
+     */
+    private function handlePreSignUpOptionalFields(array & $input)
+    {
+
+        if (empty($input[Entity::BUSINESS_NAME]) === true and
+            empty($input[Entity::CONTACT_NAME]) === false)
+        {
+            $input[Entity::BUSINESS_NAME] = $input[Entity::CONTACT_NAME];
+        }
+    }
+
+    /**
+     * Checks whether coupon_code is present in input and applies
+     *
+     * @param array $input
+     *
+     * @throws \Throwable
      */
     private function applyCoupon(array &$input)
     {
@@ -936,5 +961,25 @@ class Service extends Base\Service
         }
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
+    }
+
+    /**
+     * @param $merchantId
+     * @param $input
+     *
+     * @return mixed
+     * @throws \Throwable
+     */
+    Public function putAdditionalWebsite($merchantId, $input)
+    {
+        $core = new Core();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $core->getMerchantDetails($merchant);
+
+        $response = $core->addAdditionalWebsiteDetails($merchantDetails, $input);
+
+        return $response;
     }
 }

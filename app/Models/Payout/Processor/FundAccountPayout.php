@@ -3,9 +3,10 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Payout;
+use RZP\Models\Contact;
+use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Contact\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -48,7 +49,7 @@ class FundAccountPayout extends Base
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
-        if ($fundAccount->getSourceType() !== Entity::CONTACT)
+        if ($fundAccount->getSourceType() !== Contact\Entity::CONTACT)
         {
             throw new BadRequestValidationFailureException(
                 'Payouts cannot be created for fund account without contact.',
@@ -65,5 +66,38 @@ class FundAccountPayout extends Base
         $validator = $payout->getValidator();
 
         $validator->validateFundAccountMode($input);
+    }
+
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
+    {
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
+        }
+        else
+        {
+            $shouldFirePayoutCreatedWebhook = $this->shouldFirePayoutCreatedWebhook($payout);
+
+            // TODO: Remove this after a week or two. JIRA: https://razorpay.atlassian.net/browse/RX-853
+            if ($shouldFirePayoutCreatedWebhook === true)
+            {
+                $this->app->events->fire('api.payout.created', [$payout]);
+            }
+
+            $this->app->events->fire('api.payout.initiated', [$payout]);
+        }
+    }
+
+    protected function shouldFirePayoutCreatedWebhook(Payout\Entity $payout)
+    {
+        $variant = $this->app->razorx->getTreatment($payout->getMerchantId(),
+                                                    Merchant\RazorxTreatment::PAYOUTS_CREATED_WEBHOOK,
+                                                    $this->mode);
+
+        return (strtolower($variant) === 'on');
     }
 }

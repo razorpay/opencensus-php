@@ -539,14 +539,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'info_code'  => Base\InfoCode::REFUND_ID_NOT_AS_EXPECTED,
-                    'refund_id'  => $refundId,
-                    'gateway'    => $this->gateway
-                ]);
-
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_ID_NOT_AS_EXPECTED);
 
             return null;

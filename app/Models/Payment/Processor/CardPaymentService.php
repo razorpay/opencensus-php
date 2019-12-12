@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
+use RZP\Gateway\Base\Action;
 use Razorpay\Trace\Logger as Trace;
 
 trait CardPaymentService
@@ -79,6 +80,12 @@ trait CardPaymentService
         $this->updatePaymentFromCpsResponse($payment, $response);
 
         $this->handleCpsResponse($payment, $response);
+
+        // If action is verify we get verify trace data
+        if ($action === Action::VERIFY)
+        {
+            return $response;
+        }
 
         return $response['data'];
     }
@@ -191,7 +198,6 @@ trait CardPaymentService
         }
 
         $response = $this->app['card.payments']->checkForErrors($response);
-
     }
 
 

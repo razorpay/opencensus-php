@@ -53,7 +53,6 @@ class GatewayProcessor extends BaseGatewayProcessor
             Terminal\Entity::STATUS              => Terminal\Status::CREATED,
             Terminal\Entity::ENABLED             => 0,
             Terminal\Entity::CATEGORY            => $subMerchant->getCategory(),
-            Terminal\Entity::TYPE                => $this->getTerminalType(),
             Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
             Terminal\Entity::IFSC_CODE           => $ifscCode,
             Terminal\Entity::GATEWAY             => Gateway::WORLDLINE,
@@ -337,19 +336,6 @@ class GatewayProcessor extends BaseGatewayProcessor
         $mcc = (int) $merchant->getCategory();
 
         return Merchant\Detail\FreechargeWorldlineOnboardingDetails::getMccPricing($mcc);
-    }
-
-    // TODO: This should be in partner processor, not gateway processor
-    protected function getTerminalType($type = null)
-    {
-        if ($type === null)
-        {
-            $type = [
-                Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND  => '1',
-            ];
-        }
-
-        return $type;
     }
 
     protected function generateMid($subMerchant)

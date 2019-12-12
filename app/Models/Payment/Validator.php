@@ -91,19 +91,20 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi,nach|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
-        'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
-        'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
-        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
+        'recurring_token'               => 'sometimes_if:method,emandate,upi|associative_array|filled',
+        'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'device'                        => 'sometimes',
     ];
 
     protected static $editAcquirerRules = [
@@ -218,6 +219,13 @@ class Validator extends Base\Validator
     protected static $paymentCardMigrateRules = [
         'limit'                             => 'sometimes|integer',
         'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
+    ];
+
+    protected static $mandateUpdateRules = [
+        'start_time'  => 'sometimes',
+        'max_amount'  => 'sometimes',
+        'token_id'    => 'sometimes',
+        'is_mandate'  => 'sometimes'
     ];
 
     protected static $createValidators = [
@@ -621,7 +629,8 @@ class Validator extends Base\Validator
         }
 
         if (($method !== Payment\Method::EMANDATE) and
-            ($method !== Payment\Method::NACH))
+            ($method !== Payment\Method::NACH) and
+            ($this->checkUpiRecurring($input) === false))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -668,6 +677,20 @@ class Validator extends Base\Validator
                 'amount',
                 ['amount' => $amount]);
         }
+    }
+
+    protected function checkUpiRecurring($input)
+    {
+        $method = $input['method'];
+
+        if (($method === Payment\Method::UPI) and
+            (isset($input['recurring']) === true) and
+            ($input['recurring']) === '1')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateUpiVpaPsp(string $vpa, array $excludedPsps)

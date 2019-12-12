@@ -1732,12 +1732,28 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN_ID, $tokenId)
+                    ->where(Entity::CUSTOMER_ID, $customerId)
+                    ->first();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPaymentsGivenIds(array $paymentIds, int $limit)
+    {
+        return $this->newQuery()
+                    ->whereIn(Payment\Entity::ID, $paymentIds)
+                    ->limit($limit)
                     ->get();
     }
 

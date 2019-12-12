@@ -43,6 +43,11 @@ class OAuth
      */
     protected $publicToken;
 
+    /**
+     * @var string
+     */
+    protected $accountId;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -78,16 +83,37 @@ class OAuth
             return false;
         }
 
-        // Check for key length and the '_oauth_' sub-string
-        $isPublicToken = ((strlen($key) === self::PUBLIC_TOKEN_LENGTH) and
-                          (substr($key, 8, 7) === '_oauth_'));
+        $isPublicToken = $isPublicTokenWithAccountId = false;
 
-        if ($isPublicToken === false)
+        $accountId = null;
+
+        // rzp_test_oauth_Dm68K5swlymBVD-acc_Dq2gQrRkp6AO2A
+        $keyRegex = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14})[-](acc_[a-zA-Z0-9]{14})$/';
+
+        $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
+
+        if ($validCallbackKey === true)
+        {
+            $key       = $matches[1];
+            $accountId = $matches[3];
+
+            $isPublicTokenWithAccountId = true;
+        }
+        else
+        {
+            // Check for key length and the '_oauth_' sub-string
+            $isPublicToken = ((strlen($key) === self::PUBLIC_TOKEN_LENGTH) and
+                              (substr($key, 8, 7) === '_oauth_'));
+        }
+
+        if (($isPublicToken === false) and
+            ($isPublicTokenWithAccountId === false))
         {
             return false;
         }
 
         $this->publicToken = $key;
+        $this->accountId   = $accountId;
 
         //
         // If the request was authenticated with key_id sent in the request params
@@ -103,7 +129,7 @@ class OAuth
         //
         $this->ba->setPublicKey($key);
 
-        return $isPublicToken;
+        return ($isPublicToken or $isPublicTokenWithAccountId);
     }
 
     /**
@@ -277,7 +303,7 @@ class OAuth
             );
         }
 
-        return $this->parseOAuthServerResponse($response);
+        return $this->parseOAuthServerResponse($response, AuthType::PUBLIC_AUTH);
     }
 
     /**
@@ -285,12 +311,12 @@ class OAuth
      * Returns an error object, if there is an error.
      * Returns null otherwise.
      *
-     * @param array  $response
-     * @param string $auth
+     * @param array       $response
+     * @param string      $auth
      *
      * @return array
      */
-    protected function parseOAuthServerResponse(array $response, string $auth = AuthType::PUBLIC_AUTH)
+    protected function parseOAuthServerResponse(array $response, string $auth)
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
 
@@ -389,7 +415,7 @@ class OAuth
             return null;
         }
 
-        $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+        $accountId = $this->accountId ?: $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
         if (empty($accountId) === true)
         {

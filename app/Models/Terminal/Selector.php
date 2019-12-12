@@ -209,7 +209,8 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
-                    $this->trace->error(
+                    // temporary - needs to be removed once parity analysis is complete
+                    $this->trace->info(
                         TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
                         [
                             'terminals_from_smart_routing'  => $newSelectedTerminals,
@@ -217,6 +218,19 @@ class Selector extends Base\Core
                             'payment_id'                    => $payment->getId(),
 
                         ]);
+
+
+                    if (empty($sortedTerminals) === false)
+                    {
+                        $this->trace->error(
+                            TraceCode::SMART_ROUTING_TERMINALS_MISMATCH,
+                            [
+                                'terminals_from_api'            => $sortedTerminals,
+                                'terminals_from_smart_routing'  => $newSelectedTerminals,
+                                'payment_id'                    => $payment->getId(),
+
+                            ]);
+                    }
                 }
 
                 // sending the event to data link layer

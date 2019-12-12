@@ -13,6 +13,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * Row Header Names
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
+    const COLUMN_PAYMENT_AMOUNT = 'amount';
 
     const BLACKLISTED_COLUMNS = [
         'contact_no',

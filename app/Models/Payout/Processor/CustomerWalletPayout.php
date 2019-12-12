@@ -14,4 +14,12 @@ use RZP\Models\Customer\Transaction\Core as CustTransactionCore;
 class CustomerWalletPayout extends Base
 {
     const DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION  = 'Debit wallet withdrawal fee amount';
+
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
+    {
+        // TODO: Should deprecate api.payout.created webhook soon!
+        // https://razorpay.atlassian.net/browse/RX-854
+        $this->app->events->fire('api.payout.created', [$payout]);
+        $this->app->events->fire('api.payout.initiated', [$payout]);
+    }
 }

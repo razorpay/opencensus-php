@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Feature\Constants as Feature;
@@ -209,6 +210,51 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentFetchWithExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id'], ['expand' => [
+                'refunds'
+            ]]);
+
+        $this->assertEquals('30000', $paymentFetchResponse['amount_refunded']);
+
+        $this->assertArrayHasKey('refunds', $paymentFetchResponse);
+
+        $refundsFromResponse = $paymentFetchResponse['refunds'];
+
+        $this->assertEquals(2, $refundsFromResponse['count']);
+
+        foreach ($refundsFromResponse['items'] as $refund)
+        {
+            $this->assertEquals($response['id'], $refund['payment_id']);
+        }
+    }
+
+    public function testPaymentFetchWithoutExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id']);
+
+        $this->assertArrayNotHasKey('refunds', $paymentFetchResponse);
+    }
+
     public function testFetchWithExpandsTransfer()
     {
         $this->ba->proxyAuth();
@@ -359,5 +405,50 @@ class PaymentFetchTest extends TestCase
         $testData['request']['url'] = '/payments/pay_' . $paymentId;
 
         $this->startTest($testData);
+    }
+
+    public function testPaymentFetchINRCurrency()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        foreach (['base_amount', 'base_currency'] as $key)
+        {
+            $this->assertArrayNotHasKey($key, $paymentFetchResponse);
+        }
+    }
+
+
+    public function testPaymentFetchNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['currency'] = Currency::USD;
+
+        $response = $this->doAuthAndCapturePayment($paymentArray, $paymentArray['amount'], Currency::USD);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        $this->assertEquals('50000', $paymentFetchResponse['amount']);
+
+        $this->assertEquals(Currency::USD, $paymentFetchResponse['currency']);
+
+        $this->assertArrayHasKey('base_amount', $paymentFetchResponse);
+
+        $this->assertArrayHasKey('base_currency', $paymentFetchResponse);
+
+        $this->assertEquals('500000', $paymentFetchResponse['base_amount']);
+
+        $this->assertEquals(Currency::INR, $paymentFetchResponse['base_currency']);
+
     }
 }

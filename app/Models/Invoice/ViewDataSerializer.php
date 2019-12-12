@@ -14,6 +14,7 @@ use RZP\Models\Options;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
@@ -539,6 +540,15 @@ class ViewDataSerializer extends Base\Core
                 [E::ORDER]
                 [Order\Entity::STATUS] = $order->getStatus();
 
+            }
+            else if ($externalEntity->getMethod() === SubscriptionRegistration\Method::NACH)
+            {
+                $paperMandate = $externalEntity->paperMandate;
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [SubscriptionRegistration\Entity::NACH]
+                [PaperMandate\Entity::START_AT] = $paperMandate->getStartAt() ?? null;
             }
         }
         else

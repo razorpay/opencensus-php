@@ -570,6 +570,20 @@ return [
         ],
     ],
 
+    'testGetInnsListWithFeatures' => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'flow' => 'otp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testBulkFlowsUpdateEnable' => [
         'request' => [
             'url'     => '/iins/bulk',

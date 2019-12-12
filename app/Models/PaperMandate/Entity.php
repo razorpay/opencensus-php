@@ -180,7 +180,10 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedShortUrl($generatedFileId);
+        return (new FileUploader)->getSignedShortUrl(
+            $generatedFileId,
+            Constants::MAX_SIGNED_URL_TIMEOUT
+        );
     }
 
     public function getUploadedFormUrl()
