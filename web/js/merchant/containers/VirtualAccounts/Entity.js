@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
+import VirtualAccountEntity from 'merchant/components/VirtualAccounts/Entity';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -188,7 +188,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     }
 
     return (
-      <VirtualAccountDetails
+      <VirtualAccountEntity
         virtualaccount={entity}
         va_payments={va_payments}
         mode={mode}

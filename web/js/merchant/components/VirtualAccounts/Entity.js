@@ -14,14 +14,15 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Table from 'common/ui/Table/Index';
 import AccountDetailsSummary from 'merchant/components/VirtualAccounts/AccountDetailsSummary';
 import EnableTransferMode from './EnableTransferMode';
-import ModalHeader from 'common/ui/ModalHeader';
 import { paymentId, amount } from 'common/ui/item/pair';
-import { openModal, closeModal } from 'merchant_common/reducers/notifications';
-import { updateVirtualAccountDetails } from 'merchant/modules/virtualaccounts';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 
 @connect(state => ({ user: state.session.user }), {
   openModal,
   closeModal,
+  showNotification,
   updateVirtualAccountDetails,
 })
 export default class extends React.Component {
@@ -33,6 +34,7 @@ export default class extends React.Component {
     this.props.openModal({
       component: (
         <EnableTransferMode
+          closeModal={this.props.closeModal}
           isForBankAccount={!bankAccount}
           isForUPIAddress={!upiAddress}
           updateVirtualAccountDetails={this.updateVirtualAccountDetails}
@@ -70,6 +72,12 @@ export default class extends React.Component {
               showBankAccountDetails={showBankAccountDetails}
             />
           ),
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
         });
       });
   };

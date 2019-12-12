@@ -66,7 +66,7 @@ export default class CreateVirtualAccount extends Component {
     close_by: null,
     _internals: {
       hasBankAccount: true,
-      hasVPA: true,
+      hasVPA: this.props.user.isVPAFeatureEnabled ? true : false,
     },
   };
 

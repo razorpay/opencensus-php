@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ModalHeader from 'common/ui/ModalHeader';
-import Form from 'component/Form';
+import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { AsyncBtn } from 'component/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 import {
   isBlank,
