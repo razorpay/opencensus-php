@@ -5,8 +5,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Excel;
 use Carbon\Carbon;
-use RZP\Services\Scrooge;
-use RZP\Models\FileStore;
+
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
@@ -39,6 +38,13 @@ class GatewayCombinedFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -110,7 +116,16 @@ class GatewayCombinedFileTest extends TestCase
         ]);
 
         $refund1 = $this->refundPayment($payment1['id']);
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         $refund2 = $this->refundPayment($payment2['id']);
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 
@@ -146,34 +161,10 @@ class GatewayCombinedFileTest extends TestCase
 
         $refundEntity = $this->getDbLastEntity('refund');
 
-        $scroogeResponse = [
-            'code'     => 200,
-            'body'     => [
-                'data' => [
-                    [
-                        'id'          => $refundEntity['id'],
-                        'amount'      => $refundEntity['amount'],
-                        'base_amount' => $refundEntity['base_amount'],
-                        'payment_id'  => $refundEntity['payment_id'],
-                        'bank'        => $refundEntity->payment['bank'],
-                        'gateway'     => $refundEntity['gateway'],
-                        'currency'    => $refundEntity['currency'],
-                        'method'      => $refundEntity->payment['method'],
-                        'created_at'  => $refundEntity['created_at'],
-                    ],
-                ],
-            ],
-        ];
+        // Netbanking Rbl refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
 
-        $scroogeMock = $this->getMockBuilder(Scrooge::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods(['getFileBasedRefunds'])
-                            ->getMock();
-
-        $this->app->instance('scrooge', $scroogeMock);
-
-        $this->app->scrooge->method('getFileBasedRefunds')
-                           ->willReturn($scroogeResponse);
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         Excel::shouldReceive('create')->andThrow(new \Exception('file_generation_exception'));
 
@@ -200,6 +191,13 @@ class GatewayCombinedFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
