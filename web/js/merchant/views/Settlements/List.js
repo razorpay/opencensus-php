@@ -19,13 +19,16 @@ import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettl
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-
+import OnHoldBanner from 'common/ui/OnHoldBanner';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
   trackOndemand,
 } from './ga';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
+import {
+  fetchCurrentBalance,
+  fetchSettlementAmount,
+} from 'merchant/reducers/home';
 import { fetchSchedule } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 
@@ -43,6 +46,7 @@ import SettlementDetail from './components/SettlementDetail';
     user: state.session.user,
     mode: state.session.mode,
     schedule: state.settlement.schedule,
+    settlement_amount: state.home.settlement_amount,
     ...state.home,
     ...state.settlements,
   }),
@@ -52,6 +56,7 @@ import SettlementDetail from './components/SettlementDetail';
     ...ModalActions,
     fetchCurrentBalance,
     fetchSchedule,
+    fetchSettlementAmount,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -111,7 +116,7 @@ export default class SettlementsListContainer extends ListContainer {
     }
 
     this.popupIfSettle();
-    console.log('***', this.props);
+    this.props.fetchSettlementAmount();
   }
 
   onSearchAnalytics = params => {
@@ -201,7 +206,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    console.log('1112', this.props);
+    console.log('1', this.props);
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
@@ -225,7 +230,7 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-
+          <OnHoldBanner />
           <content>
             <div class="content-wrapper">
               <HeaderAction>
@@ -306,19 +311,9 @@ export default class SettlementsListContainer extends ListContainer {
                           <Amount value={balance} currency={'INR'} />
                         </span>
                         <br />
-                        <span style={{ fontSize: '11px' }}>
+                        <span style={{ fontSize: '13px' }}>
                           <strong>₹3,24,666.36</strong> will be settled by 01
-                          Dec, 5PM.{' '}
-                          <i class="i i-info-circle">
-                            <Popover align="bottom" theme="dark">
-                              <PopoverBody>
-                                <p>
-                                  This is just a tentative amount, it might vary
-                                  by refund and others.{' '}
-                                </p>
-                              </PopoverBody>
-                            </Popover>
-                          </i>{' '}
+                          Dec, 5PM{' '}
                           <span
                             onClick={() => {
                               this.props.openModal({

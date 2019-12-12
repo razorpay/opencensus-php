@@ -116,7 +116,7 @@ class AnalyticsDesktop extends Component {
       recentActivityTitle,
       trafficSectionTitle,
     } = this.props;
-    console.log('sam', settlement_amount);
+
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
     return (
@@ -208,54 +208,6 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
-                      <span style={{ fontSize: '12px' }}>
-                        {settlement_amount.data.next_settlement_time ===
-                        null ? (
-                          <>
-                            <strong>
-                              {settlement_amount.data.no_settlement.caption}
-                            </strong>
-                            <i class="i i-info-circle">
-                              <Popover align="bottom" theme="dark">
-                                <PopoverBody>
-                                  <p>
-                                    {
-                                      settlement_amount.data.no_settlement
-                                        .reason
-                                    }
-                                  </p>
-                                </PopoverBody>
-                              </Popover>
-                            </i>
-                          </>
-                        ) : (
-                          <>
-                            <strong>
-                              <Amount
-                                value={settlement_amount.data.settlement_amount}
-                                currency={'INR'}
-                              />
-                            </strong>{' '}
-                            will be settled by{' '}
-                            <Time
-                              value={
-                                settlement_amount.data.next_settlement_time
-                              }
-                              format="DD MMM YYYY"
-                            />
-                            <i class="i i-info-circle">
-                              <Popover align="bottom" theme="dark">
-                                <PopoverBody>
-                                  <p>
-                                    Saturday and Sunday are weekends. hence the
-                                    next settlement would happen on 02 Dec, 9AM.
-                                  </p>
-                                </PopoverBody>
-                              </Popover>
-                            </i>
-                          </>
-                        )}
-                      </span>
                     </div>
                   </GroupItem>
                 )}

@@ -111,7 +111,6 @@ const keymetricsSectionTitle = 'Transactions Overview',
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
-      settlement_amount: state.home.settlement_amount,
       showInstantActivationSuccess:
         state.home.instantActivations.showInstantActivationSuccess,
       showKYCActivationSuccess:
@@ -519,8 +518,6 @@ export default class HomeContainer extends Component {
         window.hj && window.hj('trigger', 'MOBILE_SURVEY');
       }, 0);
     }
-
-    this.props.fetchSettlementAmount();
   }
 
   closeOnboardingStep() {
@@ -639,7 +636,6 @@ export default class HomeContainer extends Component {
     let {
       mode,
       current_balance,
-      settlement_amount,
       tabsMeta,
       user,
       // following three props will be sent by admin analytics
@@ -683,7 +679,6 @@ export default class HomeContainer extends Component {
     const commonProps = {
       mode,
       current_balance,
-      settlement_amount,
       tabsMeta,
       isAdmin,
       analyticsFetch,
