@@ -221,15 +221,21 @@ class Checker extends Base\Core
 
                 $result = ($offerIssuer === $card->getIssuer());
 
+                break;
+
             case Payment\Method::NETBANKING:
                 $bank = $this->payment->getBank();
 
                 $result = ($offerIssuer === $bank);
+                
+                break;
 
             case Payment\Method::WALLET:
                 $wallet = $this->payment->getWallet();
 
                 $result = ($offerIssuer === $wallet);
+
+                break;
 
             default:
                 $result;
