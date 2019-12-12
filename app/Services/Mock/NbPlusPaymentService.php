@@ -3,21 +3,25 @@
 namespace RZP\Services\Mock;
 
 use App;
+use Requests_Response;
+
 use RZP\Services\NbPlusPaymentService as BaseNbPlusPaymentService;
 
 class NbPlusPaymentService extends BaseNbPlusPaymentService
 {
-    public function sendRequest(string $method, string $url, array $input = []): array
+    public function sendRawRequest($request)
     {
-        $action = explode('/', $url)[1];
+        $action  = explode('/', $request['url'])[1];
 
-        $this->request($input, $action);
+        $content = $request['content'];
 
-        $response = $this->$action($input);
+        $this->request($content, $action);
+
+        $response = $this->$action($content);
 
         $this->content($response, $action);
 
-        return $response;
+        return $this->makeJsonResponse($response);
     }
 
     public function fetchMultiple(string $entityName, array $input): array
@@ -58,6 +62,16 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
         ];
     }
 
+    protected function verify($input)
+    {
+        return [
+            'data' => [
+                'gateway_success' => true,
+                'amount'          => $input['input']['payment']['amount']
+            ]
+        ];
+    }
+
     public function content(& $content, $action = '')
     {
         return $content;
@@ -66,5 +80,18 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
     public function request(& $content, $action = '')
     {
         return $content;
+    }
+
+    protected function makeJsonResponse(array $content)
+    {
+        $response = new Requests_Response();
+
+        $response->headers = ['Content-Type' => 'application/json', 'Cache-Control' => 'no-cache'];
+
+        $response->status_code = 200;
+
+        $response->body = json_encode($content);
+
+        return $response;
     }
 }

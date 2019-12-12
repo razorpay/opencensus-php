@@ -9,7 +9,6 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
@@ -359,7 +358,7 @@ class NbPlusPaymentService
     protected function checkAmountMismatch(Verify &$verify)
     {
         $expectedAmount = $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT];
-        $actualAmount   =  $verify->verifyResponseContent['amount'];
+        $actualAmount   = $verify->verifyResponseContent['amount'];
 
         $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
