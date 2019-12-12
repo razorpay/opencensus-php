@@ -148,7 +148,7 @@ class Base extends Mailable
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($type === 'subscription_registration')
+                if ($this->data['invoice']['entity_type'] === 'subscription_registration')
                 {
                     $template = static::SUBJECT_TEMPLATES[$merchantId];
 
