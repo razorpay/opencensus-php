@@ -4,6 +4,8 @@ import Input from 'common/new-ui/Input';
 import { BankDetails, AccountDetails } from './commonFields';
 
 export default ({
+  formReference1,
+  formReference2,
   accountType,
   isNachFormAval,
   bankAccountIFSC,
@@ -55,6 +57,10 @@ export default ({
         value={accountType}
       />
     </AccountDetails>
+
+    <Input name="formReference1" value={formReference1} label="Reference 1" />
+
+    <Input name="formReference2" value={formReference2} label="Reference 2" />
   </React.Fragment>
 );
 

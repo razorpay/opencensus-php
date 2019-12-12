@@ -53,6 +53,8 @@ export function createPaymentLink(payload) {
 
   if (Object.keys(customer).length) {
     reqPayload.customer = customer;
+  } else {
+    delete reqPayload.reminder_enable;
   }
 
   const reqPayloadToTrack = {

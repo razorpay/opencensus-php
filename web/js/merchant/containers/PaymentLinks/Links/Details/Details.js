@@ -11,6 +11,7 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -72,6 +73,11 @@ export default props => {
     );
 
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
+
+  const isContactDetailsAvl =
+    invoice.contact_details &&
+    (invoice.contact_details.contact_email ||
+      invoice.contact_details.contact_phone);
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -231,23 +237,39 @@ export default props => {
                 {user.isRemindersEnabled &&
                   isPaymentLinksRemindersEnabled && (
                     <EntityDetailRow label="Reminders">
-                      <Input.Check
-                        name="auto_reminders"
-                        fieldLabel="Send auto reminders"
-                        checked={isRemindersEnabled}
-                        disabled={
-                          isPaymentLinkClosed || isAutoRemindersUpdating
-                        }
-                        onChange={onChangeSendAutoReminder}
-                        autoRender
-                      />
+                      <React.Fragment>
+                        <span>
+                          <Input.Check
+                            name="auto_reminders"
+                            fieldLabel="Send auto reminders"
+                            checked={isRemindersEnabled}
+                            disabled={
+                              !isContactDetailsAvl ||
+                              isPaymentLinkClosed ||
+                              isAutoRemindersUpdating
+                            }
+                            onChange={onChangeSendAutoReminder}
+                            autoRender
+                          />
+                          {!isContactDetailsAvl && (
+                            <Popover theme="dark" align="bottom">
+                              <PopoverBody>
+                                No contact details present for reminders to be
+                                sent
+                              </PopoverBody>
+                            </Popover>
+                          )}
+                        </span>
 
-                      <ReminderStepsDetails
-                        isRemindersEnabled={isRemindersEnabled}
-                        nextReminders={nextReminders}
-                        isAutoRemindersUpdating={isAutoRemindersUpdating}
-                        isPaymentLinkClosed={isPaymentLinkClosed}
-                      />
+                        {isContactDetailsAvl && (
+                          <ReminderStepsDetails
+                            isRemindersEnabled={isRemindersEnabled}
+                            nextReminders={nextReminders}
+                            isAutoRemindersUpdating={isAutoRemindersUpdating}
+                            isPaymentLinkClosed={isPaymentLinkClosed}
+                          />
+                        )}
+                      </React.Fragment>
                     </EntityDetailRow>
                   )}
 

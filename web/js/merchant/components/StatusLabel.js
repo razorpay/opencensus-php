@@ -136,5 +136,6 @@ export const ActivationStatusLabel = StatusLabel(activationStatusMap);
 export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
 export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 export const OfferStatusLabel = StatusLabel(offerStatusMap);
+export const RefundStatusLabel = StatusLabel(refundStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

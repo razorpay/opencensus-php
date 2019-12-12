@@ -323,7 +323,7 @@ const businessModel = [
           </div>
         </React.Fragment>
       ),
-      info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
+      info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: activation => activation.state.has_url === '0',
       _disabledWhen: activation =>
         isL1Completed(activation) &&
