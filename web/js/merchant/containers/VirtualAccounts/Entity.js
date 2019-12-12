@@ -188,7 +188,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     }
 
     return (
-      <VirtualAccountEntity
+      <VirtualAccountDetails
         virtualaccount={entity}
         va_payments={va_payments}
         mode={mode}

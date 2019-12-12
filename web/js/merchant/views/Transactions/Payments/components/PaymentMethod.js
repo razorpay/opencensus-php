@@ -34,6 +34,7 @@ export default ({
     netbanking: 'bank',
     wallet: 'wallet',
     emandate: 'emandate',
+    upi: 'upi',
     aeps: 'aeps',
   };
 
@@ -50,7 +51,12 @@ export default ({
         : paymentMethodText;
     el = (
       <Definition>
-        <span>{paymentMethodText + ' ' + titleCase(paymentMethod)}</span>
+        <span>
+          {paymentMethod !== 'upi'
+            ? paymentMethodText + ' ' + titleCase(paymentMethod)
+            : 'UPI'}
+        </span>
+        {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
@@ -105,7 +111,9 @@ export default ({
         </Definition>
       </ContentToggler>
     );
-  } else if (paymentMethod === 'upi') {
+  } else if (paymentMethod === 'bank_transfer') {
+    /*
+  else if (paymentMethod === 'upi') {
     const isDetailsLoading =
       Object.keys(upiTransfer.details).length === 0 || upiTransfer.loading;
 
@@ -147,7 +155,8 @@ export default ({
         </Definition>
       </ContentToggler>
     );
-  } else if (paymentMethod === 'bank_transfer') {
+  }
+  */
     const isDetailsLoading =
       Object.keys(bankTransfer.details).length === 0 || bankTransfer.loading;
 
