@@ -182,8 +182,8 @@ class Service extends Base\Service
     {
         $isFunc = $this->app->environment(Environment::FUNC);
         
-        if($isFunc == true){
-            return false;                                                          
+        if($isFunc === true){
+            return false;                                                         
         }
 
         $isProduction = $this->app->environment(Environment::PRODUCTION);
