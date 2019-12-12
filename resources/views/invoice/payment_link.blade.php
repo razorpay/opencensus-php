@@ -64,6 +64,9 @@ $view_preferences               = $data['view_preferences'];
             success: noop, // Successfully completes activity
             failed: noop, // A failure occured
             push: noop, // Explicitly push as custom event to the queue
+            now: function() {
+                return window.rzpQ;
+            },
             setUser:noop, // Set a user one time
             defineEventModifiers: noop, // Extends to set custom event properties
             // Any modifiers
@@ -73,7 +76,14 @@ $view_preferences               = $data['view_preferences'];
         };
 
         function initAnalytics() {
-            analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
+            if (!window.analytics || window.location.hostname.indexOf('razorpay.com') < 0){
+                return;
+            }
+
+            analytics.init(['ga', 'hotjar', 'la'], {
+                la: '96df432a283745908a06f711acd9e5eb'
+            };
+
             analytics.track('ga', 'pageview');
 
 
