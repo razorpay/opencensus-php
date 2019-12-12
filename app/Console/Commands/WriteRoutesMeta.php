@@ -79,7 +79,7 @@ class WriteRoutesMeta extends Command
             $content .= '   },'.PHP_EOL;
         }
         $content .= '}'.PHP_EOL;
-        $content .= 'M.routes_meta_count = '.count($routesMeta).PHP_EOL;
+        $content .= 'M.routes_meta_count = #M.routes_meta'.PHP_EOL;
         $content .= 'return M'.PHP_EOL;
 
         file_put_contents(app_path().'/../etc/nginx/routes_meta.lua', $content);

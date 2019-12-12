@@ -1,5 +1,5 @@
 -- leaky_bucket.lua
--- Todo: Write comments.
+-- Refer: https://github.com/razorpay/hodor.
 
 local leaky_bucket_script = [==[
 local key               = KEYS[1]
