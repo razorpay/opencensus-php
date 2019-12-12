@@ -267,7 +267,7 @@ export default class SettlementsListContainer extends ListContainer {
                       <span class="icon i-external-link" />
                     </a>
                     <a
-                      class="btn right-border-margin settlement-doc-btn pull-left"
+                      class="btn settlement-doc-btn pull-left"
                       onClick={() => {
                         this.props.openModal({
                           size: 'regular',
@@ -277,15 +277,6 @@ export default class SettlementsListContainer extends ListContainer {
                     >
                       Settlement Schedule&nbsp;
                       <span class="icon i-external-link" />
-                    </a>
-                    <a
-                      class="btn btn-outline settlement-doc-btn pull-left"
-                      href="http://razorpay.com/settlement"
-                      target="_blank"
-                      onClick={trackHowSettlementsWorkClicks}
-                    >
-                      Activate Daily Settlement&nbsp;
-                      <span class="icon i-arrow-forward" />
                     </a>
                   </ShowWhen>
                   {this.props.user.isOndemandSettlementEnabled && (
@@ -322,7 +313,7 @@ export default class SettlementsListContainer extends ListContainer {
                 ) && (
                   <Fragment>
                     <div class="flex text-right">
-                      <div class="right-border-margin">
+                      <div>
                         <span class="settlement-balance-amount">
                           Current Balance:{' '}
                           <Amount value={balance} currency={'INR'} />
@@ -366,12 +357,6 @@ export default class SettlementsListContainer extends ListContainer {
                             </span>
                           </span>
                         )}
-                      </div>
-                      <div>
-                        <button class="btn btn-primary confirm-ok">
-                          <i class="i i-early-settlement settle-icon settle-now pull-right temp-icon-2" />
-                          Settle Now
-                        </button>
                       </div>
                     </div>
                   </Fragment>
