@@ -282,37 +282,24 @@ class Icici extends Base
         return in_array(Type::DIRECT_SETTLEMENT_WITH_REFUND, $terminal['type'], true);
     }
 
-    public function generateData(PublicCollection $refunds)
+    protected function collectPaymentData(Payment\Entity $payment): array
     {
-        $data = [];
+        $terminal = $payment->terminal;
 
-        foreach ($refunds as $refund)
+        $merchant = $payment->merchant;
+
+        $bankAccount = $merchant->bankAccount;
+
+        $col['payment'] = $payment->toArray();
+
+        $col['terminal'] = $terminal->toArray();
+
+        if (empty($bankAccount) === false)
         {
-            $payment = $refund->payment;
-
-            $terminal = $payment->terminal;
-
-            $col['refund'] = $refund->toArray();
-
-            $col['payment'] = $payment->toArray();
-
-            $col['terminal'] = $terminal->toArray();
-
-            $merchant = $refund->merchant;
-
-            $bankAccount = $merchant->bankAccount;
-
-            if (empty($bankAccount) === false)
-            {
-                $col['bankAccount'] = $bankAccount->toArray();
-            }
-
-            $data[] = $col;
+            $col['bankAccount'] = $bankAccount->toArray();
         }
 
-        $data = $this->addGatewayEntitiesToData($data, $refunds);
-
-        return $data;
+        return $col;
     }
 
     protected function getFileNameWithPid($pid)
