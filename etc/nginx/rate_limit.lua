@@ -15,20 +15,52 @@ end
 
 function get_req_ctx(ngx)
     local req_ctx = {
-        identifier = "example",
-        mode = "live",
-        auth = "public",
-        proxy = 0,
-        route = "example",
+        user = nil,
+        mode = nil,
+        auth = nil,
+        proxy = nil,
+        route = nil,
     }
-    -- Todo: Implement this.
+
+    -- Sets req_ctx.{route,auth}.
+    local method = ngx.var.request_method
+    local uri = ngx.var.uri
+    require 'routes_meta'
+    for i=0,routes_meta_count-1 do
+        if routes_meta[i].methods[method] then
+            if string.find(uri, routes_meta[i].uri_regex) then
+                req_ctx.route = routes_meta[i].name
+                req_ctx.auth = routes_meta[i].auth
+            end
+        end
+    end
+
+    -- Sets req_ctx.{user, mode, proxy}.
+    -- Assumption: Dashboard backend sends this particular header during proxy requests.
+    local dashboard_user_id = ngx.req.get_headers()['X-Dashboard-User-Id']
+    req_ctx.proxy = dashboard_user_id ~= nil
+    local auth_base64 = string.sub(ngx.var.http_authorization, 7)
+    if auth_base64 ~= nil then
+        local auth_user_pass = ngx.decode_base64(auth_base64)
+        if auth_user_pass ~= nil then
+            req_ctx.user = string.gmatch(auth_user_pass, '([^:]+)')()
+        end
+    end
+
+    -- Sets req_ctx.mode.
+    local mode = string.sub(req_ctx.user, 5, 8)
+    if mode == "live" or mode == "test" then
+        req_ctx.mode = mode
+    end
 
     return req_ctx, nil
 end
 
 function get_rate_limit_args(redis, req_ctx)
     local rate_limit_args = {
-        identifier = "example",
+        skip = false,
+        mock = true,
+        identifier = nil,
         lrv = 2,
         lrd = 1,
         mbs = 30,
@@ -117,6 +149,9 @@ function rate_limit_ngx(ngx)
         return
     end
 
+    if rate_limit_args.skip then
+        return
+    end
     rate_limit_args.now = ngx.now()
     rate_limit_res, err = rate_limit(redis, rate_limit_args)
     if err then
@@ -130,6 +165,10 @@ function rate_limit_ngx(ngx)
     end
 
     if not rate_limit_res.allowed then
+        if rate_limit_args.mock then
+            -- Todo: Log warn with contextual information.
+            return
+        end
         ngx.header["X-RateLimit-Limit"] = rate_limit_res.limit
         ngx.header["X-RateLimit-Remaining"] = rate_limit_res.remaining
         ngx.header["X-RateLimit-ResetAt"] = rate_limit_res.reset_at

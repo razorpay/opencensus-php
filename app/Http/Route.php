@@ -4287,6 +4287,11 @@ final class Route
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
     }
 
+    public static function getApiRoutes(): array
+    {
+        return self::$apiRoutes;
+    }
+
     public static function getApiRoute($name)
     {
         return self::$apiRoutes[$name];
