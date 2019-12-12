@@ -23,8 +23,11 @@ export default class SettlementDetail extends Component {
                 <span>
                   <strong>₹3,24,666.36</strong> will be settled by 01 Dec, 5PM.
                 </span>{' '}
-                <br />
-                <button
+                <p>
+                  The actual time taken to settle the money on your account will
+                  be vary by bank.
+                </p>
+                {/* <button
                   onClick={() => {
                     const showBreakUp = !this.state.showBreakUp;
                     this.setState({ showBreakUp });
@@ -38,7 +41,7 @@ export default class SettlementDetail extends Component {
                       this.state.showBreakUp ? 'up' : 'down'
                     }`}
                   />
-                </button>
+                </button> */}
               </div>
               {this.state.showBreakUp ? (
                 <div class="breakup">

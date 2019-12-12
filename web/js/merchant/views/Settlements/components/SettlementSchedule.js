@@ -22,63 +22,42 @@ export default class SettlementSchedule extends Component {
           <Fragment>
             <div class="grey">Your payments get settled to your account in</div>
             <div class="emphzd">
-              <div class="settlement-alert-warning">
-                <span>
-                  <strong>₹3,24,666.36</strong> will be settled by 01 Dec, 5PM.
-                </span>{' '}
-                <br />
-                <button
-                  onClick={() => {
-                    const showBreakUp = !this.state.showBreakUp;
-                    this.setState({ showBreakUp });
-                  }}
-                  style={{ marginTop: '10px' }}
-                  class="outline btn-primary"
-                >
-                  Show Breakup{' '}
-                  <i
-                    class={`i i-arrow-${
-                      this.state.showBreakUp ? 'up' : 'down'
-                    }`}
-                  />
-                </button>
+              <div class="emphzd-div">
+                <div class="flex">
+                  <div class="w50">Domestic Payments</div>
+                  <div class="w50">T+3 working days</div>
+                </div>
+                <div class="flex">
+                  <div class="w50">International Payments</div>
+                  <div class="w50">T+7 working days</div>
+                </div>
               </div>
-              {this.state.showBreakUp ? (
-                <div class="breakup">
-                  <div class="flex grey">
-                    <div style={{ width: '60%' }}>Total Amount</div>
-                    <div style={{ width: '40%' }}>
-                      <span>
-                        <Amount value={326618} currency={'INR'} />
-                      </span>
-                    </div>
-                  </div>
-                  <div class="flex grey">
-                    <div style={{ width: '60%' }}>Fees (0.2%)</div>
-                    <div style={{ width: '40%' }}>
-                      <span>
-                        <Amount value={-1425} currency={'INR'} />
-                      </span>
-                    </div>
-                  </div>
-                  <div class="flex grey">
-                    <div style={{ width: '60%' }}>Taxes</div>
-                    <div style={{ width: '40%' }}>
-                      <span>
-                        <Amount value={-455} currency={'INR'} />
-                      </span>
-                    </div>
-                  </div>
-                  <div class="flex grey">
-                    <div style={{ width: '60%' }}>Amount to be settled</div>
-                    <div style={{ width: '40%' }}>
-                      <span>
-                        <Amount value={324193} currency={'INR'} />
-                      </span>
-                    </div>
+              <div style={{ margin: '10px' }}>
+                <p class="grey">Other method specific Settlement schedules,</p>
+                <div class="flex" style={{ margin: '10px', fontSize: '16px' }}>
+                  <div class="w50">Method 1</div>
+                  <div class="w50">
+                    <b>T+4</b> Working Days
                   </div>
                 </div>
-              ) : null}
+                <div class="flex" style={{ margin: '10px', fontSize: '16px' }}>
+                  <div class="w50">Method 2</div>
+                  <div class="w50">
+                    <b>T+6</b> Working Days
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div
+                  class="flex grey"
+                  style={{ margin: '10px', fontSize: '13px' }}
+                >
+                  <div class="w50">
+                    <span class="text-danger">*</span> for Default Schedules
+                  </div>
+                  <div class="w50">(T is the date of payment capture)</div>
+                </div>
+              </div>
               <hr />
               <p class="grey">
                 Because of bank holiday [Holiday Name] on 04 Dec 2019, the next
