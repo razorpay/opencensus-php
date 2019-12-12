@@ -12,10 +12,9 @@ import BatchUpload from 'merchant/views/Transactions/Refunds/BatchUpload';
 import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
-
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
-
+import OnHoldBanner from 'common/ui/OnHoldBanner';
 @connect(state => state.session)
 export default class TransactionsContainer extends Component {
   constructor(props) {
@@ -70,12 +69,17 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
+          <>
+            <strong>Rs. 3,45, 000</strong> will be settled by 3rd Dec{' '}
+            <span class="btn-link">Know more</span>
+          </>
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
           <EnableSettlementsBanner />
         ) : (
           <TestModeBanner />
         )}
+        <OnHoldBanner />
         <content>
           <Switch>
             <Route path="/refunds/batchupload" component={BatchUpload} />

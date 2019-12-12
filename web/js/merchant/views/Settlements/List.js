@@ -19,7 +19,7 @@ import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettl
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-
+import OnHoldBanner from 'common/ui/OnHoldBanner';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
@@ -224,7 +224,7 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-
+          <OnHoldBanner />
           <content>
             <div class="content-wrapper">
               <HeaderAction>
@@ -305,19 +305,9 @@ export default class SettlementsListContainer extends ListContainer {
                           <Amount value={balance} currency={'INR'} />
                         </span>
                         <br />
-                        <span style={{ fontSize: '11px' }}>
+                        <span style={{ fontSize: '13px' }}>
                           <strong>₹3,24,666.36</strong> will be settled by 01
-                          Dec, 5PM.{' '}
-                          <i class="i i-info-circle">
-                            <Popover align="bottom" theme="dark">
-                              <PopoverBody>
-                                <p>
-                                  This is just a tentative amount, it might vary
-                                  by refund and others.{' '}
-                                </p>
-                              </PopoverBody>
-                            </Popover>
-                          </i>{' '}
+                          Dec, 5PM{' '}
                           <span
                             onClick={() => {
                               this.props.openModal({
