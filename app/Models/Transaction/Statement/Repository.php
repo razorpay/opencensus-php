@@ -115,7 +115,7 @@ class Repository extends Transaction\Repository
         $action = $params[Entity::ACTION];
         $actionColumn = $this->dbColumn($action);
 
-        $query->where($actionColumn, '!=', 0);
+        $query->where($actionColumn, '>', 0);
     }
 
     /**
