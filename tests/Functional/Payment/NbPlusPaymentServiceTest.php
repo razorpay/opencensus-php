@@ -19,6 +19,30 @@ class NbPlusPaymentServiceTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
+    const AUTHORIZE_ACTION_INPUT = [
+        'payment',
+        'callbackUrl',
+        'otpSubmitUrl',
+        'payment_analytics',
+        'token',
+        'terminal',
+        'merchant',
+        'cps_route',
+        'merchant_detail',
+        'gateway_config',
+        'gateway',
+    ];
+
+    const CALLBACK_ACTION_INPUT = [
+        'payment',
+        'gateway',
+        'terminal',
+        'merchant',
+        'cps_route',
+        'merchant_detail',
+        'gateway_config',
+    ];
+
     public function setUp()
     {
         parent::setUp();
@@ -53,6 +77,22 @@ class NbPlusPaymentServiceTest extends TestCase
     public function testAuthorizeViaNbPlusPaymentUpdateService()
     {
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $this->assertEquals('billdesk', $content['gateway']);
+
+            switch ($action)
+            {
+                case 'authorize':
+                    $this->assertEquals('authorize', $content['action']);
+                    $this->assertArrayKeysExist($content['input'], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case 'callback':
+                    $this->assertEquals('callback', $content['action']);
+                    $this->assertArrayKeysExist($content['input'], self::CALLBACK_ACTION_INPUT);
+            }
+        });
 
         $this->doAuthPayment($paymentArray);
 
@@ -212,5 +252,10 @@ class NbPlusPaymentServiceTest extends TestCase
     protected function mockServerContentFunction($closure)
     {
         $this->nbPlusService->shouldReceive('content')->andReturnUsing($closure);
+    }
+
+    protected function mockServerRequestFunction($closure)
+    {
+        $this->nbPlusService->shouldReceive('request')->andReturnUsing($closure);
     }
 }
