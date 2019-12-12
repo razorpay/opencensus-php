@@ -253,7 +253,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
     this.props.openModal({
-      size: 'small',
+      size: 'medium',
       component: (
         <Success
           handleClose={this.props.closeModal}

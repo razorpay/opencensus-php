@@ -49,7 +49,7 @@ export default class PreviewEmbedButton extends React.Component {
     }
 
     const previewBtnCode = (
-      <span>
+      <span style={{ position: 'relative' }}>
         <a
           href={url}
           style={{
