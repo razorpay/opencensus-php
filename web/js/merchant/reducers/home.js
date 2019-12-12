@@ -283,7 +283,7 @@ export default function(state = initialState, action) {
     case `${SETTLEMENT_AMOUNT_FETCH}::SUCCESS`:
       return merge(state, {
         settlement_amount: {
-          data: action.payload,
+          data: action.payload.data,
           loading: false,
           error: null,
         },
