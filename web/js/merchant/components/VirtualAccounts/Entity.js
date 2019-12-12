@@ -48,8 +48,6 @@ export default class extends React.Component {
       .then(({ data }) => {
         this.props.closeModal();
 
-        console.log('...data....', data);
-
         let accountDetails, modalTitle;
         let showUPIAddressDetails, showBankAccountDetails;
 
