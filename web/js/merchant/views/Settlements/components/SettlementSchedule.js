@@ -11,6 +11,7 @@ export default class SettlementSchedule extends Component {
   };
 
   render() {
+    console.log(this.props, 'props');
     return (
       <div>
         <ModalHeader

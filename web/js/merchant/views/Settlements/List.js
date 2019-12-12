@@ -26,6 +26,7 @@ import {
   trackOndemand,
 } from './ga';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
+import { fetchSchedule } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 
 import Amount from 'common/ui/Amount';
@@ -40,6 +41,7 @@ import SettlementSchedule from 'merchant/views/Settlements/components/Settlement
   state => ({
     user: state.session.user,
     mode: state.session.mode,
+    schedule: state.settlement.schedule,
     ...state.home,
     ...state.settlements,
   }),
@@ -48,6 +50,7 @@ import SettlementSchedule from 'merchant/views/Settlements/components/Settlement
     showNotification,
     ...ModalActions,
     fetchCurrentBalance,
+    fetchSchedule,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -100,12 +103,14 @@ export default class SettlementsListContainer extends ListContainer {
     );
 
     this.props.fetchCurrentBalance();
+    this.props.fetchSchedule();
 
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
     }
 
     this.popupIfSettle();
+    console.log('***', this.props);
   }
 
   onSearchAnalytics = params => {
@@ -195,6 +200,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
+    console.log('1112', this.props);
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;

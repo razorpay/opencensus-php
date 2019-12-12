@@ -4,12 +4,23 @@ import { set, merge } from 'common/utils/immutable';
 const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 
+const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
+
 export const fetchItem = id => {
   let settlement = new Settlement();
 
   return {
     type: SETTLEMENT_FETCH,
     payload: settlement.fetch(id),
+  };
+};
+
+export const fetchSchedule = id => {
+  let settlement = new Settlement();
+
+  return {
+    type: SETTLEMENT_SCHEDULE_FETCH,
+    payload: settlement.fetchSettlementSchedule(),
   };
 };
 
@@ -28,6 +39,11 @@ let initialState = {
   breakupDetails: {
     loading: false,
     items: [],
+    error: null,
+  },
+  schedule: {
+    loading: false,
+    data: [],
     error: null,
   },
 };
@@ -69,6 +85,20 @@ export default function(state = initialState, action) {
       return set(state, 'breakupDetails', {
         loading: false,
         items: [],
+        error: action.payload.errors,
+      });
+
+    case `${SETTLEMENT_SCHEDULE_FETCH}::SUCCESS`:
+      return set(state, 'schedule', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+
+    case `${SETTLEMENT_SCHEDULE_FETCH}::ERROR`:
+      return set(state, 'schedule', {
+        loading: false,
+        data: [],
         error: action.payload.errors,
       });
 

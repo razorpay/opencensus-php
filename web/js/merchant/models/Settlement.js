@@ -17,6 +17,16 @@ export default class Settlement extends GenericEntity {
     });
   }
 
+  fetchSettlementSchedule(type) {
+    let Klass = this.constructor;
+    const url = `schedule_tasks/settlement`;
+    return this.makeGenericAjaxCall({ url }).then(response => {
+      console.log(response, 'papa');
+      response.data = response.data.map(item => new Klass(item).deserialize());
+      return response;
+    });
+  }
+
   deserializeProperty(prop, value) {
     if (prop === 'amount') {
       this.amountInINR = getFixedINRAmount(value);
