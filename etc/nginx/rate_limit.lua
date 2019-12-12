@@ -198,8 +198,7 @@ local function rate_limit(redis, rate_limit_args, now)
     }
 end
 
--- release_redis_conn method if needs explanation then you should demand
--- promotion as soon as possible- the situation is critical.
+-- release_redis_conn releases redis connection. Hehe.
 local function release_redis_conn(redis)
     local ok, err = redis:set_keepalive(redis_conf.max_idle_ms, redis_conf.pool_size)
     return err
