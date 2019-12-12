@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Scrooge
 {
@@ -239,20 +240,36 @@ class Scrooge
 
     /**
      * @param array $input
+     * @param string $merchantId
      * @return array
      */
-    public function setInstantRefundsMode(array $input): array
+    public function setInstantRefundsMode(array $input, string $merchantId = null): array
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::POST, $input);
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'],
+            Requests::POST,
+            $input
+        );
     }
 
     /**
      * @param string $id
      * @param array $input
+     * @param string $merchantId
      * @return array
      */
-    public function expireInstantRefundsModeConfig(string $id, array $input): array
+    public function expireInstantRefundsModeConfig(string $id, array $input, string $merchantId = null): array
     {
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
         return $this->sendRequest(
             self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'] . '/' . $id . '/expire',
             Requests::PUT,
@@ -275,10 +292,16 @@ class Scrooge
 
     /**
      * @param array $input
+     * @param string $merchantId
      * @return array
      */
-    public function fetchInstantRefundsModeConfigs(array $input): array
+    public function fetchInstantRefundsModeConfigs(array $input, string $merchantId = null): array
     {
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
         return $this->sendRequest(
             self::MerchantsBaseURL . '/' . self::URLS['fetch_instant_refunds_modes'],
             Requests::POST,

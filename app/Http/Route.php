@@ -973,13 +973,15 @@ final class Route
         'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                             'ScroogeController@enqueue'                                  ],
         'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',               'ScroogeController@downloadGatewayRefundsFile'               ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change',      'ScroogeController@bulkStatusUpdate'                         ],
-        'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                           'ScroogeController@refreshFtaModes'                          ],
-        'scrooge_set_merchant_mode_config'           => ['post',     'scrooge/merchants/instant_refunds_mode',              'ScroogeController@setInstantRefundsMode'                    ],
-        'scrooge_set_instant_refund_mode_config'     => ['post',     'scrooge/instant_refunds_mode',                        'ScroogeController@setInstantRefundsMode'                    ],
-        'scrooge_expire_merchant_mode_config'        => ['put',      'scrooge/merchants/instant_refunds_mode/{id}/expire',  'ScroogeController@expireInstantRefundsModeConfig'           ],
-        'scrooge_expire_instant_refund_mode_config'  => ['put',      'scrooge/instant_refunds_mode/{id}/expire',            'ScroogeController@expireInstantRefundsModeConfig'           ],
-        'scrooge_fetch_merchant_mode_configs'        => ['post',     'scrooge/merchants/fetch/instant_refund_mode_configs', 'ScroogeController@fetchInstantRefundsModeConfigs'           ],
-        'scrooge_fetch_instant_refund_mode_config'   => ['post',     'scrooge/fetch/instant_refund_mode_configs',           'ScroogeController@fetchInstantRefundsModeConfigs'           ],
+
+        // Scrooge - Instant Refunds Mode Config related routes
+        'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                                 'ScroogeController@refreshFtaModes'                           ],
+        'scrooge_set_instant_refund_mode_config'     => ['post',     'scrooge/instant_refunds_mode',                              'ScroogeController@setInstantRefundsMode'                     ],
+        'scrooge_expire_instant_refund_mode_config'  => ['put',      'scrooge/instant_refunds_mode/{id}/expire',                  'ScroogeController@expireInstantRefundsModeConfig'            ],
+        'scrooge_fetch_instant_refund_mode_config'   => ['post',     'scrooge/fetch/instant_refund_mode_configs',                 'ScroogeController@fetchInstantRefundsModeConfigs'            ],
+        'scrooge_set_merchant_mode_config'           => ['post',     'scrooge/merchants/{mid}/instant_refunds_mode',              'ScroogeController@setInstantRefundsModeForMerchant'          ],
+        'scrooge_expire_merchant_mode_config'        => ['put',      'scrooge/merchants/{mid}/instant_refunds_mode/{id}/expire',  'ScroogeController@expireInstantRefundsModeConfigForMerchant' ],
+        'scrooge_fetch_merchant_mode_configs'        => ['post',     'scrooge/merchants/{mid}/fetch/instant_refund_mode_configs', 'ScroogeController@fetchInstantRefundsModeConfigsForMerchant' ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
