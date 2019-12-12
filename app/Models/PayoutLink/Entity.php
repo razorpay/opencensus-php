@@ -178,6 +178,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::DESCRIPTION);
     }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -187,9 +192,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
-    public function setStatus($status)
+    public function setStatus($newStatus)
     {
-        $this->setAttribute(self::STATUS, $status);
+        Status::validateStatus($this->getStatus(), $this->getStatus(), $newStatus);
+
+        $this->setAttribute(self::STATUS, $newStatus);
     }
 
     // -------------------------------------- End Setters -----------------------------

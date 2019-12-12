@@ -52,6 +52,32 @@ class Core extends Base\Core
         $this->redis = $this->app['redis']->connection();
     }
 
+    public function cancel(string $payoutLinkId)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
+            [
+                'id' => $payoutLinkId
+            ]
+        );
+
+        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        // If already cancelled, then return the entity without any change. Making this call idempotent.
+        if ($payoutLink->getStatus() === Status::CANCELLED)
+        {
+            return $payoutLink;
+        }
+
+        $payoutLink->setStatus(Status::CANCELLED);
+
+        $payoutLink->saveOrFail();
+
+        return $payoutLink;
+    }
+
     public function create(array $input): Entity
     {
         $this->trace->info(

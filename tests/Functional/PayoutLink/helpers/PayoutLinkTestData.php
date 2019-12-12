@@ -353,5 +353,51 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
         ]
-    ]
+    ],
+
+    'testPayoutLinkCancelApiSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
+            ]
+        ]
+    ],
+
+    'testCancellingPayoutLinkFromProcessingStatusShouldThrowException' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+        ]
+    ],
+
+    'testCancelIdempotencyByCallingTheApiTwice' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
+            ]
+        ]
+    ],
 ];

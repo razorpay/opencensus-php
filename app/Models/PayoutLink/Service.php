@@ -39,6 +39,11 @@ class Service extends Base\Service
         return $this->core->generateAndSendCustomerOtp($payoutLinkId);
     }
 
+    public function cancel(string $payoutLinkId)
+    {
+        return $this->core->cancel($payoutLinkId);
+    }
+
     public function verifyCustomerOtp($payoutLinkId, $input)
     {
         $validator = (new Entity())->getValidator();
