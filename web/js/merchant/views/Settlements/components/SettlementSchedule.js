@@ -9,6 +9,7 @@ export default class SettlementSchedule extends Component {
     showBreakUp: false,
     showExample: false,
   };
+
   render() {
     return (
       <div>
@@ -18,9 +19,7 @@ export default class SettlementSchedule extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div class="grey">
-              Your payements get settled to your account in
-            </div>
+            <div class="grey">Your payments get settled to your account in</div>
             <div class="emphzd">
               <div class="settlement-alert-warning">
                 <span>
