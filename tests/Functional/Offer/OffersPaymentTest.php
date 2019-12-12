@@ -530,7 +530,6 @@ class OffersPaymentTest extends TestCase
             $offer1,
             $offer2,
         ]);
-        s($order);
 
         $payment = $this->getOfferPaymentArray($order, $offer2);
 

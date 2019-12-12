@@ -227,7 +227,7 @@ class Checker extends Base\Core
                 $bank = $this->payment->getBank();
 
                 $result = ($offerIssuer === $bank);
-                
+
                 break;
 
             case Payment\Method::WALLET:

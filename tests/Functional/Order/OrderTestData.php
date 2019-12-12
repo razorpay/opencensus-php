@@ -1287,7 +1287,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Offer not applicable on selected issuer',
                 ],
             ],
             'status_code' => 400,
