@@ -103,13 +103,12 @@ class AnalyticsDesktop extends Component {
       payments,
       showOnboardingBanner,
       showInstantActivation,
-
       onHideOnboardingBanner,
       onFirstStepClose,
       onDatesChange,
       onFetchPayments,
       onExtraContentMount,
-
+      settlement_amount,
       defaultPreset,
       keymetricsSectionTitle,
       paymentInsightsTitle,

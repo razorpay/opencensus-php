@@ -11,6 +11,7 @@ const ANALYTICS_FETCH = 'ANALYTICS_FETCH';
 const ENTITY_TOTALS_FETCH = 'ENTITY_TOTALS_FETCH';
 const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
+const SETTLEMENT_AMOUNT_FETCH = 'SETTLEMENT_AMOUNT_FETCH';
 
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
@@ -43,6 +44,11 @@ let initialState = {
     error: null,
   },
   current_balance: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  settlement_amount: {
     loading: true,
     data: {},
     error: null,
@@ -187,6 +193,13 @@ export const hidePANStatusModal = () => {
   };
 };
 
+export const fetchSettlementAmount = () => {
+  return {
+    type: SETTLEMENT_AMOUNT_FETCH,
+    payload: merchantFetch('settlements/amount'),
+  };
+};
+
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${ANALYTICS_FETCH}::PENDING`:
@@ -265,6 +278,22 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.current_balance.data,
+      });
+
+    case `${SETTLEMENT_AMOUNT_FETCH}::SUCCESS`:
+      return merge(state, {
+        settlement_amount: {
+          data: action.payload,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${SETTLEMENT_AMOUNT_FETCH}::ERROR`:
+      return set(state, 'settlement_amount', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.settlement_amount.data,
       });
 
     case `SHOW_IA_SUCCESS`:
