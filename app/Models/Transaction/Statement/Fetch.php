@@ -49,9 +49,10 @@ class Fetch extends Transaction\Fetch
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
+            Entity::ACTION,
         ],
         AuthType::PROXY_AUTH => [
-            Entity::ACTION
+            // Entity::ACTION
         ],
     ];
 
