@@ -409,10 +409,6 @@ export default class User {
     return window.pl_expiry_in_hrs;
   }
 
-  get toShowExtraFieldsInPP() {
-    return this.getExpStatus('show_extra_fields_in_pp');
-  }
-
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
   }
@@ -426,6 +422,10 @@ export default class User {
     return this.getExpStatus('mobile_hotjar_survey');
   }
 
+  get isNPSSurveyBannerEnabled() {
+    return this.getExpStatus('nps_survey_banner');
+  }
+
   get isShowCommissionBalanceEnabled() {
     return this.getExpStatus('show_commission_balance');
   }
@@ -437,6 +437,10 @@ export default class User {
 
   get isFirstAmountHidden() {
     return this.getExpStatus('hide_registration_link_first_amount');
+  }
+
+  get paymentLinkCreationFormExtraFields() {
+    return window.pl_extra_fields;
   }
 
   get isAllowedTeamManagement() {

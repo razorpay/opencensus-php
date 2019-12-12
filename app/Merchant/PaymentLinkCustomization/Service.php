@@ -21,6 +21,19 @@ class Service extends Base\Service
     }
 
     /**
+     * To get the extra form fields to be shown to a user.
+     *
+     * @param string $currentMerchantId Current selected merchant id
+     *
+     */
+    public function getExtraFormFieldsByMID(string $currentMerchantId)
+    {
+        $extraFields = Constants::getExtraFormFieldsByMID($currentMerchantId);
+
+        return $extraFields;
+    }
+
+    /**
      * To get the custom form fields to be shown to a user.
      *
      * @param string $currentMerchantId Current selected merchant id
