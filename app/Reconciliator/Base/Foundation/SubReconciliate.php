@@ -762,4 +762,16 @@ class SubReconciliate extends Base\Core
 
         return constant($className . '::' . 'BLACKLISTED_COLUMNS');
     }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function if MIS file need to be modified.
+     *
+     * Currently this is being used for cardfssbob
+     * @param $row
+     */
+    protected function modifyRowIfNeeded(&$row)
+    {
+        return;
+    }
 }

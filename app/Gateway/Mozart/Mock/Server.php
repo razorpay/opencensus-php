@@ -85,6 +85,14 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $intentObj, 'intent');
     }
 
+    public function checkAccount($input)
+    {
+        $elligiblityObj = new CheckAccountData();
+
+        return $this->processMockResponse($input, $elligiblityObj, 'check_account');
+    }
+
+
     public function authInit($input)
     {
         $mandateCreateObj = new AuthInitData();
@@ -288,6 +296,28 @@ class Server extends Base\Mock\Server
             'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function getsimpl($input)
+    {
+        $content = $input;
+
+        $content = [
+            'available_credit_in_paise'     => '10000000',
+            'merchant_payload'              => $content['paymentId'],
+            'success'                       => true,
+            'token'                         => '83hd48h387d83n78fn8rf83r7if83r'
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/v1/callback/getsimpl',
+            'content' => $content
         ];
 
         return $this->makePostResponse($request);

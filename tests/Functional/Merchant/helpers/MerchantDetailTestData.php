@@ -770,6 +770,25 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsForUnregisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsWithCouponCode' => [
         'request' => [
             'content' => [

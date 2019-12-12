@@ -1964,22 +1964,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hiddenInReport;
     }
 
-    public function getPspFromVpa()
+    public function getVpaHandleFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
     {
-        $psp = $this->getPspFromVpa();
+        $vpaHandle = $this->getVpaHandleFromVpa();
 
-        return ProviderCode::getBankCode($psp);
+        return ProviderCode::getBankCode($vpaHandle);
     }
 
     public function getTransferId()
@@ -2389,7 +2389,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpi() === true)
         {
-            $issuer = $this->getPspFromVpa();
+            $issuer = $this->getVpaHandleFromVpa();
         }
         else if ($this->isPayLater() === true)
         {
