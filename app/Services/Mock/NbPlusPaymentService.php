@@ -7,9 +7,13 @@ use RZP\Services\NbPlusPaymentService as BaseNbPlusPaymentService;
 
 class NbPlusPaymentService extends BaseNbPlusPaymentService
 {
-    public function action(string $gateway, string $action, array $input): array
+    public function sendRequest(string $method, string $url, array $input = []): array
     {
-        $response = $this->$action($gateway, $input);
+        $action = explode('/', $url)[1];
+
+        $this->request($input, $action);
+
+        $response = $this->$action($input);
 
         $this->content($response, $action);
 
@@ -26,13 +30,13 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
         return [];
     }
 
-    protected function authorize($gateway, $input)
+    protected function authorize($input)
     {
         return [
             'data' => [
                 'url'     => $this->app['api.route']
                                   ->getPublicCallbackUrlWithHash(
-                                                        $input['payment']['public_id'],
+                                                        $input['input']['payment']['public_id'],
                                                         'rzp_test_TheTestAuthKey',
                                                         'payment_callback_post'
                                                        ),
@@ -42,7 +46,7 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
         ];
     }
 
-    protected function callback($gateway, $input)
+    protected function callback($input)
     {
         return [
             'data' => [
@@ -55,6 +59,11 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
     }
 
     public function content(& $content, $action = '')
+    {
+        return $content;
+    }
+
+    public function request(& $content, $action = '')
     {
         return $content;
     }
