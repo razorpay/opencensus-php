@@ -73,15 +73,16 @@
                 <td colspan="2" class="content"
                     style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2;">
                     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
-                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">
-Dear {{$invoice['customer_details']['name']}},
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; word-wrap: break-word;">
+                            Dear {{$invoice['customer_details']['name']}},
                         </div>
-                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">
-Greetings from RBL Bank!
-
-Thank you for choosing RBL Bank. We request you to register a
-mandate for your RBL loan application no.{{$invoice['subscription_registration']['loan_number'] ?? ''}}
-by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.
+                        <br/>
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; color: #58666E; word-wrap: break-word;">
+                            Greetings from RBL Bank!
+                            <br/>
+                            <br/>
+                            <span style="line-height: 24px;"> Thank you for choosing RBL Bank. We request you to register a mandate for your RBL loan application no.{{$invoice['subscription_registration']['loan_number'] ?? ''}} by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.</span>
+                            <br/>
                         </div>
                     </div>
                 </td>
