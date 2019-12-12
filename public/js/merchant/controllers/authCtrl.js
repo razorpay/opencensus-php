@@ -120,7 +120,7 @@ app
         details: {
           business_type: {
             1: {
-              name: 'Not Yet Registered',
+              name: 'Not Registered',
               value: 11,
             },
             // 2: {
@@ -514,11 +514,6 @@ app
 
             window.rzpAnalytics({
               name: 'facebook',
-              event: 'signup_complete',
-            });
-
-            window.rzpAnalytics({
-              name: 'taboola',
               event: 'signup_complete',
             });
 

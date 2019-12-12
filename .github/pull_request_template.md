@@ -1,30 +1,28 @@
 **Description**
+1. What is this PR about?
+2. Write individual changes in points
+[Screenshot with each point if necessary]
 
-- What is this PR about?
 
-**TODO**
+**List of impacted parts in dashboard**
+- Eg: modules, features, whole dashboard, roles-permissions, etc.
+- Eg: Small/Big functionality in invoices
+- Eg: UI of entire invoices page
 
-- [ ] Item 1
-- [ ] Add a screenshot of the changes if this includes a UI change
 
 **Dependencies**
+- [ ] Add link to API PR here if required for this PR
 
-- [ ] If there is an API PR that is required for this, link it here
-- [ ] DevOps changes (requires env variables etc)
+
+**QA sign off done by?**
+[Name]
+
 
 **Check List**
-
-This PR includes the following (tick whichever is applicable):
-
-- [ ] Migrations
-- [ ] Tests
-- [ ] New API side changes
-- [ ] UI Changes
-- [ ] Dependency Updates (composer/npm)
-
-**Post-Deployment Steps**
-
-- [ ] Post on #prod_bulletin if it's a public facing feature
-- [ ] Does public documentation need updating?
-
-PS: Don't forget to add appropriate labels to this PR
+- [ ] Add Jira ID(s) in PR message, or description?
+- [ ] Self-check PR once?
+- [ ] Is format of your commit messages proper?
+- [ ] Any Screenshots required for PR?
+- [ ] Have you ensured that no sizeable refactors are mixed in this PR?
+	  (If sizeable refactors are there, purpose of PR must be same)
+- [ ] Any manual dev testing done by you on beta/func environment?

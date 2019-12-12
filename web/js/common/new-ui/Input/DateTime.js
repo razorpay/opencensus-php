@@ -1,5 +1,5 @@
 import moment from 'moment';
-import Input, { Description } from 'common/new-ui/Input';
+import Input, { Description, Error, inputClass } from 'common/new-ui/Input';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
 import { classList } from 'common/utils/rzp-utils';
@@ -8,6 +8,7 @@ export default class DateTime extends React.Component {
   state = {
     value: this.props.defaultValue,
     hasNoDate: this.props.required ? false : !this.props.defaultValue,
+    mature: this.props.mature || false,
   };
 
   onDateChange = date => {
@@ -23,13 +24,10 @@ export default class DateTime extends React.Component {
   };
 
   updateDate = ts => {
-    const newDate = moment(ts);
-
-    this.setState({
-      value: newDate,
-    });
-
-    this.props.onChange && this.props.onChange(newDate);
+    const value = moment(ts);
+    const error = this.props.validator && this.props.validator(value);
+    this.props.onChange && this.props.onChange(value);
+    this.setState({ error, mature: true, value });
   };
 
   render() {
@@ -41,8 +39,8 @@ export default class DateTime extends React.Component {
       required = false,
       isInline,
       description,
+      defaultValue = moment(value),
     } = this.props;
-
     return (
       <React.Fragment>
         {!required && (
@@ -69,7 +67,9 @@ export default class DateTime extends React.Component {
           />
         )}
         <Input.Group
+          label={(required && label) || null}
           class={classList(
+            inputClass(this),
             !required && 'InputGroup--near',
             isInline ? 'InputGroup--inline' : 'Input--half_big'
           )}
@@ -77,8 +77,8 @@ export default class DateTime extends React.Component {
           <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
               data-name="date"
-              placeholder="15-04-2018"
-              defaultValue={moment(value)}
+              placeholder="DD-MM-YYYY"
+              defaultValue={defaultValue}
               disabled={hasNoDate}
               readOnly={true}
               onChange={this.onDateChange}
@@ -87,7 +87,7 @@ export default class DateTime extends React.Component {
               placement="topLeft"
               allowToday={true}
               disablePastDates={true}
-              required={required}
+              required
             />
             {!!value && (
               <Input.TimePicker
@@ -98,10 +98,11 @@ export default class DateTime extends React.Component {
                 onChange={this.onTimeChange}
                 size={isInline ? 'half_small' : 'half'}
                 addonAfter={<i class="i i-time" />}
-                required={required}
+                required
               />
             )}
             {description && <Description text={description} />}
+            <Error text={this.state.error} />
           </div>
         </Input.Group>
       </React.Fragment>

@@ -39,13 +39,6 @@ export const trackhubsContactUpdate = data => {
   });
 };
 
-export const trackTaboola = event => {
-  window.rzpAnalytics({
-    name: 'taboola',
-    event,
-  });
-};
-
 /**
  * Common function to fire all events at once.
  * @param {Object} - fbData, bingData, liData(linkedin), twiData(twitter)

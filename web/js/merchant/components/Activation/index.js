@@ -13,14 +13,12 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import {
-  fireAnalyticsEvents,
-  trackTaboola,
-} from 'common/utils/googleAnalytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  getBusinessTypeOptions,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -45,6 +43,7 @@ import {
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { validatePANCardUnregBiz } from 'common/utils/validators';
 
 import {
   L1FormSuccess,
@@ -157,7 +156,7 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
-    callingL1Api: false,
+    callingApi: false,
     address_proof: 'aadhar',
     needsClarification: {},
   };
@@ -181,6 +180,12 @@ export default class ActivationWizard extends React.Component {
       props.user.instantActivation.isL1Submitted
         ? 'KYC Form'
         : 'Activation Form';
+
+    this.formDescription =
+      props.user.showInstantActivation &&
+      props.user.instantActivation.isL1Submitted
+        ? 'Complete and submit the form to enable settlements.'
+        : 'Complete and submit the form to accept payments.';
   }
   isNeedsClarificationMode() {
     return this.props.data.activation_status === 'needs_clarification';
@@ -245,6 +250,9 @@ export default class ActivationWizard extends React.Component {
           label: props.categories[c].description,
         }))
       );
+
+      // Set Biz type options dynamically based on current activation stage
+      FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
     }
 
     DOCUMENT_UPLOAD_STEP &&
@@ -766,6 +774,17 @@ export default class ActivationWizard extends React.Component {
     }
   }
 
+  get canSubmitL1Form() {
+    const promoterPan =
+      this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
+    return (
+      !hasSelectedBlacklistedCategory(this) &&
+      (this.isUnregBiz
+        ? promoterPan && !validatePANCardUnregBiz(promoterPan)
+        : true)
+    );
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -869,7 +888,7 @@ export default class ActivationWizard extends React.Component {
 
     this.trackSubmitL1(data);
 
-    this.setState({ callingL1Api: true });
+    this.setState({ callingAPI: true });
 
     try {
       let response = await this.props.submitL1Form({
@@ -911,7 +930,7 @@ export default class ActivationWizard extends React.Component {
       L1FormSuccess(props);
       this.saveCurrentTab();
 
-      this.setState({ callingL1Api: false }, () => {
+      this.setState({ callingAPI: false }, () => {
         if (
           poi_verification_status != 'incorrect_details' &&
           poi_verification_status != 'not_matched'
@@ -921,7 +940,7 @@ export default class ActivationWizard extends React.Component {
       });
       return response;
     } catch (err) {
-      this.setState({ callingL1Api: false });
+      this.setState({ callingAPI: false });
       this.saveCurrentTab();
       if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
@@ -1040,8 +1059,6 @@ export default class ActivationWizard extends React.Component {
           });
         }
 
-        trackTaboola('l2_submission');
-
         updateHubSpotContactsProperties(
           {
             final_submission: true,
@@ -1088,7 +1105,7 @@ export default class ActivationWizard extends React.Component {
     });
 
     try {
-      this.setState({ callingL1Api: true });
+      this.setState({ callingAPI: true });
       const response = await this.props.save(reqData);
       if (response.success) {
         this.props.showKYCStatusModal({
@@ -1106,7 +1123,7 @@ export default class ActivationWizard extends React.Component {
       }
       return err;
     } finally {
-      this.setState({ callingL1Api: false });
+      this.setState({ callingApi: false });
     }
   };
 
@@ -1397,9 +1414,7 @@ export default class ActivationWizard extends React.Component {
           title={this.formName}
           description={
             !this.isLinkedAccountForm &&
-            !isFormSubmitted && (
-              <p>Complete and submit the form to start accepting payments.</p>
-            )
+            !isFormSubmitted && <p>{this.formDescription}</p>
           }
           tabs={FORM_TABS}
           moreTabs={moreTabs}
@@ -1620,15 +1635,14 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
-                      disabled={
-                        this.state.callingL1Api ||
-                        hasSelectedBlacklistedCategory(this)
-                      }
+                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
                       onClick={this.submitL1}
-                      pendingState={'Verifying'}
+                      pendingState={
+                        this.isUnregBiz ? 'Verifying' : 'Submitting'
+                      }
                       name={'submit-and-verify'}
                     >
-                      Submit and Verify
+                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
                     </AsyncBtn.Primary>
                   )}
 
@@ -1657,7 +1671,7 @@ export default class ActivationWizard extends React.Component {
           <footer>
             <AsyncBtn.Primary
               disabled={
-                !this.hasFilledClarificationDetails || this.state.callingL1Api
+                !this.hasFilledClarificationDetails || this.state.callingApi
               }
               onClick={this.submitClarifications}
               pendingState={'Submitting...'}
@@ -1783,7 +1797,7 @@ function ActivationField(field) {
     key = _name;
   }
 
-  const isFormLocked = this.isFormLocked;
+  const isFormLocked = this.isFormLocked || this.state.callingAPI;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;
