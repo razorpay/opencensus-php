@@ -25,7 +25,10 @@ import {
   trackHowSettlementsWorkClicks,
   trackOndemand,
 } from './ga';
-import { fetchCurrentBalance } from 'merchant/reducers/home';
+import {
+  fetchCurrentBalance,
+  fetchSettlementAmount,
+} from 'merchant/reducers/home';
 import { fetchSchedule } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 
@@ -43,6 +46,7 @@ import SettlementDetail from './components/SettlementDetail';
     user: state.session.user,
     mode: state.session.mode,
     schedule: state.settlement.schedule,
+    settlement_amount: state.home.settlement_amount,
     ...state.home,
     ...state.settlements,
   }),
@@ -52,6 +56,7 @@ import SettlementDetail from './components/SettlementDetail';
     ...ModalActions,
     fetchCurrentBalance,
     fetchSchedule,
+    fetchSettlementAmount,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -111,7 +116,7 @@ export default class SettlementsListContainer extends ListContainer {
     }
 
     this.popupIfSettle();
-    console.log('***', this.props);
+    this.props.fetchSettlementAmount();
   }
 
   onSearchAnalytics = params => {
@@ -201,7 +206,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    console.log('1112', this.props);
+    console.log('1', this.props);
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;

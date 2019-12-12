@@ -15,10 +15,24 @@ import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
-@connect(state => state.session)
+import { fetchSettlementAmount } from 'merchant/reducers/home';
+
+@connect(
+  state => {
+    return {
+      ...state.session,
+      settlement_amount: state.home.settlement_amount,
+    };
+  },
+  { fetchSettlementAmount }
+)
 export default class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
+    this.props.fetchSettlementAmount();
   }
 
   render() {
