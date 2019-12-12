@@ -39,6 +39,7 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import { trackInstantSettlementsBanner } from 'merchant/components/Announcements/ga';
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
+import Time from 'common/ui/Time';
 
 @withRouter
 @connect(
@@ -211,6 +212,9 @@ export default class SettlementsListContainer extends ListContainer {
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
 
+    const nextSettlement = this.props.settlement_amount.data
+      .next_settlement_time;
+
     return (
       <React.Fragment>
         {/* instant settlements banner */}
@@ -230,7 +234,20 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-          <OnHoldBanner />
+          {nextSettlement === null ? (
+            <OnHoldBanner
+              ctaOnClick={() => {
+                this.props.openModal({
+                  size: 'regular',
+                  component: (
+                    <SettlementDetail
+                      settlementAmount={this.props.settlement_amount.data}
+                    />
+                  ),
+                });
+              }}
+            />
+          ) : null}
           <content>
             <div class="content-wrapper">
               <HeaderAction>
@@ -311,21 +328,44 @@ export default class SettlementsListContainer extends ListContainer {
                           <Amount value={balance} currency={'INR'} />
                         </span>
                         <br />
-                        <span style={{ fontSize: '13px' }}>
-                          <strong>₹3,24,666.36</strong> will be settled by 01
-                          Dec, 5PM{' '}
-                          <span
-                            onClick={() => {
-                              this.props.openModal({
-                                size: 'regular',
-                                component: <SettlementDetail />,
-                              });
-                            }}
-                            class="btn-link pointer"
-                          >
-                            <b>Know More</b>
+                        {nextSettlement && (
+                          <span style={{ fontSize: '13px' }}>
+                            <strong>
+                              <Amount
+                                value={
+                                  this.props.settlement_amount.data
+                                    .settlement_amount
+                                }
+                                currency={'INR'}
+                              />
+                            </strong>{' '}
+                            will be settled by{' '}
+                            <Time
+                              value={
+                                this.props.settlement_amount.data
+                                  .next_settlement_time
+                              }
+                              format={'DD MMM YYYY, hh:mm:ss a'}
+                            />
+                            <span
+                              onClick={() => {
+                                this.props.openModal({
+                                  size: 'regular',
+                                  component: (
+                                    <SettlementDetail
+                                      settlementAmount={
+                                        this.props.settlement_amount.data
+                                      }
+                                    />
+                                  ),
+                                });
+                              }}
+                              class="btn-link pointer"
+                            >
+                              <b>Know More</b>
+                            </span>
                           </span>
-                        </span>
+                        )}
                       </div>
                       <div>
                         <button class="btn btn-primary confirm-ok">

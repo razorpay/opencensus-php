@@ -44,7 +44,8 @@ export default class TransactionsContainer extends Component {
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
-    const isOnHold = !this.props.settlement_amount.data.next_settlement_time;
+    const nextSettlement = !this.props.settlement_amount.data
+      .next_settlement_time;
 
     return (
       <tabbed-container>
@@ -90,7 +91,7 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
-          {!isOnHold ? (
+          {!nextSettlement ? (
             <div class="text-right w50">
               <strong>
                 <Amount
@@ -103,7 +104,21 @@ export default class TransactionsContainer extends Component {
                 value={this.props.settlement_amount.data.next_settlement_time}
                 format={'DD MMM YYYY, hh:mm:ss a'}
               />{' '}
-              <span class="btn-link">Know more</span>
+              <span
+                class="btn-link"
+                onClick={() => {
+                  this.props.openModal({
+                    size: 'regular',
+                    component: (
+                      <SettlementDetail
+                        settlementAmount={this.props.settlement_amount.data}
+                      />
+                    ),
+                  });
+                }}
+              >
+                Know more
+              </span>
             </div>
           ) : null}
         </header>
@@ -112,7 +127,7 @@ export default class TransactionsContainer extends Component {
         ) : (
           <TestModeBanner />
         )}
-        {isOnHold ? (
+        {nextSettlement ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
