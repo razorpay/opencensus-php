@@ -258,15 +258,6 @@ export default class SettlementsListContainer extends ListContainer {
                     }
                   >
                     <a
-                      class="btn right-border-margin settlement-doc-btn pull-left"
-                      href="http://razorpay.com/settlement"
-                      target="_blank"
-                      onClick={trackHowSettlementsWorkClicks}
-                    >
-                      How settlements work?&nbsp;
-                      <span class="icon i-external-link" />
-                    </a>
-                    <a
                       class="btn settlement-doc-btn pull-left"
                       onClick={() => {
                         this.props.openModal({

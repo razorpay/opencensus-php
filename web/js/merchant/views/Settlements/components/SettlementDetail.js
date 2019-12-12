@@ -1,8 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
-import SettlementDetails from 'merchant/views/Settlements/components/Details';
 import ModalHeader from 'common/ui/ModalHeader';
-import Alert from 'common/ui/Forms/Alert';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 
@@ -11,19 +8,12 @@ export default class SettlementDetail extends Component {
     showBreakUp: false,
   };
   render() {
-    console.log(this.props, 'props');
     const isOnHold = !this.props.settlementAmount.next_settlement_time;
     return (
       <div>
         <ModalHeader title={`Settlement Details`} />
         <div class="modal-body">
           <Fragment>
-            {!isOnHold ? (
-              <div class="grey">
-                Your payements get settled to your account in
-              </div>
-            ) : null}
-
             <div class="emphzd">
               <div class="settlement-alert-warning">
                 <span>
@@ -72,17 +62,18 @@ export default class SettlementDetail extends Component {
                 </p>
               )}
             </div>
-            {isOnHold ? null : (
-              <div style={{ padding: '13px' }}>
-                <p>
-                  <b>Early Settlement:</b> Get your settlements on the same day
-                  from now on automtically !
-                </p>
-                <button style={{ marginTop: '15px' }} class="btn btn-primary">
-                  Enable Now <i class="i i-arrow-right" />
+            <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+              {isOnHold && (
+                <button style={{ marginTop: '15px' }} class="btn btn-default">
+                  Contact Support <i class="i i-arrow-right" />
                 </button>
-              </div>
-            )}
+              )}
+              <a href="http://razorpay.com/settlement" target="_blank">
+                <button style={{ marginTop: '15px' }} class="btn btn-primary">
+                  Settlement Guide <i class="i i-arrow-right" />
+                </button>
+              </a>
+            </div>
           </Fragment>
         </div>
       </div>
