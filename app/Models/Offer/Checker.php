@@ -211,27 +211,35 @@ class Checker extends Base\Core
 
         $paymentMethod = $this->payment->getMethod();
 
+        $result = false;
+
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
             case Payment\Method::EMI:
                 $card = $this->payment->card;
 
-                return ($offerIssuer === $card->getIssuer());
+                $result = ($offerIssuer === $card->getIssuer());
 
             case Payment\Method::NETBANKING:
                 $bank = $this->payment->getBank();
 
-                return ($offerIssuer === $bank);
+                $result = ($offerIssuer === $bank);
 
             case Payment\Method::WALLET:
                 $wallet = $this->payment->getWallet();
 
-                return ($offerIssuer === $wallet);
+                $result = ($offerIssuer === $wallet);
 
             default:
-                return false;
+                $result;
         }
+        if(!$result)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_APPLICABLE_ON_ISSUER);
+        }
+
+        return $result;
     }
 
     protected function checkEmiDurations()

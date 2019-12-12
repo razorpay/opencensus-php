@@ -255,6 +255,8 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    const OFFER_FEATURE_BLOCK      = 'offer_feature_block';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -448,6 +450,7 @@ class Constants
         self::FORCE_GREYLIST_INTERNAT         => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::OFFER_FEATURE_BLOCK             => true,
     ];
 
     // Entity type constants
