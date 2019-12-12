@@ -16,6 +16,7 @@ import Offer from 'merchant/models/Offer';
 import PaymentMethods from './paymentMethods';
 import OfferDescription from './offerDescription';
 import OfferDiscount from './offerDiscount';
+import OfferDuration from './offerDuration';
 
 @withRouter
 @connect(state => ({
@@ -253,8 +254,20 @@ export default class CreateOfferWizard extends React.Component {
     );
   };
 
+  renderOfferDurationFormInputs = () => {
+    const { starts_at, ends_at } = this.state;
+    return (
+      <OfferDuration
+        startsAt={starts_at}
+        getFormElementValidations={this.getFormElementValidations}
+        getFormOnChangeHandler={this.getFormOnChangeHandler}
+        endsAt={ends_at}
+      />
+    );
+  };
+
   renderForm() {
-    const { currentTab, discount_type, starts_at, ends_at } = this.state;
+    const { currentTab } = this.state;
 
     switch (currentTab) {
       case 0:
@@ -264,35 +277,12 @@ export default class CreateOfferWizard extends React.Component {
       case 2:
         return this.renderDiscountFormInputs();
       case 3:
-        return (
-          <React.Fragment>
-            <Input.DateTime
-              label="Starting On"
-              name="starts_at"
-              description="Start date for offer"
-              onChange={this.getFormOnChangeHandler('datetime', 'starts_at')}
-              isInline
-              required
-              validator={this.getFormElementValidations('starts_at')}
-              defaultValue={starts_at}
-            />
-            <Input.DateTime
-              label="Expires On"
-              name="ends_at"
-              onChange={this.getFormOnChangeHandler('datetime', 'ends_at')}
-              description="Expiry date for offer"
-              isInline
-              required
-              validator={this.getFormElementValidations('ends_at')}
-              defaultValue={ends_at}
-            />
-          </React.Fragment>
-        );
+        return this.renderOfferDurationFormInputs();
     }
   }
 
   renderWizard() {
-    const { currentTab } = this.state;
+    const { currentTab, validTabs } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
 
     return (
@@ -308,10 +298,10 @@ export default class CreateOfferWizard extends React.Component {
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
           tabsValidity={[0, 1, 2, 3].map(
-            x => this.state.validTabs[x] && this.isTabDataValid(x)
+            x => validTabs[x] && this.isTabDataValid(x)
           )}
           disableTabCondition={tabIndex =>
-            tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
+            tabIndex !== 0 && !validTabs[tabIndex - 1]
           }
         />
         <main class="form-container">
@@ -334,7 +324,7 @@ export default class CreateOfferWizard extends React.Component {
             <Button.Primary
               onClick={this.changeTab(1)}
               type="button"
-              disabled={!this.isTabDataValid(this.state.currentTab)}
+              disabled={!this.isTabDataValid(currentTab)}
             >
               Next
             </Button.Primary>
@@ -371,7 +361,6 @@ export default class CreateOfferWizard extends React.Component {
       'validTabs',
       'fields',
       'allPaymentMethodsAllowed',
-      // 'block',
     ];
 
     dateFields.forEach(field => {
