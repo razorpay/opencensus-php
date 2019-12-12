@@ -1,7 +1,9 @@
 -- rate_limit.lua
 -- Todo: Write comments.
 
-local leaky_bucket_script_sha
+local redis_script_sha
+local redis_global_settings_key = "throttle:t"
+local redis_key_prefix = "throttle:t:"
 
 function get_redis_conn(redis_conf)
     local redis_lib = require "resty.redis"
@@ -39,7 +41,7 @@ function get_req_ctx(ngx)
     -- Assumption: Dashboard backend sends this particular header during proxy requests.
     local dashboard_user_id = ngx.req.get_headers()['X-Dashboard-User-Id']
     req_ctx.proxy = dashboard_user_id ~= nil
-    local auth_base64 = string.sub(ngx.var.http_authorization, 7)
+    local auth_base64 = ngx.var.http_authorization and string.sub(ngx.var.http_authorization, 7)
     if auth_base64 ~= nil then
         local auth_user_pass = ngx.decode_base64(auth_base64)
         if auth_user_pass ~= nil then
@@ -48,7 +50,7 @@ function get_req_ctx(ngx)
     end
 
     -- Sets req_ctx.mode.
-    local mode = string.sub(req_ctx.user, 5, 8)
+    local mode = req_ctx.user and string.sub(req_ctx.user, 5, 8)
     if mode == "live" or mode == "test" then
         req_ctx.mode = mode
     end
@@ -57,29 +59,85 @@ function get_req_ctx(ngx)
 end
 
 function get_rate_limit_args(redis, req_ctx)
+    local err
+    local res
+
     local rate_limit_args = {
         skip = false,
         mock = true,
-        identifier = nil,
+        mid = nil,
         lrv = 2,
         lrd = 1,
         mbs = 30,
     }
-    -- Todo: Implement this.
+
+    -- Sets rate_limit_args.mid.
+    -- Assumption: We are only handling private and proxy auth rate limiting
+    -- and that too for normal cases and not oauth and route etc.
+    -- Talk to me personally for reasons!
+    if req_ctx.auth == "private" then
+        if req_ctx.proxy then
+            rate_limit_args.mid = string.sub(req_ctx.user, 10)
+        else
+            res, err = redis:get(redis_key_prefix .. req_ctx.user)
+            if err then
+                return nil, "failed to get key<>mid mapping from redis:" .. err
+            end
+            if res == ngx.null then
+                return nil, "key<>mid mapping does not exists"
+            end
+            rate_limit_args.mid = res
+        end
+    else
+        return {skip = true}, nil
+    end
+
+    -- Loads global and mid specific settings.
+    redis:init_pipeline()
+    redis:hgetall(redis_global_settings_key)
+    redis:hgetall(redis_key_prefix .. rate_limit_args.mid)
+    res, err = redis:commit_pipeline()
+    if err then
+        return nil, "failed to get settings from redis" .. err
+    end
+
+    -- In cascading fashion reads the settings out.
+    settings_keys = {"skip", "mock", "lrv", "lrd", "mbs"}
+    for k, v in pairs(settings_keys) do
+        rate_limit_args[k] =
+            -- Value for given mid/application id, mode, auth & route
+            (res[1] and res[1][req_ctx.mode .. ":" .. req_ctx.auth .. ":" .. (req_ctx.proxy and 1 or 0) .. ":" .. req_ctx.route .. ":" .. k]) or
+            -- Value for given mid/application id, mode & auth
+            (res[1] and res[1][req_ctx.mode .. ":" .. req_ctx.auth .. ":" .. (req_ctx.proxy and 1 or 0) .. ":" .. k]) or
+            -- Value for given mid/application id & mode
+            (res[1] and res[1][req_ctx.mode .. ":" .. k]) or
+            -- Value for given mid/application id
+            (res[1] and res[1][k]) or
+            -- Value for given mode, auth & route
+            (res[0] and res[0][req_ctx.mode .. ":" .. req_ctx.auth .. ":" .. (req_ctx.proxy and 1 or 0) .. ":" .. req_ctx.route .. ":" .. k]) or
+            -- Value for given mode & auth
+            (res[0] and res[0][req_ctx.mode .. ":" .. req_ctx.auth .. ":" .. (req_ctx.proxy and 1 or 0) .. ":" .. k]) or
+            -- Value for given mode
+            (res[0] and res[0][req_ctx.mode .. ":" .. k]) or
+            -- Finally, global default value
+            (res[0] and res[0][k]) or
+            -- Again finally, the default:)
+            rate_limit_args[k]
+    end
 
     return rate_limit_args, nil
 end
 
 function rate_limit(redis, rate_limit_args, now)
-    leaky_bucket_script_sha, err = get_leaky_bucket_script_sha(redis)
+    redis_script_sha, err = get_redis_script_sha(redis)
     if err then
         return nil, err
     end
 
     local res, err = redis:evalsha(
-        leaky_bucket_script_sha,
+        redis_script_sha,
         1,
-        rate_limit_args.identifier,
+        redis_key_prefix .. rate_limit_args.mid,
         rate_limit_args.mbs,
         rate_limit_args.lrv,
         rate_limit_args.lrd,
@@ -88,7 +146,7 @@ function rate_limit(redis, rate_limit_args, now)
         1
     )
     if err then
-        leaky_bucket_script_sha = nil
+        redis_script_sha = nil
         return nil, err
     end
 
@@ -107,17 +165,17 @@ function release_redis_conn(redis, redis_conf)
     return err
 end
 
-function get_leaky_bucket_script_sha(redis)
-    if not leaky_bucket_script_sha then
+function get_redis_script_sha(redis)
+    if not redis_script_sha then
         local sha, err = redis:script("LOAD", require("leaky_bucket")())
         if err then
             return nil, err
         end
 
-        leaky_bucket_script_sha = sha
+        redis_script_sha = sha
     end
 
-    return leaky_bucket_script_sha, nil
+    return redis_script_sha, nil
 end
 
 function rate_limit_ngx(ngx)
