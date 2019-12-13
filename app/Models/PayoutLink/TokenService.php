@@ -7,20 +7,17 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
-use RZP\Tests\Unit\Models\Token\EntityTest;
-use RZP\Models\Contact\Entity as ContactEntity;
 
 /**
  * Class Token
  *
- * Used to wrap token for auth functionality. The token is generated after OTP verification. And stored in redis
- *
+ * Used to wrap "token for otp-auth" functionality. The token is generated after OTP verification. And stored in redis
  *
  * @package RZP\Models\PayoutLink
  */
 class TokenService
 {
-    const TOKEN_EXPIRES_IN_SECONDS = 900; //15 minutes
+    const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes
     const EX                       = 'ex';
 
     protected $redis;
@@ -32,7 +29,7 @@ class TokenService
 
     /**
      * Will generate a token, add to redis and return.
-     * It will be unique is almost all cases, unless generate is called on the same context at the exact same time.
+     * It will be unique in almost all cases, unless generate is called on the same context at the exact same time.
      * In which case one generate will override the other, but the final expected result still remains the same
      * @param string $context
      * @return string
@@ -72,6 +69,6 @@ class TokenService
 
     public function invalidate($token)
     {
-        // todo, pl will be done in a later PR, is not required currently
+        // todo, pl will be done in a later PR, currently not required
     }
 }

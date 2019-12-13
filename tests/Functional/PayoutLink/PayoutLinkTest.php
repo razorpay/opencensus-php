@@ -470,7 +470,8 @@ class PayoutLinkTest extends TestCase
         $redisMock->method('get')
                   ->will($this->returnValue('some value'));
 
-        // call fund-account, assuming OTP verification will pass as redis is mocked
+        // call fund-account, assuming OTP verification will pass as redis is mocked to return non-null value,
+        // which signifies OTP is present
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id' => $this->contact->getId()
@@ -492,7 +493,8 @@ class PayoutLinkTest extends TestCase
         $redisMock->method('get')
                   ->will($this->returnValue(null));
 
-        // call fund-account, assuming OTP verification will pass as redis is mocked
+        // call fund-account, assuming OTP verification will pass as redis is mocked to return Null,
+        // which means token is not found
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id' => $this->contact->getId()
