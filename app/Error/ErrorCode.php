@@ -882,6 +882,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
+    const BAD_REQUEST_UFH_INTEGRATION                                               = 'BAD_REQUEST_UFH_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
 
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
