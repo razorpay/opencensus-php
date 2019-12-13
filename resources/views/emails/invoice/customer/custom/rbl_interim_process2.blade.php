@@ -92,7 +92,7 @@
                     style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
                     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
                         @if ($invoice['subscription_registration']['notes']['loan_number'] ?? false)
-                            Loan Account Number: {{$invoice['subscription_registration']['notes']['loan_number']}}
+                            Loan Application Number: {{$invoice['subscription_registration']['notes']['loan_number']}}
                         @else
                             {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
                         @endif

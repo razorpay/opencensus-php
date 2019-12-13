@@ -81,7 +81,7 @@
                             Greetings from RBL Bank!
                             <br/>
                             <br/>
-                            <span style="line-height: 24px;"> Thank you for choosing RBL Bank. We request you to register a mandate for your RBL loan application no.{{$invoice['subscription_registration']['loan_number'] ?? ''}} by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.</span>
+                            <span style="line-height: 24px;"> Thank you for choosing RBL Bank. We request you to register a mandate for your RBL loan application no.{{$invoice['subscription_registration']['notes']['loan_number'] ?? ''}} by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.</span>
                             <br/>
                         </div>
                     </div>
