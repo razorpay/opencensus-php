@@ -566,6 +566,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation)
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
+    linkedfields: ['cancelled_cheque'],
   },
 ];
 
