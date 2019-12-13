@@ -1,9 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import SettlementsExample from 'merchant/views/Settlements/components/SettlementsExample';
 import ModalHeader from 'common/ui/ModalHeader';
-import Amount from 'common/ui/Amount';
 import { closeModal } from 'merchant_common/reducers/modals';
+import { connect } from 'react-redux';
 
+@connect(state => state, {
+  closeModal,
+})
 export default class SettlementSchedule extends Component {
   state = {
     showBreakUp: false,
@@ -11,12 +14,11 @@ export default class SettlementSchedule extends Component {
   };
 
   render() {
-    console.log(this.props, 'props');
     return (
       <div>
         <ModalHeader
           title={`Settlement Schedule`}
-          onCloseClick={() => closeModal()}
+          onCloseClick={() => this.props.closeModal()}
         />
         <div class="modal-body">
           <Fragment>
@@ -94,7 +96,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: No Bank Holiday</b>
                       </h5>
-                      <SettlementsExample duration={6} />
+                      <SettlementsExample duration={4} />
                     </div>
                   </div>
                   <div
@@ -109,7 +111,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: Bank Holiday in between</b>
                       </h5>
-                      <SettlementsExample holiday={true} duration={6} />
+                      <SettlementsExample holiday={true} duration={4} />
                     </div>
                   </div>
                 </Fragment>

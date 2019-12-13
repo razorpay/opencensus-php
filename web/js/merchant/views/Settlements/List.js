@@ -207,7 +207,6 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    console.log('**', this.props);
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
