@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 export default class SettlementDetail extends Component {
   state = {
@@ -11,7 +12,10 @@ export default class SettlementDetail extends Component {
     const isOnHold = !this.props.settlementAmount.next_settlement_time;
     return (
       <div>
-        <ModalHeader title={`Settlement Details`} />
+        <ModalHeader
+          title={`Settlement Details`}
+          onCloseClick={() => closeModal()}
+        />
         <div class="modal-body">
           <Fragment>
             <div class="emphzd">

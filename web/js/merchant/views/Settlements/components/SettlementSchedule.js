@@ -59,10 +59,6 @@ export default class SettlementSchedule extends Component {
                 </div>
               </div>
               <hr />
-              <p class="grey">
-                Because of bank holiday [Holiday Name] on 04 Dec 2019, the next
-                settlement would happen on Wednesday.{' '}
-              </p>
             </div>
             <div style={{ padding: '13px' }}>
               <p>
@@ -120,18 +116,17 @@ export default class SettlementSchedule extends Component {
               ) : null}
 
               <div style={{ marginTop: '15px' }}>
-                <button
-                  style={{ width: '48%', margin: '5px' }}
-                  class="btn btn-outline"
-                >
+                <button style={{ width: '48%' }} class="btn btn-outline">
                   List of Bank Holidays
                 </button>
-                <button
-                  style={{ width: '48%', margin: '5px' }}
-                  class="btn btn-primary"
-                >
-                  Settlement Guide
-                </button>
+                <a href="http://razorpay.com/settlement" target="_blank">
+                  <button
+                    style={{ width: '48%', marginLeft: '5px' }}
+                    class="btn btn-primary"
+                  >
+                    Settlement Guide
+                  </button>
+                </a>
               </div>
             </div>
           </Fragment>

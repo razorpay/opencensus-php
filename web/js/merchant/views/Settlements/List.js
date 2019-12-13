@@ -252,24 +252,25 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  <ShowWhen
-                    additionalCondition={user =>
-                      user.isOrgAllowedFunctionality('external_links')
-                    }
+                  <div
+                    class="btn btn-link settlement-doc-btn"
+                    onClick={() => {
+                      this.props.openModal({
+                        size: 'regular',
+                        component: <SettlementSchedule />,
+                      });
+                    }}
                   >
-                    <a
-                      class="btn settlement-doc-btn pull-left"
-                      onClick={() => {
-                        this.props.openModal({
-                          size: 'regular',
-                          component: <SettlementSchedule />,
-                        });
+                    <span
+                      class="icon i-info-outline"
+                      style={{
+                        marginRight: '5px',
+                        position: 'relative',
+                        top: '2px',
                       }}
-                    >
-                      Settlement Schedule&nbsp;
-                      <span class="icon i-external-link" />
-                    </a>
-                  </ShowWhen>
+                    />
+                    View Settlement Cycle
+                  </div>
                   {this.props.user.isOndemandSettlementEnabled && (
                     <ShowWhen myRole="owner admin finance">
                       <div className="box-left-pad10-inline">
