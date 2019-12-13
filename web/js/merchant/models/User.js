@@ -461,6 +461,10 @@ export default class User {
     return this.getExpStatus('sellerapp_PL_batch_upload');
   }
 
+  get isVPAFeatureEnabled() {
+    return this.getExpStatus('vpa_enabled');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return (

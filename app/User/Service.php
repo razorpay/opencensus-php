@@ -884,7 +884,8 @@ class Service extends Base\Service
             'show_commission_balance',
             'custom_notes',
             'sellerapp_PL_batch_upload',
-            'nps_survey_banner'
+            'nps_survey_banner',
+            'vpa_enabled'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

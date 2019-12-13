@@ -1,0 +1,89 @@
+.VirtualAccountDetails
+  margin: -4px
+  padding: 4px
+  border: 1px solid #eaeff0
+  border-radius: 4px
+  background: #fdfdfd
+  width: 90%
+  max-width: 500px
+
+  .pair-group-item:first-child
+    .pair-label
+      color: inherit
+
+  .divider
+    border-top: 1px solid #eaeff0
+
+
+.VirtualAccountSummary
+  max-width: 98%
+  width: 384px
+
+  .pair-label
+    color: inherit
+
+  .ClipboardCustom
+    display: block
+
+
+$max-width = 640px
+
+.Modal-container--VirtualAccount
+    width: 90%
+    max-width: $max-width
+    min-height: 560px
+    max-height: 690px
+    height: 85vh
+
+
+/* PaymentLinks wizard screen */
+.VirtualAccount--Create
+  max-width: $max-width
+  height: 85vh
+  min-height: 560px
+  max-height: 690px
+  background: #fafafa
+  position: relative
+
+  .form-title
+    padding: 28px 0
+    font-weight: 600
+    font-size: 18px
+
+  .Form
+    position: absolute
+    bottom: 0
+    top: 0
+
+  .Form--tabular
+    .Input-content
+      margin-left: 156px
+
+    .Input-label
+      width: 136px
+
+  main
+    height: 100%
+    padding: 0 40px
+    padding-bottom: 96px
+    overflow: auto
+
+    &::-webkit-scrollbar
+      display: none
+
+  .form-group
+    > div:first-child
+      margin-top: 0
+
+  footer
+    position: absolute
+    left: 0
+    right: 0
+    bottom: 0
+    padding: 20px
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    button
+      vertical-align: top
