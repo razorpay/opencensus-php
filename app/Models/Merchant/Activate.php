@@ -351,7 +351,7 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $product = $this->auth->getRequestOriginProduct();
+        $product = $this->app['basicauth']->getRequestOriginProduct();
 
         if ($product === Product::PRIMARY)
         {
