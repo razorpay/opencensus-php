@@ -662,7 +662,7 @@ class Checkout
         } else {
             $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
 
-            $offers = array_merge($offers, $nonOrderOffers);
+            $offers = $offers->merge($nonOrderOffers);
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data, $order);

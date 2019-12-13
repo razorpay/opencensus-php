@@ -2663,6 +2663,7 @@ class MerchantTest extends TestCase
             'percent_rate'   => 5000,
             'min_amount'     => 200000,
             'terms'          => 'Some terms',
+            'type'           => 'instant',
         ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 300000]);
