@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
@@ -23,9 +24,7 @@ class Base extends FundAccountPayout\Base
         {
             $this->setChannel($payout);
 
-            // TODO: Remove this when `Mode is required` goes live for all payouts.
-            // Currently only checks for mode when channel is ICICI or CITI
-            $payout->getValidator()->validateModeSetForChannels();
+            $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
             $this->createTransaction($payout);
 
@@ -126,7 +125,7 @@ class Base extends FundAccountPayout\Base
                 // The below line will ensure that whenever the balance is above the threshold, we
                 // update the notify_at to 0 so that if it goes below the threshold again, we notify.
                 //
-                $this->modifyNotifyAtForLowBalanceEmail($merchantConfig, $merchantId, 0);
+                $this->modifyNotifyAtForLowBalanceEmail($lowBalanceEmailMerchantsConfig, $merchantId, 0);
 
                 return;
             }
@@ -191,5 +190,39 @@ class Base extends FundAccountPayout\Base
             [
                 Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => $lowBalanceEmailMerchantsConfig
             ]);
+    }
+
+    /**
+     * This function makes sure that we don't queue something that will fail when picked up for processing.
+     * Ideally, this logic should stay with FTS, but in that case merchants get a bad experience.
+     * TODO: Need to keep this check at FTS level itself
+     *
+     * @param $payout
+     * @param $ftaAccount
+     * @throws BadRequestException
+     */
+    protected function validateModeForChannelAndFundAccount($payout, $ftaAccount)
+    {
+        $destinationType = $ftaAccount->getEntity();
+
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+
+        if ($valid === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ],
+                $mode . ' is not supported'
+            );
+        }
     }
 }

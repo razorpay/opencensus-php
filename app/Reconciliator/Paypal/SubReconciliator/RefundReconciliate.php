@@ -61,9 +61,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'payment_id'        => $this->refund->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -71,5 +72,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return true;
+    }
+
+    protected function getRefundEntityAmount()
+    {
+        return $this->refund->getAmount();
     }
 }

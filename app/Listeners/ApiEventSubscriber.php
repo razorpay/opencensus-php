@@ -288,7 +288,7 @@ class ApiEventSubscriber extends Base\Core
 
         $this->prepareAndDispatchWebhook($payload);
     }
-    
+
     protected function onAccountFundsHold($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
@@ -563,6 +563,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransactionUpdated(Transaction\Entity $txn)
+    {
+        $payload = $this->getTransactionPayload($txn);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPayoutCreated(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
@@ -641,6 +648,16 @@ class ApiEventSubscriber extends Base\Core
         //     (new Transaction\Notifier($payout->transaction, $this->event))->notify();
         // }
 
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutFailed(Payout\Entity $payout)
+    {
         if ($this->webhookEnabledForEvent === true)
         {
             $payload = $this->getPayoutPayload($payout);
@@ -800,6 +817,15 @@ class ApiEventSubscriber extends Base\Core
             ];
         }
 
+        if ($payment->isUpiTransfer() === true)
+        {
+            $upiTransfer = $payment->upiTransfer;
+
+            $partialPayload[$upiTransfer->getEntity()] = [
+                'entity' => $upiTransfer->toArrayPublic(),
+            ];
+        }
+
         return $partialPayload;
     }
 
@@ -912,13 +938,28 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutPayload(Payout\Entity $payout): array
     {
-        $payload = [
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
+            ];
+        }
+
+        return [
             Constants\Entity::PAYOUT => [
-                'entity' => $payout->toArrayPublic(),
+                'entity' => $payout->toArrayWebhook(),
             ],
         ];
-
-        return $payload;
     }
 
     protected function getPaymentPayloadWithDispute($payment)
@@ -968,7 +1009,7 @@ class ApiEventSubscriber extends Base\Core
             Constants\Entity::TERMINAL => [
                 'entity' => $terminalArray,
             ]
-        ];  
+        ];
 
         return $payload;
     }

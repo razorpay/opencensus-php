@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\Transaction;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Exception\P2p\BadRequestException;
 
 /**
@@ -69,16 +70,27 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::ADD_SUCCESS, $input, true);
 
-        $vpa = $this->core->createOrUpdate($this->input->get(Entity::VPA));
-
         $bankAccountId = array_get($this->input->get(Entity::BANK_ACCOUNT), Entity::ID);
+        $bankAccount   = null;
 
         if (is_null($bankAccountId) === false)
         {
             $bankAccount = (new BankAccount\Core)->fetch($bankAccountId);
-
-            $this->core->assignBankAccount($vpa, $bankAccount);
         }
+
+        $vpa = $this->repo()->transaction(function() use ($bankAccount)
+        {
+            $vpa = $this->core->createOrUpdate($this->input->get(Entity::VPA));
+
+            if (is_null($bankAccount) === false)
+            {
+                $this->core->assignBankAccount($vpa, $bankAccount);
+            }
+
+            $this->handleDeviceTokenIfApplicable();
+
+            return $vpa;
+        });
 
         return $vpa->toArrayPublic();
     }
@@ -109,6 +121,8 @@ class Processor extends Base\Processor
 
         $this->core->assignBankAccount($vpa, $bankAccount);
 
+        $this->handleDeviceTokenIfApplicable();
+
         return $vpa->toArrayPublic();
     }
 
@@ -137,7 +151,10 @@ class Processor extends Base\Processor
 
         $vpa = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID]);
 
-        $this->core->setDefaultVpa($vpa);
+        $vpa = $this->repo()->transaction(function() use ($vpa)
+        {
+            return $this->core->setDefaultVpa($vpa);
+        });
 
         return $vpa->toArrayPublic();
     }
@@ -243,6 +260,18 @@ class Processor extends Base\Processor
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
                 Entity::USERNAME    => $username,
             ]);
+        }
+    }
+
+    protected function handleDeviceTokenIfApplicable()
+    {
+        if ($this->input->has(DeviceToken\Entity::DEVICE_TOKEN))
+        {
+            $id = $this->input->get(DeviceToken\Entity::DEVICE_TOKEN)[DeviceToken\Entity::ID];
+
+            $core = (new DeviceToken\Core);
+            $deviceToken = $core->fetch($id);
+            $core->update($deviceToken, $this->input->get(DeviceToken\Entity::DEVICE_TOKEN));
         }
     }
 }

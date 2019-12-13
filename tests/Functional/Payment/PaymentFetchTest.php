@@ -1,9 +1,13 @@
 <?php
 
 namespace RZP\Tests\Functional\Payment;
+use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -14,14 +18,27 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
  */
 class PaymentFetchTest extends TestCase
 {
+    use OAuthTrait;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentFetchTestData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
+
 
     public function testFetchRuleCascadingForAdminAuth()
     {
@@ -193,6 +210,51 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentFetchWithExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id'], ['expand' => [
+                'refunds'
+            ]]);
+
+        $this->assertEquals('30000', $paymentFetchResponse['amount_refunded']);
+
+        $this->assertArrayHasKey('refunds', $paymentFetchResponse);
+
+        $refundsFromResponse = $paymentFetchResponse['refunds'];
+
+        $this->assertEquals(2, $refundsFromResponse['count']);
+
+        foreach ($refundsFromResponse['items'] as $refund)
+        {
+            $this->assertEquals($response['id'], $refund['payment_id']);
+        }
+    }
+
+    public function testPaymentFetchWithoutExpandRefunds()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->refundPayment($response['id'], '10000');
+        $this->refundPayment($response['id'], '20000');
+
+        $paymentFetchResponse = $this->fetchPayment($response['id']);
+
+        $this->assertArrayNotHasKey('refunds', $paymentFetchResponse);
+    }
+
     public function testFetchWithExpandsTransfer()
     {
         $this->ba->proxyAuth();
@@ -248,5 +310,145 @@ class PaymentFetchTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testPaymentFetchWithPartnerAuthWithoutAccountIdInHeader()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $paymentId = $pay['id'];
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $paymentId;
+
+        $resp = $this->startTest($testData);
+
+        $this->assertEquals($paymentId, $resp["id"]);
+    }
+
+    public function testPaymentFetchWithDifferentPartnerAuthWithoutAccountIdInHeader()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $paymentAttributes = [
+            'merchant_id' => $merchant->getId(),
+            'amount'      => 4000 * 100,
+        ];
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $paymentId = $payment->getId();
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/pay_' . $paymentId;
+
+        $this->startTest($testData);
+    }
+
+    public function testPaymentFetchINRCurrency()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        foreach (['base_amount', 'base_currency'] as $key)
+        {
+            $this->assertArrayNotHasKey($key, $paymentFetchResponse);
+        }
+    }
+
+
+    public function testPaymentFetchNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['currency'] = Currency::USD;
+
+        $response = $this->doAuthAndCapturePayment($paymentArray, $paymentArray['amount'], Currency::USD);
+
+        $paymentId = $response['id'];
+
+        $paymentFetchResponse = $this->fetchPayment($paymentId);
+
+        $this->assertEquals('50000', $paymentFetchResponse['amount']);
+
+        $this->assertEquals(Currency::USD, $paymentFetchResponse['currency']);
+
+        $this->assertArrayHasKey('base_amount', $paymentFetchResponse);
+
+        $this->assertArrayHasKey('base_currency', $paymentFetchResponse);
+
+        $this->assertEquals('500000', $paymentFetchResponse['base_amount']);
+
+        $this->assertEquals(Currency::INR, $paymentFetchResponse['base_currency']);
+
     }
 }

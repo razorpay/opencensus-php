@@ -546,6 +546,39 @@ class Repository extends Base\Repository
         return $count;
     }
 
+    public function fetchSettledTransactionsWithoutSettlementId($type, $count)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->where(Transaction\Entity::TYPE, $type)
+            ->where(Transaction\Entity::SETTLED, 1)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->take($count)
+            ->get()->pluck('id')->all();
+    }
+
+    public function updateSettledToFalse($type, $txnIds)
+    {
+        if (count($txnIds) === 0)
+        {
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FIX_COMPLETED);
+
+            return 0;
+        }
+
+        $values = [Transaction\Entity::SETTLED  => false];
+
+        $count = $this->newQuery()
+            ->whereIn(Transaction\Entity::ID, $txnIds)
+            ->where(Transaction\Entity::TYPE, $type)
+            ->where(Transaction\Entity::SETTLED, true)
+            ->whereNull(Transaction\Entity::SETTLEMENT_ID)
+            ->update($values);
+
+        return $count;
+    }
+
     /**
      * Update channel for unsettled transactions
      *
@@ -1598,15 +1631,91 @@ class Repository extends Base\Repository
     }
 
     /**
+     * gives the amount which has to be settled to the merchant on given time
+     *
+     * @param string $merchantId
+     * @param        $balanceId
+     * @param        $timestamp
+     * @return mixed
+     */
+    public function getMerchantSettlementAmount(
+        string $merchantId,
+        Balance\Entity $balance,
+        int $timestamp)
+    {
+        $startTime = microtime(true);
+
+        $cacheTag = Entity::getCacheTag($this->entity, $merchantId, $balance->getType(), $timestamp);
+
+        $result = $this->app['cache']->get($cacheTag);
+
+        //
+        // return the data if data available in cache
+        //
+        if ($result !== null)
+        {
+            return $result;
+        }
+
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
+        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+
+        $query = $this->newQuery()
+                      ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount"))
+                      ->where($transactionMerchantId, $merchantId)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
+                      ->where($transactionType, '!=', Type::SETTLEMENT)
+                      ->whereNotNull($transactionSettledAt)
+                      ->where($transactionSettledAt, '<=', $timestamp);
+
+        if ($balance->isTypePrimary() === true)
+        {
+            $query->where(function ($query) use ($transactionBalanceId, $balance) {
+                $query->where($transactionBalanceId, $balance->getId())
+                      ->orWhereNull($transactionBalanceId);
+            });
+        }
+        else
+        {
+            $query->where($transactionBalanceId, $balance->getId());
+        }
+
+        $results = $query->first();
+
+        //
+        // caching the data for a minute
+        //
+        $this->app['cache']->put($cacheTag, $results, 1);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_AMOUNT_FETCH_TIME_TAKEN,
+            [
+                'time_taken'   => get_diff_in_millisecond($startTime),
+                'merchant_id'  => $merchantId,
+                'settled_at'   => $timestamp,
+                'balance_id'   => $balance->getId(),
+            ]);
+
+        return $results;
+    }
+
+    /**
      * @param string $mid
      * @param string $channel
-     * @param string $balanceType
+     * @param Balance\Entity $balance
      * @param array $params
      *
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel,string $balanceType, array $params = []): Base\PublicCollection
+        string $mid, string $channel, Balance\Entity $balance, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1620,14 +1729,10 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
-        $balanceIdColumn        = $this->repo->balance->dbColumn(Entity::ID);
-        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
-
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceId)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -1635,16 +1740,16 @@ class Repository extends Base\Repository
                       ->where($transactionType, '!=', Type::SETTLEMENT)
                       ->whereNotNull($transactionSettledAt);
 
-        if ($balanceType === Balance\Type::PRIMARY)
+        if ($balance->isTypePrimary() === true)
         {
-            $query->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn) {
-                $query->whereNull($transactionBalanceId)
-                      ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+            $query->where(function ($query) use ($transactionBalanceId, $balance) {
+                $query->where($transactionBalanceId, $balance->getId())
+                      ->orWhereNull($transactionBalanceId);
             });
         }
         else
         {
-            $query->where($balanceTypeColumn, $balanceType);
+            $query->where($transactionBalanceId, $balance->getId());
         }
 
         $query = $this->addSettlementFilters($query, $timestamp, $params);
@@ -1659,7 +1764,8 @@ class Repository extends Base\Repository
                 'merchant_id'  => $mid,
                 'settled_at'   => $timestamp,
                 'params'       => $params,
-                'balance_type' => $balanceType,
+                'balance_type' => $balance->getType(),
+                'balance_id'   => $balance->getId(),
             ]);
 
         return $results;
@@ -1738,6 +1844,7 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+
         return $this->newQuery()
                     ->select($balanceTypeColumn)
                     ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
@@ -1845,7 +1952,7 @@ class Repository extends Base\Repository
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $query = $this->newQuery()
-                ->select($transactionChannel,DB::raw("(SUM($settlementCredit)-SUM($settlementDebit))/100 as amount"))
+                ->select($transactionChannel, DB::raw("(SUM($settlementCredit)-SUM($settlementDebit))/100 as amount"))
                 ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
                     {
                          $join->on('settle_merchants.id', '=', 'transactions.merchant_id');

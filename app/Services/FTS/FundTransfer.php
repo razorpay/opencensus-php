@@ -2,6 +2,8 @@
 
 namespace RZP\Services\FTS;
 
+use Requests;
+
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -11,6 +13,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
@@ -30,6 +33,8 @@ class FundTransfer extends Base
     protected $fta;
 
     protected $source;
+
+    protected $amount;
 
     protected $accountType;
 
@@ -69,6 +74,8 @@ class FundTransfer extends Base
     public function requestFundTransfer(): array
     {
         $input = $this->makeRequestUsingType();
+
+        $this->updateFTAWithResponse();
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
@@ -224,12 +231,12 @@ class FundTransfer extends Base
      */
     protected function addBankAccountDetails(array $request):array
     {
-        $ftsAccountId = $this->fta->bankAccount->getFtsFundAccountId();
-
-        if (empty($ftsAccountId) === false)
-        {
-            return $this->addFTSFundAccountId($request, $ftsAccountId);
-        }
+//        $ftsAccountId = $this->fta->bankAccount->getFtsFundAccountId();
+//
+//        if (empty($ftsAccountId) === false)
+//        {
+//            return $this->addFTSFundAccountId($request, $ftsAccountId);
+//        }
 
         $accountType = $this->fta->bankAccount->getAccountType();
 
@@ -312,62 +319,105 @@ class FundTransfer extends Base
      */
     protected function handleResponse(array $responseBody, string $type)
     {
-        $this->updateFTA($responseBody);
+        $this->updateFTAWithResponse($responseBody);
 
-        $this->updatePaymentInstrumentByType($responseBody, $type);
+//        $this->updatePaymentInstrumentByType($responseBody, $type);
     }
 
     /**
      * @param array $responseBody
      */
-    protected function updateFTA(array $responseBody)
+    protected function updateFTAWithResponse(array $responseBody = [])
     {
-        $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
+        $failureReason = null;
 
-        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+        $ftsTransferId = 0;
 
-        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        $status        = Constants::STATUS_INITIATED;
+
+        if (isset($responseBody[Constants::FUND_TRANSFER_ID]) === true)
         {
-            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+            $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
         }
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
-
-        $this->updateSource($ftsTransferId);
-    }
-
-    /**
-     * @param array $responseBody
-     * @param string $type
-     */
-    protected function updatePaymentInstrumentByType(array $responseBody, string $type)
-    {
-        switch ($type)
+        if ((isset($responseBody[Constants::INTERNAL_ERROR]) === true) and
+            ((isset($responseBody[Constants::INTERNAL_ERROR][Constants::CODE]) === true) and
+                ($responseBody[Constants::INTERNAL_ERROR][Constants::CODE] === Constants::VALIDATION_ERROR)))
         {
-            case Constants::BANK_ACCOUNT:
-                (new BankAccountCore)->updateBankAccountWithFtsId(
-                    $this->fta->bankAccount,
-                    $responseBody[Constants::FUND_ACCOUNT_ID]);
+            $status = Constants::STATUS_FAILED;
 
-                break;
+            if (isset($responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE]) === true)
+            {
+                $failureReason = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
+            }
+        }
 
-            case Constants::VPA:
-                (new VPACore)->updateVpaWithFtsId($this->fta->vpa, $responseBody[Constants::FUND_ACCOUNT_ID]);
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
 
-                break;
+        try
+        {
+            $this->updateSource($this->fta);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_FUND_TRANSFER_SOURCE_UPDATE_FAILED,
+                [
+                    'fta_id'            => $this->fta->getId(),
+                    'source'            => $this->source->getId(),
+                    'status'            => $status,
+                    'failure_reason'    => $failureReason,
+                    'fts_transfer_id'   => $ftsTransferId,
+                ]);
         }
     }
 
+//    /**
+//     * @param array $responseBody
+//     * @param string $type
+//     */
+//    protected function updatePaymentInstrumentByType(array $responseBody, string $type)
+//    {
+//        switch ($type)
+//        {
+//            case Constants::BANK_ACCOUNT:
+//                (new BankAccountCore)->updateBankAccountWithFtsId(
+//                    $this->fta->bankAccount,
+//                    $responseBody[Constants::FUND_ACCOUNT_ID]);
+//
+//                break;
+//
+//            case Constants::VPA:
+//                (new VPACore)->updateVpaWithFtsId($this->fta->vpa, $responseBody[Constants::FUND_ACCOUNT_ID]);
+//
+//                break;
+//        }
+//    }
+
     /**
-     * @param $ftsTransferId
+     * @param FundTransferAttempt\Entity $fta
      */
-    protected function updateSource($ftsTransferId)
+    protected function updateSource(FundTransferAttempt\Entity $fta)
     {
-        $sourceCoreClass = Entity::getEntityNamespace($this->source->getEntity()) . '\\Core';
+        $source = $fta->source;
+
+        $sourceCoreClass = Entity::getEntityNamespace($source->getEntity()) . '\\Core';
 
         $sourceCore = new $sourceCoreClass();
 
-        $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+        $sourceCore->updateEntityWithFtsTransferId($source, $fta->getFTSTransferId());
+
+        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+        {
+            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+        }
+
+        if ($fta->getStatus() === FundTransferAttempt\Status::FAILED)
+        {
+            (new FundTransferAttempt\Core)->updateSourceEntityByFta($fta);
+        }
     }
 
     /**
@@ -392,7 +442,7 @@ class FundTransfer extends Base
                     'card_id' => $card->getId()
                 ]);
 
-            (new SlackNotification())->send(
+            (new SlackNotification)->send(
                 'Vault token missing',
                 [
                     'card_id' => $card->getId()
@@ -448,13 +498,11 @@ class FundTransfer extends Base
 
         $issuer         = $iin->getIssuer();
 
-        $amount         = $this->source->getAmount();
-
         $networkCode    = $iin->getNetworkCode();
 
         $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             $mode =  Mode::IMPS;
         }
@@ -466,7 +514,7 @@ class FundTransfer extends Base
 
             if ((($now >= $this->bankingStartTime) and
                     ($now <= $this->bankingEndTimeRtgs)) and
-                ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+                ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
                 $mode = Mode::RTGS;
             }
@@ -493,8 +541,6 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        $amount  = $this->source->getAmount();
-
         if ($channel === Channel::ICICI)
         {
             return Mode::IMPS;
@@ -513,7 +559,7 @@ class FundTransfer extends Base
             return Mode::IFT;
         }
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             return Mode::IMPS;
         }
@@ -521,7 +567,7 @@ class FundTransfer extends Base
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+            ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
         }
@@ -543,6 +589,16 @@ class FundTransfer extends Base
         }
 
         return $sla;
+    }
+
+    public function bulkUpdateFtsAttempts(array $input)
+    {
+        $this->setDashboardAuthAndAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
+            Requests::PATCH,
+            $input);
     }
 
     public function shouldAllowTransfersViaFts()
@@ -576,6 +632,30 @@ class FundTransfer extends Base
         return $this->isNeftRtgsSupportedTimings($mode);
     }
 
+    public function addInitiateAtIfRequired()
+    {
+        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
+        {
+            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if (($currentTime < $this->bankingStartTime) &&
+                (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt($this->bankingStartTime);
+            }
+            else
+            {
+                $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function initialize(string $ftaId)
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
@@ -596,6 +676,10 @@ class FundTransfer extends Base
         $sourceType = $this->fta->getSourceType();
 
         $this->setSourceEntityByType($sourceType);
+
+        $this->amount = $this->source->getAmount()/100;
+
+        $this->amount = round($this->amount, 2);
     }
 
     protected function isNeftRtgsSupportedTimings($mode)
@@ -643,5 +727,35 @@ class FundTransfer extends Base
         }
 
         return $isHoliday;
+    }
+
+    public function getBulkTransferStatus(array $input)
+    {
+        $this->setDashboardAuthAndAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function checkTransferStatus(array $input)
+    {
+        $this->setDashboardAuthAndAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function getRawBankStatus(array $input)
+    {
+        $this->setDashboardAuthAndAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
+            Requests::POST,
+            $input);
     }
 }

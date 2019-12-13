@@ -3,6 +3,9 @@
 namespace RZP\Models\Settings;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Service extends Base\Service
 {
@@ -49,5 +52,19 @@ class Service extends Base\Service
         $settings = Keys::getWithDescriptions($module);
 
         return ['settings' => $settings];
+    }
+
+    public function getForMerchant(string $module, string $key, Merchant\Entity $merchant = null)
+    {
+        $merchant = $merchant ?? $this->merchant;
+
+        $setting = Accessor::for($merchant, $module)->get($key);
+
+        if ($setting instanceof Dictionary)
+        {
+            $setting = null;
+        }
+
+        return $setting;
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Feature;
 
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Repository as BaseRepository;
@@ -203,5 +204,25 @@ class Repository extends BaseRepository
                     ->where(Entity::NAME, $featureName)
                     ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
                     ->get();
+    }
+
+    public function merchantOnEarlySettlement(Merchant\Entity $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $featureList = $this->findMerchantWithFeatures(
+                $merchantId,
+                [
+                    Constants::ES_AUTOMATIC,
+                    Constants::ES_AUTOMATIC_THREE_PM,
+                ])
+            ->pluck(Entity::NAME);
+
+        if($featureList->isEmpty() === true)
+        {
+            return [false, null];
+        }
+
+        return [true, $featureList->toArray()];
     }
 }

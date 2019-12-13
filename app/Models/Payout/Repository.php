@@ -50,15 +50,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchFromUtr($utr, $balanceId)
+    public function fetchFromUtr($utr, $amount, $balanceId)
     {
         return $this->newQuery()
                     ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::AMOUNT, $amount)
                     ->where(Entity::UTR, $utr)
                     ->get();
     }
 
-    public function fetchFromCmsRefNumber($cmsRefNumber, $balanceId)
+    public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable = $this->repo->fund_transfer_attempt->getTableName();
 
@@ -70,6 +71,8 @@ class Repository extends Base\Repository
 
         $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
 
+        $payoutsAmountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
+
         $payoutAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
@@ -77,6 +80,7 @@ class Repository extends Base\Repository
                     ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
                     ->get();
     }
 

@@ -141,6 +141,11 @@ class Helper
             );
         }
 
+        if (self::shouldEnableInternational($input) === true)
+        {
+            $detailInput[Detail\Entity::BUSINESS_INTERNATIONAL] = true;
+        }
+
         $detailInput = array_merge($detailInput, self::getBankAccountFromInput($input));
 
         return $detailInput;
@@ -217,13 +222,38 @@ class Helper
             $customFields[Constants::TNC] = $input[Constants::TNC];
         }
 
-        if ((isset($input[Constants::PROFILE]) === true) and
-            (isset($input[Constants::PROFILE][Constants::APPS]) === true))
+        if ((isset($input[Constants::PROFILE][Constants::APPS]) === true))
         {
             $customFields[Constants::APPS] = $input[Constants::PROFILE][Constants::APPS];
         }
 
         return $customFields;
+    }
+
+    /**
+     * We modify the input here because for some cases like address type, we want to accept case insensitive chars
+     * like both REGISTERED and registered. So we modify the input here, so that validations and === comparisons will
+     * pass and there will be uniformity elsewhere in the code
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public static function modifyAccountInput(array $input): array
+    {
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $input;
+        }
+
+        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $key => $address)
+        {
+            $type = strtolower($input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE]);
+
+            $input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE] = $type;
+        }
+
+        return $input;
     }
 
     private static function getAddressesFromInput(array $input): array
@@ -346,5 +376,16 @@ class Helper
         $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT];
 
         return $bankAccount[Constants::NOTES] ?? [];
+    }
+
+    public static function shouldEnableInternational(array $input)
+    {
+        if ((isset($input[Constants::SETTINGS][Constants::PAYMENT]) === true) and
+            (empty($input[Constants::SETTINGS][Constants::PAYMENT][Constants::INTERNATIONAL]) === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

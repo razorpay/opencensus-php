@@ -896,6 +896,23 @@ return [
         ],
     ],
 
+    'testSendOtpWithContact' => [
+        'request' => [
+            'url'     => '/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'            => 'sms',
+                'action'            => 'bureau_verify',
+                'contact_mobile'    => '9876543210',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
     'testSendOtpViaMail' => [
         'request' => [
             'url'     => '/users/otp/send',
@@ -1349,6 +1366,33 @@ return [
         'response' => [
             'content'     => [],
             'status_code' => 200,
+        ],
+    ],
+    'testGetForUsersWithBusinessBankingEnabled' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'            => true,
+                        'banking_activated_at' => 1563692021,
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
         ],
     ],
 ];

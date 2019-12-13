@@ -66,7 +66,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get the refund amount!',
-                    'row'             => $row,
+                    'refund_id'       => $this->refund->getId(),
                     'gateway'         => $this->gateway
                 ]);
 

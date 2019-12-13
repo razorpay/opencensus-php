@@ -160,33 +160,31 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        $response = new Base\Collection;
-
         $names = $input[Entity::NAME];
 
         // Will separately update dashboard to start
         // sending a list of features in a single request
-        $names = (is_array($input[Entity::NAME])? $names : [$input[Entity::NAME]]);
+        $names = (is_array($input[Entity::NAME]) ? $names : [$input[Entity::NAME]]);
 
-        $opsResponse = $processed = [];
+        $opsResponse = $successResponse = $failedResponse = [];
 
         foreach ($names as $featureName)
         {
-            $failedMerchant = [];
+            $failedMerchant = $successfulMerchant = [];
 
             foreach ($entityIds as $entityId)
             {
                 $featureParam = [
-                    Entity::ENTITY_TYPE     => $input[Entity::ENTITY_TYPE],
-                    Entity::ENTITY_ID       => $entityId,
-                    Entity::NAME            => $featureName,
+                    Entity::ENTITY_TYPE => $input[Entity::ENTITY_TYPE],
+                    Entity::ENTITY_ID   => $entityId,
+                    Entity::NAME        => $featureName,
                 ];
 
                 try
                 {
                     $feature = (new Core)->create($featureParam, $shouldSync);
 
-                    $response->push($feature);
+                    array_push($successfulMerchant, $entityId);
                 }
                 catch (\Exception $e)
                 {
@@ -201,19 +199,22 @@ class Service extends Base\Service
                         ]);
                 }
             }
-            if (count($failedMerchant)>0)
+            if (count($failedMerchant) > 0)
             {
-                $opsResponse[$featureName] = $failedMerchant;
+                $failedResponse[$featureName] = $failedMerchant;
+            }
+
+            if (count($successfulMerchant) > 0)
+            {
+                $successResponse[$featureName] = $successfulMerchant;
             }
         }
 
-        $opsResponse['processed_response']=$response->toArray();
+        $opsResponse['successful'] = $successResponse;
 
-        if (count($opsResponse)>1)
-        {
-            $opsResponse['failed_reason']=PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_EXIST;
-            return $opsResponse;
-        }
+        $opsResponse['failed'] = $failedResponse;
+
+        $this->trace->info(TraceCode::MERCHANT_MULTI_FEATURE_ASSIGN_RESPONSE, $opsResponse);
 
         return $opsResponse;
     }
@@ -232,15 +233,13 @@ class Service extends Base\Service
 
         // Will separately update dashboard to start
         // sending a list of features in a single request
-        $names = (is_array($input[Entity::NAME])? $names : [$input[Entity::NAME]]);
+        $names = (is_array($input[Entity::NAME]) ? $names : [$input[Entity::NAME]]);
 
-        $response = new Base\Collection;
-
-        $opsResponse = $processed = [];
+        $opsResponse = $successResponse = $failedResponse = [];
 
         foreach ($names as $featureName)
         {
-            $failedMerchant = [];
+            $failedMerchant = $successfulMerchant = [];
 
             foreach ($entityIds as $entityId)
             {
@@ -253,9 +252,9 @@ class Service extends Base\Service
 
                     if (!empty($feature))
                     {
-                        $response->push($feature);
-
                         (new Core)->delete($feature, $shouldSync);
+
+                        array_push($successfulMerchant, $entityId);
                     }
                 }
                 catch (\Throwable $e)
@@ -268,19 +267,22 @@ class Service extends Base\Service
                         $failedMerchant);
                 }
             }
-            if (count($failedMerchant)>0)
+            if (count($failedMerchant) > 0)
             {
-                $opsResponse[$featureName] = $failedMerchant;
+                $failedResponse[$featureName] = $failedMerchant;
+            }
+
+            if (count($successfulMerchant) > 0)
+            {
+                $successResponse[$featureName] = $successfulMerchant;
             }
         }
 
-        $opsResponse['processed_response']=$response->toArray();
+        $opsResponse['successful'] = $successResponse;
 
-        if (count($opsResponse)>1)
-        {
-            $opsResponse['failed_reason']=PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_NOT_EXIST;
-            return $opsResponse;
-        }
+        $opsResponse['failed'] = $failedResponse;
+
+        $this->trace->info(TraceCode::MERCHANT_MULTI_FEATURE_REMOVE_RESPONSE, $opsResponse);
 
         return $opsResponse;
     }

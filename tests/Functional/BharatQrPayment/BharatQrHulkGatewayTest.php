@@ -47,6 +47,8 @@ class BharatQrHulkGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $this->gateway = 'upi_hulk';
     }
 

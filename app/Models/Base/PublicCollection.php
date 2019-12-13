@@ -27,6 +27,22 @@ class PublicCollection extends Collection
     }
 
     /**
+     * Get the collection of items as a plain array.
+     * Response will include the relations which are fetched and present in the expanded[] array of the entity.
+     *(eg. expand[] = transaction, transaction.settlement with payment fetch).
+     *
+     * @return array
+     */
+    public function toArrayPublicWithExpand(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array[static::ITEMS] = $this->itemsToArrayPublic($expand = true);
+
+        return $array;
+    }
+
+    /**
      * `load` on a collection fails if some items of the collection don't have the given foreign_key/relation.
      * This function removes those items from the collection by checking explicitly whether the foreign_key is set.
      * It then runs `load` on the collection and then adds back the previous items that were removed from the collection.
@@ -97,9 +113,9 @@ class PublicCollection extends Collection
         return $this->itemsToArrayGateway();
     }
 
-    public function toArrayPublicEmbedded()
+    public function toArrayPublicEmbedded(bool $expand = false)
     {
-        return $this->itemsToArrayPublic();
+        return $this->itemsToArrayPublic($expand);
     }
 
     public function toArrayHosted()
@@ -209,12 +225,18 @@ class PublicCollection extends Collection
         }, $this->items);
     }
 
-    protected function itemsToArrayPublic()
+    protected function itemsToArrayPublic(bool $expand = false): array
     {
-        return array_map(function($item)
+        return array_map(function($item) use ($expand)
         {
-            return $item->toArrayPublic();
-
+            if ($expand === true)
+            {
+                return $item->toArrayPublicWithExpand();
+            }
+            else
+            {
+                return $item->toArrayPublic();
+            }
         }, $this->items);
     }
 

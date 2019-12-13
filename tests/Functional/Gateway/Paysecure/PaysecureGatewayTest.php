@@ -91,7 +91,6 @@ class PaysecureGatewayTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode)
@@ -134,6 +133,9 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+        $this->assertNotEmpty($payment['reference2']);
 
         // Assert card vault exist in card entity
         $card = $this->getDbLastEntityToArray('card');
@@ -785,11 +787,12 @@ class PaysecureGatewayTest extends TestCase
     // the hitachi entity would not exist.
     public function testLateAuthorizedViaPurchaseTerminal()
     {
+        // making it direct terminal so that another hitachi terminal doesn't get created with default mode
         $this->fixtures->terminal->edit(
             \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
             [
                 'mode' => 2,
-
+                'merchant_id' => '10000000000000'
             ]
         );
 

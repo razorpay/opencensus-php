@@ -194,7 +194,7 @@ class Collection extends Base\PublicCollection
         }
     }
 
-    protected function itemsToArrayPublic(): array
+    protected function itemsToArrayPublic($expand = false): array
     {
         $array = [];
 

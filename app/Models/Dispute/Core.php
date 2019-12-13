@@ -31,7 +31,6 @@ class Core extends Base\Core
 
     // Type of emails to be fetched from merchant_emails table
     const POC_EMAIL_TYPES = [
-        MerchantEmail\Type::DISPUTE,
         MerchantEmail\Type::CHARGEBACK,
     ];
 
@@ -559,7 +558,7 @@ class Core extends Base\Core
         else
         {
             // ToDo : Phase 2 : Add cc field in dashboard and support to fetch here (rzpinternal in merchant emails)
-            // Fetching merchant dispute, chargeback PoC. If not available, fetches merchant registered email
+            // Fetching merchant chargeback PoC. If not available, fetches merchant registered email
             $emails = $this->getDefaultEmailsForDispute($merchant);
         }
 

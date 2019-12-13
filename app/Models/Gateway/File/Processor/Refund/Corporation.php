@@ -128,40 +128,4 @@ class Corporation extends Base
             $this->mid = $this->app['config']['gateway']['netbanking_corporation']['test_merchant_id'];
         }
     }
-
-    /**
-     * Overriding this because refund file needs merchant name.
-     * Merchant is thus included in data by accessing it through payment
-     *
-     * @param  PublicCollection $refunds
-     *
-     * @return array
-     */
-    public function generateData(PublicCollection $refunds)
-    {
-        $data = [];
-
-        foreach ($refunds as $refund)
-        {
-            $payment = $refund->payment;
-
-            $terminal = $payment->terminal;
-
-            $merchant = $payment->merchant;
-
-            $col['refund'] = $refund->toArray();
-
-            $col['payment'] = $payment->toArray();
-
-            $col['terminal'] = $terminal->toArray();
-
-            $col['merchant'] = $merchant->toArray();
-
-            $data[] = $col;
-        }
-
-        $data = $this->addGatewayEntitiesToData($data, $refunds);
-
-        return $data;
-    }
 }

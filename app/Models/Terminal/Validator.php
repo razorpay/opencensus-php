@@ -42,6 +42,7 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMANDATE                    => 'sometimes|boolean',
+        Entity::NACH                        => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
         Entity::OMNICHANNEL                 => 'sometimes|boolean',
@@ -65,6 +66,9 @@ class Validator extends Base\Validator
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
         Entity::NOTES                       => 'sometimes',
+        Entity::VIRTUAL_UPI_HANDLE          => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'required_if:type.upi_transfer,1|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -78,6 +82,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::UPI_CITI,
+        Payment\Gateway::UPI_JUSPAY,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
@@ -105,6 +110,7 @@ class Validator extends Base\Validator
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
+        Payment\Gateway::NACH_CITI,
     ];
 
     protected static $createValidators = [
@@ -156,6 +162,18 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
 
+    protected static $upiJuspayTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_juspay',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::VPA                        => 'required|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -178,7 +196,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::CURRENCY                   => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
@@ -448,6 +466,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
 
+    protected static $upiJuspayEditTerminalRules = [
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::VPA                        => 'sometimes|string',
+    ];
+
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
@@ -592,6 +617,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
+    protected static $netbankingKvbTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_kvb',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1',
+    ];
+
     protected static $netbankingCubEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
@@ -660,6 +692,9 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'required_if:type.upi_transfer,1|string',
     ];
 
     protected static $upiAxisTerminalRules = [
@@ -727,6 +762,27 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $nachCitiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:nach_citi',
+        Entity::NACH                       => 'required|boolean|in:1',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|alpha_num|max:18',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string|max:40',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string|alpha_num|max:11',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $nachCitiEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:nach_citi',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|alpha_num|max:18',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|max:40',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
     ];
 
     protected static $netbankingSibTerminalRules = [
@@ -830,6 +886,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
@@ -994,9 +1051,11 @@ class Validator extends Base\Validator
     protected static $paylaterTerminalRules = [
         Entity::GATEWAY                     => 'required|in:paylater',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::PAYLATER                    => 'required|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::MODE                        => 'sometimes',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $paylaterEditTerminalRules = [
@@ -1005,6 +1064,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::MODE                        => 'sometimes',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $updateTerminalsBankRules = [
@@ -1034,18 +1095,25 @@ class Validator extends Base\Validator
     ];
 
     protected static $worldlineTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:worldline',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_TERMINAL_ID        => 'required|string',
-        Entity::MC_MPAN                    => 'required|string|max:255',
-        Entity::VISA_MPAN                  => 'required|string',
-        Entity::RUPAY_MPAN                 => 'required|string',
-        Entity::VPA                        => 'required|string',
-        Entity::EXPECTED                   => 'sometimes|boolean',
-        Entity::TYPE                       => 'required|array',
-        Entity::TYPE . '.bharat_qr'        => 'required|in:1',
-        Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY                                 => 'required|in:worldline',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID                     => 'required|string',
+        Entity::MC_MPAN                                 => 'required|string|max:255',
+        Entity::VISA_MPAN                               => 'required|string',
+        Entity::RUPAY_MPAN                              => 'required|string',
+        Entity::VPA                                     => 'sometimes|string',
+        Entity::EXPECTED                                => 'required|boolean|in:1',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.bharat_qr'                     => 'required|in:1',
+        Entity::TYPE . '.non_recurring'                 => 'required|in:1',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::CARD                                    => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes',
+        Entity::ENABLED                                 => 'sometimes',
+        Entity::ACCOUNT_NUMBER                          => 'sometimes',
+        Entity::IFSC_CODE                               => 'sometimes',
+        Entity::GATEWAY_ACQUIRER                        => 'sometimes|string|in:axis',
     ];
 
     protected static $worldlineEditTerminalRules = [
@@ -1199,7 +1267,7 @@ class Validator extends Base\Validator
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
                                     (in_array($gateway, $nonCardPurchaseExceptions, true)));
 
-        // Migs, Amex, OpenWallet, CardlessEmi, PayPal terminals are always in auth-capture mode
+        // Migs, Amex, OpenWallet, CardlessEmi, PayPal, GETSIMPL terminals are always in auth-capture mode
         //
         $authCaptureOnly = [
             Gateway::AXIS_MIGS,
@@ -1207,6 +1275,7 @@ class Validator extends Base\Validator
             Gateway::WALLET_OPENWALLET,
             Gateway::CARDLESS_EMI,
             Gateway::WALLET_PAYPAL,
+            Gateway::GETSIMPL,
         ];
 
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));

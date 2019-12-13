@@ -770,6 +770,25 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsForUnregisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsWithCouponCode' => [
         'request' => [
             'content' => [
@@ -1287,4 +1306,52 @@ return [
         ],
     ],
 
+    'testAdditionalWebsite' => [
+        'request'  => [
+            'content' => [
+                'additional_website' => 'https://example.com',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'additional_websites' => [
+                    'https://example.com',
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPutPreSignUpDetailsWithReferralCode' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code'   => 'teslacomikejzc',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testPutPreSignUpDetailsWithInvalidReferralCode' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code'   => 'teslacomikejzc',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

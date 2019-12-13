@@ -112,7 +112,7 @@ class Service extends Base\Service
 
     protected function editAmountExpectedToIncludeFees(Order\Entity $order, array & $virtualAccount)
     {
-        if ($order->merchant->isFeeBearerCustomer() === true)
+        if ($order->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
 
@@ -445,5 +445,28 @@ class Service extends Base\Service
         $processor = new Payment\Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    public function addReceiver(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($virtualAccount->isClosed())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+        }
+
+        $this->verifyMerchantCategory();
+
+        $this->verifyMerchantIsLiveForLiveRequest();
+
+        $virtualAccount = $this->core->addReceiver($virtualAccount, $input, $this->merchant);
+
+        return $virtualAccount->toArrayPublic();
     }
 }

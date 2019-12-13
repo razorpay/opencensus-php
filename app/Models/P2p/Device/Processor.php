@@ -19,6 +19,8 @@ use RZP\Models\P2p\Transaction;
  */
 class Processor extends Base\Processor
 {
+    use MerchantTrait;
+
     protected $entity = 'p2p_device';
 
     public function initiateVerification(array $input): array
@@ -165,10 +167,10 @@ class Processor extends Base\Processor
         $this->repo()->transaction(
             function()
             {
-                (new Vpa\Core)->deleteAll();
-                (new BankAccount\Core)->deleteAll();
-                (new DeviceToken\Core)->deleteAll();
-                (new Beneficiary\Core)->deleteAll();
+                (new Vpa\Core)->deregister();
+                (new BankAccount\Core)->deregister();
+                (new DeviceToken\Core)->deregister();
+                (new Beneficiary\Core)->deregister();
             });
 
         return [

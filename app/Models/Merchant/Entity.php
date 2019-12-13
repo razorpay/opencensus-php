@@ -55,6 +55,8 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use Cacheable;
 
+    const ID_LENGTH = 14;
+
     const ID                             = 'id';
     const ORG_ID                         = 'org_id';
     const NAME                           = 'name';
@@ -161,6 +163,11 @@ class Entity extends Base\PublicEntity
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,
@@ -211,6 +218,8 @@ class Entity extends Base\PublicEntity
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
+
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
 
     protected $entity = 'merchant';
 
@@ -505,9 +514,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isFeeBearerDynamic()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::DYNAMIC;
+    }
+
+    public function isFeeBearerCustomerOrDynamic()
+    {
+        return (($this->isFeeBearerDynamic() === true) or
+                ($this->isFeeBearerCustomer() === true));
     }
 
     public function isPrepaid()
@@ -1612,6 +1637,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
     }
 
+    public function forceGreyListInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);
+    }
+
     public function createCustomerOnContactEmailNull(): bool
     {
         return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
@@ -1738,6 +1768,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
@@ -1773,8 +1808,15 @@ class Entity extends Base\PublicEntity
         }
         else
         {
+            $this->setHoldFundsReason();
+
             $this->fireEventWithMerchantPayload('api.account.funds_unhold');
         }
+    }
+
+    public function setHoldFundsReason(string $reason = null)
+    {
+        $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
     }
 
     public function isReceiptEmailsEnabled()
@@ -1802,17 +1844,6 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $riskThreshold;
-    }
-
-    public function getSubventionType()
-    {
-        // Move to subvention type if ever.
-        if ($this->isFeeBearerCustomer())
-        {
-            return FeeBearer::CUSTOMER;
-        }
-
-        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
@@ -2197,6 +2228,7 @@ class Entity extends Base\PublicEntity
             self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
             self::EMAIL          => $this->getAttribute(self::EMAIL),
             self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ACTIVATED_AT   => $this->getAttribute(self::ACTIVATED_AT),
             self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
@@ -2337,8 +2369,10 @@ class Entity extends Base\PublicEntity
 
     protected function fireEventWithMerchantPayload(string $event)
     {
+        $entity = clone $this;
+
         $eventPayload = [
-            ApiEventSubscriber::MAIN => $this,
+            ApiEventSubscriber::MAIN => $entity,
         ];
 
         $app = App::getFacadeRoot();

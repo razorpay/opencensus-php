@@ -104,6 +104,48 @@ trait PartnerTrait
         return [$subMerchant, $accessMap];
     }
 
+    public function createPartnerMerchantAndSubMerchant(string $partnerType)
+    {
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => $partnerType,
+            ]
+        );
+
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            ]
+        );
+
+        $application = $this->createOAuthApplication(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'type'        => 'partner',
+            ]
+        );
+
+        $accessMap = $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
+        return [$application, $accessMap];
+    }
+
     public function createPurePlatFormMerchantAndSubMerchant()
     {
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
@@ -230,6 +272,13 @@ trait PartnerTrait
         $subMerchantId = $subMerchant->getId();
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $merchantDetailAttribute = [
+            "merchant_id"       => $subMerchantId,
+            "business_type"     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
         // Assign submerchant to partner
         $accessMapData = [

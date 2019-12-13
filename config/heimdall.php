@@ -151,6 +151,9 @@ return [
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',
@@ -641,6 +644,9 @@ return [
                 'description' => 'edit_permission',
                 'workflow'    => true
             ],
+            Permission::REMINDER_OPERATION  => [
+                'description' => 'reminder_operation',
+            ],
         ],
 
         PermissionCategory::AUDIT_LOG  => [
@@ -796,6 +802,13 @@ return [
                 'description'   => 'Allows to manage merchant setup',
                 'assignable'    => true,
             ],
+        ],
+
+        PermissionCategory::RENDERING_PREFERENCES => [
+            Permission::MANAGE_RENDERING_PREFERENCES => [
+                'description' => 'Manage rendering preferences from admin dashboard',
+                'assignable'  => true
+            ]
         ],
     ],
 

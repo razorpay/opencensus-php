@@ -5,10 +5,11 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits;
-use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Feature\Constants as MerchantFeature;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 
 /**
  * @property FundAccount fundAccount
@@ -100,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::RESULTS,
+        self::FUND_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -150,12 +152,12 @@ class Entity extends Base\PublicEntity
 
     // -------------- Setters --------------
 
-    public function setAmount(int $amount)
+    public function setAmount(int $amount = null)
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setCurrency(string $currency)
+    public function setCurrency(string $currency = null)
     {
         $this->setAttribute(self::CURRENCY, $currency);
     }
@@ -237,6 +239,23 @@ class Entity extends Base\PublicEntity
             ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR) === true))
         {
             $array[self::RESULTS][self::UTR] = $this->getUtr();
+        }
+    }
+
+    public function setPublicFundAccountAttribute(array & $favEntity)
+    {
+        $bankAccount    = FundAccountEntity::BANK_ACCOUNT;
+        $vpa            = FundAccountEntity::VPA;
+        $details        = FundAccountEntity::DETAILS;
+
+        if (isset($favEntity[self::FUND_ACCOUNT][$bankAccount]) === true)
+        {
+            $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$bankAccount];
+        }
+
+        if (isset($favEntity[self::FUND_ACCOUNT][$vpa]) === true)
+        {
+            $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$vpa];
         }
     }
 

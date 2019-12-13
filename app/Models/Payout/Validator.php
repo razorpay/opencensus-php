@@ -14,6 +14,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\Channel as BankChannel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -64,7 +65,7 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID      => 'required|public_id',
-        Entity::MODE                 => 'sometimes|nullable|string',
+        Entity::MODE                 => 'required|string|custom',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
@@ -126,40 +127,17 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
     ];
 
-    protected static $fundAccountPayoutValidators = [
-        'fund_account_mode',
-    ];
-
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
     }
 
-    public function validateModeSetForChannels()
+    protected function validateMode($attribute, $value)
     {
-        $payout = $this->entity;
-
-        $mode = $payout->getMode();
-
-        if (empty($mode) === true)
-        {
-            $channel = $payout->getChannel();
-
-            if (($channel === BankChannel::CITI) or
-                ($channel === BankChannel::ICICI))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_REQUIRED,
-                    null,
-                    [
-                        'id'        => $payout->getid(),
-                        'channel'   => $channel,
-                    ]);
-            }
-        }
+        PayoutMode::validateMode($value);
     }
 
-    protected function validateFundAccountMode($input)
+    public function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;
@@ -179,27 +157,9 @@ class Validator extends Base\Validator
 
         $accountType = $fundAccount->getAccountType();
 
-        if (empty($mode) === true)
-        {
-            // Going forward, we want to make `mode` mandatory for all payouts, irrespective of anything.
-            if ($accountType === FundAccount\Type::CARD)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The mode field is required for card payouts',
-                    Entity::MODE,
-                    [
-                        'input' => $input
-                    ]);
-            }
-
-            return;
-        }
-
         Mode::validateModeOfAccountType($mode, $accountType);
 
         $this->validateCardAccountType($payout);
-
-        $this->validateVpaAccountType($payout);
 
         $this->validateModeAndAmount($input, $payout);
     }
@@ -219,36 +179,6 @@ class Validator extends Base\Validator
             $networkCode = $fundAccount->account->getNetworkCode();
 
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
-        }
-    }
-
-    protected function validateVpaAccountType(Entity $payout)
-    {
-        $fundAccount = $payout->fundAccount;
-
-        $mode = $payout->getMode();
-
-        $accountType = $fundAccount->getAccountType();
-
-        if (($accountType === FundAccount\Type::VPA) or
-            ($mode === Mode::UPI))
-        {
-            $balance = $payout->balance;
-
-            if (($balance->isTypeBanking() === true) and
-                ($balance->getAccountType() === AccountType::DIRECT) and
-                ($balance->getChannel() === Channel::RBL))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'UPI is not supported for RBL Banking Payouts currently',
-                    Entity::MODE,
-                    [
-                        'balance_id'    => $balance->getId(),
-                        'mode'          => $mode,
-                        'account_type'  => $accountType,
-                        'payout_id'     => $payout->getId(),
-                    ]);
-            }
         }
     }
 

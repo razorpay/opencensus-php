@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
 
+        $this->core->notifyOpsAboutProActivation($account);
+
         $this->core->notifyMerchantAboutUpdatedStatus($account);
 
         return $account->toArrayPublic();
@@ -71,22 +73,33 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
-    public function storeCredentialsAndActivateAccount(string $id, array $input)
+    public function activate(string $id, array $input)
     {
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
-                           ['id' => $id]);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
+            [
+                'id'=> $id
+            ]);
+
+        //
+        // This route is to be used via Admin auth only.
+        // Don't use this on proxy auth
+        //
+        if ($this->auth->isAdminAuth() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH);
+        }
 
         /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
         // validating if user tries to add/change credentials
         // after his account gets activated successfully
 
         $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-        $this->core->storeCredentialsAndActivateAccount($bankingAccount, $input);
-
-        $this->core->createAccountMappingForFts($bankingAccount);
+        $bankingAccount = $this->core->activate($bankingAccount, $input);
 
         return $bankingAccount->toArrayPublic();
     }

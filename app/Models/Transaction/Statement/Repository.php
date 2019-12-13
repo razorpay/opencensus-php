@@ -77,10 +77,16 @@ class Repository extends Transaction\Repository
 
     /**
      * {@inheritDoc}
+     *
+     * This method overrides the fetch method of RepositoryFetch class, params should match the signature of the parent
+     * method.
      */
-    public function fetch(array $input, string $merchantId = null, bool $useSlave = false): PublicCollection
+    public function fetch(array $input,
+                          string $merchantId = null,
+                          bool $useSlave = false,
+                          bool $useMasterReplica = false): PublicCollection
     {
-        $statements = parent::fetch($input, $merchantId, $useSlave);
+        $statements = parent::fetch($input, $merchantId, $useSlave, $useMasterReplica);
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);

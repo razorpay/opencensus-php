@@ -19,7 +19,8 @@ class ReconciledType
 
     public static function validateReconciledType($reconciledType)
     {
-        if (self::isReconciledTypeValid($reconciledType) === false)
+        if ((empty($reconciledType) === false) and
+            (self::isReconciledTypeValid($reconciledType) === false))
         {
             throw new InvalidArgumentException(
                 'Invalid reconciled type',

@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use RZP\Models\External as ExternalModel;
 use RZP\Models\BankingAccountStatement\Type;
 
 class External extends Base
 {
+    /** @var ExternalModel\Entity */
+    protected $source;
+
     /**
      * We are overriding this because base function was written very badly. (`hasTransaction`)
      */
@@ -26,13 +30,6 @@ class External extends Base
         $this->fees = $this->tax = $this->feesSplit = 0;
     }
 
-    public function setMerchantBalanceLockForUpdate()
-    {
-        $this->merchantBalance = $this->source->balance;
-
-        $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
-    }
-
     public function calculateFees()
     {
         $type = $this->source->getType();
@@ -51,5 +48,12 @@ class External extends Base
 
     public function updateTransaction()
     {
+    }
+
+    public function setMerchantBalanceLockForUpdate()
+    {
+        $this->merchantBalance = $this->source->balance;
+
+        $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
 }

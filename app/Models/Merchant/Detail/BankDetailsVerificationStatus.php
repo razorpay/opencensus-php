@@ -10,7 +10,9 @@ class BankDetailsVerificationStatus
 
     const FAILED = 'failed';
 
-    const BANK_DETAIL_VERIFICATION_THRESHOLD = 70;
+    const BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN = 51.0;
+
+    const BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT = 51.0;
 
     /**
      * Allowed next bank detail verification statuses mapping
@@ -19,4 +21,5 @@ class BankDetailsVerificationStatus
         self::FAILED    => [self::VERIFIED],
         self::INITIATED => [self::FAILED, self::VERIFIED],
     ];
+
 }

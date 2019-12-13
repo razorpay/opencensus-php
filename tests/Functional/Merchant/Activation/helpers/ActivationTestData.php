@@ -1124,7 +1124,109 @@ return [
         ]
     ],
 
+    'testPostInstantActivationForUnregisteredRazorxOff' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+        ]
+    ],
+
     'testPostInstantActivation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'               => 'ABCDE0000Z',
+                'gstin'                      => null,
+                'p_gstin'                    => null,
+                'business_category'          => 'ecommerce',
+                'business_subcategory'       => 'fashion_and_lifestyle',
+                'archived'                   => 0,
+                'submitted_at'               => null,
+                'activation_status'          => 'instantly_activated',
+                'business_operation_address' => 'My Addres is somewhere',
+                'business_operation_state'   => 'KA',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+                'verification'               => [
+                    'status'              => 'disabled',
+                    'disabled_reason'     => 'required_fields',
+                    'required_fields'     => [
+                        'address_proof_url',
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_address_url',
+                    ],
+                    'activation_progress' => 57,
+                ],
+                'can_submit'                 => false,
+                'activated'                  => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testPostInstantActivationWithBalanceCreation' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -2057,6 +2159,28 @@ return [
         ],
     ],
 
+    'testReleaseFundsWithParntersBankAccount' => [
+        'request'   => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
+
     'testPostInstantActivationFetaureCheck' => [
         'request'     => [
             'method'  => 'POST',
@@ -2457,6 +2581,27 @@ return [
         'status_code' => 200,
     ],
 
+    'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'    => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit'   => true,
+                'locked'       => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
@@ -2604,5 +2749,37 @@ return [
             ],
             'status_code' => 200,
         ]
-    ]
+    ],
+
+    'testBusinessWebsiteUpdate' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'activation_status' => 'instantly_activated',
+                'business_website'  => 'https://example.com',
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

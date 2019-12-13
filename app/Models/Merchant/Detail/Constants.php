@@ -7,13 +7,25 @@ class Constants
     // input params for pan verifier
     const PAN_NUMBER = 'pan_number';
 
+    const POI_STATUS                       = 'poi_status';
+    const POA_STATUS                       = 'poa_status';
+    const DOCUMENT_TYPE                    = 'document_type';
+    const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
+    const EXTERNAL_VERIFIER                = 'external_verifier';
+
     // pan verifier response types
     const INCORRECT_DETAILS = 'incorrect_details';
     const SUCCESS           = 'success';
     const FAILURE           = 'failure';
 
-    const SIGNED_URL        = 'signed_url';
-    const PASSPORT_FRONT    = 'passport_front';
-    const AADHAR_FRONT      = 'aadhar_front';
-    const VOTER_ID_FRONT    = 'voter_id_front';
+    const SIGNED_URL             = 'signed_url';
+    const PASSPORT_FRONT         = 'passport_front';
+    const AADHAR_FRONT           = 'aadhar_front';
+    const VOTER_ID_FRONT         = 'voter_id_front';
+    const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
+
+    // penny testing constants
+    const MERCHANT_ID     = 'merchant_id';
+    const ACCOUNT_STATUS  = 'account_status';
+    const REGISTERED_NAME = 'registered_name';
 }

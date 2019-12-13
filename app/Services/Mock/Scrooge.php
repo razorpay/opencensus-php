@@ -196,4 +196,16 @@ class Scrooge extends BaseScrooge
     {
         return 'IMPS';
     }
+
+    public function getFileBasedRefunds(array $input): array
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        return $scroogeResponse;
+    }
 }

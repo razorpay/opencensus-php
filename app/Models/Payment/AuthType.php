@@ -18,6 +18,7 @@ class AuthType
     const HEADLESS_OTP = 'headless_otp';
     const IVR          = 'ivr';
     const UNKNOWN      = 'unknown';
+    const PHYSICAL     = 'physical';
 
     public static $types = [
         Method::EMANDATE => [
@@ -25,6 +26,9 @@ class AuthType
             self::AADHAAR,
             self::AADHAAR_FP,
             self::DEBITCARD,
+        ],
+        Method::NACH    => [
+            self::PHYSICAL,
         ],
         Method::CARD    => [
             self::PIN,

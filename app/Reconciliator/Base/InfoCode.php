@@ -30,7 +30,9 @@ class InfoCode
 
     const REFUND_ID_NOT_FOUND                           = 'REFUND_ID_NOT_FOUND';
 
-    const REFUND_ID_NOT_AS_EXPECTED                     = 'REFUND_ID_NULL';
+    const REFUND_ID_NOT_AS_EXPECTED                     = 'REFUND_ID_NOT_AS_EXPECTED';
+
+    const PAYMENT_ID_NOT_AS_EXPECTED                    = 'PAYMENT_ID_NOT_AS_EXPECTED';
 
     const REFUND_ABSENT                                 = 'REFUND_ABSENT';
 
@@ -157,4 +159,16 @@ class InfoCode
     const RECON_GATEWAY_REFUNDED                        = 'RECON_GATEWAY_REFUNDED';
 
     const RECON_BLACKLISTED_COLUMNS_NOT_DEFINED         = 'RECON_BLACKLISTED_COLUMNS_NOT_DEFINED';
+
+    const CPS_PAYMENT_AUTH_DATA_MISMATCH                = 'CPS_PAYMENT_AUTH_DATA_MISMATCH';
+
+    const CPS_PAYMENT_AUTH_DATA_ABSENT                  = 'CPS_PAYMENT_AUTH_DATA_ABSENT';
+
+    const RECON_CPS_QUEUE_DISPATCH                      = 'RECON_CPS_QUEUE_DISPATCH';
+
+    const RECON_CPS_JOB_DISPATCH                        = 'RECON_CPS_JOB_DISPATCH';
+
+    const CPS_RESPONSE_AUTHORIZATION_DATA               = 'CPS_RESPONSE_AUTHORIZATION_DATA';
+
+    const PAYMENT_RECON_CPS_JOB_FAILURE_EXCEPTION       = 'PAYMENT_RECON_CPS_JOB_FAILURE_EXCEPTION';
 }

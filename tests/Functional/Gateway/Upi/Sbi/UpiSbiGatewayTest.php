@@ -14,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
+use RZP\Gateway\Upi\Base\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Base\VerifyResult;
@@ -92,6 +93,7 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
         $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
     }
@@ -186,6 +188,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
 
         $this->assertEquals(SbiStatus::FAILED, $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);

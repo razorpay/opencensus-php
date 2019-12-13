@@ -23,6 +23,7 @@ use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
@@ -368,18 +369,29 @@ class Core extends Base\Core
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
-    public function updateFTA(Entity $fta, $ftsTransferId, string $status)
+    public function updateFTA(Entity $fta, $ftsTransferId, string $status = null, string $failureReason = null)
     {
-        $fta->setFTSTransferId($ftsTransferId);
+        if (empty($failureReason) === false)
+        {
+            $fta->setFailureReason($failureReason);
+        }
 
-        $fta->setStatus($status);
+        if (empty($ftsTransferId) === false)
+        {
+            $fta->setFTSTransferId($ftsTransferId);
+        }
+
+        if (empty($status) === false)
+        {
+            $fta->setStatus($status);
+        }
 
         $this->repo->saveOrFail($fta);
     }
 
     /**
      * To Update FTA and source Using incoming webhook from FTS
-     * 
+     *
      * @param array $input
      * @return array
      * @throws \Throwable
@@ -408,14 +420,13 @@ class Core extends Base\Core
                             ->fund_transfer_attempt
                             ->getFTSAttemptBySourceId(
                                 $input[Entity::SOURCE_ID],
-                                $input[Entity::SOURCE_TYPE]);
+                                $input[Entity::SOURCE_TYPE],
+                                true);
 
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
 
             $fta = $this->updateFtaWithInput($input, $fta);
-
-            $fta->fill($input);
 
             if (method_exists($fta->source, 'setFTSTransferId') === true)
             {
@@ -458,16 +469,21 @@ class Core extends Base\Core
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 
-    public function updateTransactionEntity($source, $reconciledType = ReconciledType::MIS)
+    public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)
     {
         // Source entity might update the transaction but because we would have already fetched
         // the transaction from source earlier. Then if we try to access $this->source->transaction now,
         // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
         $source->load(EntityConstant::TRANSACTION);
 
-        $currentTime = Carbon::now(Timezone::IST)->timestamp;
+        $reconciledTime = Carbon::now(Timezone::IST)->timestamp;
 
-        $source->transaction->setReconciledAt($currentTime);
+        if ($reset === true)
+        {
+            $reconciledTime = $reconciledType = null;
+        }
+
+        $source->transaction->setReconciledAt($reconciledTime);
 
         $source->transaction->setReconciledType($reconciledType);
 
@@ -479,6 +495,8 @@ class Core extends Base\Core
         if ($holdFunds === true)
         {
             $fta->merchant->setHoldFunds(true);
+
+            $fta->merchant->setHoldFundsReason('bank account/transaction was rejected from bank');
 
             $this->repo->saveOrFail($fta->merchant);
         }
@@ -516,6 +534,11 @@ class Core extends Base\Core
 
         if (($fta->getSourceType() === Type::REFUND) and ($fta->getStatus() !== Status::PROCESSED))
         {
+            if ($fta->source->getStatus() === RefundStatus::PROCESSED)
+            {
+                $this->updateTransactionEntity($fta->source, true);
+            }
+
             //
             // For refund fta, not updating transaction entity if fta is not processed.
             // Do not want to set recon details of transaction entity for non-processed refunds
@@ -574,7 +597,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateSourceEntityByFta(Entity $fta, array $input)
+    public function updateSourceEntityByFta(Entity $fta, array $input = [])
     {
         $extraInfo = $input['extra_info'] ?? [];
 
@@ -729,6 +752,22 @@ class Core extends Base\Core
             $this->updateExtraInfo($input['extra_info'], $fta);
         }
 
+        if (empty($input[Entity::STATUS]) === false) {
+            $fta->setStatus($input[Entity::STATUS]);
+        }
+
+        if (empty($input[Entity::FAILURE_REASON]) === false) {
+            $fta->setFailureReason($input[Entity::FAILURE_REASON]);
+        }
+
+        if (empty($input[Entity::BANK_STATUS_CODE]) === false) {
+            $fta->setBankStatusCode($input[Entity::BANK_STATUS_CODE]);
+        }
+
+        if (empty($input[Entity::REMARKS]) === false) {
+            $fta->setRemarks($input[Entity::REMARKS]);
+        }
+
         return $fta;
     }
 
@@ -771,20 +810,30 @@ class Core extends Base\Core
 
     protected function getChannelForPayout(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
     {
-        $key = ConfigKey::PREFIX . 'fts_payout_' . strtolower($accountType);
-
-        $rampingEnabled = $this->getRampingStatus($source, $key);
-
-        if ($rampingEnabled === true)
+        if (empty($source->getChannel()) === true)
         {
-            if (empty($source->getChannel()) === false)
-            {
-                return [true, $source->getChannel()];
-            }
-            else
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
+            return [false, Settlement\Channel::YESBANK];
+        }
+
+        $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();
+
+        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_INIT, ['key' => $key]);
+
+        $rampOnFts  = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_COMPLETE, [
+            'key'         => $key,
+            'mode'        => $this->mode,
+            'ramp_status' => $rampOnFts,
+        ]);
+
+        if ((strtolower($rampOnFts) === 'on') and ($source->isBalanceTypeBanking() === true))
+        {
+            return [true, $source->getChannel()];
         }
 
         $isFTS = (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true)? true: false;
@@ -827,22 +876,33 @@ class Core extends Base\Core
         return [false, Settlement\Channel::YESBANK];
     }
 
-    protected function getChannelForFundAccountValidation(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    protected function getChannelForFundAccountValidation(Base\PublicEntity $source,
+                                                          string $accountType,
+                                                          CardEntity $card = null): array
     {
-        if ($accountType === E::CARD)
+        $key = 'fts_penny_testing_' . strtolower($accountType);
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_INIT, ['key' => $key]);
+
+        $rampingOnPennyTesting = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_COMPLETE,
+            [
+                'key'           => $key,
+                'mode'          => $this->mode,
+                'ramp_status'   => $rampingOnPennyTesting,
+            ]);
+
+        if(strtolower($rampingOnPennyTesting) === 'on')
         {
-            throw new LogicException('Penny testing on card not supported via FTA flow');
+            return [false, Settlement\Channel::YESBANK];
         }
 
-        // TODO: Need to refactor this and use razorx for ramping
-        $rampingEnabled = $this->getRampingStatus($source);
-
-        if ($rampingEnabled === true)
-        {
-            return [true, Settlement\Channel::ICICI];
-        }
-
-        return [false, Settlement\Channel::YESBANK];
+        return [true, Settlement\Channel::ICICI];
     }
 
     protected function getRampingStatus(Base\PublicEntity $source, string $key = ConfigKey::FTS_TEST_MERCHANT)

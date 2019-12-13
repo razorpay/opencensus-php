@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -35,7 +36,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
         Entity::CUSTOMER_ID                        => 'filled|public_id|size:19',
         Entity::NOTES                              => 'sometimes|notes',
-        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi',
+        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi,nach',
         Entity::BANK                               => 'filled',
         Entity::DISCOUNT                           => 'sometimes|boolean',
         Entity::OFFERS                             => 'sometimes|array',
@@ -73,7 +74,8 @@ class Validator extends Base\Validator
         $amount = $input['amount'];
 
         if ((isset($input[Entity::METHOD]) === false) or
-            ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
+            (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
+                ($input[Entity::METHOD] !== Payment\Method::NACH)))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -149,7 +151,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === true)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Order creation failed. Please contact Razorpay for further assistance.');
@@ -179,12 +181,41 @@ class Validator extends Base\Validator
         $this->validateOrderBank($payment->getBank());
 
         $this->validateOrderMethod($payment->getMethod());
+
+        $this->validateOrderForNachMethod();
+    }
+
+    public function validateOrderForNachMethod()
+    {
+        if ($this->entity->getMethod() !== SubscriptionRegistration\Method::NACH)
+        {
+            return;
+        }
+
+        $payments = $this->entity->payments;
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->isFailed() !== true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'payment ' . $payment->getPublicId() . ' is not failed for the given order which is of method nach, can\'t create one more'
+                );
+            }
+        }
+
+        $tokenRegistration = $this->entity->getTokenRegistration();
+
+        if ($tokenRegistration !== null)
+        {
+            $tokenRegistration->getValidator()->validatePaymentCreation();
+        }
     }
 
     /**
      * Validates that order is not already paid.
      */
-    protected function validateOrderNotPaid()
+    public function validateOrderNotPaid()
     {
         $order = & $this->entity;
 

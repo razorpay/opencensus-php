@@ -453,7 +453,7 @@ class Beneficiary extends Base\Core
                 'to'   => $endTime
             ]);
 
-        return $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp($startTime, $endTime);
+        return $this->repo->bank_account->getBankAccountsBetweenTimestamp($startTime, $endTime);
     }
 
     /**

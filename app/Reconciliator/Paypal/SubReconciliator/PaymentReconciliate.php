@@ -31,7 +31,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $row[ReconFields::CURRENCY] ?? null;
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -89,5 +89,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return;
+    }
+
+    protected function getPaymentEntityAmount()
+    {
+        return $this->payment->getAmount();
     }
 }

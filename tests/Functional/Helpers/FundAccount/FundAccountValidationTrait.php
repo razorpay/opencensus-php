@@ -8,11 +8,14 @@ use Mockery;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Services\RazorXClient;
 
 trait FundAccountValidationTrait
 {
     protected function createValidationWithFundAccountEntity(): array
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -41,7 +44,7 @@ trait FundAccountValidationTrait
         $this->assertEquals('fund_account_validation', $txn['type']);
         // Fee Bearer is always Platform for Fund Account Validation
         $this->assertEquals('platform', $txn['fee_bearer']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -101,5 +104,16 @@ trait FundAccountValidationTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
 
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+    }
 }

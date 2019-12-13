@@ -54,7 +54,7 @@ class Service extends Base\Service
 
         $this->verifyPartnerTerminalOnboardingAccess();
 
-        $onboardInput['gateway'] = Gateway::ATOS;
+        $onboardInput['gateway'] = Gateway::WORLDLINE;
 
         $onboardInput['gateway_input'] = $input;
 
@@ -211,6 +211,48 @@ class Service extends Base\Service
         $terminals = $this->repo->terminal->fetchTerminalsForActivation($count);
 
         $response = (new GatewayOnboardingService)->verifyTerminals($terminals);
+
+        return $response;
+    }
+
+    /**
+     * Below method is for precautionary api to change terminalonboarding status manually
+     * if terminals get stuck in queued state forever
+     */
+    public function updateTerminalOnboardingStatus($input)
+    {
+        $response = ['updated_terminal_onboarding_ids'        => [],
+                     'not_applicable_terminal_onboarding_ids' => []];
+
+        foreach ($input as $terminalOnboardingDetailId)
+        {
+            try
+            {
+                $terminalOnboardingDetail = $this->repo->terminal_onboarding_detail->findOrFailPublic($terminalOnboardingDetailId);
+
+                $terminal = $terminalOnboardingDetail->terminal;
+
+                if ($terminalOnboardingDetail->getStatus() !== TerminalOnboardingDetail\Status::QUEUED)
+                {
+                    throw new Exception\LogicException(
+                        'Only queued status can be manually updated',
+                        null,
+                        [
+                            'input' => $input
+                        ]);
+                }
+
+                $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::CREATED);
+            
+                $terminalOnboardingDetail->save();    
+
+                array_push($response['updated_terminal_onboarding_ids'], $terminalOnboardingDetailId);
+            }
+            catch(\Throwable $ex)
+            {
+                array_push($response['not_applicable_terminal_onboarding_ids'], $terminalOnboardingDetailId);
+            }
+        }
 
         return $response;
     }

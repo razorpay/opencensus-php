@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement\Processor\Rbl;
 
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Services\Mozart;
@@ -74,6 +75,19 @@ class Gateway extends BaseProcessor
 
                 throw $ex;
             }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
+                    [
+                        Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                        Entity::CHANNEL             => $this->channel,
+                    ]);
+
+                return [];
+            }
 
             $isValid = $this->validateMozartResponse($bankResponse);
 
@@ -118,6 +132,7 @@ class Gateway extends BaseProcessor
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
     {
+        /** @var BankingAccountEntity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($this->accountNumber,
                                                                                       $this->channel);
 
@@ -131,13 +146,11 @@ class Gateway extends BaseProcessor
             Fields::SOURCE_ACCOUNT => [
                 Fields::ACCOUNT_NUMBER              => $this->accountNumber,
                 Fields::CREDENTIALS => [
-                    Fields::SUBCORP_ID              => $bankingAccount->getReference1(),
-                    Fields::SUBCORP_USER_ID         => $bankingAccount->getUsername(),
-                    Fields::SUBCORP_USER_PASSWORD   => $bankingAccount->getPassword(),
-                    Fields::CLIENT_ID               => Config::get('gateway.mozart.razorpayx.direct.rbl.client_id'),
-                    Fields::CLIENT_SECRET           => Config::get('gateway.mozart.razorpayx.direct.rbl.client_secret'),
-                    Fields::AUTH_USERNAME           => Config::get('gateway.mozart.razorpayx.direct.rbl.auth_username'),
-                    Fields::AUTH_PASSWORD           => Config::get('gateway.mozart.razorpayx.direct.rbl.auth_password'),
+                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
+                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
+                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
+                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
                 ]
             ],
             Fields::LAST_TRANSACTION => $this->getPaginationDataForRequest($lastTransaction),
@@ -297,7 +310,7 @@ class Gateway extends BaseProcessor
     {
         $amount = $transaction[Fields::TRANSACTION_SUMMARY][Fields::TRANSACTION_AMOUNT][Fields::AMOUNT_VALUE];
 
-        $amount = (int) ($amount * 100);
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }
@@ -366,7 +379,9 @@ class Gateway extends BaseProcessor
 
     protected function getBalanceFromResponse(array $transaction): int
     {
-        $amount = (int) ($transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE] * 100);
+        $amount = $transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE];
+
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }

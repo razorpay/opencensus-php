@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -525,6 +526,8 @@ class OrderTest extends TestCase
     {
         $this->fixtures->merchant->enableConvenienceFeeModel();
 
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
         $feesArray = $this->validateFees($payment);
@@ -741,6 +744,19 @@ class OrderTest extends TestCase
         $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
 
         $preferences = $this->startTest($testData);
+    }
+
+    public function testPreferencesForOrderWithAuthType()
+    {
+        $this->testEmandateRegistrationOrderWithZeroRupeeAndTokenWithFirstAmount();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $this->startTest($testData);
     }
 
     public function testPaymentWithIncorrectBankFromOrderBank()

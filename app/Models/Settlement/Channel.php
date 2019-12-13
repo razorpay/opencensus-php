@@ -236,7 +236,6 @@ class Channel
     {
         return [
             self::RBL,
-            self::CITI,
         ];
     }
 
@@ -278,12 +277,13 @@ class Channel
             self::RBL,
             self::ICICI,
             self::CITI,
+            self::YESBANK,
         ];
     }
 
     public static function validateChannelAndMode(string $channel = null,
                                                   string $destinationType = null,
-                                                  string $mode = null)
+                                                  string $mode = null) : bool
     {
         self::validate($channel);
 
@@ -291,17 +291,7 @@ class Channel
 
         $modesSupportedForChannel = $allChannelsWithModes[$channel][$destinationType] ?? [];
 
-        if (in_array($mode, $modesSupportedForChannel, true) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MODE_UNSUPPORTED_FOR_CHANNEL,
-                null,
-                [
-                    'channel'           => $channel,
-                    'mode'              => $mode,
-                    'destination_type'  => $destinationType
-                ]);
-        }
+        return (in_array($mode, $modesSupportedForChannel, true));
     }
 
     protected static function getAllSupportedChannelsWithModes()

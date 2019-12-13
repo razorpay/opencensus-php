@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants\Es;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
@@ -123,11 +124,15 @@ trait RepositoryFetch
      * @param string|null $merchantId
      *
      * @param bool        $useSlave
+     * @param bool        $useMasterEsReplica
      * @return PublicCollection
      * @throws BadRequestValidationFailureException
      * @throws InvalidArgumentException
      */
-    public function fetch(array $params, string $merchantId = null, bool $useSlave = false): PublicCollection
+    public function fetch(array $params,
+                          string $merchantId = null,
+                          bool $useSlave = false,
+                          bool $useMasterEsReplica = false): PublicCollection
     {
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
@@ -135,6 +140,20 @@ trait RepositoryFetch
         $expands = $this->getExpandsForQueryFromInput($params);
 
         $query = $this->newQuery();
+
+        $routeThroughMasterReplica = false;
+
+        if($useMasterEsReplica === true)
+        {
+            $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
+        }
+
+        if (($useMasterEsReplica === true) and
+            ($routeThroughMasterReplica === true) and
+            ($this->app['env'] !== Environment::TESTING))
+        {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
 
         if ($useSlave === true)
         {
@@ -688,14 +707,16 @@ trait RepositoryFetch
      *
      * @param string $id
      * @param array  $params
+     * @param bool $useMasterEsReplica
      *
      * @return PublicEntity
      */
     public function findOrFailByPublicIdWithParams(
         string $id,
-        array $params) : PublicEntity
+        array $params,
+        bool $useMasterEsReplica = false) : PublicEntity
     {
-        $query = $this->getQueryForFindWithParams($params);
+        $query = $this->getQueryForFindWithParams($params, $useMasterEsReplica);
 
         $entity = $query->findOrFailPublic($id);
 
@@ -716,10 +737,11 @@ trait RepositoryFetch
      * (for now) can be sent conditionally.
      *
      * @param array $params
+     * @param bool $useMasterEsReplica
      *
      * @return BuilderEx
      */
-    protected function getQueryForFindWithParams(array $params): BuilderEx
+    protected function getQueryForFindWithParams(array $params, bool $useMasterEsReplica = false): BuilderEx
     {
         if ($this->hasEntityFetch() === true)
         {
@@ -735,6 +757,20 @@ trait RepositoryFetch
         $expands = $this->getExpandsForQueryFromInput($params);
 
         $query = $this->newQuery()->with($expands);
+
+        $routeThroughMasterReplica = false;
+
+        if($useMasterEsReplica === true)
+        {
+            $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
+        }
+
+        if (($useMasterEsReplica === true) and
+            ($routeThroughMasterReplica === true) and
+            ($this->app['env'] !== Environment::TESTING))
+        {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())->with($expands);
+        }
 
         $this->buildQueryWithParams($query, $params);
 

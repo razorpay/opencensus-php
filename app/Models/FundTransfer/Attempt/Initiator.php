@@ -141,11 +141,19 @@ class Initiator extends Base\Core
 
             $data[$channel] = [];
 
+            $forceFlag = false;
+
+            if ((isset($input[Constants::IGNORE_TIME_LIMIT]) === true) and
+                ($input[Constants::IGNORE_TIME_LIMIT] === '1'))
+            {
+                $forceFlag = true;
+            }
+
             // Since yesbank fund transfer with purpose settlement need Beneficiary
             // Registration and verification, they will go via queue.
             if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
             {
-                $response = $this->dispatchTransfers($channel, $attempts);
+                $response = $this->dispatchTransfers($channel, $attempts, $forceFlag);
             }
             else
             {
@@ -159,7 +167,7 @@ class Initiator extends Base\Core
     }
 
     public function processFundTransferAttempts(
-        string $channel, Base\PublicCollection $attempts): array
+        string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
     {
         $count = $attempts->count();
 
@@ -196,12 +204,12 @@ class Initiator extends Base\Core
 
             list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
                 $attempts,
-                function(PublicCollection $collection) use ($purpose, $channel)
+                function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
                 {
                     $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
                     return [
-                        (new $class($purpose))->initiateTransfer($collection),
+                        (new $class($purpose))->initiateTransfer($collection, $forceFlag),
                         $collection
                     ];
                 });
@@ -250,6 +258,8 @@ class Initiator extends Base\Core
 
     protected function raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium)
     {
+        $startTime = microtime(true);
+
         $batchFundTransfer = $attemptedFTAs->first()->batchFundTransfer;
 
         $batchFTaId = null;
@@ -281,12 +291,28 @@ class Initiator extends Base\Core
             'transaction_count'                     => $transactionCount,
         ];
 
-        $this->raiseSettlementEvent(
-            EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
-            null,
-            null,
-            $customProperties
-        );
+        $attemptedFTAs->each(function ($attemptedFTA) use ($customProperties)
+        {
+            $ftaId = $attemptedFTA->getId();
+
+            $customProperties['fund_transfer_attempt_id'] = $ftaId;
+
+            $this->raiseSettlementEvent(
+                EventCode::BATCH_FUND_TRANSFER_CREATION_SUCCESS,
+                null,
+                null,
+                $customProperties
+            );
+
+            return true;
+        });
+
+        $this->trace->info(TraceCode::FTA_BATCH_SUCCESS_EVENT_TIME_TAKEN,
+            [
+                'batch_fund_transfer_id'        => $batchFTaId,
+                'fund_transfer_attempt_count'   => $ftaCountInBatch,
+                'time_taken'                    => get_diff_in_millisecond($startTime),
+            ]);
     }
 
     protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
@@ -490,8 +516,9 @@ class Initiator extends Base\Core
      *
      * @param Entity $fta
      * @param        $channel
+     * @param        $forceFlag
      */
-    public function initFundTransferOnChannel(Entity $fta, $channel)
+    public function initFundTransferOnChannel(Entity $fta, $channel, bool $forceFlag = false)
     {
         $data = [
             'fta_id'  => $fta->getId(),
@@ -503,7 +530,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($channel, $attempts);
+        $response = $this->processFundTransferAttempts($channel, $attempts, $forceFlag);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
@@ -568,9 +595,10 @@ class Initiator extends Base\Core
      * Takes a list of attempt ids and dispatches to the queue
      * @param string $channel
      * @param PublicCollection $attempts
+     * @param forceFlag
      * @return array
      */
-    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
     {
         $attemptIds = $attempts->pluck(Entity::ID);
 
@@ -593,7 +621,7 @@ class Initiator extends Base\Core
                         'data'    => $info
                     ]);
 
-                FundTransfer::dispatch($this->mode, $id);
+                FundTransfer::dispatch($this->mode, $id, $forceFlag);
 
                 $successCount ++;
 
@@ -689,26 +717,6 @@ class Initiator extends Base\Core
     {
         try
         {
-            if ($fta->shouldUseGateway() === true)
-            {
-                return false;
-            }
-
-            $redis = $this->app['redis']->connection();
-
-            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
-
-            if (empty($ftsChannelMode) === true)
-            {
-                $this->trace->info(
-                    TraceCode::FTS_INVALID_CHANNEL,
-                    [
-                        'channel' => $fta->getChannel(),
-                    ]);
-
-                return false;
-            }
-
             FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(
@@ -855,7 +863,7 @@ class Initiator extends Base\Core
 
         return $response;
     }
-  
+
     protected function raiseSettlementEvent(array $eventDetails,
                                             Settlement\Entity $settlement = null,
                                             \Throwable $exception = null,
@@ -868,7 +876,7 @@ class Initiator extends Base\Core
             $exception,
             $customProperties);
     }
-    
+
     // This will return the mode which are unsupported due to being outside of timing window.
     // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
     // maximum ending timing. Since Nodal account class for each channel has its own timing

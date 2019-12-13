@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 
@@ -51,9 +52,10 @@ class Doppler
             return;
         }
 
-        // publishing event to doppler's topic if payment method is card/upi
+        // publishing event to doppler's topic if payment method is card/upi/netbanking
         if (($payment->getMethod() === Method::CARD) or
-            ($payment->getMethod() === Method::UPI))
+            ($payment->getMethod() === Method::UPI)  or
+            ($payment->getMethod() === Method::NETBANKING))
         {
 
             $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode);
@@ -85,6 +87,8 @@ class Doppler
         $card = [];
 
         $upi = [];
+
+        $netbanking = [];
 
         $terminalType = null;
 
@@ -124,29 +128,54 @@ class Doppler
             $card['card_type'] = $payment->card->getType();
             $card['card_issuer'] = $payment->card->getIssuer();
             $upi['vpa'] = null;
+            $upi['vpa_handle'] = null;
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
+            $netbanking['bank'] = null;
         }
 
         if($payment->isUPI() === true)
         {
+            $vpaHandle = $payment->getVpaHandleFromVpa();
+            if (strlen($vpaHandle) == 0)
+            {
+                $vpaHandle = null;
+            }
             $card['card_iin'] = null;
             $card['card_network'] = null;
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = $payment->getVpa();
-            $upi['psp'] = $payment->getPspFromVpa();
-            $upi['bank'] = $payment->getBankName();
+            $upi['vpa_handle'] = $vpaHandle;
+            $upi['psp'] = ProviderCode::getPsp($vpaHandle) ?? null;
+            $upi['bank'] = $payment->getBankName() ?? null;
             $upi['type'] = $payment->getMetadata('flow');
+            $netbanking['bank'] = null;
+        }
+
+        if($payment->isNetbanking() === true)
+        {
+            $card['card_iin'] = null;
+            $card['card_network'] = null;
+            $card['card_type'] = null;
+            $card['card_issuer'] = null;
+            $upi['vpa'] = null;
+            $upi['vpa_handle'] = null;
+            $upi['psp'] = null;
+            $upi['bank'] = null;
+            $upi['type'] = null;
+            $netbanking['bank'] = $payment->getBankName();
         }
 
         $reqObj = [
             'payment_id'            => $payment->getId(),
             'method'                => $payment->getMethod(),
+            'merchant_id'           => $payment->getMerchantId(),
             'authorized'            => $authorizeStatus,
             'card'                  => $card,
             'upi'                   => $upi,
+            'netbanking'            => $netbanking,
             'terminal'              => $payment->getTerminalId(),
             'gateway'               => $gateway,
             'terminalType'          => $terminalType,
@@ -158,6 +187,7 @@ class Doppler
             'error_code'            => $errorCode ?? null,
             'internal_error_code'   => $internalErrorCode ?? null,
         ];
+
 
         $data = [
             'session_id' => self::SESSION_ID,

@@ -153,16 +153,29 @@ class Merchant
 
     public function createTransaction($settlement)
     {
-        $this->setl = $settlement;
-
-        $this->repo->transaction(function()
+        try
         {
-            $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
+            $this->setl = $settlement;
 
-            $this->repo->saveOrFail($this->setlTransaction);
+            $this->repo->transaction(function()
+            {
+                $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
 
-            $this->repo->saveOrFail($this->setl);
-        });
+                $this->repo->saveOrFail($this->setlTransaction);
+
+                $this->repo->saveOrFail($this->setl);
+            });
+        }
+        catch(\Throwable $e)
+        {
+            //
+            // this is required as any failure in transaction wont revert the changes in the model.
+            // so forcefully mark the settlement transaction as null
+            //
+            $settlement->transaction()->dissociate();
+
+            throw $e;
+        }
     }
 
     public function createSettlementAttempt($merchantSettleToPartner, $params = []) : FundTransferAttempt\Entity
@@ -242,6 +255,7 @@ class Merchant
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
                 case Transaction\Type::DISPUTE:
+                case Transaction\Type::FUND_ACCOUNT_VALIDATION:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 
@@ -430,7 +444,6 @@ class Merchant
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-
         $customProperties = [
             'merchant_id'           => $this->merchant->getId(),
             'channel'               => $this->channel,

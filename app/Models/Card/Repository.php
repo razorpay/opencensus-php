@@ -204,6 +204,59 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findCardsWithoutFingerprint(int $limit)
+    {
+        $window = 1200;
+
+        $timestamp = time() - $window;
+
+        /*
+         * Split queries into two (Fingerprint with Null, Fingerprint with empty) to fix query timeouts.
+         */
+
+        $cardsWithNullFingerprint = $this->newQuery()
+            ->WhereNull(Entity::GLOBAL_FINGERPRINT)
+            ->whereNotNull(Entity::VAULT_TOKEN)
+            ->where(Entity::CREATED_AT, '<=', $timestamp)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+
+        $cardsWithEmptyFingerprint = $this->newQuery()
+            ->Where(Entity::GLOBAL_FINGERPRINT, '=', '')
+            ->whereNotNull(Entity::VAULT_TOKEN)
+            ->where(Entity::CREATED_AT, '<=', $timestamp)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+
+        return $cardsWithNullFingerprint->merge($cardsWithEmptyFingerprint)->all();
+    }
+
+    public function migrateCardVaultTokenBulk($existingToken, $newToken, $globalFingerprint)
+    {
+        $limit = 1000;
+
+        $this->newQuery()
+            ->where(Entity::VAULT_TOKEN, '=', $existingToken)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->update(['vault_token' => $newToken, 'global_fingerprint' => $globalFingerprint]);
+    }
+
+    public function resetCardVaultToken($existingToken)
+    {
+        if (starts_with($existingToken, "pay_"))
+        {
+            $limit = 250;
+
+            $this->newQuery()
+                ->where(Entity::VAULT_TOKEN, '=', $existingToken)
+                ->limit($limit)
+                ->update(['vault_token' => null, 'global_fingerprint' => null]);
+        }
+    }
+
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->dbColumn(Entity::INTERNATIONAL);

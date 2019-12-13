@@ -962,7 +962,7 @@ return [
                 'profile'         => [
                     'addresses' => [
                         [
-                            'type'          => 'registered',
+                            'type'          => 'REGISTERED',
                             'line1'         => 'registered',
                             'line2'         => 'near Jamnalal Police Stn',
                             'city'          => 'BENGALURU',
@@ -1058,6 +1058,11 @@ return [
                                 ],
                             ],
                         ],
+                    ],
+                ],
+                'settings' => [
+                    'payment' => [
+                        'international' => true,
                     ],
                 ],
                 'tnc' => [
@@ -1213,6 +1218,11 @@ return [
                         ],
                     ],
                 ],
+                'settings' => [
+                    'payment' => [
+                        'international' => true,
+                    ],
+                ],
                 'payment'    => [
                     'flash_checkout' => true,
                     'international'  => false,
@@ -1253,7 +1263,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => 8398,
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1280,6 +1290,11 @@ return [
                                 'ifsc'           => 'ICIC0000031',
                             ],
                         ],
+                    ],
+                ],
+                'settings' => [
+                    'payment' => [
+                        'international' => true,
                     ],
                 ],
             ],
@@ -1355,7 +1370,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 7011,
+                    'mcc'            => 8398,
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -1388,6 +1403,11 @@ return [
                                 'ifsc'           => 'ICIC0000031',
                             ],
                         ],
+                    ],
+                ],
+                'settings' => [
+                    'payment' => [
+                        'international' => true,
                     ],
                 ],
                 'payment'    => [

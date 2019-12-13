@@ -407,9 +407,15 @@ class Service extends Base\Service
         return $admins->toArrayPublic();
     }
 
-    public function editAdmin(string $adminId, array $input)
+    /**
+     * @param string $adminId
+     * @param array  $input
+     *
+     * @return mixed
+     */
+    public function validateAndEditAdmin(string $adminId, array $input)
     {
-        if (empty($this->adminOrgId))
+        if (empty($this->adminOrgId) === true)
         {
             $orgId = $this->app['basicauth']->getOrgId();
         }
@@ -440,6 +446,19 @@ class Service extends Base\Service
         }
 
         $admin = $this->core()->edit($admin, $input);
+
+        return $admin;
+    }
+
+    /**
+     * @param string $adminId
+     * @param array  $input
+     *
+     * @return mixed
+     */
+    public function editAdmin(string $adminId, array $input)
+    {
+        $admin = $this->validateAndEditAdmin($adminId, $input);
 
         return $admin->toArrayPublic();
     }

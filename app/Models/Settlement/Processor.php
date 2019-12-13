@@ -50,7 +50,7 @@ class Processor extends Base\Core
 
     const MUTEX_SETTLEMENT_CREATE_RESOURCE = 'SETTLEMENT_CREATE_%s_%s';
 
-    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 600;
+    const MUTEX_SETTLEMENT_CREATE_TIMEOUT  = 900;
 
     public function __construct()
     {
@@ -184,10 +184,11 @@ class Processor extends Base\Core
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,
             [
-                'timestamp'   => $this->setlTime,
-                'time'        => time(),
-                'using_queue' => $useQueue,
-                'params'      => $params,
+                'timestamp'    => $this->setlTime,
+                'time'         => time(),
+                'using_queue'  => $useQueue,
+                'params'       => $params,
+                'merchant_ids' => $merchantIds,
             ]);
 
         $response = [];
@@ -492,8 +493,12 @@ class Processor extends Base\Core
 
             $balance = $this->merchants[$merchantId]->getBalanceByTypeOrFail($balanceType);
 
-            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel, $merchantSettleToPartner, $balance, $params);
-
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns(
+                $txns,
+                $channel,
+                $merchantSettleToPartner,
+                $balance,
+                $params);
 
             if ($setl !== null)
             {
@@ -842,7 +847,9 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ($this->isMerchantSettlementAllowed($merchant) === false)
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant);
+
+        if ($status === false)
         {
             return [
                 'settlement_count' => 0,
@@ -874,6 +881,16 @@ class Processor extends Base\Core
         //
         (new Bucket\Core)->markMerchantSettlementAsComplete($merchant, $balanceType);
 
+        //
+        // update the count for channel here
+        // this would help to maintain the exact settlement create count
+        //
+        $redis = app('redis')->connection();
+
+        $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
+
+        $count = (int) $redis->hincrby($key, $channel, 1);
+
         $this->trace->count(
             Metric::SETTLEMENT_CREATED_COUNT,
             [
@@ -888,10 +905,27 @@ class Processor extends Base\Core
     {
         RuntimeManager::setMemoryLimit('4096M');
 
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        if ($balance === null)
+        {
+            $this->traceMerchantSettlementSkip(
+                $merchant,
+                [
+                    'reason' => 'merchant does not have balance type ' . $balanceType,
+                ]);
+
+            return [
+                'settlement_count'  => 0,
+                'attempt_count'     => 0,
+                'txn_count'         => 0,
+            ];
+        }
+
         // fetch all the valid transactions for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balanceType, $params);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balance, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)

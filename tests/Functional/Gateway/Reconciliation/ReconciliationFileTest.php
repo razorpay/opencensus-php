@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use Queue;
+use RZP\Jobs;
 use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -819,6 +821,69 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Tests recon and gateway data update for cybersource payment
+    // which is being routed through Cards Payment Service (CPS).
+    //
+    public function testAxisCyberSourceCpsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($payment1['reference1']);
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment1['id'], ['cps_route' => 2]);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        // Recon should not overwrite reference2 if it was saved before
+        $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    //
+    // Tests whether recon batch is getting created and the
+    // batch job is getting queued in the desired queue.
+    //
+    public function testAxisCyberSourceReconQueueAndBatchStatus()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+
+        Queue::fake();
+
+        $this->runForFiles([$file], 'Axis');
+
+        Queue::assertPushedOn(env('AWS_RECON_QUEUE'), Jobs\Batch::class);
+
+        $this->assertBatchStatus(Status::CREATED);
     }
 
     public function testAxisCyberSourceReconPaymentModifiedFile()
@@ -1740,6 +1805,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
 
         $this->fixtures->on('live')->create('terminal', [
@@ -1802,6 +1869,56 @@ class ReconciliationFileTest extends TestCase
 
         // set the payment status to 'failed' and try to reconcile it with force authorize
         $this->fixtures->edit('payment', $gatewayPayment1['payment_id'], ['status' => Payment\Status::FAILED]);
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($updatedPayment['status'], Payment\Status::FAILED);
+
+        $this->runForFiles([$file], 'Hitachi', [], [$payment['id']]);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
+
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // For payments being routed via Card Payment Service
+    public function testHitachiForceAuthorizeFailedCpsPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment['reference2']]);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        // set the payment cps_route to 2 and status to 'failed' and
+        // try to reconcile it with force authorize
+        $this->fixtures->edit(
+            'payment',
+            $gatewayPayment1['payment_id'],
+            [
+                'status'    => Payment\Status::FAILED,
+                'cps_route' => 2,
+            ]);
 
         $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
 
@@ -2389,6 +2506,61 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFssBobNewFormatPaymentReconFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
+
+        $headers[] = ['Merchant Setttlment' => '  '];
+
+        $headers[] = ['From Settlement' => ' To Settlement', '31-08-2018' => '31-08-2018'];
+
+        $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
+
+        $entries[] = $this->overrideFssBobReconNewFormat($gatewayPayment1, $gatewayPayment1['payment_id']);
+
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
+
+        $response = $this->runForFiles([$file], 'CardFssBob');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        //Test that gateway entity value is updated from response
+        $updatedGatewayEnity = $this->getDbLastEntityToArray('card_fss');
+
+        $this->assertEquals('30-07-2018', $updatedGatewayEnity['postdate']);
+
+        //Test We update payment reference2 from recon
+        $paymentEnity = $this->getDbLastEntity('payment');
+        $this->assertNotNull($paymentEnity['reference2']);
+        $this->assertNotNull($paymentEnity['reference1']);
+
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MSFAMOUNT']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+
+        // Test that the gateway fee and tax sum is as expected
+        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
+
+        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHdfcIsgBharatQrReconRefund()
     {
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
@@ -2648,6 +2820,23 @@ class ReconciliationFileTest extends TestCase
         $facade['Merchant Track ID'] = "''". $entityId;
 
         $facade['Transaction Type'] =  $transactionType;
+
+        return $facade;
+    }
+
+    private function overrideFssBobReconNewFormat(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
+    {
+        $facade = $this->testData['facades']['testFssBobNewFormatRecon'];
+
+        $facade['TRANSACTIONAMOUNT'] = number_format($gatewayPayment['amount'] / 100, 2);
+
+        $facade['SETTLEMENTAMOUNT']  = $facade['TRANSACTIONAMOUNT'] / 100;
+
+        $facade['AUTHAPPROVALCODE']  = $gatewayPayment['auth'];
+
+        $facade['MERCHANTTRACKID']   = "''". $entityId;
+
+        $facade['TRANSACTIONTYPE']   =  $transactionType;
 
         return $facade;
     }

@@ -11,10 +11,14 @@ use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 class BusinessSubCategoryMetaData
 {
     const DESCRIPTION                       = 'description';
-    const NORMAL_AUTH_FIELDS                = [self::DESCRIPTION];
+    const NORMAL_AUTH_FIELDS                = [self::DESCRIPTION, Entity::ACTIVATION_FLOW,
+                                               self::NON_REGISTERED_ACTIVATION_FLOW];
     const EMI_ACTIVATION                    = 'emi_activation';
     const INTERNATIONAL_ACTIVATION          = 'international_activation';
     const NON_REGISTERED_MAX_PAYABLE_AMOUNT = 'non_registered_max_payable_amount';
+
+    // This is just a temp solution till we move this to database and implement fallback logic based on business type
+    const NON_REGISTERED_ACTIVATION_FLOW = 'non_registered_activation_flow';
 
     const SUB_CATEGORY_METADATA = [
         Sub::ACCOMMODATION                 => [
@@ -24,7 +28,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1062300,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ACCOUNTING                    => [
             Merchant::CATEGORY                      => 8931,
@@ -33,7 +38,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::AD_AND_MARKETING              => [
             Merchant::CATEGORY                      => 7311,
@@ -43,6 +49,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::AGRICULTURE                   => [
             Merchant::CATEGORY                      => 5193,
@@ -51,7 +58,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ALCOHOL                       => [
             Merchant::CATEGORY                      => 5813,
@@ -60,7 +68,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::ARTS_AND_COLLECTIBLES         => [
             Merchant::CATEGORY                      => 5971,
@@ -69,7 +78,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::AVIATION                      => [
             Merchant::CATEGORY                      => 4511,
@@ -78,7 +88,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1062300,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::BABY_PRODUCTS                 => [
             Merchant::CATEGORY                      => 5945,
@@ -87,7 +98,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::BETTING                       => [
             Merchant::CATEGORY                      => 7801,
@@ -96,7 +108,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::BILL_AND_RECHARGE_AGGREGATORS => [
             Merchant::CATEGORY                      => 4814,
@@ -106,6 +119,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::BOOKS                         => [
             Merchant::CATEGORY                      => 5942,
@@ -114,7 +128,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::BROADBAND                     => [
             Merchant::CATEGORY                      => 4899,
@@ -124,6 +139,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::BUS                           => [
             Merchant::CATEGORY                      => 4131,
@@ -132,7 +148,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CABLE                         => [
             Merchant::CATEGORY                      => 4899,
@@ -142,6 +159,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CAB_HAILING                   => [
             Merchant::CATEGORY                      => 4121,
@@ -150,7 +168,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CATERING                      => [
             Merchant::CATEGORY                      => 5811,
@@ -159,7 +178,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CENTRAL                       => [
             Merchant::CATEGORY                      => 9399,
@@ -169,6 +189,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::CHARITY                       => [
             Merchant::CATEGORY                      => 8398,
@@ -178,6 +199,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::CLINIC                        => [
             Merchant::CATEGORY                      => 8062,
@@ -186,7 +208,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::COACHING                      => [
             Merchant::CATEGORY                      => 8299,
@@ -195,7 +218,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::COLLEGE                       => [
             Merchant::CATEGORY                      => 8220,
@@ -204,7 +228,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::COMMODITIES                   => [
             Merchant::CATEGORY                      => 6211,
@@ -213,7 +238,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::CONSULTING                    => [
             Merchant::CATEGORY                      => 7392,
@@ -222,7 +248,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CONSULTING_AND_OUTSOURCING    => [
             Merchant::CATEGORY                      => 7392,
@@ -231,7 +258,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CONTENT_AND_PUBLISHING        => [
             Merchant::CATEGORY                      => 2741,
@@ -240,7 +268,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::COOPERATIVES                  => [
             Merchant::CATEGORY                      => 6012,
@@ -249,7 +278,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::COUPONS                       => [
             Merchant::CATEGORY                      => 7311,
@@ -258,7 +288,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::COURIER                       => [
             Merchant::CATEGORY                      => 4215,
@@ -267,7 +298,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4130000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::COWORKING                     => [
             Merchant::CATEGORY                      => 6513,
@@ -277,6 +309,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::CROWDFUNDING                  => [
             Merchant::CATEGORY                      => 6050,
@@ -285,7 +318,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::CRYPTOCURRENCY                => [
             Merchant::CATEGORY                      => 6051,
@@ -294,7 +328,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::CRYPTO_MACHINERY              => [
             Merchant::CATEGORY                      => 5999,
@@ -303,7 +338,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::DAY_CARE                      => [
             Merchant::CATEGORY                      => 8351,
@@ -312,7 +348,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY                      => 6513,
@@ -321,7 +358,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::DIETICIAN                     => [
             Merchant::CATEGORY                      => 7298,
@@ -330,7 +368,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::DISTANCE_LEARNING             => [
             Merchant::CATEGORY                      => 8299,
@@ -339,7 +378,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::DISTRIBUTION_MANAGEMENT       => [
             Merchant::CATEGORY                      => 4214,
@@ -348,7 +388,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4130000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::DROP_SHIPPING                 => [
             Merchant::CATEGORY                      => 5399,
@@ -357,7 +398,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::DTH                           => [
             Merchant::CATEGORY                      => 4899,
@@ -367,6 +409,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ECOMMERCE_MARKETPLACE         => [
             Merchant::CATEGORY                      => 5399,
@@ -375,7 +418,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::EDUCATIONAL                   => [
             Merchant::CATEGORY                      => 8398,
@@ -385,6 +429,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::ELEARNING                     => [
             Merchant::CATEGORY                      => 8299,
@@ -393,7 +438,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ELECTRICITY                   => [
             Merchant::CATEGORY                      => 4900,
@@ -403,6 +449,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ELECTRONICS_AND_FURNITURE     => [
             Merchant::CATEGORY                      => 5732,
@@ -411,7 +458,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::END_TO_END_LOGISTICS          => [
             Merchant::CATEGORY                      => 4214,
@@ -420,7 +468,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4130000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ESPORTS                       => [
             Merchant::CATEGORY                      => 5816,
@@ -430,6 +479,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::EVENT_PLANNING                => [
             Merchant::CATEGORY                      => 8999,
@@ -438,7 +488,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FACILITY_MANAGEMENT           => [
             Merchant::CATEGORY                      => 7349,
@@ -447,7 +498,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FANTASY_SPORTS                => [
             Merchant::CATEGORY                      => 5816,
@@ -457,6 +509,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::FASHION_AND_LIFESTYLE         => [
             Merchant::CATEGORY                      => 5691,
@@ -465,7 +518,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FINANCIAL_ADVISOR             => [
             Merchant::CATEGORY                      => 8931,
@@ -474,7 +528,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FITNESS                       => [
             Merchant::CATEGORY                      => 7298,
@@ -483,7 +538,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FOOD_COURT                    => [
             Merchant::CATEGORY                      => 5814,
@@ -492,7 +548,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::FOREX                         => [
             Merchant::CATEGORY                      => 6010,
@@ -501,7 +558,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::FREIGHT                       => [
             Merchant::CATEGORY                      => 4214,
@@ -510,7 +568,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4130000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::GAME_DEVELOPER                => [
             Merchant::CATEGORY                      => 5816,
@@ -520,6 +579,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::GAMING_MARKETPLACE            => [
             Merchant::CATEGORY                      => 5816,
@@ -529,6 +589,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::GAS                           => [
             Merchant::CATEGORY                      => 4900,
@@ -538,6 +599,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::GET_RICH_SCHEMES              => [
             Merchant::CATEGORY                      => 7361,
@@ -546,7 +608,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::GIFTING                       => [
             Merchant::CATEGORY                      => 5193,
@@ -555,7 +618,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::GROCERY                       => [
             Merchant::CATEGORY                      => 5411,
@@ -564,7 +628,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::HEALTH_COACHING               => [
             Merchant::CATEGORY                      => 7298,
@@ -573,7 +638,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::HEALTH_PRODUCTS               => [
             Merchant::CATEGORY                      => 5499,
@@ -582,7 +648,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::HEALTHCARE_MARKETPLACE        => [
             Merchant::CATEGORY                      => 5399,
@@ -591,7 +658,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::HOSPITAL                      => [
             Merchant::CATEGORY                      => 8062,
@@ -600,7 +668,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::IAAS                          => [
             Merchant::CATEGORY                      => 5817,
@@ -609,7 +678,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::INSURANCE                     => [
             Merchant::CATEGORY                      => 6300,
@@ -618,7 +688,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::INTERIOR_DESIGN_AND_ARCHITECT => [
             Merchant::CATEGORY                      => 8911,
@@ -627,7 +698,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::INTERNET_PROVIDER             => [
             Merchant::CATEGORY                      => 4816,
@@ -637,6 +709,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::LAB                           => [
             Merchant::CATEGORY                      => 8071,
@@ -645,7 +718,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::LEGAL                         => [
             Merchant::CATEGORY                      => 8111,
@@ -654,7 +728,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::LENDING                       => [
             Merchant::CATEGORY                      => 6012,
@@ -663,7 +738,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::MATCHMAKING                   => [
             Merchant::CATEGORY                      => 7273,
@@ -672,7 +748,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::MESSAGING                     => [
             Merchant::CATEGORY                      => 4821,
@@ -681,7 +758,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::MOVERS_AND_PACKERS            => [
             Merchant::CATEGORY                      => 4214,
@@ -690,7 +768,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::MULTI_LEVEL_MARKETING         => [
             Merchant::CATEGORY                      => 5964,
@@ -699,7 +778,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::MULTIPLEX                     => [
             Merchant::CATEGORY                      => 7832,
@@ -708,7 +788,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::MUSIC_STREAMING               => [
             Merchant::CATEGORY                      => 5815,
@@ -717,7 +798,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::MUTUAL_FUND                   => [
             Merchant::CATEGORY                      => 6211,
@@ -726,7 +808,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::NBFC                          => [
             Merchant::CATEGORY                      => 6012,
@@ -735,7 +818,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::NEIGHBOURHOOD_NETWORK         => [
             Merchant::CATEGORY                      => 8699,
@@ -744,7 +828,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::NEWS                          => [
             Merchant::CATEGORY                      => 5994,
@@ -753,7 +838,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::OFFICE_SUPPLIES               => [
             Merchant::CATEGORY                      => 5111,
@@ -762,7 +848,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::ONLINE_CASINO                 => [
             Merchant::CATEGORY                      => 7801,
@@ -772,6 +859,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::ONLINE_FOOD_ORDERING          => [
             Merchant::CATEGORY                      => 5811,
@@ -780,7 +868,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::OTA                           => [
             Merchant::CATEGORY                      => 4722,
@@ -789,7 +878,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1062300,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::PAAS                          => [
             Merchant::CATEGORY                      => 5817,
@@ -798,7 +888,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::PENSION_FUND                  => [
             Merchant::CATEGORY                      => 6012,
@@ -807,7 +898,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::PERSONAL                      => [
             Merchant::CATEGORY                      => 8398,
@@ -817,6 +909,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::PROFESSIONAL_COURSES          => [
             Merchant::CATEGORY                      => 8299,
@@ -825,7 +918,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::PET_PRODUCTS                  => [
             Merchant::CATEGORY                      => 5995,
@@ -834,7 +928,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::PHARMACY                      => [
             Merchant::CATEGORY                      => 5912,
@@ -843,7 +938,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1549000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::PROFESSIONAL_NETWORK          => [
             Merchant::CATEGORY                      => 8699,
@@ -852,7 +948,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::REALESTATE_CLASSIFIEDS        => [
             Merchant::CATEGORY                      => 6513,
@@ -861,7 +958,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::RELIGIOUS                     => [
             Merchant::CATEGORY                      => 8661,
@@ -871,6 +969,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::RELIGIOUS_PRODUCTS            => [
             Merchant::CATEGORY                      => 5973,
@@ -879,7 +978,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::RENTAL                        => [
             Merchant::CATEGORY                      => 7394,
@@ -888,7 +988,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::REPAIR_AND_CLEANING           => [
             Merchant::CATEGORY                      => 7531,
@@ -897,7 +998,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::RESTAURANT                    => [
             Merchant::CATEGORY                      => 5812,
@@ -906,7 +1008,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::RESTAURANT_SEARCH_AND_BOOKING => [
             Merchant::CATEGORY                      => 7299,
@@ -915,7 +1018,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::RWA                           => [
             Merchant::CATEGORY                      => 7349,
@@ -924,7 +1028,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SAAS                          => [
             Merchant::CATEGORY                      => 5817,
@@ -933,7 +1038,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SCHOOLS                       => [
             Merchant::CATEGORY                      => 8211,
@@ -942,7 +1048,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::SECURITIES                    => [
             Merchant::CATEGORY                      => 6211,
@@ -951,7 +1058,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::SERVICE_CENTRE                => [
             Merchant::CATEGORY                      => 5511,
@@ -960,7 +1068,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SERVICES_CLASSIFIEDS          => [
             Merchant::CATEGORY                      => 7311,
@@ -969,7 +1078,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SEXUAL_WELLNESS_PRODUCTS      => [
             Merchant::CATEGORY                      => 5999,
@@ -978,7 +1088,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::SOCIAL_NETWORK                => [
             Merchant::CATEGORY                      => 8641,
@@ -987,7 +1098,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SPACE_RENTAL                  => [
             Merchant::CATEGORY                      => 6513,
@@ -996,7 +1108,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::SPORTS_PRODUCTS               => [
             Merchant::CATEGORY                      => 5941,
@@ -1005,7 +1118,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::STATE                         => [
             Merchant::CATEGORY                      => 9399,
@@ -1015,6 +1129,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 0,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::TECHNICAL_SUPPORT             => [
             Merchant::CATEGORY                      => 7379,
@@ -1023,7 +1138,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::TELECOM                       => [
             Merchant::CATEGORY                      => 4814,
@@ -1033,6 +1149,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::TICKETING                     => [
             Merchant::CATEGORY                      => 7832,
@@ -1041,7 +1158,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::TOBACCO                       => [
             Merchant::CATEGORY                      => 5993,
@@ -1050,7 +1168,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::TRADING                       => [
             Merchant::CATEGORY                      => 6211,
@@ -1059,7 +1178,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 3500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::TRAIN_AND_METRO               => [
             Merchant::CATEGORY                      => 4112,
@@ -1068,7 +1188,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::TRAVEL_AGENCY                 => [
             Merchant::CATEGORY                      => 4722,
@@ -1077,7 +1198,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1062300,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::UNIVERSITY                    => [
             Merchant::CATEGORY                      => 8220,
@@ -1086,7 +1208,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 6000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::VIDEO_ON_DEMAND               => [
             Merchant::CATEGORY                      => 5815,
@@ -1095,7 +1218,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::WATER                         => [
             Merchant::CATEGORY                      => 4900,
@@ -1105,6 +1229,7 @@ class BusinessSubCategoryMetaData
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::WAREHOUSING                   => [
             Merchant::CATEGORY                      => 4225,
@@ -1113,7 +1238,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4130000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::WEAPONS_AND_AMMUNITIONS       => [
             Merchant::CATEGORY                      => 5999,
@@ -1122,7 +1248,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
         Sub::WEB_DEVELOPMENT               => [
             Merchant::CATEGORY                      => 7372,
@@ -1131,7 +1258,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 5000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
         Sub::WHOLESALE                     => [
             Merchant::CATEGORY                      => 5300,
@@ -1140,7 +1268,8 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1480500,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 4000000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
         ],
     ];
 
@@ -1157,7 +1286,8 @@ class BusinessSubCategoryMetaData
             Merchant::CATEGORY2                     => Category::OTHERS,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
-            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
+            self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ];
     }
 

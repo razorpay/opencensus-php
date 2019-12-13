@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Webhook\Stork;
 
 class Core extends Merchant\Core
 {
@@ -101,6 +102,8 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create_account', $input);
 
+        $input = Helper::modifyAccountInput($input);
+
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
@@ -109,6 +112,8 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail($account->getId());
 
         return $account;
     }
@@ -125,6 +130,8 @@ class Core extends Merchant\Core
     public function editAccount(Merchant\Entity $partner, string $accountId, array $input)
     {
         (new Validator)->validateInput('edit_account', $input);
+
+        $input = Helper::modifyAccountInput($input);
 
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
         {
@@ -230,16 +237,23 @@ class Core extends Merchant\Core
 
         $this->fillBankAccountNotes($subMerchant, $input);
 
-        // update activation flow to grey list by default to bypass the instant activation flow
-        $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
-
-        $subMerchantDetails->setActivationFlow(Detail\ActivationFlow::GREYLIST);
-
-        $this->repo->saveOrFail($subMerchantDetails);
+        $this->updateActivationFlows($partner, $subMerchant);
 
         $this->upsertMerchantEmails($subMerchant, $input);
 
         return $subMerchant;
+    }
+
+    protected function updateActivationFlows(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        $merchantDetailsCore = new Detail\Core;
+
+        $merchantDetailsCore->autoUpdateMerchantActivationFlows($subMerchant, $partner);
+
+        // fetch merchant details and save to db as above method does not save it
+        $subMerchantDetails = $merchantDetailsCore->getMerchantDetails($subMerchant);
+
+        $this->repo->saveOrFail($subMerchantDetails);
     }
 
     /**

@@ -61,6 +61,7 @@ class Base
         'gateway_token'     => \RZP\Models\Customer\GatewayToken\Entity::class,
         'risk'              => \RZP\Models\Risk\Entity::class,
         'payment_analytics' => \RZP\Models\Payment\Analytics\Entity::class,
+        'd2c_bureau_detail' => \RZP\Models\D2cBureauDetail\Entity::class,
 
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,
@@ -70,6 +71,7 @@ class Base
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,
         'cardless_emi'      => \RZP\Gateway\CardlessEmi\Entity::class,
+        'options'           => \RZP\Models\Options\Entity::class,
     ];
 
     protected static $liveAndTest = [

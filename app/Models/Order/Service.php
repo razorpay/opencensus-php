@@ -2,15 +2,15 @@
 
 namespace RZP\Models\Order;
 
-use Razorpay\IFSC\IFSC;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Diag\EventCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
-use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Diag\EventCode;
 
 class Service extends Base\Service
 {
@@ -221,9 +221,9 @@ class Service extends Base\Service
      * Here, we convert the old format to the new one, and force_offer explicitly,
      * so that the old format continues to work the way it did.
      *
-     * @param  array $input
+     * @param  array  $input
      */
-    protected function modifyOfferRequestFromOldFormat(array & $input)
+    protected function modifyOfferRequestFromOldFormat(array &$input)
     {
         if ($this->isOldFormatOfferRequest($input) === false)
         {
@@ -304,5 +304,49 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $order->toArrayPublic();
+    }
+
+    // This function is being used by Create Payment Link flow with options containing an Order
+    public function createOrderFromOptionsForPaymentLinks(array $input, bool $enablePartialPayment = false)
+    {
+        $this->beforeCreate($input);
+
+        $orderInput = (new Core())->getInputWithoutExtraParams($input);
+
+        $order = $this->processCreateFromOptionsForPaymentLinks($orderInput, $enablePartialPayment);
+
+        $order = $this->afterCreate($input, $order);
+
+        return $order;
+    }
+
+    private function processCreateFromOptionsForPaymentLinks(array $input, bool $enablePartialPayment): Entity
+    {
+        $properties = $input;
+
+        $properties['user_agent'] = $this->app['request']->header('User-Agent');
+
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $properties);
+
+        try
+        {
+            $merchant = $this->merchant;
+
+            $this->modifyOfferRequestFromOldFormat($input);
+
+            $this->modifyBankAccountRequestFromOldFormat($input);
+
+            $order = (new Core)->create($input, $merchant, $enablePartialPayment);
+
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $order);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex);
+
+            throw $ex;
+        }
+
+        return $order;
     }
 }

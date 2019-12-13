@@ -42,6 +42,7 @@ class Validator extends Merchant\Validator
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'required|array',
         Constants::SETTLEMENT      => 'sometimes|array',
+        Constants::SETTINGS        => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
         Constants::CONTACT_INFO    => 'sometimes|array',
     ];
@@ -91,7 +92,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $accountAddressRules = [
-        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'required|string|max:100',
         Constants::LINE2         => 'required|string',
         Constants::CITY          => 'required|string',
@@ -102,7 +103,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountAddressRules = [
-        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'filled|string|max:100',
         Constants::LINE2         => 'filled|string',
         Constants::CITY          => 'filled|string',
@@ -163,7 +164,7 @@ class Validator extends Merchant\Validator
 
     protected static $ownerInfoRules = [
         Constants::NAME           => 'required|string',
-        Constants::IDENTIFICATION => 'array|size:1',
+        Constants::IDENTIFICATION => 'required|array|size:1',
     ];
 
     protected static $contactInfoRules = [
@@ -172,10 +173,19 @@ class Validator extends Merchant\Validator
         Constants::PHONE => 'required|numeric|digits:10',
     ];
 
+    protected static $settingsRules = [
+        Constants::PAYMENT => 'sometimes|array|custom:payment_settings',
+    ];
+
+    protected static $paymentSettingsRules = [
+        Constants::INTERNATIONAL => 'sometimes|boolean',
+    ];
+
     protected static $createAccountValidators = [
         'profile_input',
         'settlement_input',
         'contact_info_input',
+        'settings_input',
     ];
 
     protected static $editAccountValidators = [
@@ -203,6 +213,14 @@ class Validator extends Merchant\Validator
         $this->validateEmails($profileInput, 'edit');
     }
 
+    protected function validateAddressType($attribute, $value)
+    {
+        if (in_array(strtolower($value), Constants::$validAddressTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid address type: ' . $value);
+        }
+    }
+
     protected function validateProfileInput(array $input)
     {
         $profileInput = $input[Constants::PROFILE];
@@ -218,6 +236,21 @@ class Validator extends Merchant\Validator
         $this->validateOwnerInfo($profileInput);
 
         $this->validateIdentificationDocuments($profileInput);
+    }
+
+    protected function validateSettingsInput(array $input)
+    {
+        if (isset($input[Constants::SETTINGS]) === false)
+        {
+            return;
+        }
+
+        $this->validateInput('settings', $input[Constants::SETTINGS]);
+    }
+
+    protected function validatePaymentSettings($attribute, $value)
+    {
+        $this->validateInput('payment_settings', $value);
     }
 
     protected function validateContactInfoInput(array $input)
