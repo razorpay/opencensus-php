@@ -4,16 +4,42 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 
-@connect(state => state, {
+@connect(state => state.settlement, {
   closeModal,
 })
 export default class SettlementSchedule extends Component {
   state = {
     showBreakUp: false,
     showExample: false,
+    defaultDomestic: [],
+    defaultInternational: [],
+    otherMethods: [],
+  };
+
+  componentDidMount() {
+    this.processSchedule();
+  }
+
+  processSchedule = () => {
+    const { schedule } = this.props;
+
+    let defaultDomestic = schedule.data.filter(
+      item => item.method === null && item.international === 0
+    );
+    let defaultInternational = schedule.data.filter(
+      item => item.method === null && item.international === 1
+    );
+    let otherMethods = schedule.data.filter(item => item.method !== null);
+
+    this.setState({
+      defaultDomestic,
+      defaultInternational,
+      otherMethods,
+    });
   };
 
   render() {
+    console.log(this.props);
     return (
       <div>
         <ModalHeader
@@ -25,30 +51,39 @@ export default class SettlementSchedule extends Component {
             <div class="grey">Your payments get settled to your account in</div>
             <div class="emphzd">
               <div class="emphzd-div">
-                <div class="flex">
-                  <div class="w50">Domestic Payments</div>
-                  <div class="w50">T+3 working days</div>
-                </div>
-                <div class="flex">
-                  <div class="w50">International Payments</div>
-                  <div class="w50">T+7 working days</div>
-                </div>
-              </div>
-              <div style={{ margin: '10px' }}>
-                <p class="grey">Other method specific Settlement schedules,</p>
-                <div class="flex" style={{ margin: '10px', fontSize: '16px' }}>
-                  <div class="w50">Method 1</div>
-                  <div class="w50">
-                    <b>T+4</b> Working Days
+                {this.state.defaultDomestic.length > 0 && (
+                  <div class="flex">
+                    <div class="w50">Domestic Payments</div>
+                    <div class="w50">
+                      T+{this.state.defaultDomestic[0].delay} working days
+                    </div>
                   </div>
-                </div>
-                <div class="flex" style={{ margin: '10px', fontSize: '16px' }}>
-                  <div class="w50">Method 2</div>
-                  <div class="w50">
-                    <b>T+6</b> Working Days
+                )}
+                {this.state.defaultInternational.length > 0 && (
+                  <div class="flex">
+                    <div class="w50">International Payments</div>
+                    <div class="w50">
+                      T+{this.state.defaultInternational[0].delay} working days
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
+              {this.state.otherMethods.map((item, idx) => {
+                <div style={{ margin: '10px' }} key={idx}>
+                  <p class="grey">
+                    Other method specific Settlement schedules,
+                  </p>
+                  <div
+                    class="flex"
+                    style={{ margin: '10px', fontSize: '16px' }}
+                  >
+                    <div class="w50">{item.method}</div>
+                    <div class="w50">
+                      <b>T+{item.delay}</b> Working Days
+                    </div>
+                  </div>
+                </div>;
+              })}
               <div>
                 <div
                   class="flex grey"
