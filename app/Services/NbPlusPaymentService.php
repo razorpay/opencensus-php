@@ -130,7 +130,7 @@ class NbPlusPaymentService
 
         $this->input = $input;
 
-        if ($this->action === Action::AUTHORIZE)
+        if ($this->action === self::AUTHORIZE)
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
