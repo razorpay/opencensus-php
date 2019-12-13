@@ -35,6 +35,7 @@ use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
@@ -50,6 +51,7 @@ use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
@@ -630,6 +632,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        if($action === Merchant\Action::RELEASE_FUNDS)
+        {
+            $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
+        }
+
         if($action === Constants::SUSPEND)
         {
             $this->removeMerchantEmailToMailingList($merchant);
@@ -646,6 +653,83 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /*
+     check if merchant is subMerchant to aggregator/fully Managerd partner
+     and if partner is settle to partner
+     and then check partner's bank account exists or not.
+    */
+    public function getSettledToPartnersTypeOfMerchantIfExists(Entity $merchant)
+    {
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        //
+        // subMerchant can belong to only one aggregator or fully managed at a time.
+        // settlementPartnerTypes are aggregator and fully Managed.
+        //
+        $partner = $partners->filter(function(Entity $partner)
+        {
+            return (in_array($partner->getPartnerType(), PartnerConstants::$settlementPartnerTypes, true) === true) ;
+
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return null;
+        }
+
+        return $partner;
+    }
+
+    public function isValidBankAccountForSettledToPartner(Entity $submerchant, Entity $partner = null)
+    {
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        $application = $this->getInternalPartnerApp($partner);
+
+        $config      = (new PartnerConfig\Core)->fetch($application, $submerchant);
+
+        if ($config === null)
+        {
+            return false;
+        }
+
+        $shouldSettleToPartner = $config->shouldSettleToPartner();
+
+        if ($shouldSettleToPartner === true)
+        {
+            // validate Partner's Bank account
+            $bankAccount = $partner->bankAccount;
+
+            if ($bankAccount === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND);
+            }
+        }
+
+        return $shouldSettleToPartner;
+    }
+
+    /**
+     * Adds merchant to settlement bucket when funds are released for the merchant.
+     *
+     * @param Merchant\Entity $merchant
+     */
+    protected function addMerchantToSettlementBucketOnFundsRelease(Merchant\Entity $merchant)
+    {
+        $settlementTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new Bucket\Core())->addMerchantToSettlementBucket('', $merchant->getId(), $settlementTime);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
     }
 
     /**
@@ -2209,6 +2293,11 @@ class Core extends Base\Core
         if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
         {
             $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+        }
+
+        if (isset($input[Detail\Entity::BUSINESS_DBA]) === true)
+        {
+            $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
         }
 
         if (empty($merchantInput) === true)

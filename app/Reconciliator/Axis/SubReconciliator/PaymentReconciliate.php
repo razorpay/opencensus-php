@@ -331,7 +331,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
                     'message'         => 'Unable to figure out the card type.',

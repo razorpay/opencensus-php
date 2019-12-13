@@ -251,6 +251,7 @@ class Entity
     const UPI_AIRTEL             = 'upi_airtel';
     const GOOGLE_PAY             = 'google_pay';
     const WORLDLINE              = 'worldline';
+    const GETSIMPL               = 'getsimpl';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -553,6 +554,7 @@ class Entity
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
+        self::GETSIMPL               => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

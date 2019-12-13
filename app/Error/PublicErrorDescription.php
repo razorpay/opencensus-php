@@ -323,6 +323,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
     const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                    = 'You are not allowed to perform this operation';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                            = 'The merchant has not yet provided his bank account details';
+    const BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND                             = 'The Partner has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';

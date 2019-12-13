@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
@@ -25,9 +26,70 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'mozart';
 
+    const CACHE_KEY    = 'gateway:cache_key_%s';
+
     protected $map = [
         'data'      => Entity::RAW,
     ];
+
+    public function checkAccount(array $input)
+    {
+        $this->action($input, Action::CHECKACCOUNT);
+
+        $provider = strtoupper($input['provider']);
+
+        $input['terminal'] = $this->terminal;
+
+        switch ($input['method'])
+        {
+            case Payment\Gateway::PAYLATER:
+                $input['payment']['gateway'] = $input['provider'];
+                break;
+        }
+
+        $request = $this->getMozartRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::CHECK_ACCOUNT_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'provider' => $provider,
+                'contact'  => $input['contact'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->trace->info(
+            TraceCode::CHECK_ACCOUNT_RESPONSE,
+            [
+                'response' => $traceRes,
+            ]);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::CHECKACCOUNT);
+
+        switch ($input['provider'])
+        {
+            case Payment\Gateway::GETSIMPL:
+                $token = $response['data']['simpltoken'];
+                break;
+            default:
+                $token = null;
+        }
+
+        if ($this->shouldCacheToken($token, $input) == true)
+        {
+            $this->cacheValue($token, $input);
+        }
+
+        return $response;
+    }
 
     public function authorize(array $input)
     {
@@ -36,6 +98,19 @@ class Gateway extends Base\Gateway
         if (($this->getGateway($input) === 'wallet_phonepe') and ($input['wallet']['flow'] == 'intent'))
         {
             parent::action($input, Action::INTENT);
+        }
+
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+
+                if(empty($input['simpltoken']) === true)
+                {
+                    $input['simpltoken'] = $this->fetchCacheData($input);
+                }
+
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
         }
 
         $request = $this->getMozartRequestArray($input);
@@ -469,6 +544,13 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION);
         }
 
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -522,6 +604,13 @@ class Gateway extends Base\Gateway
         $this->input = $input;
         $this->action = Action::VERIFY_REFUND;
 
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -563,6 +652,13 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
 
         $verify = new Verify($this->gateway, $input);
 
@@ -854,6 +950,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  null,
                 Action::VERIFY      =>  Action::PAY_VERIFY,
             ],
+            Payment\Gateway::GETSIMPL   =>  [
+                Action::CHECKACCOUNT    =>  null,
+                Action::PAY_INIT        =>  null,
+                Action::REFUND          =>  Action::PAY_INIT,
+                Action::VERIFY          =>  Action::PAY_INIT,
+                Action::VERIFY_REFUND   =>  Action::REFUND,
+            ]
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -959,6 +1062,14 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  null,
                 Action::VERIFY      =>  Action::AUTHORIZE,
             ],
+
+            Payment\Gateway::GETSIMPL   =>  [
+                Action::CHECKACCOUNT    =>  null,
+                Action::PAY_INIT        =>  null,
+                Action::REFUND          =>  Action::AUTHORIZE,
+                Action::VERIFY          =>  Action::AUTHORIZE,
+                Action::VERIFY_REFUND   =>  Action::REFUND,
+            ]
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -1451,6 +1562,49 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
             ]
         ];
+    }
+
+    protected function shouldCacheToken($token, $input)
+    {
+        if ((empty($token) === false) and ($input['provider'] === Payment\Gateway::GETSIMPL))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    protected function cacheValue($token, $input)
+    {
+        $contact = $input['contact'];
+
+        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $cacheKey = strtolower($input['provider']) . '_' . $contact . '_' . $merchantId;
+
+        $key = sprintf(self::CACHE_KEY, $cacheKey);
+
+        $this->createCacheData($key, $token);
+    }
+
+    protected function createCacheData($key, $value, $ttl = self::CARD_CACHE_TTL)
+    {
+        $this->app['cache']->put($key, $value, $ttl);
+    }
+
+    protected function fetchCacheData($input)
+    {
+        $contact = $input['payment']['contact'];
+
+        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $cacheKey = $input['payment']['wallet'] . '_' . $contact . '_' . $merchantId;
+
+        $key = sprintf(self::CACHE_KEY, $cacheKey);
+
+        return $this->app['cache']->get($key);
     }
 
     protected function extractPaymentsProperties($gatewayPayment)

@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use Redirect;
 use ApiResponse;
@@ -28,7 +29,6 @@ use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
-
     /**
      * This is a health Check API for third party url.
      * It basically hits external services (like payment gateway) through api.
@@ -216,6 +216,9 @@ class GatewayController extends Controller
             // Only logs the response
             case Gateway::WALLET_OLAMONEY:
                 break;
+            case Gateway::GETSIMPL:
+                $data = $this->processGetSimplCallback($input);
+                return $data;
 
             //Special case because gateway is upi_mindgate
             case 'upi_hdfc':
@@ -238,7 +241,9 @@ class GatewayController extends Controller
             case Gateway::UPI_JUSPAY:
 
                 $input = [
-                    'headers' => Request::header(),
+                    'headers' => [
+                        'x-merchant-payload-signature' => Request::header('X-Merchant-Payload-Signature')
+                    ],
                     'raw'     => Request::getContent(),
                     'body'    => $input,
                 ];
@@ -465,6 +470,50 @@ class GatewayController extends Controller
         $url = $url . '?' . $inputMsg;
 
         return Redirect::to($url);
+    }
+
+    public function processGetSimplCallback($input)
+    {
+        if($input['token'] === "null")
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'provider' => Gateway::GETSIMPL,
+                    'input'    => $input,
+                ]);
+        }
+
+        $this->app['trace']->info(
+            TraceCode::PAYLATER_ELLIGIBILITY_CALLBACK,
+            [
+                'gateway'          =>  Payment\Gateway::GETSIMPL,
+                'payment_id'       =>  $input['merchant_payload']
+            ]
+        );
+
+        $paymentId = $input['merchant_payload'];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['rzp.mode'] = $mode;
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
+
+        $input['simpltoken'] = $input['token'];
+
+        $gatewayinput = $input;
+
+        $input['payment'] = $payment;
+
+        return (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
     }
 
     public function callbackYesbank()

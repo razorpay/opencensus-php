@@ -23,6 +23,7 @@ class RequestHeader
     // Admin details
     const X_DASHBOARD_ADMIN_USERNAME    = 'X-Dashboard-Admin-Username';
     const X_DASHBOARD_ADMIN_EMAIL       = 'X-Dashboard-Admin-Email';
+    const X_USER_EMAIL                  = 'X-User-Email';
     const X_ADMIN_TOKEN                 = 'X-Admin-Token';
 
     // Merchant details

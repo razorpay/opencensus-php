@@ -10,11 +10,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingYesbCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -35,7 +37,17 @@ class NetbankingYesbCombinedFileTest extends TestCase
 
         list($payment1, $fullRefund) = $this->createRefund();
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         $this->createRefund(500);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Scb refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 

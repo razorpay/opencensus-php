@@ -52,6 +52,37 @@ $hostedpage_options             = $data['options']['hosted_page'];
     <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
 
     <script>
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
+        if (typeof Object.assign !== 'function') {
+          // Must be writable: true, enumerable: false, configurable: true
+          Object.defineProperty(Object, "assign", {
+            value: function assign(target, varArgs) { // .length of function is 2
+              'use strict';
+              if (target === null || target === undefined) {
+                throw new TypeError('Cannot convert undefined or null to object');
+              }
+
+              var to = Object(target);
+
+              for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+
+                if (nextSource !== null && nextSource !== undefined) {
+                  for (var nextKey in nextSource) {
+                    // Avoid bugs when hasOwnProperty is shadowed
+                    if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                      to[nextKey] = nextSource[nextKey];
+                    }
+                  }
+                }
+              }
+              return to;
+            },
+            writable: true,
+            configurable: true
+          });
+        }
+
         function initAnalytics() {
             analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
             analytics.track('ga', 'pageview');
@@ -727,7 +758,7 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 // partial_payment_label:  $checkout_options.label.partial_payment
             };
 
-            var modalCheckoutOptions = $checkout_options.modal; // TODO: Ask if need to remove some keys like ondismiss, onhidden, etc.
+            var modalCheckoutOptions = $checkout_options.modal;
             options.modal = Object.assign(modalCheckoutOptions, options.modal); // Shouldn't override base options
 
             // : description option : Hiding this permanantly as requested by Sriram
@@ -738,13 +769,14 @@ $hostedpage_options             = $data['options']['hosted_page'];
             // set from Rendering preferences
             options.name = $checkout_options.name || invoiceObj.merchant_label;
             options.description = $checkout_options.description;
+            options.min_amount_label = data.options.first_payment_min_amount;
 
             // : hidden option
             options.hidden = $checkout_options.hidden; // Eg: email, contact
 
             // : theme options
             var themeFromCheckoutOptions = $checkout_options.theme;
-            options.modal = Object.assign(themeFromCheckoutOptions, options.theme); // Shouldn't override base options
+            options.theme = Object.assign(themeFromCheckoutOptions, options.theme); // Shouldn't override base options
 
 
             // : prefill options

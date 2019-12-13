@@ -23,28 +23,28 @@ class McMastercardIINBatchTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function testBulkIinMcUpdate()
-    {
-        $entries = $this->getFileEntries();
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);;
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-
-        $batch = $this->getLastEntity('batch', true);
-
-        $this->assertEquals(3, $batch['processed_count']);
-        $this->assertEquals(2, $batch['success_count']);
-        $this->assertEquals(1, $batch['failure_count']);
-        $this->assertEquals('processed', $batch['status']);
-
-        $iin = $this->getEntityById('iin', '230798', true);
-
-        $this->assertEquals("The Karur Vysya Bank LTD", $iin['issuer_name']);
-
-    }
+//    public function testBulkIinMcUpdate()
+//    {
+//        $entries = $this->getFileEntries();
+//
+//        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);;
+//
+//        $this->ba->adminAuth();
+//
+//        $this->startTest();
+//
+//        $batch = $this->getLastEntity('batch', true);
+//
+//        $this->assertEquals(3, $batch['processed_count']);
+//        $this->assertEquals(2, $batch['success_count']);
+//        $this->assertEquals(1, $batch['failure_count']);
+//        $this->assertEquals('processed', $batch['status']);
+//
+//        $iin = $this->getEntityById('iin', '230798', true);
+//
+//        $this->assertEquals("The Karur Vysya Bank LTD", $iin['issuer_name']);
+//
+//    }
 
     public function testBulkIinViaBatchService()
     {

@@ -127,6 +127,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CANCELLED_METADATA                            = 'PAYMENT_CANCELLED_METADATA';
     const PAYMENT_FAILED_TO_AUTHORIZED                          = 'PAYMENT_FAILED_TO_AUTHORIZED';
     const PAYMENT_CALLBACK_FAILURE                              = 'PAYMENT_CALLBACK_FAILURE';
+    const CHECK_ACCOUNT_CALLBACK_FAILURE                        = 'CHECK_ACCOUNT_CALLBACK_FAILURE';
     const PAYMENT_CALLBACK_RETRY                                = 'PAYMENT_CALLBACK_RETRY';
     const PAYMENT_CALLBACK_RETRY_SUCCESS                        = 'PAYMENT_CALLBACK_RETRY_SUCCESS';
     const PAYMENT_CALLBACK_PENDING                              = 'PAYMENT_CALLBACK_PENDING';
@@ -610,6 +611,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const RUNTIME_ERROR                                         = 'RUNTIME_ERROR';
 
+    const PAYLATER_ELLIGIBILITY_CALLBACK                        = 'PAYLATER_ELLIGIBILITY_CALLBACK';
+
     const NETBANKING_PAYMENT_CALLBACK                           = 'NETBANKING_PAYMENT_CALLBACK';
     const SMS_SENDING_FAILED                                    = 'SMS_SENDING_FAILED';
     const GATEWAY_ALREADY_REFUNDED_INPUT                        = 'GATEWAY_ALREADY_REFUNDED_INPUT';
@@ -722,7 +725,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VALIDATE_ERROR                                = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_VALIDATE_REFUND_SUMMARY                       = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
+    const GATEWAY_ELLIGIBILITY_RESPONSE                         = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                             = 'GATEWAY_AUTHORIZE_REQUEST';
+    const GATEWAY_ELLIGIBILITY_REQUEST                          = 'GATEWAY_ELLIGIBILITY_REQUEST';
     const GATEWAY_PRE_AUTH_REQUEST                              = 'GATEWAY_PRE_AUTH_REQUEST';
     const GATEWAY_MANDATE_CREATE_REQUEST                        = 'GATEWAY_MANDATE_CREATE_REQUEST';
     const GATEWAY_MANDATE_CREATE_RESPONSE                       = 'GATEWAY_MANDATE_CREATE_RESPONSE';
@@ -861,6 +866,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+    const MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS             = 'MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS';
     const DELETING_COMPLETED_BUCKET_ENTRIES                     = 'DELETING_COMPLETED_BUCKET_ENTRIES';
     const COMPLETED_BUCKET_ENTRIES_DELETED                      = 'COMPLETED_BUCKET_ENTRIES_DELETED';
 
