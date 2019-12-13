@@ -113,15 +113,7 @@ class Base extends BaseProcessor
             // Regular flow - fetching refunds from API DB
             //
 
-            $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
-                static::PAYMENT_TYPE_ATTRIBUTE,
-                static::GATEWAY_CODE,
-                $begin,
-                $end,
-                static::GATEWAY
-            );
-
-            return $refunds;
+            return $this->fetchRefundsFromAPI($begin, $end);
         }
     }
 
@@ -404,27 +396,7 @@ class Base extends BaseProcessor
      */
     protected function populateScroogeRefunds(int $from, int $to, $refundIds = [])
     {
-        $input = [
-            RefundConstants::SCROOGE_QUERY => [
-                RefundConstants::SCROOGE_REFUNDS => [
-                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
-                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
-                    RefundConstants::SCROOGE_CREATED_AT => [
-                        RefundConstants::SCROOGE_GTE => $from,
-                        RefundConstants::SCROOGE_LTE => $to,
-                    ],
-                    RefundConstants::SCROOGE_BASE_AMOUNT => [
-                        RefundConstants::SCROOGE_GT => 0,
-                    ],
-                ],
-            ],
-            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
-        ];
-
-        if (empty($refundIds) === false)
-        {
-            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
-        }
+        $input = $this->getScroogeQuery($from, $to, $refundIds);
 
         $refunds = [];
         $fetchSuccess = false;
@@ -577,5 +549,60 @@ class Base extends BaseProcessor
         }
 
         return $col;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
+    }
+
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
+    {
+        //
+        // Regular flow - fetching refunds from API DB
+        //
+
+        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY
+        );
+
+        return $refunds;
     }
 }

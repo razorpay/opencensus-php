@@ -59,6 +59,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Gateway\Mozart\GetSimpl\Constants;
 
 
 trait Authorize
@@ -940,6 +941,14 @@ trait Authorize
 
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
     {
+        //
+        // For simpl redirection flow OTT is dummy value
+        //
+        if($input['ott'] === Constants::GETSIMPLTOKEN)
+        {
+            return;
+        }
+
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
@@ -1417,6 +1426,10 @@ trait Authorize
         {
             $this->validateRecurringForUpi($payment, $token, $input);
         }
+        else if ($payment->isNach() === true)
+        {
+            $this->validateRecurringForNach($payment, $token, $input);
+        }
 
         //
         // The first recurring will be on public auth for non-S2S enabled merchants.
@@ -1612,6 +1625,37 @@ trait Authorize
         $this->validateTokenExpiredAt($token);
     }
 
+    protected function validateRecurringForNach(Payment\Entity $payment,
+                                                Token\Entity $token,
+                                                array $input)
+    {
+        if ($payment->isRecurringTypeInitial() === true)
+        {
+            $this->validateInitialRecurringForNach($payment, $input);
+        }
+        else if ($payment->isRecurringTypeAuto() === true)
+        {
+            $this->validateAutoRecurringForNach($payment, $input);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Shouldn\'t have reached here.',
+                null,
+                [
+                    'payment'        => $payment->getId(),
+                    'recurring_type' => $payment->getRecurringType(),
+                    'auth_type'      => $payment->getAuthType()
+                ]);
+        }
+
+        $this->validateTokenRecurringStatus($token, $payment);
+
+        $this->validateTokenMaxAmount($token, $payment);
+
+        $this->validateTokenExpiredAt($token);
+    }
+
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
@@ -1675,7 +1719,54 @@ trait Authorize
         }
     }
 
+    protected function validateInitialRecurringForNach(Payment\Entity $payment, array $input)
+    {
+        $authType = $payment->getAuthType();
+
+        if ($authType === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required when method is ' . Method::NACH
+            );
+        }
+
+        $order = $payment->order;
+
+        if ($order !== null)
+        {
+            $subscriptionRegistration = $order->getTokenRegistration();
+
+            if ($subscriptionRegistration !== null)
+            {
+                if ($subscriptionRegistration->getAuthType() !== $authType)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'payment auth type is not same as order auth type'
+                    );
+                }
+            }
+        }
+    }
+
     protected function validateAutoRecurringForEmandate(Payment\Entity $payment, array $input)
+    {
+        if ($payment->getAmount() < 100)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be at least 100.',
+                'amount',
+                [
+                    'amount'            => $payment->getAmount(),
+                    'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
+                    'auth_type'         => $payment->getAuthType(),
+                    'recurring_type'    => $payment->getRecurringType(),
+                    'bank'              => $payment->getBank(),
+                ]);
+        }
+    }
+
+    protected function validateAutoRecurringForNach(Payment\Entity $payment, array $input)
     {
         if ($payment->getAmount() < 100)
         {
@@ -3401,6 +3492,8 @@ trait Authorize
             {
                 $saveMethodInput[Token\Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
 
+                $saveMethodInput[Token\Entity::AUTH_TYPE]  = $payment->getAuthType();
+
                 $paperMandate = $tokenRegistration->paperMandate;
 
                 if ($paperMandate !== null)
@@ -3421,10 +3514,13 @@ trait Authorize
                     }
 
                     $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
+
+                    $saveMethodInput[Token\Entity::START_TIME]  = $paperMandate->getStartAt();
+
+                    $saveMethodInput[Token\Entity::EXPIRED_AT]  = $paperMandate->getEndAt();
                 }
             }
         }
-
         else if ($payment->isUpiRecurring() === true)
         {
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =

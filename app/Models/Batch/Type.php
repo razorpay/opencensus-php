@@ -246,6 +246,7 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::PARTNER_SUBMERCHANTS,
     ];
 
     /**

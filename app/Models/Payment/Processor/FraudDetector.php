@@ -152,6 +152,7 @@ trait FraudDetector
                  (($this->payment->card->isInternational() === true) or ($this->payment->card->isAmex() === true))))
             {
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
                 $riskSource = Risk\Source::SHIELD;
             }
         }
