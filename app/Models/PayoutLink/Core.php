@@ -3,14 +3,12 @@
 namespace RZP\Models\PayoutLink;
 
 use Mail;
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
@@ -31,25 +29,47 @@ class Core extends Base\Core
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
 
-    const TOKEN_EXPIRE_IN_SECONDS = 900; //15 minutes
-    const MESSAGE                 = 'message';
-    const SUCCESS                 = 'success';
+    const MESSAGE = 'message';
+    const SUCCESS = 'success';
+    const ACTIVE  = 'active';
 
     protected $elfin;
 
     protected $raven;
 
-    protected $redis;
+    protected $tokenService;
 
     public function __construct()
     {
         parent::__construct();
-
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
 
-        $this->redis = $this->app['redis']->connection();
+        $this->tokenService = new TokenService();
+    }
+
+    public function getFundAccountsOfContact(string $payoutLinkId, array $input)
+    {
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
+
+        (new TokenService())->verify($input[Entity::TOKEN]);
+
+        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $fundAccounts = $payoutLink->contact->fundAccounts;
+
+        return $this->filterOutInActiveFundAccounts($fundAccounts);
+    }
+
+    // todo, pl this looks like a  repo funtionality, but unsure how to push it there. #reviewer ?
+    public function filterOutInActiveFundAccounts(PublicCollection $fundAccounts)
+    {
+        return $fundAccounts->where(self::ACTIVE, '=' , '1');
     }
 
     public function cancel(string $payoutLinkId)
@@ -160,28 +180,15 @@ class Core extends Base\Core
 
         $this->raven->verifyOtp($payload);
 
-        $uniqueToken = $this->generateUniqueRequestToken($payoutLinkId);
-
-        $this->redis->set($uniqueToken, '', 'ex', self::TOKEN_EXPIRE_IN_SECONDS);
+        $token = $this->tokenService->generate($payoutLinkId);
 
         return [
-            'token' => $uniqueToken
+            'token' => $token
         ];
     }
 
     /**
-     * This will be stored in redis after OTP verification
-     * and will be used in subsequent api calls
-     */
-    protected function generateUniqueRequestToken($payoutLinkId): string
-    {
-        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
-
-        return $payoutLinkId . '.' . $timestamp;
-    }
-
-    /**
-     * Returns true, if atkleast one delivery worked. else returns false
+     * Returns true, if atleast one delivery worked. else returns false
      * @param Entity $payoutLink
      * @param ContactEntity $contact
      * @param string $otp

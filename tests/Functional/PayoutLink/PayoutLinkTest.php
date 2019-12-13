@@ -458,4 +458,14 @@ class PayoutLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetFundAccountWithValidTokenReturnsFundAccountArray()
+    {
+
+    }
+
+    public function testGetFundAccountWithInvalidTokenRaisesException()
+    {
+
+    }
 }

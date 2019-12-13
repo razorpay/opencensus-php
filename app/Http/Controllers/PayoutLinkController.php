@@ -18,6 +18,13 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
+    public function getFundAccountsOfContact(string $payoutLinkId)
+    {
+        $response = $this->service()->getFundAccountsOfContact($payoutLinkId, $this->input);
+
+        return $response;
+    }
+
     public function generateAndSendCustomerOtp(string $payoutLinkId)
     {
         $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);

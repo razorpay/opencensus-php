@@ -6,14 +6,19 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
-    const CONTACT_ID           = 'contact.contact_id';
-    const CONTACT_EMAIL        = 'contact.email';
-    const CONTACT_PHONE_NUMBER = 'contact.phone_number';
-    const CONTACT_TYPE         = 'contact.type';
-    const CONTACT_NAME         = 'contact.name';
+    const CONTACT_ID                       = 'contact.contact_id';
+    const CONTACT_EMAIL                    = 'contact.email';
+    const CONTACT_PHONE_NUMBER             = 'contact.phone_number';
+    const CONTACT_TYPE                     = 'contact.type';
+    const CONTACT_NAME                     = 'contact.name';
 
-    const COMPOSITE_CREATE_RULE = 'composite_create';
-    const VERIFY_OTP            = 'verify_otp';
+    const COMPOSITE_CREATE_RULE            = 'composite_create';
+    const VERIFY_OTP                       = 'verify_otp';
+    const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
+
+    protected static $getFundAccountByContactRules = [
+        Entity::TOKEN => 'required|string'
+    ];
 
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',
