@@ -17,6 +17,7 @@ import PaymentMethods from './paymentMethods';
 import OfferDescription from './offerDescription';
 import OfferDiscount from './offerDiscount';
 import OfferDuration from './offerDuration';
+import OfferReview from './offerReview';
 
 @withRouter
 @connect(state => ({
@@ -27,8 +28,8 @@ import OfferDuration from './offerDuration';
 export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
-    starts_at: moment(),
-    ends_at: moment().add(1, 'days'),
+    // starts_at: moment().add(1, "days"),
+    // ends_at: moment().add(7, "days"),
     block: '',
     validTabs: [false, false, false, false],
     fields: {
@@ -112,8 +113,13 @@ export default class CreateOfferWizard extends React.Component {
         />
       ),
       getFieldsToBeValidated: () => {
-        return ['starts_at', 'ends_at', 'block'];
+        return ['starts_at', 'ends_at', 'block', 'max_offer_usage'];
       },
+    },
+    {
+      name: 'Review',
+      renderFunction: () => <OfferReview data={this.state} />,
+      getFieldsToBeValidated: () => [],
     },
   ];
 
@@ -183,11 +189,13 @@ export default class CreateOfferWizard extends React.Component {
           return 'Please enter number upto 2 decimal points';
       },
       ends_at: val => {
+        if (this.state.ends_at === null) return;
         if (this.state.starts_at >= val) {
           return 'End date cannot be less that start date.';
         }
       },
       starts_at: val => {
+        if (this.state.starts_at === null) return;
         if (moment() > val) {
           return 'Start date cannot be in past.';
         }
@@ -196,6 +204,9 @@ export default class CreateOfferWizard extends React.Component {
         if (!val) {
           return 'Start date cannot be in past.';
         }
+      },
+      max_offer_usage: val => {
+        if (!new RegExp('[0-9]').test(val)) return 'Please enter a number';
       },
     }[elementName];
   };
@@ -217,7 +228,7 @@ export default class CreateOfferWizard extends React.Component {
         this.setState({
           [syntheticEvent.target.name]: syntheticEvent.target.value,
         }),
-
+      // momentObj / null if not date is required
       datetime: momentObj => this.setState({ [options[0]]: momentObj }),
 
       iins: syntheticEvent => {
@@ -336,7 +347,9 @@ export default class CreateOfferWizard extends React.Component {
     ];
 
     dateFields.forEach(field => {
-      transformed[field] = form[field].unix();
+      if (!form[field]) {
+        fieldsTobeDeleted.push(field);
+      } else transformed[field] = form[field].unix();
     });
 
     //Convert rupees to paisa

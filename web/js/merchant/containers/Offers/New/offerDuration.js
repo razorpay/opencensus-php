@@ -16,7 +16,7 @@ export default ({
       description="Start date for offer"
       onChange={getFormOnChangeHandler('datetime', 'starts_at')}
       isInline
-      required
+      //   required
       validator={getFormElementValidations('starts_at')}
       defaultValue={startsAt}
     />
@@ -26,7 +26,7 @@ export default ({
       onChange={getFormOnChangeHandler('datetime', 'ends_at')}
       description="Expiry date for offer"
       isInline
-      required
+      //   required
       validator={getFormElementValidations('ends_at')}
       defaultValue={endsAt}
     />
