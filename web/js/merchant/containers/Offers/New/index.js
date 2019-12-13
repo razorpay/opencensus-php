@@ -39,6 +39,84 @@ export default class CreateOfferWizard extends React.Component {
     allPaymentMethodsAllowed: false,
   };
 
+  tabsData = [
+    {
+      name: 'Offer Description',
+      renderFunction: () => (
+        <OfferDescription
+          name={this.state.name}
+          getFormElementValidations={this.getFormElementValidations}
+          displayText={this.state.display_text}
+          terms={this.state.terms}
+        />
+      ),
+      getFieldsToBeValidated: () => {
+        return ['name', 'display_text', 'terms'];
+      },
+    },
+    {
+      name: 'Applicable On',
+      renderFunction: () => (
+        <PaymentMethods
+          allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
+          isSelectedPaymentMethod={this.isSelectedPaymentMethod}
+          iins={this.state.iins}
+          paymentNetwork={this.state.payment_network}
+          maxPaymentCount={this.state.max_payment_count}
+          paymentMethodType={this.state.payment_method_type}
+          issuer={this.state.issuer}
+          paymentMethod={this.state.payment_method}
+          getFormElementValidations={this.getFormElementValidations}
+        />
+      ),
+      getFieldsToBeValidated: () => {
+        return ['payment_method'];
+      },
+    },
+    {
+      name: 'Offer Amount',
+      renderFunction: () => (
+        <OfferDiscount
+          percentRate={this.state.percent_rate}
+          maxCashback={this.state.max_cashback}
+          flatCashback={this.state.flat_cashback}
+          discountType={this.state.discount_type}
+          getFormElementValidations={this.getFormElementValidations}
+          minAmount={this.state.min_amount}
+        />
+      ),
+      getFieldsToBeValidated: () => {
+        return [
+          'discount_type',
+          'min_amount',
+          ...{
+            flat: ['flat_cashback'],
+            percent: ['max_cashback', 'percent_rate'],
+          }[this.state.discount_type],
+        ];
+      },
+    },
+    {
+      name: 'Valid Until',
+      renderFunction: () => (
+        <OfferDuration
+          startsAt={this.state.starts_at}
+          getFormElementValidations={this.getFormElementValidations}
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
+          endsAt={this.state.ends_at}
+          block={this.state.block}
+          checkoutVisibility={this.state.checkout_visibility}
+          minAmount={this.state.min_amount}
+          maxOfferUsage={this.state.max_offer_usage}
+        />
+      ),
+      getFieldsToBeValidated: () => {
+        return ['starts_at', 'ends_at', 'block'];
+      },
+    },
+  ];
+
   stringToInt(subject) {
     if (subject === null) {
       return null;
@@ -123,25 +201,9 @@ export default class CreateOfferWizard extends React.Component {
   };
 
   isTabDataValid = tabNumber => {
-    switch (tabNumber) {
-      case 0:
-        return this.areGivenFormElementsValid('name', 'display_text', 'terms');
-      case 1:
-        return this.areGivenFormElementsValid('payment_method');
-      case 2:
-        return this.areGivenFormElementsValid(
-          'discount_type',
-          'min_amount',
-          ...{
-            flat: ['flat_cashback'],
-            percent: ['max_cashback', 'percent_rate'],
-          }[this.state.discount_type]
-        );
-      case 3:
-        return this.areGivenFormElementsValid('starts_at', 'ends_at', 'block');
-      default:
-        return false;
-    }
+    return this.areGivenFormElementsValid(
+      ...this.tabsData[tabNumber].getFieldsToBeValidated()
+    );
   };
 
   handleTabChange = ({ target }) => {
@@ -186,88 +248,14 @@ export default class CreateOfferWizard extends React.Component {
     );
   };
 
-  renderOfferDescriptionFormInputs() {
-    return (
-      <OfferDescription
-        name={this.state.name}
-        getFormElementValidations={this.getFormElementValidations}
-        displayText={this.state.display_text}
-        terms={this.state.terms}
-      />
-    );
-  }
-
-  renderPaymentMethods() {
-    return (
-      <PaymentMethods
-        allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
-        getFormOnChangeHandler={this.getFormOnChangeHandler}
-        isSelectedPaymentMethod={this.isSelectedPaymentMethod}
-        iins={this.state.iins}
-        paymentNetwork={this.state.payment_network}
-        maxPaymentCount={this.state.max_payment_count}
-        paymentMethodType={this.state.payment_method_type}
-        issuer={this.state.issuer}
-        paymentMethod={this.state.payment_method}
-        getFormElementValidations={this.getFormElementValidations}
-      />
-    );
-  }
-
-  renderDiscountFormInputs = () => {
-    return (
-      <OfferDiscount
-        percentRate={this.state.percent_rate}
-        maxCashback={this.state.max_cashback}
-        flatCashback={this.state.flat_cashback}
-        discountType={this.state.discount_type}
-        getFormElementValidations={this.getFormElementValidations}
-        minAmount={this.state.min_amount}
-      />
-    );
-  };
-
-  renderOfferDurationFormInputs = () => {
-    const {
-      starts_at,
-      block,
-      ends_at,
-      min_amount,
-      max_offer_usage,
-      checkout_visibility,
-    } = this.state;
-    return (
-      <OfferDuration
-        startsAt={starts_at}
-        getFormElementValidations={this.getFormElementValidations}
-        getFormOnChangeHandler={this.getFormOnChangeHandler}
-        endsAt={ends_at}
-        block={block}
-        checkoutVisibility={checkout_visibility}
-        minAmount={min_amount}
-        maxOfferUsage={max_offer_usage}
-      />
-    );
-  };
-
   renderForm() {
     const { currentTab } = this.state;
-
-    switch (currentTab) {
-      case 0:
-        return this.renderOfferDescriptionFormInputs();
-      case 1:
-        return this.renderPaymentMethods();
-      case 2:
-        return this.renderDiscountFormInputs();
-      case 3:
-        return this.renderOfferDurationFormInputs();
-    }
+    return this.tabsData[currentTab].renderFunction();
   }
 
   renderWizard() {
     const { currentTab, validTabs } = this.state;
-    const isLastTab = currentTab === tabs.length - 1;
+    const isLastTab = currentTab === this.tabsData.length - 1;
 
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
@@ -278,7 +266,7 @@ export default class CreateOfferWizard extends React.Component {
               Provide details regarding how you would like the offer to function
             </p>
           }
-          tabs={tabs}
+          tabs={this.tabsData.map(x => x.name)}
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
           tabsValidity={[0, 1, 2, 3].map(
@@ -289,7 +277,7 @@ export default class CreateOfferWizard extends React.Component {
           }
         />
         <main class="form-container">
-          <main-title>{tabs[currentTab]}</main-title>
+          <main-title>{this.tabsData[currentTab].name}</main-title>
           <Form
             class="PaymentLinks--Create--Form"
             layout="tabular"
@@ -472,10 +460,3 @@ export default class CreateOfferWizard extends React.Component {
     return !args.some(x => !this.isFormElementValid(x));
   };
 }
-
-const tabs = [
-  'Offer Description',
-  'Applicable On',
-  'Offer Amount',
-  'Valid Until',
-];
