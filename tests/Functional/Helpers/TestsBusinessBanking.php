@@ -71,7 +71,7 @@ trait TestsBusinessBanking
                 'type'           => 'virtual_account',
                 'entity_id'      => $virtualAccount->getId(),
                 'account_number' => '2224440041626905',
-                'ifsc_code'      => 'RAZRB000000',
+                'ifsc_code'      => 'YESB0000022',
             ]);
         $virtualAccount->bankAccount()->associate($bankAccount);
         $virtualAccount->balance()->associate($bankingBalance);
