@@ -6,7 +6,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
       <Input
         label="Offer Name"
         name="name"
-        placeholder="Offer Short name"
+        placeholder="Example: New Year Sale (This name appears on your dashboard)"
         autoFocus={true}
         defaultValue={name}
         required
@@ -15,7 +15,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
       <Input
         label="Display Text"
         name="display_text"
-        placeholder="Display text for offer"
+        placeholder="10% off on all HDFC Debit Cards (This appears on checkout for your customers)"
         required
         defaultValue={displayText}
         validator={getFormElementValidations('display_text')}
@@ -26,6 +26,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
         placeholder="Terms and conditions for offer"
         defaultValue={terms}
         validator={getFormElementValidations('terms')}
+        description={'Enter offer terms and conditions'}
         required
       />
     </React.Fragment>

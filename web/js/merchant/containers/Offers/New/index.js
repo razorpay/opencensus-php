@@ -29,7 +29,7 @@ export default class CreateOfferWizard extends React.Component {
     currentTab: 0,
     starts_at: moment(),
     ends_at: moment().add(1, 'days'),
-    block: 'Block Payment',
+    block: '',
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
@@ -77,6 +77,11 @@ export default class CreateOfferWizard extends React.Component {
           return 'Please select a field type';
         }
       },
+      block: val => {
+        if (!val || val == '') {
+          return 'Please select an option';
+        }
+      },
       percent_rate: val => {
         if (!val) {
           return 'Should be valid number between 0 and 100';
@@ -88,6 +93,10 @@ export default class CreateOfferWizard extends React.Component {
           return 'Please enter number upto 2 decimal points';
       },
       flat_cashback: val => {
+        if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+          return 'Please enter number upto 2 decimal points';
+      },
+      min_amount: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
       },
@@ -105,6 +114,11 @@ export default class CreateOfferWizard extends React.Component {
           return 'Start date cannot be in past.';
         }
       },
+      payment_method: val => {
+        if (!val) {
+          return 'Start date cannot be in past.';
+        }
+      },
     }[elementName];
   };
 
@@ -113,17 +127,18 @@ export default class CreateOfferWizard extends React.Component {
       case 0:
         return this.areGivenFormElementsValid('name', 'display_text', 'terms');
       case 1:
-        return true;
+        return this.areGivenFormElementsValid('payment_method');
       case 2:
         return this.areGivenFormElementsValid(
           'discount_type',
+          'min_amount',
           ...{
             flat: ['flat_cashback'],
             percent: ['max_cashback', 'percent_rate'],
           }[this.state.discount_type]
         );
       case 3:
-        return this.areGivenFormElementsValid('starts_at', 'ends_at');
+        return this.areGivenFormElementsValid('starts_at', 'ends_at', 'block');
       default:
         return false;
     }
@@ -194,52 +209,9 @@ export default class CreateOfferWizard extends React.Component {
         paymentMethodType={this.state.payment_method_type}
         issuer={this.state.issuer}
         paymentMethod={this.state.payment_method}
+        getFormElementValidations={this.getFormElementValidations}
       />
     );
-  }
-
-  renderDiscountDetailsSection() {
-    let type = this.state.discount_type;
-    if (type && type === 'flat') {
-      return (
-        <Input
-          label="Discount Worth"
-          name="flat_cashback"
-          class="Input--half"
-          addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
-          description="Discount worth in cash"
-          required
-          defaultValue={this.state.flat_cashback}
-          validator={this.getFormElementValidations('flat_cashback')}
-        />
-      );
-    }
-    if (type && type === 'percent') {
-      return (
-        <React.Fragment>
-          <Input
-            label="Discount Worth"
-            name="percent_rate"
-            class="Input--half"
-            description="Discount worth in Percent"
-            addonBefore={<span>%</span>}
-            required
-            defaultValue={this.state.percent_rate}
-            validator={this.getFormElementValidations('percent_rate')}
-          />
-          <Input
-            label="Maximum Cashback"
-            name="max_cashback"
-            defaultValue={this.state.max_cashback}
-            class="Input--half"
-            description="Maximum cashback for this offer"
-            addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
-            validator={this.getFormElementValidations('max_cashback')}
-            required
-          />
-        </React.Fragment>
-      );
-    }
   }
 
   renderDiscountFormInputs = () => {
@@ -250,18 +222,30 @@ export default class CreateOfferWizard extends React.Component {
         flatCashback={this.state.flat_cashback}
         discountType={this.state.discount_type}
         getFormElementValidations={this.getFormElementValidations}
+        minAmount={this.state.min_amount}
       />
     );
   };
 
   renderOfferDurationFormInputs = () => {
-    const { starts_at, ends_at } = this.state;
+    const {
+      starts_at,
+      block,
+      ends_at,
+      min_amount,
+      max_offer_usage,
+      checkout_visibility,
+    } = this.state;
     return (
       <OfferDuration
         startsAt={starts_at}
         getFormElementValidations={this.getFormElementValidations}
         getFormOnChangeHandler={this.getFormOnChangeHandler}
         endsAt={ends_at}
+        block={block}
+        checkoutVisibility={checkout_visibility}
+        minAmount={min_amount}
+        maxOfferUsage={max_offer_usage}
       />
     );
   };

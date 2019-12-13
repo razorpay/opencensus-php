@@ -3,6 +3,7 @@ import Input from 'common/new-ui/Input';
 export default ({
   allPaymentMethodsAllowed,
   getFormOnChangeHandler,
+  getFormElementValidations,
   isSelectedPaymentMethod,
   iins,
   paymentNetwork,
@@ -50,39 +51,23 @@ export default ({
     <React.Fragment>
       {!allPaymentMethodsAllowed && (
         <Input.Select
+          required
           label="Payment Method"
           name="payment_method"
           options={paymentMethods}
-          placeholder="Payment Method"
+          placeholder="Select Payment Method"
           onChange={getFormOnChangeHandler()}
           defaultValue={paymentMethod}
+          validator={getFormElementValidations('payment_method')}
         />
       )}
 
-      {(isSelectedPaymentMethod('netbanking', 'card', 'emi') && (
-        <Input.Select
-          label="Issuer"
-          name="issuer"
-          defaultValue={issuer}
-          placeholder="Payment Instrument Issuer/Bank Name"
-          options={paymentIssuers}
-        />
-      )) ||
-        null}
       {(isSelectedPaymentMethod('card', 'emi') && (
         <React.Fragment>
-          <Input
-            label="Maximum Usage Per Card"
-            name="max_payment_count"
-            defaultValue={maxPaymentCount}
-            type="number"
-            placeholder="Maximum usage of a card to avail this offer"
-          />
           <Input.Select
             label="Card Type"
             name="payment_method_type"
             defaultValue={paymentMethodType}
-            description="Card Type"
             onChange={getFormOnChangeHandler()}
             options={(() => {
               return isSelectedPaymentMethod('emi')
@@ -92,14 +77,27 @@ export default ({
                     { label: 'Debit Card', name: 'debit' },
                   ];
             })()}
-            required
           />
           <Input.Select
-            label="Payment Method Network"
+            label="Bank"
+            name="issuer"
+            defaultValue={issuer}
+            placeholder="Select Bank"
+            options={paymentIssuers}
+          />
+          <Input.Select
+            label="Network"
             name="payment_network"
             defaultValue={paymentNetwork}
-            placeholder="Payment Method Type"
+            placeholder="Select network"
             options={paymentNetworks}
+          />
+          <Input
+            label="Max Usage Per Card"
+            name="max_payment_count"
+            defaultValue={maxPaymentCount}
+            type="number"
+            placeholder="Max times a card can be used to avail this offer"
           />
           <Input
             label="IINs"
@@ -109,6 +107,17 @@ export default ({
             description={iins && iins.join(', ')}
           />
         </React.Fragment>
+      )) ||
+        null}
+
+      {(isSelectedPaymentMethod('netbanking') && (
+        <Input.Select
+          label="Issuer"
+          name="issuer"
+          defaultValue={issuer}
+          placeholder="Payment Instrument Issuer/Bank Name"
+          options={paymentIssuers}
+        />
       )) ||
         null}
     </React.Fragment>

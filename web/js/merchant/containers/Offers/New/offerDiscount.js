@@ -6,6 +6,7 @@ export default ({
   flatCashback,
   discountType,
   getFormElementValidations,
+  minAmount,
 }) => {
   return (
     <React.Fragment>
@@ -34,6 +35,7 @@ export default ({
               addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
               description="Discount worth in cash"
               required
+              placeholder="0.00"
               defaultValue={flatCashback}
               validator={getFormElementValidations('flat_cashback')}
             />
@@ -45,14 +47,16 @@ export default ({
                 label="Discount Worth"
                 name="percent_rate"
                 class="Input--half"
+                placeholder="0.00"
                 description="Discount worth in Percent"
-                addonBefore={<span>%</span>}
+                addonAfter={<span>%</span>}
                 required
                 defaultValue={percentRate}
                 validator={getFormElementValidations('percent_rate')}
               />
               <Input
                 label="Maximum Cashback"
+                placeholder="0.00"
                 name="max_cashback"
                 defaultValue={maxCashback}
                 class="Input--half"
@@ -63,6 +67,16 @@ export default ({
               />
             </React.Fragment>
           )}
+        <Input
+          label="Min Order amount"
+          placeholder="0.00"
+          name="min_amount"
+          defaultValue={minAmount}
+          class="Input--half"
+          addonBefore={<span>{window.currencyList['INR'].symbol}</span>}
+          validator={getFormElementValidations('min_amount')}
+          required
+        />
       </div>
     </React.Fragment>
   );
