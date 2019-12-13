@@ -71,7 +71,12 @@ class Checker extends Base\Core
 
         $validMaxOrderAmount = $this->checkMaxOrderAmount();
 
-        $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+        $isMaxOfferUsageExceeded = true;
+
+        if($this->offer->getMaxOfferUsage() !== null)
+        {
+            $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+        }
 
         return (($validMinOrderAmount === true) and ($validMaxOrderAmount === true) and
                 ($this->checkApplicabilityOnOrder($order) === true) and $isMaxOfferUsageExceeded);
