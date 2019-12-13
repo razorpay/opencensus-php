@@ -1,11 +1,5 @@
 import fUnits from './field-units';
 
-let getUser;
-
-if (typeof window !== 'undefined') {
-  getUser = require('merchant/store').getUser;
-}
-
 /*
 * A. Type: text
 *    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
@@ -16,31 +10,19 @@ if (typeof window !== 'undefined') {
 * */
 
 export function getFieldTypes() {
-  let FIELD_TYPES = [
+  const FIELD_TYPES = [
     fUnits.str,
+    fUnits.alphabets,
+    fUnits.alphanumeric,
     fUnits.number,
     fUnits.email,
     fUnits.phone,
     fUnits.url,
     fUnits.textarea,
+    fUnits.pan,
+    fUnits.pincode,
     fUnits.dropdown,
   ];
-
-  if (getUser && getUser().toShowExtraFieldsInPP) {
-    FIELD_TYPES = [
-      fUnits.str,
-      fUnits.alphabets,
-      fUnits.alphanumeric,
-      fUnits.number,
-      fUnits.email,
-      fUnits.phone,
-      fUnits.url,
-      fUnits.textarea,
-      fUnits.pan,
-      fUnits.pincode,
-      fUnits.dropdown,
-    ];
-  }
 
   return FIELD_TYPES;
 }

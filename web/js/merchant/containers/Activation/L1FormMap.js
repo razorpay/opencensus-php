@@ -16,7 +16,7 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_YET_REGISTERED = 11;
+const NOT_REGISTERED = 11;
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -202,6 +202,6 @@ function excludeFor_Indiv(activation) {
     activation.state.dirty.business_type || activation.props.data.business_type;
 
   return (
-    [INDIVIDUAL, NOT_YET_REGISTERED].indexOf(Number(currentBusinessType)) === -1
+    [INDIVIDUAL, NOT_REGISTERED].indexOf(Number(currentBusinessType)) === -1
   );
 }

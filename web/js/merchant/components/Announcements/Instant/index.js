@@ -97,10 +97,12 @@ export default class InstantActivationAnnouncements extends Component {
       }
     } else {
       if (user.isAccepted) {
-        theme = 'success';
-        title = 'Settlements Enabled';
-        content =
-          'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
+        if (!user.isNPSSurveyBannerEnabled) {
+          theme = 'success';
+          title = 'Settlements Enabled';
+          content =
+            'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
+        } else return null;
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
 
