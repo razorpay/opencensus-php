@@ -37,7 +37,7 @@ class Greylist extends Base implements ActivationFlowInterface
 
     public function sendKycRequestEmail(Entity $merchant)
     {
-        $product = $this->auth->getRequestOriginProduct();
+        $product = $this->app['basicauth']->getRequestOriginProduct();
 
         if ($product === Product::BANKING)
         {
