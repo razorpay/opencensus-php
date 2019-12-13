@@ -47,16 +47,22 @@ export default class extends React.Component {
   updateVirtualAccountDetails = payload => {
     return this.props
       .updateVirtualAccountDetails(this.props.virtualaccount.id, payload)
-      .then(({ data }) => {
+      .then(data => {
         this.props.closeModal();
 
         let accountDetails, modalTitle;
         let showUPIAddressDetails, showBankAccountDetails;
 
-        if (payload.receivers.indexOf('vpa') > -1) {
+        if (
+          payload.receivers.types &&
+          payload.receivers.types.indexOf('vpa') > -1
+        ) {
           modalTitle = 'UPI Transfer Enabled';
           showUPIAddressDetails = true;
-        } else if (payload.receivers.indexOf('bank_account') > -1) {
+        } else if (
+          payload.receivers.types &&
+          payload.receivers.types.indexOf('bank_account') > -1
+        ) {
           modalTitle = 'Account Transfer Enabled';
           showBankAccountDetails = true;
         }
@@ -77,7 +83,7 @@ export default class extends React.Component {
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors || 'Some network error has occurred',
         });
       });
   };
@@ -144,12 +150,16 @@ export default class extends React.Component {
 
                 {!isClosed &&
                   !bankAccount && (
-                    <button
-                      class="btn btn-default"
-                      onClick={this.openEnableTransferModeModal}
-                    >
-                      Enable Account Transfer
-                    </button>
+                    <>
+                      <br />
+
+                      <button
+                        class="btn btn-default"
+                        onClick={this.openEnableTransferModeModal}
+                      >
+                        Enable Account Transfer
+                      </button>
+                    </>
                   )}
 
                 {!isClosed &&
