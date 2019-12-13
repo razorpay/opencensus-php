@@ -291,6 +291,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function isDefaultOffer()
+    {
+        return $this->getAttribute(self::DEFAULT_OFFER);
+    }
+
     public function isPeriodActive()
     {
         $now = Carbon::now()->getTimestamp();
