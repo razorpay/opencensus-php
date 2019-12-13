@@ -135,7 +135,7 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-  
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -257,7 +257,7 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
-    const OFFER_FEATURE_BLOCK      = 'offer_feature_block';
+    const BLOCK_OFFER_CREATION  ='block_offer_creation';
 
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
@@ -265,8 +265,6 @@ class Constants
      * to have a controlled roll out of x_pro might be removed going forward.
      */
     const X_PRO_INVITE  = 'x_pro_invite';
-
-    const BLOCK_OFFER_CREATION  ='block_offer_creation';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -453,7 +451,7 @@ class Constants
         self::FORCE_GREYLIST_INTERNAT         => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
-        self::OFFER_FEATURE_BLOCK             => true,
+        self::BLOCK_OFFER_CREATION            => true,
     ];
 
     // Entity type constants
