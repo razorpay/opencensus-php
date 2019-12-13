@@ -1164,6 +1164,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORTING_SERVICE_UNFILTERED_CONFIGS                  = 'REPORTING_SERVICE_UNFILTERED_CONFIGS';
     const REPORTING_SERVICE_FILTERED_CONFIGS                    = 'REPORTING_SERVICE_FILTERED_CONFIGS';
 
+    const UFH_SERVICE_API_REQUEST                               = 'UFH_SERVICE_API_REQUEST';
+    const UFH_SERVICE_API_RESPONSE                              = 'UFH_SERVICE_API_RESPONSE';
+    const UFH_INTEGRATION_ERROR                                 = 'UFH_INTEGRATION_ERROR';
+
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
