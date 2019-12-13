@@ -7,6 +7,8 @@ use Mail;
 use Mockery;
 
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -43,6 +45,7 @@ class NbPlusPaymentServiceTest extends TestCase
         'gateway_config',
     ];
 
+    // TODO: amount mismatch test case for verify?
     public function setUp()
     {
         parent::setUp();
@@ -74,7 +77,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
-    public function testAuthorizeViaNbPlusPaymentUpdateService()
+    public function testAuthorizeViaNbPlusPaymentService()
     {
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -105,32 +108,69 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals($this->terminal->getId(), $payment['terminal_id']);
     }
 
-    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    public function testVerifyViaNbPlusPaymentService()
     {
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
-        $response = $this->mockCallbackFromGateway($url, $method, $content);
+        $response = $this->doAuthPayment($paymentArray);
 
-        $data = $this->getPaymentJsonFromCallback($response->getContent());
+        $this->verifyPayment($response['razorpay_payment_id']);
 
-        $response->setContent($data);
+        $payment = $this->getLastPayment(true);
 
-        return $response;
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(1, $payment['verified']);
     }
 
-    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
+    public function testPaymentFailedVerifySuccessViaNbPlusPaymentService()
     {
-        $request = array(
-            'url' => $url,
-            'method' => strtoupper($method),
-            'content' => $content);
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = [
+                    'data' => null,
+                    'payment' => [
+                    ],
+                    'error' => [
+                        'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                    ],
+                ];
+            }
+        });
 
-        $response = $this->makeRequestParent($request);
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
-        return $response;
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            },
+            PaymentVerificationException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals(0, $payment['verified']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponse()
+    public function testAuthorizeViaNbPlusPaymentHandleErrorResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -156,7 +196,7 @@ class NbPlusPaymentServiceTest extends TestCase
             },
             GatewayErrorException::class);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getLastPayment(true);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
 
@@ -165,7 +205,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponseServerError()
+    public function testAuthorizeViaNbPlusPaymentErrorResponseServerError()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -191,7 +231,7 @@ class NbPlusPaymentServiceTest extends TestCase
             },
             \RZP\Exception\LogicException::class);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getLastPayment(true);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
 
@@ -201,7 +241,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('SERVER_ERROR', $payment['internal_error_code']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentUpdateHandleErrorResponseGatewayError()
+    public function testAuthorizeViaNbPlusPaymentHandleErrorResponseGatewayError()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -226,7 +266,7 @@ class NbPlusPaymentServiceTest extends TestCase
             },
             GatewayErrorException::class);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getLastPayment(true);
 
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
 
@@ -234,6 +274,31 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals($this->terminal->getId(), $payment['terminal_id']);
         $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
         $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment['internal_error_code']);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
+    }
+
+    protected function mockCallbackFromGateway($url, $method = 'get', $content = array())
+    {
+        $request = array(
+            'url' => $url,
+            'method' => strtoupper($method),
+            'content' => $content);
+
+        $response = $this->makeRequestParent($request);
+
+        return $response;
     }
 
     // TODO
