@@ -301,7 +301,10 @@ class Core extends Base\Core
             $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS,
+                                                 $this->merchant,
+                                                 null,
+                                                 $eventAttributes);
     }
 
     protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null)
@@ -497,9 +500,9 @@ class Core extends Base\Core
 
     protected function sendL2FormSubmissionEmail(Merchant\Entity $merchant)
     {
-        $product = $this->auth->getRequestOriginProduct();
+        $product = $this->app['basicauth']->getRequestOriginProduct();
 
-        if($product === Product::BANKING)
+        if ($product === Product::BANKING)
         {
             $activationFlow = $merchant->merchantDetail->getActivationFlow();
 
@@ -530,7 +533,8 @@ class Core extends Base\Core
             return null;
         }
 
-        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness());
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                          $merchantDetails->isUnregisteredBusiness());
 
         if ($enabled === false)
         {

@@ -39,7 +39,7 @@ class Greylist extends Base implements ActivationFlowInterface
     {
         $product = $this->auth->getRequestOriginProduct();
 
-        if($product === Product::BANKING)
+        if ($product === Product::BANKING)
         {
             Mail::queue(new RequestKyc($merchant->getEntityName(), $merchant->getEmail()));
         }

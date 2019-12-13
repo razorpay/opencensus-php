@@ -107,8 +107,7 @@ class Activate extends Base\Core
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
-
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -177,7 +176,7 @@ class Activate extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        if($merchant->isActivated() === true)
+        if ($merchant->isActivated() === true)
         {
             (new Merchant\Core)->addMerchantEmailToMailingList($merchant);
         }
@@ -233,7 +232,7 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
 
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -354,7 +353,7 @@ class Activate extends Base\Core
     {
         $product = $this->auth->getRequestOriginProduct();
 
-        if($product === Product::PRIMARY)
+        if ($product === Product::PRIMARY)
         {
             $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
@@ -404,7 +403,7 @@ class Activate extends Base\Core
         {
             $instantActivationMail = new RazorpayXInstantActivationMail($merchant->getId());
         }
-        else if ($activationSource === Product::PRIMARY)
+        else
         {
             $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
@@ -459,8 +458,8 @@ class Activate extends Base\Core
             // This endpoint could be hit from test mode as well, depending which this merchant has been read from
             // corresponding connection. Because this entity is synced between both connection, setting connection
             // to live mode is same as fetching merchant of same id from live connection. We need to do this
-            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect in this flow
-            // to query in live connection.
+            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect
+            // in this flow to query in live connection.
             //
             $merchant->setConnection($liveMode);
 

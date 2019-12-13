@@ -53,6 +53,11 @@ class AccountActivationConfirmation extends Mailable
 
         $bankingAccounts = $merchant->bankingAccounts()->get();
 
+        // todo, need a better way to determine which banking account.
+        // right now, this is part of onboarding flow, and only a VA banking account will be present.
+        // hence index(0) will work. Going forward, in case there is a flow where
+        // at the time of on-boarding the person has 2 active banking account,
+        // then it will be tough to determine which banking account is being activated.
         return $bankingAccounts[0];
     }
 
