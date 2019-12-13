@@ -331,6 +331,7 @@ class NachGatewayTest extends TestCase
                 E::SUBSCRIPTION_REGISTRATION => [
                     'token_id'   => '100000000token',
                     'max_amount' => 1000000,
+                    'auth_type'  => 'physical',
                     E::PAPER_MANDATE => [
                         'amount' => 1000000,
                         'status' => PaperMandate\Status::AUTHENTICATED,
@@ -348,7 +349,8 @@ class NachGatewayTest extends TestCase
             "customer_id" => "cust_1000000000cust",
             "recurring"   => true,
             "contact"     => "9483159238",
-            "email"       => "r@g.c"
+            "email"       => "r@g.c",
+            "auth_type"   => "physical",
         ]);
 
         return $this->getEntityById('payment', $response['razorpay_payment_id'], true);

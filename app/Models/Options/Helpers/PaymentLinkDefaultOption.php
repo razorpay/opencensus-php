@@ -21,6 +21,7 @@ class PaymentLinkDefaultOption implements DefaultOption
 //                    'org_id' => '100000000',
             'name'        => '',
             'description' => '',
+            'first_payment_min_amount' => 'Minimum Amount Due',
             'checkout' =>
                 array (
                     'prefill' =>

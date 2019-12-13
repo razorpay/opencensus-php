@@ -114,8 +114,8 @@ class ErrorCodeMapping
         'TXN_TIMEOUT'                    => 'Payout failed. Please reinitiate transfer after 30 min.',
         'TXN_REJECTED_BENE_BANK'         => 'Transaction not permitted to beneficiary account.',
         'BANK_CBS_OFFLINE_FAILURE'       => 'Partner Bank is experiencing downtime. Reinitiate transfer after 30 min.',
-        'DORMANT_ACCOUNT'                => 'Beneficiary account is dormant.',
-        'CLOSED_ACCOUNT'                 => 'Beneficiary account is closed.',
+        'DORMANT_ACCOUNT'                => 'Beneficiary Account is Dormant. Please check with Beneficiary Bank.',
+        'CLOSED_ACCOUNT'                 => 'Beneficiary Account is Closed. Please contact beneficiary bank.',
         'IMPS_NOT_ENABLED'               => 'IMPS is not enabled on Beneficiary Account',
         'FUNDS_ON_HOLD'                  => 'Payout failed. Reinitiate transfer after 60 min.',
         'BENEFICIARY_MERCHANT'           => 'Payout failed. Contact support for help.',
@@ -127,7 +127,7 @@ class ErrorCodeMapping
         'NPCI_RESPONSE_ISSUE'            => 'Payout failed. Contact support for help.',
         'BENE_BANK_RESPONSE_AWAITED'     => 'Beneficiary bank\'s systems are down. Please retry after some time.',
         'AUTHORIZATION_FAILED'           => 'Payout failed. Contact support for help.',
-        'FROZEN_ACCOUNT'                 => 'Beneficiary account is frozen.',
+        'FROZEN_ACCOUNT'                 => 'Beneficiary Account is Frozen. Please contact beneficiary bank.',
         'INVALID_AMOUNT'                 => 'Payout failed. Contact support for help.',
         'INVALID_VPA'                    => 'Invalid beneficiary VPA/UPI address',
         'COLLECT_REQUEST_REJECTED'       => 'Payout failed. Contact support for help.',
@@ -143,6 +143,12 @@ class ErrorCodeMapping
         'RETURNED'                       => 'Payout failed. Contact support for help.',
         'REQUEST_NOT_FOUND'              => 'Payout failed. Contact support for help.',
         'PBANK_CBS_REJECTED'             => 'Issue at partner bank. Reinitiate transfer after 30 min',
+        'INVALID_IFSC'                   => 'IFSC Code is Not Valid. Please check and retry.',
+        'MERCHANT_INVALID_TXN_DETAILS'   => 'Narration provided is not supported. Please check and retry.',
+        'REASON_UNKNOWN'                 => 'Payout failed. Contact support for help.',
+        'NRE_ACCOUNT'                    => 'Beneficiary Account is NRE. Please check and retry.',
+        'BENEFICIARY_NAME_MISMATCH'      => 'Beneficiary Name Mismatch. Please check and retry.',
+        'INVALID_BENEFICIARY_ACCOUNT'    => 'Invalid Beneficiary Account. Please check and retry.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

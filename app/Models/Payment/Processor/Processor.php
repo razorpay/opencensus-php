@@ -2391,6 +2391,11 @@ class Processor
 
         $this->order = $this->fetchOrderFromInput($input);
 
+        if ($payment->isNach() === true)
+        {
+            $payment->setBank($this->order->getBankForNachMethod());
+        }
+
         $this->order->getValidator()->validatePaymentCreation($payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
@@ -2407,11 +2412,6 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
-
-        if ($payment->isNach() === true)
-        {
-            $payment->setBank($this->order->getBankForNachMethod());
-        }
 
         //
         // FIXME: Hack for reliance AMC, moving order receipt to payment

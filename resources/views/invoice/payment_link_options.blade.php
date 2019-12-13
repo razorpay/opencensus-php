@@ -769,6 +769,7 @@ $hostedpage_options             = $data['options']['hosted_page'];
             // set from Rendering preferences
             options.name = $checkout_options.name || invoiceObj.merchant_label;
             options.description = $checkout_options.description;
+            options.min_amount_label = data.options.first_payment_min_amount;
 
             // : hidden option
             options.hidden = $checkout_options.hidden; // Eg: email, contact
