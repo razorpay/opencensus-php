@@ -263,6 +263,35 @@ return [
         ]
     ],
 
+    'testOtpVerificationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => [
+                'context' => '1576208561',
+                'otp'     => '0007'
+
+            ]
+
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testOtpGenerationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'content' => [
+                'context' => '1576208561'
+            ]
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
     'testVerifyOtpSuccessful' => [
         'request'  => [
             'method'  => 'POST',
@@ -352,6 +381,26 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+        ]
+    ],
+
+    'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
         ]
     ]
 ];

@@ -124,9 +124,11 @@ class Core extends Base\Core
 
         $contact = $payoutLink->contact;
 
+        $context = array_pull($input, Entity::CONTEXT);
+
         $receiver = $this->getReceiver($contact, $payoutLinkId);
 
-        $requestContext = $this->processContext($payoutLinkId, $input[Entity::CONTEXT]);
+        $requestContext = $this->processContext($payoutLinkId, $context);
 
         $payload = [
             self::RECEIVER  => $receiver,
@@ -152,7 +154,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function processContext(string $payoutLinkId, string $context)
+    protected function processContext(string $payoutLinkId, string $context = null)
     {
         $requestContext = $payoutLinkId;
 
@@ -275,7 +277,7 @@ class Core extends Base\Core
         return $payload;
     }
 
-    protected function generateOtp(ContactEntity $contact, string $payoutLinkId, string $context)
+    protected function generateOtp(ContactEntity $contact, string $payoutLinkId, string $context = null)
     {
         $receiver = $this->getReceiver($contact, $payoutLinkId);
 
