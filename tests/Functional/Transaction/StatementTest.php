@@ -273,4 +273,14 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction['amount'], $txn['credit']);
     }
+
+    public function testActionFilterFailedPrivateAuth()
+    {
+        $this->createPayout();
+
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $this->startTest();
+    }
 }
