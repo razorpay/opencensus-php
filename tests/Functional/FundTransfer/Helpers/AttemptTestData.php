@@ -180,7 +180,7 @@ return [
     'matchAttemptForReconFailureKotak' => [
         'channel'           => Channel::KOTAK,
         'version'           => 'V3',
-        'bank_status_code'  => KotakStatus::PROCESSED,
+        'bank_status_code'  => KotakStatus::CANCELLED,
         'status'            => AttemptStatus::FAILED,
         'remarks'           => 'Some failure.',
     ],

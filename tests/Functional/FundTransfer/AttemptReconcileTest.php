@@ -396,16 +396,12 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifySettlementReconProcessForRbl();
 
-//        $this->reconcileEntitiesForChannel(Channel::RBL);
-
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
     public function testSettlementReconcileEntitiesSuccessForYesbank()
     {
         $this->verifySettlementReconProcessForYesbank();
-
-//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
@@ -420,8 +416,6 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifyPayoutReconProcessForYesbankVpa();
 
-//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
-
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
 
@@ -432,19 +426,11 @@ class AttemptReconcileTest extends TestCase
         Carbon::setTestNow($now);
 
         $this->verifySettlementReconProcessForRbl(true);
-
-//        $content = $this->reconcileEntitiesForChannel(Channel::RBL);
-//
-//        $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
     }
 
     public function testSettlementReconcileEntitiesFailureForYesbank()
     {
         $this->verifySettlementReconProcessForYesbank(true);
-
-//        $content = $this->reconcileEntitiesForChannel(Channel::YESBANK);
-//
-//        $this->assertOnlineReconcileEntitiesFailure($content, Channel::YESBANK);
     }
 
     public function testPayoutReconcileEntitiesForKotak()
@@ -452,23 +438,13 @@ class AttemptReconcileTest extends TestCase
         $this->markTestSkipped('Kotak is not live.');
 
         $this->verifyPayoutReconFileProcessForKotak();
-
-//        $this->reconcileEntitiesForChannel(Channel::KOTAK);
-//
-//        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
 
     public function verifyReconcileEntitiesFailureForKotak()
     {
         Mail::fake();
 
-        $channel = Channel::KOTAK;
-
         $this->verifySettlementReconFileProcessFailureKotak();
-
-//        $content = $this->reconcileEntitiesForChannel($channel);
-//
-//        $this->assertReconcileEntitiesFailure($content, $channel);
 
         $merchant = $this->getEntityById('merchant', '10000000000000', true);
         $this->assertEquals(true, $merchant['hold_funds']);
@@ -481,10 +457,6 @@ class AttemptReconcileTest extends TestCase
         $channel = Channel::ICICI;
 
         $this->verifySettlementReconFileProcessFailureIcici();
-
-//        $content = $this->reconcileEntitiesForChannel($channel);
-//
-//        $this->assertReconcileEntitiesFailure($content, $channel);
     }
 
     protected function assertReconcileEntitiesFailure(array $content, string $channel)
