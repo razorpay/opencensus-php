@@ -107,6 +107,7 @@ class Activate extends Base\Core
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
+
             if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
