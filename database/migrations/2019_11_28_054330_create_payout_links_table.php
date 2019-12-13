@@ -36,6 +36,15 @@ class CreatePayoutLinksTable extends Migration
 
             $table->char(Entity::CONTACT_ID, Contact::ID_LENGTH);
 
+            $table->char(Entity::CONTACT_NAME, 255)
+                  ->nullable();
+
+            $table->char(Entity::CONTACT_EMAIL, 255)
+                  ->nullable();
+
+            $table->char(Entity::CONTACT_PHONE_NUMBER, 255)
+                  ->nullable();
+
             $table->char(Entity::FUND_ACCOUNT_ID, FundAccount::ID_LENGTH)
                   ->nullable();
 
@@ -54,6 +63,8 @@ class CreatePayoutLinksTable extends Migration
 
             $table->bigInteger(Entity::AMOUNT);
 
+            $table->string(PaymentLink\Entity::CURRENCY, 3);
+
             $table->text(Entity::NOTES)
                   ->nullable();
 
@@ -62,8 +73,6 @@ class CreatePayoutLinksTable extends Migration
 
             $table->string(Entity::RECEIPT, 40)
                   ->nullable();
-
-            $table->string(PaymentLink\Entity::CURRENCY, 3);
 
             $table->integer(Entity::CANCELLED_AT)
                   ->nullable();
@@ -75,7 +84,13 @@ class CreatePayoutLinksTable extends Migration
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
+            $table->index(Entity::USER_ID);
+
+            $table->index(Entity::BATCH_ID);
+
             $table->index(Entity::CREATED_AT);
+
+            $table->index(Entity::DELETED_AT);
 
             $table->index(Entity::UPDATED_AT);
 
@@ -109,6 +124,15 @@ class CreatePayoutLinksTable extends Migration
      */
     public function down()
     {
+        Schema::table(Table::PAYOUT_LINK, function($table)
+        {
+            $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::MERCHANT_ID . '_foreign');
+
+            $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::CONTACT_ID . '_foreign');
+
+            $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::FUND_ACCOUNT_ID . '_foreign');
+        });
+
         Schema::dropIfExists(Table::PAYOUT_LINK);
     }
 }
