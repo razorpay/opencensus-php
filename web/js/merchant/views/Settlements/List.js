@@ -1,7 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -18,25 +18,22 @@ import EarlySettlementsAnnouncement from 'merchant/components/Announcements/Earl
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
-import {
-  trackEarlySettlementRequests,
-  trackHowSettlementsWorkClicks,
-  trackOndemand,
-} from './ga';
+import { trackEarlySettlementRequests, trackOndemand } from './ga';
 import {
   fetchCurrentBalance,
   fetchSettlementAmount,
 } from 'merchant/reducers/home';
-import { fetchSchedule } from 'merchant/reducers/settlements/details';
+import {
+  fetchSchedule,
+  fetchHolidayList,
+} from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
-import { trackInstantSettlementsBanner } from 'merchant/components/Announcements/ga';
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
@@ -48,6 +45,7 @@ import Time from 'common/ui/Time';
     mode: state.session.mode,
     schedule: state.settlement.schedule,
     settlement_amount: state.home.settlement_amount,
+    holidayList: state.settlement.holidayList,
     ...state.home,
     ...state.settlements,
   }),
@@ -58,6 +56,7 @@ import Time from 'common/ui/Time';
     fetchCurrentBalance,
     fetchSchedule,
     fetchSettlementAmount,
+    fetchHolidayList,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -118,6 +117,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.popupIfSettle();
     this.props.fetchSettlementAmount();
+    this.props.fetchHolidayList();
   }
 
   onSearchAnalytics = params => {
@@ -173,7 +173,7 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
-  removeRequestESButton = e => {
+  removeRequestESButton = () => {
     window.removeEventListener(
       'remove-req-es-button',
       this.removeRequestESButton,
@@ -181,7 +181,7 @@ export default class SettlementsListContainer extends ListContainer {
     );
   };
 
-  showRequestEarySettlementForm = e => {
+  showRequestEarySettlementForm = () => {
     trackEarlySettlementRequests();
 
     this.props.openModal({
@@ -207,7 +207,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    console.log('1', this.props);
+    console.log('**', this.props);
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
