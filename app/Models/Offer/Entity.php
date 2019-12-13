@@ -579,7 +579,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }
 
-    public function toArrayCheckout(bool $discount = false, int $amount = null)
+    public function toArrayCheckout(int $amount = null)
     {
         $data = [
             self::ID              => $this->getPublicId(),

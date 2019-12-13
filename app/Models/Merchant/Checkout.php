@@ -677,7 +677,7 @@ class Checkout
 
             if ($checker->checkValidityOnOrder($order) === true)
             {
-                $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+                $data['offers'][] = $offer->toArrayCheckout($orderAmount);
             }
         }
     }
