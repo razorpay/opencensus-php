@@ -12,9 +12,14 @@ class Validator extends Base\Validator
     const CONTACT_TYPE         = 'contact.type';
     const CONTACT_NAME         = 'contact.name';
 
+
     const COMPOSITE_CREATE_RULE = 'composite_create';
     const VERIFY_OTP            = 'verify_otp';
+    const GENERATE_OTP          = 'generate_otp';
 
+    protected static $generateOtpRules = [
+        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
+    ];
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',
         Entity::CURRENCY        => 'required|size:3',
@@ -38,6 +43,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyOtpRules = [
-        'otp' => 'required|string|max:6'
+        Entity::OTP     => 'required|string|max:6',
+        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
 }

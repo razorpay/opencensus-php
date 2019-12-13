@@ -412,6 +412,16 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testOtpGenerationWithContext()
+    {
+
+    }
+
+    public function testOtpVerificationWithContext()
+    {
+
+    }
+
     public function testWhenRavenFailsWhileOtpGenerationExceptionIsThrown()
     {
 
