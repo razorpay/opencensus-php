@@ -618,7 +618,7 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($order, $data);
+            $this->checkAndFillOrderOffers($order, $data, $merchant);
         }
         else
         {
@@ -626,7 +626,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data, Merchant\Entity $merchant)
     {
         $offers = $order->offers;
 
@@ -659,6 +659,10 @@ class Checkout
             // If offer is forced, checkout handles it by displaying it without list of choices
             //
             $data['force_offer'] = true;
+        } else {
+            $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+
+            $offers = array_merge($offers, $nonOrderOffers);
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data, $order);
