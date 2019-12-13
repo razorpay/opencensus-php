@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\PayoutLink;
 
 use Mail;
+use Redis;
 use Mockery;
 use Exception;
 use RZP\Error\ErrorCode;
@@ -461,11 +462,41 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithValidTokenReturnsFundAccountArray()
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
 
+        Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue('some value'));
+
+        // call fund-account, assuming OTP verification will pass as redis is mocked
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $this->contact->getId()
+                                              ]);
+
+        $this->startTest();
     }
 
     public function testGetFundAccountWithInvalidTokenRaisesException()
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
 
+        Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('set')
+                  ->will($this->returnValue(true));
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(null));
+
+        // call fund-account, assuming OTP verification will pass as redis is mocked
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id' => $this->contact->getId()
+                                              ]);
+        $this->startTest();
     }
 }

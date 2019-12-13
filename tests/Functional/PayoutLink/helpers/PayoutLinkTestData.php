@@ -388,7 +388,7 @@ return [
         ]
     ],
 
-    'testCancelIdempotencyByCallingTheApiTwice' => [
+    'testCancelIdempotencyByCallingTheCancelApiTwice' => [
         'request'  => [
             'method' => 'POST',
             'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
@@ -400,4 +400,43 @@ return [
             ]
         ]
     ],
+
+    'testGetFundAccountWithValidTokenReturnsFundAccountArray' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/fund-accounts',
+            'content' => ['token' => 'some-random-token']
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id'  => '10000000000000',
+                    'source_type'  => 'contact',
+                    'source_id'    => '1000010contact',
+                    'account_type' => 'bank_account',
+                ]
+            ],
+        ]
+    ],
+
+    'testGetFundAccountWithInvalidTokenRaisesException' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/fund-accounts',
+            'content' => ['token' => 'some-random-token']
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+        ]
+    ]
 ];
