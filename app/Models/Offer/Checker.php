@@ -71,8 +71,10 @@ class Checker extends Base\Core
 
         $validMaxOrderAmount = $this->checkMaxOrderAmount();
 
+        $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+
         return (($validMinOrderAmount === true) and ($validMaxOrderAmount === true) and
-                ($this->checkApplicabilityOnOrder($order) === true));
+                ($this->checkApplicabilityOnOrder($order) === true) and $isMaxOfferUsageExceeded);
     }
 
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
