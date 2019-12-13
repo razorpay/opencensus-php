@@ -256,7 +256,11 @@ export default class SettlementsListContainer extends ListContainer {
                     onClick={() => {
                       this.props.openModal({
                         size: 'regular',
-                        component: <SettlementSchedule />,
+                        component: (
+                          <SettlementSchedule
+                            holidayList={this.props.holidayList}
+                          />
+                        ),
                       });
                     }}
                   >
