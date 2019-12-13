@@ -415,7 +415,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -431,7 +437,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
