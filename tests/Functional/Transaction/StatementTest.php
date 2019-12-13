@@ -234,7 +234,8 @@ class StatementTest extends TestCase
         $this->createPayout();
 
         // Test debit filter after payout
-        $this->ba->proxyAuth();
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
 
         $response = $this->startTest();
