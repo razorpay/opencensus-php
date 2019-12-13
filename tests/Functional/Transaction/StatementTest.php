@@ -234,16 +234,14 @@ class StatementTest extends TestCase
     {
         $this->createPayout();
 
-        $this->ba->privateAuth();
-
         // Test debit filter after payout
+        $this->ba->proxyAuth();
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
 
         $response = $this->startTest();
 
         $this->assertEquals(1, $response['count']);
         $txn = $response['items'][0];
-
         $this->assertEquals(count($response['items']), 1);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction['amount'], $txn['debit']);
@@ -263,7 +261,6 @@ class StatementTest extends TestCase
 
         $this->assertEquals(1, $response['count']);
         $txn = $response['items'][0];
-
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction['amount'], $txn['debit']);
 
@@ -273,7 +270,6 @@ class StatementTest extends TestCase
 
         $this->assertEquals(1, $response['count']);
         $txn = $response['items'][0];
-
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction['amount'], $txn['credit']);
     }
