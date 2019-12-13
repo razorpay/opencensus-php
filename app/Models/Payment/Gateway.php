@@ -1679,6 +1679,10 @@ class Gateway
         Gateway::UPI_RBL,
     ];
 
+    public static $upiQrGateways = [
+        Gateway::UPI_MINDGATE,
+    ];
+
     public static $sequenceNoBasedRefundGateways = [
         Gateway::NETBANKING_SBI
     ];
