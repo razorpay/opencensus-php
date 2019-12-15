@@ -219,7 +219,11 @@ class Gateway extends Base\Gateway
     {
         if ($exception !== null)
         {
-            throw $exception;
+            if ($exception instanceof \Exception)
+            {
+                throw $exception;
+            }
+            throw new \Exception('Not valid bharat qr');
         }
 
         //
@@ -247,6 +251,11 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($token);
 
         return true;
+    }
+
+    public function getIntentUrl($input)
+    {
+        return $this->getIntentRequest($input);
     }
 
     protected function getIntentRequest($input)

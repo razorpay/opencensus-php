@@ -307,6 +307,8 @@ class Entity
     const FTS_FUND_ACCOUNT               = 'fts.fund_accounts';
     const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
 
+    const UFH_FILES                      = 'ufh.files';
+
     const COMMISSION = 'commission';
 
     /**
@@ -681,6 +683,7 @@ class Entity
         self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
+        self::UFH_FILES                    => \RZP\Services\UfhClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

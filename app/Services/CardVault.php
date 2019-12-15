@@ -4,7 +4,9 @@ namespace RZP\Services;
 
 use Requests;
 use Requests_Hooks;
+
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Validator;
@@ -167,6 +169,15 @@ class CardVault
 
     public function sendRequest($url, $method, $data = null)
     {
+        // temporary code to debug
+        if (($url === 'tokenize') or
+            ($url === 'detokenize'))
+        {
+            $trackId = Base\UniqueIdEntity::generateUniqueId();
+
+            $url = $url . '/track/' . $trackId;
+        }
+
         $url = $this->baseUrl . $url;
 
         if ($data === null)
@@ -207,7 +218,9 @@ class CardVault
             'content' => $data
         ];
 
-        $this->trace->info(TraceCode::CARD_VAULT_REQUEST,[]);
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
+            'url' => $url,
+        ]);
 
         $response = $this->sendCardVaultRequest($request);
 

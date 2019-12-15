@@ -1164,6 +1164,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORTING_SERVICE_UNFILTERED_CONFIGS                  = 'REPORTING_SERVICE_UNFILTERED_CONFIGS';
     const REPORTING_SERVICE_FILTERED_CONFIGS                    = 'REPORTING_SERVICE_FILTERED_CONFIGS';
 
+    const UFH_SERVICE_API_REQUEST                               = 'UFH_SERVICE_API_REQUEST';
+    const UFH_SERVICE_API_RESPONSE                              = 'UFH_SERVICE_API_RESPONSE';
+    const UFH_INTEGRATION_ERROR                                 = 'UFH_INTEGRATION_ERROR';
+
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                                  = 'QUEUE_INVALID_CONFIG';
@@ -2239,6 +2243,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Banking Account Statement
     const BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE            = 'BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST        = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST';
+    const BANKING_ACCOUNT_STATEMENT_GENERATE                    = 'BANKING_ACCOUNT_STATEMENT_GENERATE';
+    const UFH_RESPONSE                                          = 'UFH_RESPONSE';
+    const UFH_FILE_UPLOAD_FAILED                                = 'UFH_FILE_UPLOAD_FAILED';
+    const BANKING_ACCOUNT_STATEMENT_REQUEST                     = 'BANKING_ACCOUNT_STATEMENT_REQUEST';
+    const BANKING_ACCOUNT_STATEMENT_EMAIL                       = 'BANKING_ACCOUNT_STATEMENT_EMAIL';
+    const CA_STATEMENT_GENERATED                                = 'CA_STATEMENT_GENERATED';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE         = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE';
     const BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY               = 'BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY';
@@ -2365,7 +2375,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST           = 'MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST';
 
-    const UFH_RESPONSE                                          = 'UFH_RESPONSE';
     const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 

@@ -1314,6 +1314,8 @@ final class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
+        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
+        'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
@@ -2138,6 +2140,7 @@ final class Route
         'user_update_contact',
         'user_update_contact_merchant',
         'user_account_unlock',
+        'banking_account_statement_generate',
         'd2c_bureau_details_fetch',
         'd2c_bureau_details_patch',
         'd2c_bureau_details_otp_submit',
@@ -3161,8 +3164,8 @@ final class Route
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'fts_dashboard_raw_bank_status'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
-        'fts_dashboard_source_account_create'       => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
-        'fts_dashboard_source_account_delete'       => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_source_account_create'       => Permission::GATEWAY_PVT,
+        'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
         'setl_holidays'                             => '*',

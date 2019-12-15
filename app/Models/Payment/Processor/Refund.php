@@ -1988,7 +1988,7 @@ trait Refund
 
             if ($this->isPaymentNetbankingAndCardTransferRefund($refund, $payment, true) === true)
             {
-                $bankAccountInput = $this->getBankAccountDetailsForRefund($payment);
+                $bankAccountInput = $this->fetchBankAccountDetailsForInstantRefund($payment);
 
                 if (empty($bankAccountInput) === false)
                 {
@@ -2866,15 +2866,26 @@ trait Refund
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 
-    public function getBankAccountDetailsForRefund(Payment\Entity $payment)
+    public function fetchBankAccountDetailsForInstantRefund(Payment\Entity $payment) : array
     {
         $netbankingEntity = $payment->netbanking;
 
-        $ifscCode = BankCodes::getIfscForBankCode($payment->getBank());
+        if (empty($netbankingEntity) === true)
+        {
+            return [];
+        }
 
-        $input[BankAccount\Entity::IFSC_CODE] = $ifscCode;
-        $input[BankAccount\Entity::ACCOUNT_NUMBER] = $netbankingEntity->getAccountNumber();
+        $accountNo = $netbankingEntity->getAccountNumber();
+        $ifscCode  = BankCodes::getIfscForBankCode($payment->getBank());
 
-        return $input;
+        if ((empty($accountNo) === true) or (empty($ifscCode) === true))
+        {
+            return [];
+        }
+
+        return [
+            BankAccount\Entity::IFSC_CODE => $ifscCode,
+            BankAccount\Entity::ACCOUNT_NUMBER => $accountNo
+        ];
     }
 }
