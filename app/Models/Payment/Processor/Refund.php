@@ -2488,7 +2488,10 @@ trait Refund
         return (($refund->isRefundRequestedSpeedInstant() === true) and
                 ($payment->hasBeenCaptured() === true) and
                 (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
-                ((in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI], true) === true) and
+                ((in_array($payment->getMethod(), [
+                    Payment\Method::CARD,
+                    Payment\Method::UPI,
+                    Payment\Method::NETBANKING], true) === true) and
                  (($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true) or
                   ($this->isPaymentNetbankingAndCardTransferRefund($refund, $payment) === true) or
                   ($this->isPaymentUpiAndCardTransferRefund($refund, $payment) === true))));
@@ -2829,9 +2832,9 @@ trait Refund
         //
 
         $queryParams = [
+            RefundEntity::GATEWAY        => $payment->getGateway(),
             RefundConstants::METHOD      => $payment->getMethod(),
             RefundConstants::AMOUNT      => $payment->getAmount(),
-            RefundEntity::GATEWAY        => $payment->getGateway(),
             RefundConstants::MERCHANT_ID => $payment->getMerchantId(),
         ];
 
@@ -2867,13 +2870,10 @@ trait Refund
     {
         $netbankingEntity = $payment->netbanking;
 
-        $ifscCode = BankCodes::getIfscForBankCode($netbankingEntity->getBank());
-
-        $beneficiaryName = $netbankingEntity->getCustomerName();
+        $ifscCode = BankCodes::getIfscForBankCode($payment->getBank());
 
         $input[BankAccount\Entity::IFSC_CODE] = $ifscCode;
         $input[BankAccount\Entity::ACCOUNT_NUMBER] = $netbankingEntity->getAccountNumber();
-        $input[BankAccount\Entity::BENEFICIARY_NAME] = ($beneficiaryName === null) ? '' : $beneficiaryName;
 
         return $input;
     }
