@@ -297,4 +297,9 @@ class Network
 
         return array_intersect_key(self::$fullName, array_flip($supported));
     }
+
+    public static function getAllNetworkCodes():array
+    {
+        return self::$networks;
+    }
 }

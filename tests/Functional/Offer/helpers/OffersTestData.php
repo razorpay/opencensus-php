@@ -1008,6 +1008,35 @@ return [
         ]
     ],
 
+    'testCreateOfferBajaj' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'BAJAJ',
+                'emi_subvention'      => true,
+                'emi_durations'       => [3,6,9,12],
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details',
+                'block'               =>  1
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'          => true,
+                'name'            => 'Test Offer',
+                'payment_method'  => 'emi',
+                'payment_network' => 'BAJAJ',
+                'display_text'    => 'Emi Subvention offers',
+                'terms'           => 'Some more details',
+                'min_amount'      => 300000,
+            ]
+        ]
+    ],
+
     'testOfferWithInvalidIssuer' => [
         'request' => [
             'content' => [

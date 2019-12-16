@@ -20,7 +20,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $deleteSourceAccountRules = [
-        'product'          => 'filled|string|required|in:PAYOUT,REFUND,PAYOUT_REFUND,SETTLEMENT,PENNY_TESTING',
-        'fund_account_id'  => 'filled|required|integer'
+        'source_account_id'  => 'filled|required|integer'
     ];
 }
