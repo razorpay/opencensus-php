@@ -241,7 +241,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $status = $this->getTerminalVerificationStatusFromResponse($response);
 
-        if ($status === Constants::CALLBACK_SUCCESSFUL)
+        if ($status === Constants::TERMINAL_ACTIVATION_SUCCESSFULL)
         {
             $this->updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail);
         }
@@ -259,7 +259,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         if (empty($response[Constants::DATA][Constants::STATUS]) === true)
         {
-            $status = Constants::CALLBACK_FAILED;
+            $status = Constants::TERMINAL_ACTIVATION_FAILED;
         }
         else
         {
