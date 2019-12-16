@@ -4,7 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\Contact as ContactClient;
 
 class Core extends Base\Core
 {
@@ -29,9 +29,9 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::COMPOSITE_CREATE, $input);
 
-        $contact = array_pull($input, 'contact');
+        $contactDetails = array_pull($input, 'contact');
 
-        $contact = (new ContactClient())->processContact($contact, $this->merchant);
+        $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
 
         $payoutLink = (new Entity)->build($input);
 

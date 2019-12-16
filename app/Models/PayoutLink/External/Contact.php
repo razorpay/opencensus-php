@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\PayoutLink\Clients;
+namespace RZP\Models\PayoutLink\External;
 
 use App;
 use RZP\Trace\TraceCode;
@@ -34,14 +34,14 @@ class Contact
     /**
      * Calls the Contact Core, to create the contact and return the Contact Entity
      *
-     * @param array $contact
+     * @param array $contactDetails
      * @param MerchantEntity $merchant
      * @return ContactEntity
      * @throws BadRequestException
      */
-    public function processContact(array $contact, MerchantEntity $merchant): ContactEntity
+    public function processContact(array $contactDetails, MerchantEntity $merchant): ContactEntity
     {
-        $contactId = array_pull($contact, 'id');
+        $contactId = array_pull($contactDetails, 'id');
 
         if ($contactId !== null)
         {
@@ -54,29 +54,29 @@ class Contact
                                               null,
                                               [
                                                   'merchant_id' => $merchant->getPublicId(),
-                                                  'contact'     => $contact
+                                                  'contact_id'     => $contact->getPublicId()
                                               ]);
             }
         }
         else
         {
             $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
-                               $contact);
+                               $contactDetails);
 
-            if ((empty($contact['email']) === true) and
-                (empty($contact['contact']) === true))
+            if ((empty($contactDetails['email']) === true) and
+                (empty($contactDetails['contact']) === true))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
                                               null,
                                               [
                                                   'merchant_id' => $merchant->getPublicId(),
-                                                  'contact'     => $contact
+                                                  'contact_details'     => $contactDetails
                                               ]);
             }
 
             try
             {
-                $contact = (new ContactCore())->create($contact, $merchant);
+                $contact = (new ContactCore())->create($contactDetails, $merchant);
             }
             catch(\Exception $e)
             {
@@ -85,7 +85,7 @@ class Contact
                     null,
                     [
                         'merchant_id' => $merchant->getPublicId(),
-                        'contact'     => $contact
+                        'contact'     => $contactDetails
                     ]
                 );
             }

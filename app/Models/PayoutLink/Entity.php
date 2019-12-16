@@ -45,7 +45,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payout_link';
 
-    protected static $sign = 'pyol';
+    protected static $sign = 'poutlk';
 
     protected $amounts = [
       self::AMOUNT

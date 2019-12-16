@@ -15,7 +15,7 @@ use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\Contact as ContactClient;
 
 class PayoutLinkTest extends TestCase
 {
