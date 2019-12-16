@@ -72,6 +72,7 @@ class PayoutLinkTest extends TestCase
             PayoutLink::AMOUNT     => 1000,
             PayoutLink::CURRENCY   => Currency::INR,
             PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
+            PayoutLink::CONTACT_NAME => $this->contact->getName()
         ];
 
         $payout_link = (new PayoutLink)->build($input);
