@@ -27,15 +27,23 @@ import OfferReview from './offerReview';
 @RTracking(() => window.rzpQ.component('NewOfferForm'))
 export default class CreateOfferWizard extends React.Component {
   state = {
-    currentTab: 0,
-    // starts_at: moment().add(1, "days"),
-    // ends_at: moment().add(7, "days"),
-    block: '',
+    currentTab: 4,
+    starts_at: moment().add(1, 'days'),
+    ends_at: moment().add(7, 'days'),
+    block: 'false',
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
       addons: [],
     },
+    name: 'Pikachu Offer',
+    display_text: 'Pika pika (nods in agreement)',
+    terms: 'Pika pika pika pi Pikachu!!',
+    payment_method: 'card',
+    discount_type: 'flat',
+    flat_cashback: '2',
+    min_amount: '6',
+    max_offer_usage: '14',
     internals: {},
     allPaymentMethodsAllowed: false,
   };
