@@ -200,6 +200,46 @@ class FraudDetectionTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testAllowByShieldWithHighRiskScore()
+    {
+        $this->mockShield();
+
+        $this->mockRazorx();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5149067611060906';
+
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD,
+            $riskEntity['reason']
+        );
+    }
+
     /*
      * In this test case, we simulate a failure to detect fraud on Shield(validateFraudDetectionV2).
      * In this case, we still want a fraud check to happen via Maxmind(validateFraudDetection)

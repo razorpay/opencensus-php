@@ -579,7 +579,7 @@ class Notifier extends Base\Core
 
         $expireBy = $this->invoice->getExpireBy();
 
-        if(empty($expireBy) === false)
+        if (empty($expireBy) === false)
         {
             $expireBy = Carbon::createFromTimestamp($expireBy, Timezone::IST)->format('d/m/Y');
         }

@@ -235,10 +235,11 @@ class Repository extends Base\Repository
 
     public function migrateCardVaultTokenBulk($existingToken, $newToken, $globalFingerprint)
     {
-        $limit = 250;
+        $limit = 1000;
 
         $this->newQuery()
             ->where(Entity::VAULT_TOKEN, '=', $existingToken)
+            ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit)
             ->update(['vault_token' => $newToken, 'global_fingerprint' => $globalFingerprint]);
     }

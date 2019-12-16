@@ -127,6 +127,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CANCELLED_METADATA                            = 'PAYMENT_CANCELLED_METADATA';
     const PAYMENT_FAILED_TO_AUTHORIZED                          = 'PAYMENT_FAILED_TO_AUTHORIZED';
     const PAYMENT_CALLBACK_FAILURE                              = 'PAYMENT_CALLBACK_FAILURE';
+    const CHECK_ACCOUNT_CALLBACK_FAILURE                        = 'CHECK_ACCOUNT_CALLBACK_FAILURE';
     const PAYMENT_CALLBACK_RETRY                                = 'PAYMENT_CALLBACK_RETRY';
     const PAYMENT_CALLBACK_RETRY_SUCCESS                        = 'PAYMENT_CALLBACK_RETRY_SUCCESS';
     const PAYMENT_CALLBACK_PENDING                              = 'PAYMENT_CALLBACK_PENDING';
@@ -610,6 +611,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const RUNTIME_ERROR                                         = 'RUNTIME_ERROR';
 
+    const PAYLATER_ELLIGIBILITY_CALLBACK                        = 'PAYLATER_ELLIGIBILITY_CALLBACK';
+
     const NETBANKING_PAYMENT_CALLBACK                           = 'NETBANKING_PAYMENT_CALLBACK';
     const SMS_SENDING_FAILED                                    = 'SMS_SENDING_FAILED';
     const GATEWAY_ALREADY_REFUNDED_INPUT                        = 'GATEWAY_ALREADY_REFUNDED_INPUT';
@@ -722,7 +725,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VALIDATE_ERROR                                = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_VALIDATE_REFUND_SUMMARY                       = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                            = 'GATEWAY_AUTHORIZE_RESPONSE';
+    const GATEWAY_ELLIGIBILITY_RESPONSE                         = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                             = 'GATEWAY_AUTHORIZE_REQUEST';
+    const GATEWAY_ELLIGIBILITY_REQUEST                          = 'GATEWAY_ELLIGIBILITY_REQUEST';
     const GATEWAY_PRE_AUTH_REQUEST                              = 'GATEWAY_PRE_AUTH_REQUEST';
     const GATEWAY_MANDATE_CREATE_REQUEST                        = 'GATEWAY_MANDATE_CREATE_REQUEST';
     const GATEWAY_MANDATE_CREATE_RESPONSE                       = 'GATEWAY_MANDATE_CREATE_RESPONSE';
@@ -1158,6 +1163,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORTING_SERVICE_CREATE_SCHEDULE                     = 'REPORTING_SERVICE_CREATE_SCHEDULE';
     const REPORTING_SERVICE_UNFILTERED_CONFIGS                  = 'REPORTING_SERVICE_UNFILTERED_CONFIGS';
     const REPORTING_SERVICE_FILTERED_CONFIGS                    = 'REPORTING_SERVICE_FILTERED_CONFIGS';
+
+    const UFH_SERVICE_API_REQUEST                               = 'UFH_SERVICE_API_REQUEST';
+    const UFH_SERVICE_API_RESPONSE                              = 'UFH_SERVICE_API_RESPONSE';
+    const UFH_INTEGRATION_ERROR                                 = 'UFH_INTEGRATION_ERROR';
 
     const QUEUE_JOB_FAILURE                                     = 'QUEUE_JOB_FAILURE';
     const QUEUE_DISPATCH_JOB_FAILURE                            = 'QUEUE_DISPATCH_JOB_FAILURE';
@@ -2234,6 +2243,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Banking Account Statement
     const BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE            = 'BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST        = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST';
+    const BANKING_ACCOUNT_STATEMENT_GENERATE                    = 'BANKING_ACCOUNT_STATEMENT_GENERATE';
+    const UFH_RESPONSE                                          = 'UFH_RESPONSE';
+    const UFH_FILE_UPLOAD_FAILED                                = 'UFH_FILE_UPLOAD_FAILED';
+    const BANKING_ACCOUNT_STATEMENT_REQUEST                     = 'BANKING_ACCOUNT_STATEMENT_REQUEST';
+    const BANKING_ACCOUNT_STATEMENT_EMAIL                       = 'BANKING_ACCOUNT_STATEMENT_EMAIL';
+    const CA_STATEMENT_GENERATED                                = 'CA_STATEMENT_GENERATED';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED';
     const BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE         = 'BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE';
     const BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY               = 'BANKING_ACCOUNT_STATEMENT_ACTUAL_ENTITY';
@@ -2360,7 +2375,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST           = 'MERCHANT_BANKING_INVOICE_EMAIL_SEND_REQUEST';
 
-    const UFH_RESPONSE                                          = 'UFH_RESPONSE';
     const MERCHANT_MTU_UPDATE_SUCCESS                           = 'MERCHANT_MTU_UPDATE_SUCCESS';
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 

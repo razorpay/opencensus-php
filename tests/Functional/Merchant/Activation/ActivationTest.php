@@ -9,16 +9,19 @@ use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
-use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
@@ -27,9 +30,10 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 /**
  * @group dns-sensitive
  */
-class ActivationTest extends TestCase
+class ActivationTest extends OAuthTestCase
 {
     use MocksDnsTrait;
+    use PartnerTrait;
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -883,6 +887,47 @@ class ActivationTest extends TestCase
         $data = $this->getInstantlyActivatedMerchantData();
         $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $this->startTest();
+    }
+
+    public function testReleaseFundsWithParntersBankAccount()
+    {
+        list($application) = $this->createPartnerMerchantAndSubMerchant(MerchantConstants::AGGREGATOR);
+
+        $data = $this->getInstantlyActivatedMerchantDetailData(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->ba->adminAuth();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/merchants/' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/action';
+
+        $data = $this->getInstantlyActivatedMerchantData();
+        $this->fixtures->on('test')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+        $this->fixtures->on('live')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+
+        $configAttributes = [
+            'SETTLE_TO_PARTNER' => 1,
+        ];
+
+        $this->createConfigForPartnerApp($application->getId(), Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $configAttributes);
+
+        $config = [
+            'deleted_at' => '1576153748'
+        ];
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
 
         $this->startTest();
     }

@@ -134,6 +134,8 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+  
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -141,6 +143,11 @@ class Constants
      * irrespective of merchant category and subcategory
      */
     const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
+     * Skipping website and allowing international activation.
+     */
+    const SKIP_WEBSITE_INTERNAT         = 'skip_website_internat';
 
     /**
      * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
@@ -443,7 +450,9 @@ class Constants
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
+        self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
     ];

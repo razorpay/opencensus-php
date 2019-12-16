@@ -3019,8 +3019,8 @@ class Service extends Base\Service
         (new Validator)->validateInput('list_submerchants', $input);
 
         // add default params
-        $params['skip'] = $params['skip'] ?? 0;
-        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+        $input['skip'] = $input['skip'] ?? 0;
+        $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 

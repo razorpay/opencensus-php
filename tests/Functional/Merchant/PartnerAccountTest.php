@@ -407,6 +407,42 @@ class PartnerAccountTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testSimulateInternationalActivationForPartner()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $this->fixtures->merchant->addFeatures([FName::PARTNER_ACTIVATE_MERCHANT, FName::SKIP_WEBSITE_INTERNAT]);
+
+        $subMerchant = $this->createUnderReviewAccount();
+
+        $merchantAttributes = [
+            'website'        => null,
+            'has_key_access' => false,
+        ];
+
+        $this->fixtures->on('test')->edit('merchant', $subMerchant->getId(), $merchantAttributes);
+        $this->fixtures->on('live')->edit('merchant', $subMerchant->getId(), $merchantAttributes);
+
+        $detail = [
+            'business_website' => null
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $detail);
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $detail);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testSimulateActivationForPartner'];
+
+        $testData['request']['url'] = '/partner/merchant/acc_' . $subMerchant->getId() . '/activation/status';
+
+        $this->runRequestResponseFlow($testData);
+
+        $sm = $this->getDbEntityById('merchant', $subMerchant->getId());
+
+        $this->assertEquals($sm['international'], true);
+    }
+
     protected function changeActivationStatus($merchantId, $status)
     {
         $testData = $this->testData['changeActivationStatus'];

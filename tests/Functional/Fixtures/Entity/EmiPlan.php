@@ -183,7 +183,7 @@ class EmiPlan extends Base
             'rate'              => '1300',
             'methods'           => 'creditcard',
             'bank'              => 'CITI',
-            'min_amount'        => '20000',
+            'min_amount'        => '2000000',
             'merchant_id'       => '10000000000000',
         ],
         [
@@ -192,6 +192,7 @@ class EmiPlan extends Base
             'rate'              => '1200',
             'methods'           => 'credit',
             'network'           => 'BAJAJ',
+            'merchant_payback'  => 0,
             'min_amount'        => '300000',
             'merchant_id'       => '10000000000000',
             'bank'              => null,

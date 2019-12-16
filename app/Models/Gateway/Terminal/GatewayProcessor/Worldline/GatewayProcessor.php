@@ -25,6 +25,9 @@ class GatewayProcessor extends BaseGatewayProcessor
     const WORLDLINE_MID_OFFSET                        = 999000000000000;
     const TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK = 'TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK';
 
+    // For worldline, if terminal_onboardnig_details status is one of below, then it means merchant is onboarded on gateway successfully
+    const MERCHANT_ONBOARDED_STATUSES                 =   [TerminalOnboardingDetail\Status::PENDING, TerminalOnboardingDetail\Status::ACTIVATED, TerminalOnboardingDetail\Status::ACTIVATION_FAILED];
+
     protected $tidGenerator;
 
     protected $redisMidKey;
@@ -134,6 +137,17 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         $subMerchant = $terminal->merchant;
 
+        // If the submerchant is already onboarded on gateway, then send additional tid request, otherwise send merchant-onboarding request
+        if ($this->isMerchantOnboardedOnGateway($subMerchant->getId()) === true)
+        {
+            return $this->getGatewayRequestArrayForAdditionalTerminalCreation($terminal, $subMerchant);
+        }
+
+        return $this->getGatewayRequestArrayForMerchantOnboarding($terminal, $subMerchant);
+    }
+
+    protected function getGatewayRequestArrayForMerchantOnboarding($terminal, $subMerchant)
+    {
         $partnerMerchant = $this->repo->merchant->getPartnerMerchantFromSubMerchantId($subMerchant->getId());
 
         $merchantDetail = $subMerchant->merchantDetail;
@@ -144,6 +158,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $gatewayRequestArray = [
             'method'                    => "POST",
+            'request_type'              => 'N',
             'gateway'                   => $terminal->getGateway(),
             'terminal'                  => $terminal->toArrayWithPassword(),
             'merchant'                  => $subMerchant->toArray(),
@@ -157,6 +172,20 @@ class GatewayProcessor extends BaseGatewayProcessor
             'other_details'             => $this->getPartnerOtherDetails(),
         ];
         
+        return $gatewayRequestArray;
+    }
+
+    protected function getGatewayRequestArrayForAdditionalTerminalCreation($terminal, $subMerchant)
+    {
+        $gatewayRequestArray = [
+            'method'                    => 'POST',
+            'request_type'              =>  'A',
+            'gateway'                   => $terminal->getGateway(),
+            'terminal'                  => $terminal->toArrayWithPassword() ,
+            'request_details'           => $this->getRequestDetails($terminal),
+            'other_details'             => $this->getPartnerOtherDetails(),
+        ];
+
         return $gatewayRequestArray;
     }
 
@@ -241,7 +270,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $status = $this->getTerminalVerificationStatusFromResponse($response);
 
-        if ($status === Constants::CALLBACK_SUCCESSFUL)
+        if ($status === Constants::TERMINAL_ACTIVATION_SUCCESSFULL)
         {
             $this->updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail);
         }
@@ -259,7 +288,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         if (empty($response[Constants::DATA][Constants::STATUS]) === true)
         {
-            $status = Constants::CALLBACK_FAILED;
+            $status = Constants::TERMINAL_ACTIVATION_FAILED;
         }
         else
         {
@@ -361,6 +390,22 @@ class GatewayProcessor extends BaseGatewayProcessor
         // TODO: Currently other details are hardcoded for freecharge, 
         // need to make this generic
         return Merchant\Detail\FreechargeWorldlineOnboardingDetails::OTHER_DETAILS;
+    }
+
+    /**
+     * Belopw method checks whether the submerchant is actually onboarded on worldline gateway or not
+     * A sub-merchant is actually on gateway if any of its terminalondetails status is pending, activated or activation_failed
+     */
+    protected function isMerchantOnboardedOnGateway($subMerchantId)
+    {
+        $merchantOnboardedTerminalOnboardingDetails = $this->repo->terminal_onboarding_detail->fetchByMerchantIdAndStatus($subMerchantId, self::MERCHANT_ONBOARDED_STATUSES);
+
+        if (count($merchantOnboardedTerminalOnboardingDetails) === 0)
+        {
+            return false;
+        }
+        
+        return true;
     }
 
 }
