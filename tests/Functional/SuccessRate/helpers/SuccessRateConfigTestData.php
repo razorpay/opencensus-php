@@ -7,7 +7,7 @@ return [
             ],
             'url' => '/create_sr_config',
             'raw' => json_encode([
-                "random" => "shit",
+                "random" => "abcd",
             ]),
             'method' => 'POST'
         ],
@@ -15,7 +15,7 @@ return [
             'content' => [
 
             ],
-            'status_code'   => 200,
+            'status_code'   => 400,
         ],
     ],
 ];
