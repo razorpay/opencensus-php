@@ -2545,16 +2545,14 @@ class Core extends Base\Core
             return false;
         }
 
-        // If business_website is empty, then don't allow international by default
-        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
-
         $category = $merchantDetails->getBusinessCategory();
 
         $subcategory = $merchantDetails->getBusinessSubCategory();
 
+        $websitePresent = $this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails);
+
         if (($merchant->isInternational() === true) or
-            (empty($businessWebsite) === true) or
-            (empty($category) === true))
+            (empty($category) === true) or $websitePresent === false)
         {
             return false;
         }
@@ -2580,6 +2578,36 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
+    {
+        // If business_website is empty, then don't allow international by default
+        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
+
+        if (empty($businessWebsite) === false)
+        {
+            return true;
+        }
+
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        // Filter partners whose feature (SKIP_WEBSITE_INTERNAT) is present.
+        $partner = $partners->filter(function(Entity $partner) {
+            return ($partner->skipWebsiteForInternational() === true);
+
+        })->first();
+
+        //
+        // If partner is not present and businessWebsite is absent
+        // then we do not allow international Activation.
+        //
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
