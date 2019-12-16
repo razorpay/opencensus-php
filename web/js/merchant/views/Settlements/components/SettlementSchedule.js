@@ -38,8 +38,21 @@ export default class SettlementSchedule extends Component {
     });
   };
 
+  formatTime = hrs => {
+    const formattedHrs = hrs.map((hr, idx) => {
+      return moment(hr, 'hh').format('LT');
+    });
+
+    return formattedHrs.map((hr, idx) => {
+      if (idx === formattedHrs.length - 1) {
+        return <Fragment key={idx}>{`${hr} Daily `}</Fragment>;
+      } else {
+        return <Fragment key={idx}>{`${hr}, `}</Fragment>;
+      }
+    });
+  };
+
   render() {
-    console.log(this.props);
     return (
       <div>
         <ModalHeader
@@ -55,7 +68,12 @@ export default class SettlementSchedule extends Component {
                   <div class="flex">
                     <div class="w50">Domestic Payments</div>
                     <div class="w50">
-                      T+{this.state.defaultDomestic[0].delay} working days
+                      {this.state.defaultDomestic[0]
+                        .is_early_settlement_schedule
+                        ? this.formatTime(this.state.defaultDomestic[0].hour)
+                        : `T+${
+                            this.state.defaultDomestic[0].delay
+                          } working days`}
                     </div>
                   </div>
                 )}
@@ -63,7 +81,14 @@ export default class SettlementSchedule extends Component {
                   <div class="flex">
                     <div class="w50">International Payments</div>
                     <div class="w50">
-                      T+{this.state.defaultInternational[0].delay} working days
+                      {this.state.defaultInternational[0]
+                        .is_early_settlement_schedule
+                        ? this.formatTime(
+                            this.state.defaultInternational[0].hour
+                          )
+                        : `T+${
+                            this.state.defaultInternational[0].delay
+                          } working days`}
                     </div>
                   </div>
                 )}
@@ -79,7 +104,9 @@ export default class SettlementSchedule extends Component {
                   >
                     <div class="w50">{item.method}</div>
                     <div class="w50">
-                      <b>T+{item.delay}</b> Working Days
+                      {item.is_early_settlement_schedule
+                        ? this.formatTime(item.hour)
+                        : `T+${item.delay} working days`}
                     </div>
                   </div>
                 </div>;
