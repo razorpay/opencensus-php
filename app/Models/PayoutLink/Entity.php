@@ -20,29 +20,35 @@ class Entity extends Base\PublicEntity
 
     protected $table  = Table::PAYOUT_LINK;
 
-    const ID              = 'id';
-    const CONTACT_ID      = 'contact_id';
-    const FUND_ACCOUNT_ID = 'fund_account_id';
-    const SHORT_URL       = 'short_url';
-    const MERCHANT_ID     = 'merchant_id';
-    const USER_ID         = 'user_id';
-    const BATCH_ID        = 'batch_id';
-    const IDEMPOTENCY_KEY = 'idempotency_key';
-    const STATUS          = 'status';
-    const AMOUNT          = 'amount';
-    const NOTES           = 'notes';
-    const DESCRIPTION     = 'description';
-    const RECEIPT         = 'receipt';
-    const CURRENCY        = 'currency';
-    const CANCELLED_AT    = 'cancelled_at';
-    const CREATED_AT      = 'created_at';
-    const UPDATED_AT      = 'updated_at';
+    const ID                   = 'id';
+    const CONTACT_ID           = 'contact_id';
+    const CONTACT_NAME         = 'contact_name';
+    const CONTACT_PHONE_NUMBER = 'contact_phone_number';
+    const CONTACT_EMAIL        = 'contact_email';
+    const FUND_ACCOUNT_ID      = 'fund_account_id';
+    const SHORT_URL            = 'short_url';
+    const MERCHANT_ID          = 'merchant_id';
+    const USER_ID              = 'user_id';
+    const BATCH_ID             = 'batch_id';
+    const IDEMPOTENCY_KEY      = 'idempotency_key';
+    const STATUS               = 'status';
+    const AMOUNT               = 'amount';
+    const NOTES                = 'notes';
+    const DESCRIPTION          = 'description';
+    const RECEIPT              = 'receipt';
+    const CURRENCY             = 'currency';
+    const CANCELLED_AT         = 'cancelled_at';
+    const CREATED_AT           = 'created_at';
+    const UPDATED_AT           = 'updated_at';
+
+    const CONTEXT = 'context';
+    const OTP = 'otp';
 
     protected $generateIdOnCreate = true;
 
     protected $entity = 'payout_link';
 
-    protected static $sign = 'pyol';
+    protected static $sign = 'poutlk';
 
     protected $amounts = [
       self::AMOUNT
@@ -54,6 +60,9 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_PHONE_NUMBER,
     ];
 
     protected $visible = [
@@ -61,6 +70,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::CONTACT_ID,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
         self::SHORT_URL,
         self::STATUS,
@@ -79,6 +91,9 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CONTACT_ID,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
         self::STATUS,
         self::AMOUNT,
@@ -103,17 +118,11 @@ class Entity extends Base\PublicEntity
 
     protected $publicAuth = [
         self::ID,
-        self::ENTITY,
-        self::CONTACT_ID,
-        self::FUND_ACCOUNT_ID,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
-        self::NOTES,
-        self::SHORT_URL,
-        self::CREATED_AT,
         self::CANCELLED_AT
     ];
 
@@ -129,17 +138,20 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::CONTACT_ID            => null,
-        self::FUND_ACCOUNT_ID       => null,
-        self::SHORT_URL             => null,
-        self::MERCHANT_ID           => null,
-        self::USER_ID               => null,
-        self::AMOUNT                => null,
-        self::CURRENCY              => Currency::INR,
-        self::DESCRIPTION           => null,
-        self::RECEIPT               => null,
-        self::NOTES                 => [],
-        self::CANCELLED_AT          => null,
+        self::CONTACT_ID           => null,
+        self::CONTACT_NAME         => '',
+        self::CONTACT_EMAIL        => '',
+        self::CONTACT_PHONE_NUMBER => '',
+        self::FUND_ACCOUNT_ID      => null,
+        self::SHORT_URL            => null,
+        self::MERCHANT_ID          => null,
+        self::USER_ID              => null,
+        self::AMOUNT               => null,
+        self::CURRENCY             => Currency::INR,
+        self::DESCRIPTION          => null,
+        self::RECEIPT              => null,
+        self::NOTES                => [],
+        self::CANCELLED_AT         => null,
     ];
 
 
@@ -187,14 +199,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Setters ------------------------------
 
-    public function setShortUrl($shortUrl)
+    public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
     public function setStatus($newStatus)
     {
-        Status::validateStatus($this->getStatus(), $this->getStatus(), $newStatus);
+        Status::validateStatusUpdate($this->getStatus(), $newStatus, $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
     }

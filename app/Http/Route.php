@@ -847,7 +847,7 @@ final class Route
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
         // Payout Links
-        'payout_links_fetch_multiple'              => ['get',       'payout-links/',                                 'PayoutLinkController@list'                                          ],
+        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                          ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
         'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}/generate-customer-otp','PayoutLinkController@generateAndSendCustomerOtp'                  ],
@@ -858,7 +858,7 @@ final class Route
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
-        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                                   ],
+        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                          ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
