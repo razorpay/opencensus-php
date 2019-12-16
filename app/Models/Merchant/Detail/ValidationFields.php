@@ -109,4 +109,28 @@ class ValidationFields
             Entity::ADDRESS_PROOF_URL,
             Entity::PROMOTER_PAN_URL,
     ];
+
+    /**
+     *
+     * Returns list of document required for a particular field/ document group .
+     *
+     * @param string $field
+     *
+     * @return array
+     */
+    public static function getDocumentsRequired(string $field): array
+    {
+        if (Type::isValid($field))
+        {
+            return [$field];
+        }
+
+        if (array_key_exists($field, self::UNREGISTERED_DOCUMENT_FIELDS) === true)
+        {
+            return [Type::AADHAR_FRONT, Type::AADHAR_BACK];
+        }
+
+        return null;
+    }
+
 }

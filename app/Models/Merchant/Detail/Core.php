@@ -673,16 +673,28 @@ class Core extends Base\Core
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        $params = [
-            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
-            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
-            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
-            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
-        ];
+        $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $merchantDetails->fill($params);
+        $params = [];
 
-        $this->repo->saveOrFail($merchantDetails);
+        foreach ($requiredDocuments as $requiredDocument)
+        {
+            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+        }
+
+        //
+        // Currently only for unregistered business we save documents in new table(Merchant documents) for
+        // other business type we still save document in merchant detail table and sync both tables .
+        //
+        if ($merchantDetails->isUnregisteredBusiness() === false)
+        {
+
+            $merchantDetails->fill($params);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
+        (new Document\Core)->storeInMerchantDocument($merchant, $params);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -1756,5 +1768,33 @@ class Core extends Base\Core
         }
 
         return $merchantDetailsInput;
+    }
+
+    /**
+     * Returns required document for L2 submission
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    private function getRequireActivationDocuments(Entity $merchantDetails): array
+    {
+        $response = $this->createResponse($merchantDetails);
+
+        $requiredFields = $response[DEConstants::VERIFICATION][DEConstants::REQUIRED_FIELDS] ?? [];
+
+        $requiredDocuments = [];
+
+        foreach ($requiredFields as $requiredField)
+        {
+            $documentFields = ValidationFields::getDocumentsRequired($requiredField);
+
+            if (empty($documentFields) === false)
+            {
+                $requiredDocuments = array_merge($requiredDocuments, $documentFields);
+            }
+        }
+
+        return $requiredDocuments;
     }
 }
