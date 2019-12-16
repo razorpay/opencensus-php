@@ -26,7 +26,6 @@ export default class HolidayModal extends Component {
   }
 
   render() {
-    console.log(this.props, 'oapapa');
     const date = new Date();
     const year = date.getUTCFullYear().toString();
     return (
