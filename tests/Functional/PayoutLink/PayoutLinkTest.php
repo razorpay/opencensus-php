@@ -298,7 +298,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -319,7 +322,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -357,7 +363,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -383,7 +392,10 @@ class PayoutLinkTest extends TestCase
                                            ]);
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
         $this->startTest();
     }
@@ -409,7 +421,10 @@ class PayoutLinkTest extends TestCase
                                            ]);
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();

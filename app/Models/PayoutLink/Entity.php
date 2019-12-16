@@ -195,6 +195,26 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
+
+    public function getContactId()
+    {
+        return $this->getAttribute(self::CONTACT_ID);
+    }
+
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
+    public function getContactPhoneNumber()
+    {
+        return $this->getAttribute(self::CONTACT_PHONE_NUMBER);
+    }
+
+    public function getContactEmail()
+    {
+        return $this->getAttribute(self::CONTACT_EMAIL);
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------

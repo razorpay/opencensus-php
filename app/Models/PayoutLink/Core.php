@@ -135,11 +135,9 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        $contact = $payoutLink->contact;
+        $otp = $this->generateOtp($payoutLink, $context);
 
-        $otp = $this->generateOtp($contact, $payoutLinkId, $context);
-
-        $this->deliverOtp($payoutLink, $contact, $otp);
+        $this->deliverOtp($payoutLink, $otp);
 
         return [self::SUCCESS => self::OK];
     }
@@ -153,11 +151,9 @@ class Core extends Base\Core
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        $contact = $payoutLink->contact;
-
         $context = array_pull($input, Entity::CONTEXT);
 
-        $receiver = $this->getReceiver($contact, $payoutLinkId);
+        $receiver = $this->getReceiver($payoutLink);
 
         $requestContext = $this->processContext($payoutLinkId, $context);
 
@@ -214,6 +210,42 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $payoutLink
+     * @return string
+     * @throws BadRequestException
+     */
+    protected function getReceiver(Entity $payoutLink): string
+    {
+        $phoneNumber = $payoutLink->getContactPhoneNumber();
+
+        $email = $payoutLink->getContactEmail();
+
+        if ((empty($phoneNumber) === true) and (empty($email) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                                          [
+                                              ContactEntity::ID      => $payoutLink->getContactId(),
+                                              ContactEntity::NAME    => $payoutLink->getContactName(),
+                                              ContactEntity::CONTACT => $payoutLink->getContactPhoneNumber(),
+                                              ContactEntity::EMAIL   => $payoutLink->getContactEmail(),
+                                              self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                                          ]
+            );
+        }
+
+        if (empty($phoneNumber) === false)
+        {
+            $receiver = $phoneNumber;
+        }
+        else
+        {
+            $receiver = $email;
+        }
+
+        return $receiver;
+    }
+
+    /**
      * Returns true, if atkleast one delivery worked. else returns false
      * @param Entity $payoutLink
      * @param ContactEntity $contact
@@ -221,19 +253,18 @@ class Core extends Base\Core
      * @return void
      * @throws BadRequestException
      */
-    protected function deliverOtp(Entity $payoutLink, ContactEntity $contact, string $otp)
+    protected function deliverOtp(Entity $payoutLink, string $otp)
     {
         $successfulChannelPushCount = 0;
 
-        $phoneNumber = $contact->getContact();
+        $phoneNumber = $payoutLink->getContactPhoneNumber();
 
         if (empty($phoneNumber) === false)
         {
-            $payload = $this->getSmsPayload($contact, $otp);
+            $payload = $this->getSmsPayload($payoutLink, $otp);
 
             try
             {
-
                 $this->raven->sendSms($payload);
 
                 $successfulChannelPushCount++;
@@ -244,15 +275,15 @@ class Core extends Base\Core
                                              Trace::ERROR,
                                              TraceCode::PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED,
                                              [
-                                                 ContactEntity::ID      => $contact->getPublicId(),
-                                                 ContactEntity::NAME    => $contact->getName(),
-                                                 ContactEntity::CONTACT => $contact->getContact(),
-                                                 self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                                                 Entity::CONTACT_ID           => $payoutLink->getContactId(),
+                                                 Entity::CONTACT_NAME         => $payoutLink->getContactName(),
+                                                 self::PAYOUT_LINK_ID         => $payoutLink->getPublicId(),
+                                                 Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
                                              ]);
             }
         }
 
-        $email = $contact->getEmail();
+        $email = $payoutLink->getContactEmail();
 
         if (empty($email) === false)
         {
@@ -273,10 +304,10 @@ class Core extends Base\Core
                                              Trace::ERROR,
                                              TraceCode::PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED,
                                              [
-                                                 ContactEntity::ID    => $contact->getPublicId(),
-                                                 ContactEntity::NAME  => $contact->getName(),
-                                                 ContactEntity::EMAIL => $contact->getEmail(),
-                                                 self::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                                                 Entity::CONTACT_ID    => $payoutLink->getContactId(),
+                                                 Entity::CONTACT_NAME  => $payoutLink->getContactName(),
+                                                 Entity::CONTACT_EMAIL => $payoutLink->getContactEmail(),
+                                                 self::PAYOUT_LINK_ID  => $payoutLink->getPublicId()
                                              ]);
             }
 
@@ -288,36 +319,36 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
                 null,
                 [
-                    ContactEntity::ID      => $contact->getPublicId(),
-                    ContactEntity::NAME    => $contact->getName(),
-                    ContactEntity::CONTACT => $contact->getContact(),
-                    ContactEntity::EMAIL   => $contact->getEmail(),
-                    self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                    Entity::CONTACT_ID           => $payoutLink->getContactId(),
+                    Entity::CONTACT_NAME         => $payoutLink->getContactName(),
+                    Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
+                    Entity::CONTACT_EMAIL        => $payoutLink->getContactEmail(),
+                    self::PAYOUT_LINK_ID         => $payoutLink->getPublicId()
                 ]
             );
         }
     }
 
-    protected function getSmsPayload(ContactEntity $contactEntity, string $otp): array
+    protected function getSmsPayload(Entity $payoutLink, string $otp): array
     {
         $payload = [
             self::PARAMS   => [
-                self::CUSTOMER_NAME => $contactEntity->getName(),
+                self::CUSTOMER_NAME => $payoutLink->getContactName(),
                 Entity::OTP         => $otp
             ],
             self::TEMPLATE => self::SMS_TEMPLATE,
             self::SOURCE   => self::API_PAYOUT_LINK_SRC_STR,
-            self::RECEIVER => $contactEntity->getContact()
+            self::RECEIVER => $payoutLink->getContactPhoneNumber()
         ];
 
         return $payload;
     }
 
-    protected function generateOtp(ContactEntity $contact, string $payoutLinkId, string $context = null)
+    protected function generateOtp(Entity $payoutLink, string $context = null)
     {
-        $receiver = $this->getReceiver($contact, $payoutLinkId);
+        $receiver = $this->getReceiver($payoutLink);
 
-        $requestContext = $this->processContext($payoutLinkId, $context);
+        $requestContext = $this->processContext($payoutLink->getPublicId(), $context);
 
         $payload = [
             self::RECEIVER => $receiver,
@@ -385,42 +416,5 @@ class Core extends Base\Core
         }
 
         $payoutLink->setShortUrl($shortUrl);
-    }
-
-    /**
-     * @param ContactEntity $contact
-     * @param string $payoutLinkId
-     * @return mixed|null
-     * @throws BadRequestException
-     */
-    protected function getReceiver(ContactEntity $contact, string $payoutLinkId): string
-    {
-        $phoneNumber = $contact->getContact();
-
-        $email = $contact->getEmail();
-
-        if ((empty($phoneNumber) === true) and (empty($email) === true))
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
-                                          [
-                                              ContactEntity::ID      => $contact->getPublicId(),
-                                              ContactEntity::NAME    => $contact->getName(),
-                                              ContactEntity::CONTACT => $contact->getContact(),
-                                              ContactEntity::EMAIL   => $contact->getEmail(),
-                                              self::PAYOUT_LINK_ID   => $payoutLinkId
-                                          ]
-            );
-        }
-
-        if (empty($phoneNumber) === false)
-        {
-            $receiver = $phoneNumber;
-        }
-        else
-        {
-            $receiver = $email;
-        }
-
-        return $receiver;
     }
 }
