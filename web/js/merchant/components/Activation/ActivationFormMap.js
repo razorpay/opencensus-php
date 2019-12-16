@@ -493,6 +493,7 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
+    linkedfields: ['cancelled_cheque'],
   },
   [
     {
