@@ -85,7 +85,7 @@ class Core extends Base\Core
 
         $payoutLink->setStatus(Status::ISSUED);
 
-        $this->repo->save($payoutLink);
+        $this->repo->saveOrFail($payoutLink);
 
         return $payoutLink;
     }
