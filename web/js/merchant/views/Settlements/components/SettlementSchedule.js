@@ -4,6 +4,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import HolidayModal from 'merchant/views/Settlements/components/Modals/HolidayModal';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 
 @connect(state => state.settlement, {
   closeModal,
@@ -63,12 +64,16 @@ export default class SettlementSchedule extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div class="grey">Your payments get settled to your account in</div>
+            <div style={{ textAlign: 'center', fontSize: '17px' }}>
+              Your payments get settled to your account in
+            </div>
             <div class="emphzd">
               <div class="emphzd-div">
                 {this.state.defaultDomestic.length > 0 && (
                   <div class="flex">
-                    <div class="w50">Domestic Payments</div>
+                    <div class="w50">
+                      Domestic Payments<span class="text-danger">*</span>
+                    </div>
                     <div class="w50">
                       {this.state.defaultDomestic[0]
                         .is_early_settlement_schedule
@@ -79,9 +84,12 @@ export default class SettlementSchedule extends Component {
                     </div>
                   </div>
                 )}
+
                 {this.state.defaultInternational.length > 0 && (
                   <div class="flex">
-                    <div class="w50">International Payments</div>
+                    <div class="w50">
+                      International Payments<span class="text-danger">*</span>
+                    </div>
                     <div class="w50">
                       {this.state.defaultInternational[0]
                         .is_early_settlement_schedule
@@ -95,6 +103,7 @@ export default class SettlementSchedule extends Component {
                   </div>
                 )}
               </div>
+
               {this.state.otherMethods.map((item, idx) => {
                 <div style={{ margin: '10px' }} key={idx}>
                   <p class="grey">
@@ -113,16 +122,11 @@ export default class SettlementSchedule extends Component {
                   </div>
                 </div>;
               })}
-              <div>
-                <div
-                  class="flex grey"
-                  style={{ margin: '10px', fontSize: '13px' }}
-                >
-                  <div class="w50">
-                    <span class="text-danger">*</span> for Default Schedules
-                  </div>
-                  <div class="w50">(T is the date of payment capture)</div>
+              <div class="settlement-default-note" style={{ fontSize: '13px' }}>
+                <div class="w50">
+                  <span class="text-danger">*</span> for Default Schedules
                 </div>
+                <div class="w50">(T is the date of payment capture)</div>
               </div>
               <hr />
             </div>
@@ -130,32 +134,29 @@ export default class SettlementSchedule extends Component {
               <p>
                 <b>Note:</b> Bank Holidays aren’t counted as working days.{' '}
                 <br />
-                <button
+                <a
                   style={{ marginTop: '10px' }}
                   onClick={() => {
                     const { showExample } = this.state;
-                    this.setState({ showExample: !showExample });
+                    this.setState(prevState => {
+                      return {
+                        showExample: !prevState.showExample,
+                      };
+                    });
                   }}
-                  class="btn-outline"
+                  class="link"
                 >
-                  {this.state.showExample ? 'Hide' : 'Show'} Example{' '}
+                  {this.state.showExample ? 'Hide' : 'View'} Examples{' '}
                   <i
                     class={`i i-arrow-${
                       this.state.showExample ? 'up' : 'down'
                     }`}
                   />
-                </button>
+                </a>
               </p>
               {this.state.showExample ? (
                 <Fragment>
-                  <div
-                    class="box"
-                    style={{
-                      marginTop: '18px',
-                      border: '1px solid #E2E2E2',
-                      borderRadius: '2px',
-                    }}
-                  >
+                  <div class="box settlement-holiday-example">
                     <div class="box-heading">
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: No Bank Holiday</b>
@@ -163,14 +164,7 @@ export default class SettlementSchedule extends Component {
                       <SettlementsExample duration={4} />
                     </div>
                   </div>
-                  <div
-                    class="box"
-                    style={{
-                      marginTop: '18px',
-                      border: '1px solid #E2E2E2',
-                      borderRadius: '2px',
-                    }}
-                  >
+                  <div class="box settlement-holiday-example">
                     <div class="box-heading">
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: Bank Holiday in between</b>
