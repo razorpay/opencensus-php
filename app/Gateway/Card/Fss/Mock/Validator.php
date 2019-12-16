@@ -28,8 +28,6 @@ class Validator extends Base\Validator
         Fields::UDF4                => 'sometimes|string',
         Fields::UDF3                => 'sometimes|string',
         Fields::UDF2                => 'sometimes|string',
-        Fields::UDF6                => 'sometimes|string',
-        Fields::UDF12               => 'sometimes|string',
         Fields::UDF1                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'required|string|in:USA',
         Fields::ID                  => 'required|string',
