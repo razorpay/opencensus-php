@@ -88,6 +88,12 @@ class Core extends Base\Core
 
         $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
 
+        $input[Entity::CONTACT_NAME] = $contact->getName();
+
+        $input[Entity::CONTACT_EMAIL] = $contact->getEmail();
+
+        $input[Entity::CONTACT_PHONE_NUMBER] = $contact->getContact();
+
         $payoutLink = (new Entity)->build($input);
 
         // Doing this because we need the Id for generating short URL
