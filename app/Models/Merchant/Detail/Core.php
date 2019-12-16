@@ -676,7 +676,7 @@ class Core extends Base\Core
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
         $params = [];
-
+        
         foreach ($requiredDocuments as $requiredDocument)
         {
             $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
@@ -1791,7 +1791,7 @@ class Core extends Base\Core
 
             if (empty($documentFields) === false)
             {
-                $requiredDocuments = array_merge($requiredDocuments, $documentFields);
+                $requiredDocuments = array_merge_recursive($requiredDocuments, $documentFields);
             }
         }
 
