@@ -332,7 +332,7 @@ class PayoutLinkTest extends TestCase
 
         $token = $response['token'];
 
-        $this->assertRegExp('/pyol_DnhDjMDHlQEjgM.*/', $token);
+        $this->assertRegExp('/poutlk_DnhDjMDHlQEjgM.*/', $token);
     }
 
     public function testVerifyOtpFailedByInvalidOtp()

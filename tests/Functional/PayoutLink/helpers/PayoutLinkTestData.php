@@ -208,7 +208,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'pyol_DnhDjMDHlQEjgM',
+                'id'          => 'poutlk_DnhDjMDHlQEjgM',
                 'amount'      => 1000,
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
@@ -244,7 +244,7 @@ return [
     'testGenerateOtpForOnlyPhoneContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
 
         ],
         'response' => [
@@ -255,7 +255,7 @@ return [
     'testGenerateOtpForOnlyEmailContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
 
         ],
         'response' => [
@@ -266,7 +266,7 @@ return [
     'testOtpVerificationWithContext' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
             'content' => [
                 'context' => '1576208561',
                 'otp'     => '0007'
@@ -282,7 +282,7 @@ return [
     'testOtpGenerationWithContext' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
             'content' => [
                 'context' => '1576208561'
             ]
@@ -295,7 +295,7 @@ return [
     'testVerifyOtpSuccessful' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
             'content' => ['otp' => '0007']
         ],
         'response' => [
@@ -306,7 +306,7 @@ return [
     'testVerifyOtpFailedByInvalidOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
             'content' => ['otp' => '1234']
         ],
         'response' => [
@@ -327,7 +327,7 @@ return [
     'testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -347,7 +347,7 @@ return [
     'testExceptionWhenOnlyPhoneIsPresentAndSmsFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -367,7 +367,7 @@ return [
     'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -387,7 +387,7 @@ return [
     'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [

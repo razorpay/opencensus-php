@@ -12,7 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\Contact as ContactClient;
 
 class Core extends Base\Core
 {
@@ -59,9 +59,9 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
-        $contact = array_pull($input, 'contact');
+        $contactDetails = array_pull($input, 'contact');
 
-        $contact = (new ContactClient())->processContact($contact, $this->merchant);
+        $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
 
         $payoutLink = (new Entity)->build($input);
 
@@ -84,7 +84,7 @@ class Core extends Base\Core
         return $payoutLink;
     }
 
-    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input)
+    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
@@ -113,7 +113,7 @@ class Core extends Base\Core
         return [self::SUCCESS => self::OK];
     }
 
-    public function verifyCustomerOtp($payoutLinkId, $input)
+    public function verifyCustomerOtp($payoutLinkId, $input): array
     {
         (new Entity())->getValidator()
                       ->validateInput(Validator::VERIFY_OTP, $input);
@@ -137,10 +137,13 @@ class Core extends Base\Core
             Entity::OTP     => $input[Entity::OTP]
         ];
 
-        // todo, pl check if its ok to log OTP
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
-            $payload
+            [
+                self::RECEIVER  => $receiver,
+                Entity::CONTEXT => $requestContext,
+                self::SOURCE    => self::API_POUT_LNK_SCR
+            ]
         );
 
         $this->raven->verifyOtp($payload);
@@ -154,7 +157,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function processContext(string $payoutLinkId, string $context = null)
+    protected function processContext(string $payoutLinkId, string $context = null): string
     {
         $requestContext = $payoutLinkId;
 
@@ -169,8 +172,10 @@ class Core extends Base\Core
     /**
      * This will be stored in redis after OTP verification
      * and will be used in subsequent api calls
+     * @param string $payoutLinkId
+     * @return string
      */
-    protected function generateUniqueRequestToken($payoutLinkId): string
+    protected function generateUniqueRequestToken(string $payoutLinkId): string
     {
         $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -262,7 +267,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function getSmsPayload(ContactEntity $contactEntity, string $otp)
+    protected function getSmsPayload(ContactEntity $contactEntity, string $otp): array
     {
         $payload = [
             self::PARAMS   => [
