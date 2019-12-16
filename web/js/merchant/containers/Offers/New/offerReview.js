@@ -1,5 +1,28 @@
 import Input from 'common/new-ui/Input';
 
+const getTermsAndConditionsCheck = (value, onChange) => {
+  return (
+    <React.Fragment>
+      <div className="horizontally-stacked-checkbox">
+        <input
+          defaultChecked={value === 'false' ? 0 : 1}
+          type="checkbox"
+          name="creation_terms_accepted"
+          onChange={e => {
+            e.target.value = e.target.checked;
+            onChange(e);
+          }}
+        />
+        <span>Terms and Conditions:</span>
+        <p>
+          I understand that the discount/cashback given in this offer will be
+          borne by me and not razorpay
+        </p>
+      </div>
+    </React.Fragment>
+  );
+};
+
 const progressionList = progression => {
   return (
     <ul class="Workflow-list">
@@ -101,7 +124,9 @@ export default ({
     issuer,
     percent_rate,
     max_cashback,
+    creation_terms_accepted,
   },
+  getFormOnChangeHandler,
 }) => {
   return (
     <div class="Subscription--New-review">
@@ -145,17 +170,16 @@ export default ({
             </p>
             {getDualColumnTable(
               'Offer Validity',
-              `${starts_at.format('DD-MM-YY, HH:MM a')} to ${ends_at.format(
-                'DD-MM-YY, HH:MM a'
-              )}`
+              `${starts_at ? starts_at.format('DD-MM-YY, HH:MM a') : '-'} to ${
+                ends_at ? ends_at.format('DD-MM-YY, HH:MM a') : '-'
+              }`
             )}
           </div>,
         ])}
-        <Input.Check
-          className={'Input--vTop'}
-          fieldLabel={'Offer available for all users on checkout.'}
-          name="checkout_visibility"
-        />
+        {getTermsAndConditionsCheck(
+          creation_terms_accepted,
+          getFormOnChangeHandler
+        )}
       </div>
     </div>
   );

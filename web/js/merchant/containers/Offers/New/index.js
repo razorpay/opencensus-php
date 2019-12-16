@@ -46,6 +46,7 @@ export default class CreateOfferWizard extends React.Component {
     max_offer_usage: '14',
     internals: {},
     allPaymentMethodsAllowed: false,
+    creation_terms_accepted: 'false',
   };
 
   tabsData = [
@@ -126,7 +127,12 @@ export default class CreateOfferWizard extends React.Component {
     },
     {
       name: 'Review',
-      renderFunction: () => <OfferReview data={this.state} />,
+      renderFunction: () => (
+        <OfferReview
+          data={this.state}
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
+        />
+      ),
       getFieldsToBeValidated: () => [],
     },
   ];
@@ -324,7 +330,10 @@ export default class CreateOfferWizard extends React.Component {
               pendingState="Creating..."
               type="submit"
               onClick={this.onCreate}
-              disabled={[0, 1, 2, 3].some(tab => !this.isTabDataValid(tab))}
+              disabled={
+                [0, 1, 2, 3].some(tab => !this.isTabDataValid(tab)) ||
+                this.state.creation_terms_accepted === 'false'
+              }
             >
               Create Subscription Link
             </AsyncBtn.Primary>
@@ -352,6 +361,7 @@ export default class CreateOfferWizard extends React.Component {
       'validTabs',
       'fields',
       'allPaymentMethodsAllowed',
+      'creation_terms_accepted',
     ];
 
     dateFields.forEach(field => {
