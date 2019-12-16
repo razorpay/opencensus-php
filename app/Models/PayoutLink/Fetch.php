@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS       => [
             Entity::ID => 'sometimes|public_id|size:19',
         ],
-        AuthType::PROXY_AUTH => [
+        AuthType::PRIVATE_AUTH => [
             Entity::ID         => 'sometimes|public_id|size:19',
             Entity::CONTACT_ID => 'sometimes|public_id|size:19'
         ]
