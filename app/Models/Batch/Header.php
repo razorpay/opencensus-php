@@ -2480,6 +2480,17 @@ class Header
             $actualHeaders = array_filter($actualHeaders);
         }
 
+
+        //
+        // In case of subMerchant batch adding support of optional header merchant_id
+        // With this data support team will be able to fix issue by their own and we can move this batch to new service .
+        //
+        if (($type === Type::SUB_MERCHANT) and
+            ((in_array(self::MERCHANT_ID, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::MERCHANT_ID;
+        }
+
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!

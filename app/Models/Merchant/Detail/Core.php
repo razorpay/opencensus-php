@@ -668,6 +668,8 @@ class Core extends Base\Core
      * Use with caution
      *
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function saveDummyActivationFiles(Merchant\Entity $merchant)
     {
@@ -676,7 +678,7 @@ class Core extends Base\Core
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
         $params = [];
-        
+
         foreach ($requiredDocuments as $requiredDocument)
         {
             $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;

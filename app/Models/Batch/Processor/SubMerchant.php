@@ -145,10 +145,6 @@ class SubMerchant extends Base
         $this->settings[ME::AUTO_ENABLE_INTERNATIONAL] = (bool) ($this->settings[ME::AUTO_ENABLE_INTERNATIONAL] ?? false);
         $this->settings[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->settings[ME::SKIP_BA_REGISTRATION] ?? true);
 
-        // This parameter is for data back filling. when we don't want to create new MID but want to update existing MIDS
-        // mids will be fetched using email provided in file
-        $this->settings[ME::CREATE_SUBMERCHANT] = (bool) ($this->settings[ME::CREATE_SUBMERCHANT] ?? true);
-
         $this->partner = $this->repo->merchant->findOrFailPublic($this->settings[ME::PARTNER_ID]);
 
         $this->updateAuthDetails($this->partner);
@@ -177,33 +173,11 @@ class SubMerchant extends Base
      *
      * @return ME
      * @throws \RZP\Exception\BadRequestException
+     * @throws \Throwable
      */
     protected function createSubMerchantForEntry(array & $entry)
     {
-        $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
-
-        $subMerchant = null;
-
-        if (($this->settings[ME::CREATE_SUBMERCHANT]) === true)
-        {
-            $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
-
-            /** @var ME $subMerchant */
-            $subMerchant = $this->repo->merchant->findOrFailPublic(
-                Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
-        }
-        else
-        {
-            if (empty($entry[Header::MERCHANT_EMAIL]) === false)
-            {
-                $merchants = $this->repo->merchant->fetchByEmailAndOrgId($entry[Header::MERCHANT_EMAIL]);
-                if ($merchants->count() === 1)
-                {
-                    $subMerchant = $merchants->first();
-                }
-
-            }
-        }
+        $subMerchant = $this->createOrFetchSubMerchant($entry);
 
         if (empty($subMerchant) === true)
         {
@@ -386,5 +360,31 @@ class SubMerchant extends Base
     protected function resetErrorOnSuccess(): bool
     {
         return false;
+    }
+
+    /**
+     * @param array $entry
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     */
+    protected function createOrFetchSubMerchant(array &$entry)
+    {
+        if (empty($entry[Header::MERCHANT_ID]) === true)
+        {
+            $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
+
+            $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
+
+            /** @var ME $subMerchant */
+            $subMerchant = $this->repo->merchant->findOrFailPublic(
+                Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
+        }
+        else
+        {
+            $subMerchant = $this->repo->merchant->findOrFailPublic($entry[Header::MERCHANT_ID]);
+        }
+
+        return $subMerchant;
     }
 }
