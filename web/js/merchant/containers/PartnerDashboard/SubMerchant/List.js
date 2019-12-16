@@ -9,6 +9,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
 import { downloadSubmerchants } from 'merchant/reducers/submerchant';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -22,6 +23,7 @@ import {
   submerchantId as id,
   email as emailColumn,
 } from 'common/ui/item/pair';
+import { Modal, ModalContent, Header } from 'common/new-ui/Modal';
 
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
@@ -32,7 +34,7 @@ import {
   trackSearchAnalytics,
   trackClearAnalytics,
 } from '../ga';
-
+import { mediaWindowUrl } from './SocialShare';
 const name = isPurePlatform => ({
   ...submerchantColumn,
   ...(isPurePlatform && {
@@ -136,6 +138,18 @@ export default class SubMerchantsList extends ListContainer {
       component: <AddMerchant closeModal={this.props.closeModal} />,
     });
   };
+  handleShareReferralLink = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <ReferalBox
+          closeModal={this.props.closeModal}
+          referralUrl={this.state.referralUrl}
+          shareReferralOn={this.shareReferralOn.bind(this)}
+        />
+      ),
+    });
+  };
 
   handleSwitchMerchant = merchantId => () => {
     this.props
@@ -180,9 +194,38 @@ export default class SubMerchantsList extends ListContainer {
         });
       });
   };
-
-  componentDidMount() {
-    trackListEvents('Go To');
+  shareReferralOn(platform) {
+    mediaWindowUrl({
+      type: platform,
+      url: this.state.referralUrl,
+      title: 'Partner referral program',
+      description: 'Refer and earn',
+    });
+  }
+  constructor(props) {
+    merchantFetch({
+      url: 'merchant/referral',
+      mode: 'live',
+      method: 'post',
+      data: {},
+    })
+      .then(({ data }) => {
+        this.setState({
+          referralUrl: data.url,
+        });
+      })
+      .catch(() => {
+        const data = {
+          id: 'DrhtksQonrtFzH',
+          merchant_id: 'DOnndj36SjCEFT',
+          ref_code: 'testvik4246khc',
+          url: 'https://stage.rzp.io/i/TlinQ7K',
+        };
+        this.setState({
+          referralUrl: data.url,
+        });
+      });
+    super(props);
   }
 
   render() {
@@ -219,7 +262,10 @@ export default class SubMerchantsList extends ListContainer {
               <div>
                 <HeaderAction>
                   <>
-                    <button class="btn btn-link">
+                    <button
+                      class="btn btn-link"
+                      onClick={this.handleShareReferralLink}
+                    >
                       <i className="i i-share" />
                       <span> Share Referral Link</span>
                     </button>
@@ -337,9 +383,18 @@ export default class SubMerchantsList extends ListContainer {
                               <i class="i i-link" />
                               Copy Link
                             </button>
-                            <img src="/dist/css/assets/onboarding/facebook.png" />
-                            <img src="/dist/css/assets/onboarding/twitter.png" />
-                            <img src="/dist/css/assets/onboarding/whatsapp.png" />
+                            <img
+                              src="/dist/css/assets/onboarding/facebook.png"
+                              onClick={() => this.shareReferralOn('fb')}
+                            />
+                            <img
+                              src="/dist/css/assets/onboarding/twitter.png"
+                              onClick={() => this.shareReferralOn('twitter')}
+                            />
+                            <img
+                              src="/dist/css/assets/onboarding/whatsapp.png"
+                              onClick={() => this.shareReferralOn('whatsapp')}
+                            />
                           </div>
                         </div>
                       </div>
@@ -353,3 +408,69 @@ export default class SubMerchantsList extends ListContainer {
     );
   }
 }
+
+const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
+  <div>
+    <div style={{ padding: '10px' }}>
+      <img
+        src="/dist/css/assets/onboarding/share-referral-link.png"
+        height="50"
+      />{' '}
+      <strong>
+        <strong>Share Referral Link</strong>
+      </strong>
+      <button
+        type="button"
+        class="close"
+        onClick={closeModal}
+        style={{ marginTop: '10px' }}
+      >
+        <i class="i i-close" />
+      </button>
+    </div>
+    <div style={{ padding: '14px' }}>
+      <p>
+        Share the following link to your merchants and{' '}
+        <strong>earn 0.1% commission on every payment</strong> received by your
+        merchants.
+      </p>
+      <div class="input-group">
+        <input
+          class="form-control input"
+          value={referralUrl}
+          style={{ width: '200px' }}
+        />
+        <button
+          class="btn btn-primary"
+          style={{
+            width: '100px',
+            borderRadius: '0px 2px 2px 0px',
+          }}
+        >
+          Copy
+        </button>
+      </div>
+      <div
+        class="social-share-btn-grp"
+        style={{
+          paddingTop: '40px',
+          display: 'flex',
+          justifyContent: 'space-around',
+        }}
+      >
+        <strong>
+          <p>Or Share Via</p>
+        </strong>
+        <a href="#" onClick={() => shareReferralOn('fb')}>
+          <img src="/dist/css/assets/onboarding/facebook.png" />
+        </a>
+        <a href="#" onClick={() => shareReferralOn('twitter')}>
+          <img src="/dist/css/assets/onboarding/twitter.png" />
+        </a>
+        <a href="#" onClick={() => shareReferralOn('whatsapp')}>
+          <img src="/dist/css/assets/onboarding/whatsapp.png" />
+        </a>
+      </div>
+    </div>
+  </div>
+);
