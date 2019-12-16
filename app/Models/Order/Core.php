@@ -129,7 +129,7 @@ class Core extends Base\Core
     {
         $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
 
-        if(!$offer->isDefaultOffer())
+        if(!$offer->isDefaultOffer() || $order->isOfferForced())
         {
             $this->associateOffer($order, $offer);
         }
