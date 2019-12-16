@@ -205,7 +205,7 @@ class Type
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
-    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -463,7 +463,6 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
-            self::SBI_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -523,6 +522,7 @@ class Type
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
+            self::SBI_UPI_REFUND,
         ],
 
         self::RECON_BUCKET_CONFIG => [

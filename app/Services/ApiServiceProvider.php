@@ -327,8 +327,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMozart();
 
         $this->registerHyperVerge();
-
-        $this->registerExpress();
     }
 
     /**
@@ -377,7 +375,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
-            'express',
         ];
     }
 
@@ -792,23 +789,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('shield.service', function($app)
         {
             return new Shield($app);
-        });
-    }
-
-    protected function registerExpress()
-    {
-        $this->app->singleton('express', function($app)
-        {
-            $mock = $app['config']->get('applications.express.mock');
-
-            if ($mock === true)
-            {
-                return new Mock\Express($app);
-            }
-            else
-            {
-                return new Express($app);
-            }
         });
     }
 

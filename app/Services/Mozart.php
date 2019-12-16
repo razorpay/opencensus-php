@@ -23,6 +23,15 @@ class Mozart
 
     const DEFAULT_MOZART_VERSION = 'v1';
 
+    // Mozart constants
+    const HEADERS                        = 'headers';
+    const CONTENT                        = 'content';
+    const OPTIONS                        = 'options';
+    const STATUS_CODE                    = 'status_code';
+    const URL                            = 'url';
+    const WEBHOOK                        = 'webhook';
+    const TRANSLATE                      = 'translate';
+
     // Mozart error constants
     const DESCRIPTION                    = 'description';
     const GATEWAY_ERROR_CODE             = 'gateway_error_code';
@@ -95,6 +104,50 @@ class Mozart
         return $responseArray;
     }
 
+    public function translateWebhook(string $gateway, string $payload, string $mode) : array
+    {
+        $this->mode = $mode;
+
+        $translateWebhookRequest = $this->getRequestV2(
+            $payload,
+            self::WEBHOOK,
+            $gateway,
+            self::DEFAULT_MOZART_VERSION,
+            self::TRANSLATE);
+
+        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, [
+            self::URL           => $translateWebhookRequest[self::URL],
+            self::CONTENT       => $translateWebhookRequest[self::CONTENT],
+        ]);
+
+        try
+        {
+            $translateWebhookResponse = $this->sendRequest($translateWebhookRequest);
+        }
+        catch (\Exception $exception)
+        {
+            $data = [
+                'exception'          => $exception->getMessage(),
+                self::URL            => $translateWebhookRequest[self::URL],
+                self::CONTENT        => $translateWebhookRequest[self::CONTENT],
+            ];
+
+            $this->trace->error(TraceCode::MOZART_SERVICE_REQUEST_FAILED, $data);
+
+            throw new Exception\IntegrationException(
+                $exception->getMessage(),
+                ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR);
+
+        }
+
+        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, [
+            self::STATUS_CODE   => $translateWebhookResponse[self::STATUS_CODE],
+            self::CONTENT       => $translateWebhookResponse[self::CONTENT],
+        ]);
+
+        return $translateWebhookResponse;
+    }
+
     protected function getUrl(): string
     {
         $baseUrl = $this->config->get('applications.mozart.url');
@@ -102,6 +155,15 @@ class Mozart
         $url = "{$baseUrl}{$this->namespace}/{$this->gateway}/{$this->version}/{$this->action}";
 
         return $url;
+    }
+
+    protected function getUrlV2(string $namespace, string $gateway, string $version, string $action): string
+    {
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->config->get($urlConfig);
+
+        return "{$baseUrl}{$namespace}/{$gateway}/{$version}/{$action}";
     }
 
     protected function getAuthenticationDetails(): array
@@ -137,6 +199,22 @@ class Mozart
         return $request;
     }
 
+    protected function getRequestV2(string $content, string $namespace, string $gateway, string $version, string $action)
+    {
+        $request = [
+            self::URL       => $this->getUrlV2($namespace, $gateway, $version, $action),
+            'method'        => Requests::POST,
+            self::HEADERS   => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::X_TASK_ID     => $this->app['request']->getTaskId(),
+            ],
+            self::CONTENT   => $content,
+            self::OPTIONS   => ['auth' => $this->getAuthenticationDetails()],
+        ];
+
+        return $request;
+    }
+
     /**
      * @param array $request
      *
@@ -147,7 +225,7 @@ class Mozart
     {
         try
         {
-            $responseBody = $this->sendRequest($request);
+            $responseBody = $this->sendRequest($request)[self::CONTENT];
 
             return $responseBody;
         }
@@ -204,7 +282,12 @@ class Mozart
 
         $this->validateResponse($response);
 
-        return $response->body;
+        return
+            [
+                self::HEADERS       =>  $response->headers->getAll(),
+                self::CONTENT       =>  $response->body,
+                self::STATUS_CODE   =>  $response->status_code,
+            ];
     }
 
     protected function validateResponse(\Requests_Response $response)

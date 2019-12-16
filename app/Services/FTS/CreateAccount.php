@@ -309,6 +309,11 @@ class CreateAccount extends Base
                 $request[Constants::DEFAULT_CHANNEL] = Channel::RBL;
                 break;
 
+            case Constants::CARD:
+                $request[Constants::CARD] = $this->getCardDetails($this->account);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
@@ -347,6 +352,11 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::CARD:
+                $this->account = $this->cardCore->getCardEntity($this->accountId);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
@@ -354,7 +364,8 @@ class CreateAccount extends Base
 
     public function isAccountCreatedInFts()
     {
-        if (empty($this->account->getFtsFundAccountId()) === false)
+        if ((method_exists($this->account, "getFtsFundAccountId") === true) &&
+            (empty($this->account->getFtsFundAccountId()) === false))
         {
             return false;
         }
@@ -446,6 +457,12 @@ class CreateAccount extends Base
         return $iin->getIssuer();
     }
 
+    /**
+     * Used to create source Account Via dashboard
+     *
+     * @param array $input
+     * @return array
+     */
     public function createAccountMappingForFts(array $input)
     {
         (new Validator)->validateInput('create_source_account', $input);

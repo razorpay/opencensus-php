@@ -42,7 +42,7 @@ class MerchantReferralTest extends OAuthTestCase
 
         $this->ba->proxyAuth();
 
-        $testData['request']['url'] = "/merchant/{$merchantId}/referral";
+        $testData['request']['url'] = "/merchant/referral";
 
         $this->startTest();
 
@@ -69,7 +69,7 @@ class MerchantReferralTest extends OAuthTestCase
 
         $testData = &$this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/{$merchantId}/referral";
+        $testData['request']['url'] = "/merchant/referral";
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -91,7 +91,7 @@ class MerchantReferralTest extends OAuthTestCase
 
         $this->ba->proxyAuth();
 
-        $testData['request']['url'] = "/merchant/{$merchantId}/referral";
+        $testData['request']['url'] = "/merchant/referral";
 
         $this->startTest();
     }

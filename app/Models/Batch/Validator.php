@@ -349,6 +349,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
     ];
 
+    protected static $adminBatchCreateRules = [
+        Entity::TYPE                            => 'required|in:admin_batch',
+        Entity::NAME                            => 'filled|string|max:255',
+        Entity::FILE                            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG                          => 'filled|array',
+    ];
+
     protected function validateBatch($attribute, $value)
     {
         $this->validateInput('sendMailBatch', $value);

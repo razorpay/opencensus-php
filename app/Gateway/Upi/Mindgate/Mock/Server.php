@@ -381,7 +381,7 @@ class Server extends Base\Mock\Server
             random_integer(5),
             $payment['vpa'] ?? self::DEFAULT_VPA,
             // NPCI Reference Id
-            random_integer(16),
+            '910000123456',
             'NA',
             'NA',
             'NA',

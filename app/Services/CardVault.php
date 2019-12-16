@@ -3,7 +3,11 @@
 namespace RZP\Services;
 
 use Requests;
+use Requests_Hooks;
+
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Validator;
 
@@ -20,6 +24,8 @@ class CardVault
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
     const TOKENEX_VAULT_MAPPING = 'tokenex_vault_mapping';
 
+    const TRACE_REQUEST_FEATURE = 'cardvault_dns_trace';
+
     const REQUEST_TIMEOUT = 20;
     const MAX_RETRY_COUNT = 1;
 
@@ -29,12 +35,18 @@ class CardVault
 
     protected $trace;
 
+    protected $app;
+
     protected $request;
 
     protected $cardNumberToToken = [];
 
     public function __construct($app)
     {
+        $this->app = $app;
+
+        $this->mode = $app['rzp.mode'] ?? Mode::LIVE;
+
         $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.card_vault');
@@ -157,6 +169,15 @@ class CardVault
 
     public function sendRequest($url, $method, $data = null)
     {
+        // temporary code to debug
+        if (($url === 'tokenize') or
+            ($url === 'detokenize'))
+        {
+            $trackId = Base\UniqueIdEntity::generateUniqueId();
+
+            $url = $url . '/track/' . $trackId;
+        }
+
         $url = $this->baseUrl . $url;
 
         if ($data === null)
@@ -174,7 +195,20 @@ class CardVault
                 $this->key,
                 $this->secret
             ],
+            'hooks' => new Requests_Hooks(),
         ];
+
+        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
+
+        $this->trace->info(TraceCode::CARD_VAULT_FEATURE_VARIANT,[
+            'feature' => self::TRACE_REQUEST_FEATURE,
+            'variant' => $variant,
+        ]);
+
+        if ($variant === 'on')
+        {
+            $options['hooks']->register('curl.after_request', [$this, 'traceCurlInfo']);
+        }
 
         $request = [
             'url' => $url,
@@ -184,13 +218,28 @@ class CardVault
             'content' => $data
         ];
 
-        $this->trace->info(TraceCode::CARD_VAULT_REQUEST,[]);
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
+            'url' => $url,
+        ]);
 
         $response = $this->sendCardVaultRequest($request);
 
         $this->checkErrors(json_decode($response->body, true));
 
         return json_decode($response->body, true);
+    }
+
+    public function traceCurlInfo($headers, $info)
+    {
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST_DURATION,[
+            'total_time'         => $info['total_time'],
+            'connect_time'       => $info['connect_time'],
+            'redirect_time'      => $info['redirect_time'],
+            'namelookup_time'    => $info['namelookup_time'],
+            'pretransfer_time'   => $info['pretransfer_time'],
+            'starttransfer_time' => $info['starttransfer_time'],
+            'primary_ip'         => $info['primary_ip'] ?? 'nil',
+        ]);
     }
 
     protected function sendCardVaultRequest($request)
