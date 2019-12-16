@@ -24,6 +24,7 @@ import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
   updateMerchantLiveTransactionFlag,
