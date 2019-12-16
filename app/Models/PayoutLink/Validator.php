@@ -25,11 +25,14 @@ class Validator extends Base\Validator
         Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
     protected static $createRules = [
-        Entity::AMOUNT          => 'required|integer',
-        Entity::CURRENCY        => 'required|size:3|in:INR',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::DESCRIPTION     => 'required|string|max:255',
-        Entity::RECEIPT         => 'sometimes|string|max:40',
+        Entity::CONTACT_NAME         => 'required|string|max:50',
+        Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
+        Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
+        Entity::AMOUNT               => 'required|integer',
+        Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::NOTES                => 'sometimes|notes',
+        Entity::DESCRIPTION          => 'required|string|max:255',
+        Entity::RECEIPT              => 'sometimes|string|max:40'
     ];
 
     protected static $compositeCreateRules = [
