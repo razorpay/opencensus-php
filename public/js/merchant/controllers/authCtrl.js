@@ -308,6 +308,20 @@ app
           },
         });
 
+        if ($scope.signup.settings.partner_intent) {
+          window.rzpAnalytics({
+            name: 'facebook',
+            event: 'partner_signup_start',
+          });
+
+          window.rzpAnalytics({
+            name: 'linkedIn',
+            value: {
+              conversionId: '1668332',
+            },
+          });
+        }
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -805,6 +819,20 @@ app
               mode: $scope.eventsMode,
             })
         );
+
+        if ($scope.signup.settings.partner_intent) {
+          window.rzpAnalytics({
+            name: 'facebook',
+            event: 'partner_signup_complete',
+          });
+
+          window.rzpAnalytics({
+            name: 'linkedIn',
+            value: {
+              conversionId: '1668316',
+            },
+          });
+        }
       };
 
       $scope.onCreateClick = function() {

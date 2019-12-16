@@ -11,6 +11,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 
 @withRouter
 @connect(
@@ -62,6 +63,10 @@ export default class BaseScreen extends React.Component {
 
   onCompleteClick = () => {
     triggerHotjarRecording('partner_onboarding_success');
+    fireAnalyticsEvents({
+      fbData: 'partner_activation_complete',
+      liData: 1668324,
+    });
     this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
     });
@@ -76,6 +81,13 @@ export default class BaseScreen extends React.Component {
     this.props.closeModal();
   };
 
+  handleNewUserGetStarted = () => {
+    fireAnalyticsEvents({
+      fbData: 'partner_activation_started',
+      liData: 1668340,
+    });
+  };
+
   render() {
     return (
       <div className="partner-onboarding-base-screen">
@@ -83,7 +95,13 @@ export default class BaseScreen extends React.Component {
           {!this.props.disableClose
             ? sliderProps => <S0 key={0} sliderProps={sliderProps} />
             : null}
-          {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
+          {sliderProps => (
+            <S1
+              key={1}
+              sliderProps={sliderProps}
+              onNext={this.handleNewUserGetStarted}
+            />
+          )}
           {sliderProps => (
             <S2
               key={2}
