@@ -335,7 +335,7 @@ class PayoutLinkTest extends TestCase
 
         $token = $response['token'];
 
-        $this->assertRegExp('/pyol_DnhDjMDHlQEjgM.*/', $token);
+        $this->assertRegExp('/poutlk_DnhDjMDHlQEjgM.*/', $token);
     }
 
     public function testVerifyOtpFailedByInvalidOtp()
@@ -415,9 +415,44 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testOtpGenerationWithContext()
+    {
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testOtpVerificationWithContext()
+    {
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
     public function testWhenRavenFailsWhileOtpGenerationExceptionIsThrown()
     {
+        $raven = Mockery::mock('RZP\Services\Raven');
 
+        $raven->shouldReceive('sendSms')
+              ->andReturn('sms_1234');
+
+        $raven->shouldReceive('generateOtp')
+              ->andreturn([]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
+
+        $this->startTest();
     }
 
     public function testPayoutLinkCancelApiSuccess()

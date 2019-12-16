@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutLink;
 
 use Mail;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -11,13 +12,11 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
-use RZP\Models\PayoutLink\Clients\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\Contact as ContactClient;
 
 class Core extends Base\Core
 {
-    const CONTEXT                 = 'context';
     const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
-    const OTP                     = 'otp';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
     const TEMPLATE                = 'template';
@@ -72,7 +71,7 @@ class Core extends Base\Core
         return $fundAccounts->where(self::ACTIVE, '=' , '1');
     }
 
-    public function cancel(string $payoutLinkId)
+    public function cancel(string $payoutLinkId): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
@@ -84,7 +83,6 @@ class Core extends Base\Core
         $payoutLink = $this->repo
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-
         // If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
@@ -93,7 +91,7 @@ class Core extends Base\Core
 
         $payoutLink->setStatus(Status::CANCELLED);
 
-        $payoutLink->saveOrFail();
+        $this->repo->saveOrFail($payoutLink);
 
         return $payoutLink;
     }
@@ -108,9 +106,9 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
-        $contact = array_pull($input, 'contact');
+        $contactDetails = array_pull($input, 'contact');
 
-        $contact = (new ContactClient())->processContact($contact, $this->merchant);
+        $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
 
         $payoutLink = (new Entity)->build($input);
 
@@ -128,12 +126,12 @@ class Core extends Base\Core
 
         $payoutLink->setStatus(Status::ISSUED);
 
-        $payoutLink->saveOrFail();
+        $this->repo->saveOrFail($payoutLink);
 
         return $payoutLink;
     }
 
-    public function generateAndSendCustomerOtp(string $payoutLinkId)
+    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
@@ -142,40 +140,57 @@ class Core extends Base\Core
             ]
         );
 
+        (new Entity())->getValidator()
+                      ->validateInput(Validator::GENERATE_OTP, $input);
+
+        // extra context param, that the F.E. can pass, in case they want to
+        // force generation of a new OTP
+        $context = array_pull($input, Entity::CONTEXT);
+
         $payoutLink = $this->repo
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         $contact = $payoutLink->contact;
 
-        $otp = $this->generateOtp($contact, $payoutLinkId);
+        $otp = $this->generateOtp($contact, $payoutLinkId, $context);
 
         $this->deliverOtp($payoutLink, $contact, $otp);
 
         return [self::SUCCESS => self::OK];
     }
 
-    public function verifyCustomerOtp($payoutLinkId, $otp)
+    public function verifyCustomerOtp($payoutLinkId, $input): array
     {
+        (new Entity())->getValidator()
+                      ->validateInput(Validator::VERIFY_OTP, $input);
+
         $payoutLink = $this->repo
-            ->payout_link
-            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         $contact = $payoutLink->contact;
 
+        $context = array_pull($input, Entity::CONTEXT);
+
         $receiver = $this->getReceiver($contact, $payoutLinkId);
 
+        $requestContext = $this->processContext($payoutLinkId, $context);
+
         $payload = [
-            self::RECEIVER => $receiver,
-            self::CONTEXT  => $payoutLinkId,
-            self::SOURCE   => self::API_POUT_LNK_SCR,
-            self::OTP      => $otp
+            self::RECEIVER  => $receiver,
+            Entity::CONTEXT => $requestContext,
+            self::SOURCE    => self::API_POUT_LNK_SCR,
+            Entity::OTP     => $input[Entity::OTP]
         ];
 
-        // todo, pl check if its ok to log OTP
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
-            $payload
+            [
+                self::RECEIVER  => $receiver,
+                Entity::CONTEXT => $requestContext,
+                self::SOURCE    => self::API_POUT_LNK_SCR
+            ]
         );
 
         $this->raven->verifyOtp($payload);
@@ -187,8 +202,37 @@ class Core extends Base\Core
         ];
     }
 
+    protected function processContext(string $payoutLinkId, string $context = null): string
+    {
+        $requestContext = $payoutLinkId;
+
+        if (empty($context) === false)
+        {
+            $requestContext .= '.' . $context;
+        }
+
+        return $requestContext;
+    }
+
     /**
+<<<<<<< HEAD
      * Returns true, if atleast one delivery worked. else returns false
+=======
+     * This will be stored in redis after OTP verification
+     * and will be used in subsequent api calls
+     * @param string $payoutLinkId
+     * @return string
+     */
+    protected function generateUniqueRequestToken(string $payoutLinkId): string
+    {
+        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
+
+        return $payoutLinkId . '.' . $timestamp;
+    }
+
+    /**
+     * Returns true, if atkleast one delivery worked. else returns false
+>>>>>>> payoutlinks_3
      * @param Entity $payoutLink
      * @param ContactEntity $contact
      * @param string $otp
@@ -272,12 +316,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function getSmsPayload(ContactEntity $contactEntity, string $otp)
+    protected function getSmsPayload(ContactEntity $contactEntity, string $otp): array
     {
         $payload = [
             self::PARAMS   => [
                 self::CUSTOMER_NAME => $contactEntity->getName(),
-                self::OTP           => $otp
+                Entity::OTP         => $otp
             ],
             self::TEMPLATE => self::SMS_TEMPLATE,
             self::SOURCE   => self::API_PAYOUT_LINK_SRC_STR,
@@ -287,13 +331,15 @@ class Core extends Base\Core
         return $payload;
     }
 
-    protected function generateOtp(ContactEntity $contact, string $payoutLinkId)
+    protected function generateOtp(ContactEntity $contact, string $payoutLinkId, string $context = null)
     {
         $receiver = $this->getReceiver($contact, $payoutLinkId);
 
+        $requestContext = $this->processContext($payoutLinkId, $context);
+
         $payload = [
             self::RECEIVER => $receiver,
-            self::CONTEXT  => $payoutLinkId,
+            Entity::CONTEXT  => $requestContext,
             self::SOURCE   => self::API_POUT_LNK_SCR
         ];
 
@@ -309,7 +355,7 @@ class Core extends Base\Core
             $response
         );
 
-        if (key_exists(self::OTP, $response) === false)
+        if (key_exists(Entity::OTP, $response) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
                                           [
@@ -319,7 +365,7 @@ class Core extends Base\Core
             );
         }
 
-        return $response[self::OTP];
+        return $response[Entity::OTP];
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)

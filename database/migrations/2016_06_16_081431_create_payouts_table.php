@@ -255,6 +255,8 @@ class CreatePayoutsTable extends Migration
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
+
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYOUT_LINK_ID . '_foreign');
         });
 
         Schema::drop(Table::PAYOUT);

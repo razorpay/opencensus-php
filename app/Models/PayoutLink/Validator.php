@@ -15,14 +15,18 @@ class Validator extends Base\Validator
     const COMPOSITE_CREATE_RULE            = 'composite_create';
     const VERIFY_OTP                       = 'verify_otp';
     const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
+    const GENERATE_OTP                     = 'generate_otp';
 
     protected static $getFundAccountByContactRules = [
         Entity::TOKEN => 'required|string'
     ];
 
+    protected static $generateOtpRules = [
+        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
+    ];
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer',
-        Entity::CURRENCY        => 'required|size:3',
+        Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
         Entity::DESCRIPTION     => 'required|string|max:255',
         Entity::RECEIPT         => 'sometimes|string|max:40',
@@ -43,6 +47,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyOtpRules = [
-        'otp' => 'required|string|max:6'
+        Entity::OTP     => 'required|string|max:6',
+        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
 }

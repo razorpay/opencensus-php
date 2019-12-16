@@ -3,7 +3,6 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestException;
 
 return [
     'testPostRequestForCreatingPayoutLink' => [
@@ -208,7 +207,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'pyol_DnhDjMDHlQEjgM',
+                'id'          => 'poutlk_DnhDjMDHlQEjgM',
                 'amount'      => 1000,
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
@@ -244,7 +243,7 @@ return [
     'testGenerateOtpForOnlyPhoneContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
 
         ],
         'response' => [
@@ -255,8 +254,37 @@ return [
     'testGenerateOtpForOnlyEmailContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
 
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testOtpVerificationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => [
+                'context' => '1576208561',
+                'otp'     => '0007'
+
+            ]
+
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testOtpGenerationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'content' => [
+                'context' => '1576208561'
+            ]
         ],
         'response' => [
             'content' => ['success' => 'OK']
@@ -266,7 +294,7 @@ return [
     'testVerifyOtpSuccessful' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
             'content' => ['otp' => '0007']
         ],
         'response' => [
@@ -277,7 +305,7 @@ return [
     'testVerifyOtpFailedByInvalidOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
             'content' => ['otp' => '1234']
         ],
         'response' => [
@@ -298,7 +326,7 @@ return [
     'testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -318,7 +346,7 @@ return [
     'testExceptionWhenOnlyPhoneIsPresentAndSmsFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -338,7 +366,7 @@ return [
     'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
         ],
         'response'  => [
             'content'     => [
@@ -358,7 +386,7 @@ return [
     'testPayoutLinkCancelApiSuccess' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
         ],
         'response' => [
             'content' => [
@@ -384,14 +412,33 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+        ]
+    ],
+
+   'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
         ]
     ],
 
     'testCancelIdempotencyByCallingTheCancelApiTwice' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
         ],
         'response' => [
             'content' => [
@@ -404,7 +451,7 @@ return [
     'testGetFundAccountWithValidTokenReturnsFundAccountArray' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/fund-accounts',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/fund-accounts',
             'content' => ['token' => 'some-random-token']
         ],
         'response' => [
@@ -422,7 +469,7 @@ return [
     'testGetFundAccountWithInvalidTokenRaisesException' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payout-links/pyol_DnhDjMDHlQEjgM/fund-accounts',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/fund-accounts',
             'content' => ['token' => 'some-random-token']
         ],
         'response' => [
