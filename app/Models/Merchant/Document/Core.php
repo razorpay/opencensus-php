@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\FileStore\Core as FileStoreCore;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\Detail\Verifiers\PoaVerifierResponse;
 
 class Core extends Base\Core
 {
@@ -225,10 +226,16 @@ class Core extends Base\Core
                             ]);
 
         $this->setOcrVerificationStatus($document, $ocrMatchingPercentage);
+
+        $this->pushEventsForOCRVerification($merchant,
+                                            $ocrDetails,
+                                            $document->getDocumentType(),
+                                            $ocrMatchingPercentage,
+                                            $promoterPanName);
     }
 
 
-    protected function extractDetailFromOcrResponse($ocrResponse): array
+    protected function extractDetailFromOcrResponse(PoaVerifierResponse $ocrResponse = null): array
     {
         if ((empty($ocrResponse) === true) or
             (($ocrResponse instanceof Detail\Verifiers\PoaVerifierResponse) === false))
@@ -237,12 +244,18 @@ class Core extends Base\Core
         }
 
         $ocrDetails = [
-            Constants::NAME => $ocrResponse->getOcrName()
+            Constants::NAME    => $ocrResponse->getOcrName(),
+            Constants::SUCCESS => $ocrResponse->isPOAVerifierResponseSuccess(),
         ];
 
         return $ocrDetails;
     }
 
+    /**
+     * @param Entity $document
+     *
+     * @return null|PoaVerifierResponse
+     */
     protected function performOcr(Entity $document)
     {
         $signedUrl = (new FileStoreCore)->getSignedUrl(
@@ -301,5 +314,23 @@ class Core extends Base\Core
                             ]);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
+    }
+
+    protected function pushEventsForOCRVerification(Merchant\Entity $merchant,
+                                                    array $ocrDetails,
+                                                    $documentType,
+                                                    $ocrMatchingPercentage = 0,
+                                                    $promoterPanName = null)
+    {
+        $eventProperties = [
+            Entity::DOCUMENT_TYPE              => $documentType,
+            Constants::VERIFIED                => $ocrDetails[Constants::SUCCESS] ?? false,
+            Constants::OCR_MATCHING_PERCENTAGE => $ocrMatchingPercentage,
+            Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
+            Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
+            Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName,
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::DOCUMENT_VERIFICATION_OCR, $merchant, null, $eventProperties);
     }
 }
