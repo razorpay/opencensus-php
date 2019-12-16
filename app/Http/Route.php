@@ -1388,9 +1388,9 @@ final class Route
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
 
         // Route for Success Rate Global Configurations
-        'create_sr_level_global_config'           => ['post',       'global_sr_config',                                        'SuccessRateController@proxy'                              ],
-        'update_sr_level_global_config'           => ['put',        'global_sr_config/{id}',                                   'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_global_config'          => ['get',        'global_sr_config',                                        'SuccessRateController@proxy'                              ],
+        //'create_sr_level_global_config'           => ['post',       'global_sr_config',                                        'SuccessRateController@proxy'                              ],
+        'update_sr_level_global_config'           => ['put',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
 
         // Route for Success Rate Merchant Level Configurations
         'create_sr_level_merchant_config'         => ['post',       'merchant_sr_config',                                      'SuccessRateController@proxy'                              ],
@@ -2670,7 +2670,7 @@ final class Route
         'mozart_gateway_action',
 
         // SuccessRate Config Routes
-        'create_sr_level_global_config',
+        //'create_sr_level_global_config',
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
         'create_sr_level_merchant_config',
@@ -3224,7 +3224,7 @@ final class Route
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
-        'create_sr_level_global_config'             => '*',
+        //'create_sr_level_global_config'             => '*',
         'update_sr_level_global_config'             => '*',
         'get_all_sr_level_global_config'            => '*',
         'create_sr_level_merchant_config'           => '*',

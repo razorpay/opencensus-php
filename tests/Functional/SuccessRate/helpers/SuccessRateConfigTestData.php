@@ -5,11 +5,11 @@ return [
             'server' => [
                 'CONTENT_TYPE'  => 'application/json',
             ],
-            'url' => '/create_sr_config',
-            'raw' => json_encode([
-                "random" => "abcd",
-            ]),
-            'method' => 'POST'
+            'url' => '/cutoffs',
+//            'raw' => json_encode([
+//                "random" => "abcd",
+//            ]),
+            'method' => 'GET'
         ],
         'response' => [
             'content' => [
