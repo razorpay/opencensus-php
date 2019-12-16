@@ -1019,7 +1019,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant',
             ],
             'url'    => '/offers',
             'method' => 'POST'
