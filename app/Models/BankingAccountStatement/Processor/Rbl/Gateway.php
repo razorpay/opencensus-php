@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement\Processor\Rbl;
 
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Services\Mozart;
@@ -73,6 +74,19 @@ class Gateway extends BaseProcessor
                 }
 
                 throw $ex;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
+                    [
+                        Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                        Entity::CHANNEL             => $this->channel,
+                    ]);
+
+                return [];
             }
 
             $isValid = $this->validateMozartResponse($bankResponse);
@@ -296,7 +310,7 @@ class Gateway extends BaseProcessor
     {
         $amount = $transaction[Fields::TRANSACTION_SUMMARY][Fields::TRANSACTION_AMOUNT][Fields::AMOUNT_VALUE];
 
-        $amount = (int) ($amount * 100);
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }
@@ -365,7 +379,9 @@ class Gateway extends BaseProcessor
 
     protected function getBalanceFromResponse(array $transaction): int
     {
-        $amount = (int) ($transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE] * 100);
+        $amount = $transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE];
+
+        $amount = intval(number_format($amount * 100, 0, '.', ''));
 
         return $amount;
     }

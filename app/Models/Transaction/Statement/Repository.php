@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\BankingAccountStatement\Entity as BankingAccountStatementEntity;
 
 /**
  * Class Repository
@@ -77,10 +78,16 @@ class Repository extends Transaction\Repository
 
     /**
      * {@inheritDoc}
+     *
+     * This method overrides the fetch method of RepositoryFetch class, params should match the signature of the parent
+     * method.
      */
-    public function fetch(array $input, string $merchantId = null, bool $useSlave = false): PublicCollection
+    public function fetch(array $input,
+                          string $merchantId = null,
+                          bool $useSlave = false,
+                          bool $useMasterReplica = false): PublicCollection
     {
-        $statements = parent::fetch($input, $merchantId, $useSlave);
+        $statements = parent::fetch($input, $merchantId, $useSlave, $useMasterReplica);
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
@@ -89,6 +96,26 @@ class Repository extends Transaction\Repository
         $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
 
         return $statements;
+    }
+
+    /**
+     * TODO : https://razorpay.atlassian.net/browse/RX-536
+     * @param $merchantId
+     * @param $balanceId
+     * @param $fromDate
+     * @param $toDate
+     * @return mixed
+     */
+    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
+                    ->with('bankingAccountStatement')
+                    ->get();
     }
 
     protected function addQueryParamId($query, $params)
@@ -127,10 +154,10 @@ class Repository extends Transaction\Repository
 
         $query->where($actionColumn, '!=', 0)
               ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
-                {
-                    $query->where($actionColumn, 0)
-                          ->where($oppositeActionColumn, 0);
-                });
+              {
+                  $query->where($actionColumn, 0)
+                        ->where($oppositeActionColumn, 0);
+              });
     }
 
     /**

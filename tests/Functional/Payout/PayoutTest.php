@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -147,132 +148,14 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
+    public function testCreatePayoutWithModeNotSet()
     {
-        $this->ba->privateAuth();
-
-        $this->fixtures->create(
-            'bank_account',
-            [
-                'id'           => '1000000lvirtba',
-                'ifsc'         => 'YESB0CMSNOC',
-            ]);
-
-        $this->fixtures->edit(
-            'fund_account', '100000000000fa',
-            [
-                'account_type' => 'bank_account',
-                'account_id'   => '1000000lvirtba'
-            ]);
-
-        $this->bankAccount->setIfsc('YESB0CMSNOC');
-
-        // Setting the mock carbon timestamp to 1 minute less than today's ending timing i.e. 6:14 PM
-        $endTime = Carbon::createFromDate(2019, 07, 11., Timezone::IST)
-                           ->hour(18)
-                           ->minute(14);
-
-        Carbon::setTestNow($endTime);
-
         $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Verify attempt entity
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals('Batman', $payoutAttempt['narration']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payout['channel'], 'yesbank');
-
-        //If Mode is not sent in the request NEFT will be the mode of attempt.
-        $this->assertEquals('NEFT', $payoutAttempt['mode']);
-
-        // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
-        $txnId = str_after($txn['id'], 'txn_');
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7dTcURsOr77",
-            'percentage'      => null,
-            'amount'          => 900,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-
-        return $payout;
     }
 
-    public function testCreatePayoutForVirtualAccountWhenModeIsPresent(): array
+    public function testCreatePayoutWithInvalidMode()
     {
-        $this->ba->privateAuth();
-
-        $this->fixtures->create(
-            'bank_account',
-            [
-                'id'           => '1000000lvirtba',
-                'ifsc'         => 'YESB0CMSNOC',
-            ]);
-
-        $this->fixtures->edit(
-            'fund_account', '100000000000fa',
-            [
-                'account_type' => 'bank_account',
-                'account_id'   => '1000000lvirtba'
-            ]);
-
         $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        // On private auth, payout.user_id should be null
-        $this->assertNull($payout['user_id']);
-
-        // Verify attempt entity
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals('Batman', $payoutAttempt['narration']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payout['channel'], 'yesbank');
-
-        //If Mode is sent in request the attempt should be in NEFT mode and Payout mode will remain the sent mode.
-        $this->assertEquals('NEFT', $payoutAttempt['mode']);
-        $this->assertEquals('IFT', $payout['mode']);
-
-        // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
-        $txnId = str_after($txn['id'], 'txn_');
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-
-        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
-
-        $expectedBreakup = [
-            'name'            => "payout",
-            'transaction_id'  => $txnId,
-            'pricing_rule_id' => "Bbg7dTcURsOr77",
-            'percentage'      => null,
-            'amount'          => 900,
-        ];
-
-        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
-
-        return $payout;
     }
 
     public function testPublicErrorCodeMapping()
@@ -329,13 +212,13 @@ class PayoutTest extends TestCase
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'        => 'failed',
-            'failure_reason'    => '',
+            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
             'bank_status_code'  => 'YB_SFMS_E59'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
-        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], '');
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], 'Beneficiary bank\'s systems are down. Please retry after some time.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
@@ -514,6 +397,20 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testCreatePayoutForVpaFundAccountWithUnsupportedMode()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
+
+        $this->startTest();
+    }
+
     protected function createQueuedOrPendingPayout(array $attributes = [])
     {
         $request = [
@@ -525,6 +422,7 @@ class PayoutTest extends TestCase
                 'currency'              => 'INR',
                 'purpose'               => 'refund',
                 'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
                 'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
             ],
         ];
@@ -765,8 +663,6 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutToCardFundAccountUsingUpi()
     {
-        $this->markTestSkipped('Disabling Test since UPI is disabled temperorily in FTA');
-
         $this->fixtures->create(
             'fund_account',
             [
@@ -1632,6 +1528,46 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayoutWithSameContact()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['contact_id'], $response['items'][1]['fund_account']['contact_id']);
+
+        $contacts = $this->getEntities('contact');
+
+        $this->assertEquals(2, count($contacts['items']));
+    }
+
+    public function testBulkPayoutWithSameFundAccount()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['fund_account']['id'], $response['items'][1]['fund_account']['id']);
+
+        $contacts = $this->getEntities('fund_account');
+
+        $this->assertEquals(2, count($contacts['items']));
+    }
+
     public function testBulkPayoutWithSameIdempotencyandBatchId()
     {
         $this->ba->batchAuth();
@@ -1740,6 +1676,91 @@ class PayoutTest extends TestCase
         $this->assertNotNull($txn['balance_id']);
 
         return $payout;
+    }
+
+    public function testCreateRblPayoutWithModeNotSet()
+    {
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateRblPayoutToCard()
+    {
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $bankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
 //    public function testCreatePayoutForRblDirectAccount(): array
@@ -1863,4 +1884,46 @@ class PayoutTest extends TestCase
 //
 //        return $payout;
 //    }
+
+    public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt',true);
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals(398, $txn['amount']);
+
+        $this->assertEquals(602, $txn['fee']);
+
+        $this->assertEquals(1000, $txn['debit']);
+
+        $this->assertEquals(0, $fta['is_fts']);
+    }
+
+    public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt',true);
+
+        $this->assertEquals(1, $fta['is_fts']);
+    }
 }

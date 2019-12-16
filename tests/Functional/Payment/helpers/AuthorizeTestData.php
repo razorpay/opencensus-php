@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Gateway\Hdfc;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -762,6 +763,20 @@ return [
                 'error_description' => null,
             ],
         ]
+    ],
+    'testTimeoutOldPaymentsCustomTimeout' => [
+        'request'  => [
+            'url'     => '/settings/merchant',
+            'method'  => 'post',
+            'content' => [
+                Merchant\Constants::PAYMENT_TIMEOUT_WINDOW       => 60 * 27, // 27 minutes
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
     ],
 
     'testAtmPinAuthenticationPayment' => [

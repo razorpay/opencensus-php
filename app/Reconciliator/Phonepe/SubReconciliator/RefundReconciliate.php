@@ -11,7 +11,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     protected function getRefundId(array $row)
     {
-        return $row[ReconFields::RZP_ID] ?? null;
+        if (empty($row[ReconFields::RZP_ID]) === false)
+        {
+            //
+            // Sometimes we get digits appended in refund ID
+            // so take first 14 chars only.
+            //
+            return substr($row[ReconFields::RZP_ID], 0, 14);
+        }
+
+        return null;
     }
 
     protected function validateRefundAmountEqualsReconAmount(array $row)

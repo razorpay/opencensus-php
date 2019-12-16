@@ -51,6 +51,8 @@ configure_dark(){
     echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_LIVE_URL=\"https://cps-dark-live.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_LIVE_URL=\"https://payments-card-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_TEST_URL=\"https://payments-card-test-dark.razorpay.com/v1/\"" >> ./environment/.env.production
 }
 
 run_migration_job(){

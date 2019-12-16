@@ -41,6 +41,7 @@ class Gateway extends Base\Gateway
         Base\Entity::RECEIVED                => Base\Entity::RECEIVED,
         ResponseFields::BANK_REF_NO          => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS               => Base\Entity::STATUS,
+        ResponseFields::STATUS_DESC          => Base\Entity::ERROR_MESSAGE,
 
         /**
          *  Fields from emandate authorize response
@@ -137,6 +138,8 @@ class Gateway extends Base\Gateway
 
         // unsetting here as we do not want the amount to be updated again
         unset($gatewayInput[ResponseFields::AMOUNT]);
+        // unsetting here as we do not want to set error_message in case of successful payment
+        unset($gatewayInput[ResponseFields::STATUS_DESC]);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 

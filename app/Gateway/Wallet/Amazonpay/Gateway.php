@@ -14,6 +14,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\RuntimeException;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -173,20 +174,89 @@ class Gateway extends Base\Gateway
                 'parsed'     => $parsed,
             ]);
 
-        $this->handleRefundResponse($input, $parsed, $refund);
+        $response = $this->getRelevantRefundDetail(
+            ResponseFields::REFUND_PAYMENT_RESULT_WRAPPER,
+            $parsed,
+            $refund->getRefundId()
+        );
+
+        $this->handleRefundResponse($input, $response, $refund);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($response),
+        ];
+    }
+
+    protected function getLatestGatewayRefund(string $refundId)
+    {
+        $refunds = $this->repo->findByRefundIdAndAction($refundId, Base\Action::REFUND);
+
+        return $refunds->last();
     }
 
     public function verifyRefund(array $input)
     {
         parent::action($input, Payment\Action::VERIFY_REFUND);
 
+        $scroogeResponse = new ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
         $verify = new Verify($this->gateway, $input);
 
-        $this->sendRefundVerifyRequest($verify);
+        $refund = $this->getLatestGatewayRefund($verify->input['refund']['id']);
 
-        $refunded = $this->verifyRefundResponse($verify);
+        // We need gateway_refund_id to perform verify action, for which refund action must
+        // have been performed before. For gateways on scrooge verify happens before any
+        // refund action. Hence assuming to refund is not present on gateway side
+        if (empty($refund) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
+        }
 
-        return $refunded;
+        $this->sendRefundVerifyRequest($verify, $refund);
+
+        $response = $this->getRelevantRefundDetail(
+            ResponseFields::GET_REFUND_DETAILS_RESULT_WRAPPER,
+            $verify->verifyResponseContent,
+            $verify->input['refund']['id']
+        );
+
+        $scroogeResponse->setGatewayVerifyResponse($response)
+                        ->setGatewayKeys($this->getGatewayData($response));
+
+        $refundStatus = $this->verifyRefundResponse($verify, $response);
+
+        if ($refundStatus === Status::COMPLETED)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        if ($refundStatus === Status::DECLINED)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::BAD_REQUEST_REFUND_FAILED)
+                                   ->toArray();
+        }
+
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
+                               ->toArray();
     }
 
     public final function getAmazonPaySdk(): PWAINBackendSDK
@@ -245,10 +315,8 @@ class Gateway extends Base\Gateway
         $this->saveVerifyContent($verify);
     }
 
-    protected function sendRefundVerifyRequest(Verify $verify)
+    protected function sendRefundVerifyRequest(Verify $verify, Entity $refund)
     {
-        $refund = $this->repo->findByRefundId($verify->input['refund']['id']);
-
         $request = $this->getVerifyRefundRequest($refund);
 
         $this->trace->info(
@@ -273,20 +341,15 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    protected function verifyRefundResponse(Verify $verify)
+    protected function verifyRefundResponse(Verify $verify, array $response)
     {
-        $response = $this->getRelevantRefundDetail(
-                               ResponseFields::GET_REFUND_DETAILS_RESULT_WRAPPER,
-                               $verify->verifyResponseContent,
-                               $verify->input['refund']['id']);
-
         $attributes = $this->getRefundResponseAttributesToSave($response);
 
         $gatewayRefund = $this->repo->findByRefundId($verify->input['refund']['id']);
 
         $this->updateGatewayRefundEntity($gatewayRefund, $attributes, false);
 
-        return ($attributes[Entity::STATUS_CODE] === Status::COMPLETED);
+        return $attributes[Entity::STATUS_CODE];
     }
 
     /**
@@ -362,11 +425,6 @@ class Gateway extends Base\Gateway
 
     private function handleRefundResponse(array $input, array $response, Entity $refund)
     {
-        $response = $this->getRelevantRefundDetail(
-                               ResponseFields::REFUND_PAYMENT_RESULT_WRAPPER,
-                               $response,
-                               $refund->getRefundId());
-
         $attributesToSave = $this->getRefundResponseAttributesToSave($response);
 
         $this->updateGatewayRefundEntity($refund, $attributesToSave, false);
@@ -399,12 +457,18 @@ class Gateway extends Base\Gateway
             }
         }
 
+        $errorDesc = 'Refund not found in response';
+
         throw new GatewayErrorException(
             ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
             null,
-            'Refund not found in response',
+            $errorDesc,
             [
-                'refund_id' => $refundId,
+                Payment\Gateway::GATEWAY_VERIFY_RESPONSE => json_encode($response),
+                Payment\Gateway::GATEWAY_KEYS => [
+                    'refund_id'  => $refundId,
+                    'error_desc' => $errorDesc,
+                ],
             ]);
     }
 
@@ -877,5 +941,24 @@ class Gateway extends Base\Gateway
         }
 
         return $output;
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                ResponseFields::REFUND_TYPE        => $response[ResponseFields::REFUND_TYPE] ?? null,
+                ResponseFields::FEE_REFUNDED       => $response[ResponseFields::FEE_REFUNDED] ?? null,
+                ResponseFields::REFUND_STATE       => $response[ResponseFields::REFUND_STATUS]
+                                                                [ResponseFields::REFUND_STATE] ?? null,
+                ResponseFields::REFUND_AMOUNT      => $response[ResponseFields::REFUND_AMOUNT] ?? null,
+                ResponseFields::REFUND_REF_ID      => $response[ResponseFields::REFUND_REF_ID] ?? null,
+                ResponseFields::AMAZON_REFUND_ID   => $response[ResponseFields::AMAZON_REFUND_ID] ?? null,
+                ResponseFields::CREATION_TIMESTAMP => $response[ResponseFields::CREATION_TIMESTAMP] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

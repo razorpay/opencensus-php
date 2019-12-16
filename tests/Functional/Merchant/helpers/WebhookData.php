@@ -1398,4 +1398,19 @@ return [
             ],
         ],
     ],
+
+    'createSettingsForWebhookTranslateUrl' => [
+        'request'  => [
+            'url'     => '/settings/partner',
+            'method'  => 'post',
+            'content' => [
+                'translate_webhook_gateway'       => 'facebook',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

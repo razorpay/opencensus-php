@@ -571,6 +571,7 @@ class DatabaseSeeder extends Seeder
                     'bank_transfer' => '1',
                     'cardless_emi'  => '1',
                     'paylater'      => '1',
+                    'nach'          => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
@@ -944,6 +945,23 @@ class DatabaseSeeder extends Seeder
                 'created_at'            => time(),
                 'updated_at'            => time(),
                 'type'                  => 0,
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '1n25f6u1Zgsmpl',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::PAYLATER,
+                'gateway_acquirer'      => 'getsimpl',
+                'card'                  => '0',
+                'gateway_merchant_id'   => '813074bab6c38ed91fe6ff65e4cd585b',
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+                'paylater'              => 1,
+                'mode'                  => 2,
             )
         );
 
@@ -1778,6 +1796,21 @@ class DatabaseSeeder extends Seeder
                     'type'                      => 6,
             ]
         );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NACH_CITI_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NACH_CITI,
+                'nach'                      => '1',
+                'gateway_merchant_id'       => 'NACH00000000010000',
+                'gateway_acquirer'          => 'RATN0TREASU',
+                'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 2,
+            ]
+        );
     }
 
     protected function createNetbankingUbiTerminal()
@@ -2066,6 +2099,24 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_mindgate_terminal_pass'),
             'created_at'                => time(),
             'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                          => '101UPIMindgate',
+            'merchant_id'                 => Account::SHARED_ACCOUNT,
+            'gateway'                     => Gateway::UPI_MINDGATE,
+            'card'                        => '0',
+            'netbanking'                  => '0',
+            'upi'                         => '1',
+            'gateway_merchant_id'         => 'HDFCTEST',
+            'gateway_terminal_id'         => '1234',
+            'gateway_terminal_password'   => Crypt::encrypt('shared_account_upi_mindgate_terminal_pass'),
+            'type'                        => '65537',
+            'virtual_upi_root'            => 'rzp.',
+            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_handle'          => 'hdfcbank',
+            'created_at'                  => time(),
+            'updated_at'                  => time(),
         ]);
 
         DB::table(Table::TERMINAL)->insert([

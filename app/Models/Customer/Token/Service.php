@@ -9,7 +9,9 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 
 class Service extends Base\Service
 {
@@ -52,6 +54,15 @@ class Service extends Base\Service
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
+
+        if ($token->getMethod() === Payment\Method::UPI)
+        {
+            $this->core->validateUpiTokenForUpdate($token);
+
+            $paymentServiceClass = new Payment\Service;
+
+            $paymentServiceClass->mandateUpdate($id, $token, $input);
+        }
 
         $token = $this->core->edit($token, $input);
 

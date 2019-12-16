@@ -4,8 +4,11 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Feature;
+use RZP\Models\BankAccount;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -22,12 +25,17 @@ class Validator extends Base\Validator
      */
     const MAX_UPI_AMOUNT = 10000000;
 
+    /**
+     * Rate limit on items sending for bulk fund_account create.
+     */
+    const MAX_BULK_FUND_ACCOUNT_LIMIT = 15;
+
     protected static $createRules = [
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',
         Entity::CONTACT_ID                          => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE                        => 'required|string|custom',
-        Entity::VPA                                 => 'sometimes|associative_array',
-        Entity::BANK_ACCOUNT                        => 'sometimes|associative_array',
+        Entity::VPA                                 => 'sometimes|custom',
+        Entity::BANK_ACCOUNT                        => 'sometimes|custom',
         Entity::CARD                                => 'sometimes|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
@@ -80,6 +88,11 @@ class Validator extends Base\Validator
             return;
         }
 
+        if (empty($this->entity) === true)
+        {
+            return;
+        }
+
         /** @var Entity $fundAccount */
         $fundAccount = $this->entity;
 
@@ -118,5 +131,32 @@ class Validator extends Base\Validator
                     'message' => 'payout_to_cards feature not enabled',
                 ]);
         }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of fund account creation in Bulk Route
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkFundAccountCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_FUND_ACCOUNT_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of Bulk Fund Account is ' . self::MAX_BULK_FUND_ACCOUNT_LIMIT,
+                null,
+                null
+            );
+        }
+    }
+
+    public function validateVpa($attribute, $value)
+    {
+        (new Vpa\Validator())->setStrictFalse()->validateInput('create', $value);
+    }
+
+    public function validateBankAccount($attribute, $value)
+    {
+        (new BankAccount\Validator())->setStrictFalse()->validateInput('create', $value);
     }
 }

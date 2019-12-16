@@ -87,7 +87,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -370,7 +370,7 @@ trait Capture
      */
     protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
@@ -437,7 +437,9 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        //
+        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -808,7 +810,8 @@ trait Capture
         $payment = $this->payment;
 
         if (($payment->isBankTransfer() === false) and
-            ($payment->isBharatQr() === false))
+            ($payment->isBharatQr() === false) and
+            ($payment->isUpiTransfer() === false))
         {
             return;
         }
@@ -855,7 +858,7 @@ trait Capture
 
         $payment->setTax($txn->getTax());
 
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($payment->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());
@@ -1014,6 +1017,14 @@ trait Capture
 
     protected function processTransferIfApplicable(Payment\Entity $payment)
     {
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_INITIATED,
+            [
+                'order_id'   => $payment->getApiOrderId(),
+                'payment_id' => $payment->getId(),
+            ]
+        );
+
         try
         {
             if ($this->shouldProcessOrderTransfer($payment) === false)
@@ -1279,16 +1290,26 @@ trait Capture
         if ($payment->isCaptured() !== true or
             $payment->hasOrder() !== true)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED,
+                               [
+                                   'payment_id' => $payment->getId()
+                               ]);
             return false;
         }
 
         $order = $payment->order;
 
-        if ($order->getStatus() !== Order\Status::PAID)
+        if ($order->getStatus() !== Order\Status::PAID or
+            $order->isPartialPaymentAllowed() === true)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID,
+                               [
+                                   'payment_id' => $payment->getId(),
+                                   'order_id'   => $order->getId()
+                               ]);
             return false;
         }
 
-        return $this->isPaymentAndOrderAmountSame($order, $payment);
+        return true;
     }
 }

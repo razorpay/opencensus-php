@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
+use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device\RegisterToken;
 
@@ -19,6 +20,8 @@ class Validator extends Base\Validator
     protected static $getTokenSuccessRules;
     protected static $deregisterRules;
     protected static $deregisterSuccessRules;
+    protected static $updateWithActionRules;
+    protected static $restoreDeviceRules;
 
     public function rules()
     {
@@ -142,7 +145,7 @@ class Validator extends Base\Validator
     public function makeGetTokenSuccessRules()
     {
         $rules = $this->makeRules([
-            DeviceToken\Entity::GATEWAY_DATA         => 'required',
+            DeviceToken\Entity::DEVICE_TOKEN         => 'required',
         ]);
 
         return $rules;
@@ -169,5 +172,26 @@ class Validator extends Base\Validator
     public function validateDeviceData()
     {
         (new RegisterToken\Validator)->validateDeviceData();
+    }
+
+    public function makeUpdateWithActionRules()
+    {
+        $rules = $this->makePublicIdRules([
+            Entity::ACTION  => 'required|string|in:' . join(',', Action::getUpdateAllowedActions()),
+            Entity::DATA    => 'nullable|array',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeRestoreDeviceRules()
+    {
+        $rules = $this->makeRules([
+            Vpa\Entity::DEFAULT     => 'sometimes|string|regex:/vpa_(\.*){14}/',
+            'deleted'               => 'sometimes|array',
+            'deleted.*'             => 'sometimes|string|regex:/vpa_(\.*){14}/',
+        ]);
+
+        return $rules;
     }
 }

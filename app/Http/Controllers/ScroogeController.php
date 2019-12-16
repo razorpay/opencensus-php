@@ -64,13 +64,6 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
-    public function setRefundDark(string $id, string $action)
-    {
-        $response = $this->app['scrooge']->setRefundDark($id, $action, $this->input);
-
-        return ApiResponse::json($response['body'], $response['code']);
-    }
-
     public function downloadGatewayRefundsFile()
     {
         $response = $this->app['scrooge']->downloadGatewayRefundsFile($this->input);
@@ -102,9 +95,44 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
-    public function expireInstantRefundsModeConfig()
+    public function setInstantRefundsModeForMerchant(string $mid)
     {
-        $response = $this->app['scrooge']->expireInstantRefundsModeConfig($this->input);
+        $response = $this->app['scrooge']->setInstantRefundsMode($this->input, $mid);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function expireInstantRefundsModeConfig(string $id)
+    {
+        $response = $this->app['scrooge']->expireInstantRefundsModeConfig($id, $this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function expireInstantRefundsModeConfigForMerchant(string $mid, string $id)
+    {
+        $response = $this->app['scrooge']->expireInstantRefundsModeConfig($id, $this->input, $mid);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function refreshFtaModes()
+    {
+        $response = $this->app['scrooge']->refreshFtaModes($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchInstantRefundsModeConfigs()
+    {
+        $response = $this->app['scrooge']->fetchInstantRefundsModeConfigs($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function fetchInstantRefundsModeConfigsForMerchant(string $mid)
+    {
+        $response = $this->app['scrooge']->fetchInstantRefundsModeConfigs($this->input, $mid);
 
         return ApiResponse::json($response['body'], $response['code']);
     }

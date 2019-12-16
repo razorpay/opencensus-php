@@ -123,6 +123,65 @@ class VerifyRefundData extends Base\Mock\Server
         return $response;
     }
 
+    public static function getsimpl($entities)
+    {
+        $response = [
+            'data'=> [
+                '_raw'          => '{\"paymentId\":\"500\",\"amount\":120000,\"transaction_id\":\"60320846-5fdb-4d87-9d8a-10b992fdc593\",\"success\":true,\"Http_status\":200}',
+                'api_version'   => '4.0',
+                'data' => [
+                    'transaction'=> [
+                        'amount_in_paise'           => $entities['payment']['amount'],
+                        'billing_address'           => null,
+                        'delivered'                 => true,
+                        'discount_amount_in_paise'  => 0,
+                        'id'                        => $entities['gateway']['pay_init']['data']['transaction']['id'],
+                        'items' => [
+                            [
+                                'sku' => '500'
+                            ]
+                        ],
+                        'metadata' => [
+                            'customer_id'   => $entities['payment']['id'],
+                            'email'         => 'rzp@simpl.com'
+                        ],
+                        'order' => [
+                            'merchant_order_id' => $entities['payment']['id']
+                        ],
+                        'refunds' => [
+                            [
+                                'amount_in_paise'           => 50,
+                                'billing_address'           => [],
+                                'delivered'                 => false,
+                                'discount_amount_in_paise'  => 0,
+                                'id'                        => '32e6ae2c-8d4e-4cdd-8d78-9ec753af7c7f',
+                                'items'                     => [],
+                                'metadata'                  => null,
+                                'order' => [
+                                    'merchant_order_id' => 'pg_payment_1234r1'
+                                ],
+                                'shipping_address'          => [],
+                                'shipping_amount_in_paise'  => 0,
+                                'status'                    => 'REFUND',
+                            ]
+                        ],
+                        'shipping_address'          => null,
+                        'shipping_amount_in_paise'  => 0,
+                        'status'                    => 'CLAIMED'
+                    ]
+                ],
+                'status'  => 'verify_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $response;
+    }
+
     public function upi_airtel($entities)
     {
         $response = [
@@ -149,4 +208,28 @@ class VerifyRefundData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_scb($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'code' => '0',
+                    'errorCode' => 000,
+                    'message' => 'successful',
+                    'txnStatus' => 'SUCCESS',
+                    'paymentId' => $entities['payment']['id'],
+                    'amount' => $entities['payment']['amount'],
+                    'hash' => 'abcd',
+                    '_raw' => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        $this->content($response, 'verify_refund');
+
+        return $response;
+    }
 }

@@ -70,24 +70,21 @@ return [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
+        'username'  => env('MOZART_USERNAME'),
 
         'test'  =>  [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
             'password'  => env('MOZART_TEST_PASSWORD'),
+            'username'  => env('MOZART_TEST_USERNAME'),
         ],
 
         'live'  =>  [
             'mock'      => env('MOZART_LIVE_MOCK', false),
             'url'       => env('MOZART_LIVE_URL'),
             'password'  => env('MOZART_LIVE_PASSWORD'),
+            'username'  => env('MOZART_LIVE_USERNAME'),
         ]
-    ],
-
-    'express' => [
-        'mock'      => env('EXPRESS_MOCK', false),
-        'url'       => env('EXPRESS_URL'),
-        'password'  => env('EXPRESS_PASSWORD'),
     ],
 
     'raven' => [
@@ -265,6 +262,10 @@ return [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
+        'admin_auth' => [
+            'username' => 'api',
+            'password' => env('UFH_ADMIN_PASSWORD'),
+        ],
     ],
 
     'pincodesearch' => [
@@ -386,6 +387,13 @@ return [
         'secret'   => env('HUBSPOT_SECRET'),
     ],
 
+    'hyper_verge' => [
+        'url'     => env('HYPERVERGE_URL'),
+        'app_id'  => env('HYPERVERGE_APP_ID'),
+        'app_key' => env('HYPERVERGE_APP_KEY'),
+        'mock'    => env('HYPERVERGE_MOCK', false),
+    ],
+
     'mtu_lambda' => [
         'secret'        => env('MTU_LAMBDA_SECRET'),
     ],
@@ -400,8 +408,11 @@ return [
         ],
     ],
 
-
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
+    ],
+
+    'kyc_service' => [
+        'mock' => env('KYC_SERVICE_MOCK', false),
     ],
 ];

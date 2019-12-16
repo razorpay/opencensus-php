@@ -109,7 +109,7 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
-        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
         {
             $input['view'] = 'html';
@@ -233,6 +233,29 @@ class PaymentCreateController extends Controller
     public function postCreatePaymentFees()
     {
         $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        return $this->createFeeBearerCustomerPayment($input);
+    }
+
+    public function postCalculatePaymentFees()
+    {
+        $input = Request::all();
+
+
+        /*
+         * A possible value of $input['view'] is 'html'. This is  used by createFeeBearerCustomerPayment()
+         *  to send the response in html. However *this* route is json only.
+         * So we unset the view parameter before sending to createFeeBearerCustomerPayment().
+         * This is to ensure only json ever gets returned.
+         */
+        if (isset($input['view']) === true)
+        {
+            unset($input['view']);
+        }
 
         $this->logPaymentRequestEvent($input);
 

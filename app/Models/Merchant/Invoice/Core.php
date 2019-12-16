@@ -17,7 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Admin\Org\Preferences;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
@@ -347,7 +347,6 @@ class Core extends Base\Core
                 'is_correction'         => $isCorrection,
                 'merchant_ids'          => $merchantIds,
                 'merchant_ids_excluded' => $merchantIdsExcluded,
-                'org_ids_included'      => Preferences::MERCHANT_INVOICE_WHITELISTED_ORG_ID,
                 'mode'                  => $mode
             ]);
 
@@ -394,5 +393,39 @@ class Core extends Base\Core
             [
                 'count' => $skip,
             ]);
+    }
+
+    /**
+     * verify if the invoice is generated correctly for all the eligible merchant
+     * else raise an slack alert and log the missing ids
+     *
+     * @param int $year
+     * @param int $month
+     */
+    public function verify(int $year, int $month): array
+    {
+        $result = $this->repo->merchant_invoice->verify($year, $month);
+
+        if ($result->isEmpty() === true)
+        {
+            return [];
+        }
+
+        $this->trace->error(
+            TraceCode::MERCHANT_INVOICE_CREATION_SKIPPED,
+            [
+                'count'        => $result->count(),
+                'merchant_ids' => $result->toArray(),
+            ]);
+
+        (new SlackNotification)->send(
+            'merchant_invoice_alert',
+            [
+                'total_invoice_skipped' => $result->count(),
+            ],
+            null,
+            $result->count());
+
+        return $result->toArray();
     }
 }

@@ -3,9 +3,15 @@ namespace RZP\Models\Gateway\Terminal;
 
 class Constants
 {
-    const RAZORPAY                          =   "Razorpay";
-    const ATOS_ACTIVATION_RETRY_LIMIT       =   10;
-    const ATOS_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+    const DEFAULT_CONTACT_NAME                   =   "Razorpay";
+    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   10;
+    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+
+    // Actions
+    const MERCHANT_ONBOARD = 'merchantOnboard';
+    const CREATE_TERMINAL = 'create_terminal';
+    const VERIFY_TERMINAL = 'verify_terminal';
+
 
     // Request
     const MPAN       = 'mpan';
@@ -13,26 +19,34 @@ class Constants
     const MASTERCARD = 'mastercard';
     const RUPAY      = 'rupay';
 
-    // Response
-    const DATA                          =   'data';
-    const RES_CODE                      =   'res_code';
-    const RETRY                         =   'retry';
-    const STATUS                        =   'status';
-    const SUCCESS                       =   'success';
-    const DESCRIPTION                   =   'description';
-    const ERROR                         =   'error';
-    const INTERNAL_ERROR_CODE           =   'internal_error_code';
-    const GATEWAY_ERROR_CODE            =   'gateway_error_code';
-    const GATEWAY_ERROR_DESCRIPTION     =   'gateway_error_description';
-    const GATEWAY_FAILURE_ERROR_CODE    =   '05';
+    // Default merchant details for merchant onboarding
+    const DEFAULT_BUSINESS_OPERATION_ADDRESS      = 'SJR Cyber Laskar, Hosur Rd, Opp Adugodi Police Station, Bengaluru';
+    const DEFAULT_BUSINESS_OPERATION_STATE        = 'Karnataka';
+    const DEFAULT_BUSINESS_OPERATION_PIN          = '560030';
+    const DEFAULT_BUSINESS_DBA                    = 'Razorpay';
+    const DEFAULT_BUSINESS_NAME                   = 'Razorpay';
+    const DEFAULT_BUSINESS_OPERATION_CITY         = 'Bengaluru';
 
-    const CALLBACK_SUCCESSFUL           =   'callback_successful';
-    const CALLBACK_FAILED               =   'callback_failed';
+    // Response
+    const DATA                                    =   'data';
+    const RES_CODE                                =   'res_code';
+    const RETRY                                   =   'retry';
+    const STATUS                                  =   'status';
+    const SUCCESS                                 =   'success';
+    const DESCRIPTION                             =   'description';
+    const ERROR                                   =   'error';
+    const INTERNAL_ERROR_CODE                     =   'internal_error_code';
+    const GATEWAY_ERROR_CODE                      =   'gateway_error_code';
+    const GATEWAY_ERROR_DESCRIPTION               =   'gateway_error_description';
+    const GATEWAY_FAILURE_ERROR_CODE              =   '05';
+
+    const TERMINAL_ACTIVATION_SUCCESSFULL         =   'terminal_activation_successful';
+    const TERMINAL_ACTIVATION_FAILED              =   'terminal_activation_failed';
 
     // cron Response
-    const ACTIVATED_TERMINALS           =   'activated_terminals';
-    const PENDING_TERMINALS             =   'pending_terminals';
-    const ACTIVATION_FAILED_TERMINALS   =   'activation_failed_terminals';
-    const NOT_APPLICABLE_TERMINALS      =   'not_applicable_terminals'; // terminals which are acquired or already been processed by other mutex
-    const VERIFICATION_ERROR_TERMINALS  =   'verification_error_terminals';
+    const ACTIVATED_TERMINALS                     =   'activated_terminals';
+    const PENDING_TERMINALS                       =   'pending_terminals';
+    const ACTIVATION_FAILED_TERMINALS             =   'activation_failed_terminals';
+    const NOT_APPLICABLE_TERMINALS                =   'not_applicable_terminals'; // terminals which are acquired or already been processed by other mutex
+    const VERIFICATION_ERROR_TERMINALS            =   'verification_error_terminals';
 }

@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact as ContactModel;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
@@ -128,6 +129,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $nachCreateRules = [
+        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:nach',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit',
+        Entity::GATEWAY     => 'required|string',
+    ];
+
     protected static $merchantOnboardingCreateRules = [
         Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE    => 'required|in:merchant_onboarding',
@@ -178,6 +186,17 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $iinHitachiVisaCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $iinMcMastercardCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -330,6 +349,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
     ];
 
+    protected static $adminBatchCreateRules = [
+        Entity::TYPE                            => 'required|in:admin_batch',
+        Entity::NAME                            => 'filled|string|max:255',
+        Entity::FILE                            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG                          => 'filled|array',
+    ];
+
     protected function validateBatch($attribute, $value)
     {
         $this->validateInput('sendMailBatch', $value);
@@ -347,7 +373,7 @@ class Validator extends Base\Validator
 
     protected function validatePayoutMode($attribute, $value)
     {
-        FundTransfer\Mode::validateMode($value);
+        PayoutMode::validateMode($value);
     }
 
     /**

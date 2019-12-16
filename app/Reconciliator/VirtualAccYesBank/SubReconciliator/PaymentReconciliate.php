@@ -80,6 +80,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
             'utr'           => $row[self::COLUMN_UTR],
             'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
+            'gateway'       => $this->gateway,
         ]);
 
         $this->app['slack']->queue(
@@ -91,15 +92,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'icon'     => ':x:'
             ]
         );
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::BANK_TRANSFER_UNEXPECTED,
-                'message'       => 'Unexpected bank transfer',
-                'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
-                'utr'           => $row[self::COLUMN_UTR],
-                'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
-            ]);
     }
 
     /**

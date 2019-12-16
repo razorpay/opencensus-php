@@ -43,10 +43,11 @@ class NodalAccount extends NodalBase\NodalAccount
      * Makes request to the bank for fund transfer for given attempts
      *
      * @param PublicCollection $attempts
+     * @param $forceFlag
      * @return array
      * @throws LogicException
      */
-    public function process(PublicCollection $attempts): array
+    public function process(PublicCollection $attempts, bool $forceFlag = false): array
     {
         $processedCount = 0;
 
@@ -63,13 +64,15 @@ class NodalAccount extends NodalBase\NodalAccount
             // initiated on non-working days/hours
             //
 
-            $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
-
-            if ($isTransferAllowedToday === false)
+            if ($forceFlag === false)
             {
-                continue;
-            }
+                $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
 
+                if ($isTransferAllowedToday === false)
+                {
+                    continue;
+                }
+            }
             //if BA is not present for attempt
             // marking FTA as failed, if source is settlement
             if($this->markFailedIfBANotExists($attempt) === true)
@@ -108,6 +111,21 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             try
             {
+                $checkAttempt = clone $attempt;
+
+                $checkAttempt->reload();
+
+                if ($checkAttempt->getStatus() !== Attempt\Status::CREATED)
+                {
+                    $this->trace->info(TraceCode::NODAL_TRANSFER_REQUEST_DUPLICATE,
+                        [
+                            'channel'       => $this->channel,
+                            'attempt_id'    => $attempt->getId(),
+                        ]);
+
+                    continue;
+                }
+
                 // Calling init will reset all the data of previous request
                 $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);

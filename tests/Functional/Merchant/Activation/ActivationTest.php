@@ -2,20 +2,26 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use DB;
 use Config;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
-use RZP\Tests\Functional\TestCase;
+use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
@@ -24,9 +30,10 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 /**
  * @group dns-sensitive
  */
-class ActivationTest extends TestCase
+class ActivationTest extends OAuthTestCase
 {
     use MocksDnsTrait;
+    use PartnerTrait;
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -94,6 +101,7 @@ class ActivationTest extends TestCase
         $this->assertFalse($merchant->merchantDetail->isSubmitted());
 
         $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+        $this->assertEquals($merchant->getBillingLabel(), 'tsest123');
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
@@ -107,6 +115,78 @@ class ActivationTest extends TestCase
         $this->assertEquals($legalEntity->getMcc(), 5691);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+    }
+
+    public function testBusinessWebsiteUpdate()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+
+        $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+
+        $this->assertNotContains('abc.com', $merchant->getWhitelistedDomains());
+    }
+
+
+    public function testPostInstantActivationWithBalanceCreation()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $balanceId = '12212121';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $timeStamp = Carbon::now()->getTimestamp();
+
+        DB::connection('live')->table('balance')
+          ->insert([
+                       'id' => $balanceId,
+                       'merchant_id' => $merchantId,
+                       'type' => \RZP\Models\Merchant\Balance\Type::PRIMARY,
+                       'currency' => Currency::INR,
+                       'name' => 'test',
+                       'balance' => 0,
+                       'created_at' => $timeStamp,
+                       'updated_at' => $timeStamp,
+                   ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->mockHubSpotClient('trackL1ContactProperties');
+
+        $this->startTest();
+
+        $merchantBalance = $this->getDbEntity('balance', [
+            'merchant_id' => $merchantId,
+        ], 'live');
+
+        $this->assertEquals($merchantBalance->getId(), $balanceId);
+
     }
 
     public function testPostInstantActivationForUnregisteredRazorxOff()
@@ -712,6 +792,7 @@ class ActivationTest extends TestCase
             'promoter_address_url'             => '124',
             'business_type'                    => 2,
             'poa_verification_status'          => $poaVerificationStatus,
+            'poi_verification_status'          => 'verified',
             'bank_details_verification_status' => $bankDetailsVerificationStatus,
         ];
         $data = array_merge($data, $otherMerchantDetailAttributes);
@@ -806,6 +887,47 @@ class ActivationTest extends TestCase
         $data = $this->getInstantlyActivatedMerchantData();
         $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $this->startTest();
+    }
+
+    public function testReleaseFundsWithParntersBankAccount()
+    {
+        list($application) = $this->createPartnerMerchantAndSubMerchant(MerchantConstants::AGGREGATOR);
+
+        $data = $this->getInstantlyActivatedMerchantDetailData(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->ba->adminAuth();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/merchants/' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/action';
+
+        $data = $this->getInstantlyActivatedMerchantData();
+        $this->fixtures->on('test')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+        $this->fixtures->on('live')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+
+        $configAttributes = [
+            'SETTLE_TO_PARTNER' => 1,
+        ];
+
+        $this->createConfigForPartnerApp($application->getId(), Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $configAttributes);
+
+        $config = [
+            'deleted_at' => '1576153748'
+        ];
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
 
         $this->startTest();
     }
@@ -1395,12 +1517,13 @@ class ActivationTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   ['business_type'           => 2,
                                                    'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'pankaj k',
                                                    'poa_verification_status' => 'verified',
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
         $attribute = [
-            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
+            ValidationEntity::REGISTERED_NAME => "p kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
@@ -1451,6 +1574,27 @@ class ActivationTest extends TestCase
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+    }
+
+    public function testFailureBankDetailsVerificationForBankNameMismatchCase()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'bank_account_name'       => 'puneet jain',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],

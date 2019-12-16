@@ -178,25 +178,49 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
+        $payment['_']['library'] = 'direct';
+
+        $payment['_']['device'] = 'desktop';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $url = $content['next'][0]['url'];
+
         $requestServer = [
             'HTTP_USER_AGENT' => 'Razorpay UA',
             'HTTP_REFERER'    => 'https://pay.com/demo'
         ];
 
-        $payment['_']['library'] = 'direct';
+        $request = [
+            'method'  => 'GET',
+            'url'     => $url
+        ];
 
-        $payment['_']['device'] = 'desktop';
+        $request['server'] = $requestServer;
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
-        $payment = $this->doS2SPrivateAuthPayment($payment, $requestServer);
+        $this->makeRequestParent($request);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic);
     }
 
+    // For S2S payments using rzp redirect flow analytics will get updated on redirect call, so marking this test to be skipped now
     public function testAnalyticsForS2sPayments()
     {
+        $this->markTestSkipped();
+
         $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
@@ -237,6 +261,7 @@ class AnalyticsTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
         $this->fixtures->create('terminal:shared_bank_account_terminal');
         $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->fixtures->create('terminal:vpa_shared_terminal');
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->ba->appAuth();

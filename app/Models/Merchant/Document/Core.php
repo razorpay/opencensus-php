@@ -20,9 +20,13 @@ class Core extends Base\Core
      */
     public function delete(Entity $document)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_DELETE_REQUEST, ['id' => $document->getId()]);
 
-        return $this->repo->deleteOrFail($document);
+        $this->repo->deleteOrFail($document);
+
+        return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
     }
 
     /**
@@ -209,7 +213,7 @@ class Core extends Base\Core
 
         $ocrMatchingPercentage = 0;
 
-        if ((isset($ocrDetails[Constants::NAME]) === true) and
+        if ((empty($ocrDetails[Constants::NAME]) === false) and
             empty($promoterPanName) === false)
         {
             $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);

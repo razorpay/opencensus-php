@@ -21,13 +21,13 @@ class Validator extends Base\Validator
     **/
 
     protected static $createRules = [
-        Entity::METHOD              => 'required|in:card,emandate,wallet',
+        Entity::METHOD              => 'required|in:card,emandate,wallet,nach,upi',
         Entity::CARD_ID             => 'required_only_if:method,card|alpha_num|size:14',
-        Entity::BANK                => 'required_only_if:method,emandate|custom',
-        // We generate it if max_amount is not present and method is emandate
-        Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate',
+        Entity::BANK                => 'required_only_if:method,emandate,nach|custom',
+        // We generate it if max_amount is not present and method is emandate or nach or upi
+        Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate,nach,upi',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
-        Entity::AUTH_TYPE           => 'required_only_if:method,emandate|string|filled|in:netbanking,aadhaar,aadhaar_fp,debitcard',
+        Entity::AUTH_TYPE           => 'required_only_if:method,emandate,nach|string|filled|in:netbanking,aadhaar,aadhaar_fp,debitcard,physical',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'sometimes|string',
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',
@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::IFSC                => 'sometimes|nullable|alpha_num|size:11',
         Entity::AADHAAR_NUMBER      => 'sometimes|nullable|string|size:12',
         Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
+        Entity::START_TIME          => 'sometimes_if:method,upi,nach'
     ];
 
     protected static $createDirectRules = [

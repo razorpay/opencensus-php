@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Scrooge
 {
@@ -35,6 +36,8 @@ class Scrooge
     const ListBaseURL = 'list';
     const MerchantsBaseURL = 'merchants';
 
+    const RESPONSE_SUCCESS_CODES = [200];
+
     const URLS = [
         'retry'                         => 'retry',
         'get_reports'                   => 'reports',
@@ -48,10 +51,10 @@ class Scrooge
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
         'download_refunds_gateway_file' => 'refunds/download-gateway-file',
-        'enable-dark'                   => 'enable-dark',
-        'disable-dark'                  => 'disable-dark',
         'instant_refunds_mode'          => 'instant_refunds_mode',
-        'instant_refunds_mode_expire'   => 'instant_refunds_mode/expire',
+        'get_file_based_refunds'        => 'file_based_refunds',
+        'refresh_fta_modes'             => 'fta_modes_refresh',
+        'fetch_instant_refunds_modes'   => 'fetch/instant_refund_mode_configs'
     ];
 
     // Headers
@@ -116,22 +119,6 @@ class Scrooge
     public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundBaseURL . '/' . $input['id'] . '/' . self::URLS['retry'],
-            Requests::POST, $input, $throwExceptionOnFailure);
-    }
-
-    /**
-     * @param string $id
-     * @param string action
-     * @param      $input
-     * @param bool $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function setRefundDark(string $id, string $action, array $input, bool $throwExceptionOnFailure = false): array
-    {
-        $setRefundDark = $action . '-' . 'dark';
-
-        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS[$setRefundDark],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
@@ -230,28 +217,112 @@ class Scrooge
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], Requests::POST, $input);
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function getFileBasedRefunds(array $input): array
+    {
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_file_based_refunds'], Requests::POST, $input, true);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
     public function downloadRefunds(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], Requests::POST, $input);
     }
 
-    public function setInstantRefundsMode(array $input): array
+    /**
+     * @param array $input
+     * @param string $merchantId
+     * @return array
+     */
+    public function setInstantRefundsMode(array $input, string $merchantId = null): array
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'], Requests::POST, $input);
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'],
+            Requests::POST,
+            $input
+        );
     }
 
-    public function expireInstantRefundsModeConfig(array $input): array
+    /**
+     * @param string $id
+     * @param array $input
+     * @param string $merchantId
+     * @return array
+     */
+    public function expireInstantRefundsModeConfig(string $id, array $input, string $merchantId = null): array
     {
-        return $this->sendRequest(self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode_expire'],
-            Requests::POST, $input);
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['instant_refunds_mode'] . '/' . $id . '/expire',
+            Requests::PUT,
+            $input
+        );
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function refreshFtaModes(array $input): array
+    {
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['refresh_fta_modes'],
+            Requests::POST,
+            $input
+        );
+    }
+
+    /**
+     * @param array $input
+     * @param string $merchantId
+     * @return array
+     */
+    public function fetchInstantRefundsModeConfigs(array $input, string $merchantId = null): array
+    {
+        if (empty($merchantId) === false)
+        {
+            $input[RefundConstants::SCROOGE_MERCHANT_ID] = $merchantId;
+        }
+
+        return $this->sendRequest(
+            self::MerchantsBaseURL . '/' . self::URLS['fetch_instant_refunds_modes'],
+            Requests::POST,
+            $input
+        );
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
     public function downloadGatewayRefundsFile(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
             Requests::POST, $input);
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
     public function dashboardInit(array $input): array
     {
         return $this->sendRequest(

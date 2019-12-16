@@ -2,18 +2,28 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Mail;
+use File;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use RZP\Mail\BankingAccount\StatementMail;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
 {
+    const STORE_TYPE         = 'transactions';
+
+    const FILE_ID            = 'file_id';
+
+    const DASHBOARD_FILE_URL = '%sufh/file/%s';
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -36,14 +46,15 @@ class Core extends Base\Core
      */
     public function processStatementForAccount(array $input)
     {
-        $channel        = array_pull($input, Entity::CHANNEL);
-        $accountNumber  = array_pull($input, Entity::ACCOUNT_NUMBER);
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
             [
-                'channel'           => $channel,
-                'account_number'    => $accountNumber,
+                'channel'        => $channel,
+                'account_number' => $accountNumber,
             ]);
 
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
@@ -57,6 +68,173 @@ class Core extends Base\Core
         $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
 
         return ['processed' => true];
+    }
+
+    public function requestAccountStatement($input)
+    {
+        (new Validator)->validateInput(Validator::ACCOUNT_STATEMENT_GENERATE, $input);
+
+        $statementFileId = $this->generateBankAccountStatement($input);
+
+        $sendEmail = filter_var($input[Entity::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+
+        if ($sendEmail === true)
+        {
+            $this->sendBankAccountStatementEmail($input, $statementFileId);
+
+            return $input;
+        }
+
+        $input[self::FILE_ID] = $statementFileId;
+
+        return $input;
+    }
+
+    /**
+     * Creates either a PDF/Excel File and returns the file handle to the calling function
+     *
+     * @param $input
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function generateBankAccountStatement(array $input)
+    {
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+
+        $channel = $input[Entity::CHANNEL];
+
+        $fromDate = $input[Entity::FROM_DATE];
+
+        $toDate = $input[Entity::TO_DATE];
+
+        $format = $input[Entity::FORMAT];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'channel'        => $channel,
+                'account_number' => $accountNumber,
+                'from_date'      => $fromDate,
+                'to_date'        => $toDate,
+                'format'         => $format,
+                'send_email'     => $input[Entity::SEND_EMAIL],
+            ]);
+
+        $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
+
+        $bankingAccount = $this->repo
+                               ->banking_account
+                               ->findByAccountNumberAndChannel($accountNumber, $channel);
+
+        $temporaryFilePath = $statementGenerator->getStatement();
+
+        $this->trace->info(TraceCode::CA_STATEMENT_GENERATED,
+                           [
+                               'banking_account_id'  => $bankingAccount->getId(),
+                               'temporary_file_path' => $temporaryFilePath
+                           ]);
+
+        $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
+
+        $fileId = $ufhResponse[self::FILE_ID] ?? null;
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_GENERATE,
+            [
+                'file_id' => $fileId
+            ]);
+
+        return $fileId;
+    }
+
+    protected function sendBankAccountStatementEmail(array $input, string $statementFileId = null)
+    {
+        $fileAccessUrl = $this->getDashboardFileAccessUrl($statementFileId);
+
+        $merchant = $this->merchant;
+
+        $toEmails = $input[Entity::TO_EMAIL_LIST];
+
+        $fromDate = $input[Entity::FROM_DATE];
+
+        $toDate = $input[Entity::TO_DATE];
+
+        $email = new StatementMail($merchant,
+                                   $toEmails,
+                                   $fromDate,
+                                   $toDate,
+                                   $fileAccessUrl);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_EMAIL,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'to_emails'   => $toEmails,
+                'from_date'   => $fromDate,
+                'to_date'     => $toDate,
+            ]);
+
+        Mail::queue($email);
+    }
+
+    protected function getDashboardFileAccessUrl(string $fileId = null)
+    {
+        return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
+    }
+
+    protected function uploadTemporaryFileToStore(string $pathToTemporaryFile, BankingAccount\Entity $entity)
+    {
+        $ufhService = $this->app['ufh.service'];
+
+        $uploadedFileInstance = $this->getUploadedFileInstance($pathToTemporaryFile);
+
+        $response = $ufhService->uploadFileAndGetUrl($uploadedFileInstance,
+                                                     $name = File::name($pathToTemporaryFile),
+                                                     self::STORE_TYPE,
+                                                     $entity);
+        $this->trace->info(
+            TraceCode::UFH_RESPONSE,
+            [
+                'banking_account_id' => $entity->getId(),
+                'response'           => $response,
+            ]);
+
+        return $response;
+    }
+
+    protected function getUploadedFileInstance(string $path)
+    {
+        $name = File::name($path);
+
+        $extension = File::extension($path);
+
+        $originalName = $name . '.' . $extension;
+
+        $mimeType = File::mimeType($path);
+
+        $size = File::size($path);
+
+        $error = null;
+
+        // Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        // reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        // creating the UploadedFile instance in test mode.
+        $test = true;
+
+        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+
+        return $object;
+    }
+
+    protected function getGenerator(string $accountNumber, string $channel, string $format, int $fromDate, int $toDate)
+    {
+        $statementGeneratorNamespace = __NAMESPACE__ . '\\' . 'Generator\\Gateway\\' . studly_case($channel);
+
+        $statementGenerator = $statementGeneratorNamespace . '\\' . studly_case($format);
+
+        return new $statementGenerator($accountNumber, $channel, $fromDate, $toDate);
     }
 
     protected function getProcessor(string $channel, string $accountNumber): Processor\Base
@@ -129,6 +307,15 @@ class Core extends Base\Core
 
             $basEntity = (new Entity)->build($bankTransaction);
 
+            //
+            // This should be done after build since `setUtr` fetches things from the entity.
+            // Can be refactored if required, as long as properly tested.
+            //
+            if (empty($basEntity->getUtr()) === true)
+            {
+                $basEntity->setUtr();
+            }
+
             $basEntity->merchant()->associate($merchant);
 
             $sourceEntity = $this->processSourceEntity($basEntity);
@@ -168,6 +355,11 @@ class Core extends Base\Core
             $sourceEntity = $this->processPayout($basEntity);
         }
 
+        if ($sourceEntity === null)
+        {
+            $sourceEntity = $this->processExternal($basEntity);
+        }
+
         $this->validateBalance($basEntity, $sourceEntity);
 
         return $sourceEntity;
@@ -179,7 +371,7 @@ class Core extends Base\Core
 
         if ($reversal === null)
         {
-            return $this->processExternal($basEntity);
+            return null;
         }
 
         //
@@ -205,14 +397,30 @@ class Core extends Base\Core
     {
         $payout = $this->fetchExistingPayoutIfPresent($basEntity);
 
-        if (($payout === null) or
-            ($payout->isStatusFailed() === true))
+        if ($payout === null)
         {
-            return $this->processExternal($basEntity);
+            return null;
         }
 
-        // TODO: Add a test case for this.
+        // We are checking for $payout->isStatusFailed(), because its possible that due to a code-miss,
+        // a 'reversed' payout is marked as a 'failed' payout, in which case we will get a 'failed' payout
+        // matching a BAS, which should be impossible ideally, because a Failed payout, means no debit
+        // ever happened. So to ensure that error case is handled we are checking for 'failed' payouts too
+        if ($payout->isStatusFailed() === true)
+        {
+            $this->trace->error(
+                TraceCode::BAS_ENTRY_FOR_A_FAILED_PAYOUT,
+                 [
+                     'bas_id'    => $basEntity->getId(),
+                     'payout_id' => $payout->getId()
+                 ]);
+
+            return null;
+        }
+
         (new DownstreamProcessor('fund_account_payout', $payout))->processTransaction();
+
+        $this->repo->saveOrFail($payout);
 
         return $payout;
     }
@@ -226,12 +434,19 @@ class Core extends Base\Core
 
     protected function fetchExistingReversalIfPresent(Entity $basEntity)
     {
-        $utr = $basEntity->getUtrFromDescription();
+        $utr = $basEntity->getUtr();
+
+        if (empty($utr) === true)
+        {
+            return null;
+        }
 
         $balance = $this->getBalance($basEntity);
 
-        // TODO: Start storing UTR in reversals
-        $reversal = $this->repo->reversal->fetchFromUtr($utr, $balance->getId())->first();
+        $reversal = $this->repo
+                         ->reversal
+                         ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId())
+                         ->first();
 
         return $reversal;
     }
@@ -251,7 +466,7 @@ class Core extends Base\Core
 
         $balance = $this->getBalance($basEntity);
 
-        $utr = $basEntity->getUtrFromDescription();
+        $utr = $basEntity->getUtr();
 
         //
         // We first try to retrieve the payout from UTR, present in the description.
@@ -265,7 +480,7 @@ class Core extends Base\Core
         //
         if (empty($utr) === false)
         {
-            $payouts = $this->repo->payout->fetchFromUtr($utr, $balance->getId());
+            $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
         }
 
         //
@@ -276,7 +491,9 @@ class Core extends Base\Core
         {
             $bankTxnId = $basEntity->getBankTransactionId();
 
-            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId, $balance->getId());
+            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId,
+                                                                  $basEntity->getAmount(),
+                                                                  $balance->getId());
         }
 
         //

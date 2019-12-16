@@ -141,6 +141,20 @@ class Entity extends Base\PublicEntity
 
     protected $queueFlag = false;
 
+    /**
+     * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
+     * from our system. Sometimes, we are not able to map a transaction to one of the payouts in our system.
+     * In these cases, we create the transaction against `external` entity. Later when we are able to map
+     * the transaction to the payout entity, we create a dummy transaction to replace the original transaction's
+     * attributes with the right payout transaction attributes. In this flow, we don't want to do any balance
+     * related stuff since that would have already been taken care of when the original transaction was created.
+     * This also ensures balance validations are not done, since they could fail because of double deductions - one
+     * via external and now another via payout.
+     *
+     * @var bool
+     */
+    protected $shouldValidateAndUpdateBalancesFlag = true;
+
     protected $entity = 'payout';
 
     protected $table  = Table::PAYOUT;
@@ -199,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::ATTEMPTS,
         self::UTR,
+        self::RETURN_UTR,
         self::FAILURE_REASON,
         self::REMARKS,
         self::PROCESSED_AT,
@@ -261,8 +276,28 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected static $modifiers = [
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::NOTES,
+        self::FEES,
+        self::TAX,
+        self::STATUS,
+        self::PURPOSE,
+        self::UTR,
         self::MODE,
+        self::REFERENCE_ID,
+        self::NARRATION,
+        self::BATCH_ID,
+        self::FAILURE_REASON,
+        self::CREATED_AT,
+    ];
+
+    protected static $modifiers = [
         self::NARRATION,
     ];
 
@@ -311,6 +346,7 @@ class Entity extends Base\PublicEntity
         self::TYPE              => self::DEFAULT,
         self::MODE              => null,
         self::UTR               => null,
+        self::RETURN_UTR        => null,
         self::FAILURE_REASON    => null,
         self::REFERENCE_ID      => null,
         self::NARRATION         => null,
@@ -522,6 +558,11 @@ class Entity extends Base\PublicEntity
         return ($this->queueFlag === true);
     }
 
+    public function shouldValidateAndUpdateBalances(): bool
+    {
+        return ($this->shouldValidateAndUpdateBalancesFlag === true);
+    }
+
     /**
      * FeeCalculator calls `$entity->getFee()` for all the pricing entity
      *
@@ -572,6 +613,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getReturnUtr()
+    {
+        return $this->getAttribute(self::RETURN_UTR);
+    }
+
     public function getInitiatedAt()
     {
         return $this->getAttribute(self::INITIATED_AT);
@@ -615,6 +661,11 @@ class Entity extends Base\PublicEntity
     public function hasBeenQueued()
     {
         return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
+    }
+
+    public function hasBeenProcessed()
+    {
+        return ($this->isAttributeNotNull(self::PROCESSED_AT) === true);
     }
 
     public function isStatusCreated(): bool
@@ -736,9 +787,19 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
     }
 
+    public function getIdempotencyKey()
+    {
+        return $this->getAttribute(self::IDEMPOTENCY_KEY);
+    }
+
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
+    }
+
+    public function setShouldValidateAndUpdateBalancesFlag($flag)
+    {
+        $this->shouldValidateAndUpdateBalancesFlag = $flag;
     }
 
     public function setChannel($channel)
@@ -838,6 +899,13 @@ class Entity extends Base\PublicEntity
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    // TODO: check how to handle this
+    // JIRA: https://razorpay.atlassian.net/browse/RX-696
+    public function setReturnUtr(string $returnUtr = null)
+    {
+        $this->setAttribute(self::RETURN_UTR, $returnUtr);
     }
 
     public function setFailureReason($reason)
@@ -1302,43 +1370,6 @@ class Entity extends Base\PublicEntity
         $bankingAccount = $this->balance->bankingAccount;
 
         return optional($bankingAccount)->getFtsFundAccountId();
-    }
-
-    protected function modifyMode(& $input)
-    {
-        $fundAccount = $this->fundAccount;
-
-        //
-        // In case of merchant payouts, we don't use fund account entity.
-        // We use destination directly. We have to move them to FA soon.
-        //
-        if (empty($fundAccount) === true)
-        {
-            return;
-        }
-
-        $accountType = $fundAccount->getAccountType();
-
-        if ($accountType === FundAccount\Type::VPA)
-        {
-            $input[self::MODE] = Mode::UPI;
-        }
-        // For now, we will not modify the mode to "IFT" in Payout. Whatever the merchant
-        // sends, we use that mode only. FTS would send IFT to the bank still though.
-        // else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
-        // {
-        //     /** @var BankAccount\Entity $ba */
-        //     $ba = $fundAccount->account;
-        //
-        //     $ifsc = $ba->getIfscCode();
-        //
-        //     $ifscFirstFour = substr($ifsc, 0, 4);
-        //
-        //     if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
-        //     {
-        //         $input[self::MODE] = Mode::IFT;
-        //     }
-        // }
     }
 
     protected function modifyNarration(& $input)

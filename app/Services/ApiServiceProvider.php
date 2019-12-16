@@ -22,6 +22,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
+use RZP\Models\Options;
 use RZP\Models\Payment;
 use RZP\Models\External;
 use RZP\Models\Customer;
@@ -35,6 +36,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -172,18 +174,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardPaymentService();
         });
 
-        $this->app->singleton('governor', function($app)
-        {
-            $goverorMock = $app['config']->get('applications.governor.mock');
-
-            if ($goverorMock === true)
-            {
-                return new Mock\GovernorService($app);
-            }
-
-            return new GovernorService($app);
-        });
-
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -292,6 +282,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerSmartRouting();
 
+        $this->registerGovernor();
+
         $this->registerDoppler();
 
         $this->registerBatchService();
@@ -334,7 +326,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMozart();
 
-        $this->registerExpress();
+        $this->registerHyperVerge();
     }
 
     /**
@@ -357,6 +349,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'raven',
             'reminders',
             'batchService',
+            'hyperVerge',
             'scrooge',
             'repo',
             'elfin',
@@ -377,11 +370,11 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_fund_transfer',
             'nonBlockingHttp',
             'smartRouting',
+            'governor',
             'doppler',
             'diag',
             'mozart',
             'hubspot',
-            'express',
         ];
     }
 
@@ -447,6 +440,21 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerGovernor()
+    {
+        $this->app->singleton('governor', function($app)
+        {
+            $goverorMock = $app['config']->get('applications.governor.mock');
+
+            if ($goverorMock === true)
+            {
+                return new Mock\GovernorService($app);
+            }
+
+            return new GovernorService($app);
+        });
+    }
+
     protected function registerDoppler()
     {
         $this->app->singleton('doppler', function($app)
@@ -471,6 +479,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.batch.mock');
 
             $implementation = $mock ? Mock\BatchMicroService::class : BatchMicroService::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerHyperVerge()
+    {
+        $this->app->bind('hyperVerge', function($app)
+        {
+            $mock = $app['config']->get('applications.hyper_verge.mock');
+
+            $implementation = $mock ? Mock\HyperVerge::class : RZP\Services\HyperVerge::class;
 
             return new $implementation($app);
         });
@@ -637,6 +657,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant_request'          => MerchantRequest\Entity::class,
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
+            'paper_mandate'             => PaperMandate\Entity::class,
 
             'contact'                   => Contact\Entity::class,
 
@@ -645,6 +666,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'application'               => Application\Entity::class,
 
             'commission'                => Commission\Entity::class,
+
+            'options'                   => Options\Entity::class,
         ]);
     }
 
@@ -766,23 +789,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('shield.service', function($app)
         {
             return new Shield($app);
-        });
-    }
-
-    protected function registerExpress()
-    {
-        $this->app->singleton('express', function($app)
-        {
-            $mock = $app['config']->get('applications.express.mock');
-
-            if ($mock === true)
-            {
-                return new Mock\Express($app);
-            }
-            else
-            {
-                return new Express($app);
-            }
         });
     }
 

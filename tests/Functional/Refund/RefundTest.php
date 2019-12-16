@@ -59,28 +59,6 @@ class RefundTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function setUpRazorXMock()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'instant_refunds_modes')
-                    {
-                        return 'on';
-                    }
-
-                    return '';
-                }));
-    }
-
     public function testRefund()
     {
         Mail::fake();
@@ -2381,8 +2359,8 @@ class RefundTest extends TestCase
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
-        $this->assertEquals(118, $transaction['fee']);
-        $this->assertEquals(18, $transaction['tax']);
+        $this->assertEquals(708, $transaction['fee']);
+        $this->assertEquals(108, $transaction['tax']);
         $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
         $this->assertEquals(0, $transaction['credit']);
 
@@ -2390,8 +2368,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('refund', $feesBreakup[0]['name']);
         $this->assertEquals('tax', $feesBreakup[1]['name']);
-        $this->assertEquals(100, $feesBreakup[0]['amount']);
-        $this->assertEquals(18, $feesBreakup[1]['amount']);
+        $this->assertEquals(600, $feesBreakup[0]['amount']);
+        $this->assertEquals(108, $feesBreakup[1]['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
@@ -2407,8 +2385,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
-        $this->assertEquals(118, $refund['fee']);
-        $this->assertEquals(18, $refund['tax']);
+        $this->assertEquals(708, $refund['fee']);
+        $this->assertEquals(108, $refund['tax']);
     }
 
     public function createUpiPayment()
@@ -2772,8 +2750,6 @@ class RefundTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
-        $this->setUpRazorXMock();
-
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
 
@@ -3004,8 +2980,6 @@ class RefundTest extends TestCase
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $this->setUpRazorXMock();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);

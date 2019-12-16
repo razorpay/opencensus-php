@@ -16,6 +16,12 @@ return [
                         'account'  => 'acc_10000000000001',
                         'amount'   => '50000',
                         'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],
@@ -29,6 +35,12 @@ return [
                         'recipient' => 'acc_10000000000001',
                         'amount'    => 50000,
                         'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],

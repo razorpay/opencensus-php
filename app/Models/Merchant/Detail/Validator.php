@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -62,12 +63,12 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
         Entity::P_GSTIN                         => 'filled|string|size:15',
@@ -114,6 +115,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $editRules = [
@@ -126,6 +129,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -135,14 +139,14 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
@@ -199,11 +203,14 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::COUPON_CODE                     => 'filled|string|max:10',
+        Entity::REFERRAL_CODE                   => 'filled|string|max:14',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
@@ -259,11 +266,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
     ];
 
     protected static $instantActivationValidators = [
@@ -275,11 +282,15 @@ class Validator extends Base\Validator
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
 
+    protected static $additionalWebsitesRules = [
+        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
+    ];
+
     protected static $patchMerchantDetailsRules = [
         Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
         Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN           => 'filled|max:15',
+        Entity::BUSINESS_OPERATION_PIN           => 'filled|size:6',
         Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
         Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
@@ -386,7 +397,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED);
         }
 
-        $this->validateForBlackListedCategories($input);
+        $this->validateForUnregisteredBlackListedCategories($input);
 
         if (empty($input[Entity::PROMOTER_PAN_NAME]) === true)
         {
@@ -394,7 +405,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateForBlackListedCategories(array $input)
+    protected function validateForUnregisteredBlackListedCategories(array $input)
     {
         $category = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
             $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
@@ -404,7 +415,7 @@ class Validator extends Base\Validator
 
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        if ($subcategoryMetaData[Entity::ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
+        if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
         }

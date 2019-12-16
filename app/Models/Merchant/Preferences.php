@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature\Constants as Feature;
 use Symfony\Component\HttpFoundation\HeaderBag as Headers;
 
 class Preferences
@@ -113,6 +115,12 @@ class Preferences
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
     const MID_BOB                   = 'CxOgfvYhxGztjJ';
+    const MID_BAGIC                 = 'CYseUgx4bt9VFp';
+    const MID_IMPACT_SCHOOL_ARCH    = 'D89MU9wL8ptnEM';
+    const MID_VEL_TECH_HIGH_TECH    = 'CxrfYIK8mrctAN';
+    const MID_MSRIT_EXAM_FEES_VFH   = 'CxqX32TCfZaHnQ';
+    const MID_INST_ENG_AND_TECH_LKO = 'D88kPwDCDxbBu3';
+    const MID_RBL_AGRI_LOAN         = 'DX4AnDB4Z9kzg0';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
@@ -276,6 +284,10 @@ class Preferences
         self::MID_SDM_YOGA_AND_NATURE,
         self::MID_ARMY_PUBLIC_SCHOOL,
         self::MID_MSR_LAW_CLG_VFH,
+        self::MID_IMPACT_SCHOOL_ARCH,
+        self::MID_VEL_TECH_HIGH_TECH,
+        self::MID_MSRIT_EXAM_FEES_VFH,
+        self::MID_INST_ENG_AND_TECH_LKO,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [
@@ -288,6 +300,36 @@ class Preferences
      */
     const NO_MERCHANT_INVOICE_MIDS = [
         self::MID_AIRTEL,
+    ];
+
+    // MSwipe Configurations
+    const MSWIPE_PARTNER_MID            = 'BiKdKIgjODkDca';
+    const MSWIPE_PRICING_PLAN_ID        = 'CeW6THajbzAkCC';
+    const MSWIPE_SETTLEMENT_SCHEDULE_ID = '7xc78ePv15g3bz';
+    const MSWIPE_FEATURE_LIST           = [
+        Feature::EMAIL_OPTIONAL,
+        Feature::EXPOSE_CARD_IIN,
+        Feature::USE_MSWIPE_TERMINALS,
+        Feature::EXPOSE_ARN_PAYMENT,
+    ];
+    const MSWIPE_METHOD_LIST            = [
+        Methods\Entity::CREDIT_CARD   => 1,
+        Methods\Entity::DEBIT_CARD    => 1,
+        Methods\Entity::NETBANKING    => 1,
+        Methods\Entity::EMI           => 0,
+        Methods\Entity::UPI           => 0,
+        Methods\Entity::BANK_TRANSFER => 0,
+        Methods\Entity::MOBIKWIK      => 1,
+        Methods\Entity::FREECHARGE    => 1,
+        Methods\Entity::AIRTELMONEY   => 1,
+        Methods\Entity::PAYZAPP       => 1,
+        Methods\Entity::JIOMONEY      => 1,
+        Methods\Entity::PAYUMONEY     => 1,
+        Methods\Entity::MPESA         => 1,
+        Methods\Entity::PHONEPE       => 1,
+        Methods\Entity::CARD_NETWORKS => [
+            Network::DICL => 0,
+        ]
     ];
 
     public static function checkZohoHeaders(Headers $headers)

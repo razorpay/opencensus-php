@@ -1,0 +1,25 @@
+<?php
+
+namespace RZP\Services\FTS;
+
+use RZP\Base;
+use RZP\Constants\Mode;
+use RZP\Http\Throttle\Constant as K;
+
+class Validator extends Base\Validator
+{
+    protected static $createSourceAccountRules = [
+        'id'               => 'sometimes|alpha_num|size:14',
+        'type'             => 'filled|string|required|in:bank_account,banking_account',
+        'config'           => 'required|array',
+        'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,',
+        'channel'          => 'filled|string|required|in:yesbank,icici,citi',
+        'credentials'      => 'required|array',
+        'mozartIdentifier' => 'filled|string|required|in:V1,V2',
+
+    ];
+
+    protected static $deleteSourceAccountRules = [
+        'source_account_id'  => 'filled|required|integer'
+    ];
+}

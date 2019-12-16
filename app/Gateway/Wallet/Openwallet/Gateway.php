@@ -4,8 +4,12 @@ namespace RZP\Gateway\Wallet\Openwallet;
 
 use RZP\Constants;
 use RZP\Models\Customer;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Models\Payment\Gateway as PaymentGateway;
+use RZP\Models\Customer\Transaction\Entity as CustomerTxnEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -44,11 +48,39 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Verify refund to return in Scrooge format
+     *
+     * @param array $input
+     * @return array
+     */
+    public function verifyRefund(array $input)
+    {
+        $scroogeResponse = new ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
+    }
+
+    /**
      * Refund action handler
      * Creates a customer_transaction and debit from balance
      *
      * @param  array  $input
-     * @return void
+     * @return array
      */
     public function refund(array $input)
     {
@@ -64,13 +96,20 @@ class Gateway extends Base\Gateway
         $customerTxn = (new Customer\Transaction\Core)
                             ->createForCustomerRefund($input, $input['merchant']);
 
+        $response = $customerTxn->toArray();
+
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'gateway'       => $this->gateway,
                 'refund_id'     => $input['refund']['id'],
-                'ctxn'          => $customerTxn->toArray(),
+                'ctxn'          => $response,
             ]);
+
+        return [
+            PaymentGateway::GATEWAY_RESPONSE => json_encode($response),
+            PaymentGateway::GATEWAY_KEYS     => $this->getGatewayData($response),
+        ];
     }
 
     /**
@@ -103,5 +142,17 @@ class Gateway extends Base\Gateway
                                                                 $payment['merchant_id']);
 
         return ($customerTxn !== null);
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                CustomerTxnEntity::STATUS => $response[CustomerTxnEntity::STATUS] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

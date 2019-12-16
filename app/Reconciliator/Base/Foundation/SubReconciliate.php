@@ -51,6 +51,10 @@ class SubReconciliate extends Base\Core
      */
     const SHOULD_ADD_ENTITY_ID_COLUMN = false;
 
+    const THRESHOLD = [
+        InfoCode::AMOUNT_MISMATCH   =>  10,
+    ];
+
     /**
      * The list of payments/refunds attempted to reconcile.
      *
@@ -120,11 +124,13 @@ class SubReconciliate extends Base\Core
 
     protected static $currentRowNumber = -1;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct();
 
         $this->gateway = $gateway;
+
+        $this->batch = $batch;
 
         $this->core = new Core;
 
@@ -550,7 +556,14 @@ class SubReconciliate extends Base\Core
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
 
-        if (empty($errorCode) === false)
+        //
+        // For error codes, we don't want to overwrite it, because the first point
+        // where we set the error code, that is very specific to the issue.
+        //
+        $existingErrorCode = static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG];
+
+        if ((empty($errorCode) === false) and
+            (empty($existingErrorCode) === true))
         {
             static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
@@ -748,5 +761,17 @@ class SubReconciliate extends Base\Core
         }
 
         return constant($className . '::' . 'BLACKLISTED_COLUMNS');
+    }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function if MIS file need to be modified.
+     *
+     * Currently this is being used for cardfssbob
+     * @param $row
+     */
+    protected function modifyRowIfNeeded(&$row)
+    {
+        return;
     }
 }

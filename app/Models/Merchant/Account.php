@@ -25,6 +25,9 @@ class Account
 
     const DEMO_VA_TEST          = '5ubLZpACTmD8D4';
 
+    const MEDLIFE               = '6knz9sdyiFESCn';
+    const OKCREDIT              = 'BhxjLIZbVWc0AI';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT

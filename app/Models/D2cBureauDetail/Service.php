@@ -57,7 +57,7 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
-            $this->traceException($e);
+            $this->trace->traceException($e);
 
             throw new Exception\RuntimeException('Error occured while fetching owner details', [
                                                     'merchant_id'   => $this->merchant->getId(),
@@ -136,7 +136,7 @@ class Service extends Base\Service
                     $maxLoanAmount = (int) $maxLoanAmount;
                 }
 
-                return $report->toArrayPublic() + [
+                return $report->toArrayForDashboard() + [
                         'max_loan_amount'   => $maxLoanAmount,
                     ];
             });

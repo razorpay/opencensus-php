@@ -80,6 +80,20 @@ class DefaultPlan
             ],
 
             [
+                'id'             => 'DFyaJegTcOn4Ev',
+                'plan_id'        => '1AXludj60w4pSp',
+                'plan_name'      => 'Full Price',
+                'feature'        => 'payment',
+                'payment_method' => 'nach',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '10',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
                 'id'             => '1HvFLd6436r9L1',
                 'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Full Price',
@@ -499,7 +513,6 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
-
             [
                 'id'             => '1PLatPricingR1',
                 'plan_id'        => '10ZeroPricingP',

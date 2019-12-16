@@ -41,6 +41,17 @@ class Core extends Base\Core
         return $external;
     }
 
+    public function delete(Entity $external)
+    {
+        $this->trace->info(
+            TraceCode::EXTERNAL_DELETE_REQUEST,
+            [
+                'id' => $external->getId(),
+            ]);
+
+        return $this->repo->deleteOrFail($external);
+    }
+
     protected function createExternalEntity(BAS\Entity $basEntity): External\Entity
     {
         $input = $this->createInputForExternalEntity($basEntity);
@@ -53,7 +64,7 @@ class Core extends Base\Core
 
         $external = (new Entity)->build($input);
 
-        $utr = $basEntity->getUtrFromDescription();
+        $utr = $basEntity->getUtr();
 
         if (empty($utr) === false)
         {

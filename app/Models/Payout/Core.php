@@ -3,8 +3,9 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Batch;
+use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
@@ -12,6 +13,7 @@ use RZP\Models\Customer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\External;
 use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -19,10 +21,13 @@ use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
+use RZP\Models\Transaction;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\BankingAccountStatement;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
  * Class Core
@@ -136,14 +141,12 @@ class Core extends Base\Core
      *
      * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity $batch
      * @param string|null $batchId
      *
      * @return Entity
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null,
                                               string $batchId = null): Entity
     {
         $this->trace->info(
@@ -152,24 +155,9 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                $merchant->getId(),
-                                                                $batchId);
-
-            if ($result !== null)
-            {
-                return $result;
-            }
-        }
-
-        // TODO: remove batch entity handling once ramped to 100%
-        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
-
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batchIdOrBatch)
+                       ->setBatch($batchId)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
@@ -698,11 +686,380 @@ class Core extends Base\Core
                 ]);
         }
 
-        $payout->setStatus(Status::PROCESSED);
+        $this->repo->transaction(
+            function() use ($payout) {
+                $payout->setStatus(Status::PROCESSED);
 
-        $this->repo->saveOrFail($payout);
+                $this->repo->saveOrFail($payout);
+
+                if ($payout->isBalanceAccountTypeDirect() === true)
+                {
+                    $this->handlePayoutTransactionForDirectBanking($payout);
+                }
+            });
 
         $this->app->events->fire('api.payout.processed', [$payout]);
+    }
+
+    /**
+     * TODO: The logic here could change for different banks. The structure needs to be accommodated for that.
+     * JIRA: https://razorpay.atlassian.net/browse/RX-698
+     *
+     * @param Entity $payout
+     *
+     * @throws Exception\LogicException
+     */
+    protected function handlePayoutTransactionForDirectBanking(Entity $payout)
+    {
+        $bas = null;
+
+        try
+        {
+            // Fetch BAS for this payout
+            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
+                   $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+        }
+        catch (\Throwable $e)
+        {
+            // This happens when a payout is be mapped to multiple bas entities
+            // we do not want to throw an exception here, as this operation occurs in a db txn
+            $this->trace->traceException($e);
+        }
+
+        //
+        // For direct banking, it's possible we have figured out the transaction via account statement
+        // even before the payout is actually marked as processed via FTS recon. In that case, we don't have
+        // to try and figure out a transaction from an existing set of transactions.
+        //
+        if ($payout->hasTransaction() === true)
+        {
+            // If this payout has a txn linked, a BAS entity should always be present for this payout
+            if (empty($bas) === true)
+            {
+                $this->trace->error(
+                    TraceCode::PAYOUT_HAS_TRANSACTION_BUT_NO_MAPPING_TO_BAS,
+                    [
+                        'payout_id'         => $payout->getId(),
+                        'txn_id'            => $payout->getTransactionId(),
+                        'channel'           => $payout->getChannel(),
+                    ]);
+            }
+
+            return;
+        }
+
+        // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a payout
+        if (empty($bas) === true)
+        {
+            return;
+        }
+
+        $transaction = $bas->transaction;
+
+        $source = $transaction->source;
+
+        if ($source->getEntity() !== Constants\Entity::EXTERNAL)
+        {
+            throw new Exception\LogicException(
+                'payout transaction created for some other source other than external!',
+                ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                [
+                    'transaction_id'    => $transaction->getId(),
+                    'bas_id'            => $bas->getId(),
+                    'payout_id'         => $payout->getId(),
+                ]);
+        }
+
+        $this->updateTransactionAndSourceToPayout($payout, $transaction);
+    }
+
+    protected function handleReversalTransactionForDirectBanking(Reversal\Entity $reversal)
+    {
+        $payoutTransaction = $this->handleProcessedPayoutViaReversedPayout($reversal);
+
+        //
+        // If we were not able to find payout's transaction, we won't be able to find
+        // reversal's transaction also. Hence, no point of doing all the below stuff.
+        //
+        if (empty($payoutTransaction) === true)
+        {
+            return;
+        }
+
+        $bas = $this->repo->banking_account_statement->fetchByUtrForReversal($reversal)->first() ??
+               $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first();
+
+        // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a reversal
+        if (empty($bas) === true)
+        {
+            return;
+        }
+
+        $transaction = $bas->transaction;
+
+        $source = $transaction->source;
+
+        if ($source->getEntity() !== Constants\Entity::EXTERNAL)
+        {
+            throw new Exception\LogicException(
+                'reversal transaction created for some other source other than external',
+                ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                [
+                    'transaction_id'    => $transaction->getId(),
+                    'bas_id'            => $bas->getId(),
+                    'payout_id'         => $reversal->entity->getId(),
+                    'reversal_id'       => $reversal->getId(),
+                ]);
+        }
+
+        $this->updateTransactionAndSourceToReversal($reversal, $transaction);
+    }
+
+    protected function handleProcessedPayoutViaReversedPayout(Reversal\Entity $reversal)
+    {
+        /** @var Entity $payout */
+        $payout = $reversal->entity;
+
+        if ($payout->hasTransaction() === true)
+        {
+            return $payout->transaction;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_PROCESS_VIA_PAYOUT_REVERSE,
+            [
+                'reversal_id'   => $reversal->getId(),
+                'payout_id'     => $payout->getId()
+            ]);
+
+        $this->handlePayoutTransactionForDirectBanking($payout);
+
+        return $payout->transaction;
+    }
+
+    protected function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
+    {
+        /** @var External\Entity $source */
+        $source = $transaction->source;
+
+        $this->trace->warning(
+            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED,
+            [
+                'payout_id'         => $payout->getId(),
+                'transaction_id'    => $transaction->getId(),
+                'source_id'         => $source->getPublicId(),
+            ]);
+
+        list($dummyTransaction, $dummyFeesBreakup) = $this->getDummyTransactionAndFeesBreakupForPayout($payout);
+
+        $this->repo->transaction(
+            function() use($payout, $transaction, $dummyTransaction, $dummyFeesBreakup)
+            {
+                //
+                // This must be called before updating the transaction in the next statement since
+                // we would be updating the source to payout there and we won't be able to get external.
+                //
+                $this->deleteTransactionExternal($transaction);
+
+                $this->updateTransactionWithDummyPayoutTransactionDetails($payout, $transaction, $dummyTransaction);
+
+                $this->updateFeesBreakupWithDummyFeesBreakupDetails($transaction, $dummyFeesBreakup);
+
+                $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $payout);
+            });
+
+        // TODO: check if dispatchEventForTransactionUpdated can be used
+        // JIRA: https://razorpay.atlassian.net/browse/RX-697
+        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+    }
+
+    protected function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
+    {
+        /** @var External\Entity $source */
+        $source = $transaction->source;
+
+        $this->trace->warning(
+            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED,
+            [
+                'reversal_id'       => $reversal->getId(),
+                'payout_id'         => $reversal->source->getId(),
+                'transaction_id'    => $transaction->getId(),
+                'source_id'         => $source->getId(),
+            ]);
+
+        //
+        // We don't need fees breakup related stuff here since no fees for RBL.
+        // We don't need any dummy transaction also since there's no difference
+        // between an external transaction and a reversal transaction.
+        // This is mostly because, no fees and tax for reversal.
+        //
+
+        $this->repo->transaction(
+            function() use($reversal, $transaction)
+            {
+                //
+                // This must be called before updating the transaction in the next statement since
+                // we would be updating the source to reversal there and we won't be able to get external.
+                //
+                $this->deleteTransactionExternal($transaction);
+
+                $this->updateTransactionWithDummyReversalTransactionDetails($reversal, $transaction);
+
+                $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $reversal);
+            });
+
+        (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+    }
+
+    protected function getDummyTransactionAndFeesBreakupForPayout(Entity $payout)
+    {
+        //
+        // We do this so that in case any of the payout's attributes/objects are changed in this block, they
+        // don't affect the actual payout entity. Especially, since this is being done for dummy purpose.
+        // We don't use `clone` since it does only a shallow copy. If objects of the payout entity are changed,
+        // the original payout's objects get changed too.
+        //
+        /** @var Entity $clonedPayout */
+        $clonedPayout = (new DeepCopy)->copy($payout);
+
+        return $this->repo->beginTransactionAndRollback(
+            function() use ($clonedPayout)
+            {
+                //
+                // We don't want to do any balance related changes since that would have already been taken
+                // care of when the "external" transaction was created. Also, everything will be rolled back
+                // here anyway. But we still have to set the flag because we do multiple validations when
+                // updating balance. These validations could fail. Hence, skipping everything around balance.
+                //
+                $clonedPayout->setShouldValidateAndUpdateBalancesFlag(false);
+
+                (new DownstreamProcessor('fund_account_payout', $clonedPayout))->processTransaction();
+
+                $dummyTransaction = $clonedPayout->transaction;
+
+                //
+                // Here we're not using: $dummyFeesBreakup = $dummyTransaction->feesBreakup;
+                // Because:
+                // Since the fee_breakup has already been inserted in the db while performing  processTransaction()
+                // Though this happens inside a db transaction, which will be rolled back at the end of this function
+                // it still sets the $exists flag on the model as true. Due to this any subsequent
+                // save on this entity is going to be an UPDATE not an INSERT. See RZP\Base\Repository::saveOrFail()
+                //
+                // Later when we try to save the fee_breakup in updateFeesBreakupWithDummyFeesBreakupDetails(),
+                // it executes as an update instead of an insert.
+                // Therefore we're using calculateMerchantFees(), which just build the entity
+                // This fee_breakup can be later inserted in the db without any issues
+                //
+                /** @var Base\PublicCollection $dummyFeesBreakup */
+                list($totalFee, $taxFee, $dummyFeesBreakup) = (new Pricing\Fee)->calculateMerchantFees($clonedPayout);
+
+                $this->trace->info(
+                    TraceCode::DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS,
+                    [
+                        'transaction_details'   => $dummyTransaction->toArrayPublic(),
+                        'fees_breakup_details'  => $dummyFeesBreakup->toArrayPublic(),
+                    ]);
+
+                return [$dummyTransaction, $dummyFeesBreakup];
+            });
+    }
+
+    protected function deleteTransactionExternal(Transaction\Entity $transaction)
+    {
+        /** @var External\Entity $external */
+        $external = $transaction->source;
+
+        if ($external->getEntity() !== Constants\Entity::EXTERNAL)
+        {
+            throw new Exception\LogicException(
+                'This function should be called to delete only external entity!',
+                ErrorCode::SERVER_ERROR_INCORRECT_ENTITY_DELETE,
+                [
+                    'source_id'     => $transaction->getEntityId(),
+                    'source_type'   => $transaction->getType(),
+                ]);
+        }
+
+        (new External\Core)->delete($external);
+    }
+
+    protected function updateTransactionWithDummyPayoutTransactionDetails(Entity $payout,
+                                                                          Transaction\Entity $transaction,
+                                                                          Transaction\Entity $dummyTransaction)
+    {
+        $transaction->sourceAssociate($payout);
+
+        $transaction->setFee($dummyTransaction->getFee());
+        $transaction->setTax($dummyTransaction->getTax());
+
+        $this->repo->saveOrFail($transaction);
+
+        //
+        // This can happen when we are associating payout transaction when the payout
+        // is directly marked as `reversed` without first being marked as processed.
+        // This happens when the Status API on the payout is called by FTA after a very
+        // long time. Due to this, the payout might have gotten processed and later reversed.
+        // Since we called the status API directly after it has been reversed on the bank's
+        // end, we end up marking the payout as reversed without first marking it as processed.
+        //
+        // Marking it as processed now will set `processed_at` value. This helps us in easily
+        // figuring out which all payouts have been processed successfully (even though they are reversed now).
+        //
+        if ($payout->hasBeenProcessed() === false)
+        {
+            $payout->setStatus(Status::PROCESSED);
+        }
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    protected function updateTransactionWithDummyReversalTransactionDetails(Reversal\Entity $reversal,
+                                                                            Transaction\Entity $transaction)
+    {
+        $transaction->sourceAssociate($reversal);
+
+        $this->repo->saveOrFail($transaction);
+
+        $this->repo->saveOrFail($reversal);
+    }
+
+    protected function updateFeesBreakupWithDummyFeesBreakupDetails(Transaction\Entity $transaction,
+                                                                    Base\PublicCollection $dummyFeesBreakup)
+    {
+        /** @var Base\PublicCollection $originalFeesBreakup */
+        $originalFeesBreakup = $transaction->feesBreakup;
+
+        // Since external entities do not have any fees_breakup, create them now
+        if ($originalFeesBreakup->count() === 0)
+        {
+            (new Transaction\Core)->saveFeeDetails($transaction, $dummyFeesBreakup);
+        }
+        else
+        {
+            //
+            // Since external entities should not have any fees_breakup, throw an exception
+            //
+            throw new Exception\LogicException(
+                'External entity should not have any fee breakup',
+                null,
+                [
+                    'transaction_id'        => $transaction->getId(),
+                    'source_id'             => $transaction->source->getPublicId(),
+                    'fee_breakup_count'     => $originalFeesBreakup->count(),
+                ]);
+        }
+    }
+
+    /**
+     * @param BankingAccountStatement\Entity $bas
+     * @param Entity|Reversal\Entity         $entity
+     */
+    protected function updateBankingAccountStatementLinkedEntity(BankingAccountStatement\Entity $bas,
+                                                                 Base\PublicEntity $entity)
+    {
+        $bas->source()->associate($entity);
+
+        $this->repo->saveOrFail($bas);
     }
 
     protected function handlePayoutReversed(Entity $payout,
@@ -722,17 +1079,7 @@ class Core extends Base\Core
     {
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
-        if ($payout->hasTransaction() === true)
-        {
-            throw new Exception\LogicException(
-                'A Payout with transaction can not be moved to failed state, it should be reversed',
-                null,
-                [
-                    'payout_id'         => $payout->getId(),
-                    'status'            => $payout->getStatus(),
-                    'failure_reason'    => $ftaFailureReason,
-                ]);
-        }
+        $this->verifyPayoutFailedTransaction($payout);
 
         $currentStatus = $payout->getStatus();
 
@@ -750,7 +1097,36 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.failed', [$payout]);
     }
 
-    protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
+    protected function verifyPayoutFailedTransaction(Entity $payout, string $ftaFailureReason = null)
+    {
+        if ($payout->hasTransaction() === true)
+        {
+            throw new Exception\LogicException(
+                'A Payout with transaction can not be moved to failed state, it should be reversed',
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'failure_reason' => $ftaFailureReason,
+                ]);
+        }
+
+        $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
+               $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+
+        if (empty($bas) === false)
+        {
+            throw new Exception\LogicException(
+                'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.',
+                null,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'failure_reason'    => $ftaFailureReason,
+                    'bas_id'            => $bas->getId()
+                ]);
+        }
+    }
+
+    protected function reversePayout(Entity $payout, string $reverseReason = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -770,7 +1146,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $reversal = $this->repo->transaction(
+        $this->repo->transaction(
             function() use ($payout, $reverseReason) {
                 $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
@@ -781,10 +1157,11 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payout);
 
-                return $reversal;
+                if ($payout->isBalanceAccountTypeDirect() === true)
+                {
+                    $this->handleReversalTransactionForDirectBanking($reversal);
+                }
             });
-
-        return $reversal;
     }
 
     protected function getPublicErrorMessage(
@@ -946,9 +1323,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     protected function processPendingPayout(Entity $payout): Entity

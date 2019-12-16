@@ -24,7 +24,7 @@ class Sbin extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::SBI_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_SBI;
-    const GATEWAY_CODE           = IFSC::SBIN;
+    const GATEWAY_CODE           = [IFSC::SBIN, IFSC::SBBJ, IFSC::SBHY, IFSC::SBMY, IFSC::STBP, IFSC::SBTR];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const BANK_CODE              = 'sbin';

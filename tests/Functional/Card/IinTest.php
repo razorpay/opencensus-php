@@ -113,6 +113,11 @@ class IinTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
         $this->startTest();
     }
 
@@ -281,6 +286,40 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInnsListWithFeatures()
+    {
+        $flows = [
+            'otp' => '1',
+        ];
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'headless_otp' => '1',
+            'ivr' => '1',
+        ];
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+
+        $this->assertEquals([401200,401201], $response['iins']);
+
+        $this->fixtures->merchant->addFeatures(['headless_disable']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals([401200], $response['iins']);
+    }
+
     public function testGetBulkFlows()
     {
         $flows = [
@@ -291,6 +330,8 @@ class IinTest extends TestCase
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
         $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
         $this->ba->privateAuth();
 
@@ -447,7 +488,7 @@ class IinTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'iin'            => 112333,
+                    'iin'            => '112333',
                     'network'        => 'RuPay',
                     'type'           => 'credit',
                     'country'        => 'IN',
@@ -462,7 +503,9 @@ class IinTest extends TestCase
 
         $this->runRequestResponseFlow($request);
 
-        Event::assertDispatched(CacheHit::class, function ($e)
+        //Since after update cache is flushed, for next request cacheMiss happens .
+
+        Event::assertDispatched(CacheMissed::class, function ($e)
         {
             foreach ($e->tags as $tag)
             {

@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Card\IIN;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment\AuthType as AuthType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Http\RequestHeader;
 
 class Service extends Base\Service
 {
@@ -165,13 +169,56 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bin_list_validation', $input);
 
-        $iins = $this->repo->iin->findOtpEnabledIins();
+        $iins = $this->getIinsWithMerchantFeatures($input);
 
         $response['count'] = count($iins);
 
         $response['iins'] = $iins;
 
         return $response;
+    }
+
+    protected function getIinsWithMerchantFeatures(array $input): array
+    {
+        $collectiveIins = [];
+
+        $exposedFlow = $input['flow'];
+
+        foreach (AuthType::$featureToAuthMap[$exposedFlow] as $feature)
+        {
+            if ($this->merchant->isFeatureEnabled($feature) === true)
+            {
+                $flowValue = Flow::$flows[Flow::$featureToFlowMappings[$exposedFlow][$feature]];
+
+                $iins = $this->repo->iin->findIinsByFlows($flowValue);
+
+                $collectiveIins =  array_merge($collectiveIins, $iins);
+            }
+        }
+
+        if (($exposedFlow === Flow::OTP) and
+            ($this->merchant->isHeadlessEnabled() === true))
+        {
+            $iins = $this->repo->iin->findIinsByFlows(Flow::$flows[Flow::HEADLESS_OTP]);
+
+            $collectiveIins =  array_merge($collectiveIins, $iins);
+        }
+
+        return array_values(array_unique($collectiveIins));
+    }
+
+    public function addorUpdateMultiple($iinMin, $iinMax, $input)
+    {
+        for ($i = $iinMin ; $i <= $iinMax ; $i++)
+        {
+            $iin = str_pad($i, 6, '0', STR_PAD_LEFT);
+
+            $this->addOrUpdate($iin, $input);
+        }
+
+        $count = $iinMax - $iinMin + 1;
+
+        return $count;
     }
 
     public function addOrUpdate($id, $input) : array
@@ -195,16 +242,107 @@ class Service extends Base\Service
         $response = [];
 
         // hardcoding for now
-        $this->processor = new Batch\NpciRupay;
-
-        foreach ($input as $data)
+        switch ($type)
         {
-            $this->processor->preprocess($data);
+            case "iin_npci_rupay" :
+                $this->processor = new Batch\NpciRupay;
+                break;
+            case "iin_hitachi_visa":
+                $this->processor = new Batch\HitachiVisa;
+                break;
+            case "iin_mc_mastercard":
+                $this->processor = new Batch\McMastercard;
+                break;
+            default :
 
-            $response[] = $this->processor->process();
         }
 
-        return $response;
+        $IinBatchCollection = new Base\PublicCollection;
+
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        (new Validator) ->validateBatchId($batchId);
+
+        $idempotentId = null;
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_IIN_BULK_REQUEST,
+            [
+                'batch_id'  => $batchId,
+                'input'     => $input,
+            ]);
+
+        foreach($input as $entry)
+        {
+            try
+            {
+                    $idempotentId = $entry['idempotent_id'] ?? null ;
+
+                    $this->processor->preprocess($entry);
+
+                    $status = $this->processor->process();
+
+                    $data = [
+                        'batch_id'        => $batchId,
+                        'idempotent_id' => $idempotentId,
+                        'status' =>  $status,
+                    ];
+
+                    $IinBatchCollection->push($data);
+
+
+            }
+            catch(Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::ERROR,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotent_id' => $idempotentId,
+                    'status'       => 0,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $IinBatchCollection->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                );
+
+                $exceptionData = [
+                    'batch_id'        => $batchId,
+                    'idempotent_id' => $idempotentId,
+                    'status'       => 0,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $IinBatchCollection->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_IIN_BULK_RESPONSE,
+            [
+                'batch_id'  => $batchId,
+                'output'    => $IinBatchCollection->toArrayWithItems(),
+            ]);
+
+        return $IinBatchCollection->toArrayWithItems();
     }
 
     protected function formatEditInput(Entity $iin, array & $input)

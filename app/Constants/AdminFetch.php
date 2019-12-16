@@ -42,6 +42,37 @@ class AdminFetch
     public static function externalEntities()
     {
         return [
+            Entity::UFH_FILES => [
+                'status'          => [
+                    Fetch::LABEL        => 'status',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'created',
+                        'failed',
+                        'uploaded',
+                    ],
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'entity_id'       => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'           => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'entity_type'     => [
+                    Fetch::LABEL        => 'entity_type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'bucket_config_name' => [
+                    Fetch::LABEL        => 'bucket_config_name',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
             Entity::REPORTING_LOGS => [
                 'consumer'         => Fetch::FIELD_MERCHANT_ID,
                 'config_id'        => [
@@ -1315,6 +1346,10 @@ class AdminFetch
             ],
 
             Entity::KEY => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
+            Entity::MERCHANT_DOCUMENT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 

@@ -7,12 +7,12 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
@@ -24,7 +24,9 @@ use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
 
 class BulkRecon extends Base\Core
 {
-    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s_%s';
+
+    const DEFAULT_LIMIT = 1000;
 
     const MUTEX_LOCK_TIMEOUT = 300;
 
@@ -53,7 +55,7 @@ class BulkRecon extends Base\Core
     {
         (new Validator)->validateInput('bulk_reconcile', $this->input);
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel, $this->mode);
 
         $data = $this->mutex->acquireAndRelease(
                     $mutexResource,
@@ -89,11 +91,23 @@ class BulkRecon extends Base\Core
 
     public function processEntities()
     {
+        $limit = self::DEFAULT_LIMIT;
+
         list($from, $to) = $this->getTimestamps();
+
+        if (isset($this->input['limit']) === true)
+        {
+            $limit = $this->input['limit'];
+        }
 
         $attempts = $this->repo
                          ->fund_transfer_attempt
-                         ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to);
+                         ->getAttemptsBetweenTimestampsWithStatus(
+                             $this->channel,
+                             Status::INITIATED,
+                             $from,
+                             $to,
+                             $limit);
 
         (new Lock( $this->channel))->acquireLockAndProcessAttempts(
             $attempts,
@@ -141,17 +155,32 @@ class BulkRecon extends Base\Core
 
                     foreach ($ftas as $fta)
                     {
-                        $reconDetails = (new $entityProcessor($fta))->process();
+                        try
+                        {
+                            $reconDetails = (new $entityProcessor($fta))->process();
 
-                        $this->allReconciledRows[] = $reconDetails;
+                            $this->allReconciledRows[] = $reconDetails;
 
-                        $entity = $reconDetails['entity'];
+                            $entity = $reconDetails['entity'];
 
-                        $this->updateBatchFundTransferStats($entity);
+                            $this->updateBatchFundTransferStats($entity);
 
-                        $this->updateCriticalErrorsSummary($fta);
+                            $this->updateCriticalErrorsSummary($fta);
 
-                        $this->dispatchForStatusCheck($fta);
+                            $this->dispatchForStatusCheck($fta);
+                        }
+                        catch (\Throwable $e)
+                        {
+                            $this->trace->traceException(
+                                $e,
+                                Logger::ERROR,
+                                TraceCode::FTA_RECON_FAILED,
+                                [
+                                    'fta_id' => $fta->getId(),
+                                ]);
+
+                            (new SlackNotification)->send('setl_reconciliation', [], $e);
+                        }
                     }
                 }
 

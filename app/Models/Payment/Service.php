@@ -298,6 +298,8 @@ class Service extends Base\Service
 
             $this->cacheResponseData($payment, $response);
 
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
+
             return $response;
         }
         catch (\Throwable $e)
@@ -910,6 +912,15 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
+    public function mandateUpdateCallback($id, $input)
+    {
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->mandateUpdateCallback($payment, $input);
+    }
+
     public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);
@@ -952,16 +963,61 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
+        $this->getOfferIdsForPayments($payments);
+
         return $payments->toArrayPublic();
+    }
+
+    protected function getOfferIdsForPayments($payments)
+    {
+        $paymentIds = $payments->pluck('id');
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds);
+
+        $plucked = $entityOffer->pluck('offer_id', 'entity_id');
+
+        foreach($payments as $payment)
+        {
+            if($plucked->has($payment->getId()))
+            {
+                $payment->setOfferId($plucked->get($payment->getId()));
+            }
+        }
     }
 
     public function fetch(string $id, array $input = []): array
     {
+        $id = Entity::stripSignWithoutValidation($id);
+
         $payment = $this->repo
                         ->payment
-                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+                        ->findOrFailByPublicIdWithParams($id, $input);
 
-        $entity = $payment->toArrayPublic();
+        $paymentMerchantId = $payment->getMerchantId();
+
+
+        if ($this->merchant->getId() !== $paymentMerchantId)
+        {
+            // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
+            // the partner merchant of that submerchant
+            $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
+        }
+
+        $paymentIds = explode(', ', $payment->getId());
+
+        $entityOffer = $this->repo
+                            ->entity_offer
+                            ->getOfferIdLinkedWithPayment($paymentIds)
+                            ->first();
+
+        if($entityOffer !== null)
+        {
+            $payment->setOfferId($entityOffer->getOfferId());
+        }
+
+        $entity = $payment->toArrayPublicWithExpand();
 
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
@@ -970,6 +1026,30 @@ class Service extends Base\Service
         }
 
         return $entity;
+    }
+
+    protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)
+    {
+        if($this->merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($entityMerchantId);
+
+        //submerchant can belong to only one aggregator or fully managed at a time
+        $partner = $partners->filter(function(Merchant\Entity $partner)
+        {
+            return (($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true));
+        })->first();
+
+        if (($partner === null) or
+            ($partner->getId() !== $this->merchant->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
+        }
     }
 
     protected function addDashboardFlags(array &$entity, $payment, array $input = [])
@@ -1761,9 +1841,26 @@ class Service extends Base\Service
      */
     public function validateVpa($input)
     {
-        $data = $this->getNewProcessor()->validateVpa($input);
+        $merchant = $this->merchant;
+
+        /**
+         * - Doing this for calls from FAVpaValidation Worker since merchant is not set in async processing
+         * - Tried with basicauth but has related issues of repo null
+         */
+        if (($merchant === null) and (empty($input['merchant_id']) === false))
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+            unset($input['merchant_id']);
+        }
+
+        $data = $this->getNewProcessor($merchant)->validateVpa($input);
 
         return $data;
+    }
+
+    public function mandateUpdate($id, $token, $input)
+    {
+        $data = $this->getNewProcessor()->mandateUpdate($id, $token, $input);
     }
 
     public function validateEntity(array $input)
@@ -1792,6 +1889,8 @@ class Service extends Base\Service
         $txn->setOnHold(false);
 
         $this->repo->saveOrFail($txn);
+
+        (new Transaction\Core)->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
 
         //
         // If the payment has a transfer, update the
@@ -1930,11 +2029,11 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId = null)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null, bool $bulkUpdate = false)
     {
         $updated = null;
 
-        (new Card\Service)->migtateCardVaultToken($cardId);
+        (new Card\Service)->migtateCardVaultToken($cardId, $bulkUpdate);
 
         if ($paymentId !== null)
         {
@@ -2032,22 +2131,33 @@ class Service extends Base\Service
 
         $limit = $input['limit'] ?? 1000;
 
-        $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+        $migrateMissingFingerprintCards = $input['migrate_missing_fingerprint_cards'] ?? false;
 
-        $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+        $payments = $cards = $cardsWithoutFingerprint = [];
 
-        $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        if($migrateMissingFingerprintCards)
+        {
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+        }
+        else
+        {
+            $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+
+            $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+
+            $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+        }
 
         $this->trace->info(
             TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST,
             [
                 'payments_count' => count($payments),
-                'cards_count'    => count($cards),
+                'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             ]);
 
         $result = [
             'payments_count' => count($payments),
-            'cards_count'    => count($cards),
+            'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
             'payment_failed' => [],
             'card_failed'    => [],
         ];
@@ -2076,19 +2186,32 @@ class Service extends Base\Service
             }
         }
 
+        foreach ($cardsWithoutFingerprint as $card)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable(null, $card, true);
+            }
+            catch (\Throwable $e)
+            {
+                $result['card_failed'][] = $card->getId();
+            }
+        }
+
         return $result;
     }
 
-    public function migrateCardDataIfApplicable($payment, $card)
+    public function migrateCardDataIfApplicable($payment, $card, $bulkUpdate=false)
     {
         $payload = [];
 
         try
         {
             $payload = [
-                'card_id'    => $card->getId(),
-                'token'      => $card->getVaultToken(),
-                'mode'       => $this->mode,
+                'card_id'     => $card->getId(),
+                'token'       => $card->getVaultToken(),
+                'mode'        => $this->mode,
+                'bulk_update' => $bulkUpdate,
             ];
 
             if ($payment !== null)
