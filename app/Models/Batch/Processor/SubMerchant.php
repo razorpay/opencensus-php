@@ -370,10 +370,10 @@ class SubMerchant extends Base
      */
     protected function createOrFetchSubMerchant(array &$entry)
     {
+        $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
+
         if (empty($entry[Header::MERCHANT_ID]) === true)
         {
-            $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
-
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
 
             /** @var ME $subMerchant */
@@ -383,6 +383,14 @@ class SubMerchant extends Base
         else
         {
             $subMerchant = $this->repo->merchant->findOrFailPublic($entry[Header::MERCHANT_ID]);
+
+            if ($subMerchant->getEmail() !== $input[Merchant\Entity::EMAIL])
+            {
+                $entry[Header::STATUS]            = Status::FAILURE;
+                $entry[Header::ERROR_DESCRIPTION] = TraceCode::MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
+
+                return null;
+            }
         }
 
         return $subMerchant;
