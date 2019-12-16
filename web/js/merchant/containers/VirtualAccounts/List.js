@@ -34,7 +34,6 @@ import OnBoarding, { getIsAllowedResetVAOnBoarding } from './OnBoarding';
 
 import QuickGuide, { getVAQuickGuideIsClosed } from './QuickGuide';
 
-import CreateVirtualAccount from './CreateVirtualAccount';
 import EmptyList from 'merchant/components/EmptyList';
 
 @connect(
@@ -136,36 +135,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
   };
 
-  onVAModalMount = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Smart Collect',
-      eventAction: 'Open Form - Create Virtual Account',
-    });
-  };
-
-  onVAModalUnmount = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Smart Collect',
-      eventAction: 'Close Form - Create Virtual Account',
-    });
-  };
-
-  onCreateVA = params => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Smart Collect',
-      eventAction: 'Submit Form - Create Virtual Account',
-      eventLabel: getKeysSeparatedByPipe(params),
-    });
-  };
-
-  onCopy = virtualaccount => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Smart Collect',
-      eventAction: 'Copy To Clipboard',
-      eventLabel: `virtual_account_id${virtualaccount.id}`,
-    });
-  };
-
+  /*
   showCreateVAModal = () => {
     this.props.openModal({
       size: 'medium',
@@ -173,14 +143,12 @@ export default class VirtualAccountsListContainer extends ListContainer {
       component: (
         <CreateVirtualAccount
           showCreateVAModal={this.showCreateVAModal}
-          onMount={this.onVAModalMount}
-          onUnmount={this.onVAModalUnmount}
-          onCreateVA={this.onCreateVA}
           onCopy={this.onCopy}
         />
       ),
     });
   };
+*/
 
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
@@ -207,13 +175,10 @@ export default class VirtualAccountsListContainer extends ListContainer {
                   user.isAllowedEdit('virtual_accounts')
                 }
               >
-                <button
-                  class="btn btn-primary"
-                  onClick={this.showCreateVAModal}
-                >
+                <NavLink class="btn btn-primary" to="/virtualaccounts/new">
                   <i class="i i-plus" />
                   <span>Create Virtual Account</span>
-                </button>
+                </NavLink>
               </ShowWhen>
             </div>
           </HeaderAction>
