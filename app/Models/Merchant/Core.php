@@ -2476,7 +2476,17 @@ class Core extends Base\Core
         }
     }
 
-    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload): array
+    /**
+     * Here we are taking mode as input parameter instead of using $this->mode because
+     * for webhook jobs we do not take mode as constructor argument and mode has to be passed for cases functionality depends on mode
+     *
+     * @param Entity $merchant
+     * @param string $payload
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload, string $mode): array
     {
         $partners = $this->fetchAffiliatedPartners($merchant->getId());
 
@@ -2510,7 +2520,7 @@ class Core extends Base\Core
                 'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['mozart']->translateWebhook($translationGateway, $payload);
+        return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
     }
 
     protected function getTranslateWebhookGateway(Entity $partner)
