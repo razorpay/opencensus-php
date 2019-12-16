@@ -63,7 +63,7 @@ class Repository extends Base\Repository
             $query->where(Entity::BANK, $bank);
         }
 
-        if ($network === Network::AMEX)
+        if (empty($network) === false)
         {
             $query->where(Entity::NETWORK, $network);
         }
