@@ -1,11 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import SettlementsExample from 'merchant/views/Settlements/components/SettlementsExample';
 import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal } from 'merchant_common/reducers/modals';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
+import HolidayModal from 'merchant/views/Settlements/components/Modals/HolidayModal';
 
 @connect(state => state.settlement, {
   closeModal,
+  openModal,
 })
 export default class SettlementSchedule extends Component {
   state = {
@@ -180,7 +182,16 @@ export default class SettlementSchedule extends Component {
               ) : null}
 
               <div style={{ marginTop: '15px' }}>
-                <button style={{ width: '48%' }} class="btn btn-outline">
+                <button
+                  onClick={() => {
+                    this.props.openModal({
+                      size: 'small',
+                      component: <HolidayModal data={this.props.holidayList} />,
+                    });
+                  }}
+                  style={{ width: '48%' }}
+                  class="btn btn-outline"
+                >
                   List of Bank Holidays
                 </button>
                 <a href="http://razorpay.com/settlement" target="_blank">
