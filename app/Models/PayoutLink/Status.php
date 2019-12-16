@@ -38,9 +38,8 @@ class Status
         self::CANCELLED => [] // this is a final state
     ];
 
-    // Note: '?' before the type hint, means that a NULL is also allowed instead of a string.
     // This is to handle the create entity flows, in which both the Status and ID will be null to start with
-    static function validateStatusUpdate(?string $currentStatus, string $nextStatus, string $payoutLinkId = null)
+    static function validateStatusUpdate(string $nextStatus, string $currentStatus = null, string $payoutLinkId = null)
     {
         // This will happen only in case of create, when there is no status set
         // We have to validate that the starting state is ISSUED and nothing else

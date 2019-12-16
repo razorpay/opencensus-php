@@ -38,6 +38,8 @@ class Core extends Base\Core
 
     protected $redis;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -47,6 +49,8 @@ class Core extends Base\Core
         $this->raven = $this->app['raven'];
 
         $this->redis = $this->app['redis']->connection();
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function cancel(string $payoutLinkId): Entity
@@ -61,17 +65,24 @@ class Core extends Base\Core
         $payoutLink = $this->repo
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-        // If already cancelled, then return the entity without any change. Makes this call idempotent.
+
+//         If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
             return $payoutLink;
         }
 
-        $payoutLink->setStatus(Status::CANCELLED);
+        // todo, pl how to test mutex fail and success flows ?  # reviewers
+        return $this->mutex->acquireAndRelease(
+            $payoutLink->getId(),
+            function () use ($payoutLink)
+            {
+                $payoutLink->setStatus(Status::CANCELLED);
 
-        $this->repo->saveOrFail($payoutLink);
+                $this->repo->saveOrFail($payoutLink);
 
-        return $payoutLink;
+                return $payoutLink;
+            });
     }
 
     public function create(array $input): Entity

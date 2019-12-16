@@ -226,7 +226,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($newStatus)
     {
-        Status::validateStatusUpdate($this->getStatus(), $newStatus, $this->getId());
+        Status::validateStatusUpdate($newStatus, $this->getStatus(), $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
     }
