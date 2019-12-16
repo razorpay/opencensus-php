@@ -19,6 +19,9 @@ import OfferDiscount from './offerDiscount';
 import OfferDuration from './offerDuration';
 import OfferReview from './offerReview';
 
+const MAX_INT = 21474836;
+const CURRENCY = 'INR';
+
 @withRouter
 @connect(state => ({
   user: state.session.user,
@@ -27,23 +30,14 @@ import OfferReview from './offerReview';
 @RTracking(() => window.rzpQ.component('NewOfferForm'))
 export default class CreateOfferWizard extends React.Component {
   state = {
-    currentTab: 4,
+    currentTab: 0,
     starts_at: moment().add(1, 'days'),
     ends_at: moment().add(7, 'days'),
-    block: 'false',
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
       addons: [],
     },
-    name: 'Pikachu Offer',
-    display_text: 'Pika pika (nods in agreement)',
-    terms: 'Pika pika pika pi Pikachu!!',
-    payment_method: 'card',
-    discount_type: 'flat',
-    flat_cashback: '2',
-    min_amount: '6',
-    max_offer_usage: '14',
     internals: {},
     allPaymentMethodsAllowed: false,
     creation_terms_accepted: 'false',
@@ -184,7 +178,7 @@ export default class CreateOfferWizard extends React.Component {
         if (!val) {
           return 'Should be valid number between 0 and 100';
         }
-        if (val > 100 || val < 0) {
+        if (val > 99.99 || val < 0.1) {
           return 'Percentage should be between 0 and 100';
         }
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
@@ -193,14 +187,34 @@ export default class CreateOfferWizard extends React.Component {
       flat_cashback: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
+        if (val > this.state.min_amount) {
+          return 'Discount value cannot be greater than minimum amount';
+        }
       },
       min_amount: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
+        if (this.state.discount_type === 'flat') {
+          if (val < this.state.flat_cashback) {
+            return 'Minimum payment is less than discount value';
+          }
+        }
       },
       max_cashback: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
       },
       ends_at: val => {
         if (this.state.ends_at === null) return;
@@ -221,6 +235,10 @@ export default class CreateOfferWizard extends React.Component {
       },
       max_offer_usage: val => {
         if (!new RegExp('[0-9]').test(val)) return 'Please enter a number';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
       },
     }[elementName];
   };
