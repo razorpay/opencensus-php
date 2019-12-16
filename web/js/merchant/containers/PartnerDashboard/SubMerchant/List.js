@@ -254,7 +254,7 @@ export default class SubMerchantsList extends ListContainer {
         <tabbed-container>
           <header>
             <NavLink exact to="/partners/submerchants">
-              Affiliated Accounts
+              Affiliate Accounts
             </NavLink>
           </header>
           <content>
