@@ -115,6 +115,14 @@ class CreatePayoutLinksTable extends Migration
                   ->on(Table::FUND_ACCOUNT)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->foreign(\RZP\Models\Payout\Entity::PAYOUT_LINK_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::PAYOUT_LINK)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -131,6 +139,11 @@ class CreatePayoutLinksTable extends Migration
             $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::CONTACT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::FUND_ACCOUNT_ID . '_foreign');
+        });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->dropForeign(Table::PAYOUT . '_' . \RZP\Models\Payout\Entity::PAYOUT_LINK_ID . '_foreign');
         });
 
         Schema::dropIfExists(Table::PAYOUT_LINK);

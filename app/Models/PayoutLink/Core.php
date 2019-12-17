@@ -28,15 +28,20 @@ class Core extends Base\Core
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
 
-    const MESSAGE = 'message';
-    const SUCCESS = 'success';
-    const ACTIVE  = 'active';
+
+    const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
+    const MESSAGE                 = 'message';
+    const SUCCESS                 = 'success';
+    const ACTIVE                  = 'active';
+    const MUTEX_TIMEOUT           = 60;
 
     protected $elfin;
 
     protected $raven;
 
     protected $tokenService;
+
+    protected $mutex;
 
     public function __construct()
     {
@@ -46,6 +51,10 @@ class Core extends Base\Core
         $this->raven = $this->app['raven'];
 
         $this->tokenService = new TokenService();
+
+        $this->redis = $this->app['redis']->connection();
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -83,17 +92,25 @@ class Core extends Base\Core
         $payoutLink = $this->repo
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-        // If already cancelled, then return the entity without any change. Makes this call idempotent.
+
+        //   If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
             return $payoutLink;
         }
 
-        $payoutLink->setStatus(Status::CANCELLED);
+        return $this->mutex->acquireAndRelease(
+            $payoutLink->getId(),
+            function () use ($payoutLink)
+            {
+                $payoutLink->setStatus(Status::CANCELLED);
 
-        $this->repo->saveOrFail($payoutLink);
+                $this->repo->saveOrFail($payoutLink);
 
-        return $payoutLink;
+                return $payoutLink;
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function create(array $input): Entity
@@ -128,7 +145,7 @@ class Core extends Base\Core
         $payoutLink->contact()->associate($contact);
 
         // todo: pl , unsure how to get the user entity from the request in core
-        // $payoutLink->user()->associate($this->app->basicauth->getUser());
+//         $payoutLink->user()->associate($this->app['basicauth']->getUser());
 
         $payoutLink->setStatus(Status::ISSUED);
 
@@ -217,22 +234,6 @@ class Core extends Base\Core
     }
 
     /**
-<<<<<<< HEAD
-     * Returns true, if atleast one delivery worked. else returns false
-=======
-     * This will be stored in redis after OTP verification
-     * and will be used in subsequent api calls
-     * @param string $payoutLinkId
-     * @return string
-     */
-    protected function generateUniqueRequestToken(string $payoutLinkId): string
-    {
-        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
-
-        return $payoutLinkId . '.' . $timestamp;
-    }
-
-    /**
      * @param Entity $payoutLink
      * @return string
      * @throws BadRequestException
@@ -269,10 +270,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns true, if atkleast one delivery worked. else returns false
->>>>>>> payoutlinks_3
+     * * Returns true, if atleast one delivery worked. else returns false
      * @param Entity $payoutLink
-     * @param ContactEntity $contact
      * @param string $otp
      * @return void
      * @throws BadRequestException
