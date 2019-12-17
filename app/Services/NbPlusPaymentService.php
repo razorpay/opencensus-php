@@ -5,14 +5,15 @@ namespace RZP\Services;
 use App;
 use RZP\Exception;
 use Requests_Session;
-use RZP\Models\Base\PublicEntity;
+
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 
 class NbPlusPaymentService
@@ -199,7 +200,14 @@ class NbPlusPaymentService
 
     protected function traceRequest(array $request)
     {
-        // TODO
+        unset($request['options']['auth']);
+        unset($request['content'][self::INPUT]['gateway_config']);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
     }
 
     protected function sendRawRequest($request)
@@ -251,7 +259,6 @@ class NbPlusPaymentService
 
     protected function traceResponse($response)
     {
-        // TODO : redact?
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 

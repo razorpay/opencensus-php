@@ -1187,16 +1187,21 @@ class Processor
 
         $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 
-        // TODO : check this for validity
-        $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
+        $traceData = [
             'payment_id'             => $payment->getId(),
             'merchant_id'            => $payment->getMerchantId(),
             'gateway'                => $payment->getGateway(),
-            'authentication_gateway' => $payment->getAuthenticationGateway(),
-            'auth_type'              => $payment->getAuthType() ?? AuthType::_3DS,
             'feature_flag'           => $featureFlag,
             'razorx_variant'         => $variant,
-        ]);
+        ];
+
+        if ($prefix !== self::NB_PLUS_PAYMENTS_PREFIX)
+        {
+            $traceData['authentication_gateway'] = $payment->getAuthenticationGateway();
+            $traceData['auth_type']              = $payment->getAuthType() ?? AuthType::_3DS;
+        }
+
+        $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
 
         return $variant;
     }
@@ -3594,13 +3599,13 @@ class Processor
             $url = $response['next']['redirect']['url'];
 
             $coproto = [
-                'type'      => 'first',
-                'version'   => 1,
-                'payment_id'=> $payment->getPublicId(),
-                'method'    => 'paylater',
-                'gateway'   => 'getsimpl',
-                'amount'    => $payment->getFormattedAmount(),
-                'request' => [
+                'type'       => 'first',
+                'version'    => 1,
+                'payment_id' => $payment->getPublicId(),
+                'method'     => 'paylater',
+                'gateway'    => 'getsimpl',
+                'amount'     => $payment->getFormattedAmount(),
+                'request'    => [
                     'url'     => $url,
                     'method'  => 'redirect',
                     'content' => $input,

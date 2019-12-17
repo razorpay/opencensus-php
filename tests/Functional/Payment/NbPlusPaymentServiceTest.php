@@ -46,7 +46,6 @@ class NbPlusPaymentServiceTest extends TestCase
         'gateway_config',
     ];
 
-    // TODO: amount mismatch test case for verify?
     public function setUp()
     {
         parent::setUp();
