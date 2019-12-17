@@ -19,7 +19,6 @@ export default ({
     { label: 'Wallet', name: 'wallet' },
     { label: 'UPI', name: 'upi' },
     { label: 'EMI', name: 'emi' },
-    { label: 'Cardless EMI', name: 'cardless_emi' },
     { label: 'Pay Later', name: 'paylater' },
   ];
   const paymentIssuers = [
@@ -47,6 +46,25 @@ export default ({
     { label: 'Maestro', name: 'MAES' },
     { label: 'American Express', name: 'AMEX' },
   ];
+
+  let walletIssuers = [
+    { label: 'Select Issuers', name: '' },
+    { label: 'Paytm', name: 'paytm' },
+    { label: 'PAYZAPP', name: 'payzapp' },
+    { label: 'MOBIKWIK', name: 'mobikwik' },
+    { label: 'PayU Money', name: 'payumoney' },
+    { label: 'OLA Money', name: 'olamoney' },
+    { label: 'Airtel Money', name: 'airtelmoney' },
+    { label: 'Amazon Pay', name: 'amazonpay' },
+    { label: 'Freecharge', name: 'freecharge' },
+    { label: 'JIO Money', name: 'jiomoney' },
+    { label: 'SBI buddy', name: 'sbibuddy' },
+    { label: 'OPEN WALLET', name: 'openwallet' },
+    { label: 'M PESA', name: 'mpesa' },
+    { label: 'Phone Pe', name: 'phonepe' },
+    { label: 'Paypal', name: 'paypal' },
+  ];
+
   return (
     <React.Fragment>
       {!allPaymentMethodsAllowed && (
@@ -56,9 +74,25 @@ export default ({
           name="payment_method"
           options={paymentMethods}
           placeholder="Select Payment Method"
-          onChange={getFormOnChangeHandler()}
+          onChange={getFormOnChangeHandler('stateResetter')([
+            'payment_method_type',
+            'issuer',
+            'payment_network',
+            'max_payment_count',
+            'iins',
+          ])}
           defaultValue={paymentMethod}
           validator={getFormElementValidations('payment_method')}
+        />
+      )}
+
+      {isSelectedPaymentMethod('wallet') && (
+        <Input.Select
+          label="Issuer"
+          name="issuer"
+          defaultValue={issuer}
+          placeholder="Select Bank"
+          options={walletIssuers}
         />
       )}
 
@@ -97,6 +131,7 @@ export default ({
             name="max_payment_count"
             defaultValue={maxPaymentCount}
             type="number"
+            validator={getFormElementValidations('max_payment_count')}
             placeholder="Max times a card can be used to avail this offer"
           />
           <Input

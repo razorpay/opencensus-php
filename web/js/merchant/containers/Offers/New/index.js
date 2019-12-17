@@ -37,8 +37,6 @@ const SUCCESS_NOTIFICATION = 'New offer created';
 export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
-    starts_at: moment(),
-    ends_at: moment(),
     validTabs: [false, false, false, false],
     allPaymentMethodsAllowed: false,
     creation_terms_accepted: 'false',
@@ -72,6 +70,7 @@ export default class CreateOfferWizard extends React.Component {
           maxPaymentCount={this.state.max_payment_count}
           paymentMethodType={this.state.payment_method_type}
           issuer={this.state.issuer}
+          walletIssuer={this.state.wallet_issuer}
           paymentMethod={this.state.payment_method}
           getFormElementValidations={this.getFormElementValidations}
         />
@@ -161,15 +160,15 @@ export default class CreateOfferWizard extends React.Component {
       },
       terms: val => {
         if (!val || val.length < 4) {
-          return 'Short description should be at least of 4 characters';
+          return 'Offer terms should contain at least of 4 characters';
         }
         if (val.length > 250) {
-          return 'Short description should not exceed 250 characters';
+          return 'Offer terms should not exceed 250 characters';
         }
       },
       discount_type: val => {
         if (!val || val == '') {
-          return 'Please select a field type';
+          return 'Please select a discount type';
         }
       },
       block: val => {
@@ -181,7 +180,8 @@ export default class CreateOfferWizard extends React.Component {
         if (!val) {
           return 'Should be valid number between 0 and 100';
         }
-        if (val > 99.99 || val < 0.1) {
+        val = parseFloat(val);
+        if (val > 99.99 || val < 0.01) {
           return 'Percentage should be between 0 and 100';
         }
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
@@ -233,11 +233,18 @@ export default class CreateOfferWizard extends React.Component {
       },
       payment_method: val => {
         if (!val) {
-          return 'Start date cannot be in past.';
+          return 'Payment method cannot be null';
         }
       },
       max_offer_usage: val => {
-        if (!new RegExp('[0-9]').test(val)) return 'Please enter a number';
+        if (!new RegExp('^[0-9]+$').test(val)) return 'Please enter a number';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
+      },
+      max_payment_count: val => {
+        if (!new RegExp('^[0-9]+$').test(val)) return 'Please enter a number';
         val = parseFloat(val);
         if (val > MAX_INT) {
           return `Maximum value allowed is ${MAX_INT}`;
@@ -265,7 +272,15 @@ export default class CreateOfferWizard extends React.Component {
         }),
       // momentObj / null if not date is required
       datetime: momentObj => this.setState({ [options[0]]: momentObj }),
-
+      stateResetter: resetFields => syntheticEvent => {
+        let clonedState = deepClone(this.state);
+        clonedState[syntheticEvent.target.name] = syntheticEvent.target.value;
+        let statePropTobeDeleted = resetFields || [];
+        statePropTobeDeleted.forEach(stateProp => {
+          clonedState[stateProp] = undefined;
+        });
+        this.setState(clonedState);
+      },
       iins: syntheticEvent => {
         const binRegex = /^\d{6}$/;
         let iins = syntheticEvent.target.value
@@ -357,7 +372,7 @@ export default class CreateOfferWizard extends React.Component {
                 this.state.creation_terms_accepted === 'false'
               }
             >
-              Create Subscription Link
+              Create Offer
             </AsyncBtn.Primary>
           )}
         </footer>
@@ -374,7 +389,13 @@ export default class CreateOfferWizard extends React.Component {
       'percent_rate',
     ];
     const dateFields = ['starts_at', 'ends_at'];
-    const fieldsToBeDeletedIfFalsey = ['payment_method_type'];
+    const fieldsToBeDeletedIfFalsey = [
+      'payment_method_type',
+      'issuer',
+      'payment_network',
+      'max_payment_count',
+      'iins',
+    ];
     const fieldsTobeDeleted = [
       'discount_type',
       'errors',
