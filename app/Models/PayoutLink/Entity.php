@@ -113,16 +113,6 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT
     ];
 
-    protected $publicAuth = [
-        self::ID,
-        self::STATUS,
-        self::AMOUNT,
-        self::CURRENCY,
-        self::DESCRIPTION,
-        self::RECEIPT,
-        self::CANCELLED_AT
-    ];
-
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
