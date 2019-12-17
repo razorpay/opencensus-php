@@ -868,14 +868,34 @@ class Notifier extends Base\Core
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                $sender = 'RBLBNK';
+                $subscriptionRegistration = $this->invoice->entity;
 
-                $template = 'sms.custom_invoice.rbl_interim_process2';
+                if ($subscriptionRegistration->isMethodCard() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_card';
 
-                $params = [
-                    'receipt'           => $receipt,
-                    'invoice_link'      => $invoiceLink,
-                ];
+                    $merchantName = $merchant->getBillingLabel();
+
+                    $merchantName = substr($merchantName, 0, 30);
+
+                    $params   = [
+                        'merchant_name' => $merchantName,
+                        'invoice_link'  => $this->invoice->getShortUrl(),
+                        'amount'        => $this->invoice->getAmount() / 100,
+                    ];
+                }
+
+                if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $sender = 'RBLBNK';
+
+                    $template = 'sms.custom_invoice.rbl_interim_process2';
+
+                    $params = [
+                        'receipt'           => $receipt,
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
 
                 break;
 
