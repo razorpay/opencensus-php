@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyOtpRules = [
-        Entity::OTP     => 'required|string|max:6',
+        Entity::OTP     => 'required|string|min:4|max:6',
         Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
 }
