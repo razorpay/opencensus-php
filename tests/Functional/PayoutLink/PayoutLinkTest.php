@@ -244,12 +244,6 @@ class PayoutLinkTest extends TestCase
      */
     public function testPayoutLinkFailedDueToContactCreationFailure()
     {
-        $mockedContactCore = Mockery::mock('overload:RZP\Models\Contact\Core');
-
-        $mockedContactCore->shouldReceive('create')
-                          ->once()
-                          ->andThrow(new Exception('I failed for the sake of testing'));
-
         $this->ba->privateAuth();
 
         $this->startTest();

@@ -343,8 +343,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
 
-    const BAD_REQUEST_CONTACT_ADD_FAILED                                        = 'Could not create contact due to an internal error';
-
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
