@@ -75,9 +75,7 @@ export default props => {
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   const isContactDetailsAvl =
-    invoice.contact_details &&
-    (invoice.contact_details.contact_email ||
-      invoice.contact_details.contact_phone);
+    invoice.customer && (invoice.customer.email || invoice.customer.contact);
 
   return (
     <div class="content-wrapper content-sm txn-details">
