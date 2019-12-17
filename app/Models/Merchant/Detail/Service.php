@@ -814,7 +814,12 @@ class Service extends Base\Service
 
             $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
-            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+            $merchantCore = new Merchant\Core;
+
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+
+            // update merchant pricing plan to the one specified by partner in partner config if applicable
+            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

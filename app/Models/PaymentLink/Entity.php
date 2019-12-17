@@ -503,7 +503,7 @@ class Entity extends Base\PublicEntity
         return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK);
     }
 
-    public function getAmountToSendSms()
+    public function getAmountToSendSmsOrEmail()
     {
         $paymentPageItems = $this->paymentPageItems;
 

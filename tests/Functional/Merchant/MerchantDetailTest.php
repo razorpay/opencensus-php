@@ -1152,9 +1152,20 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
-        $referredSubMerchant = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID);
+        $app = $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->fixtures->merchant->createDummyPartnerApp();
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
 
         $referrerId = self::DEFAULT_MERCHANT_ID;
 
@@ -1172,7 +1183,11 @@ class MerchantDetailTest extends OAuthTestCase
                                                ], 'test')
                                  ->toArray();
 
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
         $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
 
         $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
 
