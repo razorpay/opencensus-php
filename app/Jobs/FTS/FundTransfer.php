@@ -22,6 +22,11 @@ class FundTransfer extends Job
     protected $ftaId;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_fund_transfer';

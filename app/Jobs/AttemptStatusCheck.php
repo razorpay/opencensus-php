@@ -14,11 +14,17 @@ class AttemptStatusCheck extends Job
     const RETRY_INTERVAL = 300;
 
     const MAX_RETRY_ATTEMPT = 5;
+
+    /**
+     * Since, UPI status check has a timeout of 180 sec
+     * @var int
+     */
+    public $timeout = 200;
+
     /**
      * @var string
      */
     protected $queueConfigKey = 'fund_transfer_status_check';
-
     /**
      * @var string
      */
