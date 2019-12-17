@@ -637,13 +637,14 @@ Field.EditablePairsList = EditablePairsList;
 Field.PowerDropdown = PowerDropdown;
 Field.EnumList = EnumList;
 
-const ToCalendar = _ => (
+const ToCalendar = React.forwardRef((props, ref) => (
   <CalendarPicker
     class="disable-past-year"
     postSelectionValue={val => val.endOf('day')}
-    {..._}
+    {...props}
+    ref={ref}
   />
-);
+));
 
 Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;

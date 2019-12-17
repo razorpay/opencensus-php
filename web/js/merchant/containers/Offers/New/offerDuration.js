@@ -15,9 +15,9 @@ export default ({
       description="Start date for offer"
       onChange={getFormOnChangeHandler('datetime', 'starts_at')}
       isInline
-      //   required
       validator={getFormElementValidations('starts_at')}
       defaultValue={startsAt}
+      fieldLabel={"Starts Immediately"}
     />
     <Input.DateTime
       label="Expires On"
@@ -25,9 +25,9 @@ export default ({
       onChange={getFormOnChangeHandler('datetime', 'ends_at')}
       description="Expiry date for offer"
       isInline
-      //   required
       validator={getFormElementValidations('ends_at')}
       defaultValue={endsAt}
+      fieldLabel={"No Expiry"}
     />
     <Input.Select
       validator={getFormElementValidations('block')}
