@@ -203,7 +203,7 @@ export default class extends React.PureComponent {
           <div class="Input Input--vTop Input--radio">
             <div class="Input-label">Payment Button</div>
 
-            <PreviewEmbedButton url={this.props.url} />
+            <PreviewEmbedButton url={this.props.url} showPreviewLabel />
 
             <div class="preview-btn-help">
               Your customers can pay from your website by clicking on this

@@ -12,7 +12,12 @@ import {
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
-@connect(state => ({}), { closeModal })
+@connect(
+  state => ({
+    config: state.config.config,
+  }),
+  { closeModal }
+)
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
 
@@ -28,6 +33,10 @@ export default class extends React.Component {
     });
   };
 
+  get merchantThemeColor() {
+    return this.props.config.brand_color;
+  }
+
   render() {
     const { shortUrl, closeModal } = this.props;
     const { btnLabel, btnSize } = this.state;
@@ -41,7 +50,7 @@ export default class extends React.Component {
 
     const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
       this.state.btnLabel
-    }" data-color="${this.color}" data-size="${BTN_SIZES[
+    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
       btnSize
     ].toLowerCase()}">
   <script>

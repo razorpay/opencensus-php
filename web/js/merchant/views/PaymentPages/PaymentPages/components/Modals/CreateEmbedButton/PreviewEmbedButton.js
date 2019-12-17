@@ -34,7 +34,12 @@ export default class PreviewEmbedButton extends React.Component {
   }
 
   render() {
-    const { url, btnSize = '0', btnLabel = 'Pay Now' } = this.props;
+    const {
+      url,
+      btnSize = '0',
+      btnLabel = 'Pay Now',
+      showPreviewLabel,
+    } = this.props;
 
     let width;
     switch (btnSize) {
@@ -85,6 +90,11 @@ export default class PreviewEmbedButton extends React.Component {
       </span>
     );
 
-    return <div id="embed-btn-preview">{previewBtnCode}</div>;
+    return (
+      <div id="embed-btn-preview">
+        {!!showPreviewLabel && <span className="preview-label">Preview</span>}
+        {previewBtnCode}
+      </div>
+    );
   }
 }

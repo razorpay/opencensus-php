@@ -13,6 +13,7 @@ import FormSection from './FormSection';
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
+import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
 import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
@@ -252,9 +253,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
-    this.props.openModal({
-      size: 'medium',
-      component: (
+    const isNewPPSuccessModalEnabled = this.props.user
+      .isNewPPSuccessModalEnabled;
+    let modalContent;
+
+    if (isNewPPSuccessModalEnabled) {
+      modalContent = (
         <Success
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
@@ -271,7 +275,34 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             this.setState({ isSettingsOpened: true });
           }}
         />
-      ),
+      );
+    } else {
+      modalContent = (
+        <PPShareView
+          handleClose={this.props.closeModal}
+          openModal={this.props.openModal}
+          handleAction={sendLink.bind(null, id)}
+          isNew={true}
+          isPaymentPagesV2={true}
+          showNotification={this.props.showNotification}
+          url={shortUrl}
+          title={title}
+          description={description}
+          trackerFn={function() {}}
+          closeModal={this.props.closeModal}
+          isEditExistingId={isEditExistingId}
+          openSettingsModal={_ => {
+            trackPageSettingsClick();
+            this.props.closeModal();
+            this.setState({ isSettingsOpened: true });
+          }}
+        />
+      );
+    }
+
+    this.props.openModal({
+      size: 'medium',
+      component: modalContent,
     });
   };
 
