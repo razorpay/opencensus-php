@@ -2694,9 +2694,14 @@ class Processor
         // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
         // service) triggered from postPaymentAuthorizeProcessing() method.
         //
+
+        // we are not auto capturing the payment page payment if the feature flag is enabled.
         if ($payment->hasPaymentLink() === true)
         {
-            return false;
+            if ($payment->merchant->isFeatureEnabled(Feature::PAYMENT_PAGES_NO_CAPTURE) === true)
+            {
+                return false;
+            }
         }
 
         //
