@@ -73,6 +73,9 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
+    this.props.trackClickOnCreateEmbedButton &&
+      this.props.trackClickOnCreateEmbedButton();
+
     this.props.openModal({
       size: 'small',
       component: <CreateEmbedButton shortUrl={this.props.url} />,

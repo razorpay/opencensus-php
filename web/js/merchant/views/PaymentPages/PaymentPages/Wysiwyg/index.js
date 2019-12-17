@@ -39,6 +39,7 @@ import {
   trackConfirmWYSIWYGCloseIntent,
   trackPageSettingsClick,
   trackPageSave,
+  trackClickOnCreateEmbedButton,
 } from '../ga';
 
 const ERROR = {
@@ -267,6 +268,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           url={shortUrl}
           title={title}
           trackerFn={function() {}}
+          trackClickOnCreateEmbedButton={_ =>
+            trackClickOnCreateEmbedButton('new')
+          }
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
           openSettingsModal={_ => {
@@ -289,6 +293,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={title}
           description={description}
           trackerFn={function() {}}
+          trackClickOnCreateEmbedButton={trackClickOnCreateEmbedButton}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
           openSettingsModal={_ => {
