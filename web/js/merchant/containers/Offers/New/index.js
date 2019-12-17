@@ -36,22 +36,10 @@ const SUCCESS_NOTIFICATION = 'New offer created';
 @RTracking(() => window.rzpQ.component('NewOfferForm'))
 export default class CreateOfferWizard extends React.Component {
   state = {
-    currentTab: 3,
+    currentTab: 0,
     starts_at: moment().add(1, 'days'),
     ends_at: moment().add(7, 'days'),
     validTabs: [false, false, false, false],
-    terms: 'ukhgjycd',
-    name: 'kjhjgfgdv' + Math.random(),
-    display_text: 'ksghdfjnsgb jy',
-    payment_method: 'upi',
-    discount_type: 'flat',
-    flat_cashback: 6,
-    min_amount: 10 + Math.floor(Math.random() * 100),
-    fields: {
-      quantity: 1,
-      addons: [],
-    },
-    internals: {},
     allPaymentMethodsAllowed: false,
     creation_terms_accepted: 'false',
   };
@@ -280,10 +268,11 @@ export default class CreateOfferWizard extends React.Component {
       datetime: momentObj => this.setState({ [options[0]]: momentObj }),
 
       iins: syntheticEvent => {
+        const binRegex = /^\d{6}$/;
         let iins = syntheticEvent.target.value
           .split(',')
           .map(iin => iin.trim())
-          .filter(iin => iin.length > 5 && iin.length < 7);
+          .filter(iin => binRegex.test(iin));
         this.setState({ iins });
       },
     };
@@ -386,6 +375,7 @@ export default class CreateOfferWizard extends React.Component {
       'percent_rate',
     ];
     const dateFields = ['starts_at', 'ends_at'];
+    const fieldsToBeDeletedIfFalsey = ['payment_method_type'];
     const fieldsTobeDeleted = [
       'discount_type',
       'errors',
@@ -402,6 +392,10 @@ export default class CreateOfferWizard extends React.Component {
       if (!form[field]) {
         fieldsTobeDeleted.push(field);
       } else transformed[field] = form[field].unix();
+    });
+
+    fieldsToBeDeletedIfFalsey.forEach(field => {
+      if (!field) fieldsTobeDeleted.push(field);
     });
 
     //Convert rupees to paisa
