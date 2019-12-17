@@ -1329,6 +1329,7 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -2622,6 +2623,7 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+        'bootstrap_key_cache',
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -3193,6 +3195,7 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,

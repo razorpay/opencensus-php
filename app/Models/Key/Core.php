@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Key;
 
+use Cache;
+
 use RZP\Constants\Mode;
 use Crypt;
 use RZP\Models\Base;
@@ -9,6 +11,7 @@ use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Http\Throttle\Constant as Throttle;
 
 class Core extends Base\Core
 {
@@ -54,6 +57,8 @@ class Core extends Base\Core
         $secret = $key->generateSecret();
 
         $this->repo->saveOrFail($key);
+
+        $this->writeCache($key);
 
         $keyData = $key->toArrayPublic();
         $keyData[Key\Entity::SECRET] = $secret;
@@ -112,5 +117,25 @@ class Core extends Base\Core
         $secret = Crypt::decrypt($key->getSecret());
 
         return ['secret' => $secret];
+    }
+
+    /**
+     * Map of key id to mid is maintained in cache for use by throttling layer.
+     * @param  Entity $key
+     * @return void
+     */
+    protected function writeCache(Entity $key)
+    {
+        $keyId      = $key->getPublicId();
+        $merchantId = $key->merchant->getId();
+
+        try
+        {
+            Cache::set(Throttle::KEYID_MID_KEY_PREFIX . $keyId, $merchantId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, compact('keyId', 'merchantId'));
+        }
     }
 }
