@@ -50,6 +50,23 @@ const BANK_MAP = {
   BARB: 'Bank of Baroda Bank',
 };
 
+const WALLET_MAP = {
+  paytm: 'Paytm',
+  payzapp: 'PAYZAPP',
+  mobikwik: 'MOBIKWIK',
+  payumoney: 'PayU Money',
+  olamoney: 'OLA Money',
+  airtelmoney: 'Airtel Money',
+  amazonpay: 'Amazon Pay',
+  freecharge: 'Freecharge',
+  jiomoney: 'JIO Money',
+  sbibuddy: 'SBI Buddy',
+  openwallet: 'OPEN',
+  mpesa: 'M PESA',
+  phonepe: 'Phone Pe',
+  paypal: 'Paypal',
+};
+
 const PAYMENT_NETWORK_MAP = {
   VISA: 'Visa',
   RUPAY: 'RuPay',
@@ -92,10 +109,10 @@ const summarizePaymentMethodsData = (
         PAYMENT_NETWORK_MAP[paymentNetwork]
       )}${wordWithSpace(cardType)}Cards`;
     case 'netbanking':
-      return `Netbanking`;
+      return `Netbanking on all ${wordWithSpace(BANK_MAP[issuer])}accounts`;
 
     case 'wallet':
-      return `All wallets`;
+      return `All ${wordWithSpace(WALLET_MAP[issuer])}wallets`;
     case 'upi':
       return `UPI`;
 
