@@ -61,6 +61,10 @@ export default class DateTime extends React.Component {
                   this.ref.current.focus();
                   this.ref.current.click();
                 }, 10);
+
+                if (value) {
+                  this.props.onChange && this.props.onChange(value);
+                }
               } else {
                 this.props.onChange && this.props.onChange(null);
               }
