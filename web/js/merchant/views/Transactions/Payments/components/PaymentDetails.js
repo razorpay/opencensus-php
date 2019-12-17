@@ -14,6 +14,8 @@ import PaymentMethod from 'merchant/views/Transactions/Payments/components/Payme
 import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
 import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import SettlementOverview from './SettlementOverview';
 
 export default props => {
   let {
@@ -191,6 +193,33 @@ export default props => {
                       ))
                     : '--'}
                 </EntityDetailRow>
+
+                {payment.transaction && (
+                  <EntityDetailRow label="Settlement Details">
+                    {payment.transaction.settlement ? (
+                      <ContentToggler>
+                        <span>
+                          Settled on{' '}
+                          <Time
+                            value={payment.transaction.settled_at}
+                            format="DD MMM YYYY"
+                          />
+                        </span>
+                        <SettlementOverview payment={payment} />
+                      </ContentToggler>
+                    ) : payment.transaction.settled_at ? (
+                      <span class="link">
+                        To be settled on{' '}
+                        <Time
+                          value={payment.transaction.settled_at}
+                          format="DD MMM YYYY"
+                        />
+                      </span>
+                    ) : (
+                      '--'
+                    )}
+                  </EntityDetailRow>
+                )}
               </div>
             </div>
           </div>
