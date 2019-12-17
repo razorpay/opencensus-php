@@ -72,7 +72,7 @@ class Stork
 
         if (empty($merchant) === false)
         {
-            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload);
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload, $mode);
 
             $payload  = $response['content'];
         }

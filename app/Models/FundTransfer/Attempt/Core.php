@@ -420,7 +420,8 @@ class Core extends Base\Core
                             ->fund_transfer_attempt
                             ->getFTSAttemptBySourceId(
                                 $input[Entity::SOURCE_ID],
-                                $input[Entity::SOURCE_TYPE]);
+                                $input[Entity::SOURCE_TYPE],
+                                true);
 
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }

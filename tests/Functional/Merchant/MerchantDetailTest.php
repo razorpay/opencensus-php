@@ -6,6 +6,7 @@ use DB;
 use RZP\Constants;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\HubspotClient;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -690,11 +691,38 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
+    }
+
+    public function testPutPreSignupDetailsForUnregisteredBusiness()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '11'
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntity('merchant_detail',
+                                             [
+                                                 'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                             ]);
+
+        $this->assertEquals($merchantDetail[Entity::CONTACT_NAME], $merchantDetail[Entity::BUSINESS_NAME]);
     }
 
     public function testPutPreSignupDetailsWithCouponCode()

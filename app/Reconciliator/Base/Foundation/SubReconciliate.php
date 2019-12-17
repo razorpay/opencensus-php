@@ -556,9 +556,15 @@ class SubReconciliate extends Base\Core
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
 
-        if ($errorCode !== null)
+        //
+        // For error codes, we don't want to overwrite it, because the first point
+        // where we set the error code, that is very specific to the issue.
+        //
+        $existingErrorCode = static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG];
+
+        if ((empty($errorCode) === false) and
+            (empty($existingErrorCode) === true))
         {
-            // Sometimes we intentionally pass '' to reset the error to blank, i.e. unprocessed success row
             static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
     }
@@ -621,7 +627,7 @@ class SubReconciliate extends Base\Core
         else
         {
             // update the recon status in the output file
-            $this->setRowReconStatusAndError(InfoCode::RECON_UNPROCESSED_SUCCESS, '');
+            $this->setRowReconStatusAndError(InfoCode::RECON_UNPROCESSED_SUCCESS);
 
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
@@ -755,5 +761,17 @@ class SubReconciliate extends Base\Core
         }
 
         return constant($className . '::' . 'BLACKLISTED_COLUMNS');
+    }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function if MIS file need to be modified.
+     *
+     * Currently this is being used for cardfssbob
+     * @param $row
+     */
+    protected function modifyRowIfNeeded(&$row)
+    {
+        return;
     }
 }

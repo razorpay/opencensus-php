@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\BankingAccountStatement\Entity as BankingAccountStatementEntity;
 
 /**
  * Class Repository
@@ -97,6 +98,26 @@ class Repository extends Transaction\Repository
         return $statements;
     }
 
+    /**
+     * TODO : https://razorpay.atlassian.net/browse/RX-536
+     * @param $merchantId
+     * @param $balanceId
+     * @param $fromDate
+     * @param $toDate
+     * @return mixed
+     */
+    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
+                    ->with('bankingAccountStatement')
+                    ->get();
+    }
+
     protected function addQueryParamId($query, $params)
     {
         $id = $params[Entity::ID];
@@ -133,10 +154,10 @@ class Repository extends Transaction\Repository
 
         $query->where($actionColumn, '!=', 0)
               ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
-                {
-                    $query->where($actionColumn, 0)
-                          ->where($oppositeActionColumn, 0);
-                });
+              {
+                  $query->where($actionColumn, 0)
+                        ->where($oppositeActionColumn, 0);
+              });
     }
 
     /**

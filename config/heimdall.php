@@ -803,6 +803,13 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        PermissionCategory::RENDERING_PREFERENCES => [
+            Permission::MANAGE_RENDERING_PREFERENCES => [
+                'description' => 'Manage rendering preferences from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
     ],
 
     'workflows' => [

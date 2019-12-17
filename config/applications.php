@@ -262,6 +262,10 @@ return [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
+        'admin_auth' => [
+            'username' => 'api',
+            'password' => env('UFH_ADMIN_PASSWORD'),
+        ],
     ],
 
     'pincodesearch' => [

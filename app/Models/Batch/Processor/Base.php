@@ -1577,4 +1577,9 @@ class Base extends BaseModel\Core
     {
         return 0;
     }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        return;
+    }
 }

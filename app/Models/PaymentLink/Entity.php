@@ -417,14 +417,6 @@ class Entity extends Base\PublicEntity
 
     public function isTimesPayableExhausted(): bool
     {
-        $isNewPage = (new Core)->isPaymentPageV3Enabled();
-
-        if (($this->getVersion() === Version::V1) and ($isNewPage === false))
-        {
-            return (($this->getTimesPayable() !== null) and
-                ($this->getTimesPayable() === $this->getTimesPaid()));
-        }
-
         $paymentPageItems = $this->paymentPageItems()->get();
 
         foreach ($paymentPageItems as $paymentPageItem)
@@ -509,6 +501,22 @@ class Entity extends Base\PublicEntity
     public function getSettingsAccessor(): Settings\Accessor
     {
         return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK);
+    }
+
+    public function getAmountToSendSms()
+    {
+        $paymentPageItems = $this->paymentPageItems;
+
+        if (count($paymentPageItems) !== 1)
+        {
+            return null;
+        }
+
+        $paymentPageItem = $paymentPageItems->get(0);
+
+        $item = $paymentPageItem->item;
+
+        return $item->getAmount();
     }
 
     // -------------------------------------- End Getters -----------------------------
