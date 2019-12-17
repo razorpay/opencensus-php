@@ -32,4 +32,11 @@ class PayoutLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function cancel(string $payoutLinkId)
+    {
+        $data = $this->service()->cancel($payoutLinkId);
+
+        return ApiResponse::json($data);
+    }
 }

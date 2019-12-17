@@ -3,7 +3,6 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestException;
 
 return [
     'testPostRequestForCreatingPayoutLink' => [
@@ -384,7 +383,39 @@ return [
         ]
     ],
 
-    'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
+    'testPayoutLinkCancelApiSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
+            ]
+        ]
+    ],
+
+    'testCancellingPayoutLinkFromProcessingStatusShouldThrowException' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+        ]
+    ],
+
+   'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
         'request'   => [
             'method' => 'POST',
             'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
@@ -402,5 +433,18 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
         ]
-    ]
+    ],
+
+    'testCancelIdempotencyByCallingTheCancelApiTwice' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
+            ]
+        ]
+    ],
 ];

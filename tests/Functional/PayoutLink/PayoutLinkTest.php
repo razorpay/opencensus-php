@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\PayoutLink;
 use Mail;
 use Mockery;
 use Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
+use RZP\Exception\BadRequestException;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -290,7 +292,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -311,7 +316,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -349,7 +357,10 @@ class PayoutLinkTest extends TestCase
 
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -375,7 +386,10 @@ class PayoutLinkTest extends TestCase
                                            ]);
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
         $this->startTest();
     }
@@ -401,7 +415,10 @@ class PayoutLinkTest extends TestCase
                                            ]);
         $this->fixtures->create('payout_link',
                                 [
-                                    'contact_id' => $contact->getId()
+                                    'contact_id'           => $contact->getId(),
+                                    'contact_name'         => $contact->getName(),
+                                    'contact_phone_number' => $contact->getContact(),
+                                    'contact_email'        => $contact->getEmail()
                                 ]);
 
         $this->startTest();
@@ -443,6 +460,46 @@ class PayoutLinkTest extends TestCase
                                 [
                                     'contact_id' => $this->contact->getId()
                                 ]);
+
+        $this->startTest();
+    }
+
+    public function testPayoutLinkCancelApiSuccess()
+    {
+        $this->fixtures->create('payout_link');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCancellingPayoutLinkFromProcessingStatusShouldThrowException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $payoutLink->setStatus(Status::PROCESSING);
+
+        $payoutLink->saveOrFail();
+    }
+
+    public function testSettingPayoutLinkToInvalidStatusShouldThrowException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS);
+
+        $this->expectException(BadRequestException::class);
+
+        $payoutLink->setStatus('An Invalid State');
+    }
+
+    public function testCancelIdempotencyByCallingTheCancelApiTwice()
+    {
+        $this->fixtures->create('payout_link');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
 
         $this->startTest();
     }
