@@ -17,7 +17,7 @@ export default ({
       isInline
       validator={getFormElementValidations('starts_at')}
       defaultValue={startsAt}
-      fieldLabel={"Starts Immediately"}
+      checkboxFieldLabel={'Starts Immediately'}
     />
     <Input.DateTime
       label="Expires On"
@@ -27,7 +27,7 @@ export default ({
       isInline
       validator={getFormElementValidations('ends_at')}
       defaultValue={endsAt}
-      fieldLabel={"No Expiry"}
+      checkboxFieldLabel={'No Expiry'}
     />
     <Input.Select
       validator={getFormElementValidations('block')}

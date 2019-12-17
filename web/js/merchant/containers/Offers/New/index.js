@@ -37,13 +37,12 @@ const SUCCESS_NOTIFICATION = 'New offer created';
 export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
-    starts_at: moment().add(1, 'days'),
-    ends_at: moment().add(7, 'days'),
+    starts_at: moment(),
+    ends_at: moment(),
     validTabs: [false, false, false, false],
     allPaymentMethodsAllowed: false,
     creation_terms_accepted: 'false',
   };
-
   IS_MODAL_VIEW = (this.props.onClose && true) || false;
 
   tabsData = [
