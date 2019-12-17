@@ -23,9 +23,9 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $results = $this->repo->workflow_payout_amount_rules->fetchAllWorkflowRulesForOrg($orgId, $input)->toArrayWithItems();
+        $results = $this->repo->workflow_payout_amount_rules->fetchAllWorkflowRulesForOrg($orgId, $input);//->toArrayWithItems();
 
-        $results = $this->convertToDashboardFormat($results);
+//        $results = $this->convertToDashboardFormat($results);
 
         return $results;
     }

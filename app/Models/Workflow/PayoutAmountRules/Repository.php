@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
@@ -22,6 +23,38 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+//    public function fetchAllWorkflowRulesForOrg($orgId, $params)
+//    {
+//        // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
+//        // which cannot be filtered further according to merchant to which it belongs which is required here.
+//        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
+//
+//        $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
+//
+//        $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
+//
+//        $query = $this->newQuery()
+//                      ->with('steps','steps.role')
+//                      ->whereHas('workflow', function($q) use($orgId)
+//                                             {
+//                                                 $q->where(Entity::ORG_ID, $orgId);
+//                                             });
+//
+//        // Filter by merchant if merchant id passed as query parameter
+//        if (empty($merchantId) === false)
+//        {
+//            $query = $query->merchantId($merchantId);
+//        }
+//
+//        $results = $query->get()
+//                         ->groupBy(Entity::MERCHANT_ID);
+//
+//        // Implementing pagination
+//        $results = $results->slice($offset,$limit);
+//
+//        return $results;
+//    }
+
     public function fetchAllWorkflowRulesForOrg($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
@@ -32,24 +65,19 @@ class Repository extends Base\Repository
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        $query = $this->newQuery()
-                      ->with('steps','steps.role')
-                      ->whereHas('workflow', function($q) use($orgId)
-                                             {
-                                                 $q->where(Entity::ORG_ID, $orgId);
-                                             });
+        $query = $this->repo->permission->newQuery()
+                                        ->where(Admin\Permission\Entity::NAME, 'create_payout');
 
-        // Filter by merchant if merchant id passed as query parameter
-        if (empty($merchantId) === false)
-        {
-            $query = $query->merchantId($merchantId);
-        }
+        /**
+         * @var Admin\Permission\Entity $permission
+         */
+        $permission = $query->first();
 
-        $results = $query->get()
-                         ->groupBy(Entity::MERCHANT_ID);
+        $merchants = $permission->workflows->pluck('merchant')->unique()->toArray();
 
-        // Implementing pagination
-        $results = $results->slice($offset,$limit);
+        $results = array_column($merchants, 'id');
+
+//        sd($merchants);
 
         return $results;
     }

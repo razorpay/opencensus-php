@@ -1148,6 +1148,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany(Action\Entity::class, Action\Entity::MAKER);
     }
 
+    public function workflowRules()
+    {
+        return $this->hasMany(\RZP\Models\Workflow\PayoutAmountRules\Entity::class, \RZP\Models\Workflow\PayoutAmountRules\Entity::MERCHANT_ID, Entity::ID);
+    }
+
     public function merchantDetail()
     {
         return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
