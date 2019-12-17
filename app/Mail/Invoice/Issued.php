@@ -44,9 +44,14 @@ class Issued extends Base
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($this->data['invoice']['entity_type'] === 'subscription_registration')
+                if ($this->data['invoice']['entity_type'] === 'subscription_registration' and
+                    $this->data['invoice']['subscription_registration']['method'] === 'emandate')
                 {
                     $this->view('emails.invoice.customer.custom.rbl_interim_process2');
+                }
+                else
+                {
+                    $this->view('emails.invoice.customer.notification');
                 }
 
                 break;
