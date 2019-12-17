@@ -2337,6 +2337,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DOPPLER_SERVICE_SUCCESS_RATE_REQUEST                  = 'DOPPLER_SERVICE_SUCCESS_RATE_REQUEST';
     const DOPPLER_SERVICE_SUCCESS_RATE_RESPONSE                 = 'DOPPLER_SERVICE_SUCCESS_RATE_RESPONSE';
     const DOPPLER_SERVICE_RETRY                                 = 'DOPPLER_SERVICE_RETRY';
+    const DOPPLER_IN_CONTROLLER                                 = 'DOPPLER_IN_CONTROLLER';
+    const DOPPLER_IN_CONTROLLER_RESPONSE                        = 'DOPPLER_IN_CONTROLLER_RESPONSE';
 
     /*
      * Trace codes for PowerWallet
