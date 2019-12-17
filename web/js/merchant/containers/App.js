@@ -24,6 +24,7 @@ import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
   updateMerchantLiveTransactionFlag,
@@ -255,6 +256,10 @@ export default class App extends Component {
                 eventAction: 'Login',
                 eventLabel: 'MTU-Funnel',
               })();
+              fireAnalyticsEvents({
+                fbData: 'live_mtu_funnel',
+                liData: 1668428,
+              });
             }
           })
           .catch(err => {});
@@ -265,6 +270,11 @@ export default class App extends Component {
           eventAction: 'Login',
           eventLabel: 'MTU-Audience',
         })();
+        fireAnalyticsEvents({
+          fbData: 'live_mtu_audience',
+          liData: 1668436,
+        });
+        break;
     }
   };
 
