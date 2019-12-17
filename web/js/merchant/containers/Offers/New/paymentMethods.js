@@ -29,7 +29,7 @@ export default ({
     { label: 'ICICI Bank', name: 'ICIC' },
     { label: 'INDUSIND Bank', name: 'INDB' },
     { label: 'Kotak Mahindra Bank', name: 'KKBK' },
-    { label: 'Ratnakar Bank Bank', name: 'RATN' },
+    { label: 'Ratnakar Bank', name: 'RATN' },
     { label: 'Standard Chartered Bank', name: 'SCBL' },
     { label: 'Axis Bank', name: 'UTIB' },
     { label: 'Yes Bank', name: 'YESB' },
@@ -68,11 +68,11 @@ export default ({
             label="Card Type"
             name="payment_method_type"
             defaultValue={paymentMethodType}
-            onChange={getFormOnChangeHandler()}
             options={(() => {
               return isSelectedPaymentMethod('emi')
                 ? [{ label: 'Credit Card', name: 'credit' }]
                 : [
+                    { label: 'Both Credit and Debit Cards', name: '' },
                     { label: 'Credit Card', name: 'credit' },
                     { label: 'Debit Card', name: 'debit' },
                   ];
