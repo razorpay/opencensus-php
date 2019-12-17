@@ -610,11 +610,6 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
-        if ($mode === Mode::UPI)
-        {
-            return [false, 'Upi not supported'];
-        }
-
         $allowedModes = Mode::get24x7FtsTransferModes();
 
         if (in_array($mode, $allowedModes, true) === true)
