@@ -546,4 +546,19 @@ class PayoutLinkTest extends TestCase
                                               ]);
         $this->startTest();
     }
+
+    // test that when type is bank_account then bank_account is required
+    // test that when type is vpa then vpa is required
+    // test that if the TYPE is not in bank_account/vpa, then the call fails
+    // test that call fails when token is absent
+    // test that call fails when token is invalid
+    // test exception is thrown when fund-account add fails
+    // test exception when the fund-account-id passed doesn't exist
+    // test success when bank account fund-account is added
+    // test success when vpa fund-account is added
+    // test exception when the fund-account-id passed if is not that of the contact then exception is thrown
+    //
+
+
+
 }

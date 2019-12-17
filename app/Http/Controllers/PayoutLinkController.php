@@ -25,6 +25,19 @@ class PayoutLinkController extends Controller
         return $response;
     }
 
+    /**
+     * This api call will take the func-account details, and initiate the payout
+     * @param string $payoutLinkId
+     * @return array
+     */
+    public function initiate(string $payoutLinkId)
+    {
+        array_pull($this->input , 'XDEBUG_SESSION_START');
+        $response = $this->service()->initiate($payoutLinkId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function generateAndSendCustomerOtp(string $payoutLinkId)
     {
         $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);

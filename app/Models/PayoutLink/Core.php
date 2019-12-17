@@ -13,6 +13,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
 class Core extends Base\Core
 {
@@ -111,6 +112,34 @@ class Core extends Base\Core
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    public function initiate(string $payoutLinkId, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
+            $input);
+
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
+                                                                          $this->merchant,
+                                                                          $payoutLink->contact);
+
+        $payoutLink->fundAccount()->associate($fundAccount);
+
+        $this->repo->saveOrFail($payoutLink);
+
+        // associate it with the payout-link entity
+        // trigger the flow for initiating the payout
+
+        return [];
     }
 
     public function create(array $input): Entity
