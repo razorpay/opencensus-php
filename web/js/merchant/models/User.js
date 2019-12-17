@@ -465,6 +465,10 @@ export default class User {
     return this.getExpStatus('vpa_enabled');
   }
 
+  get isNewPPSuccessModalEnabled() {
+    return this.getExpStatus('new_pp_success_modal');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return (
