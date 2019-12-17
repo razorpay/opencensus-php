@@ -59,6 +59,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINK_CUSTOMER_OTP_RESPONSE                     = 'PAYOUT_LINK_CUSTOMER_OTP_RESPONSE';
     const PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED                   = 'PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED';
     const PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED                  = 'PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED';
+    const PAYOUT_LINK_CANCEL_REQUEST                            = 'PAYOUT_LINK_CANCEL_REQUEST';
 
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';

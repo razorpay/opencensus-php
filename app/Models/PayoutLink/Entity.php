@@ -180,6 +180,31 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::DESCRIPTION);
     }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getContactId()
+    {
+        return $this->getAttribute(self::CONTACT_ID);
+    }
+
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
+    public function getContactPhoneNumber()
+    {
+        return $this->getAttribute(self::CONTACT_PHONE_NUMBER);
+    }
+
+    public function getContactEmail()
+    {
+        return $this->getAttribute(self::CONTACT_EMAIL);
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -189,10 +214,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
-    public function setStatus(string $status)
+    public function setStatus($newStatus)
     {
-        // todo. pl add Status validation logic here, and fail accordingly
-        $this->setAttribute(self::STATUS, $status);
+        Status::validateStatusUpdate($newStatus, $this->getStatus(), $this->getId());
+
+        $this->setAttribute(self::STATUS, $newStatus);
     }
 
     // -------------------------------------- End Setters -----------------------------
