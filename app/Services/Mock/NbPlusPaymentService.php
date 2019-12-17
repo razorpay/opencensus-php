@@ -11,7 +11,7 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
 {
     public function sendRawRequest($request)
     {
-        $action  = explode('/', $request['url'])[1];
+        $action  = camel_case(explode('/', $request['url'])[1]);
 
         $content = $request['content'];
 
@@ -67,7 +67,21 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
         return [
             'data' => [
                 'gateway_success' => true,
-                'amount'          => $input['input']['payment']['amount']
+                'acquirer' => [
+                    'reference1' => '1234'
+                ],
+            ]
+        ];
+    }
+
+    protected function authorizeFailed($input)
+    {
+        return [
+            'data' => [
+                'gateway_success' => true,
+                'acquirer' => [
+                    'reference1' => '1234'
+                ],
             ]
         ];
     }

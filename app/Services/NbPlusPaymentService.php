@@ -33,6 +33,7 @@ class NbPlusPaymentService
     const ACTION    = 'action';
     const INPUT     = 'input';
     const DATA      = 'data';
+    const ACQUIRER  = 'acquirer';
     const ERROR     = 'error';
 
     // Supported Actions
@@ -138,9 +139,6 @@ class NbPlusPaymentService
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
-
-            // TODO: in case secrets are stored in credstash on api
-            //$input[Entity::TERMINAL] = $this->updateTerminalFromConfig($input);
         }
 
         foreach ($input as $key => $data)
@@ -238,12 +236,14 @@ class NbPlusPaymentService
 
         $responseBody = $this->jsonToArray($response->body);
 
-        if ($this->isSuccessResponse($code, $responseBody))
+        if ($this->action === self::AUTHORIZE_FAILED)
         {
-            if ($this->action === self::VERIFY)
-            {
-                return $this->processVerifyResponse($responseBody);
-            }
+            return $this->processAuthorizeFailedFlow($responseBody);
+        }
+
+        if ($this->isSuccessResponse($code, $responseBody) and ($this->action === self::VERIFY))
+        {
+            return $this->processVerifyResponse($responseBody);
         }
 
         return $responseBody;
@@ -297,27 +297,37 @@ class NbPlusPaymentService
     {
         $verify = $this->verifyPayment($response);
 
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
-        }
-
-        if (($verify->amountMismatch === true) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\RuntimeException(
-                'Payment amount verification failed.',
-                [
-                    'payment_id' => $this->input['payment']['id'],
-                    'gateway'    => $this->gateway
-                ]
-            );
-        }
-
         return $verify->getDataToTrace();
+    }
+
+    protected function processAuthorizeFailedFlow($response)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verifyPayment($response);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                [
+                    'message'    => 'Payment verification failed. Now converting to authorized',
+                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID]
+                ]);
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not',
+                null,
+                $this->input[Entity::PAYMENT]);
+        }
+
+        return $response;
     }
 
     protected function verifyPayment($response)
@@ -345,7 +355,13 @@ class NbPlusPaymentService
             return $verify;
         }
 
-        $this->checkAmountMismatch($verify);
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
 
         return $verify;
     }
@@ -365,14 +381,6 @@ class NbPlusPaymentService
     protected function checkGatewaySuccess(Verify &$verify)
     {
         $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
-    }
-
-    protected function checkAmountMismatch(Verify &$verify)
-    {
-        $expectedAmount = $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT];
-        $actualAmount   = $verify->verifyResponseContent['amount'];
-
-        $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
 
     // ----------------------- Error ---------------------------------------------

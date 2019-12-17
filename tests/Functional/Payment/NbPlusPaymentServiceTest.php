@@ -64,9 +64,10 @@ class NbPlusPaymentServiceTest extends TestCase
                   ->method('getTreatment')
                   ->will($this->returnCallback(
                       function ($mid, $feature, $mode)
-                        {
+                      {
                             return 'nbplusps';
-                        }));
+                      })
+                  );
 
         $this->terminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
 
@@ -77,7 +78,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
-    public function testAuthorizeViaNbPlusPaymentService()
+    public function testAuthorize()
     {
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -105,10 +106,16 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->assertEquals('authorized', $payment['status']);
 
+        $acquirerData = [
+            'bank_transaction_id' => '1234'
+        ];
+
+        $this->assertArraySelectiveEquals($acquirerData, $payment['acquirer_data']);
+
         $this->assertEquals($this->terminal->getId(), $payment['terminal_id']);
     }
 
-    public function testVerifyViaNbPlusPaymentService()
+    public function testVerify()
     {
         $paymentArray = $this->getDefaultNetbankingPaymentArray();
 
@@ -125,7 +132,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals(1, $payment['verified']);
     }
 
-    public function testPaymentFailedVerifySuccessViaNbPlusPaymentService()
+    public function testPaymentFailedVerifySuccess()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -170,7 +177,57 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals(0, $payment['verified']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentHandleErrorResponse()
+    public function testAuthorizeFailedPayment()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = [
+                    'data' => null,
+                    'payment' => [
+                    ],
+                    'error' => [
+                        'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
+                        'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                    ],
+                ];
+            }
+        });
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->authorizedFailedPayment($payment['id']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment['cps_route']);
+
+        $this->assertTrue($payment['late_authorized']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $acquirerData = [
+            'bank_transaction_id' => '1234'
+        ];
+
+        $this->assertArraySelectiveEquals($acquirerData, $payment['acquirer_data']);
+    }
+
+    public function testAuthorizeHandleErrorResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -205,7 +262,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentErrorResponseServerError()
+    public function testAuthorizeHandleServerErrorResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -241,7 +298,7 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('SERVER_ERROR', $payment['internal_error_code']);
     }
 
-    public function testAuthorizeViaNbPlusPaymentHandleErrorResponseGatewayError()
+    public function testAuthorizeHandleGatewayErrorResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
