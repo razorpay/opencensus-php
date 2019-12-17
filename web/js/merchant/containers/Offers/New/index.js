@@ -6,12 +6,14 @@ import { deepClone } from 'common/utils/rzp-utils';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { luminateRow } from 'merchant/reducers/app';
 import Offer from 'merchant/models/Offer';
+import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
 
 import PaymentMethods from './paymentMethods';
 import OfferDescription from './offerDescription';
@@ -21,19 +23,30 @@ import OfferReview from './offerReview';
 
 const MAX_INT = 21474836;
 const CURRENCY = 'INR';
+const SUCCESS_NOTIFICATION = 'New offer created';
 
 @withRouter
-@connect(state => ({
-  user: state.session.user,
+@connect(state => state.session, {
   showNotification,
-}))
+  openModal,
+  closeModal,
+  luminateRow,
+  appendOfferInReduxList,
+})
 @RTracking(() => window.rzpQ.component('NewOfferForm'))
 export default class CreateOfferWizard extends React.Component {
   state = {
-    currentTab: 0,
+    currentTab: 3,
     starts_at: moment().add(1, 'days'),
     ends_at: moment().add(7, 'days'),
     validTabs: [false, false, false, false],
+    terms: 'ukhgjycd',
+    name: 'kjhjgfgdv' + Math.random(),
+    display_text: 'ksghdfjnsgb jy',
+    payment_method: 'upi',
+    discount_type: 'flat',
+    flat_cashback: 6,
+    min_amount: 10 + Math.floor(Math.random() * 100),
     fields: {
       quantity: 1,
       addons: [],
@@ -42,6 +55,8 @@ export default class CreateOfferWizard extends React.Component {
     allPaymentMethodsAllowed: false,
     creation_terms_accepted: 'false',
   };
+
+  IS_MODAL_VIEW = (this.props.onClose && true) || false;
 
   tabsData = [
     {
@@ -110,7 +125,6 @@ export default class CreateOfferWizard extends React.Component {
           getFormOnChangeHandler={this.getFormOnChangeHandler}
           endsAt={this.state.ends_at}
           block={this.state.block}
-          checkoutVisibility={this.state.checkout_visibility}
           minAmount={this.state.min_amount}
           maxOfferUsage={this.state.max_offer_usage}
         />
@@ -424,7 +438,6 @@ export default class CreateOfferWizard extends React.Component {
         this.setState({
           parentFormLock: false,
         });
-
         if (savedOffer && savedOffer.id) {
           this.props.showNotification({
             type: 'success',
@@ -435,9 +448,8 @@ export default class CreateOfferWizard extends React.Component {
           this.props.tracking.trackEvent(
             window.rzpQ.merchantActions().success('Offer_create')
           );
-
+          debugger;
           const entityId = savedOffer.id;
-
           if (this.IS_MODAL_VIEW) {
             this.props.appendOfferInReduxList(savedOffer);
             this.props.luminateRow(entityId); // Make it promise based
@@ -458,6 +470,7 @@ export default class CreateOfferWizard extends React.Component {
         }
       })
       .catch(({ errors }) => {
+        debugger;
         let err = errors;
         if (Array.isArray(err)) {
           err = [];

@@ -6,7 +6,6 @@ export default ({
   getFormElementValidations,
   getFormOnChangeHandler,
   endsAt,
-  checkoutVisibility,
   maxOfferUsage,
 }) => (
   <React.Fragment>
@@ -50,13 +49,6 @@ export default ({
       placeholder="Max Usage of this offer: Example - 100 times"
       required
       defaultValue={maxOfferUsage}
-    />
-    <Input.Check
-      label={'Checkout Visibility'}
-      className={'Input--vTop'}
-      fieldLabel={'Offer available for all users on checkout.'}
-      name="checkout_visibility"
-      defaultValue={checkoutVisibility}
     />
   </React.Fragment>
 );
