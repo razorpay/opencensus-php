@@ -95,7 +95,7 @@ return [
                 'description' => 'This is a test payout',
                 'contact'     => [
                     'name'       => 'cskdsdssdklifnjs',
-                    'email'      => 'dsknlds@gmail.com',
+                    'email'      => '@@',
                     'contact'    => '1231231231'
                 ],
                 'notes'       => ['hi' => 'hello'],
@@ -106,14 +106,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_ADD_FAILED,
+                    'description' => 'The email must be a valid email address.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
