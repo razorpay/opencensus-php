@@ -1047,6 +1047,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE           = 'MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE';
     const MERCHANT_VERIFY_POA                                   = 'MERCHANT_VERIFY_POA';
     const MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA             = 'MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA';
     const MERCHANT_MARK_HAS_KEY_ACCESS                          = 'MERCHANT_MARK_HAS_KEY_ACCESS';

@@ -28,4 +28,10 @@ class Constants
     const MERCHANT_ID     = 'merchant_id';
     const ACCOUNT_STATUS  = 'account_status';
     const REGISTERED_NAME = 'registered_name';
+
+    // merchant verification
+    const VERIFICATION    = 'verification';
+    const REQUIRED_FIELDS = 'required_fields';
+
+    const DUMMY_ACTIVATION_FILE = '100000000Dummy';
 }
