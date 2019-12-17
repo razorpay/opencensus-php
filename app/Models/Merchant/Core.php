@@ -135,6 +135,9 @@ class Core extends Base\Core
     }
 
     /**
+     * For any code getting added here, consider whether it is applicable for a submerchant
+     * getting linked via an admin or by a referral code and update code in those cases too
+     *
      * @param array  $input
      * @param Entity $aggregatorMerchant
      * @param bool   $linkedAccount
@@ -214,7 +217,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    protected function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
+    public function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
     {
         // assign parent pricing plan by default
         $pricingPlan = $merchant->getPricingPlanId();
