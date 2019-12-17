@@ -11,31 +11,9 @@ import {
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
-@connect(
-  state => ({
-    config: state.config.config,
-  }),
-  { closeModal }
-)
+@connect(state => ({}), { closeModal })
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
-  componentWillMount() {
-    const script = document.createElement('script');
-
-    script.onload = () => {
-      const textClr =
-        !window.colorLib || window.colorLib.isDark(this.color)
-          ? '#fff'
-          : 'rgba(0, 0, 0, 0.85)';
-
-      this.setState({
-        textClr,
-      });
-    };
-    script.src = 'https://cdn.razorpay.com/static/assets/color.js';
-
-    document.head.appendChild(script);
-  }
 
   updateButtonText = e => {
     this.setState({
@@ -49,63 +27,10 @@ export default class extends React.Component {
     });
   };
 
-  get color() {
-    return this.props.config.brand_color;
-  }
-
   render() {
     const { shortUrl, closeModal } = this.props;
     const { btnLabel, btnSize } = this.state;
     const el = document.getElementById('embed-btn-preview');
-
-    let width;
-    switch (btnSize) {
-      case '1':
-        width = 180;
-        break;
-      case '2':
-        width = 120;
-        break;
-      default:
-        width = 240;
-    }
-
-    const previewBtnCode = (
-      <span>
-        <a
-          href={shortUrl}
-          style={{
-            position: 'relative',
-            display: 'block',
-            minHeight: 38,
-            width,
-            padding: 10,
-            margin: '0 auto',
-            lineHeight: '18px',
-            fontWeight: 600,
-            fontSize: 14,
-            fontFamily:
-              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
-            wordBreak: 'break-word',
-            borderRadius: 2,
-            textAlign: 'center',
-            backgroundColor: this.color,
-            color: this.state.textClr || '#fff',
-            boxShadow: '0 0 24px 0 rgba(0,0,0,0.2)',
-            zIndex: 2,
-          }}
-          target="_blank"
-        >
-          {this.state.textClr && btnLabel}
-        </a>
-        <div style={{ marginTop: 4, textAlign: 'center' }}>
-          <img
-            height="16px"
-            src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png"
-          />
-        </div>
-      </span>
-    );
 
     /* Embed Button */
 
@@ -157,7 +82,12 @@ export default class extends React.Component {
             />
             <div className="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
-              <div id="embed-btn-preview">{previewBtnCode}</div>
+              <PreviewPaymentPageButton
+                url={shortUrl}
+                textClr={this.state.textClr}
+                btnSize={btnSize}
+                btnLabel={btnLabel}
+              />
             </div>
             <Input.Textarea
               id="code-copier"
@@ -199,5 +129,94 @@ export default class extends React.Component {
         </div>
       </div>
     );
+  }
+}
+
+@connect(
+  state => ({
+    config: state.config.config,
+  }),
+  null
+)
+class PreviewPaymentPageButton extends React.Component {
+  state = {
+    textColor: '#fff',
+  };
+
+  componentDidMount() {
+    const script = document.createElement('script');
+
+    script.onload = () => {
+      const textColor =
+        !window.colorLib || window.colorLib.isDark(this.merchantThemeColor)
+          ? '#fff'
+          : 'rgba(0, 0, 0, 0.85)';
+
+      this.setState({
+        textColor,
+      });
+    };
+    script.src = 'https://cdn.razorpay.com/static/assets/color.js';
+
+    document.head.appendChild(script);
+  }
+
+  get merchantThemeColor() {
+    return this.props.config.brand_color;
+  }
+
+  render() {
+    const { url, btnSize = '0', btnLabel = 'Pay Now' } = this.props;
+
+    let width;
+    switch (btnSize) {
+      case '1':
+        width = 180;
+        break;
+      case '2':
+        width = 120;
+        break;
+      default:
+        width = 240;
+    }
+
+    const previewBtnCode = (
+      <span>
+        <a
+          href={url}
+          style={{
+            position: 'relative',
+            display: 'block',
+            minHeight: 38,
+            width,
+            padding: 10,
+            margin: '0 auto',
+            lineHeight: '18px',
+            fontWeight: 600,
+            fontSize: 14,
+            fontFamily:
+              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
+            wordBreak: 'break-word',
+            borderRadius: 2,
+            textAlign: 'center',
+            backgroundColor: this.merchantThemeColor,
+            color: this.state.textColor,
+            boxShadow: '0 0 24px 0 rgba(0,0,0,0.2)',
+            zIndex: 2,
+          }}
+          target="_blank"
+        >
+          {this.state.textColor && btnLabel}
+        </a>
+        <div style={{ marginTop: 4, textAlign: 'center' }}>
+          <img
+            height="16px"
+            src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png"
+          />
+        </div>
+      </span>
+    );
+
+    return <div id="embed-btn-preview">{previewBtnCode}</div>;
   }
 }

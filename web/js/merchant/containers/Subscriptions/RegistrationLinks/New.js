@@ -312,6 +312,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             data.formReference2;
         }
       }
+
+      payload.subscription_registration.auth_type = 'physical';
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
