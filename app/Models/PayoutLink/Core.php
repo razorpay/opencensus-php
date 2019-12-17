@@ -28,9 +28,10 @@ class Core extends Base\Core
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
 
-    const TOKEN_EXPIRE_IN_SECONDS = 900; //15 minutes
+    const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
+    const MUTEX_TIMEOUT           = 60;
 
     protected $elfin;
 
@@ -66,13 +67,12 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-//         If already cancelled, then return the entity without any change. Makes this call idempotent.
+        //   If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
             return $payoutLink;
         }
 
-        // todo, pl how to test mutex fail and success flows ?  # reviewers
         return $this->mutex->acquireAndRelease(
             $payoutLink->getId(),
             function () use ($payoutLink)
@@ -82,7 +82,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($payoutLink);
 
                 return $payoutLink;
-            });
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function create(array $input): Entity
