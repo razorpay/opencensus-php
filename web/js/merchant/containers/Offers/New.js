@@ -93,6 +93,10 @@ class NewOfferForm extends React.Component {
     if (transformed.min_amount === null || isNaN(transformed.min_amount)) {
       fieldsTobeDeleted.push('min_amount');
     }
+    if (transformed.payment_method_type === 'all') {
+      // when no payment_method_type sent api consider it as all
+      fieldsTobeDeleted.push('payment_method_type');
+    }
     //fields to be deleted
     fieldsTobeDeleted.forEach(field => {
       if (field in transformed) {
@@ -250,6 +254,7 @@ class NewOfferForm extends React.Component {
                 return this.isSelectedPaymentMethod('emi')
                   ? [{ label: 'Credit Card', name: 'credit' }]
                   : [
+                      { label: 'All Card', name: 'all' },
                       { label: 'Credit Card', name: 'credit' },
                       { label: 'Debit Card', name: 'debit' },
                     ];
