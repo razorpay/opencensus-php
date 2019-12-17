@@ -393,6 +393,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED,
                         'message'    => 'Recon status is failed, but authorized_at is set in API',
                         'payment_id' => $this->payment->getId(),
                         'gateway'    => $this->gateway
