@@ -116,6 +116,7 @@ export default ({
     discount_type,
     flat_cashback,
     min_amount,
+    display_text,
     payment_method,
     starts_at,
     ends_at,
@@ -137,7 +138,7 @@ export default ({
             <p>
               <strong>Description:</strong>
             </p>
-            {getDualColumnTable('Display Text', '10% off on all HDFC cards')}
+            {getDualColumnTable('Display Text', display_text)}
             {getDualColumnTable('Offer Terms', terms)}
           </div>,
           <div>
@@ -171,8 +172,8 @@ export default ({
             </p>
             {getDualColumnTable(
               'Offer Validity',
-              `${starts_at ? starts_at.format('DD-MM-YY, HH:MM a') : '-'} to ${
-                ends_at ? ends_at.format('DD-MM-YY, HH:MM a') : '-'
+              `${starts_at ? starts_at.format('DD-MM-YY, HH:MM a') : '--'} to ${
+                ends_at ? ends_at.format('DD-MM-YY, HH:MM a') : '--'
               }`
             )}
           </div>,
