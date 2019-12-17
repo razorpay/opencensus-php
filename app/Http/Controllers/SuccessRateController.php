@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 use RZP\Services\Doppler;
 
 class SuccessRateController extends Controller
