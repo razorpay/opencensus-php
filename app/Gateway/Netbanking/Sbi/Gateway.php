@@ -233,14 +233,17 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequest(array $input)
     {
-        $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_MANDATE_' .$this->mode);
+
             $requestArray = $this->getEmandateParams($input);
         }
         else
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
+
             $requestArray = [
                 RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
                 RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,

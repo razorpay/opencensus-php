@@ -489,10 +489,13 @@ class Server extends Base\Mock\Server
         switch ($mockCase)
         {
             case "1":
+            default:
                 $responseBody = [
                     'data' => [
-                        'description'   => "Success",
-                        'res_code'        => "00",
+                        'description'   => "SUCCESS",
+                        'res_code'      => "00",
+                        'retry'         =>  "false",
+                        'status'        => "terminal_creation_successful",
                         '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
                     ],
                     'error'             => [],
@@ -588,11 +591,12 @@ class Server extends Base\Mock\Server
         switch ($mockCase)
         {
             case "1":
+            default:
                 $responseBody = [
                     'data' => [
                         'description'   => 'Success',
                         'res_code'        => '00',
-                        'status'        => 'callback_successful',
+                        'status'        => 'terminal_activation_successful',
                         '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
                     ],
                     'error'             => [],
@@ -607,7 +611,7 @@ class Server extends Base\Mock\Server
                     'data' => [
                         'description'   => 'Failed',
                         'res_code'        => '00',
-                        'status'        => 'callback_failed',
+                        'status'        => 'terminal_activation_failed',
                         '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
                     ],
                     'error'             => [],

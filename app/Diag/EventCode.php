@@ -434,6 +434,11 @@ class EventCode
         'name'  => 'kyc.upload_document.success',
     ];
 
+    const DOCUMENT_VERIFICATION_OCR = [
+        'group' => 'onboarding',
+        'name'  => 'document.verification.ocr',
+    ];
+
     const KYC_UPLOAD_DOCUMENT_FAILED = [
         'group' => 'onboarding',
         'name'  => 'kyc.upload_document.failed',

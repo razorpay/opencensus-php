@@ -511,6 +511,22 @@ class Entity extends Base\PublicEntity
         return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK);
     }
 
+    public function getAmountToSendSms()
+    {
+        $paymentPageItems = $this->paymentPageItems;
+
+        if (count($paymentPageItems) !== 1)
+        {
+            return null;
+        }
+
+        $paymentPageItem = $paymentPageItems->get(0);
+
+        $item = $paymentPageItem->item;
+
+        return $item->getAmount();
+    }
+
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------

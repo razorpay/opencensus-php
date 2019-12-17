@@ -205,7 +205,7 @@ class Type
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
-    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.

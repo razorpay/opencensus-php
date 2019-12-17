@@ -508,6 +508,18 @@ class Processor
             return $payment;
         });
 
+        switch ($input['provider'])
+        {
+            case CardlessEmi::ZESTMONEY:
+                $input['contact'] = $payment['contact'];
+                break;
+            case CardlessEmi::FLEXMONEY:
+                $input['contact'] = $payment['contact'];
+                break;
+            default;
+                break;
+        }
+
         $input['payment_id'] = $payment->getPublicId();
 
         if ((empty($input['emi_duration']) === false) and
@@ -645,7 +657,7 @@ class Processor
 
                 $input['payment'] = $payment->toArray();
 
-                $input['contact'] = '+' . 91 . $input['contact'];
+                $input['contact'] = $payment['contact'];
                 break;
 
             default:
