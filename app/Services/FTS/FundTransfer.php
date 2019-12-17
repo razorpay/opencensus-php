@@ -647,7 +647,7 @@ class FundTransfer extends Base
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes(15)->getTimestamp());
             }
 
             return true;
@@ -660,7 +660,7 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
                                         ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
