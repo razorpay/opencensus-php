@@ -24,6 +24,9 @@ class Status
      * Valid state transitions.
      */
     const STATE_MACHINE = [
+        null => [
+            self::ISSUED
+        ],
         self::ISSUED => [
             self::PROCESSING,
             self::CANCELLED
@@ -41,14 +44,6 @@ class Status
     // This is to handle the create entity flows, in which both the Status and ID will be null to start with
     static function validateStatusUpdate(string $nextStatus, string $currentStatus = null, string $payoutLinkId = null)
     {
-        // This will happen only in case of create, when there is no status set
-        // We have to validate that the starting state is ISSUED and nothing else
-        if ((empty($currentStatus) === true) and
-            ($nextStatus === self::ISSUED))
-        {
-            return;
-        }
-
         $context = [
             'id'             => $payoutLinkId,
             'current_status' => $currentStatus,
