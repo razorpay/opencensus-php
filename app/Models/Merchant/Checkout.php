@@ -659,10 +659,6 @@ class Checkout
             // If offer is forced, checkout handles it by displaying it without list of choices
             //
             $data['force_offer'] = true;
-        } else {
-            $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
-
-            $offers = $offers->merge($nonOrderOffers);
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data, $order);

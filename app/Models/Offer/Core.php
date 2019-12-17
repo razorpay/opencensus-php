@@ -170,7 +170,7 @@ class Core extends Base\Core
 
         $sharedOffers = $groupedOffers->get(Account::SHARED_ACCOUNT) ?? new PublicCollection;
 
-        $applicableOffers = $directOffers;
+        $applicableOffers = new PublicCollection();
 
         //
         // For shared merchant offers if there is no similar offer (i,e for same method,
