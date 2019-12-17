@@ -16,6 +16,7 @@ export default ({
       <div>
         <Input.Select
           name="discount_type"
+          class="Input--half"
           label="Discount Type"
           placeholder="Discount Type"
           required
