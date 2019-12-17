@@ -1195,19 +1195,22 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\PayoutLink\Entity::class, [
-            'id'           => 'DnhDjMDHlQEjgM',
-            'contact_id'   => '1000010contact',
-            'amount'       => 1000,
-            'merchant_id'  => '10000000000000',
-            'user_id'      => null,
-            'currency'     => 'INR',
-            'description'  => 'This is a test payout',
-            'receipt'      => 'Test Payout Receipt',
-            'notes'        => null,
-            'short_url'    => 'http=>//76594130.ngrok.io/i/mGs4ehe',
-            'status'       => 'issued',
-            'created_at'   => 1575367399,
-            'cancelled_at' => null
+            'id'                   => 'DnhDjMDHlQEjgM',
+            'contact_id'           => '1000010contact',
+            'contact_name'         => '1000010contact',
+            'contact_phone_number' => '1231231231',
+            'contact_email'        => 'test@rzp.com',
+            'amount'               => 1000,
+            'merchant_id'          => '10000000000000',
+            'user_id'              => null,
+            'currency'             => 'INR',
+            'description'          => 'This is a test payout',
+            'receipt'              => 'Test Payout Receipt',
+            'notes'                => null,
+            'short_url'            => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+            'status'               => 'issued',
+            'created_at'           => 1575367399,
+            'cancelled_at'         => null
         ]);
     }
 }

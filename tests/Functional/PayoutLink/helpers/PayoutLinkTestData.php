@@ -3,7 +3,6 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\BadRequestException;
 
 return [
     'testPostRequestForCreatingPayoutLink' => [
@@ -36,6 +35,7 @@ return [
             ]
         ]
     ],
+
     'testPostRequestForCreatingPayoutLinkWithContactId' => [
         'request'  => [
             'method'  => 'POST',
@@ -65,6 +65,7 @@ return [
             ]
         ]
     ],
+
     'testShortUrlGenerationSuccessful'                => [
         'request'  => [
             'method'  => 'POST',
@@ -85,6 +86,7 @@ return [
             ]
         ]
     ],
+
     'testPayoutLinkFailedDueToContactCreationFailure' => [
         'request'  => [
             'method'  => 'POST',
@@ -197,6 +199,7 @@ return [
             ]
         ]
     ],
+
     'testGetPayoutLinkById' => [
         'request'  => [
             'method' => 'GET',
@@ -217,6 +220,7 @@ return [
             ]
         ]
     ],
+
     'testListPayoutLink' => [
         'request'  => [
             'method' => 'GET',
@@ -232,6 +236,214 @@ return [
         ],
         'response' => [
             'content' => [
+            ]
+        ]
+    ],
+
+    'testGenerateOtpForOnlyPhoneContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testGenerateOtpForOnlyEmailContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testOtpVerificationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => [
+                'context' => '1576208561',
+                'otp'     => '0007'
+
+            ]
+
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testOtpGenerationWithContext' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'content' => [
+                'context' => '1576208561'
+            ]
+        ],
+        'response' => [
+            'content' => ['success' => 'OK']
+        ]
+    ],
+
+    'testVerifyOtpSuccessful' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => ['otp' => '0007']
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testVerifyOtpFailedByInvalidOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'content' => ['otp' => '1234']
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+        ]
+    ],
+
+    'testExceptionWhenOnlyPhoneIsPresentAndSmsFails' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+        ]
+    ],
+
+    'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
+        ]
+    ],
+
+    'testPayoutLinkCancelApiSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
+            ]
+        ]
+    ],
+
+    'testCancellingPayoutLinkFromProcessingStatusShouldThrowException' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+        ]
+    ],
+
+   'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
+        'request'   => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+        ]
+    ],
+
+    'testCancelIdempotencyByCallingTheCancelApiTwice' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'DnhDjMDHlQEjgM',
+                'status'      => 'cancelled',
             ]
         ]
     ],
