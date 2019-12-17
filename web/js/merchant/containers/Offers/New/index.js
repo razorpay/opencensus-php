@@ -103,6 +103,7 @@ export default class CreateOfferWizard extends React.Component {
           discountType={this.state.discount_type}
           getFormElementValidations={this.getFormElementValidations}
           minAmount={this.state.min_amount}
+          currency={CURRENCY}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -138,6 +139,7 @@ export default class CreateOfferWizard extends React.Component {
       renderFunction: () => (
         <OfferReview
           data={this.state}
+          currencySymbol={window.currencyList[CURRENCY].symbol}
           getFormOnChangeHandler={this.getFormOnChangeHandler}
         />
       ),

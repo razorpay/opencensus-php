@@ -126,6 +126,7 @@ export default ({
     max_cashback,
     creation_terms_accepted,
   },
+  currencySymbol,
   getFormOnChangeHandler,
 }) => {
   return (
@@ -146,8 +147,8 @@ export default ({
             {getDualColumnTable(
               discount_type + ' discount',
               discount_type == 'flat'
-                ? `Flat discount of ${flat_cashback} on a minimum purchase of ${min_amount}`
-                : `${percent_rate}% discount upto ${max_cashback} on a minimum purchase of ${min_amount}`
+                ? `Flat discount of ${currencySymbol} ${flat_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`
+                : `${percent_rate}% discount upto ${currencySymbol} ${max_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`
             )}
           </div>,
           <div>
