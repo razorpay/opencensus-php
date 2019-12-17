@@ -351,6 +351,8 @@ class ViewDataSerializer extends Base\Core
         // object passed as part of construct does not have relations loaded.
         //
         $this->repo->loadRelations($this->invoice);
+        
+        $this->invoice->setRelation('entity', $this->invoice->entity);
 
         $this->app['basicauth']->setMerchant($this->invoice->merchant);
 
