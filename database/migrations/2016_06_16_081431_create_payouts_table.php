@@ -229,11 +229,6 @@ class CreatePayoutsTable extends Migration
                   ->references(BatchFundTransfer\Entity::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
-
-            $table->foreign(Payout::PAYOUT_LINK_ID)
-                  ->references(PayoutLink\Entity::ID)
-                  ->on(Table::PAYOUT_LINK)
-                  ->on_delete('restrict');
         });
     }
 
@@ -255,8 +250,6 @@ class CreatePayoutsTable extends Migration
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
-
-            $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYOUT_LINK_ID . '_foreign');
         });
 
         Schema::drop(Table::PAYOUT);

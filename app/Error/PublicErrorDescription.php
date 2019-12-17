@@ -343,8 +343,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
 
-    const BAD_REQUEST_CONTACT_ADD_FAILED                                        = 'Could not create contact due to an internal error';
-
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
@@ -796,7 +794,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
     // payout links
-    const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Attached contact does not have either email or phone number';
+    const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Attached contact neither has email or phone number';
     const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/EMAIL delivery for OTP';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'Otp generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid payout link status passed';

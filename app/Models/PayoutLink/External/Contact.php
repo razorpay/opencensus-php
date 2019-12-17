@@ -74,21 +74,7 @@ class Contact
                                               ]);
             }
 
-            try
-            {
-                $contact = (new ContactCore())->create($contactDetails, $merchant);
-            }
-            catch(\Exception $e)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_CONTACT_ADD_FAILED,
-                    null,
-                    [
-                        'merchant_id' => $merchant->getPublicId(),
-                        'contact'     => $contactDetails
-                    ]
-                );
-            }
+            $contact = (new ContactCore())->create($contactDetails, $merchant);
         }
 
         return $contact;

@@ -38,15 +38,11 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION => 'required|string|max:255',
         Entity::RECEIPT     => 'sometimes|string|max:40',
         'contact'           => 'required|array',
-        'contact.id'        => 'sometimes|nullable|string|size:14',
-        'contact.name'      => 'required_without:contact.id|string|max:50',
-        'contact.email'     => 'nullable|email|filled',
-        'contact.contact'   => 'nullable|contact_syntax|filled',
-        'contact.type'      => 'nullable|max:40|alpha_dash_space|filled',
+        'contact.id'        => 'required_without:contact.name|nullable|string|size:14'
     ];
 
     protected static $verifyOtpRules = [
-        Entity::OTP     => 'required|string|max:6',
+        Entity::OTP     => 'required|string|min:4|max:6',
         Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
 }
