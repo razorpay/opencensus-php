@@ -55,11 +55,13 @@ const OfferDetails = props => {
     let paymentMethod = offer.payment_method || '--';
     let iins = (offer.iins && offer.iins.join(', ')) || '--';
     if (paymentMethod == 'card') {
-      paymentMethod =
-        {
-          credit: 'Credit Card',
-          debit: 'Debit Card',
-        }[offer.payment_method_type] || 'Both Credit and Debit Cards';
+      paymentMethod = 'Debit Card';
+      if (offer.payment_method_type == 'credit') {
+        paymentMethod = 'Credit Card';
+      }
+      if (offer.payment_method_type === null) {
+        paymentMethod = 'Both Credit and Debit cards';
+      }
     }
 
     return (
