@@ -41,6 +41,9 @@ class Entity extends Base\PublicEntity
     const CREATED_AT           = 'created_at';
     const UPDATED_AT           = 'updated_at';
 
+    const CONTEXT = 'context';
+    const OTP = 'otp';
+
     protected $generateIdOnCreate = true;
 
     protected $entity = 'payout_link';
@@ -173,6 +176,10 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------

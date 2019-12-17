@@ -793,6 +793,11 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
+    // payout links
+    const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Attached contact neither has email or phone number';
+    const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/EMAIL delivery for OTP';
+    const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'Otp generation failed';
+
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED                   = 'Only terminals in activated state can be enabled';

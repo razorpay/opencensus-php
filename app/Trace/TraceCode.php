@@ -48,10 +48,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_RESPONSE                         = 'PAYMENT_CAPTURE_BULK_RESPONSE';
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
+
+    // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
-    const PAYOUT_LINK_CONTACT_ADD_FAILED                        = 'PAYOUT_LINK_CONTACT_ADD_FAILED';
     const PAYOUT_LINK_PROCESS_CONTACT_REQUEST                   = 'PAYOUT_LINK_PROCESS_CONTACT_REQUEST';
     const PAYOUT_LINK_SHORT_URL_GENERATION_FAILED               = 'PAYOUT_LINK_SHORT_URL_GENERATION_FAILED';
+    const PAYOUT_LINK_CUSTOMER_OTP_GENERATE                     = 'PAYOUT_LINK_CUSTOMER_OTP_GENERATE';
+    const PAYOUT_LINK_CUSTOMER_OTP_VERIFY                       = 'PAYOUT_LINK_CUSTOMER_OTP_VERIFY';
+    const PAYOUT_LINK_CUSTOMER_OTP_REQUEST                      = 'PAYOUT_LINK_CUSTOMER_OTP_REQUEST';
+    const PAYOUT_LINK_CUSTOMER_OTP_RESPONSE                     = 'PAYOUT_LINK_CUSTOMER_OTP_RESPONSE';
+    const PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED                   = 'PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED';
+    const PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED                  = 'PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED';
+
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_CRON                             = 'PAYMENT_AUTO_CAPTURE_CRON';
@@ -1971,11 +1979,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES            = 'GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES';
     const GATEWAY_REQUEST_CURL_INFO                             = 'GATEWAY_REQUEST_CURL_INFO';
 
+    // Payout Link Codes
+
     const PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST                 = 'PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST';
     const PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST            = 'PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST';
     const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST               = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
     const PAYOUT_FOR_PAYMENT_CREATE_REQUEST                     = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
+    const PAYOUT_CUSTOMER_OTP_REQUEST                           = 'PAYOUT_CUSTOMER_OTP_REQUEST';
+
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';

@@ -2,20 +2,19 @@
 
 namespace RZP\Tests\Functional\PayoutLink;
 
+use Mail;
 use Mockery;
 use Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\BadRequestException;
+use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Models\PayoutLink\External\Contact as ContactClient;
 
 class PayoutLinkTest extends TestCase
 {
@@ -42,6 +41,13 @@ class PayoutLinkTest extends TestCase
         'cancelled_at' => null
         ];
 
+    const TEST_CONTACT = [
+        'id'      => '1000010contact',
+        'email'   => 'contact@razorpay.com',
+        'contact' => '8888888888',
+        'name'    => 'test user'
+    ];
+
     const FIXTURE_ENTITY = 'payout_link';
 
     public function setUp()
@@ -66,6 +72,7 @@ class PayoutLinkTest extends TestCase
             PayoutLink::AMOUNT     => 1000,
             PayoutLink::CURRENCY   => Currency::INR,
             PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
+            PayoutLink::CONTACT_NAME => $this->contact->getName()
         ];
 
         $payout_link = (new PayoutLink)->build($input);
@@ -265,6 +272,177 @@ class PayoutLinkTest extends TestCase
         $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'] = $testData;
 
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGenerateOtpForOnlyPhoneContact()
+    {
+        Mail::fake();
+
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'contact' => '8888888888',
+                                               'email' => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $contact->getId()
+                                ]);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(CustomerOtp::class);
+    }
+
+    public function testGenerateOtpForOnlyEmailContact()
+    {
+        Mail::fake();
+
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'email' => 'test@razorpay.com',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $contact->getId()
+                                ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(CustomerOtp::class);
+    }
+
+    public function testVerifyOtpSuccessful()
+    {
+        $this->fixtures->create('payout_link');
+
+        $response = $this->startTest();
+
+        $token = $response['token'];
+
+        $this->assertRegExp('/poutlk_DnhDjMDHlQEjgM.*/', $token);
+    }
+
+    public function testVerifyOtpFailedByInvalidOtp()
+    {
+        $this->fixtures->create('payout_link');
+
+        $this->startTest();
+    }
+
+    public function testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'email'   => '',
+                                               'contact' => '',
+                                               'name'    => 'test user'
+                                           ]);
+
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails()
+    {
+        $mail = Mockery::mock('overload:Mail');
+
+        $mail->shouldReceive('queue')
+             ->andThrow(new Exception('I failed for the sake of testing'));
+
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'email'   => 'test@razorpay.com',
+                                               'contact' => '',
+                                               'name'    => 'test user'
+                                           ]);
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $contact->getId()
+                                ]);
+        $this->startTest();
+    }
+
+    public function testExceptionWhenOnlyPhoneIsPresentAndSmsFails()
+    {
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('sendSms')
+              ->andThrow(new Exception('I failed for the sake of testing'));
+
+        $raven->shouldReceive('generateOtp')
+              ->andReturn(['otp' => '1234']);
+
+        $this->app->instance('raven', $raven);
+
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'id'      => '1000011contact',
+                                               'email'   => '',
+                                               'contact' => '1231231231',
+                                               'name'    => 'test user'
+                                           ]);
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testOtpGenerationWithContext()
+    {
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testOtpVerificationWithContext()
+    {
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
+
+        $this->startTest();
+    }
+
+    public function testWhenRavenFailsWhileOtpGenerationExceptionIsThrown()
+    {
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('sendSms')
+              ->andReturn('sms_1234');
+
+        $raven->shouldReceive('generateOtp')
+              ->andreturn([]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->fixtures->create('payout_link',
+                                [
+                                    'contact_id' => $this->contact->getId()
+                                ]);
 
         $this->startTest();
     }
