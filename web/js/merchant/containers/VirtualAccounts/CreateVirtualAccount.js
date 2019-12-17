@@ -39,6 +39,12 @@ const CustomCustomerOption = ({ option }) => {
   );
 };
 
+function valdiateVABankAccount(value, maxLength) {
+  let regex = new RegExp(`^[a-z0-9]{0,${maxLength}}$`, 'i');
+
+  return regex.test(value);
+}
+
 @withRouter
 @connect(
   state => {
@@ -100,7 +106,7 @@ export default class CreateVirtualAccount extends Component {
   };
 
   handleSubmit = formData => {
-    const { descriptorVPA, descriptorBankAccount } = formData;
+    const { descriptorVPA, descriptorBankAccount, description } = formData;
     const { notes, close_by, _internals, customer } = this.state;
 
     let transformedNotes = notes;
@@ -119,6 +125,7 @@ export default class CreateVirtualAccount extends Component {
       },
       notes: transformedNotes,
       close_by: close_by ? close_by.unix() : undefined,
+      description,
     };
 
     if (customer) {
@@ -262,74 +269,91 @@ export default class CreateVirtualAccount extends Component {
           <main>
             <div class="form-title">Create Virtual Account</div>
             <div class="form-group">
-              <Input.Group class="Input--vTop" label="Accept Payment Via">
-                <div>
-                  <Input.Check
-                    _name="hasBankAccount"
-                    fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
-                    defaultValue={_internals.hasBankAccount}
-                    disabled={!user.isVPAFeatureEnabled}
-                    onChange={e =>
-                      this.setState({
-                        _internals: {
-                          ...this.state._internals,
-                          hasBankAccount: e.target.checked,
-                        },
-                      })
-                    }
-                  />
-                  <Input
-                    name="descriptorBankAccount"
-                    label={() => (
-                      <span style={{ fontWeight: 'normal' }}>
-                        Account Number
-                      </span>
-                    )}
-                    size="half_big"
-                    description={
-                      _internals.hasBankAccount
-                        ? 'If left blank, an account number will be auto generated'
-                        : null
-                    }
-                    disabled={!_internals.hasBankAccount}
-                  />
-                </div>
-
-                {!!user.isVPAFeatureEnabled && (
-                  <>
-                    <br />
-
+              {(!!handle || !!user.isVPAFeatureEnabled) && (
+                <Input.Group class="Input--vTop" label="Accept Payment Via">
+                  {!!handle && (
                     <div>
                       <Input.Check
-                        _name="hasVPA"
-                        fieldLabel="UPI Transfer"
-                        defaultValue={_internals.hasVPA}
+                        _name="hasBankAccount"
+                        fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
+                        defaultValue={_internals.hasBankAccount}
+                        disabled={!user.isVPAFeatureEnabled}
                         onChange={e =>
                           this.setState({
                             _internals: {
                               ...this.state._internals,
-                              hasVPA: e.target.checked,
+                              hasBankAccount: e.target.checked,
                             },
                           })
                         }
                       />
                       <Input
-                        name="descriptorVPA"
+                        name="descriptorBankAccount"
                         label={() => (
-                          <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                          <span style={{ fontWeight: 'normal' }}>
+                            Account Descriptor
+                          </span>
                         )}
                         size="half_big"
+                        placeholder={`Alphanumberic, upto ${descriptorLimit} characters`}
+                        validator={val => {
+                          if (!valdiateVABankAccount(val, descriptorLimit)) {
+                            return `Enter only Alphanumberic, upto ${descriptorLimit} characters`;
+                          }
+                        }}
+                        onChange={e => {
+                          let val = e.target.value;
+
+                          if (valdiateVABankAccount(val, descriptorLimit)) {
+                            e.target.value = val.toUpperCase();
+                          }
+                        }}
                         description={
-                          _internals.hasVPA
-                            ? 'If left blank, a UPI ID will be auto generated'
+                          _internals.hasBankAccount
+                            ? 'If left blank, an account number will be auto generated'
                             : null
                         }
-                        disabled={!_internals.hasVPA}
+                        disabled={!_internals.hasBankAccount}
                       />
                     </div>
-                  </>
-                )}
-              </Input.Group>
+                  )}
+
+                  {!!user.isVPAFeatureEnabled && (
+                    <>
+                      <br />
+
+                      <div>
+                        <Input.Check
+                          _name="hasVPA"
+                          fieldLabel="UPI Transfer"
+                          defaultValue={_internals.hasVPA}
+                          onChange={e =>
+                            this.setState({
+                              _internals: {
+                                ...this.state._internals,
+                                hasVPA: e.target.checked,
+                              },
+                            })
+                          }
+                        />
+                        <Input
+                          name="descriptorVPA"
+                          label={() => (
+                            <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                          )}
+                          size="half_big"
+                          description={
+                            _internals.hasVPA
+                              ? 'If left blank, a UPI ID will be auto generated'
+                              : null
+                          }
+                          disabled={!_internals.hasVPA}
+                        />
+                      </div>
+                    </>
+                  )}
+                </Input.Group>
+              )}
 
               <div class="Input">
                 <div class="Input-label">Customer</div>
