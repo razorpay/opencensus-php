@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use SoftDeletes;
 
+    protected $table  = Table::PAYOUT_LINK;
+
     const ID                   = 'id';
     const CONTACT_ID           = 'contact_id';
     const CONTACT_NAME         = 'contact_name';
@@ -43,7 +45,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payout_link';
 
-    protected $table  = Table::PAYOUT_LINK;
+    protected static $sign = 'poutlk';
 
     protected $amounts = [
       self::AMOUNT
@@ -111,16 +113,6 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT
     ];
 
-    protected $publicAuth = [
-        self::ID,
-        self::STATUS,
-        self::AMOUNT,
-        self::CURRENCY,
-        self::DESCRIPTION,
-        self::RECEIPT,
-        self::CANCELLED_AT
-    ];
-
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -164,7 +156,7 @@ class Entity extends Base\PublicEntity
 
     public function fundAccount()
     {
-        return $this->hasOne(FundAccount\Entity::class);
+        return $this->belongsTo(FundAccount\Entity::class);
     }
 
     public function contact()
@@ -185,8 +177,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Setters ------------------------------
 
-    public function setStatus($status)
+    public function setShortUrl(string $shortUrl)
     {
+        $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
+    }
+
+    public function setStatus(string $status)
+    {
+        // todo. pl add Status validation logic here, and fail accordingly
         $this->setAttribute(self::STATUS, $status);
     }
 
