@@ -49,17 +49,17 @@ class WriteRoutesMeta extends Command
             $methods = array_map(function($v) { return strtoupper($v); }, $methods);
 
             $routesMeta[] = [
-                'methods' => $methods,
+                'methods'   => $methods,
                 'uri_regex' => laravelPatternToNonPosixRegex($meta[1]),
-                'name' => $name,
-                'auth' => routeNameToAuth($name),
+                'name'      => $name,
+                'auth'      => routeNameToAuth($name),
             ];
         }
 
         $this->info("Writing routes meta using writer func: {$this->writerFunc}");
         $this->{$this->writerFunc}($routesMeta);
 
-        $this->info("Done");
+        $this->info(sprintf('Wrote total %d routes', count($routesMeta)));
     }
 
     protected function writeToNginxLuaFile(array $routesMeta)
@@ -130,6 +130,5 @@ function routeNameToAuth(string $name): string
     else
     {
         return 'unknown';
-        // throw new \Exception("Failed to find route auth for {$name}");
     }
 }

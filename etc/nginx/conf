@@ -7,8 +7,8 @@ events {
 }
 
 # These environment variables(with defaults) are made available to lua module.
-env RESTY_REDIS_TIMEOUT;
-env RESTY_REDIS_HOST";
+env RESTY_REDIS_TIMEOUT_MS;
+env RESTY_REDIS_HOST;
 env RESTY_REDIS_PORT;
 env RESTY_REDIS_MAX_IDLE_MS;
 env RESTY_REDIS_POOL_SIZE;

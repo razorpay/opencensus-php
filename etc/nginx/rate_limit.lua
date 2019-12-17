@@ -13,17 +13,17 @@ local redis_key_prefix = "throttle:t:"
 -- The environment variables below are made available via nginx's env
 -- directive in http block.
 local redis_conf = {
-    timeout = os.getenv("RESTY_REDIS_TIMEOUT") or 1000,
-    host = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
-    port = os.getenv("RESTY_REDIS_PORT") or 6379,
+    timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 1000,
+    host        = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
+    port        = os.getenv("RESTY_REDIS_PORT") or 6379,
     max_idle_ms = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
-    pool_size = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
+    pool_size   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
 }
 
 -- get_redis_conn gets a new connection from redis pool of connections.
 local function get_redis_conn()
     local redis = redis_lib:new()
-    redis:set_timeouts(redis_conf.timeout, redis_conf.timeout, redis_conf.timeout)
+    redis:set_timeouts(redis_conf.timeout_ms, redis_conf.timeout_ms, redis_conf.timeout_ms)
     local ok, err = redis:connect(redis_conf.host, redis_conf.port)
     return redis, err
 end
@@ -81,10 +81,9 @@ local function get_req_ctx(ngx)
     return req_ctx, nil
 end
 
--- get_rate_limit_args method is not easily explain-able. I cried when writing
--- this. No one helped me in "not writing it".
--- It basically gets parameter needed for applying rate limit logic on also the
--- identifier on which it needs to be applied too- all given the request context.
+-- get_rate_limit_args method basically gets parameter needed for applying rate
+-- limit logic and also the identifier on which it needs to be applied too- all
+-- given the request context.
 local function get_rate_limit_args(redis, req_ctx)
     local rate_limit_args = {
         skip = 1,
@@ -103,7 +102,7 @@ local function get_rate_limit_args(redis, req_ctx)
         if req_ctx.proxy then
             mid = string.sub(req_ctx.user, 10)
         else
-            local res, err = redis:get(redis_key_prefix .. req_ctx.user)
+            local res, err = redis:get(redis_key_prefix .. "km:" .. req_ctx.user)
             if err then
                 return nil, "failed to get key<>mid mapping from redis:" .. err
             end
