@@ -40,6 +40,10 @@ class Service extends Base\Service
         Reconciliate::AUTH_CODE,
     ];
 
+    // TODO
+    const NB_PLUS_PARAMS = [
+    ];
+
     /**
      * This limit is being used as default while fetching the cancelled billdesk
      * payments and corresponding refunds. The route get hit via cron.
@@ -267,6 +271,81 @@ class Service extends Base\Service
             TraceCode::RECON_INFO,
             [
                 'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                'queue'     => $queueName,
+                'payload'   => json_encode($pushData),
+            ]
+        );
+    }
+
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input)
+    {
+        $paymentId = $input['payment_id'];
+
+        $misParams = $input['params'];
+
+        $pushData = [];
+
+        if (empty($response[$paymentId]) === false)
+        {
+            foreach (self::NB_PLUS_PARAMS as $field)
+            {
+                if (empty($misParams[$field]) === true)
+                {
+                    continue;
+                }
+
+                if (empty($response[$paymentId][$field]) === true)
+                {
+                    $pushData[$field] = $misParams[$field];
+                }
+                else if (trim($response[$paymentId][$field]) !== $misParams[$field])
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'                => TraceCode::RECON_MISMATCH,
+                            'info_code'                 => InfoCode::NB_PLUS_DATA_MISMATCH,
+                            'payment_id'                => $paymentId,
+                            'field'                     => $field,
+                            'db_reference_number'       => $response[$paymentId][$field],
+                            'recon_reference_number'    => $misParams[$field],
+                            'gateway'                   => $input['gateway'],
+                            'batch_id'                  => $input['batch_id'],
+                        ]
+                    );
+
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::NB_PLUS_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $input['gateway'],
+                    'batch_id'      => $input['batch_id'],
+                ]);
+
+            return;
+        }
+
+        if (empty($pushData) === true)
+        {
+            return;
+        }
+
+        $pushData['payment_id'] = $paymentId;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_NB_PLUS_QUEUE_DISPATCH,
                 'queue'     => $queueName,
                 'payload'   => json_encode($pushData),
             ]
