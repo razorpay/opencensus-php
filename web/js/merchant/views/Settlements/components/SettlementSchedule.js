@@ -55,6 +55,19 @@ export default class SettlementSchedule extends Component {
     });
   };
 
+  toggleExample = () => {
+    this.setState(prevState => {
+      return {
+        showExample: !prevState.showExample,
+      };
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlement UI Revamp',
+      eventAction: 'View Settlement Example',
+    });
+  };
+
   render() {
     return (
       <div>
@@ -136,14 +149,7 @@ export default class SettlementSchedule extends Component {
                 <br />
                 <a
                   style={{ marginTop: '10px' }}
-                  onClick={() => {
-                    const { showExample } = this.state;
-                    this.setState(prevState => {
-                      return {
-                        showExample: !prevState.showExample,
-                      };
-                    });
-                  }}
+                  onClick={this.toggleExample}
                   class="link"
                 >
                   {this.state.showExample ? 'Hide' : 'View'} Examples{' '}
