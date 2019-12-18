@@ -175,6 +175,24 @@ class NbPlusPaymentService
         return $this->sendRequest('GET', $path, $input);
     }
 
+    // TODO revisit
+    public function fetchAuthorizationData(array $input)
+    {
+        $request = [
+            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'method'  => 'POST',
+            'content' => $input,
+            'headers' => [
+                'task_id'       => $this->app['request']->getTaskId(),
+                'request_id'    => $this->app['request']->getId(),
+            ],
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        return $this->jsonToArray($response->body);
+    }
+
     public function sendRequest(string $method, string $url, array $data = [])
     {
         $request = [
