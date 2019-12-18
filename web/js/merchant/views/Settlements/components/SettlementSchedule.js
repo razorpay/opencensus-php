@@ -68,6 +68,18 @@ export default class SettlementSchedule extends Component {
     });
   };
 
+  viewHolidayList = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <HolidayModal data={this.props.holidayList} />,
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlement UI Revamp',
+      eventAction: 'View Holiday List',
+    });
+  };
+
   render() {
     return (
       <div>
@@ -183,12 +195,7 @@ export default class SettlementSchedule extends Component {
 
               <div style={{ marginTop: '15px' }}>
                 <button
-                  onClick={() => {
-                    this.props.openModal({
-                      size: 'small',
-                      component: <HolidayModal data={this.props.holidayList} />,
-                    });
-                  }}
+                  onClick={this.viewHolidayList}
                   style={{ width: '48%' }}
                   class="btn btn-outline"
                 >
