@@ -1307,4 +1307,13 @@ class TerminalTest extends TestCase
 
         $this->editTerminal($tid, $data);
     }
+
+    public function testCreateJuspayIntentTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

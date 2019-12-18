@@ -6,10 +6,13 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
 
 class Terminal extends Base\Terminal
 {
@@ -87,12 +90,43 @@ class Terminal extends Base\Terminal
             TerminalFields::STATE                => $state,
         ];
 
-        return $this->getStandardRequestArray($content);
+        try
+        {
+            $requestArray = $this->getStandardRequestArray($content);
+        }
+        catch (\Exception $e)
+        {
+
+            if ($e->getCode() !== ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON)
+            {
+                throw $e;
+            }
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::HITACHI_ONBOARD_REQUEST_CREATION_ERROR,
+                ['content' => $content]);
+
+            // for few merchant address we are getting error in json encoding, we are setting default rzp address
+            // for those cases
+            $content[TerminalFields::CITY]             = TerminalConstants::DEFAULT_BUSINESS_OPERATION_CITY;
+            $content[TerminalFields::MERCHANT_GROUP]   = substr(TerminalConstants::DEFAULT_BUSINESS_NAME, 0, 8);
+            $content[TerminalFields::MERCHANT_NAME]    = substr(TerminalConstants::DEFAULT_BUSINESS_NAME, 0, 23);
+            $content[TerminalFields::ZIPCODE]          = TerminalConstants::DEFAULT_BUSINESS_OPERATION_PIN;
+            $content[TerminalFields::MERCHANT_DB_NAME] = substr(TerminalConstants::DEFAULT_BUSINESS_DBA, 0, 23);
+            $content[TerminalFields::LOCATION]         = substr(TerminalConstants::DEFAULT_BUSINESS_OPERATION_ADDRESS, 0, 23);
+            $content[TerminalFields::STATE]            = TerminalConstants::DEFAULT_BUSINESS_OPERATION_STATE_CODE;
+
+            $requestArray = $this->getStandardRequestArray($content);
+        }
+
+        return $requestArray;
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post')
     {
-        $body = json_encode($content);
+        $body = $this->arrayToJson($content);
 
         $request = parent::getStandardRequestArray($body, $method);
 

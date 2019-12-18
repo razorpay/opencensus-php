@@ -1162,6 +1162,7 @@ class ErrorCode
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
+    const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                         = 'BAD_REQUEST_NOT_SUPPORTED_FEATURE';
 
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
 
@@ -1380,6 +1381,7 @@ class ErrorCode
     // Mozart Service
     const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_SERVICE_ERROR';
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
+    const SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON                              = 'SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 
     // Fund transfer service
