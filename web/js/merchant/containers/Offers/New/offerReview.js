@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
 
+import { PAYMENT_NETWORK_MAP } from './../Entity';
+
 const getTermsAndConditionsCheck = (value, onChange) => {
   return (
     <React.Fragment>
@@ -65,15 +67,6 @@ const WALLET_MAP = {
   mpesa: 'M PESA',
   phonepe: 'Phone Pe',
   paypal: 'Paypal',
-};
-
-const PAYMENT_NETWORK_MAP = {
-  VISA: 'Visa',
-  RUPAY: 'RuPay',
-  MC: 'MasterCard',
-  DICL: 'Diners Club',
-  MAES: 'Maestro',
-  AMEX: 'American Express',
 };
 
 const getDualColumnTable = (key, value, columnRatio = 0.25) => {
