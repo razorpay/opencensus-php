@@ -69,7 +69,7 @@ class NbPlusPaymentServiceTest extends TestCase
                       })
                   );
 
-        $this->terminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
         $this->enableNbPlusConfig();
 
@@ -84,7 +84,7 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->mockServerRequestFunction(function (&$content, $action = null)
         {
-            $this->assertEquals(Payment\Gateway::BILLDESK, $content[NbPlusPaymentService::GATEWAY]);
+            $this->assertEquals(Payment\Gateway::ATOM, $content[NbPlusPaymentService::GATEWAY]);
 
             switch ($action)
             {

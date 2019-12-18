@@ -2309,7 +2309,7 @@ class Gateway
     public static function isNbPlusServiceGateway($gateway)
     {
         $gateways = [
-            self::BILLDESK
+            self::ATOM
         ];
 
         return (in_array($gateway, $gateways, true));
