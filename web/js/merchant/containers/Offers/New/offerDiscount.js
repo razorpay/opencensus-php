@@ -8,6 +8,7 @@ export default ({
   getFormElementValidations,
   minAmount,
   currency,
+  getFormOnChangeHandler,
 }) => {
   return (
     <React.Fragment>
@@ -26,6 +27,11 @@ export default ({
             { label: 'Flat', name: 'flat' },
             { label: 'Percentage', name: 'percent' },
           ]}
+          onChange={getFormOnChangeHandler('stateResetter')([
+            'flat_cashback',
+            'percent_rate',
+            'max_cashback',
+          ])}
           validator={getFormElementValidations('discount_type')}
         />
         {discountType &&

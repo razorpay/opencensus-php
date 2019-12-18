@@ -189,8 +189,8 @@ export default ({
             </p>
             {getDualColumnTable(
               'Offer Validity',
-              `${starts_at ? starts_at.format('DD-MM-YY, HH:MM a') : '--'} to ${
-                ends_at ? ends_at.format('DD-MM-YY, HH:MM a') : '--'
+              `${starts_at ? starts_at.format('DD-MM-YY, hh:mm a') : '--'} to ${
+                ends_at ? ends_at.format('DD-MM-YY, hh:mm a') : '--'
               }`
             )}
           </div>,

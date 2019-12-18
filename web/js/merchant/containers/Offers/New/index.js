@@ -83,6 +83,7 @@ export default class CreateOfferWizard extends React.Component {
       name: 'Offer Amount',
       renderFunction: () => (
         <OfferDiscount
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
           percentRate={this.state.percent_rate}
           maxCashback={this.state.max_cashback}
           flatCashback={this.state.flat_cashback}
@@ -104,7 +105,7 @@ export default class CreateOfferWizard extends React.Component {
       },
     },
     {
-      name: 'Valid Until',
+      name: 'Offer Validity',
       renderFunction: () => (
         <OfferDuration
           startsAt={this.state.starts_at}
