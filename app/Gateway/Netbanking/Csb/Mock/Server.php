@@ -3,8 +3,13 @@
 namespace RZP\Gateway\Netbanking\Csb\Mock;
 
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
+
 use RZP\Gateway\Base;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AESCrypto;
+use RZP\Exception\LogicException;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Gateway\Netbanking\Csb\RequestFields;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
@@ -12,6 +17,7 @@ use RZP\Gateway\Netbanking\Csb\ResponseFields;
 class Server extends Base\Mock\Server
 {
     const BANK_ID   = 'CSB';
+    const TID       = 9999999999;
 
     protected $gatewayInstance = null;
 
@@ -19,7 +25,7 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $request = $this->getAuthorizeRequest($input);
+        $request = $this->getRequestDetails($input);
 
         $this->verifyChecksum($request);
 
@@ -27,20 +33,20 @@ class Server extends Base\Mock\Server
 
         $response = $this->getAuthorizeResponse($request);
 
-        return $request[RequestFields::RETURN_URL] . '?' . http_build_query($response);
+        return $request[RequestFields::RETURN_URL] . '?' .  http_build_query($response);
     }
 
     public function verify($input)
     {
         parent::verify($input);
 
-        $request = $this->getVerifyRequest($input);
+        $request = $this->getRequestDetails($input);
 
         $this->verifyChecksum($request);
 
         $this->validateActionInput($request, $this->action);
 
-        $response = $this->getVerifyResponse();
+        $response = $this->getVerifyResponse($request);
 
         return $this->makeResponse($response);
     }
@@ -68,88 +74,111 @@ class Server extends Base\Mock\Server
         $narration = $request[RequestFields::PAYEE_ID] . ' ' . $request[RequestFields::BANK_REF_NUM];
 
         $content = [
-            ResponseFields::PAYEE_ID     => $request[RequestFields::PAYEE_ID],
             ResponseFields::BANK_REF_NUM => $request[RequestFields::BANK_REF_NUM],
             ResponseFields::AMOUNT       => $request[RequestFields::AMOUNT],
             ResponseFields::MODE         => $request[RequestFields::MODE],
             ResponseFields::NARRATION    => $narration,
             ResponseFields::DATE_TIME    => $date,
-            ResponseFields::TRAN_REF_NUM => 9999999999,
+            ResponseFields::TRAN_REF_NUM => self::TID,
             ResponseFields::STATUS       => Status::SUCCESS,
+            ResponseFields::PAYEE_ID     => $request[RequestFields::PAYEE_ID],
             ResponseFields::BANKID       => self::BANK_ID,
-            ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE]
+            ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE],
         ];
 
         $this->content($content, $this->action);
 
-        return $content;
+        $data = array_slice($content, 0, 7);
+
+        $response = array_slice($content, 7, 3);
+
+        $hashParams = [
+            $content[ResponseFields::PAYEE_ID],
+            $content[ResponseFields::CHNPGCODE],
+            $content[ResponseFields::BANK_REF_NUM],
+            $content[ResponseFields::AMOUNT],
+            $content[ResponseFields::TRAN_REF_NUM],
+            $content[ResponseFields::STATUS],
+        ];
+
+        $data[ResponseFields::CHECKSUM] = $this->getGatewayInstance()->generateHash($hashParams);
+
+        $response[ResponseFields::DATA] = $this->encrypt(http_build_query($data), $this->getKeyForAction('Biller Payment Key'));
+
+        return [
+            ResponseFields::QOUT => $this->encrypt(urldecode(http_build_query($response)), $this->getKeyForAction('Bank Payment Key'))
+        ];
     }
 
-    protected function getVerifyResponse()
+    protected function getVerifyResponse($request)
     {
         $xmlRoot = "<Xml />";
 
         $response = [
-            ResponseFields::VERIFICATION => Status::SUCCESS
+            ResponseFields::STATUS => Status::SUCCESS,
+            ResponseFields::BANK_REF_NUM => $request[RequestFields::BANK_REF_NUM],
+            ResponseFields::AMOUNT => $request[RequestFields::AMOUNT],
+            ResponseFields::TRAN_REF_NUM => self::TID,
         ];
 
         $this->content($response, $this->action);
 
-        if (is_array($response) === false)
-        {
-            //
-            // For the test case testPaymentVerifyHtmlResponse, we return response as html string
-            //
-            return $response;
-        }
+        // checksum is calculated in a different order than the response that we receive
+        $hashParams = [
+            $response[ResponseFields::BANK_REF_NUM],
+            $response[ResponseFields::AMOUNT],
+            $response[ResponseFields::TRAN_REF_NUM],
+            $response[ResponseFields::STATUS],
+        ];
 
-        //
-        // Simple XML Element takes the values of the associate array
-        // as the XML elements. Therefore, we need to flip the array
-        // to ensure that the keys are selected instead.
-        //
-        $gatewayParam = array_flip($response);
+        $response[ResponseFields::CHECKSUM] = $this->getGatewayInstance()->generateHash($hashParams);
+
+        $encryptedResponse = $this->encrypt(implode('|', $response), $this->getKeyForAction('Biller Verification Key'));
+
+        $encryptedResponse = $this->encrypt($encryptedResponse, $this->getKeyForAction('Bank Payment Key'));
 
         $gatewayParamXml = new \SimpleXMLElement($xmlRoot);
 
-        //
-        // Recursively walks through the array and adds each entry in $gatewayParam
-        // into $gatewayParamXml as an XML child of the origin XML root.
-        //
-        array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
+        $gatewayParamXml->addChild('Status', $encryptedResponse);
 
         return trim(explode('?>', $gatewayParamXml->asXML())[1]);
     }
 
-    protected function getVerifyRequest(array $input)
+    protected function getRequestDetails(array $input)
     {
-        $data = $input[RequestFields::POST_DATA];
+        $isTPV = false;
 
-        $base64DecodedRequestString = base64_decode($data);
+        $encryptedInputL1 = $input[RequestFields::POST_DATA];
 
-        $requestArray = explode('|', $base64DecodedRequestString);
+        switch ($this->action) {
+            case Action::AUTHORIZE:
+                $decryptedInputL1 = explode('|', $this->decrypt(urldecode($encryptedInputL1), $this->getKeyForAction('Bank Payment Key')));
+                $encryptedInputL2 = urldecode(array_pop($decryptedInputL1));
+                $decryptedInputL2 = explode('|', $this->decrypt($encryptedInputL2, $this->getKeyForAction('Biller Payment Key')));
+                if (count($decryptedInputL2) === 6)
+                {
+                    $isTPV = true;
+                }
+                break;
 
-        return array_combine($this->getVerifyRequestFields(), $requestArray);
-    }
+            case Action::VERIFY:
+                $decryptedInputL1 = explode('|', $this->decrypt($encryptedInputL1, $this->getKeyForAction('Bank Payment Key')));
+                $encryptedInputL2 = urldecode(array_pop($decryptedInputL1));
+                $decryptedInputL2 = explode('|', $this->decrypt($encryptedInputL2, $this->getKeyForAction('Biller Verification Key')));
+                break;
 
-    protected function getAuthorizeRequest(array $input)
-    {
-        $data = $input[RequestFields::POST_DATA];
+            default:
+                throw new LogicException('should not have reached here. Invalid action '. $this->action);
+        }
 
-        unset($input[RequestFields::POST_DATA]);
+        $requestDetails = array_merge($decryptedInputL1, $decryptedInputL2);
 
-        $base64DecodedRequestString = base64_decode($data);
-
-        $requestArray = explode('|', $base64DecodedRequestString);
-
-        $decryptedResponseArray = array_combine($this->getAuthorizeRequestFields(), $requestArray);
-
-        return array_merge($input, $decryptedResponseArray);
+        return array_combine($this->getRequestFields($isTPV), $requestDetails);
     }
 
     protected function verifyChecksum(array $request)
     {
-        $checkSum = $request[RequestFields::CHECKSUM];
+        $checksum = $request[RequestFields::CHECKSUM];
 
         unset($request[RequestFields::CHECKSUM]);
 
@@ -159,7 +188,7 @@ class Server extends Base\Mock\Server
 
         $generatedCheckSum = $this->getChecksum($request);
 
-        $this->compareHashes($checkSum, $generatedCheckSum);
+        $this->compareHashes($checksum, $generatedCheckSum);
     }
 
     protected function getChecksum(array $request)
@@ -169,32 +198,80 @@ class Server extends Base\Mock\Server
         return $this->getGatewayInstance()->generateHash($content);
     }
 
-    protected function getAuthorizeRequestFields()
+    protected function getRequestFields($isTPV)
     {
-        return [
-            RequestFields::CHNPGSYN,
-            RequestFields::CHNPGCODE,
-            RequestFields::PAYEE_ID,
-            RequestFields::BANK_REF_NUM,
-            RequestFields::AMOUNT,
-            RequestFields::RETURN_URL,
-            RequestFields::MODE,
-            RequestFields::CHECKSUM
-        ];
+        switch ($this->action) {
+            case Action::AUTHORIZE:
+                $requestFields =  [
+                    RequestFields::CHNPGSYN,
+                    RequestFields::CHNPGCODE,
+                    RequestFields::PAYEE_ID,
+                    RequestFields::BANK_REF_NUM,
+                    RequestFields::AMOUNT,
+                    RequestFields::RETURN_URL,
+                    RequestFields::MODE,
+                    RequestFields::CHECKSUM
+                ];
+                if ($isTPV === true)
+                {
+                    $requestFields[] = RequestFields::ACCOUNT_NUM;
+                }
+                break;
+
+            case Action::VERIFY:
+                $requestFields =  [
+                    RequestFields::CHNPGSYN,
+                    RequestFields::CHNPGCODE,
+                    RequestFields::PAYEE_ID,
+                    RequestFields::BANK_REF_NUM,
+                    RequestFields::AMOUNT,
+                    RequestFields::RETURN_URL,
+                    RequestFields::TRAN_REF_NUM,
+                    RequestFields::MODE,
+                    RequestFields::CHECKSUM
+                ];
+                break;
+
+            default:
+                throw new LogicException('should not have reached here. Invalid action '. $this->action);
+        }
+
+        return $requestFields;
     }
 
-    protected function getVerifyRequestFields()
+    protected function encrypt(string $str, $key)
     {
-        return [
-            RequestFields::CHNPGSYN,
-            RequestFields::CHNPGCODE,
-            RequestFields::PAYEE_ID,
-            RequestFields::BANK_REF_NUM,
-            RequestFields::AMOUNT,
-            RequestFields::RETURN_URL,
-            RequestFields::TRAN_REF_NUM,
-            RequestFields::MODE,
-            RequestFields::CHECKSUM
-        ];
+        $aes = new AESCrypto(AES::MODE_CBC, substr($key, 0, 16), substr($key, 0, 16));
+
+        return base64_encode($aes->encryptString($str));
+    }
+
+    protected function decrypt(string $str, $key)
+    {
+        $aes = new AESCrypto(AES::MODE_CBC, substr($key, 0, 16), substr($key, 0, 16));
+
+        return $aes->decryptString(base64_decode($str));
+    }
+
+    protected function getKeyForAction($action)
+    {
+        switch ($action) {
+            case 'Biller Payment Key':
+                $key = $this->getGatewayInstance()->getTerminalPassword();
+                break;
+
+            case 'Bank Payment Key':
+                $key = $this->getGatewayInstance()->getTerminalPassword2();
+                break;
+
+            case 'Biller Verification Key':
+                $key = $this->getGatewayInstance()->getSecureSecret2();
+                break;
+
+            default:
+                throw new LogicException('should not have reached here. Invalid action '. $action);
+        }
+
+        return $key;
     }
 }

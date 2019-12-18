@@ -133,7 +133,6 @@ class Repository extends Transaction\Repository
      * SELECT *
      * FROM transactions
      * WHERE debit != 0
-     *    OR (credit = 0 AND debit = 0)
      *
      * @param BuilderEx $query
      * @param array     $params
@@ -143,21 +142,7 @@ class Repository extends Transaction\Repository
         $action = $params[Entity::ACTION];
         $actionColumn = $this->dbColumn($action);
 
-        if ($action === Entity::DEBIT)
-        {
-            $oppositeActionColumn = $this->dbColumn(Entity::CREDIT);
-        }
-        else
-        {
-            $oppositeActionColumn = $this->dbColumn(Entity::DEBIT);
-        }
-
-        $query->where($actionColumn, '!=', 0)
-              ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
-              {
-                  $query->where($actionColumn, 0)
-                        ->where($oppositeActionColumn, 0);
-              });
+        $query->where($actionColumn, '>', 0);
     }
 
     /**

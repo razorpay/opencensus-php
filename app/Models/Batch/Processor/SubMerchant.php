@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
@@ -266,8 +267,16 @@ class SubMerchant extends Base
 
             if ($response[MerchantDetail::SUBMITTED] === false)
             {
+                $this->trace->info(
+                    TraceCode::MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE,
+                    [
+                        'response'    => $response,
+                        'merchant_id' => $subMerchant->getId(),
+                    ]);
+
                 $status                           = Status::FAILURE;
                 $entry[Header::ERROR_DESCRIPTION] = 'Activation details not submitted successfully';
+
             }
 
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
@@ -372,5 +381,10 @@ class SubMerchant extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function resetErrorOnSuccess(): bool
+    {
+        return false;
     }
 }

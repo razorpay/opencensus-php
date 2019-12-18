@@ -1010,6 +1010,7 @@ final class Route
         'settings_upsert'                          => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
 
         // OAuth routes
+        'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
         'oauth_token_fetch_multiple'               => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
         'oauth_token_fetch'                        => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
         'oauth_token_revoke'                       => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
@@ -1925,6 +1926,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'oauth_token_create',
         'merchant_activation_update_website_status',
         'reminder_next_run',
         'reminder_service',
@@ -3595,6 +3597,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'oauth_token_create',
         ],
 
         'stork' => [

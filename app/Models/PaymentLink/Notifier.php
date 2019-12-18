@@ -126,7 +126,7 @@ class Notifier extends Base\Core
     {
         $merchant = $paymentLink->merchant;
 
-        $amount = $paymentLink->getAmountToSendSms();
+        $amount = $paymentLink->getAmountToSendSmsOrEmail();
 
         $template = $this->getTemplateForSMS($amount);
 

@@ -411,6 +411,25 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
 
+    public function testProcessSubMerchantBatchForUnregisteredMerchants()
+    {
+        $this->setUpForProcessing(__FUNCTION__, 'UnregisteredEntries');
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(1, 1, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch2@razorpay.com'], 'live');
+
+        $this->assertNotNull($merchant);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
+    }
+
     public function testProcessSubMerchantBatchForActivateAlreadyExistingMerchant()
     {
         // create merchant and instant activate merchant and submit

@@ -505,10 +505,13 @@ class Base extends BaseModel\Core
 
                 $this->processEntry($entry);
 
-                // Set errors as null
+                if ($this->resetErrorOnSuccess() === true)
+                {
+                    // Set errors as null
 
-                $entry[Batch\Header::ERROR_CODE]        = null;
-                $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                    $entry[Batch\Header::ERROR_CODE]        = null;
+                    $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                }
 
                 $timeTaken = millitime() - $timeStarted;
 
@@ -1576,5 +1579,21 @@ class Base extends BaseModel\Core
     protected function getNumRowsToSkipExcelFile()
     {
         return 0;
+    }
+    
+    /**
+     * In some cases error code and error description are required
+     * and These detail should not be reset .
+     *
+     * @return bool
+     */
+    protected function resetErrorOnSuccess(): bool
+    {
+        return true;
+    }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        return;
     }
 }
