@@ -689,7 +689,7 @@ class Gateway
         Payment\Gateway::NETBANKING_EQUITAS     => 1576578600,
         Payment\Gateway::NETBANKING_IBK         => 1576578600,
         Payment\Gateway::UPI_SBI                => 1576578600,
-        Payment\Gateway::NETBANKING_HDFC        => 1576665000,
+        Payment\Gateway::NETBANKING_HDFC        => 1576751400,
     ];
 
     public static $channels = [
