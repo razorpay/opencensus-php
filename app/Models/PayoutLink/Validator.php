@@ -14,12 +14,16 @@ class Validator extends Base\Validator
     const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
     const GENERATE_OTP                     = 'generate_otp';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
+    const ACCOUNT_TYPE                     = 'account_type';
+    const VPA                              = 'vpa';
+    const BANK_ACCOUNT                     = 'bank_account';
 
     protected static $addFundAccountRules = [
         Entity::FUND_ACCOUNT_ID => 'nullable|string|size:14',
-        'account_type'                  => 'required|string|in:bank_account,vpa',
-        'vpa'                   => 'required_if:type,vpa|array',
-        'bank_account'          => 'required_if:type,bank_account|array',
+        self::ACCOUNT_TYPE      => 'required_if:fund_account_id,null|string|in:bank_account,vpa',
+        self::VPA               => 'required_if:type,vpa|array',
+        self::BANK_ACCOUNT      => 'required_if:type,bank_account|array',
+        Entity::TOKEN           => 'required|string'
     ];
 
     protected static $getFundAccountByContactRules = [

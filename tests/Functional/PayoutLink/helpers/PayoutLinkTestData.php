@@ -485,5 +485,180 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
         ]
-    ]
+    ],
+
+    'testInitiateApiBankAccountRequiredWhenTypeIsBankAccount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'account_type' => 'bank_account',
+                'token'        => 'random token string',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one of card, vpa or bank_account can be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testInitiateApiVpaRequiredWhenTypeIsVpa' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'account_type' => 'vpa'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one of card, vpa or bank_account can be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testInitiateApiWithInvalidAccountTypeRaisesException' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'account_type' => 'invalid bank account type'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected account type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testInitiateApiWhenTokenIsAbsent' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'account_type' => 'vpa'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The token field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testInitiateApiWithInvalidTokenRaiseException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'account_type' => 'vpa',
+                'vpa'          => [
+                    'address' => 'test@okhdfcbank'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+        ]
+    ],
+
+    'testInitiateApiWithInvalidFundAccountIdThrowException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => 'invalid_id_123'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
+    ],
+
+    'testInitiateApiSuccessWhenValidBankAccountPassed' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ]
+    ]],
+
+    'testInitiateApiSuccessWhenValidVpaPassed' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+        ],
+    ],
 ];

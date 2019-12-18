@@ -547,18 +547,112 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    // test that when type is bank_account then bank_account is required
-    // test that when type is vpa then vpa is required
-    // test that if the TYPE is not in bank_account/vpa, then the call fails
-    // test that call fails when token is absent
-    // test that call fails when token is invalid
-    // test exception is thrown when fund-account add fails
-    // test exception when the fund-account-id passed doesn't exist
+    public function testInitiateApiBankAccountRequiredWhenTypeIsBankAccount()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiVpaRequiredWhenTypeIsVpa()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiWithInvalidAccountTypeRaisesException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiWhenTokenIsAbsent()
+    {
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiWithInvalidTokenRaiseException()
+    {
+        $this->fixtures->create('payout_link');
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(null));
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiWithInvalidFundAccountIdThrowException()
+    {
+        $this->startTest();
+    }
+
+    public function testInitiateApiSuccessWhenValidVpaPassed()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $fd = $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $this->contact->getId(),
+            'merchant_id'  => $this->contact->merchant->getId()
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiSuccessWhenValidBankAccountPassed()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link');
+
+        $fd = $this->fixtures->create('fund_account:bank_account', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $this->contact->getId(),
+            'merchant_id'  => $this->contact->merchant->getId()
+        ]);
+
+        $this->startTest();
+    }
+
     // test success when bank account fund-account is added
     // test success when vpa fund-account is added
     // test exception when the fund-account-id passed if is not that of the contact then exception is thrown
     //
 
+    protected function mockRedisSuccess()
+    {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue('Token valid as a non-null value is being returned'));
+    }
+
+    protected function mockRedisFail()
+    {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(null));
+    }
 
 
 }

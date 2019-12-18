@@ -124,6 +124,10 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
 
+        $token = array_pull($input, Entity::TOKEN);
+
+        (new TokenService())->verify($token);
+
         $payoutLink = $this->repo
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
