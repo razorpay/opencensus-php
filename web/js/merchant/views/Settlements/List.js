@@ -256,6 +256,11 @@ export default class SettlementsListContainer extends ListContainer {
                     />
                   ),
                 });
+
+                window.rzpAnalytics({
+                  eventCategory: 'Dashboard - Settlement UI Revamp',
+                  eventAction: 'Click Know More(On Hold)',
+                });
               }}
             />
           ) : null}
