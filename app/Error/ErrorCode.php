@@ -1377,6 +1377,7 @@ class ErrorCode
     // Mozart Service
     const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_SERVICE_ERROR';
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
+    const SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON                              = 'SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 
     // Fund transfer service
