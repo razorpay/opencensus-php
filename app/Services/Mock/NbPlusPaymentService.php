@@ -24,16 +24,6 @@ class NbPlusPaymentService extends BaseNbPlusPaymentService
         return $this->makeJsonResponse($response);
     }
 
-    public function fetchMultiple(string $entityName, array $input): array
-    {
-        return [];
-    }
-
-    public function fetch(string $entityName, string $id, $input)
-    {
-        return [];
-    }
-
     protected function authorize($input)
     {
         return [

@@ -43,9 +43,6 @@ class NbPlusPaymentService
     const VERIFY           = 'verify';
     const AUTHORIZE_FAILED = 'authorize_failed';
 
-    // admin path
-    const ADMIN_PATH = 'admin/entities/';
-
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
         self::CALLBACK,
@@ -159,20 +156,6 @@ class NbPlusPaymentService
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
         return $response;
-    }
-
-    public function fetchMultiple(string $entityName, array $input)
-    {
-        $path = self::ADMIN_PATH . $entityName;
-
-        return $this->sendRequest('GET', $path, $input);
-    }
-
-    public function fetch(string $entityName, string $id, $input)
-    {
-        $path = self::ADMIN_PATH . $entityName . '/' . $id;
-
-        return $this->sendRequest('GET', $path, $input);
     }
 
     public function sendRequest(string $method, string $url, array $data = [])
