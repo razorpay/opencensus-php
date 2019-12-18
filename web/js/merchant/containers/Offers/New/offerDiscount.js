@@ -34,6 +34,19 @@ export default ({
           ])}
           validator={getFormElementValidations('discount_type')}
         />
+        {discountType && (
+          <Input
+            label="Min Order amount"
+            placeholder="0.00"
+            name="min_amount"
+            defaultValue={minAmount}
+            class="Input--half"
+            addonBefore={<span>{window.currencyList[currency].symbol}</span>}
+            validator={getFormElementValidations('min_amount')}
+            required
+            onChange={getFormOnChangeHandler()}
+          />
+        )}
         {discountType &&
           discountType === 'flat' && (
             <Input
@@ -80,17 +93,6 @@ export default ({
               />
             </React.Fragment>
           )}
-        <Input
-          label="Min Order amount"
-          placeholder="0.00"
-          name="min_amount"
-          defaultValue={minAmount}
-          class="Input--half"
-          addonBefore={<span>{window.currencyList[currency].symbol}</span>}
-          validator={getFormElementValidations('min_amount')}
-          required
-          onChange={getFormOnChangeHandler()}
-        />
       </div>
     </React.Fragment>
   );

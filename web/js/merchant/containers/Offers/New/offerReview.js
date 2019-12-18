@@ -197,7 +197,7 @@ export default ({
         ])}
         {getTermsAndConditionsCheck(
           creation_terms_accepted,
-          getFormOnChangeHandler
+          getFormOnChangeHandler()
         )}
       </div>
     </div>
