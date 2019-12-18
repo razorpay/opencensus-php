@@ -507,13 +507,7 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithValidTokenReturnsFundAccountArray()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')->andReturn($redisMock);
-
-        $redisMock->method('get')
-                  ->will($this->returnValue('some value'));
+        $this->mockRedisSuccess();
 
         // call fund-account, assuming OTP verification will pass as redis is mocked to return non-null value,
         // which signifies OTP is present
@@ -527,16 +521,7 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithInvalidTokenRaisesException()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')->andReturn($redisMock);
-
-        $redisMock->method('set')
-                  ->will($this->returnValue(true));
-
-        $redisMock->method('get')
-                  ->will($this->returnValue(null));
+        $this->mockRedisFail();
 
         // call fund-account, assuming OTP verification will pass as redis is mocked to return Null,
         // which means token is not found
@@ -549,14 +534,18 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiBankAccountRequiredWhenTypeIsBankAccount()
     {
-        $payoutLink = $this->fixtures->create('payout_link');
+        $this->mockRedisSuccess();
+
+        $this->fixtures->create('payout_link');
 
         $this->startTest();
     }
 
     public function testInitiateApiVpaRequiredWhenTypeIsVpa()
     {
-        $payoutLink = $this->fixtures->create('payout_link');
+        $this->mockRedisSuccess();
+
+        $this->fixtures->create('payout_link');
 
         $this->startTest();
     }
@@ -579,13 +568,7 @@ class PayoutLinkTest extends TestCase
     {
         $this->fixtures->create('payout_link');
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')->andReturn($redisMock);
-
-        $redisMock->method('get')
-                  ->will($this->returnValue(null));
+        $this->mockRedisFail();
 
         $this->startTest();
     }

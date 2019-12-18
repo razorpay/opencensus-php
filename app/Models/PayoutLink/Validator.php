@@ -6,7 +6,7 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
-    const CONTACT_ID                       = 'contact.contact_id';
+    const CONTACT_ID                       = 'contact.id';
     const CONTACT                          = 'contact';
 
     const COMPOSITE_CREATE_RULE            = 'composite_create';

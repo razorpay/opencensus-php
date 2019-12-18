@@ -114,8 +114,16 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+    /**
+     * @param string $payoutLinkId
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
     public function initiate(string $payoutLinkId, array $input)
     {
+        // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
+        // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         $this->trace->info(
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
             $input);
