@@ -114,6 +114,11 @@ export default class TransactionsContainer extends Component {
                       />
                     ),
                   });
+
+                  window.rzpAnalytics({
+                    eventCategory: 'Dashboard - Settlement UI Revamp',
+                    eventAction: 'Click Know More',
+                  });
                 }}
               >
                 Know more
