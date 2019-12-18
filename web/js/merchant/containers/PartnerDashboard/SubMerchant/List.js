@@ -35,6 +35,8 @@ import {
   trackClearAnalytics,
 } from '../ga';
 import { mediaWindowUrl } from './SocialShare';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+
 const name = isPurePlatform => ({
   ...submerchantColumn,
   ...(isPurePlatform && {
@@ -198,8 +200,9 @@ export default class SubMerchantsList extends ListContainer {
     mediaWindowUrl({
       type: platform,
       url: this.state.referralUrl,
-      title: 'Partner referral program',
-      description: 'Refer and earn',
+      title: 'Sign up on Razorpay!',
+      description:
+        "Start using a wide range of Razorpay's payment solutions and unlock growth for your business with just a few clicks. Go live in less than 10 minutes.",
     });
   }
   constructor(props) {
@@ -359,8 +362,8 @@ export default class SubMerchantsList extends ListContainer {
                               class="btn btn-primary pull-right m-l"
                               onClick={this.handleAddMerchant}
                             >
-                              <i class="i i-plus" />
-                              Add New Merchant
+                              <i class="i i-plus line-height-9" /> Add New
+                              Merchant
                             </button>
                           </div>
                         </div>
@@ -376,13 +379,14 @@ export default class SubMerchantsList extends ListContainer {
                             class="social-share-btn-grp"
                             style={{ paddingTop: '20px' }}
                           >
-                            <button
-                              class="btn btn-primary pull-right m-l"
-                              onClick={() => {}}
-                            >
-                              <i class="i i-link" />
-                              Copy Link
-                            </button>
+                            <CustomClipboard value={this.state.referralUrl}>
+                              <button
+                                class="btn btn-primary pull-right m-l"
+                                onClick={() => {}}
+                              >
+                                <i class="i i-link line-height-9" /> Copy Link
+                              </button>
+                            </CustomClipboard>
                             <img
                               src="/dist/css/assets/onboarding/facebook.png"
                               onClick={() => this.shareReferralOn('fb')}
@@ -435,20 +439,22 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
         merchants.
       </p>
       <div class="input-group">
-        <input
-          class="form-control input"
-          value={referralUrl}
-          style={{ width: '200px' }}
-        />
-        <button
-          class="btn btn-primary"
-          style={{
-            width: '100px',
-            borderRadius: '0px 2px 2px 0px',
-          }}
-        >
-          Copy
-        </button>
+        <CustomClipboard value={referralUrl}>
+          <input
+            class="form-control input"
+            value={referralUrl}
+            style={{ width: '200px' }}
+          />
+          <button
+            class="btn btn-primary"
+            style={{
+              width: '100px',
+              borderRadius: '0px 2px 2px 0px',
+            }}
+          >
+            Copy
+          </button>
+        </CustomClipboard>
       </div>
       <div
         class="social-share-btn-grp"
