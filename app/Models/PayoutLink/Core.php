@@ -122,36 +122,46 @@ class Core extends Base\Core
      */
     public function initiate(string $payoutLinkId, array $input)
     {
-        // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
-        // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         $this->trace->info(
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
             $input);
 
-        $validator = (new Entity())->getValidator();
+        // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
+        // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
+        return $this->mutex->acquireAndRelease(
+            $payoutLinkId,
+            function() use ($payoutLinkId, $input)
+            {
+                return $this->repo->transaction(
+                        function() use ($payoutLinkId, $input)
+                        {
+                            $validator = (new Entity())->getValidator();
 
-        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+                            $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
 
-        $token = array_pull($input, Entity::TOKEN);
+                            $token = array_pull($input, Entity::TOKEN);
 
-        (new TokenService())->verify($token);
+                            (new TokenService())->verify($token);
 
-        $payoutLink = $this->repo
-                           ->payout_link
-                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                            $payoutLink = $this->repo
+                                ->payout_link
+                                ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
-                                                                          $this->merchant,
-                                                                          $payoutLink->contact);
+                            $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
+                                                                                              $this->merchant,
+                                                                                              $payoutLink->contact);
+                            $payoutLink->fundAccount()->associate($fundAccount);
 
-        $payoutLink->fundAccount()->associate($fundAccount);
+                            $this->repo->saveOrFail($payoutLink);
 
-        $this->repo->saveOrFail($payoutLink);
+                            return [];
+                        });
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
 
         // associate it with the payout-link entity
         // trigger the flow for initiating the payout
-
-        return [];
     }
 
     public function create(array $input): Entity
