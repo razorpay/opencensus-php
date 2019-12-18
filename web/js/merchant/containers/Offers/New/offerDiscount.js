@@ -44,6 +44,7 @@ export default ({
               description="Discount worth in cash"
               required
               placeholder="0.00"
+              onChange={getFormOnChangeHandler()}
               defaultValue={flatCashback}
               validator={getFormElementValidations('flat_cashback')}
             />
@@ -61,6 +62,7 @@ export default ({
                 required
                 defaultValue={percentRate}
                 validator={getFormElementValidations('percent_rate')}
+                onChange={getFormOnChangeHandler()}
               />
               <Input
                 label="Maximum Cashback"
@@ -74,6 +76,7 @@ export default ({
                 }
                 validator={getFormElementValidations('max_cashback')}
                 required
+                onChange={getFormOnChangeHandler()}
               />
             </React.Fragment>
           )}
@@ -86,6 +89,7 @@ export default ({
           addonBefore={<span>{window.currencyList[currency].symbol}</span>}
           validator={getFormElementValidations('min_amount')}
           required
+          onChange={getFormOnChangeHandler()}
         />
       </div>
     </React.Fragment>

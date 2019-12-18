@@ -1,6 +1,12 @@
 import Input from 'common/new-ui/Input';
 
-export default ({ name, getFormElementValidations, displayText, terms }) => {
+export default ({
+  name,
+  getFormOnChangeHandler,
+  getFormElementValidations,
+  displayText,
+  terms,
+}) => {
   return (
     <React.Fragment>
       <Input
@@ -11,6 +17,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
         defaultValue={name}
         required
         validator={getFormElementValidations('name')}
+        onChange={getFormOnChangeHandler()}
       />
       <Input
         label="Display Text"
@@ -19,6 +26,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
         required
         defaultValue={displayText}
         validator={getFormElementValidations('display_text')}
+        onChange={getFormOnChangeHandler()}
       />
       <Input.Textarea
         label="Terms"
@@ -28,6 +36,7 @@ export default ({ name, getFormElementValidations, displayText, terms }) => {
         validator={getFormElementValidations('terms')}
         description={'Enter offer terms and conditions'}
         required
+        onChange={getFormOnChangeHandler()}
       />
     </React.Fragment>
   );

@@ -93,6 +93,7 @@ export default ({
           defaultValue={issuer}
           placeholder="Select Bank"
           options={walletIssuers}
+          onChange={getFormOnChangeHandler()}
         />
       )}
 
@@ -111,6 +112,7 @@ export default ({
                     { label: 'Debit Card', name: 'debit' },
                   ];
             })()}
+            onChange={getFormOnChangeHandler()}
           />
           <Input.Select
             label="Bank"
@@ -118,6 +120,7 @@ export default ({
             defaultValue={issuer}
             placeholder="Select Bank"
             options={paymentIssuers}
+            onChange={getFormOnChangeHandler()}
           />
           <Input.Select
             label="Network"
@@ -125,6 +128,7 @@ export default ({
             defaultValue={paymentNetwork}
             placeholder="Select network"
             options={paymentNetworks}
+            onChange={getFormOnChangeHandler()}
           />
           <Input
             label="Max Usage Per Card"
@@ -133,6 +137,7 @@ export default ({
             type="number"
             validator={getFormElementValidations('max_payment_count')}
             placeholder="Max times a card can be used to avail this offer"
+            onChange={getFormOnChangeHandler()}
           />
           <Input
             label="IINs"
@@ -140,6 +145,7 @@ export default ({
             onChange={getFormOnChangeHandler('iins')}
             placeholder="6 digit IINs for cards. Separated by comma if more than one"
             description={iins && iins.join(', ')}
+            onChange={getFormOnChangeHandler()}
           />
         </React.Fragment>
       )) ||
@@ -152,6 +158,7 @@ export default ({
           defaultValue={issuer}
           placeholder="Payment Instrument Issuer/Bank Name"
           options={paymentIssuers}
+          onChange={getFormOnChangeHandler()}
         />
       )) ||
         null}

@@ -31,7 +31,7 @@ export default ({
     />
     <Input.Select
       validator={getFormElementValidations('block')}
-      label="Block Payment"
+      label="On Payment Failure"
       name="block"
       defaultValue={block}
       description="What happens at times of failure of offer validation for customer?"
@@ -41,6 +41,7 @@ export default ({
         { label: 'Block', name: true },
         { label: 'Allow', name: false },
       ]}
+      onChange={getFormOnChangeHandler()}
     />
     <Input
       label="Max Usage"
@@ -50,6 +51,7 @@ export default ({
       placeholder="Max Usage of this offer: Example - 100 times"
       required
       defaultValue={maxOfferUsage}
+      onChange={getFormOnChangeHandler()}
     />
   </React.Fragment>
 );

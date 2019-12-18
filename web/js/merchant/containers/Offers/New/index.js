@@ -45,13 +45,14 @@ export default class CreateOfferWizard extends React.Component {
 
   tabsData = [
     {
-      name: 'Offer Description',
+      name: 'Description',
       renderFunction: () => (
         <OfferDescription
           name={this.state.name}
           getFormElementValidations={this.getFormElementValidations}
           displayText={this.state.display_text}
           terms={this.state.terms}
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -59,28 +60,7 @@ export default class CreateOfferWizard extends React.Component {
       },
     },
     {
-      name: 'Applicable On',
-      renderFunction: () => (
-        <PaymentMethods
-          allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
-          getFormOnChangeHandler={this.getFormOnChangeHandler}
-          isSelectedPaymentMethod={this.isSelectedPaymentMethod}
-          iins={this.state.iins}
-          paymentNetwork={this.state.payment_network}
-          maxPaymentCount={this.state.max_payment_count}
-          paymentMethodType={this.state.payment_method_type}
-          issuer={this.state.issuer}
-          walletIssuer={this.state.wallet_issuer}
-          paymentMethod={this.state.payment_method}
-          getFormElementValidations={this.getFormElementValidations}
-        />
-      ),
-      getFieldsToBeValidated: () => {
-        return ['payment_method'];
-      },
-    },
-    {
-      name: 'Offer Amount',
+      name: 'Discount type',
       renderFunction: () => (
         <OfferDiscount
           getFormOnChangeHandler={this.getFormOnChangeHandler}
@@ -105,6 +85,27 @@ export default class CreateOfferWizard extends React.Component {
       },
     },
     {
+      name: 'Applicable On',
+      renderFunction: () => (
+        <PaymentMethods
+          allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
+          getFormOnChangeHandler={this.getFormOnChangeHandler}
+          isSelectedPaymentMethod={this.isSelectedPaymentMethod}
+          iins={this.state.iins}
+          paymentNetwork={this.state.payment_network}
+          maxPaymentCount={this.state.max_payment_count}
+          paymentMethodType={this.state.payment_method_type}
+          issuer={this.state.issuer}
+          walletIssuer={this.state.wallet_issuer}
+          paymentMethod={this.state.payment_method}
+          getFormElementValidations={this.getFormElementValidations}
+        />
+      ),
+      getFieldsToBeValidated: () => {
+        return ['payment_method'];
+      },
+    },
+    {
       name: 'Offer Validity',
       renderFunction: () => (
         <OfferDuration
@@ -122,7 +123,7 @@ export default class CreateOfferWizard extends React.Component {
       },
     },
     {
-      name: 'Review',
+      name: 'Overview',
       renderFunction: () => (
         <OfferReview
           data={this.state}
@@ -344,7 +345,7 @@ export default class CreateOfferWizard extends React.Component {
           <Form
             class="PaymentLinks--Create--Form"
             layout="tabular"
-            onChange={this.getFormOnChangeHandler()}
+            // onChange={this.getFormOnChangeHandler()}
           >
             {this.renderForm()}
           </Form>
