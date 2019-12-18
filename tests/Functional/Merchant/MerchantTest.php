@@ -2061,7 +2061,8 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
+            'type'             => 'already_discounted',
+            'merchant_id'      => '100000Razorpay',
         ]);
 
         $this->startTest();
@@ -2118,35 +2119,6 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $this->assertCount(1, $content['offers']);
-    }
-
-    public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
-    {
-        $this->ba->publicAuth();
-
-        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
-
-        $offer1 = $this->fixtures->create('offer:wallet', [
-            'merchant_id'      => '100000Razorpay',
-            'checkout_display' => true,
-            'display_text'     => 'Some display text',
-            'terms'            => 'Some terms',
-            'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
-        ]);
-
-        $offer2 = $this->fixtures->create('offer:wallet', [
-            'merchant_id'      => '10000000000000',
-            'checkout_display' => true,
-            'display_text'     => 'Merchant specific offer',
-            'terms'            => 'Some terms',
-            'starts_at'        => $startsAt,
-            'type'             => 'already_discounted'
-        ]);
-
-        $response = $this->startTest();
-
-        $this->assertStringStartsWith('offer_', $response['offers'][0]['id']);
     }
 
     public function testGetCheckoutPreferencesWithMultipleOrderOffers()

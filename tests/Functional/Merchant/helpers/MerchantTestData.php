@@ -2025,28 +2025,6 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
-        'request' => [
-            'url'    => '/preferences',
-            'method' => 'get',
-            'content' => [
-                'currency' => 'INR'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'wallet',
-                        'issuer'          => 'olamoney',
-                        'display_text'    => 'Merchant specific offer',
-                    ]
-                ]
-            ],
-        ],
-    ],
-
     'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
         'request' => [
             'url'     => '/preferences',
