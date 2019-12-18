@@ -217,17 +217,7 @@ export default class SubMerchantsList extends ListContainer {
           referralUrl: data.url,
         });
       })
-      .catch(() => {
-        const data = {
-          id: 'DrhtksQonrtFzH',
-          merchant_id: 'DOnndj36SjCEFT',
-          ref_code: 'testvik4246khc',
-          url: 'https://stage.rzp.io/i/TlinQ7K',
-        };
-        this.setState({
-          referralUrl: data.url,
-        });
-      });
+      .catch(() => {});
     super(props);
   }
 
