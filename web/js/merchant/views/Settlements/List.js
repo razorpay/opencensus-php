@@ -361,6 +361,7 @@ export default class SettlementsListContainer extends ListContainer {
                                 });
                               }}
                               class="btn-link pointer"
+                              style={{ marginLeft: '5px' }}
                             >
                               <b>Know More</b>
                             </span>

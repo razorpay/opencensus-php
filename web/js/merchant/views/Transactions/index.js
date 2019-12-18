@@ -91,7 +91,7 @@ export default class TransactionsContainer extends Component {
             </ShowWhen>
           )}
           {!nextSettlement ? (
-            <div class="text-right w50">
+            <div class="text-right" style={{ width: '65%' }}>
               <strong>
                 <Amount
                   value={this.props.settlement_amount.data.settlement_amount}
@@ -105,6 +105,7 @@ export default class TransactionsContainer extends Component {
               />{' '}
               <span
                 class="btn-link"
+                style={{ marginLeft: '5px' }}
                 onClick={() => {
                   this.props.openModal({
                     size: 'regular',
