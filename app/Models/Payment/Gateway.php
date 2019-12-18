@@ -1685,6 +1685,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
+        Gateway::UPI_JUSPAY,
     ];
 
     public static $upiQrGateways = [
