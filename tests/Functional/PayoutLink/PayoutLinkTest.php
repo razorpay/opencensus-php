@@ -600,20 +600,49 @@ class PayoutLinkTest extends TestCase
 
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $fd = $this->fixtures->create('fund_account:bank_account', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $this->contact->getId(),
-            'merchant_id'  => $this->contact->merchant->getId()
-        ]);
+        $fd = $this->fixtures->create('fund_account:bank_account',
+                                      [
+                                          'id'          => '100000000003fa',
+                                          'source_type' => 'contact',
+                                          'source_id'   => $this->contact->getId(),
+                                          'merchant_id' => $this->contact->merchant->getId()
+                                      ]);
 
         $this->startTest();
     }
 
-    // test success when bank account fund-account is added
-    // test success when vpa fund-account is added
-    // test exception when the fund-account-id passed if is not that of the contact then exception is thrown
-    //
+    public function testInitiateApiFailsWhenFundAccountIdPassedBelongsToAnotherContact()
+    {
+        $this->mockRedisSuccess();
+
+        $contact1 = $this->contact;
+
+        $contact2 = $this->fixtures->create('contact',
+                                           [
+                                               'name'    => 'Test Contact 2',
+                                               'email'   => 'test2@rzp.com',
+                                               'contact' => '9876543210'
+                                           ]);
+        // create the payoutlink that is associated with the first contact
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'contact_id'           => $contact1->getId(),
+                                                  'contact_name'         => $contact1->getName(),
+                                                  'contact_phone_number' => $contact1->getContact(),
+                                                  'contact_email'        => $contact1->getEmail()
+                                              ]);
+
+        // create a fund account that belongs to the second contact
+        $fundAccount = $this->fixtures->create('fund_account:bank_account',
+                                      [
+                                          'id'          => '100000000003fa',
+                                          'source_type' => 'contact',
+                                          'source_id'   => $contact2->getId(),
+                                          'merchant_id' => $contact2->merchant->getId()
+                                      ]);
+
+        $this->startTest();
+    }
 
     protected function mockRedisSuccess()
     {

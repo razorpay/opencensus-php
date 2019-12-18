@@ -4,6 +4,7 @@ namespace RZP\Models\PayoutLink\External;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\FundAccount\Core as FundAccountCore;
@@ -47,7 +48,7 @@ class FundAccount
             // and that fund_account doesn't belong to the intended contact. In this case we throw an exception
             if ($fundAccount->contact->getId() !== $contact->getId())
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_DOESNT_BELONG_TO_INTENDED_CONTACT,
                                               null,
                                               [
                                                   'fund_account_id' => $fundAccountId,

@@ -154,7 +154,7 @@ class Core extends Base\Core
 
                             $this->repo->saveOrFail($payoutLink);
 
-                            return [];
+                            return $payoutLink;
                         });
             },
             self::MUTEX_TIMEOUT,
