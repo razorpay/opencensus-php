@@ -147,10 +147,13 @@ class Core extends Base\Core
                                 ->payout_link
                                 ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
+                            // Code to create/fetch fund account and associate it with the payoutlink
                             $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                               $this->merchant,
                                                                                               $payoutLink->contact);
                             $payoutLink->fundAccount()->associate($fundAccount);
+
+                            // code to create a payout as this payout-link as the source
 
                             $this->repo->saveOrFail($payoutLink);
 

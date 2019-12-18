@@ -69,10 +69,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -572,8 +572,8 @@ class Core extends Base\Core
 
             $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
 
-            $dispatchedCount += 1;
-         }
+            $dispatchedCount++;
+        }
 
          return [
              'balance_remaining'        => $totalBalance,
