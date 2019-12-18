@@ -30,6 +30,7 @@ export default props => {
     statusMsg = {},
     onRefundDetailsToggleClick = () => {},
     isRoleAllowedEdit,
+    viewSettlementOverview,
   } = props;
 
   return (
@@ -197,7 +198,7 @@ export default props => {
                 {payment.transaction && (
                   <EntityDetailRow label="Settlement Details">
                     {payment.transaction.settlement ? (
-                      <ContentToggler>
+                      <ContentToggler onToggleClick={viewSettlementOverview}>
                         <span>
                           Settled on{' '}
                           <Time

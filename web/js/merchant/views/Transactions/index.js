@@ -40,7 +40,6 @@ export default class TransactionsContainer extends Component {
   }
 
   render() {
-    console.log(this.props, 'propsss');
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
