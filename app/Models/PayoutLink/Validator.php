@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
         Entity::AMOUNT               => 'required|integer',
         Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::AMOUNT               => 'required|integer',
         Entity::NOTES                => 'sometimes|notes',
         Entity::DESCRIPTION          => 'required|string|max:255',
         Entity::RECEIPT              => 'sometimes|string|max:40'

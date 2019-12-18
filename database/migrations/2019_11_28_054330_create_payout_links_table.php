@@ -3,9 +3,11 @@
 use RZP\Models\Batch;
 use RZP\Constants\Table;
 use RZP\Models\PaymentLink;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Models\User\Entity as User;
 use Illuminate\Support\Facades\Schema;
+use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\Contact\Entity as Contact;
 use Illuminate\Database\Schema\Blueprint;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -48,6 +50,9 @@ class CreatePayoutLinksTable extends Migration
             $table->char(Entity::FUND_ACCOUNT_ID, FundAccount::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::BALANCE_ID, Balance\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->char(Entity::USER_ID, User::ID_LENGTH)
@@ -86,6 +91,8 @@ class CreatePayoutLinksTable extends Migration
 
             $table->index(Entity::USER_ID);
 
+            $table->index(Payout::BALANCE_ID, Entity::MERCHANT_ID);
+
             $table->index(Entity::BATCH_ID);
 
             $table->index(Entity::CREATED_AT);
@@ -114,6 +121,11 @@ class CreatePayoutLinksTable extends Migration
                   ->references(FundAccount::ID)
                   ->on(Table::FUND_ACCOUNT)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::BALANCE_ID)
+                  ->references(Balance\Entity::ID)
+                  ->on(Table::BALANCE)
+                  ->on_delete('restrict');
         });
 
         Schema::table(Table::PAYOUT, function($table)
@@ -139,6 +151,8 @@ class CreatePayoutLinksTable extends Migration
             $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::CONTACT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::FUND_ACCOUNT_ID . '_foreign');
+
+            $table->dropForeign(Table::PAYOUT_LINK . '_' . Entity::BALANCE_ID . '_foreign');
         });
 
         Schema::table(Table::PAYOUT, function($table)
