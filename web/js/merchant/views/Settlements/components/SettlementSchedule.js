@@ -69,6 +69,8 @@ export default class SettlementSchedule extends Component {
   };
 
   viewHolidayList = () => {
+    if (this.props.holidayList.error === true) return;
+
     this.props.openModal({
       size: 'small',
       component: <HolidayModal data={this.props.holidayList} />,
