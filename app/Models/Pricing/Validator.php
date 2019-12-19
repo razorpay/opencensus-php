@@ -728,9 +728,11 @@ class Validator extends Base\Validator
                 'merchant_fee_bearer'   => $merchant->getFeeBearer(),
             ];
 
+            $message = 'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
+                '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer();
+
             throw new Exception\BadRequestValidationFailureException(
-                'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
-                '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer(),
+                $message,
                 'fee_bearer',
                 $data);
         }
