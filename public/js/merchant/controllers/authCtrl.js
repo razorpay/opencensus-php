@@ -341,10 +341,6 @@ app
 
         payload.data.partner_intent = $scope.signup.settings.partner_intent;
 
-        if (Boolean(referral_code)) {
-          payload.data['referral_code'] = referral_code;
-        }
-
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {
           delete payload.data.business_name;
@@ -497,6 +493,9 @@ app
 
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
+        }
+        if (Boolean(referral_code)) {
+          $scope.signup.merchantData['referral_code'] = referral_code;
         }
         var payload = {
           method: 'post',
