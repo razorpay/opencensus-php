@@ -18,6 +18,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 use RZP\Constants\SettlementChannelMedium as Medium;
 
@@ -713,14 +714,14 @@ trait SettlementTrait
 
         try
         {
-            list($setl, $bankTransferAtpt) =
+            list($setl, $transferAttempt) =
                 $this->repo->transaction(function () use($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee,
                                                         $tax, $merchantSettleToPartner, $balance, $params){
                  return $this->settleForMerchant($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax,
                                                    $merchantSettleToPartner, $balance, $params);
             });
 
-            if(($setl !== null) and ($bankTransferAtpt !== null))
+            if(($setl !== null) and ($transferAttempt !== null))
             {
                 $transactionCount = $txns->count();
 
@@ -742,10 +743,10 @@ trait SettlementTrait
                     Medium::API : Medium::FILE;
 
                 $customProperties += [
-                    'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
-                    'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
+                    'fund_transfer_attempt_id'                => $transferAttempt->getId(),
+                    'fund_transfer_attempt_mode'              => $transferAttempt->getMode(),
                     'fund_transfer_attempt_medium'            => $medium,
-                    'fund_transfer_attempt_purpose'           => $bankTransferAtpt->getPurpose(),
+                    'fund_transfer_attempt_purpose'           => Purpose::SETTLEMENT,
                 ];
 
                 $this->app['diag']->trackSettlementEvent(
@@ -755,7 +756,7 @@ trait SettlementTrait
                     $customProperties);
             }
 
-            return [$setl, $bankTransferAtpt];
+            return [$setl, $transferAttempt];
         }
         catch (\Exception $exception)
         {
@@ -906,13 +907,13 @@ trait SettlementTrait
     {
         $settlement = null;
 
-        $bankTransferAtpt = null;
+        $transferAttempt = null;
 
         $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt,
+            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $transferAttempt,
                  $merchantSettleToPartner, $balance, $params) {
                 try
                 {
@@ -941,9 +942,26 @@ trait SettlementTrait
 
                         $merchantSettler->createTransaction($settlement);
 
-                        $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+                        $transferAttempt = null;
 
-                        return [$settlement, $bankTransferAtpt];
+                        // TODO: have the config check here and send merchant ID accordingly
+                        if (false)
+                        {
+                            $destinationMerchantId = '100000Razorpay';
+
+                            $transferAttempt = (new Transfer\Core)->transfer(
+                                $settlement,
+                                $destinationMerchantId,
+                                $balance->getType());
+                        }
+                        else
+                        {
+                            $transferAttempt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+                        }
+
+                        // TODO: make entry in settlement destination here
+
+                        return [$settlement, $transferAttempt];
                 }
                 catch (\Exception $ex)
                 {

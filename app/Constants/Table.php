@@ -73,6 +73,7 @@ class Table
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_TRANSFER       = 'settlement_transfer';
     const SETTLEMENT_DESTINATION    = 'settlement_destination';
 
     // Subscriptions Tables

@@ -111,8 +111,9 @@ class Entity
     const INVOICE_REMINDER           = 'invoice_reminder';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
-    const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_BUCKET          = 'settlement_bucket';
     const SETTLEMENT_DETAILS         = 'settlement_details';
+    const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
@@ -451,6 +452,7 @@ class Entity
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
+        self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
