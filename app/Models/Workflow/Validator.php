@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\Checker;
@@ -15,7 +16,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:150',
         Entity::ORG_ID      => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
-        Entity::LEVELS      => 'required|array',
+        Entity::LEVELS      => 'present|array',
         Entity::MERCHANT_ID => 'sometimes|string|size:14',
     ];
 
@@ -65,6 +66,19 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
                         null, $diffPerms);
+        }
+    }
+
+    public function checkForValidNumberOfLevels($levels, $permissions, $orgId)
+    {
+        if((new Core())->requestHasCreatePayoutPermission($permissions, $orgId) === false)
+        {
+            if(empty($levels) === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Atleast one level required with this permission'
+                );
+            }
         }
     }
 }

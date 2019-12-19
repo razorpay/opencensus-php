@@ -291,6 +291,25 @@ return [
         ]
     ],
 
+    'testGetMerchantIdsWithPermission' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/workflows/rules/payout_amount/merchants',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+
+                "entity"    =>  "collection",
+                'count'     =>  2,
+                'items'     =>  [
+
+                ]
+
+            ],
+        ]
+    ],
+
     'testGetMerchantWorkflowPayoutAmountRules' => [
         'request' => [
             'method'  => 'GET',
@@ -301,19 +320,69 @@ return [
             'content' => [
 
                 "entity"    =>  "collection",
-                'count'     =>  2,
+                'count'     =>  3,
                 'items'     =>  [
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  0,
-                        'max_amount'    =>  100
+                        'max_amount'    =>  100,
+                        'steps'         =>  []
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
                         'min_amount'    =>  100,
-                        'max_amount'    =>  null
+                        'max_amount'    =>  1000,
+                        'steps'         =>  []
+                    ],
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'condition'     =>  null,
+                        'min_amount'    =>  1000,
+                        'max_amount'    =>  null,
+                        'steps'         =>  [
+
+                            [
+                                'role_id'           =>  'RzpAdminRoleId',
+                                'workflow_id'       =>  'workflowId1000',
+                                'reviewer_count'    =>  1,
+                                'op_type'           =>  'or',
+                                'level'             =>  1,
+                                'role'              =>  [
+                                    'id'                => 'RzpAdminRoleId',
+                                    'name'              => 'SuperAdmin',
+                                    'description'       => 'Manager of roles',
+                                    'org_id'            => '100000razorpay',
+                                ]
+                            ],
+                            [
+                                'role_id'           => 'RzpChekrRoleId',
+                                'workflow_id'       => 'workflowId1000',
+                                'reviewer_count'    =>  1,
+                                'op_type'           => 'or',
+                                'level'             =>  1,
+                                'role'              => [
+                                    'id'                => 'RzpChekrRoleId',
+                                    'name'              => 'Checker',
+                                    'description'       => 'Manager of roles',
+                                    'org_id'            => '100000razorpay',
+                                ]
+                            ],
+                            [
+                                'role_id'           => 'RzpMakerRoleId',
+                                'workflow_id'       => 'workflowId1000',
+                                'reviewer_count'    =>  1,
+                                'op_type'           => 'and',
+                                'level'             =>  2,
+                                'role'              => [
+                                    'id'                => 'RzpMakerRoleId',
+                                    'name'              => 'Maker',
+                                    'description'       => 'Manager of roles',
+                                    'org_id'            => '100000razorpay'
+                                ]
+                            ]
+                        ]
                     ]
                 ]
 

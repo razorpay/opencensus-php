@@ -238,4 +238,27 @@ class WorkflowTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateWorkflowWithoutCreatePayoutPermissionAndNoLevels()
+    {
+        $defaultAttributes = $this->getDefaultWorkflowArray();
+
+        // Remove the contents of levels array
+        unset($defaultAttributes['levels']);
+        $defaultAttributes['levels'] =[];
+
+        $attributes = array_merge($defaultAttributes, $this->input);
+
+        $attributes['org_id'] = $this->org->getPublicId();
+
+        $permissionId = DB::table('permissions')->where('name','=','edit_admin')->value('id');
+
+        $attributes['permissions'] = [
+            'perm_'.$permissionId
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content'] = $attributes;
+
+        $this->startTest();
+    }
 }

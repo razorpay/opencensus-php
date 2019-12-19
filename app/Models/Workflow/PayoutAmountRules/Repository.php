@@ -18,66 +18,45 @@ class Repository extends Base\Repository
 
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->get();
+        $query =  $this->newQuery();
+
+        // If adminAuth is used pass retrieve additional infomration such as steps and roles in the workflow
+        if($this->app['basicauth']->isAdminAuth())
+        {
+            $query = $query->with('steps','steps.role');
+        }
+
+        $query->merchantId($merchantId);
+
+        $results = $query->get();
+
+        return $results;
     }
 
-//    public function fetchAllWorkflowRulesForOrg($orgId, $params)
-//    {
-//        // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
-//        // which cannot be filtered further according to merchant to which it belongs which is required here.
-//        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
-//
-//        $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
-//
-//        $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
-//
-//        $query = $this->newQuery()
-//                      ->with('steps','steps.role')
-//                      ->whereHas('workflow', function($q) use($orgId)
-//                                             {
-//                                                 $q->where(Entity::ORG_ID, $orgId);
-//                                             });
-//
-//        // Filter by merchant if merchant id passed as query parameter
-//        if (empty($merchantId) === false)
-//        {
-//            $query = $query->merchantId($merchantId);
-//        }
-//
-//        $results = $query->get()
-//                         ->groupBy(Entity::MERCHANT_ID);
-//
-//        // Implementing pagination
-//        $results = $results->slice($offset,$limit);
-//
-//        return $results;
-//    }
-
-    public function fetchAllWorkflowRulesForOrg($orgId, $params)
+    public function getMerchantIdsForWorkflowPermission($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
-        // which cannot be filtered further according to merchant to which it belongs which is required here.
-        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
-
+        // which cannot be filtered further according to permission which is required here.
         $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
+        $permission = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? 'create_payout';
+
         $query = $this->repo->permission->newQuery()
-                                        ->where(Admin\Permission\Entity::NAME, 'create_payout');
+                                        ->where(Admin\Permission\Entity::NAME, $permission);
 
-        /**
-         * @var Admin\Permission\Entity $permission
-         */
-        $permission = $query->first();
+        $permissionIdArray = $query->pluck('id')->toArray();
+        $permissionId = $permissionIdArray[0];
 
-        $merchants = $permission->workflows->pluck('merchant')->unique()->toArray();
-
-        $results = array_column($merchants, 'id');
-
-//        sd($merchants);
+        $results = $this->repo->workflow->newQuery()
+                                        ->whereIn('id', function ($query) use ($permissionId) {
+                                            $query->select('workflow_id')->from('workflow_permissions')->where('permission_id', $permissionId);
+                                        })
+                                        ->distinct()
+                                        ->skip($offset)
+                                        ->take($limit)
+                                        ->pluck('merchant_id');
 
         return $results;
     }

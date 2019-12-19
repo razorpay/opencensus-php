@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name;
+use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -17,42 +18,17 @@ class Service extends Base\Service
     }
 
     // Gets workflow rules for all merchants
-    public function getAllWorkflowRules($input)
+    public function getMerchantIdsForWorkflowPermission($input)
     {
         $orgId = $this->auth->getOrgId();
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $results = $this->repo->workflow_payout_amount_rules->fetchAllWorkflowRulesForOrg($orgId, $input);//->toArrayWithItems();
+        $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForWorkflowPermission($orgId, $input);
 
-//        $results = $this->convertToDashboardFormat($results);
+        $results = (new PublicCollection($results));
 
-        return $results;
-    }
-
-    public function convertToDashboardFormat($response)
-    {
-        $groupedRules = $response['items'];
-
-        $results = [];
-
-        foreach($groupedRules as $mid => $groupedRule)
-        {
-            $result = [
-                "merchant_id" => (string)$mid,
-                "rules"       => $groupedRule
-            ];
-
-            $results[] = $result;
-        }
-
-        $newResponse = [
-            "entity" => $response['entity'],
-            "count"  => $response['count'],
-            "items"  => $results
-        ];
-
-        return $newResponse;
+        return $results->toArrayWithItems();
     }
 
     public function createWorkflowPayoutAmountRules($input): array
