@@ -4,7 +4,9 @@ namespace RZP\Models\Gateway\Downtime\Webhook;
 
 use App;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Gateway\Downtime\Entity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
@@ -12,7 +14,10 @@ use RZP\Models\Gateway\Downtime\ReasonCode;
 class DopplerProcessor implements ProcessorInterface
 {
     const STATUS_UP = 'up';
+
     const STATUS_DOWN = 'down';
+
+    const DOPPLER_HITTING_DOWNTIME_DATABASE = 'doppler_hitting_downtime_database';
 
     protected $app;
 
@@ -22,6 +27,10 @@ class DopplerProcessor implements ProcessorInterface
 
     protected $repo;
 
+    protected $env;
+
+    protected $mode;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -29,6 +38,10 @@ class DopplerProcessor implements ProcessorInterface
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->env = $this->app['env'];
+
+        $this->mode = $this->app['rzp.mode'];
 
         $this->core = new Downtime\Core;
     }
@@ -154,6 +167,8 @@ class DopplerProcessor implements ProcessorInterface
     {
         $downtime = $this->core->fetchMostRecentActive($downtimeData);
 
+        $razorXDowntimeDatabase = $this->shouldHitDowntimeDatabase();
+
         if(is_null($downtime) === false)
         {
             if($downtime->getReasonCode() === $downtimeData['reason_code'])
@@ -168,28 +183,50 @@ class DopplerProcessor implements ProcessorInterface
             }
             else
             {
-                $this->trace->info(
-                    TraceCode::GATEWAY_DOWNTIME_DOPPLER_EDIT, ['data' => $downtimeData]
-                );
-
                 $id = $downtime->getId();
 
                 $downtimeUpdate = [
                     Entity::REASON_CODE     => $downtimeData[Entity::REASON_CODE],
                 ];
 
-                $downtime = $this->core->edit( $id, $downtimeUpdate);
+                if ($razorXDowntimeDatabase === true)
+                {
+                    $downtime = $this->core->edit($id, $downtimeUpdate);
+                }
+                else
+                {
+                    $downtime = (new Entity)->build($downtimeUpdate);
+
+                    $this->trace->info(
+                        TraceCode::GATEWAY_DOWNTIME_DOPPLER_EDIT,
+                        [
+                            'data' => $downtimeUpdate,
+                            'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
+                        ]
+                    );
+                }
 
                 return $downtime->toArrayAdmin();
 
             }
         }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_DOWNTIME_DOPPLER_CREATE, ['data' => $downtimeData]
-        );
+        if ($razorXDowntimeDatabase === true)
+        {
+            $downtime = $this->core->create($downtimeData);
+        }
+        else
+        {
+            $downtime = (new Entity)->build($downtimeData);
 
-        $downtime = $this->core->create($downtimeData);
+            $this->trace->info(
+                TraceCode::GATEWAY_DOWNTIME_DOPPLER_CREATE,
+                [
+                    'data' => $downtimeData,
+                    'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
+                ]
+            );
+        }
 
         return $downtime->toArrayAdmin();
     }
@@ -197,6 +234,8 @@ class DopplerProcessor implements ProcessorInterface
     private function resolveDowntime(array $downtimeData)
     {
         $downtime = $this->core->fetchMostRecentActive($downtimeData);
+
+        $razorXDowntimeDatabase = $this->shouldHitDowntimeDatabase();
 
         if(is_null($downtime) === true)
         {
@@ -211,9 +250,43 @@ class DopplerProcessor implements ProcessorInterface
 
         $downtime->setEnd();
 
-        $this->repo->saveOrFail($downtime);
+        if ($razorXDowntimeDatabase === true)
+        {
+            $this->repo->saveOrFail($downtime);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_DOWNTIME_DOPPLER_RESOLVE,
+                [
+                    'data' => $downtimeData,
+                    'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
+                ]
+            );
+        }
 
         return $downtime->toArrayAdmin();
+    }
+
+    protected function shouldHitDowntimeDatabase()
+    {
+        if (($this->env !== Environment::PRODUCTION) or
+            ($this->mode !== Mode::LIVE))
+        {
+            return false;
+        }
+
+        $response = $this->app->razorx->getTreatment(
+            $this->app['request']->getId(),
+            self::DOPPLER_HITTING_DOWNTIME_DATABASE,
+            $this->mode);
+
+        if ($response === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }
