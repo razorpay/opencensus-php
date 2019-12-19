@@ -1339,7 +1339,7 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
-    public function testDoppler()
+    public function testDopplerDowntimeCreation()
     {
         $this->ba->directAuth();
 

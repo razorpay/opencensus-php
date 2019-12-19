@@ -50,6 +50,8 @@ class DopplerProcessor implements ProcessorInterface
 
     protected function validateRequiredKeys(array $input)
     {
+        $this->validateStatus($input['status']);
+
         $requiredKeys = [Entity::REASON_CODE, Entity::METHOD, Entity::GATEWAY];
 
         $diffSet = array_diff_key(array_flip($requiredKeys), $input);
@@ -92,8 +94,6 @@ class DopplerProcessor implements ProcessorInterface
         {
             $status = $input['status'];
 
-            $this->validateStatus($status);
-
             $this->validateRequiredKeys($input);
 
             $data = $this->buildInput($input);
@@ -113,6 +113,8 @@ class DopplerProcessor implements ProcessorInterface
         {
             $this->trace->traceException($e);
         }
+
+        return [];
     }
 
     private function buildInput(array $input)
