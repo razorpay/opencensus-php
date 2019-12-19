@@ -8,6 +8,8 @@ COPY composer.json composer.lock /app/
 
 WORKDIR /app
 
+COPY  . /app/
+
 RUN set -eux && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
@@ -15,7 +17,7 @@ RUN set -eux && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    php artisan rzp:write_routes_meta
+    php artisan rzp:write_routes_meta 
 
 
 FROM openresty/openresty:1.15.8.2-6-alpine-nosse42
@@ -41,13 +43,18 @@ RUN echo "* Installing deps" && \
     echo "* Installing Alohomora==0.4.7" && \
     pip install --upgrade pip && \
     pip install --no-cache-dir "razorpay.alohomora==0.4.7" && \
-    rm -rf ~/.cache/pip/* && \
+    rm -rf ~/.cache/pip/* &&\
+    echo "* Installing gosu" && \
+    curl --location --output /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$ARCH" && \
+    chmod +x /usr/local/bin/gosu && \
+    addgroup -S nginx && \
+    adduser -S nginx -G nginx
 
-COPY dockerconf/openresty/openresty.conf /usr/local/openresty/nginx/conf/nginx.conf
-COPY dockerconf/openresty/*.lua  /usr/local/openresty/nginx/lua/
-COPY dockerconf/openresty/api.openresty.conf.j2 /usr/local/openresty/ngnix/sites/
-COPY --from=php-builder /app/routes_meta.lua /usr/local/openresty/nginx/lua/
-COPY dockerconf/entrypoint.openresty.sh /app/entrypoint.openresty.sh
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/openresty.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/*.lua  /usr/local/openresty/nginx/lua/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/api.openresty.conf.j2 /usr/local/openresty/ngnix/sites/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/routes_meta.lua /usr/local/openresty/nginx/lua/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/entrypoint.openresty.sh /app/entrypoint.openresty.sh
 
 EXPOSE 80
 
