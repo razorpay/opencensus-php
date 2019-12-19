@@ -3,10 +3,10 @@
 namespace RZP\Models\Settlement\Transfer;
 
 use RZP\Models\Base;
-use RZP\Models\Settlement\Status;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Settlement\Status;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
