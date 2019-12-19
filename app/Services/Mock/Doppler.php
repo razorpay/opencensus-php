@@ -14,6 +14,35 @@ class Doppler extends BaseDoppler
 
     public function sendRequest(string $method, string $path, string $content)
     {
+        if($method === "GET")
+        {
+            return[
+                [
+                    "method" => "card",
+                    "network" => "mastercard",
+                    "high" => "10",
+                    "medium" => "30",
+                ],
+                [
+                    "method" => "upi",
+                    "psp" => "paytm",
+                    "high" => "5",
+                    "medium" => "20",
+                ]
+            ];
+        }
+        if($method === "PUT")
+        {
+            return[
+                "method" => "upi",
+                "psp" => "paytm",
+                "high" => "5",
+                "medium" => "20",
+            ];
 
+        }
+        return [
+
+        ];
     }
 }

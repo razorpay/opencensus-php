@@ -1388,8 +1388,8 @@ final class Route
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
 
         // Route for Success Rate Global Configurations
-        'update_sr_level_global_config'           => ['put',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_global_config'          => ['get',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
     ];
 
     public static $public = [
@@ -2663,7 +2663,6 @@ final class Route
         'mozart_gateway_action',
 
         // SuccessRate Config Routes
-        //'create_sr_level_global_config',
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
     ];
@@ -3212,8 +3211,11 @@ final class Route
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
-        'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
-        'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
+        //Todo update permission later
+        //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
+        'update_sr_level_global_config'             => '*',
+        //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
+        'get_all_sr_level_global_config'            => '*',
 
     ];
 

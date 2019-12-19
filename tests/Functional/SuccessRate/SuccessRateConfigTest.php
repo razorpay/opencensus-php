@@ -2,11 +2,13 @@
 
 namespace RZP\Tests\Functional\SuccessRate;
 
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class SuccessRateConfigTest extends TestCase
 {
+    use OAuthTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -22,4 +24,9 @@ class SuccessRateConfigTest extends TestCase
     {
         $this->startTest();
     }
+
+//    public function testSuccessRateUpdateConfig()
+//    {
+//        $this->startTest();
+//    }
 }
