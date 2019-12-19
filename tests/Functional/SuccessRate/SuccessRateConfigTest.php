@@ -18,7 +18,7 @@ class SuccessRateConfigTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function testSuccessRateCreateConfig()
+    public function testSuccessRateGetConfig()
     {
         $this->startTest();
     }
