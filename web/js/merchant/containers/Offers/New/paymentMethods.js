@@ -145,7 +145,6 @@ export default ({
             onChange={getFormOnChangeHandler('iins')}
             placeholder="6 digit IINs for cards. Separated by comma if more than one"
             description={iins && iins.join(', ')}
-            onChange={getFormOnChangeHandler()}
           />
         </React.Fragment>
       )) ||

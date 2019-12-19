@@ -247,6 +247,7 @@ export default class CreateOfferWizard extends React.Component {
         }
       },
       max_payment_count: val => {
+        if (!val) return;
         if (!new RegExp('^[0-9]+$').test(val)) return 'Please enter a number';
         val = parseFloat(val);
         if (val > MAX_INT) {
@@ -398,6 +399,7 @@ export default class CreateOfferWizard extends React.Component {
       'payment_network',
       'max_payment_count',
       'iins',
+      'max_offer_usage',
     ];
     const fieldsTobeDeleted = [
       'discount_type',
@@ -418,7 +420,7 @@ export default class CreateOfferWizard extends React.Component {
     });
 
     fieldsToBeDeletedIfFalsey.forEach(field => {
-      if (!field) fieldsTobeDeleted.push(field);
+      if (!this.state[field]) fieldsTobeDeleted.push(field);
     });
 
     //Convert rupees to paisa
