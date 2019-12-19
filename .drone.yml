@@ -427,36 +427,6 @@ steps:
       status:
         - success
 
-  - name: build_openresty
-    pull: default
-    image: plugins/docker
-    settings:
-      build_args:
-        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
-      build_args_from_env:
-        - GIT_TOKEN
-        - GIT_USERNAME
-      repo: razorpay/api
-      tags: "openresty-${DRONE_COMMIT_SHA}"
-    environment:
-      DOCKER_PASSWORD:
-        from_secret: docker_password
-      DOCKER_USERNAME:
-        from_secret: docker_username
-      GIT_TOKEN:
-        from_secret: git_token
-      GIT_USERNAME:
-        from_secret: git_username
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-      status:
-        - success
-
   - name: build-notify
     pull: default
     image: plugins/slack
