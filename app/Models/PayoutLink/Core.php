@@ -199,6 +199,10 @@ class Core extends Base\Core
 
         $payoutLink->contact()->associate($contact);
 
+        $balance = $this->getBalance($input);
+
+        $payoutLink->balance()->associate($balance);
+
         // todo: pl , unsure how to get the user entity from the request in core
 //         $payoutLink->user()->associate($this->app['basicauth']->getUser());
 
@@ -207,6 +211,22 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payoutLink);
 
         return $payoutLink;
+    }
+
+    protected function getBalance(array $input)
+    {
+        $balanceId = array_pull($input, Entity::BALANCE_ID);
+
+        if (empty($balanceId) === true)
+        {
+            $balance = $this->merchant->primaryBalance;
+        }
+        else
+        {
+            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+        }
+
+        return $balance;
     }
 
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
