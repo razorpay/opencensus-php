@@ -11,11 +11,13 @@ use RZP\Constants\Table;
 use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits\HasBalance;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+    use HasBalance;
     use SoftDeletes;
 
     protected $table  = Table::PAYOUT_LINK;
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::RECEIPT,
         self::NOTES,
+        self::BALANCE_ID,
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
