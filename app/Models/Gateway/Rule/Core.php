@@ -37,17 +37,12 @@ class Core extends Base\Core
 
         $this->$validatorMethod($rule, $matchingRules);
 
-        $this->repo->saveOrFail($rule);
+        $this->repo->transaction(function () use ($rule)
+        {
+            $this->repo->saveOrFail($rule);
 
-        // try catch added temporarily
-        try
-        {
             $this->app->smartRouting->createGatewayRule($rule->toArray());
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
-        }
+        });
 
         return $rule;
     }
@@ -71,17 +66,12 @@ class Core extends Base\Core
 
         $this->$validatorMethod($rule, $matchingRules);
 
-        $this->repo->saveOrFail($rule);
+        $this->repo->transaction(function () use ($rule)
+        {
+            $this->repo->saveOrFail($rule);
 
-        // try catch added temporarily
-        try
-        {
             $this->app->smartRouting->updateGatewayRule($rule->toArray());
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
-        }
+        });
 
         return $rule;
     }
