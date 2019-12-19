@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Invoice;
 
+use RZP\Constants\Entity;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
 
@@ -44,8 +46,8 @@ class Issued extends Base
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($this->data['invoice']['entity_type'] === 'subscription_registration' and
-                    $this->data['invoice']['subscription_registration']['method'] === 'emandate')
+                if ($this->data['invoice']['entity_type'] === Entity::SUBSCRIPTION_REGISTRATION and
+                    $this->data['invoice']['subscription_registration']['method'] === Constants::EMANDATE)
                 {
                     $this->view('emails.invoice.customer.custom.rbl_interim_process2');
                 }
