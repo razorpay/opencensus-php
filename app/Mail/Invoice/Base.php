@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Invoice;
 
+use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
@@ -23,9 +24,9 @@ class Base extends Mailable
     ];
 
     const MAIL_TAG_MAP = [
-        Type::LINK    => C\MailTags::LINK,
-        Type::ECOD    => C\MailTags::ECOD,
-        Type::INVOICE => C\MailTags::INVOICE,
+        Type::LINK    => MailTags::LINK,
+        Type::ECOD    => MailTags::ECOD,
+        Type::INVOICE => MailTags::INVOICE,
     ];
 
     protected $data;
@@ -93,13 +94,13 @@ class Base extends Mailable
         {
             $invoiceType = $this->data['invoice']['type'];
 
-            $label = self::MAIL_TAG_MAP[$invoiceType] ?? C\MailTags::INVOICE;
+            $label = self::MAIL_TAG_MAP[$invoiceType] ?? MailTags::INVOICE;
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(C\MailTags::HEADER, $this->data['invoice']['id']);
+            $headers->addTextHeader(MailTags::HEADER, $this->data['invoice']['id']);
 
-            $headers->addTextHeader(C\MailTags::HEADER, $label);
+            $headers->addTextHeader(MailTags::HEADER, $label);
         });
 
         return $this;
