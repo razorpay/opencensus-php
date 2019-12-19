@@ -6,13 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 
-class Settlement extends Base
+class SettlementTransfer extends Base
 {
     public function fillDetails()
     {
         $this->txn->setAmount($this->source->getAmount());
 
-        $this->txn->setChannel($this->source->getChannel());
+        $this->txn->setChannel($this->source->merchant->getChannel());
     }
 
     public function setFeeDefaults()
@@ -23,14 +23,14 @@ class Settlement extends Base
 
     public function calculateFees()
     {
-        $this->debit = $this->source->getAmount();
+        $this->credit = $this->source->getAmount();
     }
 
     public function updateTransaction()
     {
+        // TODO: calculate the settledAt from schedule
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $this->txn->setSettled(true);
         $this->txn->setSettledAt($settledAt);
         $this->txn->setGatewayFee(0);
         $this->txn->setApiFee(0);
@@ -40,7 +40,7 @@ class Settlement extends Base
 
     public function setMerchantBalanceLockForUpdate()
     {
-        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+        $this->merchantBalance = $this->source->balance;
 
         $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
