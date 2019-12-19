@@ -2159,6 +2159,28 @@ return [
         ],
     ],
 
+    'testReleaseFundsWithParntersBankAccount' => [
+        'request'   => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
+
     'testPostInstantActivationFetaureCheck' => [
         'request'     => [
             'method'  => 'POST',
@@ -2727,5 +2749,37 @@ return [
             ],
             'status_code' => 200,
         ]
-    ]
+    ],
+
+    'testBusinessWebsiteUpdate' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'activation_status' => 'instantly_activated',
+                'business_website'  => 'https://example.com',
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

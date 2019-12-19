@@ -338,6 +338,16 @@ class Payment extends Base
 
     protected function getRelevantPricingRuleForNach($rules)
     {
+        $payment = $this->entity;
+
+        $recurringType = $payment->getRecurringType();
+
+        $filters = [
+            [Pricing\Entity::PAYMENT_ISSUER, $recurringType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

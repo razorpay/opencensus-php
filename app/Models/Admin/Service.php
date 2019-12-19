@@ -9,11 +9,13 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\AdminFetch;
+use RZP\Models\Payment\Method;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\{Base, Batch, Admin\Org};
@@ -907,5 +909,15 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getModeConfigInstruments(): array
+    {
+        $result = [];
+        $result['method'] = Method::getAllPaymentMethods();
+        $result['card_type'] = Card\Type::getCardTypes();
+        $result['issuer'] = Card\Issuer::getAllIssuers();
+        $result['network_code'] = Card\Network::getAllNetworkCodes();
+        return $result;
     }
 }

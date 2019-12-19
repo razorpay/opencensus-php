@@ -97,6 +97,7 @@ return [
         'paysecure',
         'paylater',
         'google_pay',
+        'getsimpl',
         'worldline',
     ],
 
@@ -176,6 +177,7 @@ return [
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_getsimpl'               => env('GETSIMPL_MOCK'),
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_upi_juspay'             => env('UPI_JUSPAY_MOCK'),
@@ -751,9 +753,12 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id_2'            => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id'              => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'              => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_terminal_password'        => env('NETBANKING_CSB_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'test_terminal_password2'       => env('NETBANKING_CSB_GATEWAY_TEST_TERMINAL_PASSWORD2'),
+        'test_gateway_secure_secret2'   => env('NETBANKING_CSB_GATEWAY_TEST_SECURE_SECRET2'),
     ],
 
     'netbanking_equitas' => [

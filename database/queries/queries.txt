@@ -5544,3 +5544,11 @@ ALTER TABLE external
 
 ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
+
+ALTER TABLE merchant_details
+	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+// Already ran on production.
+ALTER TABLE `terminals`
+    CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
+    CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;

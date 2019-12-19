@@ -323,6 +323,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
     const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                    = 'You are not allowed to perform this operation';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                            = 'The merchant has not yet provided his bank account details';
+    const BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND                             = 'The Partner has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
@@ -338,6 +339,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
     const BAD_REQUEST_MERCHANT_REFERRAL_DOES_NOT_EXIST                          = 'Merchant referral does not Exist';
+    const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
 
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
@@ -415,6 +417,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                             = 'Payment cancelled by customer';
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
+    const BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED                            = 'User is not registered for NetBanking payments.';
 
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
@@ -529,12 +532,14 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
     const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE              = 'The fees calculated for fund account validation is greater than available fee credits or balance.';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE             = 'Penny Testing is not supported for the given account number.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
+    const BAD_REQUEST_UFH_INTEGRATION                                           = 'Issue with UFH Integration';
 
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';

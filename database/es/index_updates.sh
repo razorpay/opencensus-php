@@ -128,3 +128,19 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_invoice_live/_mapping/api
     }
 }'
 
+#17 Dec, 2019, Adds recurring to payment index
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_live/_mapping/api_payment_live" -d '{
+    "properties": {
+        "recurring": {
+            "type": "boolean"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_test/_mapping/api_payment_test" -d '{
+    "properties": {
+        "recurring": {
+            "type": "boolean"
+        }
+    }
+}'

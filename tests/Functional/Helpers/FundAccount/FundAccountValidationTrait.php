@@ -8,11 +8,14 @@ use Mockery;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Services\RazorXClient;
 
 trait FundAccountValidationTrait
 {
     protected function createValidationWithFundAccountEntity(): array
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -101,5 +104,16 @@ trait FundAccountValidationTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
 
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+    }
 }

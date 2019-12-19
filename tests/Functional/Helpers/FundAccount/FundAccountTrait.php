@@ -25,6 +25,10 @@ trait FundAccountTrait
         {
             $fundAccount = $this->getDefaultFundAccountVPAArray();
         }
+        elseif ($type === Type::CARD)
+        {
+            $fundAccount = $this->getDefaultFundAccountCardArray();
+        }
         else
         {
             $fundAccount = $this->getDefaultFundAccountBankAccountArray();
@@ -73,6 +77,25 @@ trait FundAccountTrait
         return $content;
     }
 
+    protected function createFundAccountCard($key = null)
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $request = $this->buildFundAccountRequest(Type::CARD);
+
+        $this->ba->privateAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $expectedFundAccount = $this->getDefaultFundAccountCardArray();
+
+        $expectedFundAccount['card'] = [];
+
+        $this->assertArraySelectiveEquals($expectedFundAccount, $content);
+
+        return $content;
+    }
+
     protected function getDefaultFundAccountVPAArray()
     {
         return [
@@ -81,6 +104,20 @@ trait FundAccountTrait
             'vpa'      => [
                 "address" => "withname@razorpay"
             ],
+        ];
+    }
+
+    protected function getDefaultFundAccountCardArray()
+    {
+        return [
+            'account_type' => 'card',
+            'contact_id'   => 'cont_1000000contact',
+            'card' => [
+                'name' => 'jp',
+                'number' => '4111111111111111',
+                'expiry_month' => 4,
+                'expiry_year' => 2025
+            ]
         ];
     }
 }

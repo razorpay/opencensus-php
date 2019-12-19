@@ -35,6 +35,12 @@ class Issued extends Base
 
                 break;
 
+            case Preferences::MID_BAGIC:
+
+                $this->view('emails.invoice.customer.custom.bagic');
+
+                break;
+
             default:
 
                 $this->view('emails.invoice.customer.notification');
@@ -56,7 +62,8 @@ class Issued extends Base
             {
                 $this->attach(
                     $this->fileData['path'],
-                    ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
+                    ['as' => $pdfDisplayName, 'mime' => 'application/pdf']
+                );
             }
 
         }
@@ -68,9 +75,9 @@ class Issued extends Base
     {
         $subject = $this->getSubjectByInvoiceType();
 
-        if (empty($this->data["reminder"]) === false)
+        if (empty($this->data['reminder']) === false)
         {
-            $subject = "Reminder::" . $subject;
+            $subject = 'Reminder:' . $subject;
         }
 
         $this->subject($subject);

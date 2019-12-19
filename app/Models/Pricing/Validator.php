@@ -11,6 +11,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
@@ -532,6 +533,28 @@ class Validator extends Base\Validator
         }
     }
 
+
+    /**
+     * When adding new rule to an existing plan - this function validates that fee_bearer
+     * attribute of the new rule does not conflict with fee_bearer attributes of all merchants
+     * on this pricing plan
+     *
+     * Conflict happens when rule is fee_bearer 'platform' but one or more merchant on this
+     * pricing plan is is fee_bearer 'customer'(or vice versa)
+     * @param Plan $plan
+     * @param Entity $rule
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateRuleForFeeBearer(Plan $plan, Pricing\Entity $rule)
+    {
+        $merchants = (new Merchant\Repository())->fetchMerchantsWithPricingPlan($rule->getPlanId());
+
+        foreach ($merchants as $merchant)
+        {
+            $this->validateRuleFeeBearerForMerchant($rule, $merchant);
+        }
+    }
+
     /**
      * Throw an error if commission plan is posted for non-rzp orgs
      *
@@ -686,5 +709,32 @@ class Validator extends Base\Validator
     {
         // Only direct channels can have this set for now
         AccountType::exists($value);
+    }
+
+    protected function validateRuleFeeBearerForMerchant(Pricing\Entity $rule, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        if ($merchant->getFeeBearer() !== $rule->getFeeBearer())
+        {
+            $data = [
+                'pricing_plan_id'       => $rule->getPlanId(),
+                'pricing_plan_name'     => $rule->getPlanName(),
+                'rule_fee_bearer'       => $rule->getFeeBearer(),
+                'merchant_id'           => $merchant->getId(),
+                'merchant_fee_bearer'   => $merchant->getFeeBearer(),
+            ];
+
+            $message = 'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
+                '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer();
+
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                'fee_bearer',
+                $data);
+        }
     }
 }
