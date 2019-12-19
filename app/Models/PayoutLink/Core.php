@@ -17,6 +17,8 @@ use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
 class Core extends Base\Core
 {
+    use Base\Traits\ProcessAccountNumber;
+
     const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
@@ -176,6 +178,8 @@ class Core extends Base\Core
         $validator = (new Entity())->getValidator();
 
         $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
+
+        $this->processAccountNumber($input);
 
         $contactDetails = array_pull($input, 'contact');
 

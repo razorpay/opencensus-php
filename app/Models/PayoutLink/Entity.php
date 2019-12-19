@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const CONTACT_PHONE_NUMBER = 'contact_phone_number';
     const CONTACT_EMAIL        = 'contact_email';
     const FUND_ACCOUNT_ID      = 'fund_account_id';
+    const BALANCE_ID           = 'balance_id';
     const SHORT_URL            = 'short_url';
     const MERCHANT_ID          = 'merchant_id';
     const USER_ID              = 'user_id';
@@ -74,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
+
         self::SHORT_URL,
         self::STATUS,
         self::AMOUNT,

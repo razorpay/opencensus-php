@@ -92,16 +92,16 @@ return [
             'method'  => 'POST',
             'url'     => '/payout-links',
             'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'description' => 'This is a test payout',
-                'contact'     => [
-                    'name'       => 'cskdsdssdklifnjs',
-                    'email'      => '@@',
-                    'contact'    => '1231231231'
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'description'    => 'This is a test payout',
+                'contact'        => [
+                    'name'    => 'cskdsdssdklifnjs',
+                    'email'   => '@@',
+                    'contact' => '1231231231'
                 ],
-                'notes'       => ['hi' => 'hello'],
-                'receipt'     => 'Test Payout Receipt'
+                'notes'          => ['hi' => 'hello'],
+                'receipt'        => 'Test Payout Receipt'
             ]
         ],
         'response' => [
