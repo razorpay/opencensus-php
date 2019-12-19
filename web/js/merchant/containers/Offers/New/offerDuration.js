@@ -27,7 +27,7 @@ export default ({
       isInline
       validator={getFormElementValidations('ends_at')}
       defaultValue={endsAt}
-      checkboxFieldLabel={'No Expiry'}
+      required
     />
     <Input.Select
       validator={getFormElementValidations('block')}
