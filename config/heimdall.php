@@ -810,6 +810,18 @@ return [
                 'assignable'  => true
             ]
         ],
+
+        PermissionCategory::DOWNTIME_CONFIG => [
+            Permission::CREATE_DOWNTIME_CONFIG => [
+                'description'   => 'Create Downtime Configuration',
+            ],
+            Permission::UPDATE_DOWNTIME_CONFIG => [
+                'description'   => 'Create Downtime Configuration',
+            ],
+            Permission::LIST_DOWNTIME_CONFIG => [
+                'description'   => 'Create Downtime Configuration',
+            ],
+        ],
     ],
 
     'workflows' => [

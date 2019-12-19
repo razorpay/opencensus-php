@@ -251,6 +251,9 @@ class Name
     const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
     const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
+    const CREATE_DOWNTIME_CONFIG              = 'create_downtime_config';
+    const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
+    const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';

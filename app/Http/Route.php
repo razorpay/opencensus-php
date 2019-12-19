@@ -1388,15 +1388,8 @@ final class Route
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
 
         // Route for Success Rate Global Configurations
-        //'create_sr_level_global_config'           => ['post',       'global_sr_config',                                        'SuccessRateController@proxy'                              ],
         'update_sr_level_global_config'           => ['put',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
-
-        // Route for Success Rate Merchant Level Configurations
-        'create_sr_level_merchant_config'         => ['post',       'merchant_sr_config',                                      'SuccessRateController@proxy'                              ],
-        'update_sr_level_merchant_config'         => ['put',        'merchant_sr_config/{id}',                                 'SuccessRateController@proxy'                              ],
-        'get_sr_level_merchant_config'            => ['get',        'merchant_sr_config/{id}',                                 'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_merchant_config'        => ['get',        'merchant_sr_config',                                      'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
     ];
 
     public static $public = [
@@ -2673,11 +2666,6 @@ final class Route
         //'create_sr_level_global_config',
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
-        'create_sr_level_merchant_config',
-        'update_sr_level_merchant_config',
-        'get_sr_level_merchant_config',
-        'get_all_sr_level_merchant_config',
-
     ];
 
     public static $routePermission = [
@@ -3224,13 +3212,8 @@ final class Route
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
-        //'create_sr_level_global_config'             => '*',
-        'update_sr_level_global_config'             => '*',
-        'get_all_sr_level_global_config'            => '*',
-        'create_sr_level_merchant_config'           => '*',
-        'update_sr_level_merchant_config'           => '*',
-        'get_sr_level_merchant_config'              => '*',
-        'get_all_sr_level_merchant_config'          => '*',
+        'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
+        'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
 
     ];
 
