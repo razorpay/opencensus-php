@@ -505,7 +505,21 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
+        $merchant['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
         return $merchant->toArray();
+    }
+
+    public function shouldShowSettlementUxRevamp()
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::SETTLEMENT_UX_REVAMP,
+            $this->mode
+        );
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 
     public function fetchBalance($merchantId = null)
