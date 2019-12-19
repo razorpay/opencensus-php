@@ -222,7 +222,7 @@ export default class CreateOfferWizard extends React.Component {
         }
       },
       ends_at: val => {
-        if (this.state.ends_at === null) return;
+        if (!val) return 'Please select a date';
         if (this.state.starts_at >= val) {
           return 'End date cannot be less that start date.';
         }
@@ -235,7 +235,7 @@ export default class CreateOfferWizard extends React.Component {
       },
       payment_method: val => {
         if (!val) {
-          return 'Payment method cannot be null';
+          return 'Payment method cannot be empty';
         }
       },
       max_offer_usage: val => {

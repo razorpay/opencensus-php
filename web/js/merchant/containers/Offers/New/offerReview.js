@@ -6,7 +6,7 @@ const getTermsAndConditionsCheck = (value, onChange) => {
   return (
     <React.Fragment>
       <div className="horizontally-stacked-checkbox">
-        <p>Terms and Conditions:</p>
+        <p className="required">Terms and Conditions:</p>
         <input
           defaultChecked={value === 'false' ? 0 : 1}
           type="checkbox"
