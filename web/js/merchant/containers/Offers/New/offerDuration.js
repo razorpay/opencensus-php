@@ -38,8 +38,8 @@ export default ({
       required
       options={[
         { label: 'Select Type', name: '' },
-        { label: 'Block', name: true },
-        { label: 'Allow', name: false },
+        { label: 'Do not allow payment to go through', name: true },
+        { label: 'Allow customer to pay without availing offer', name: false },
       ]}
       onChange={getFormOnChangeHandler()}
     />
