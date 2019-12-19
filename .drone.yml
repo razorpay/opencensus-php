@@ -397,7 +397,7 @@ steps:
           - tag
           - pull_request
 
-  - name: build-apache
+  - name: build_apache
     pull: default
     image: plugins/docker
     settings:
@@ -427,7 +427,7 @@ steps:
       status:
         - success
 
-  - name: build-openresty
+  - name: build_openresty
     pull: default
     image: plugins/docker
     settings:
@@ -438,7 +438,7 @@ steps:
         - GIT_USERNAME
       repo: razorpay/api
       tags: "openresty-${DRONE_COMMIT_SHA}"
-      dockerfile: "Dockerfile.openresty"
+      dockerfile: Dockerfile.openresty
     environment:
       DOCKER_PASSWORD:
         from_secret: docker_password
