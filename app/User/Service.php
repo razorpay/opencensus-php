@@ -885,7 +885,8 @@ class Service extends Base\Service
             'custom_notes',
             'sellerapp_PL_batch_upload',
             'nps_survey_banner',
-            'vpa_enabled'
+            'vpa_enabled',
+            'new_pp_success_modal'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
