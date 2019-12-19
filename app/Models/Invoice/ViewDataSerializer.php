@@ -351,8 +351,6 @@ class ViewDataSerializer extends Base\Core
         // object passed as part of construct does not have relations loaded.
         //
         $this->repo->loadRelations($this->invoice);
-        
-        $this->invoice->setRelation('entity', $this->invoice->entity);
 
         $this->app['basicauth']->setMerchant($this->invoice->merchant);
 
@@ -425,7 +423,7 @@ class ViewDataSerializer extends Base\Core
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+                if ($this->invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
                 {
                     $serialized['rbl_emandate_interim_process2'] = true;
                 }
