@@ -594,6 +594,7 @@ class Selector extends Base\Core
                 [
                     'payment'             => $data['payment'],
                     'merchant'            => $data['merchant'],
+                    'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
                     'execution_type'      => $executionType,
