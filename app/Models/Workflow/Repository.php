@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Workflow\Step;
 
 class Repository extends Base\Repository
@@ -20,30 +21,37 @@ class Repository extends Base\Repository
 
     public function findByOrgId(string $orgId, $params)
     {
-        // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
-        // which cannot be filtered further according to permission attached which is required here.
-        $permission = $params[Entity::PERMISSIONS] ?? null;
-
         $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        $query =  $this->newQuery()
-                       ->where(Entity::ORG_ID, '=', $orgId);
+        $permissionName = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? null;
 
-        // Filter by permission if the permission name has been passed as a query parameter
-        if (empty($permission) === false)
+        $query = $this->repo->permission->newQuery()
+            ->where(Admin\Permission\Entity::NAME, $permissionName);
+
+        $permission = $query->pluck(Entity::ID)->toArray();
+
+        if(empty($permission) === false)
         {
-            $query = $query->whereHas('permissions', function($q) use($permission)
-            {
-                $q->where('name', '=', $permission);
-            });
+            $permissionId = $permission[0];
         }
 
-        $results  = $query->get();
+        $query = $this->newQuery()
+                      ->where(Entity::ORG_ID, '=', $orgId);
 
-        // Implementing pagination
-        $results = $results->slice($offset,$limit);
+        if(empty($permission) === false)
+        {
+            $query->whereIn('id', function ($q) use ($permissionId) {
+                                  $q->select(Step\Entity::WORKFLOW_ID)
+                                  ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
+                                  ->where(Entity::PERMISSION_ID, $permissionId);
+                                  });
+        }
+
+        $results = $query->skip($offset)
+                         ->take($limit)
+                         ->get();
 
         return $results;
     }

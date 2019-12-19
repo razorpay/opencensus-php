@@ -18,6 +18,7 @@ class Core extends Base\Core
 
         $orgId       = $input[Entity::ORG_ID];
         $permissions = $input[Entity::PERMISSIONS];
+        $levels      = $input[Entity::LEVELS];
 
         // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
         if ($this->requestHasCreatePayoutPermission($permissions, $orgId) == true)
@@ -34,6 +35,10 @@ class Core extends Base\Core
                 $workflow->merchant()->associate($merchant);
             }
         }
+
+        // Check if atleast one level has been entered for all permissions other than the create_payout permission
+        // Workflows with create_payout permission are permitted to leave the field empty
+        $workflow->getValidator()->checkForValidNumberOfLevels($levels, $permissions, $orgId);
 
         // Check if the permissions given are enabled to have workflows
         $workflow->getValidator()->validatePermissionsForOrg($orgId, $permissions);
@@ -233,7 +238,7 @@ class Core extends Base\Core
         return (empty($actions) === true);
     }
 
-    protected function requestHasCreatePayoutPermission(array $permissions, string $orgId): bool
+    public function requestHasCreatePayoutPermission(array $permissions, string $orgId): bool
     {
         $createPayoutPerm = $this->repo
                                  ->permission

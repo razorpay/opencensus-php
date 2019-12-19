@@ -133,11 +133,11 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getAllWorkflowPayoutAmountRules()
+    public function getMerchantIdsForWorkflowPermission()
     {
         $input = Request::all();
 
-        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getAllWorkflowRules($input);
+        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getMerchantIdsForWorkflowPermission($input);
 
         return ApiResponse::json($data);
     }

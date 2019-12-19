@@ -100,7 +100,7 @@ class Core extends Base\Core
             // An existing api returns in this format for proxyAuth which is maintained
             return $amountRules->toArrayPublic();
         }
-        else
+        elseif($this->app['basicauth']->isAdminAuth())
         {
             // Returns in a format including containing more fields like id in database useful for admin
             return $amountRules->toArrayWithItems();
