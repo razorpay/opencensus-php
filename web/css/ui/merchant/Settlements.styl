@@ -531,6 +531,7 @@ i.settle-now {
   padding: 20px;
   font-size: 16px;
   text-align: center;
+  opacity : .7
 }
 
 .settlement-alert-warning {
@@ -539,39 +540,53 @@ i.settle-now {
   margin-top: 10px;
 }
 
+.settlement-holiday-example{
+  margin-top:  18px;
+  border: 1px solid #E2E2E2;
+  border-radius:  2px
+}
+
+.settlement-default-note{
+    display: flex;
+    height: 50px;
+    text-align: center;
+    padding-top: 15px;
+}
+
 .breakup {
   margin-top: 15px;
 }
 
-// .holiday-div {
-// width: 20%;
-// border-top: 1px solid;
-// border-radius: 68px;
-// padding-top: 10px;
-// }
 .pointer {
   cursor: pointer;
 }
 
-.holiday {
-  td {
-    width: 115px;
-    padding: 5px 0;
-  }
-
-  table {
-    margin: 0;
-    width: 100%;
-  }
-
-  div.table {
-    height: 490px;
-    overflow: scroll;
-    background: #fff;
-    padding: 10px;
-  }
-
-  tbody {
-    font-weight: 600;
-  }
+.holiday{
+  height : 450px;
+  overflow: scroll;
 }
+.settlement-detail-row
+  display: flex
+  width: 73%
+  justify-content: space-between
+  padding: 3px 0px 0px 0px
+  color: #7C8199
+
+.settlement-sub-row
+  border-left-style: solid
+  padding-left: 5px
+  border-left-color: #C6CFD9
+  font-size: 12px
+  color:#7C8199
+
+.settlement-payment-info
+  color:#528FF0
+  width: 80%
+  display: flex
+  align-items: center
+  padding-top: 5px
+
+  i{
+    padding-right: 5px
+    padding-top: 4px
+  }

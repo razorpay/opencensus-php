@@ -24,7 +24,13 @@ export const fetchItem = id => {
       id,
       {},
       {
-        expand: ['card', 'emi_plan', 'disputes'],
+        expand: [
+          'card',
+          'emi_plan',
+          'disputes',
+          'transaction',
+          'transaction.settlement',
+        ],
         dashboard_flag: ['instant_refund_support'],
       }
     ),

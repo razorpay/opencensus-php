@@ -40,7 +40,6 @@ export default class TransactionsContainer extends Component {
   }
 
   render() {
-    console.log(this.props, 'propsss');
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
@@ -92,7 +91,7 @@ export default class TransactionsContainer extends Component {
             </ShowWhen>
           )}
           {!nextSettlement ? (
-            <div class="text-right w50">
+            <div class="text-right" style={{ width: '65%' }}>
               <strong>
                 <Amount
                   value={this.props.settlement_amount.data.settlement_amount}
@@ -106,6 +105,7 @@ export default class TransactionsContainer extends Component {
               />{' '}
               <span
                 class="btn-link"
+                style={{ marginLeft: '5px' }}
                 onClick={() => {
                   this.props.openModal({
                     size: 'regular',
@@ -114,6 +114,11 @@ export default class TransactionsContainer extends Component {
                         settlementAmount={this.props.settlement_amount.data}
                       />
                     ),
+                  });
+
+                  window.rzpAnalytics({
+                    eventCategory: 'Dashboard - Settlement UI Revamp',
+                    eventAction: 'Click Know More',
                   });
                 }}
               >
@@ -137,6 +142,11 @@ export default class TransactionsContainer extends Component {
                     settlementAmount={this.props.settlement_amount.data}
                   />
                 ),
+              });
+
+              window.rzpAnalytics({
+                eventCategory: 'Dashboard - Settlement UI Revamp',
+                eventAction: 'Click Know More(On Hold)',
               });
             }}
           />

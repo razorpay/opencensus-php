@@ -206,6 +206,18 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
+  viewSettlementCycle = () => {
+    this.props.openModal({
+      size: 'regular',
+      component: <SettlementSchedule holidayList={this.props.holidayList} />,
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlement UI Revamp',
+      eventAction: 'View Settlement Cycle',
+    });
+  };
+
   render() {
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
@@ -244,6 +256,11 @@ export default class SettlementsListContainer extends ListContainer {
                     />
                   ),
                 });
+
+                window.rzpAnalytics({
+                  eventCategory: 'Dashboard - Settlement UI Revamp',
+                  eventAction: 'Click Know More(On Hold)',
+                });
               }}
             />
           ) : null}
@@ -253,16 +270,7 @@ export default class SettlementsListContainer extends ListContainer {
                 <React.Fragment>
                   <div
                     class="btn btn-link settlement-doc-btn"
-                    onClick={() => {
-                      this.props.openModal({
-                        size: 'regular',
-                        component: (
-                          <SettlementSchedule
-                            holidayList={this.props.holidayList}
-                          />
-                        ),
-                      });
-                    }}
+                    onClick={this.viewSettlementCycle}
                   >
                     <span
                       class="icon i-info-outline"
@@ -345,8 +353,15 @@ export default class SettlementsListContainer extends ListContainer {
                                     />
                                   ),
                                 });
+
+                                window.rzpAnalytics({
+                                  eventCategory:
+                                    'Dashboard - Settlement UI Revamp',
+                                  eventAction: 'Click Know More',
+                                });
                               }}
                               class="btn-link pointer"
+                              style={{ marginLeft: '5px' }}
                             >
                               <b>Know More</b>
                             </span>

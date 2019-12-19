@@ -286,6 +286,13 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
+  viewSettlementOverview = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlement UI Revamp',
+      eventAction: 'View Settlement Details On Payment',
+    });
+  };
+
   render() {
     let {
       loading,
@@ -323,6 +330,7 @@ export default class PaymentDetailsContainer extends Component {
           openRefundModal={this.openRefundModal}
           onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
           isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
+          viewSettlementOverview={this.viewSettlementOverview}
         />
 
         <ShowWhen
