@@ -156,13 +156,33 @@ class DopplerProcessor implements ProcessorInterface
 
         if(is_null($downtime) === false)
         {
-            throw new Exception\LogicException(
-              'Duplicate Ongoing Downtime Found by Doppler',
-              null,
-              [
-                  'DowntimeData' => $downtimeData,
-              ]
-            );
+            if($downtime->getReasonCode() === $downtimeData['reason_code'])
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Ongoing Downtime Found by Doppler',
+                    null,
+                    [
+                        'DowntimeData' => $downtimeData,
+                    ]
+                );
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_DOWNTIME_DOPPLER_EDIT, ['data' => $downtimeData]
+                );
+
+                $id = $downtime->getId();
+
+                $downtimeUpdate = [
+                    Entity::REASON_CODE     => $downtimeData[Entity::REASON_CODE],
+                ];
+
+                $downtime = $this->core->edit( $id, $downtimeUpdate);
+
+                return $downtime->toArrayAdmin();
+
+            }
         }
 
         $this->trace->info(
