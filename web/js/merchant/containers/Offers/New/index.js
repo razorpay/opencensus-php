@@ -239,6 +239,7 @@ export default class CreateOfferWizard extends React.Component {
         }
       },
       max_offer_usage: val => {
+        if (!val) return;
         if (!new RegExp('^[0-9]+$').test(val)) return 'Please enter a number';
         val = parseFloat(val);
         if (val > MAX_INT) {

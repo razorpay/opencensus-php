@@ -49,7 +49,6 @@ export default ({
       type="number"
       validator={getFormElementValidations('max_offer_usage')}
       placeholder="Max Usage of this offer: Example - 100 times"
-      required
       defaultValue={maxOfferUsage}
       onChange={getFormOnChangeHandler()}
     />
