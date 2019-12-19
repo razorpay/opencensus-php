@@ -75,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
+
         self::SHORT_URL,
         self::STATUS,
         self::AMOUNT,

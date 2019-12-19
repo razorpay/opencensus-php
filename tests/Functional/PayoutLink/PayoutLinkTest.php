@@ -92,12 +92,16 @@ class PayoutLinkTest extends TestCase
     {
         $this->ba->privateAuth();
 
+        $this->addAccountNumberParameter(__FUNCTION__);
+
         $this->startTest();
     }
 
     public function testPostRequestForCreatingPayoutLinkWithContactId()
     {
         $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
 
         $this->startTest();
     }
@@ -201,6 +205,8 @@ class PayoutLinkTest extends TestCase
 
         $testHardCodedShortUrl = 'www.this_is_when_elfin_works.com';
 
+        $this->addAccountNumberParameter(__FUNCTION__);
+
         $elfin = $this->createMock(ElfinService::class);
 
         $elfin->method('shorten')
@@ -218,6 +224,8 @@ class PayoutLinkTest extends TestCase
         $urlFormat = '%s/payout-links/%s/view';
 
         $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
 
         // mock elfin and make it throw an error, check the right exception is thrown on our end
         $elfin = $this->createMock(ElfinService::class);
@@ -248,12 +256,16 @@ class PayoutLinkTest extends TestCase
     {
         $this->ba->privateAuth();
 
+        $this->addAccountNumberParameter(__FUNCTION__);
+
         $this->startTest();
     }
 
     public function testContactAddFailsWhenEmailAndPhoneNumberBothMissing()
     {
         $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
 
         $this->startTest();
     }
@@ -272,6 +284,8 @@ class PayoutLinkTest extends TestCase
         $testData['request']['content']['contact']['id'] = $contact->getId();
 
         $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'] = $testData;
+
+        $this->addAccountNumberParameter(__FUNCTION__);
 
         $this->ba->privateAuth();
 
@@ -502,5 +516,11 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
 
         $this->startTest();
+    }
+
+    protected function addAccountNumberParameter($funcName)
+    {
+        $this->testData[$funcName]['request']['content']['account_number'] =
+            $this->virtualAccount->bankAccount->getAccountNumber();
     }
 }
