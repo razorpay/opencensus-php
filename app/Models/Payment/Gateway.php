@@ -342,8 +342,10 @@ class Gateway
 
     // banks supported by enach_npci_netbanking gateway for auth type netbanking
     const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
+        IFSC::ANDB,
         IFSC::CBIN,
         IFSC::CIUB,
+        IFSC::CNRB,
         IFSC::DEUT,
         IFSC::ESFB,
         IFSC::FDRL,
@@ -353,36 +355,39 @@ class Gateway
         IFSC::IDFB,
         IFSC::INDB,
         IFSC::IOBA,
+        IFSC::KARB,
         IFSC::KKBK,
         IFSC::MAHB,
         IFSC::PYTM,
         IFSC::RATN,
+        IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
+        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
-        IFSC::ANDB,
-        IFSC::KARB,
-        IFSC::UTBI,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
     const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
-        IFSC::KKBK,
-        IFSC::YESB,
-        IFSC::USFB,
-        IFSC::INDB,
-        IFSC::ESFB,
-        IFSC::ICIC,
-        IFSC::SIBL,
-        IFSC::HDFC,
-        IFSC::IDFB,
-        IFSC::MAHB,
+        IFSC::ANDB,
         IFSC::DEUT,
+        IFSC::ESFB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
+        IFSC::KARB,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::SIBL,
+        IFSC::USFB,
         IFSC::UTBI,
-        IFSC::AUBL,
+        IFSC::YESB,
+        Netbanking::PUNB_R,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -656,6 +661,10 @@ class Gateway
         Payment\Gateway::NETBANKING_IDFC,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_AXIS,
+        Payment\Gateway::NETBANKING_EQUITAS,
+        Payment\Gateway::NETBANKING_IBK,
+        Payment\Gateway::UPI_SBI,
+        Payment\Gateway::NETBANKING_HDFC,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -677,6 +686,10 @@ class Gateway
         Payment\Gateway::NETBANKING_IDFC        => 1576060200,
         Payment\Gateway::NETBANKING_ICICI       => 1576146600,
         Payment\Gateway::NETBANKING_AXIS        => 1576146600,
+        Payment\Gateway::NETBANKING_EQUITAS     => 1576578600,
+        Payment\Gateway::NETBANKING_IBK         => 1576578600,
+        Payment\Gateway::UPI_SBI                => 1576578600,
+        Payment\Gateway::NETBANKING_HDFC        => 1577097000,
     ];
 
     public static $channels = [
@@ -1672,6 +1685,11 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
+        Gateway::UPI_JUSPAY,
+    ];
+
+    public static $upiQrGateways = [
+        Gateway::UPI_MINDGATE,
     ];
 
     public static $sequenceNoBasedRefundGateways = [

@@ -64,7 +64,10 @@ class Mozart
 
         $this->config = $app['config'];
 
-        $this->mode = $app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function sendMozartRequest(
@@ -104,8 +107,10 @@ class Mozart
         return $responseArray;
     }
 
-    public function translateWebhook(string $gateway, string $payload) : array
+    public function translateWebhook(string $gateway, string $payload, string $mode) : array
     {
+        $this->mode = $mode;
+
         $translateWebhookRequest = $this->getRequestV2(
             $payload,
             self::WEBHOOK,

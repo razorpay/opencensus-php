@@ -196,7 +196,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::CURRENCY                   => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
@@ -854,6 +854,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
     ];
 
     protected static $netbankingCsbEditTerminalRules = [
@@ -861,6 +864,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];

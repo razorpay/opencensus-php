@@ -8,6 +8,7 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Admin;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -86,7 +87,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            return (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
         }
         else
         {
@@ -118,7 +119,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
             }
             else
             {
@@ -147,6 +148,34 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * When callback payment id is not found in payment table, it could be
+     * 1. Present in QrCode entity for VA payments
+     * 2. Unexpected payments made directly to VPA
+     *
+     * @return array|bool
+     */
+    protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver)
+    {
+        // First if mode is not found from payment repo, we will check with QR repo
+        $qrRepo = $this->app['repo']->qr_code;
+
+        $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
+
+        if ($mode !== null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+        }
+        else
+        {
+            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+        }
+
+        return $data;
     }
 
     protected function callbackEbs($input)
@@ -294,7 +323,7 @@ class GatewayController extends Controller
         {
             case Payment\Method::NETBANKING:
                 $data = $this->staticCallbackNetbanking($input, $gateway,$mode);
-                return  $data;
+                return $data;
         }
 
         return null;
@@ -513,7 +542,15 @@ class GatewayController extends Controller
 
         $input['payment'] = $payment;
 
-        return (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+
+        if ($input['token'] === 'Test_Token')
+        {
+            return $data;
+        }
+        assertTrue ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function callbackYesbank()

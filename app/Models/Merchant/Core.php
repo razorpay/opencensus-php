@@ -51,6 +51,7 @@ use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
@@ -134,6 +135,9 @@ class Core extends Base\Core
     }
 
     /**
+     * For any code getting added here, consider whether it is applicable for a submerchant
+     * getting linked via an admin or by a referral code and update code in those cases too
+     *
      * @param array  $input
      * @param Entity $aggregatorMerchant
      * @param bool   $linkedAccount
@@ -213,7 +217,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    protected function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
+    public function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
     {
         // assign parent pricing plan by default
         $pricingPlan = $merchant->getPricingPlanId();
@@ -248,12 +252,23 @@ class Core extends Base\Core
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
+        $this->setDefaultFeatureForMerchant($merchant);
+    }
+
+    protected function setDefaultFeatureForMerchant(Entity $merchant)
+    {
         // Removing this feature is complicated, but
         // blindly assigning the feature to everybody is not
         (new Feature\Core)->create([
             Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+        ], $shouldSync = true);
+
+        (new Feature\Core)->create([
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+            Feature\Entity::ENTITY_ID       => $merchant->getId(),
+            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
         ], $shouldSync = true);
     }
 
@@ -524,7 +539,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
                                [
-                                   "balance_id" => $merchantBalance->getId()
+                                   'balance_id' => $merchantBalance->getId()
                                ]);
 
             return $merchantBalance;
@@ -652,6 +667,65 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /*
+     check if merchant is subMerchant to aggregator/fully Managerd partner
+     and if partner is settle to partner
+     and then check partner's bank account exists or not.
+    */
+    public function getSettledToPartnersTypeOfMerchantIfExists(Entity $merchant)
+    {
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        //
+        // subMerchant can belong to only one aggregator or fully managed at a time.
+        // settlementPartnerTypes are aggregator and fully Managed.
+        //
+        $partner = $partners->filter(function(Entity $partner)
+        {
+            return (in_array($partner->getPartnerType(), PartnerConstants::$settlementPartnerTypes, true) === true);
+
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return null;
+        }
+
+        return $partner;
+    }
+
+    public function isValidBankAccountForSettledToPartner(Entity $submerchant, Entity $partner = null)
+    {
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        $application = $this->getInternalPartnerApp($partner);
+
+        $config      = (new PartnerConfig\Core)->fetch($application, $submerchant);
+
+        if ($config === null)
+        {
+            return false;
+        }
+
+        $shouldSettleToPartner = $config->shouldSettleToPartner();
+
+        if ($shouldSettleToPartner === true)
+        {
+            // validate Partner's Bank account
+            $bankAccount = $partner->bankAccount;
+
+            if ($bankAccount === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND);
+            }
+        }
+
+        return $shouldSettleToPartner;
     }
 
     /**
@@ -2383,7 +2457,7 @@ class Core extends Base\Core
             return null;
         }
 
-        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+        return (int) ($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
     }
 
 
@@ -2416,7 +2490,17 @@ class Core extends Base\Core
         }
     }
 
-    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload): array
+    /**
+     * Here we are taking mode as input parameter instead of using $this->mode because
+     * for webhook jobs we do not take mode as constructor argument and mode has to be passed for cases functionality depends on mode
+     *
+     * @param Entity $merchant
+     * @param string $payload
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload, string $mode): array
     {
         $partners = $this->fetchAffiliatedPartners($merchant->getId());
 
@@ -2450,7 +2534,16 @@ class Core extends Base\Core
                 'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['mozart']->translateWebhook($translationGateway, $payload);
+        try
+        {
+            return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
     }
 
     protected function getTranslateWebhookGateway(Entity $partner)
@@ -2475,16 +2568,14 @@ class Core extends Base\Core
             return false;
         }
 
-        // If business_website is empty, then don't allow international by default
-        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
-
         $category = $merchantDetails->getBusinessCategory();
 
         $subcategory = $merchantDetails->getBusinessSubCategory();
 
+        $websitePresent = $this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails);
+
         if (($merchant->isInternational() === true) or
-            (empty($businessWebsite) === true) or
-            (empty($category) === true))
+            (empty($category) === true) or $websitePresent === false)
         {
             return false;
         }
@@ -2510,6 +2601,36 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
+    {
+        // If business_website is empty, then don't allow international by default
+        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
+
+        if (empty($businessWebsite) === false)
+        {
+            return true;
+        }
+
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        // Filter partners whose feature (SKIP_WEBSITE_INTERNAT) is present.
+        $partner = $partners->filter(function(Entity $partner) {
+            return ($partner->skipWebsiteForInternational() === true);
+
+        })->first();
+
+        //
+        // If partner is not present and businessWebsite is absent
+        // then we do not allow international Activation.
+        //
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -2759,7 +2880,7 @@ class Core extends Base\Core
 
         $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
 
-        $merchantEmailList = [] ;
+        $merchantEmailList = [];
 
         foreach ($transactionReportEmails as $transactionReportEmail)
         {

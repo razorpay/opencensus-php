@@ -26,7 +26,6 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_PAYMENT_PAGE_ITEMS = 25;
 
     protected static $createRules = [
-        Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min_amount|custom',
         Entity::CURRENCY        => 'filled|string|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -50,11 +49,10 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
 
-        Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1',
+        Entity::PAYMENT_PAGE_ITEMS => 'required|sequential_array|min:1',
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT          => 'nullable|mysql_unsigned_int|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
@@ -396,60 +394,6 @@ class Validator extends Base\Validator
         }
 
         $this->validateInput('sendNotification', $input);
-    }
-
-    /**
-     * @param  Payment\Entity $payment
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    public function validatePaymentAmount(Payment\Entity $payment)
-    {
-        $errorMsg                = null;
-        $paymentLink             = $this->entity;
-        $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
-        // When the merchant is not customer fee bearer the fee will be calcualted at the time of capture so now the
-        // fee will be zero in case of merchant fee bearer.
-        $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
-        $paymentLinkAmount       = $paymentLink->getAmount();
-        $allowMultipleUnits      = (bool) $paymentLink->getSettingsScalarElseNull(Entity::ALLOW_MULTIPLE_UNITS);
-
-        if ($paymentLinkAmount === null)
-        {
-            return;
-        }
-
-        // If payment for multiple units are not allowed, both amount should be same.
-        if (($allowMultipleUnits === false) and
-            ($paymentLinkAmount !== $paymentAmount) and
-            ($payment->hasOrder() === false))
-        {
-            $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
-        }
-        // Else if payment for multiple amounts is allowed and payment.notes.units must(if exists) must
-        // contain valid integer value.
-        else if (($allowMultipleUnits === true) and
-            ($payment->hasOrder() === false))
-        {
-            $paymentUnits = filter_var($payment->getNotes()[Entity::UNITS] ?? '1', FILTER_VALIDATE_INT);
-
-            if (($paymentUnits === false) or ($paymentUnits < 1))
-            {
-                $errorMsg = 'Payment notes must contain units which is numeric and greater than equal to 1.';
-            }
-            else if ($paymentAmountWithoutFee !== ($paymentUnits * $paymentLinkAmount))
-            {
-                $errorMsg = 'Payment amount should be multiple of number of units and payment link\'s unit amount.';
-            }
-        }
-
-        if ($errorMsg != null)
-        {
-            throw new BadRequestValidationFailureException(
-                $errorMsg,
-                Entity::AMOUNT,
-                compact('paymentAmount', 'paymentLinkAmount', 'allowMultipleUnits'));
-        }
     }
 
     public function validateCurrency(string $attribute, string $currency)

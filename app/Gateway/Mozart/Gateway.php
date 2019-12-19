@@ -143,6 +143,23 @@ class Gateway extends Base\Gateway
             return ['data' => $data];
         }
 
+        $intentGatewaysWithPayInit = [
+            Payment\Gateway::UPI_JUSPAY,
+        ];
+
+        if (($this->action === Action::PAY_INIT) and
+            (in_array($this->getGateway($input), $intentGatewaysWithPayInit, true)))
+        {
+            if($this->isUpiIntent($input) === true)
+            {
+                $data = [
+                    'intent_url' => $response['next']['redirect']['url'],
+                ];
+
+                return ['data' => $data ];
+            }
+        }
+
         if ($input['payment']['method'] === 'upi')
         {
             return [
@@ -415,7 +432,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -431,7 +454,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -1460,6 +1489,11 @@ class Gateway extends Base\Gateway
         return $input['payment']['gateway'];
     }
 
+    protected function isUpiIntent($input): bool
+    {
+        return (isset($input['upi']['flow']) and ($input['upi']['flow'] === 'intent'));
+    }
+
     protected function isGooglePayGateway($input)
     {
         if ($this->getGateway($input) === Payment\Gateway::GOOGLE_PAY)
@@ -1495,6 +1529,7 @@ class Gateway extends Base\Gateway
     {
         return in_array($gateway, [
             Payment\Gateway::UPI_CITI,
+            Payment\Gateway::UPI_JUSPAY,
         ], true);
     }
 
