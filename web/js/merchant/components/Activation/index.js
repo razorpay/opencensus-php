@@ -220,7 +220,10 @@ export default class ActivationWizard extends React.Component {
 
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-      if (props.data['activation_status'] === 'needs_clarification') {
+      if (
+        props.data['activation_status'] === 'needs_clarification' &&
+        props.data['kyc_clarification_reasons']
+      ) {
         if (FORM_TABS.indexOf('Needs Clarification') === -1) {
           FORM_TABS.push('Needs Clarification');
         }
