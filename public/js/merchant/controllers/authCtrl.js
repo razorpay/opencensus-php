@@ -92,6 +92,7 @@ app
       // signup state container
       var email = $location.search().email;
       var role = $location.search().r;
+      var referral_code = $location.search().referral_code;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -339,6 +340,10 @@ app
         payload.data.business_name = payload.data.business_name || '';
 
         payload.data.partner_intent = $scope.signup.settings.partner_intent;
+
+        if (Boolean(referral_code)) {
+          payload.data['referral_code'] = referral_code;
+        }
 
         // Business name cannot be empty or null. Same as quickSendDetails
         if (!payload.data.business_name) {
