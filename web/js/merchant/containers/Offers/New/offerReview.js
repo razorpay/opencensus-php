@@ -6,20 +6,22 @@ const getTermsAndConditionsCheck = (value, onChange) => {
   return (
     <React.Fragment>
       <div className="horizontally-stacked-checkbox">
-        <p className="required">Terms and Conditions:</p>
-        <input
-          defaultChecked={value === 'false' ? 0 : 1}
-          type="checkbox"
-          name="creation_terms_accepted"
-          onChange={e => {
-            e.target.value = e.target.checked;
-            onChange(e);
-          }}
-        />
-        <span>
-          I understand that the discount/cashback given in this offer will be
-          borne by me and not razorpay
-        </span>
+        <label className="required">Terms and Conditions:</label>
+        <div>
+          <input
+            defaultChecked={value === 'false' ? 0 : 1}
+            type="checkbox"
+            name="creation_terms_accepted"
+            onChange={e => {
+              e.target.value = e.target.checked;
+              onChange(e);
+            }}
+          />
+          <span>
+            I understand that the discount/cashback given in this offer will be
+            borne by me and not razorpay
+          </span>
+        </div>
       </div>
     </React.Fragment>
   );

@@ -13,13 +13,14 @@
         text-transform: capitalize;
 
 .horizontally-stacked-checkbox
-    display: flex;
     align-items: center;
     flex-wrap: wrap;
 
-    >input[type="checkbox"]
-        margin-right: 20px;
-    >p
+    >div
+        display: grid;
+        grid-template-columns: 25px 100%;
+
+    >label
         font-weight: bold;
         position:relative;
         width: 100%;
