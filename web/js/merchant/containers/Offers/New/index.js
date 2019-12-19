@@ -275,7 +275,7 @@ export default class CreateOfferWizard extends React.Component {
       // momentObj / null if not date is required
       datetime: momentObj => this.setState({ [options[0]]: momentObj }),
       stateResetter: resetFields => syntheticEvent => {
-        let clonedState = deepClone(this.state);
+        let clonedState = { ...this.state };
         clonedState[syntheticEvent.target.name] = syntheticEvent.target.value;
         let statePropTobeDeleted = resetFields || [];
         statePropTobeDeleted.forEach(stateProp => {
@@ -466,7 +466,6 @@ export default class CreateOfferWizard extends React.Component {
           this.props.tracking.trackEvent(
             window.rzpQ.merchantActions().success('Offer_create')
           );
-          debugger;
           const entityId = savedOffer.id;
           if (this.IS_MODAL_VIEW) {
             this.props.appendOfferInReduxList(savedOffer);
@@ -488,7 +487,6 @@ export default class CreateOfferWizard extends React.Component {
         }
       })
       .catch(({ errors }) => {
-        debugger;
         let err = errors;
         if (Array.isArray(err)) {
           err = [];
