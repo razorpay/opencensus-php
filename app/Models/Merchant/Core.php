@@ -2523,7 +2523,16 @@ class Core extends Base\Core
                 'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        try
+        {
+            return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
     }
 
     protected function getTranslateWebhookGateway(Entity $partner)
