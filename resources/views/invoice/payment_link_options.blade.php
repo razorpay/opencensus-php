@@ -852,8 +852,8 @@ $isHostedCheckout               = true;
                 }
 
                 ele.addEventListener('click', function() {
-
-
+                    const hostedCheckoutURL = 'https://api.razorpay.com/v1/checkout/embedded';
+                    window.invokeHostedCheckout(options, 'post', hostedCheckoutURL); // Redirects to Hosted checkout page, so handler not needed
                 })
 
             } else {
