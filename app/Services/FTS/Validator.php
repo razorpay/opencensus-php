@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         'channel'          => 'filled|string|required|in:yesbank,icici,citi',
         'credentials'      => 'required|array',
         'mozartIdentifier' => 'filled|string|required|in:V1,V2',
-
+        'sourceAccountType'=> 'filled|string|required|in:current,nodal'
     ];
 
     protected static $deleteSourceAccountRules = [

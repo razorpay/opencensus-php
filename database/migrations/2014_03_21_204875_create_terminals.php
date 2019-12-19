@@ -66,10 +66,10 @@ class CreateTerminals extends Migration
             $table->string(Terminal::GATEWAY_ACCESS_CODE)
                   ->nullable();
 
-            $table->string(Terminal::GATEWAY_SECURE_SECRET)
+            $table->text(Terminal::GATEWAY_SECURE_SECRET)
                   ->nullable();
 
-            $table->string(Terminal::GATEWAY_SECURE_SECRET2)
+            $table->text(Terminal::GATEWAY_SECURE_SECRET2)
                   ->nullable();
 
             $table->text(Terminal::GATEWAY_RECON_PASSWORD)
@@ -190,7 +190,7 @@ class CreateTerminals extends Migration
                   ->nullable();
 
             $table->text(Terminal::NOTES)
-                  ->nullable();    
+                  ->nullable();
 
             $table->integer(Terminal::CREATED_AT);
 

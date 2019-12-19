@@ -259,7 +259,13 @@ return [
 
     'order_mapping'           => [],
 
-    'payment_mapping'         => [],
+    'payment_mapping'         => [
+        'properties' => [
+            'recurring' => [
+                'type' => 'boolean',
+            ],
+        ],
+    ],
 
     'refund_mapping'          => [],
 

@@ -209,17 +209,6 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
-                    // temporary - needs to be removed once parity analysis is complete
-                    $this->trace->info(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
-                        [
-                            'terminals_from_smart_routing'  => $newSelectedTerminals,
-                            'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
-                            'payment_id'                    => $payment->getId(),
-
-                        ]);
-
-
                     if (empty($sortedTerminals) === false)
                     {
                         $this->trace->error(
@@ -228,6 +217,7 @@ class Selector extends Base\Core
                                 'terminals_from_api'            => $sortedTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
+                                'method'                        => $payment->getMethod(),
 
                             ]);
                     }
@@ -607,6 +597,7 @@ class Selector extends Base\Core
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
+                    'execution_type'      => $executionType,
                 ]);
 
             if ($executionType === self::EXECUTION_TYPE_SYNC)
