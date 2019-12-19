@@ -92,7 +92,7 @@ export default class SupportBody extends Component {
             </small>
           </li>
           {window.rzp_user ? (
-            ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
+            ['activated', 'under_review', 'instantly_activated'].indexOf(
               window.rzp_user.activation_status
             ) > -1 ? (
               <li
