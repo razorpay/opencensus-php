@@ -2,11 +2,11 @@
 
 namespace RZP\Mail\Invoice;
 
-use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
+use RZP\Constants as C;
 
 class Base extends Mailable
 {
@@ -23,9 +23,9 @@ class Base extends Mailable
     ];
 
     const MAIL_TAG_MAP = [
-        Type::LINK    => MailTags::LINK,
-        Type::ECOD    => MailTags::ECOD,
-        Type::INVOICE => MailTags::INVOICE,
+        Type::LINK    => C\MailTags::LINK,
+        Type::ECOD    => C\MailTags::ECOD,
+        Type::INVOICE => C\MailTags::INVOICE,
     ];
 
     protected $data;
@@ -93,13 +93,13 @@ class Base extends Mailable
         {
             $invoiceType = $this->data['invoice']['type'];
 
-            $label = self::MAIL_TAG_MAP[$invoiceType] ?? MailTags::INVOICE;
+            $label = self::MAIL_TAG_MAP[$invoiceType] ?? C\MailTags::INVOICE;
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, $this->data['invoice']['id']);
+            $headers->addTextHeader(C\MailTags::HEADER, $this->data['invoice']['id']);
 
-            $headers->addTextHeader(MailTags::HEADER, $label);
+            $headers->addTextHeader(C\MailTags::HEADER, $label);
         });
 
         return $this;
@@ -148,7 +148,7 @@ class Base extends Mailable
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($this->data['invoice']['entity_type'] === 'subscription_registration')
+                if ($this->data['invoice']['entity_type'] === C\Entity::SUBSCRIPTION_REGISTRATION)
                 {
                     $template = static::SUBJECT_TEMPLATES[$merchantId];
 

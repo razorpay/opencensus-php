@@ -8,10 +8,10 @@ use RZP\Models\Merchant\Preferences;
 class Issued extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK                         => ' Requesting payment of %s %s (via Razorpay)',
-        Type::ECOD                         => ' Requesting payment of %s %s (via Razorpay)',
-        Type::INVOICE                      => ' Invoice from %s',
-        Preferences::MID_RBL_RETAIL_ASSETS => ' Mandate registration link from RBL Bank',
+        Type::LINK                              => ' Requesting payment of %s %s (via Razorpay)',
+        Type::ECOD                              => ' Requesting payment of %s %s (via Razorpay)',
+        Type::INVOICE                           => ' Invoice from %s',
+        Preferences::MID_RBL_RETAIL_ASSETS      => ' Mandate registration link from RBL Bank',
         Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
     ];
 
