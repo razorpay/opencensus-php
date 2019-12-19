@@ -1,6 +1,6 @@
 <?php
 return [
-    'testSuccessRateCreateConfig' => [
+    'testSuccessRateGetConfig' => [
         'request' => [
             'server' => [
                 'CONTENT_TYPE'  => 'application/json',
