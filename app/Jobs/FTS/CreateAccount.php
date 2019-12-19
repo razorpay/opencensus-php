@@ -34,6 +34,11 @@ class CreateAccount extends Job
     protected $status;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_create_account';

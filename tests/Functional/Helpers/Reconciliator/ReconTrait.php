@@ -164,7 +164,7 @@ trait ReconTrait
         return $excel->string('xlsx');
     }
 
-    protected function getNewUpiEntity($merchantId, $gateway)
+    protected function getNewUpiEntity($merchantId, $gateway, $mockServer = null)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
 
@@ -178,7 +178,7 @@ trait ReconTrait
 
         $this->gateway = 'upi_mindgate';
 
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $content = ($mockServer ? $mockServer : $this->mockServer())->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 

@@ -13,15 +13,13 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
@@ -39,6 +37,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
+    use PaymentGetsimplTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1071,6 +1070,11 @@ trait PaymentTrait
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
                     break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
+                    break;
             }
 
             if ($event !== '')
@@ -1331,6 +1335,18 @@ trait PaymentTrait
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function fetchRefundsForPayment($paymentId)
     {
         $request['url'] = '/payments/'.$paymentId.'/refunds';
@@ -1460,6 +1476,25 @@ trait PaymentTrait
         $payment['auth_type'] = Payment\AuthType::NETBANKING;
 
         $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getOtmInitialPaymentArray()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        unset($payment['card']);
+
+        $payment['recurring'] = 1;
+        $payment['amount'] = 0;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['recurring_token']['max_amount'] = 4000;
+
+        $payment['recurring_token']['expire_by'] = Carbon::now()->addDays(3)->getTimestamp();
+
+        $payment['recurring_token']['start_time'] = Carbon::now()->getTimestamp();
 
         return $payment;
     }
@@ -2119,19 +2154,19 @@ trait PaymentTrait
         });
     }
 
-    protected function mockExpressSendRequest($closure, $times = 1)
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
     {
-        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
 
-        $express->shouldAllowMockingProtectedMethods();
+        $mozart->shouldAllowMockingProtectedMethods();
 
-        $express->shouldReceive('sendRequest')
+        $mozart->shouldReceive('translateWebhook')
                 ->times($times)
                 ->andReturnUsing($closure);
 
-        $this->app->instance('express', $express);
+        $this->app->instance('mozart', $mozart);
 
-        return $express;
+        return $mozart;
     }
 
     protected function mockShield()
@@ -2427,4 +2462,38 @@ trait PaymentTrait
         return $address;
     }
 
+    protected function setFetchFileBasedRefundsFromScroogeMockResponse(array $refundEntities)
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        foreach ($refundEntities as $refundEntity)
+        {
+            $scroogeResponse['body']['data'][] = [
+                'id'          => $refundEntity['id'],
+                'amount'      => $refundEntity['amount'],
+                'base_amount' => $refundEntity['base_amount'],
+                'payment_id'  => $refundEntity['payment_id'],
+                'bank'        => $refundEntity->payment['bank'],
+                'gateway'     => $refundEntity['gateway'],
+                'currency'    => $refundEntity['currency'],
+                'method'      => $refundEntity->payment['method'],
+                'created_at'  => $refundEntity['created_at'],
+            ];
+        }
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
+    }
 }

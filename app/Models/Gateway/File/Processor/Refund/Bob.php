@@ -19,7 +19,7 @@ class Bob extends Base
     const FILE_TYPE              = FileStore\Type::BOB_NETBANKING_REFUND;
 
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
-    const GATEWAY                = 'netbanking_bob';
+    const GATEWAY                = Payment\Gateway::NETBANKING_BOB;
     const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C];
 
     protected function formatDataForFile(array $inputData)

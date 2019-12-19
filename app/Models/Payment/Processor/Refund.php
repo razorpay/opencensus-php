@@ -1951,12 +1951,54 @@ trait Refund
         return $data;
     }
 
+    protected function loadFTADataForScroogeRefund(
+        array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
+    {
+        if (isset($input['vpa']) === true)
+        {
+            $scroogeData['fta_data']['vpa'] = $input['vpa'];
+
+            return;
+        }
+
+        // Shouldn't enter this flow once instant refund fails and load fta data from input
+        if (($refund->isRefundSpeedInstant() === true) and ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
+        {
+            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $cardInput = $this->getCardIdInput($payment, $input);
+
+                if (empty($cardInput) === false)
+                {
+                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
+
+                    return;
+                }
+            }
+
+            if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
+
+                return;
+            }
+        }
+
+        $bankAccountInput = $this->getBankAccountInput($payment, $input);
+
+        if (empty($bankAccountInput) === false)
+        {
+            $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+        }
+    }
+
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         $refundData = $refund->toArray();
 
         $extraData = [
             'method'                    => $payment->getMethod(),
+            'bank'                      => $payment->getBank(),
             'payment_amount'            => $payment->getAmount(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
@@ -1975,45 +2017,12 @@ trait Refund
 
         $scroogeData = array_merge($refundData, $extraData);
 
-        if ($payment->isNetbanking() === true)
-        {
-            $scroogeData['bank'] = $payment->getBank();
-        }
-
-        if (isset($input['vpa']) === true)
-        {
-            $scroogeData['fta_data']['vpa'] = $input['vpa'];
-        }
-        else if ($refund->isRefundSpeedInstant() === true)
-        {
-            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $cardInput = $this->getCardIdInput($payment, $input);
-
-                if (empty($cardInput) === false)
-                {
-                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
-                }
-            }
-            else if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
-            }
-        }
-        else
-        {
-            $bankAccountInput = $this->getBankAccountInput($payment, $input);
-
-            if (empty($bankAccountInput) === false)
-            {
-                $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
-            }
-        }
-
         if (isset($input['refund'][RefundEntity::MODE_REQUESTED]) === true)
         {
             $scroogeData[RefundEntity::MODE_REQUESTED] = $input['refund'][RefundEntity::MODE_REQUESTED];
         }
+
+        $this->loadFTADataForScroogeRefund($scroogeData, $refund, $payment, $input);
 
         //
         // These attributes are already in scrooge, need to be reset before sending scrooge request
@@ -2606,17 +2615,8 @@ trait Refund
         {
             $paymentId = $payment->getId();
 
-            $haystack = [
-                'A0DbFSFMubDEAy',
-                'AEYsLhL8DAQAeh',
-                'AFG1ItI8zwijGP',
-                'AGsXWuKUv6XiVU',
-                'AMqpPrSMsxKKPc',
-                'AQNG7kHM5tfk4G',
-                'ATCKgAcp7cswbo'
-            ];
-
-            if (in_array($paymentId, $haystack, true) === true)
+            // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
+            if ($paymentId === 'AQNG7kHM5tfk4G')
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
@@ -2749,52 +2749,42 @@ trait Refund
 
     protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
-        // Using RazorX to control use of mode decisioning - call to scrooge during launch phase
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getMerchantId(),
-            Merchant\RazorxTreatment::INSTANT_REFUND_MODES,
-            $this->mode
-        );
+        //
+        // Calling Scrooge to fetch mode for a refund.
+        // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
+        // with support for modes from FTA/FTS
+        //
 
-        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        $queryParams = [
+            RefundConstants::METHOD => $payment->getMethod(),
+            RefundConstants::AMOUNT => $payment->getAmount()
+        ];
+
+        if ($payment->getMethod() === Payment\Method::CARD)
         {
             //
-            // Calling Scrooge to fetch mode for a refund.
-            // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
-            // with support for modes from FTA/FTS
+            // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
+            // Therefore, Scrooge must not send a validation error.
             //
 
-            $queryParams = [
-                RefundConstants::METHOD => $payment->getMethod(),
-                RefundConstants::AMOUNT => $payment->getAmount()
-            ];
-
-            if ($payment->getMethod() === Payment\Method::CARD)
+            if ($payment->hasCard() === true)
             {
-                //
-                // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
-                // Therefore, Scrooge must not send a validation error.
-                //
+                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
 
-                if ($payment->hasCard() === true)
+                $iin = $payment->card->iinRelation;
+
+                if ($iin !== null)
                 {
-                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-
-                    $iin = $payment->card->iinRelation;
-
-                    if ($iin !== null)
-                    {
-                        $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-                        $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
-                    }
+                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
                 }
             }
-
-            $mode = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
-
-            // If the status is false or if the mode is empty we are decisioning the speed to normal
-            (empty($mode) === false) ? $refund->setModeRequested($mode) :
-                $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
         }
+
+        $mode = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+
+        // If the status is false or if the mode is empty we are decisioning the speed to normal
+        (empty($mode) === false) ? $refund->setModeRequested($mode) :
+            $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 }

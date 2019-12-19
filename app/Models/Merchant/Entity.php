@@ -163,6 +163,11 @@ class Entity extends Base\PublicEntity
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,
@@ -213,6 +218,8 @@ class Entity extends Base\PublicEntity
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
+
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
 
     protected $entity = 'merchant';
 
@@ -1633,6 +1640,11 @@ class Entity extends Base\PublicEntity
     public function forceGreyListInternational(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);
+    }
+
+    public function skipWebsiteForInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SKIP_WEBSITE_INTERNAT) === true);
     }
 
     public function createCustomerOnContactEmailNull(): bool

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
+use Mail;
 use Queue;
 use Redis;
 use Mockery;
@@ -11,6 +12,8 @@ use RZP\Services\Mozart;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
@@ -29,6 +32,12 @@ class RblBankingAccountStatementTest extends TestCase
     use AttemptTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+
+    const UFH_FILE_PATH_REGEX    = '/.*\/ufh\/file\/(.*)/';
+
+    const MOCK_UFH_BASE_LOCATION = 'files/filestore';
+
+    const FILE_ID                = 'file_id';
 
     public function setUp()
     {
@@ -51,9 +60,37 @@ class RblBankingAccountStatementTest extends TestCase
             'channel'               => 'rbl',
             'pincode'               => '1',
             'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+    }
+
+    public function testRblXlsxStatementGeneration()
+    {
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        $this->assertArrayHasKey(self::FILE_ID, $response);
+
+        $this->verifyGeneratedXlsxFile($currentTime);
+
+    }
+
+    public function testRblXlsxStatementEmailSent()
+    {
+        Mail::fake();
+
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        Mail::assertQueued(StatementMail::class);
     }
 
     /**
@@ -221,6 +258,42 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+    }
+
+    protected function verifyGeneratedXlsxFile($currentTime)
+    {
+        $openingBalanceCell = 'B36';
+
+        $closingBalanceCell = 'B37';
+
+        $effectiveBalanceCell = 'B38';
+
+        $expectedOpeningBalance = 214.5;
+
+        $expectedClosingBalance = 113.55;
+
+        $expectedEffectiveBalance = 113.55;
+
+        $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
+                    '/2224440041626905_946684800_' .
+                    $currentTime .
+                    '.xlsx';
+
+        $spreadsheet = IOFactory::load($fileName);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $openingBalance = $activeSheet->getCell($openingBalanceCell)->getValue();
+
+        $closingBalance = $activeSheet->getCell($closingBalanceCell)->getValue();
+
+        $effectiveBalance = $activeSheet->getCell($effectiveBalanceCell)->getValue();
+
+        $this->assertEquals($expectedOpeningBalance , $openingBalance);
+
+        $this->assertEquals($expectedClosingBalance , $closingBalance);
+
+        $this->assertEquals($expectedEffectiveBalance , $effectiveBalance);
     }
 
     /**
@@ -482,8 +555,6 @@ class RblBankingAccountStatementTest extends TestCase
 
     protected function setupForRblPayout($channel = Channel::RBL)
     {
-        $this->setupRedis($channel);
-
         $this->ba->privateAuth();
 
         $this->createContact();
@@ -514,20 +585,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertPushed(FtsFundTransfer::class, 1);
-    }
-
-    protected function setupRedis($channel)
-    {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-            ->getMock();
-
-        Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-            ->method('hget')
-            ->with('config:fts_channels', $channel)
-            ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
     }
 
     protected function getRblDataResponse()
@@ -781,5 +838,20 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $this->app->instance('mozart', $mock);
+    }
+
+    protected function addTestTransactions(): void
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testRblAccountStatementCase1']['request'];
+
+        $this->sendRequest($request);
+
+        $this->ba->proxyAuth();
     }
 }

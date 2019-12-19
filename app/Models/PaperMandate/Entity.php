@@ -103,6 +103,8 @@ class Entity extends Base\PublicEntity
         self::TERTIARY_ACCOUNT_HOLDER,
         self::TERMINAL_ID,
         self::FORM_CHECKSUM,
+        self::GENERATED_FILE_ID,
+        self::UPLOADED_FILE_ID,
         self::CREATED_AT,
     ];
 
@@ -178,7 +180,10 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedShortUrl($generatedFileId);
+        return (new FileUploader)->getSignedShortUrl(
+            $generatedFileId,
+            Constants::MAX_SIGNED_URL_TIMEOUT
+        );
     }
 
     public function getUploadedFormUrl()

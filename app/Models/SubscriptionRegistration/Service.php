@@ -280,6 +280,8 @@ class Service extends Base\Service
 
         $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
 
+        $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
+
         $paymentService = new Payment\Service();
 
         return $paymentService->process($paymentInput);
@@ -491,6 +493,6 @@ class Service extends Base\Service
 
         $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
-        return $invoice->toArrayPublic();
+        return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 }

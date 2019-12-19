@@ -17,6 +17,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Terminal;
@@ -105,7 +106,8 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYMENT_FAILED,
         WebhookEvent::PAYOUT_PROCESSED,
         WebhookEvent::PAYOUT_REVERSED,
-        WebhookEvent::ORDER_PAID
+        WebhookEvent::ORDER_PAID,
+        WebhookEvent::PAYMENT_CAPTURED,
     ];
 
     /**
@@ -347,6 +349,11 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
+        if ($payment->hasPaymentLink() === true)
+        {
+            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+        }
+
         $payload = $this->getPaymentPayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
@@ -938,13 +945,28 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutPayload(Payout\Entity $payout): array
     {
-        $payload = [
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
+            ];
+        }
+
+        return [
             Constants\Entity::PAYOUT => [
-                'entity' => $payout->toArrayPublic(),
+                'entity' => $payout->toArrayWebhook(),
             ],
         ];
-
-        return $payload;
     }
 
     protected function getPaymentPayloadWithDispute($payment)

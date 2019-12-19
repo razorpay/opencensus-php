@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'paysecure_%s_card_details';
 
+    const MIGRATION_TIMESTAMP = 1575912600;
+
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
     protected $gatewayPayment = null;
@@ -63,7 +65,14 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
+        if ($input['payment']['created_at'] > self::MIGRATION_TIMESTAMP)
+        {
+            $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay_new.wsdl';
+        }
+        else
+        {
+            $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
+        }
     }
 
     /**
@@ -247,19 +256,23 @@ class Gateway extends Base\Gateway
     // ------------ Auth request helpers -----------------
     protected function updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response)
     {
-        $redirectUrl = $response[Fields::REDIRECT_URL];
-
-        $parsed = parse_url($redirectUrl);
 
         $content = $this->getMappedAttributes($response);
 
-        if (isset($parsed['query']) === true)
+        if (isset($response[Fields::REDIRECT_URL]) === true)
         {
-            parse_str($parsed['query'], $parsed);
+            $redirectUrl = $response[Fields::REDIRECT_URL];
 
-            $hkey = $parsed[Fields::ACCU_HKEY];
+            $parsed = parse_url($redirectUrl);
 
-            $content[Entity::HKEY] = $hkey;
+            if (isset($parsed['query']) === true)
+            {
+                parse_str($parsed['query'], $parsed);
+
+                $hkey = $parsed[Fields::ACCU_HKEY];
+
+                $content[Entity::HKEY] = $hkey;
+            }
         }
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
@@ -379,6 +392,19 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        if (empty($verify->payment[Entity::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            // Ideally verify fail cron wont pick up paysecure payments, because gateway error exception
+            // is thrown with action "authenticate". But, in case some error happens before the gateway error is thrown
+            // these payments would be moved to verify failed bucket.
+            // Here, it calls verify and if trans id is not set we send a payment verify exception with action finish
+            // so that these payments won't again be picked up for verify.
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
+
         $response = $this->transactionStatus($verify->payment);
 
         $verify->setVerifyResponseContent($response);
@@ -414,7 +440,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    // @codingStandardsIgnoreStart
     protected function checkGatewaySuccess(Base\Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -427,7 +452,6 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
         }
     }
-    // @codingStandardsIgnoreEnd
 
     protected function saveVerifyContentIfNeeded($verify)
     {
@@ -606,7 +630,15 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        $input = $this->input;
+
         $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        if (($input['payment']['created_at'] > self::MIGRATION_TIMESTAMP) and
+            (strtoupper($this->mode) === 'LIVE'))
+        {
+            return constant($urlClass . '::' . 'NEW_' .strtoupper($this->mode));
+        }
 
         return constant($urlClass . '::' .strtoupper($this->mode));
     }

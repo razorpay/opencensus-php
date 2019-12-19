@@ -161,6 +161,19 @@ class Pricing extends Base
                 'org_id'              => '100000razorpay',
             ],
             [
+                'id'                  => '1zD0BXpeOJaqQQ',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'nach',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
                 'id'                  => '1zD0BXpeOJaqpD',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -503,7 +516,7 @@ class Pricing extends Base
             [
                 'id'             => '1zE31zbyeGCTd4',
                 'plan_id'        => $pricingPlanId,
-                'plan_name'      => 'testDefaultPlan',
+                'plan_name'      => 'standard_plan',
                 'feature'        => 'transfer',
                 'payment_method' => 'account',
                 'percent_rate'   => 200,
@@ -513,7 +526,7 @@ class Pricing extends Base
             [
                 'id'             => '1zE31zbyeGCTd5',
                 'plan_id'        => $pricingPlanId,
-                'plan_name'      => 'testDefaultPlan',
+                'plan_name'      => 'standard_plan',
                 'feature'        => 'transfer',
                 'payment_method' => 'customer',
                 'percent_rate'   => 200,
@@ -523,9 +536,29 @@ class Pricing extends Base
             [
                 'id'             => '1zE31zbyeGCTd6',
                 'plan_id'        => $pricingPlanId,
-                'plan_name'      => 'testDefaultPlan',
+                'plan_name'      => 'standard_plan',
                 'feature'        => 'esautomatic',
                 'payment_method' => 'transfer',
+                'percent_rate'   => 240,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31zbyeGCTd7',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'paylater',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31zbyeGCTd8',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'card',
                 'percent_rate'   => 20,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
@@ -1039,7 +1072,7 @@ class Pricing extends Base
         $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getSubmerchantPricingOfOnboardedPartners());
     }
 
-    protected function addPricingRulesToDb($rows)
+    public function addPricingRulesToDb($rows)
     {
         foreach ($rows as $row)
         {

@@ -5,7 +5,6 @@ namespace RZP\Models\Payout;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -142,14 +141,12 @@ class Core extends Base\Core
      *
      * @param array $input
      * @param Merchant\Entity $merchant
-     * @param Batch\Entity $batch
      * @param string|null $batchId
      *
      * @return Entity
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              Batch\Entity $batch = null,
                                               string $batchId = null): Entity
     {
         $this->trace->info(
@@ -158,24 +155,9 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->payout->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                $merchant->getId(),
-                                                                $batchId);
-
-            if ($result !== null)
-            {
-                return $result;
-            }
-        }
-
-        // TODO: remove batch entity handling once ramped to 100%
-        $batchIdOrBatch = $batchId === null ? $batch : $batchId;
-
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
-                       ->setBatch($batchIdOrBatch)
+                       ->setBatch($batchId)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
@@ -1341,9 +1323,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     protected function processPendingPayout(Entity $payout): Entity

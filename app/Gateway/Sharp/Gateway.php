@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
 
@@ -31,6 +32,22 @@ class Gateway extends Base\Gateway
         }
 
         $this->failIfRequired($input);
+
+        if ($this->isMandateExecuteRequest($input) === true)
+        {
+            if (isset($input['payment']['vpa']) === false)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+
+            if ((isset($input['payment']['vpa']) === true) and
+                ($input['payment']['vpa'] === Vpa::FAILURE))
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+
+            return;
+        }
 
         if ($this->isSecondRecurringPaymentRequest($input))
         {
@@ -97,7 +114,21 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
+            if ($this->isMandateCreateRequest($input) === true)
+            {
+                $token = $this->app['repo']->token->getByTokenIdAndCustomerId($input['token']['id'], $input['payment']['customer_id']);
+
+                $token->setRecurringStatus('initiated');
+
+                $this->repo->saveOrFail($token);
+
+                $this->processTestUpiPayment($input['payment']);
+
+                return true;
+            }
+
             $this->processTestUpiPayment($input['payment']);
+
 
             if ((isset($input['upi']['flow']) === true) and
                 ($input['upi']['flow'] === 'intent'))
@@ -133,6 +164,20 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function isMandateCreateRequest(array $input): bool
+    {
+        return ((isset($input['payment']) === true) and
+                ($input['payment'][Payment\Entity::METHOD] === Payment\Method::UPI) and
+                ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL));
+    }
+
+    protected function isMandateExecuteRequest(array $input): bool
+    {
+        return ((isset($input['payment']) === true) and
+                ($input['payment'][Payment\Entity::METHOD] === Payment\Method::UPI) and
+                ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO));
     }
 
     protected function getQrData(array $input)
@@ -174,7 +219,11 @@ class Gateway extends Base\Gateway
     {
         if ($exception !== null)
         {
-            throw $exception;
+            if ($exception instanceof \Exception)
+            {
+                throw $exception;
+            }
+            throw new \Exception('Not valid bharat qr');
         }
 
         //
@@ -183,6 +232,30 @@ class Gateway extends Base\Gateway
         // means we can add stuff later without breaking compatibility.
         //
         return [];
+    }
+
+    public function mandateUpdate(array $input)
+    {
+        $token = $input['token'];
+
+        if (isset($input['start_time']) === true)
+        {
+            $token->setStartTime($input['start_time']);
+        }
+
+        if (isset($input['max_amount']) === true)
+        {
+            $token->setMaxAmountAttribute($input['max_amount']);
+        }
+
+        $this->repo->saveOrFail($token);
+
+        return true;
+    }
+
+    public function getIntentUrl($input)
+    {
+        return $this->getIntentRequest($input);
     }
 
     protected function getIntentRequest($input)
@@ -281,6 +354,15 @@ class Gateway extends Base\Gateway
         $acquirerData = $this->getAcquirerData($input, null);
 
         $this->addRecurringDataIfApplicable($input, $acquirerData);
+
+        if ($this->isMandateCreateRequest($input['payment']) === true)
+        {
+            $response = [
+                'recurring_status' => 'confirmed'
+            ];
+
+            return $response;
+        }
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }

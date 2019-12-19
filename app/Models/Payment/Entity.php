@@ -174,6 +174,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
@@ -206,6 +207,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
+    const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
 
     // payment services
@@ -355,6 +357,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
+        self::REFUNDS,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
@@ -1793,6 +1796,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
+    public function isUpiRecurring()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::UPI) and
+                ($this->getAttribute(self::RECURRING) === true));
+    }
+
     public function isTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
@@ -1819,6 +1828,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
+    public function isFlowIntent(): bool
+    {
+        return ($this->getMetadata('flow') === Flow::INTENT);
+    }
+
+    public function isUpiQr(): bool
+    {
+        // By definition if receiver type is qr_code and flow is intent, its upi qr payment
+        // Not relying on isBharatQr method as its implementation may change over time.
+        return (($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE) and $this->isFlowIntent());
     }
 
     /**
@@ -1965,22 +1986,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hiddenInReport;
     }
 
-    public function getPspFromVpa()
+    public function getVpaHandleFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
     {
-        $psp = $this->getPspFromVpa();
+        $vpaHandle = $this->getVpaHandleFromVpa();
 
-        return ProviderCode::getBankCode($psp);
+        return ProviderCode::getBankCode($vpaHandle);
     }
 
     public function getTransferId()
@@ -2390,7 +2411,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpi() === true)
         {
-            $issuer = $this->getPspFromVpa();
+            $issuer = $this->getVpaHandleFromVpa();
         }
         else if ($this->isPayLater() === true)
         {
@@ -2774,6 +2795,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
+
+        return $data;
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        $data =  parent::toArrayPublicWithExpand();
+
+        if ($this->getCurrency() !== Currency\Currency::INR)
+        {
+            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
+
+            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
+        }
 
         return $data;
     }
@@ -3240,7 +3275,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $gateway = $this->getGateway();
 
         // default is 9 mins
-        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+        $timeWindow = (new Merchant\Core)->getPaymentTimeoutWindow($this->merchant) ?? self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
         {
@@ -3363,7 +3398,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 break;
 
             case Method::UPI:
-                $paymentArray[self::VPA] = self::DUMMY_VPA;
+                if (array_get($paymentArray, '_.flow') !== 'intent')
+                {
+                    $paymentArray[self::VPA] = self::DUMMY_VPA;
+                }
                 break;
 
             case Method::NACH:

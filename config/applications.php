@@ -87,12 +87,6 @@ return [
         ]
     ],
 
-    'express' => [
-        'mock'      => env('EXPRESS_MOCK', false),
-        'url'       => env('EXPRESS_URL'),
-        'password'  => env('EXPRESS_PASSWORD'),
-    ],
-
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
@@ -268,6 +262,10 @@ return [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
+        'admin_auth' => [
+            'username' => 'api',
+            'password' => env('UFH_ADMIN_PASSWORD'),
+        ],
     ],
 
     'pincodesearch' => [
@@ -409,8 +407,11 @@ return [
         ],
     ],
 
-
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
+    ],
+
+    'kyc_service' => [
+        'mock' => env('KYC_SERVICE_MOCK', false),
     ],
 ];
