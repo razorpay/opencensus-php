@@ -30,12 +30,21 @@ class Service extends Base\Service
 
         $rule = $this->repo->gateway_rule->findOrFailPublic($id);
 
-        $this->repo->transaction(function () use ($rule, $id)
+        try
         {
-            $this->repo->deleteOrFail($rule);
+            $this->repo->transaction(function () use ($rule, $id)
+            {
+                $this->repo->deleteOrFail($rule);
 
-            $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
-        });
+                $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+            });
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::GATEWAY_RULE_DELETE_REQUEST);
+
+            throw $e;
+        }
 
         return $rule->toArrayDeleted();
     }
