@@ -6,6 +6,7 @@ const getTermsAndConditionsCheck = (value, onChange) => {
   return (
     <React.Fragment>
       <div className="horizontally-stacked-checkbox">
+        <p>Terms and Conditions:</p>
         <input
           defaultChecked={value === 'false' ? 0 : 1}
           type="checkbox"
@@ -15,11 +16,10 @@ const getTermsAndConditionsCheck = (value, onChange) => {
             onChange(e);
           }}
         />
-        <span>Terms and Conditions:</span>
-        <p>
+        <span>
           I understand that the discount/cashback given in this offer will be
           borne by me and not razorpay
-        </p>
+        </span>
       </div>
     </React.Fragment>
   );
