@@ -39,16 +39,9 @@ class Core extends Base\Core
 
         $this->repo->transaction(function () use ($rule)
         {
-            try
-            {
-                $this->repo->saveOrFail($rule);
+            $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->createGatewayRule($rule->toArray());
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e,Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
-            }
+            $this->app->smartRouting->createGatewayRule($rule->toArray());
         });
 
         return $rule;
@@ -75,16 +68,9 @@ class Core extends Base\Core
 
         $this->repo->transaction(function () use ($rule)
         {
-            try
-            {
-                $this->repo->saveOrFail($rule);
+            $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->updateGatewayRule($rule->toArray());
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e,Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
-            }
+            $this->app->smartRouting->updateGatewayRule($rule->toArray());
         });
 
         return $rule;
