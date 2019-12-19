@@ -438,7 +438,7 @@ steps:
         - GIT_USERNAME
       repo: razorpay/api
       tags: "openresty-${DRONE_COMMIT_SHA}"
-      dockerfile: Dockerfile.openresty
+      dockerfile: "Dockerfile.openresty"
     environment:
       DOCKER_PASSWORD:
         from_secret: docker_password
