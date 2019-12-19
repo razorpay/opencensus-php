@@ -377,6 +377,22 @@
         display: none;
     }
 
+    #desk-payment-btn {
+        position: relative;
+        top: 280px;
+        width: 196px;
+        background: #fff;
+        margin: 0 auto;
+        z-index: 100;
+        height: 55px;
+        font-size: 16px;
+        color: #fff;
+        border: 0;
+        background-image: linear-gradient(to bottom right,rgba(255,255,255,0.2),rgba(0,0,0,0.2));
+        cursor: pointer;
+        display: none;
+    }
+
     #chkout-header:before {
         content: "";
         left: 0;
