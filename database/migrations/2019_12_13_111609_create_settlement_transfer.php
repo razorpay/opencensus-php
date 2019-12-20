@@ -47,7 +47,15 @@ class CreateSettlementTransfer extends Migration
 
             $table->integer(Transfer::UPDATED_AT);
 
-            // TODO: finalize on index
+            // adding indexes
+
+            $table->index(Transfer::SOURCE_MERCHANT_ID);
+
+            $table->index(Transfer::SETTLEMENT_ID);
+
+            $table->index(Transfer::MERCHANT_ID);
+
+            $table->index(Transfer::TRANSACTION_ID);
         });
     }
 
