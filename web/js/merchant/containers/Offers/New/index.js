@@ -326,7 +326,7 @@ export default class CreateOfferWizard extends React.Component {
 
   renderWizard() {
     const { currentTab, validTabs } = this.state;
-    const isLastTab = currentTab === this.tabsData.length - 1;
+    const isLastTab = (currentTab === this.tabsData.length - 1);
 
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
