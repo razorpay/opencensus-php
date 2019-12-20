@@ -32,6 +32,11 @@
   }
 </script>
 
+<!-- Hotjar Tracking Code for dashboard.razorpay.com -->
+@if(env('APP_ENV') === 'production')
+  @include('partials/hotjar')
+@endif
+
 @if ($isConfirmed and $isPreSignupComplete)
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
