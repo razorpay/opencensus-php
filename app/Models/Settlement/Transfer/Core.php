@@ -73,8 +73,12 @@ class Core extends Base\Core
     }
 
     /**
+     * creates entity based on given parameter and
+     * validate the attribute against create rules defined
+     *
      * @param SettlementEntity $settlement
      * @param Balance\Entity $destinationBalance
+     *
      * @return Entity
      */
     protected function buildSettlementTransferEntity(
