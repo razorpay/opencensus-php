@@ -74,11 +74,6 @@ export default class SettlementDetail extends Component {
               )}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-              {isOnHold && (
-                <button style={{ marginTop: '15px' }} class="btn btn-default">
-                  Contact Support <i class="i i-arrow-right" />
-                </button>
-              )}
               <a href="http://razorpay.com/settlement" target="_blank">
                 <button style={{ marginTop: '15px' }} class="btn btn-primary">
                   Settlement Guide <i class="i i-arrow-right" />
