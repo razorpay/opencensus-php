@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mozart;
 
 class Action
 {
+    const CHECKACCOUNT          = 'check_account';
     const PAY_INIT              = 'pay_init';
     const PAY_VERIFY            = 'pay_verify';
     const AUTH_INIT             = 'auth_init';

@@ -12,6 +12,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -19,6 +20,7 @@ use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 class GatewayRefundFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -40,6 +42,13 @@ class GatewayRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -75,6 +84,13 @@ class GatewayRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         Queue::fake();
 
@@ -134,6 +150,13 @@ class GatewayRefundFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
@@ -180,6 +203,13 @@ class GatewayRefundFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
@@ -209,6 +239,13 @@ class GatewayRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -256,6 +293,13 @@ class GatewayRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile->getId() . '/retry';
 

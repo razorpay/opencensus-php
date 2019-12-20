@@ -73,14 +73,17 @@ class Constants
      * Scrooge File Based Refunds request related constants
      */
     const SCROOGE_GT          = 'gt';
+    const SCROOGE_ID          = 'id';
     const SCROOGE_GTE         = 'gte';
     const SCROOGE_LTE         = 'lte';
     const SCROOGE_BANK        = 'bank';
     const SCROOGE_SKIP        = 'skip';
     const SCROOGE_COUNT       = 'count';
     const SCROOGE_QUERY       = 'query';
+    const SCROOGE_METHOD      = 'method';
     const SCROOGE_REFUNDS     = 'refunds';
     const SCROOGE_GATEWAY     = 'gateway';
     const SCROOGE_CREATED_AT  = 'created_at';
     const SCROOGE_BASE_AMOUNT = 'base_amount';
+    const SCROOGE_MERCHANT_ID = 'merchant_id';
 }

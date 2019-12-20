@@ -694,6 +694,8 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function editPreSignupDetails(array $input) : array
     {
@@ -702,6 +704,8 @@ class Service extends Base\Service
         $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
 
         $this->applyCoupon($input);
+
+        $this->handlePreSignUpOptionalFields( $input);
 
         $this->applyReferralPartner($input);
 
@@ -739,8 +743,27 @@ class Service extends Base\Service
     }
 
     /**
-     * Checks whether coupon_code is present in input and applies
+     * As part of experiment we want to remove company name in pre_Signup flow , so using contact name as company name
+     * This will be handled in L1 as we already take company name in L1 form
+     *
      * @param array $input
+     */
+    private function handlePreSignUpOptionalFields(array & $input)
+    {
+
+        if (empty($input[Entity::BUSINESS_NAME]) === true and
+            empty($input[Entity::CONTACT_NAME]) === false)
+        {
+            $input[Entity::BUSINESS_NAME] = $input[Entity::CONTACT_NAME];
+        }
+    }
+
+    /**
+     * Checks whether coupon_code is present in input and applies
+     *
+     * @param array $input
+     *
+     * @throws \Throwable
      */
     private function applyCoupon(array &$input)
     {
@@ -791,7 +814,12 @@ class Service extends Base\Service
 
             $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
-            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+            $merchantCore = new Merchant\Core;
+
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+
+            // update merchant pricing plan to the one specified by partner in partner config if applicable
+            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

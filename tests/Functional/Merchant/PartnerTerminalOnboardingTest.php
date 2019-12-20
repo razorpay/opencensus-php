@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -459,7 +460,7 @@ class PartnerTerminalOnboardingTest extends TestCase
                 'locked'      => true
             ]);
 
-        (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
+        (new BaseFixture)->createEntity('merchant_detail', [
             'merchant_id' => '10000000000000',
             'submitted'   => true,
             'business_registered_state' => 'KA',
@@ -491,6 +492,102 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($terminal->getStatus(), 'pending');
 
         // $this->assertEquals($terminalOnboardingDetail['status'], 'pending');
+    }
+
+    // If the submerchant is already onboarded, then additional TID flow should run
+    public function testTerminalOnboardingCreationCronAdditionalTidFlow()
+    {
+   
+        $this->mockGateway();
+
+        $this->ba->cronAuth();
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'       => $subMerchantId,
+            'enabled'           => false,
+            'gateway'           => 'worldline',
+            'account_number'    => '10010101011',
+            'ifsc_code'         => 'RZPB0000000',
+            'status'            => 'pending'
+            ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'pending',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'merchant_id'       => $subMerchantId,
+            'enabled'           => false,
+            'gateway'           => 'worldline',
+            'account_number'    => '10010101011',
+            'ifsc_code'         => 'RZPB0000000',
+            'status'            => 'created'
+            ]);
+
+        $terminalOnboardingDetail2 = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal2->getId(),
+            'status'            => 'created',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+
+        $merchant = $terminal->merchant;
+
+        $merchant->setCategory("742");
+
+        $merchant->save();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $subMerchantId,
+                'submitted'   => true,
+                'business_registered_state' => 'MH',
+                'locked'      => true
+            ]);
+
+        (new BaseFixture)->createEntity('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
+         
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__]  =  $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+
+        $terminal2->reload();
+
+        $terminalOnboardingDetail2->reload();
+
+        $this->assertEquals($terminal2->getStatus(), 'pending');
     }
 
     // Validation failure by Mozart
@@ -764,7 +861,7 @@ class PartnerTerminalOnboardingTest extends TestCase
                 'locked'      => true
             ]);
         
-        (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
+        (new BaseFixture)->createEntity('merchant_detail', [
             'merchant_id' => '10000000000000',
             'submitted'   => true,
             'business_registered_state' => 'KA',
@@ -772,5 +869,38 @@ class PartnerTerminalOnboardingTest extends TestCase
         ]);
         
         return [$terminal, $terminalOnboardingDetail];
+    }
+
+    protected function mockGateway()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+            Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))
+            ->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                $length = count($input);
+
+                $this->assertEquals(6, $length);
+
+                $responseBody = [
+                    'data' => [
+                        'description'   => "Success",
+                        'res_code'        => "00",
+                        '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => "",
+                    'mozart_id'         => "blfq216r1gunssphbs01",
+                    'next'              => null,
+                    'success'           => true
+                ];
+
+                return $responseBody;
+            });
+
+        $this->app->instance('gateway', $gateway);
     }
 }

@@ -513,7 +513,6 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
-
             [
                 'id'             => '1PLatPricingR1',
                 'plan_id'        => '10ZeroPricingP',

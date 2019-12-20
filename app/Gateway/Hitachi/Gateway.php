@@ -189,7 +189,7 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
-// Risk validation for international payments after authentication response 'N'
+        // Risk validation for international payments after authentication response 'N'
         if (isset($input['payment_analytics']['risk_score']) === true )
         {
             if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
@@ -580,6 +580,8 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($hitachiEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $this->getAcquirerData($input, $hitachiEntity);
     }
 
     // used only by paysecure authorized Rupay payment to capture payments

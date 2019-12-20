@@ -118,6 +118,7 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         Entity::NOTES,
+        Entity::RECURRING,
     ];
 
     const SIGNED_IDS = [
@@ -129,6 +130,10 @@ class Fetch extends BaseFetch
         Entity::TRANSFER_ID,
         Entity::BATCH_ID,
         Entity::VIRTUAL_ACCOUNT_ID,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::RECURRING,
     ];
 
     protected function validateCustomerId($attribute, $value)

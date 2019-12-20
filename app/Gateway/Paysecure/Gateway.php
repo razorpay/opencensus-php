@@ -256,19 +256,23 @@ class Gateway extends Base\Gateway
     // ------------ Auth request helpers -----------------
     protected function updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response)
     {
-        $redirectUrl = $response[Fields::REDIRECT_URL];
-
-        $parsed = parse_url($redirectUrl);
 
         $content = $this->getMappedAttributes($response);
 
-        if (isset($parsed['query']) === true)
+        if (isset($response[Fields::REDIRECT_URL]) === true)
         {
-            parse_str($parsed['query'], $parsed);
+            $redirectUrl = $response[Fields::REDIRECT_URL];
 
-            $hkey = $parsed[Fields::ACCU_HKEY];
+            $parsed = parse_url($redirectUrl);
 
-            $content[Entity::HKEY] = $hkey;
+            if (isset($parsed['query']) === true)
+            {
+                parse_str($parsed['query'], $parsed);
+
+                $hkey = $parsed[Fields::ACCU_HKEY];
+
+                $content[Entity::HKEY] = $hkey;
+            }
         }
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
@@ -388,6 +392,19 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        if (empty($verify->payment[Entity::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            // Ideally verify fail cron wont pick up paysecure payments, because gateway error exception
+            // is thrown with action "authenticate". But, in case some error happens before the gateway error is thrown
+            // these payments would be moved to verify failed bucket.
+            // Here, it calls verify and if trans id is not set we send a payment verify exception with action finish
+            // so that these payments won't again be picked up for verify.
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
+
         $response = $this->transactionStatus($verify->payment);
 
         $verify->setVerifyResponseContent($response);
@@ -423,7 +440,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    // @codingStandardsIgnoreStart
     protected function checkGatewaySuccess(Base\Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -436,7 +452,6 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
         }
     }
-    // @codingStandardsIgnoreEnd
 
     protected function saveVerifyContentIfNeeded($verify)
     {

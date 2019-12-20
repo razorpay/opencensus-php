@@ -80,18 +80,19 @@ class FileUploader extends Base\Core
         return $fileId;
     }
 
-    public function getSignedUrl($fileId)
+    public function getSignedUrl($fileId, $duration = 15)
     {
         $file = $this->app['ufh.service']->getSignedUrl(
-            'file_' . $fileId
+            'file_' . $fileId,
+            ['duration' => $duration]
         );
 
         return $file['signed_url'];
     }
 
-    public function getSignedShortUrl($fileId)
+    public function getSignedShortUrl($fileId, $duration = 15)
     {
-        $signedUrl = $this->getSignedUrl($fileId);
+        $signedUrl = $this->getSignedUrl($fileId, $duration);
 
         return $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
     }
