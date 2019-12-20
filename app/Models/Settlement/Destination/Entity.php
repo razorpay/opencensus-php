@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Settlement\Destination;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Constants\Entity as EntityConstant;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                 = 'id';
     const SETTLEMENT_ID      = 'settlement_id';
     const DESTINATION_TYPE   = 'destination_type';
