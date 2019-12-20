@@ -78,4 +78,13 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
+
+    public function fetchAccountNumberByChannel($channel, $limit)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->orderBy(Entity::LAST_STATEMENT_ATTEMPT_AT, 'desc')
+                    ->limit($limit)
+                    ->get(['ACCOUNT_NUMBER']);
+    }
 }

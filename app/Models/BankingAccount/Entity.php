@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
@@ -99,6 +100,8 @@ class Entity extends Base\PublicEntity
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
 
+    const LAST_STATEMENT_ATTEMPT_AT = 'last_statement_attempt_at';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bacc';
@@ -134,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
         self::INTERNAL_COMMENT,
+        self::LAST_STATEMENT_ATTEMPT_AT,
     ];
 
     protected $visible = [
@@ -171,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT,
         self::INTERNAL_COMMENT,
         self::BANKING_ACCOUNT_DETAILS,
+        self::LAST_STATEMENT_ATTEMPT_AT,
         //
         // This has been added so that banking_account_details
         // relations can be fetched on admin auth.
@@ -271,6 +276,13 @@ class Entity extends Base\PublicEntity
     public function setPassword(string $password)
     {
         $this->setAttribute(self::PASSWORD, $password);
+    }
+
+    public function setLastStatementAttemptAt()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $currentTime);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -430,7 +442,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Public setters ---------------------------------
 
-    public function setPublicBankingAccountDetailsAttribute(array & $array)
+    public function setPublicBankingAccountDetailsAttribute(array &$array)
     {
         if (app('basicauth')->isAdminAuth() === false)
         {

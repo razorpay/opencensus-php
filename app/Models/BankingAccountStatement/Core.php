@@ -14,6 +14,7 @@ use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
 use RZP\Mail\BankingAccount\StatementMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
@@ -58,6 +59,8 @@ class Core extends Base\Core
             ]);
 
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+
+        $bankingAccount->setLastStatementAttemptAt();
 
         $merchant = $bankingAccount->merchant;
 
@@ -558,4 +561,34 @@ class Core extends Base\Core
         }
     }
 
+    public function dispatchAccountNumberForChannel(array $input)
+    {
+        // 0. Trace the request here.
+        //
+        // 1. Fetch accountNumbers to process for that channel
+        // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
+        //
+        // Create and dispatch jobs to pull data for those MIDs
+        // Return some info for the route response
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $limit = 2;
+
+        $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);
+
+        foreach ($accountNumbers as $accountNumber)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'accountNumber'  => $accountNumber,
+                ]);
+
+            BankingAccountStatementJob::dispatch($this->mode,
+                [ 'channel' => $channel, 'accountNumber' => $accountNumber]);
+        }
+
+        return $MIDs;
+    }
 }

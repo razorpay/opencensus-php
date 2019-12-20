@@ -5547,3 +5547,6 @@ ALTER TABLE partner_configs
 
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE banking_accounts
+    ADD COLUMN last_statement_attempt_at INT UNSIGNED DEFAULT NULL AFTER  `updated_at`;
