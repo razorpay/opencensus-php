@@ -15,8 +15,8 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID                = 'balance_id';
     const CURRENCY                  = 'currency';
     const AMOUNT                    = 'amount';
-    const FEE                       = 'balance_type';
-    const TAX                       = 'bucket_timestamp';
+    const FEE                       = 'fee';
+    const TAX                       = 'tax';
 
     protected $entity = EntityConstant::SETTLEMENT_TRANSFER;
 
