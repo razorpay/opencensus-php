@@ -641,7 +641,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
-            'fund_account_attempt'      => FundTransfer\Attempt\Entity::class,
+            'fund_transfer_attempt'     => FundTransfer\Attempt\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
             'external'                  => External\Entity::class,
 

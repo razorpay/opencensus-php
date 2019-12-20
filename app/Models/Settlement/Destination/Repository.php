@@ -15,7 +15,7 @@ class Repository extends Base\Repository
      * @param string $settlementId
      * @return Base\PublicCollection
      */
-    public function fetchActiveDestination(string $settlementId): Base\PublicCollection
+    public function fetchActiveDestination(string $settlementId)
     {
         return $this->newQuery()
                     ->where(Entity::SETTLEMENT_ID, $settlementId)
