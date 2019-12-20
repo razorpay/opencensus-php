@@ -273,7 +273,7 @@ class DopplerProcessor implements ProcessorInterface
         if (($this->env !== Environment::PRODUCTION) or
             ($this->mode !== Mode::LIVE))
         {
-            return false;
+            return true;
         }
 
         $response = $this->app->razorx->getTreatment(
