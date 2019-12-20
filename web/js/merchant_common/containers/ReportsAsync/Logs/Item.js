@@ -1,6 +1,6 @@
 import { classList } from 'common/utils/rzp-utils';
 
-import { getFormattedDate } from './utils';
+import { getFormattedDate } from '../utils';
 import KindOfLog from './components/KindOfLog';
 import LogStatus from './components/LogStatus';
 

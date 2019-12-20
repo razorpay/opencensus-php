@@ -4,10 +4,13 @@ import Input from 'common/new-ui/Input';
 export default function SelectConfig({ configs }) {
   return (
     <Input.Select
-      name="config_id"
+      name="selectedConfigId"
       size="half_big"
       placeholder="Select Config"
-      options={getConfigOptions(configs)}
+      options={[
+        { label: 'Select Config', name: '' },
+        ...getConfigOptions(configs),
+      ]}
       label="Select Report Type"
       class="Input--vTop"
     />
@@ -17,6 +20,6 @@ export default function SelectConfig({ configs }) {
 function getConfigOptions(configs = []) {
   return configs.map(config => ({
     label: config.name,
-    value: config.id,
+    name: config.id,
   }));
 }
