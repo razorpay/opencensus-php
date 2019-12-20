@@ -15,11 +15,11 @@ import { luminateRow } from 'merchant/reducers/app';
 import Offer from 'merchant/models/Offer';
 import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
 
-import PaymentMethods from './paymentMethods';
-import OfferDescription from './offerDescription';
-import OfferDiscount from './offerDiscount';
-import OfferDuration from './offerDuration';
-import OfferReview from './offerReview';
+import PaymentMethods from 'merchant/containers/Offers/New/paymentMethods';
+import OfferDescription from 'merchant/containers/Offers/New/offerDescription';
+import OfferDiscount from 'merchant/containers/Offers/New/offerDiscount';
+import OfferDuration from 'merchant/containers/Offers/New/offerDuration';
+import OfferReview from 'merchant/containers/Offers/New/offerReview';
 
 const MAX_INT = 21474836;
 const CURRENCY = 'INR';
@@ -33,7 +33,7 @@ const SUCCESS_NOTIFICATION = 'New offer created';
   luminateRow,
   appendOfferInReduxList,
 })
-@RTracking(() => window.rzpQ.component('NewOfferForm'))
+@RTracking(() => window.rzpQ.component('CreateOfferForm'))
 export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
@@ -74,14 +74,18 @@ export default class CreateOfferWizard extends React.Component {
         />
       ),
       getFieldsToBeValidated: () => {
-        return [
-          'discount_type',
-          'min_amount',
-          ...{
-            flat: ['flat_cashback'],
-            percent: ['max_cashback', 'percent_rate'],
-          }[this.state.discount_type],
-        ];
+        const discountTypeSpecificFields = (() => {
+          switch (this.state.discount_type) {
+            case 'flat':
+              return ['flat_cashback'];
+            case 'percent':
+              return ['max_cashback', 'percent_rate'];
+
+            default:
+              return [];
+          }
+        })();
+        return ['discount_type', 'min_amount', ...discountTypeSpecificFields];
       },
     },
     {
@@ -345,11 +349,7 @@ export default class CreateOfferWizard extends React.Component {
         />
         <main class="form-container">
           <main-title>{this.tabsData[currentTab].name}</main-title>
-          <Form
-            class="PaymentLinks--Create--Form"
-            layout="tabular"
-            // onChange={this.getFormOnChangeHandler()}
-          >
+          <Form class="PaymentLinks--Create--Form" layout="tabular">
             {this.renderForm()}
           </Form>
         </main>

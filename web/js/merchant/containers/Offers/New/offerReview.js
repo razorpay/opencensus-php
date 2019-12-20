@@ -2,6 +2,9 @@ import Input from 'common/new-ui/Input';
 
 import { PAYMENT_NETWORK_MAP } from './../Entity';
 
+const TERMS_CONDITIONS_STRING =
+  'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';
+
 const getTermsAndConditionsCheck = (value, onChange) => {
   return (
     <React.Fragment>
@@ -17,10 +20,7 @@ const getTermsAndConditionsCheck = (value, onChange) => {
               onChange(e);
             }}
           />
-          <span>
-            I understand that the discount/cashback given in this offer will be
-            borne by me and not razorpay
-          </span>
+          <span>{TERMS_CONDITIONS_STRING}</span>
         </div>
       </div>
     </React.Fragment>
