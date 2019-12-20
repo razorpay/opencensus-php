@@ -25,16 +25,23 @@ class Doppler
     const SESSION_ID = 'rzp_api_session';
 
     const CONTENT_TYPE_HEADER      = 'Content-Type';
+
     const ACCEPT_HEADER            = 'Accept';
+
     const APPLICATION_JSON         = 'application/json';
+
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
+
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
 
-    const REQUEST_TIMEOUT = 40;
+    const REQUEST_TIMEOUT = 5;
+
     const MAX_RETRY_COUNT = 1;
 
     const ERROR = 'error';
+
     const ERROR_MESSAGE = 'error_message';
+
     const ERROR_CODE = 'error_code';
 
     protected $app;
