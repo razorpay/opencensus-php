@@ -38,8 +38,9 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
                   <div className="Field-el">
                     <label>
-                      <b>{amountDisplay.split('.')[0]}</b>.
-                      {amountDisplay.split('.')[1]}
+                      <b>{amountDisplay.split('.')[0]}</b>.{
+                        amountDisplay.split('.')[1]
+                      }
                     </label>
                   </div>
 
