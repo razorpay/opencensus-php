@@ -339,16 +339,17 @@ class Gateway extends Base\Gateway
 
                 if ($input[E::MERCHANT]->isFeatureEnabled(Feature\Constants::VIJAYA_MERCHANT) === true)
                 {
-                    $requestContent[Fields::UDF6]       = $input[E::MERCHANT][Merchant\Entity::NAME];
                     $requestContent[Fields::UDF7]       = $input[E::CARD][Card\Entity::NAME];
                     $requestContent[Fields::UDF8]       = $input[E::PAYMENT][Payment\Entity::EMAIL];
                     $requestContent[Fields::UDF9]       = $input[E::PAYMENT][Payment\Entity::CONTACT];
                     $requestContent[Fields::UDF10]      = 'Bangalore, Karnataka';
                     $requestContent[Fields::UDF11]      = $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100;
-                    $requestContent[Fields::UDF12]      = $input[E::PAYMENT][Payment\Entity::ID];
                     $requestContent[Fields::UDF13]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2];
                     $requestContent[Fields::UDF14]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
                 }
+
+                $requestContent[Fields::UDF6]       = $input[E::MERCHANT]->getDbaName();
+                $requestContent[Fields::UDF12]      = $input[E::PAYMENT][Payment\Entity::ID];
 
                 break;
             case Acquirer::SBI:
