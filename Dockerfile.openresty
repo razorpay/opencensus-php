@@ -14,7 +14,7 @@ RUN set -eux && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer global require hirak/prestissimo && \
-    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
+    composer install --no-dev --no-interaction && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     php artisan rzp:write_routes_meta 
