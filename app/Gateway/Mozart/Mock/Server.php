@@ -194,6 +194,11 @@ class Server extends Base\Mock\Server
                         $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
                         $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
                         break;
+
+                    case 'intentPayment':
+                        $content[UpiJuspay\Fields::TYPE]  = 'MERCHANT_CREDITED_VIA_PAY';
+                        unset($content[UpiJuspay\Fields::EXPIRY]);
+                        break;
                 }
                 // TODO: Create proper signature
                 $server['HTTP_X-Merchant-Payload-Signature']                      = 'signature';

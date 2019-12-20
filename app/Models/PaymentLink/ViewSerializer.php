@@ -172,6 +172,8 @@ class ViewSerializer extends Base\Core
     protected function addDerivedAttributesForPaymentLink(array & $serialized)
     {
         $serialized['min_amount_value'] = Currency::getMinAmount($this->paymentLink->getCurrency());
+
+        $serialized['amount'] = $this->paymentLink->getAmountToSendSmsOrEmail();
     }
 
     protected function addFormattedAmountAttributesForPaymentLink(array & $serialized)

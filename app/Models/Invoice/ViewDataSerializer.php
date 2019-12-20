@@ -423,7 +423,7 @@ class ViewDataSerializer extends Base\Core
 
             case Preferences::MID_RBL_INTERIM_PROCESS2:
 
-                if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+                if ($this->invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
                 {
                     $serialized['rbl_emandate_interim_process2'] = true;
                 }

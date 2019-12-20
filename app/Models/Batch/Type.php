@@ -247,6 +247,7 @@ class Type
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
         self::PARTNER_SUBMERCHANTS,
+        self::OAUTH_MIGRATION_TOKEN,
     ];
 
     /**

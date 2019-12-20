@@ -64,7 +64,10 @@ class Mozart
 
         $this->config = $app['config'];
 
-        $this->mode = $app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function sendMozartRequest(
