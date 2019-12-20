@@ -4,10 +4,11 @@ import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { closeModal } from 'merchant_common/reducers/modals';
+import PreviewEmbedButton from './PreviewEmbedButton';
 import {
   trackCreateButtonSizeSelection,
   trackCreateButtonCancel,
-} from '../../ga';
+} from '../../../ga';
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
@@ -19,23 +20,6 @@ const BTN_SIZES = ['Large', 'Medium', 'Small'];
 )
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
-  componentWillMount() {
-    const script = document.createElement('script');
-
-    script.onload = () => {
-      const textClr =
-        !window.colorLib || window.colorLib.isDark(this.color)
-          ? '#fff'
-          : 'rgba(0, 0, 0, 0.85)';
-
-      this.setState({
-        textClr,
-      });
-    };
-    script.src = 'https://cdn.razorpay.com/static/assets/color.js';
-
-    document.head.appendChild(script);
-  }
 
   updateButtonText = e => {
     this.setState({
@@ -49,7 +33,7 @@ export default class extends React.Component {
     });
   };
 
-  get color() {
+  get merchantThemeColor() {
     return this.props.config.brand_color;
   }
 
@@ -57,55 +41,6 @@ export default class extends React.Component {
     const { shortUrl, closeModal } = this.props;
     const { btnLabel, btnSize } = this.state;
     const el = document.getElementById('embed-btn-preview');
-
-    let width;
-    switch (btnSize) {
-      case '1':
-        width = 180;
-        break;
-      case '2':
-        width = 120;
-        break;
-      default:
-        width = 240;
-    }
-
-    const previewBtnCode = (
-      <span>
-        <a
-          href={shortUrl}
-          style={{
-            position: 'relative',
-            display: 'block',
-            minHeight: 38,
-            width,
-            padding: 10,
-            margin: '0 auto',
-            lineHeight: '18px',
-            fontWeight: 600,
-            fontSize: 14,
-            fontFamily:
-              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
-            wordBreak: 'break-word',
-            borderRadius: 2,
-            textAlign: 'center',
-            backgroundColor: this.color,
-            color: this.state.textClr || '#fff',
-            boxShadow: '0 0 24px 0 rgba(0,0,0,0.2)',
-            zIndex: 2,
-          }}
-          target="_blank"
-        >
-          {this.state.textClr && btnLabel}
-        </a>
-        <div style={{ marginTop: 4, textAlign: 'center' }}>
-          <img
-            height="16px"
-            src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png"
-          />
-        </div>
-      </span>
-    );
 
     /* Embed Button */
 
@@ -115,7 +50,7 @@ export default class extends React.Component {
 
     const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
       this.state.btnLabel
-    }" data-color="${this.color}" data-size="${BTN_SIZES[
+    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
       btnSize
     ].toLowerCase()}">
   <script>
@@ -157,7 +92,11 @@ export default class extends React.Component {
             />
             <div className="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
-              <div id="embed-btn-preview">{previewBtnCode}</div>
+              <PreviewEmbedButton
+                url={shortUrl}
+                btnSize={btnSize}
+                btnLabel={btnLabel}
+              />
             </div>
             <Input.Textarea
               id="code-copier"

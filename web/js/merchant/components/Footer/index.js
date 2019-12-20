@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ user }) => {
+  const currentYear = new Date().getFullYear();
   return (
     <React.Fragment>
       {!user.isOrgRZP && (
@@ -14,7 +15,8 @@ export default ({ user }) => {
         />
       )}
       <footer class="pagefooter">
-        © {user.isOrgRZP ? '2017' : '2018'} Copyright Razorpay
+        © {`${user.isOrgRZP ? '2017' : '2018'}-${currentYear}`} Copyright
+        Razorpay
         <ShowWhen
           additionalCondition={user =>
             user.isOrgAllowedFunctionality('external_links')
