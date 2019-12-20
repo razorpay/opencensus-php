@@ -1,9 +1,13 @@
 import { NavLink } from 'react-router-dom';
+import { connect } from 'react-redux';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
 
+@connect(state => ({
+  user: state.session.user,
+}))
 export default class ReportHome extends React.PureComponent {
   static defaultProps = {
     config: {
@@ -20,6 +24,13 @@ export default class ReportHome extends React.PureComponent {
     this.props.fetchConfigs();
   }
 
+  onGenerateReport = payload => {
+    return this.props.createLog({
+      ...payload,
+      generated_by: this.props.user.current,
+    });
+  };
+
   render() {
     const { logs, config, user, configs } = this.props;
     return (
@@ -31,7 +42,10 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div class="content-wrapper">
-              <GenerateReportPanel configs={this.props.configs} />
+              <GenerateReportPanel
+                configs={configs}
+                onGenerateReport={this.onGenerateReport}
+              />
               <LogList
                 currentMerchantId={user.current}
                 {...logs}
