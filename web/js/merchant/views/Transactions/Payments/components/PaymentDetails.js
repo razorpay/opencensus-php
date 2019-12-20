@@ -31,6 +31,7 @@ export default props => {
     onRefundDetailsToggleClick = () => {},
     isRoleAllowedEdit,
     viewSettlementOverview,
+    config,
   } = props;
 
   return (
@@ -195,32 +196,33 @@ export default props => {
                     : '--'}
                 </EntityDetailRow>
 
-                {payment.transaction && (
-                  <EntityDetailRow label="Settlement Details">
-                    {payment.transaction.settlement ? (
-                      <ContentToggler onToggleClick={viewSettlementOverview}>
-                        <span>
-                          Settled on{' '}
+                {config.settlement_ux_revamp &&
+                  payment.transaction && (
+                    <EntityDetailRow label="Settlement Details">
+                      {payment.transaction.settlement ? (
+                        <ContentToggler onToggleClick={viewSettlementOverview}>
+                          <span>
+                            Settled on{' '}
+                            <Time
+                              value={payment.transaction.settled_at}
+                              format="DD MMM YYYY"
+                            />
+                          </span>
+                          <SettlementOverview payment={payment} />
+                        </ContentToggler>
+                      ) : payment.transaction.settled_at ? (
+                        <span class="link">
+                          To be settled on{' '}
                           <Time
                             value={payment.transaction.settled_at}
                             format="DD MMM YYYY"
                           />
                         </span>
-                        <SettlementOverview payment={payment} />
-                      </ContentToggler>
-                    ) : payment.transaction.settled_at ? (
-                      <span class="link">
-                        To be settled on{' '}
-                        <Time
-                          value={payment.transaction.settled_at}
-                          format="DD MMM YYYY"
-                        />
-                      </span>
-                    ) : (
-                      '--'
-                    )}
-                  </EntityDetailRow>
-                )}
+                      ) : (
+                        '--'
+                      )}
+                    </EntityDetailRow>
+                  )}
               </div>
             </div>
           </div>

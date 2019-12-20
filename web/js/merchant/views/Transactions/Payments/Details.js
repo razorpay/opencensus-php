@@ -24,7 +24,11 @@ import {
 @withRouter
 @connect(
   state => {
-    return { ...state.payment, user: state.session.user };
+    return {
+      ...state.payment,
+      user: state.session.user,
+      config: state.config.config,
+    };
   },
   {
     expandSlider,
@@ -302,6 +306,7 @@ export default class PaymentDetailsContainer extends Component {
       transfers,
       bankTransfer,
       upiTransfer,
+      config,
     } = this.props;
     let statusMsg = {};
 
@@ -313,6 +318,7 @@ export default class PaymentDetailsContainer extends Component {
         message: this.props.error,
       };
     }
+
     return (
       <div className={`${this.state.secView ? 'multi-content' : ''}`}>
         <PaymentDetails
@@ -331,6 +337,7 @@ export default class PaymentDetailsContainer extends Component {
           onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
           isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
           viewSettlementOverview={this.viewSettlementOverview}
+          config={config}
         />
 
         <ShowWhen

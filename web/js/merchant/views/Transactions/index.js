@@ -26,6 +26,7 @@ import Time from 'common/ui/Time';
     return {
       ...state.session,
       settlement_amount: state.home.settlement_amount,
+      config: state.config.config,
     };
   },
   { fetchSettlementAmount, openModal }
@@ -45,6 +46,8 @@ export default class TransactionsContainer extends Component {
 
     const nextSettlement = !this.props.settlement_amount.data
       .next_settlement_time;
+
+    const { settlement_ux_revamp } = this.props.config;
 
     return (
       <tabbed-container>
@@ -90,7 +93,7 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
-          {!nextSettlement ? (
+          {settlement_ux_revamp && !nextSettlement ? (
             <div class="text-right" style={{ width: '65%' }}>
               <strong>
                 <Amount
@@ -132,7 +135,7 @@ export default class TransactionsContainer extends Component {
         ) : (
           <TestModeBanner />
         )}
-        {nextSettlement ? (
+        {settlement_ux_revamp && nextSettlement ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({

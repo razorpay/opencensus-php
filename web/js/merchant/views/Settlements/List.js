@@ -46,6 +46,7 @@ import Time from 'common/ui/Time';
     schedule: state.settlement.schedule,
     settlement_amount: state.home.settlement_amount,
     holidayList: state.settlement.holidayList,
+    config: state.config.config,
     ...state.home,
     ...state.settlements,
   }),
@@ -226,6 +227,8 @@ export default class SettlementsListContainer extends ListContainer {
     const nextSettlement = this.props.settlement_amount.data
       .next_settlement_time;
 
+    const { settlement_ux_revamp } = this.props.config;
+
     return (
       <React.Fragment>
         {/* instant settlements banner */}
@@ -245,7 +248,7 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-          {nextSettlement === null ? (
+          {settlement_ux_revamp && nextSettlement === null ? (
             <OnHoldBanner
               ctaOnClick={() => {
                 this.props.openModal({
@@ -268,20 +271,22 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  <div
-                    class="btn btn-link settlement-doc-btn"
-                    onClick={this.viewSettlementCycle}
-                  >
-                    <span
-                      class="icon i-info-outline"
-                      style={{
-                        marginRight: '5px',
-                        position: 'relative',
-                        top: '2px',
-                      }}
-                    />
-                    View Settlement Cycle
-                  </div>
+                  {settlement_ux_revamp && (
+                    <div
+                      class="btn btn-link settlement-doc-btn"
+                      onClick={this.viewSettlementCycle}
+                    >
+                      <span
+                        class="icon i-info-outline"
+                        style={{
+                          marginRight: '5px',
+                          position: 'relative',
+                          top: '2px',
+                        }}
+                      />
+                      View Settlement Cycle
+                    </div>
+                  )}
                   {this.props.user.isOndemandSettlementEnabled && (
                     <ShowWhen myRole="owner admin finance">
                       <div className="box-left-pad10-inline">
@@ -322,51 +327,52 @@ export default class SettlementsListContainer extends ListContainer {
                           <Amount value={balance} currency={'INR'} />
                         </span>
                         <br />
-                        {nextSettlement && (
-                          <span style={{ fontSize: '13px' }}>
-                            <strong>
-                              <Amount
+                        {settlement_ux_revamp &&
+                          nextSettlement && (
+                            <span style={{ fontSize: '13px' }}>
+                              <strong>
+                                <Amount
+                                  value={
+                                    this.props.settlement_amount.data
+                                      .settlement_amount
+                                  }
+                                  currency={'INR'}
+                                />
+                              </strong>{' '}
+                              will be settled by{' '}
+                              <Time
                                 value={
                                   this.props.settlement_amount.data
-                                    .settlement_amount
+                                    .next_settlement_time
                                 }
-                                currency={'INR'}
+                                format={'DD MMM YYYY, hh:mm:ss a'}
                               />
-                            </strong>{' '}
-                            will be settled by{' '}
-                            <Time
-                              value={
-                                this.props.settlement_amount.data
-                                  .next_settlement_time
-                              }
-                              format={'DD MMM YYYY, hh:mm:ss a'}
-                            />
-                            <span
-                              onClick={() => {
-                                this.props.openModal({
-                                  size: 'regular',
-                                  component: (
-                                    <SettlementDetail
-                                      settlementAmount={
-                                        this.props.settlement_amount.data
-                                      }
-                                    />
-                                  ),
-                                });
+                              <span
+                                onClick={() => {
+                                  this.props.openModal({
+                                    size: 'regular',
+                                    component: (
+                                      <SettlementDetail
+                                        settlementAmount={
+                                          this.props.settlement_amount.data
+                                        }
+                                      />
+                                    ),
+                                  });
 
-                                window.rzpAnalytics({
-                                  eventCategory:
-                                    'Dashboard - Settlement UI Revamp',
-                                  eventAction: 'Click Know More',
-                                });
-                              }}
-                              class="btn-link pointer"
-                              style={{ marginLeft: '5px' }}
-                            >
-                              <b>Know More</b>
+                                  window.rzpAnalytics({
+                                    eventCategory:
+                                      'Dashboard - Settlement UI Revamp',
+                                    eventAction: 'Click Know More',
+                                  });
+                                }}
+                                class="btn-link pointer"
+                                style={{ marginLeft: '5px' }}
+                              >
+                                <b>Know More</b>
+                              </span>
                             </span>
-                          </span>
-                        )}
+                          )}
                       </div>
                     </div>
                   </Fragment>
