@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\Payment\Gateway;
 
 class Service extends Base\Service
 {
@@ -74,7 +75,12 @@ class Service extends Base\Service
 
             // before processing payment, we will call verify callback to check if the
             // notification was sent by the gateway or some other source .
-            $gatewayClass->verifyBharatQrNotification($gatewayResponse);
+            // skipping verification for worldline gateway altogether for Axis-BQR as worldline's verification have some issues
+            // Axis-bank has agreed to take responsibility of not having verification
+            if ($gateway !== Gateway::WORLDLINE)
+            {
+                $gatewayClass->verifyBharatQrNotification($gatewayResponse);
+            } 
         }
         catch (\Exception $ex)
         {
@@ -94,17 +100,30 @@ class Service extends Base\Service
     {
         $gateway = $gatewayResponse[GatewayResponseParams::GATEWAY];
 
-        if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
-        {
-            $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+        $terminal = null;
 
-            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-        }
-        else
+        // some gateways allow multiple terminals per mid, so need to find by both mid and mpan
+        switch ($gateway)
         {
-            $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
-
-            $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+            case Payment\Gateway::WORLDLINE:
+                if (isset($gatewayResponse[GatewayResponseParams::MPAN]) === true)
+                {
+                    if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true) 
+                    {
+                        $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+        
+                        $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
+            
+                        $terminal = $this->repo->terminal->findActivatedTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);     
+                    }
+                }
+                else
+                {
+                    $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
+                }
+                break;   
+            default:
+                $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
         }
 
         if ($terminal === null)
@@ -117,9 +136,23 @@ class Service extends Base\Service
                     'mode'               => $this->mode,
                 ]
             );
-        }
+        }    
 
         return $terminal;
+    }
+
+    protected function getTerminalDefaultCase($gatewayResponse, $gateway)
+    {
+        if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+            return $this->repo->terminal->findActivatedTerminalByGatewayMerchantId($gatewayMerchantId, $gateway);
+        }
+
+        $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
+
+        return $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
     }
 
     protected function validateGateway(string $gateway)
