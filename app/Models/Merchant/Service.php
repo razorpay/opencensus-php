@@ -505,12 +505,14 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
-        $merchant['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+        $response = $merchant->toArray();
 
-        return $merchant->toArray();
+        $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
+        return $response;
     }
 
-    public function shouldShowSettlementUxRevamp()
+    public function shouldShowSettlementUxRevamp(): bool
     {
         $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
             Merchant\RazorxTreatment::SETTLEMENT_UX_REVAMP,
