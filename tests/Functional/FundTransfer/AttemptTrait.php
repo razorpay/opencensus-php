@@ -132,9 +132,12 @@ trait AttemptTrait
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+        if (empty($setl) === false)
+        {
+            $bta = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+            $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+        }
 
         return $content;
     }
