@@ -201,6 +201,7 @@ export default class CreateOfferWizard extends React.Component {
         }
       },
       min_amount: val => {
+        if (!val && this.state.discount_type === 'percent') return;
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
         val = parseFloat(val);

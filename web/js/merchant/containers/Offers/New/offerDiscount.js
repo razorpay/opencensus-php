@@ -43,7 +43,7 @@ export default ({
             class="Input--half"
             addonBefore={<span>{window.currencyList[currency].symbol}</span>}
             validator={getFormElementValidations('min_amount')}
-            required
+            required={discountType === 'flat'}
             onChange={getFormOnChangeHandler()}
           />
         )}
