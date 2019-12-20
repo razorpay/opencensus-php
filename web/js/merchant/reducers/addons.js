@@ -1,6 +1,6 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { formatFields } from 'merchant/models/AddOns';
-import { merchantFetch } from 'merchant/utils/ajax';
+
 import { makeActionCollectionReducer } from 'merchant/reducers/collection';
 
 export const ADDONS_CREATE = 'ADDONS_CREATE';

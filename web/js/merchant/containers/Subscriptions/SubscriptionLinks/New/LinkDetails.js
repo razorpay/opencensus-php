@@ -7,7 +7,7 @@ export default function NewSubscriptionLinkLinkDetails({
   internals,
   ...props
 }) {
-  const dateInMoment = !!fields.expire_by
+  const dateInMoment = fields.expire_by
     ? moment(fields.expire_by, 'X')
     : undefined;
 
