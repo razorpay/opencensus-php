@@ -11,7 +11,7 @@
 
 
 **Dependencies**
-- [ ] Add link to API PR here if required for this PR
+- [ ] Add any related PRs? Like api, static, etc.
 
 
 **QA sign off done by?**
@@ -19,7 +19,7 @@
 
 
 **Check List**
-- [ ] Add Jira ID(s) in PR message, or description?
+- [ ] Add Jira ID(s) in PR title or in the description?
 - [ ] Self-check PR once?
 - [ ] Is format of your commit messages proper?
 - [ ] Any Screenshots required for PR?
