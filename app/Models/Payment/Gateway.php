@@ -2298,9 +2298,16 @@ class Gateway
     public static function isCardPaymentServiceGateway($gateway)
     {
         $gateways = [
-            self::MPGS,
+            self::AXIS_MIGS,
+            self::CARD_FSS,
             self::CYBERSOURCE,
+            self::FIRST_DATA,
+            self::HDFC,
+            self::HITACHI,
+            self::MPGS,
             self::MPI_BLADE,
+            self::MPI_ENSTAGE,
+            self::PAYSECURE,
         ];
 
         return (in_array($gateway, $gateways, true));
