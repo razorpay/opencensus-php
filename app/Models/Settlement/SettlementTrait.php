@@ -944,6 +944,8 @@ trait SettlementTrait
 
                         $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
 
+                        (new Destination\Core)->register($settlement, $bankTransferAtpt);
+
                         return [$settlement, $bankTransferAtpt];
                 }
                 catch (\Exception $ex)
