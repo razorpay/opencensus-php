@@ -596,13 +596,16 @@ class PayoutLinkTest extends TestCase
     {
         $this->mockRedisSuccess();
 
-        $payoutLink = $this->fixtures->create('payout_link');
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
 
         $fd = $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $this->contact->getId(),
-            'merchant_id'  => $this->contact->merchant->getId()
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $this->contact->getId(),
+            'merchant_id' => $this->contact->merchant->getId(),
         ]);
 
         $this->startTest();
@@ -612,7 +615,10 @@ class PayoutLinkTest extends TestCase
     {
         $this->mockRedisSuccess();
 
-        $payoutLink = $this->fixtures->create('payout_link');
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
 
         $fd = $this->fixtures->create('fund_account:bank_account',
                                       [

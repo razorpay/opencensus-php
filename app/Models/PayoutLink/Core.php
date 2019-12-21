@@ -178,6 +178,7 @@ class Core extends Base\Core
     protected function getPayoutMode(Entity $payoutLink)
     {
         // todo, pl need to figure this one out, hardcoding it for now
+
         return 'NEFT';
     }
 
