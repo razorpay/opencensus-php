@@ -348,7 +348,7 @@ class Gateway extends Base\Gateway
                     $requestContent[Fields::UDF14]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
                 }
 
-                $requestContent[Fields::UDF6]       = $input[E::MERCHANT]->getDbaName();
+                $requestContent[Fields::UDF6]       = str_replace("&", "", $input[E::MERCHANT]->getDbaName());
                 $requestContent[Fields::UDF12]      = $input[E::PAYMENT][Payment\Entity::ID];
 
                 break;
