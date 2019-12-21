@@ -7,9 +7,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Core as FundAccountCore;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * This class will hold all interaction of PayoutLink with FundAccount.
