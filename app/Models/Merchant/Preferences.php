@@ -121,6 +121,7 @@ class Preferences
     const MID_MSRIT_EXAM_FEES_VFH   = 'CxqX32TCfZaHnQ';
     const MID_INST_ENG_AND_TECH_LKO = 'D88kPwDCDxbBu3';
     const MID_RBL_AGRI_LOAN         = 'DX4AnDB4Z9kzg0';
+    const MID_RBL_INTERIM_PROCESS2  = 'DqPTv7SI18A7y8';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';

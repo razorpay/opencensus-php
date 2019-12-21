@@ -2013,6 +2013,7 @@ trait Refund
 
         $extraData = [
             'method'                    => $payment->getMethod(),
+            'bank'                      => $payment->getBank(),
             'payment_amount'            => $payment->getAmount(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
@@ -2030,11 +2031,6 @@ trait Refund
         unset($refundData[RefundEntity::SPEED_DECISIONED]);
 
         $scroogeData = array_merge($refundData, $extraData);
-
-        if ($payment->isNetbanking() === true)
-        {
-            $scroogeData['bank'] = $payment->getBank();
-        }
 
         if (isset($input['refund'][RefundEntity::MODE_REQUESTED]) === true)
         {

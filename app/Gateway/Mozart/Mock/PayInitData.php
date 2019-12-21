@@ -68,6 +68,18 @@ class PayInitData extends Base\Mock\Server
             'next' => [],
             'success' => true,
         ];
+
+        switch ($entities['payment']['description']) {
+            case 'intentPayment':
+                $response['data'] = [];
+                $response['next'] = [
+                   'redirect' => [
+                       'method' => 'post',
+                       "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                   ]
+                ];
+             break;
+        }
         return $response;
     }
 
