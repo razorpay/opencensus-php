@@ -25,8 +25,11 @@ class Status
         PayoutStatus::PROCESSING => self::PROCESSING,
         PayoutStatus::CANCELLED  => self::ISSUED,
         PayoutStatus::FAILED     => self::ISSUED,
+        PayoutStatus::REVERSED   => self::ISSUED,
         PayoutStatus::CREATED    => self::PROCESSING,
+        PayoutStatus::INITIATED  => self::PROCESSING,
         PayoutStatus::PROCESSED  => self::PAID,
+        PayoutStatus::QUEUED     => self::PROCESSING,
     ];
 
     /**

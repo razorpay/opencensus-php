@@ -6,8 +6,8 @@ use Mail;
 use Redis;
 use Mockery;
 use Exception;
+use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
-use RZP\Models\P2p\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
@@ -139,7 +139,7 @@ class PayoutLinkTest extends TestCase
 
         while ($i < $payoutLinkCount)
         {
-            $id = Entity::generateUniqueId();
+            $id = PayoutLink::generateUniqueId();
 
             $testPayload['id'] = $id;
 
@@ -630,6 +630,20 @@ class PayoutLinkTest extends TestCase
                                       ]);
 
         $this->startTest();
+
+        // assert that a payout entity was create
+        $this->assertEquals($payoutLink->payouts->count(), 1);
+
+        //assert there is only one payout, and that belongs to the above payout-link
+        $payout = $this->getDbEntities('payout')[0];
+
+        $this->assertEquals($payout->payoutLink->getId(), $payoutLink->getId());
+
+        $payoutLink->refresh();
+
+        // assert payout link is now in processing state
+        $this->assertEquals($payoutLink->getStatus(), Status::PROCESSING);
+
     }
 
     public function testInitiateApiFailsWhenFundAccountIdPassedBelongsToAnotherContact()
@@ -665,16 +679,110 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    // todo, pl testInitiateApi call creates a payout entity. Also, test that this payout is associated with the
-    // payoutlink, via payoutlink_id
-    // todo, pl test when payout goes to processed state, payout link also goes in processed state
-    // todo, pl test when payout fails payout link becomes issued
-    // todo, pl test when payout is reversed payout link becomes issued
+    public function testPayoutStatusCreatedMakesLinkStatusProcessing()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->startTest();
+
+        $payoutLink->refresh();
+
+        $payout = $payoutLink->payouts()->first();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'created',
+        ]);
+
+        $this->assertEquals(Status::PROCESSING, $payoutLink->getStatus());
+
+        $this->assertEquals(Payout\Status::CREATED, $payout->getStatus());
+    }
+
+    public function testPayoutStatusReversedMakesLinkStatusIssued()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->startTest();
+
+        $payout = $payoutLink->payouts()->first();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => 'This is a test failure',
+        ]);
+
+        $payoutLink->refresh();
+
+        $this->assertEquals(Status::ISSUED, $payoutLink->getStatus());
+
+        $this->assertEquals($payout->getStatus() , Payout\Status::REVERSED);
+    }
+
+    public function testPayoutStatusProcessedMakesLinkStatusPaid()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->startTest();
+
+        $payout = $payoutLink->payouts()->first();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'processed',
+            'failure_reason'    => 'This is a test failure',
+        ]);
+
+        $payoutLink->refresh();
+
+        $this->assertEquals(Status::PAID, $payoutLink->getStatus());
+
+        $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
+    }
 
     protected function mockRedisSuccess()
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
                           ->getMock();
+
+        Redis::shouldReceive('zadd')->andReturn($redisMock);
 
         Redis::shouldReceive('connection')->andReturn($redisMock);
 

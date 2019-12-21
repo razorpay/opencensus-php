@@ -685,4 +685,60 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_DOESNT_BELONG_TO_INTENDED_CONTACT,
         ]
     ],
+
+    'testPayoutStatusCreatedMakesLinkStatusProcessing' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ]
+        ]],
+
+    'testPayoutStatusFailedMakesLinkStatusIssued' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ]
+        ]],
+
+    'testPayoutStatusProcessedMakesLinkStatusPaid' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ]
+        ]],
+
+    'testPayoutStatusReversedMakesLinkStatusIssued' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'        => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ]
+        ]],
 ];

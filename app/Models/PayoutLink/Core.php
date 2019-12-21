@@ -7,11 +7,13 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Models\PayoutLink\External\FundAccount;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
@@ -194,7 +196,7 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
             [
                 'payout_link_id'          => $payoutLinkId,
-                'payout_id'               => $payoutStatus,
+                'payout_status'           => $payoutStatus,
                 'next_payout_link_status' => $nextPayoutLinkStatus
             ]);
 
@@ -204,7 +206,7 @@ class Core extends Base\Core
             {
                 $payoutLink = $this->repo
                                     ->payout_link
-                                    ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                                    ->findByIdAndMerchant($payoutLinkId, $this->merchant);
 
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
@@ -216,9 +218,18 @@ class Core extends Base\Core
 
     protected function getPayoutMode(Entity $payoutLink)
     {
-        // todo, pl need to figure this one out, hardcoding it for now
+        // todo, pl need to figure this one out, hard-coding it for now
+        $fundAccount = $payoutLink->fundAccount;
 
-        return 'NEFT';
+        switch ($fundAccount->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                return 'NEFT';
+                break;
+            case Type::VPA:
+                return 'UPI';
+                break;
+        }
     }
 
     public function create(array $input): Entity
