@@ -3,7 +3,7 @@ import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import LogItem from './Item';
 
 export default function LogList(props) {
-  const { items, config } = props;
+  const { loading, items, allConfigs, configsLoading } = props;
 
   const onDownloadClick = ({ target }) => {
     const { fileId, consumerId } = target.dataset;
@@ -16,15 +16,18 @@ export default function LogList(props) {
 
   return (
     <div class="LogList">
-      {items.map(item => (
-        <LogItem
-          key={item.id}
-          configName={config.name}
-          configTemplate={config.template}
-          onDownloadClick={onDownloadClick}
-          {...item}
-        />
-      ))}
+      {loading || configsLoading ? (
+        <p>Loading...</p>
+      ) : (
+        items.map(item => (
+          <LogItem
+            key={item.id}
+            config={allConfigs.find(({ id }) => id === item.config_id) || {}}
+            onDownloadClick={onDownloadClick}
+            {...item}
+          />
+        ))
+      )}
     </div>
   );
 }

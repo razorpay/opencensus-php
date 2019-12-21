@@ -1,34 +1,28 @@
 import { classList } from 'common/utils/rzp-utils';
 
-import { getFormattedDate } from '../utils';
+import { getFormattedDate, extractExtensionFromTemplate } from '../utils';
 import KindOfLog from './components/KindOfLog';
 import LogStatus from './components/LogStatus';
 
 const DEFAULT_FILE_FORMAT = 'csv';
 
-export default function LogItem(props) {
-  const startDate = getFormattedDate(props.start_time);
-  const endDate = getFormattedDate(props.end_time);
-
+export default function LogItem({ config, ...props }) {
   return (
     <div class={classList('LogItem', `LogItem--${props.status}`)}>
       <div className="LogItem__Body">
         <div>
-          <p>
-            <strong>{props.configName}</strong>
-          </p>
-          <p class="text-muted">
-            ({startDate} - {endDate})
-          </p>
+          <p>{config.name || '--'}</p>
+
+          <ReportDuration
+            startTime={props.start_time}
+            endTime={props.end_time}
+          />
         </div>
         <div>
-          <label>Format</label>
-          <p class="text-muted">
-            {getFileFormat({
-              logTemplate: props.template_overrides,
-              configTemplate: props.configTemplate,
-            }).toUpperCase()}
-          </p>
+          <FileFormat
+            logTemplate={props.template_overrides}
+            configTemplate={config.template}
+          />
         </div>
 
         <KindOfLog
@@ -48,12 +42,25 @@ export default function LogItem(props) {
   );
 }
 
-function getFileFormat({ logTemplate, configTemplate }) {
-  const extension =
-    extractExtension(logTemplate) || extractExtension(configTemplate);
-  return extension || DEFAULT_FILE_FORMAT;
+function ReportDuration({ startTime, endTime }) {
+  const startDate = getFormattedDate(startTime);
+  const endDate = getFormattedDate(endTime);
+  return (
+    <p class="text-muted small">
+      ({startDate} {startDate !== endDate ? <> - {endDate}</> : ''})
+    </p>
+  );
 }
 
-function extractExtension(template) {
-  return ((template || {}).file_meta || {} || {}).extension;
+function FileFormat({ logTemplate, configTemplate }) {
+  return (
+    <>
+      <label>Format</label>
+      <p class="text-muted">
+        {extractExtensionFromTemplate(logTemplate) ||
+          extractExtensionFromTemplate(configTemplate) ||
+          DEFAULT_FILE_FORMAT}
+      </p>
+    </>
+  );
 }

@@ -9,19 +9,9 @@ import GenerateReportPanel from './GenerateReportPanel';
   user: state.session.user,
 }))
 export default class ReportHome extends React.PureComponent {
-  static defaultProps = {
-    config: {
-      id: 'config_edFWoe78RbLHwO',
-      consumer: '100000Razorpay',
-      report_type: 'merchant',
-      type: 'transfers',
-      scheduled: false,
-      name: 'Transfers',
-    },
-  };
-
   componentDidMount() {
     this.props.fetchConfigs();
+    this.props.fetchLogs({ count: 5 });
   }
 
   onGenerateReport = payload => {
@@ -32,7 +22,7 @@ export default class ReportHome extends React.PureComponent {
   };
 
   render() {
-    const { logs, config, user, configs } = this.props;
+    const { logs, user, configs, config } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -48,8 +38,10 @@ export default class ReportHome extends React.PureComponent {
               />
               <LogList
                 currentMerchantId={user.current}
-                {...logs}
+                allConfigs={configs.items}
+                configsLoading={configs.loading}
                 config={config}
+                {...logs}
               />
             </div>
           </content>

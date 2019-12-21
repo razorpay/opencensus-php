@@ -19,3 +19,6 @@ export const getStartAndEndUnixTimeStampsForDaysFrom = (
 
   return [lastNthStartOfDayUnix, lastDayEndOfDayUnix];
 };
+
+export const extractExtensionFromTemplate = template =>
+  ((template || {}).file_meta || {}).extension;

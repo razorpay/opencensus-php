@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
 
+import { extractExtensionFromTemplate } from '../utils';
+
 const DEFAULT_FILE_FORMAT = 'csv';
 export default class SelectFormat extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState = {}) {
@@ -61,10 +63,10 @@ export default class SelectFormat extends React.Component {
 function getDefaultFileFormatOfConfig(selectedConfigId, allConfigs) {
   const selectedConfig =
     allConfigs.find(({ id }) => id === selectedConfigId) || {};
-  if (selectedConfig.template && selectedConfig.template.file_meta) {
-    return selectedConfig.template.file_meta.extension || DEFAULT_FILE_FORMAT;
-  }
-  return DEFAULT_FILE_FORMAT;
+
+  return (
+    extractExtensionFromTemplate(selectedConfig.template) || DEFAULT_FILE_FORMAT
+  );
 }
 
 const formatOptions = [
