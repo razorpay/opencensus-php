@@ -181,14 +181,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
-
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getCurrency()

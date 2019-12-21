@@ -149,6 +149,11 @@ class Core extends Base\Core
                                 ->payout_link
                                 ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
+                            if ($payoutLink->getStatus() !== Status::ISSUED)
+                            {
+                                return $payoutLink;
+                            }
+
                             // Code to create/fetch fund account and associate it with the payoutlink
                             $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                               $this->merchant,
@@ -165,6 +170,8 @@ class Core extends Base\Core
                 $mode = $this->getPayoutMode($payoutLink);
 
                 $payout = (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+
+                $payoutLink->setStatus(Status::PROCESSING);
 
                 return $payoutLink;
             },

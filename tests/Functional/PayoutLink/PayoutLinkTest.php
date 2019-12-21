@@ -601,12 +601,13 @@ class PayoutLinkTest extends TestCase
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
 
-        $fd = $this->fixtures->create('fund_account:vpa', [
-            'id'          => '100000000003fa',
-            'source_type' => 'contact',
-            'source_id'   => $this->contact->getId(),
-            'merchant_id' => $this->contact->merchant->getId(),
-        ]);
+        $fd = $this->fixtures->create('fund_account:vpa',
+                                      [
+                                          'id'          => '100000000003fa',
+                                          'source_type' => 'contact',
+                                          'source_id'   => $this->contact->getId(),
+                                          'merchant_id' => $this->contact->merchant->getId(),
+                                      ]);
 
         $this->startTest();
     }
@@ -663,6 +664,11 @@ class PayoutLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    // todo, pl testInitiateApi call creates a payout entity
+    // todo, pl test when payout goes to processed state, payout link also goes in processed state
+    // todo, pl test when payout fails payout link becomes issued
+    // todo, pl test when payout is reversed payout link becomes issued
 
     protected function mockRedisSuccess()
     {
