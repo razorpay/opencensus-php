@@ -205,8 +205,8 @@ class Core extends Base\Core
             function () use ($payoutLinkId, $payoutStatus, $nextPayoutLinkStatus)
             {
                 $payoutLink = $this->repo
-                                    ->payout_link
-                                    ->findByIdAndMerchant($payoutLinkId, $this->merchant);
+                                   ->payout_link
+                                   ->findByIdAndMerchant($payoutLinkId, $this->merchant);
 
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
@@ -218,7 +218,7 @@ class Core extends Base\Core
 
     protected function getPayoutMode(Entity $payoutLink)
     {
-        // todo, pl need to figure this one out, hard-coding it for now
+        // todo, pl will change when the merchant settings for Payout Links is done
         $fundAccount = $payoutLink->fundAccount;
 
         switch ($fundAccount->getAccountType())
