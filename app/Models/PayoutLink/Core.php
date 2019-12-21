@@ -12,6 +12,7 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
@@ -120,7 +121,6 @@ class Core extends Base\Core
      * @param string $payoutLinkId
      * @param array $input
      * @return array
-     * @throws BadRequestException
      */
     public function initiate(string $payoutLinkId, array $input)
     {
@@ -134,7 +134,7 @@ class Core extends Base\Core
             $payoutLinkId,
             function() use ($payoutLinkId, $input)
             {
-                return $this->repo->transaction(
+                $payoutLink =  $this->repo->transaction(
                         function() use ($payoutLinkId, $input)
                         {
                             $validator = (new Entity())->getValidator();
@@ -155,18 +155,31 @@ class Core extends Base\Core
                                                                                               $payoutLink->contact);
                             $payoutLink->fundAccount()->associate($fundAccount);
 
-                            // code to create a payout as this payout-link as the source
-
+                            // pushing this to DB layer, before going to payout create flow
                             $this->repo->saveOrFail($payoutLink);
 
                             return $payoutLink;
                         });
+
+                // code to create a payout as this payout-link as the source
+                $mode = $this->getPayoutMode($payoutLink);
+
+                $payout = (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+
+                return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
 
         // associate it with the payout-link entity
         // trigger the flow for initiating the payout
+    }
+
+    protected function getPayoutMode(Entity $payoutLink)
+    {
+        // todo, pl need to figure this one out, hardcoding it for now
+
+        return 'NEFT';
     }
 
     public function create(array $input): Entity
