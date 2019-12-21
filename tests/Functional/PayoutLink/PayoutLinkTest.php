@@ -665,7 +665,8 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    // todo, pl testInitiateApi call creates a payout entity
+    // todo, pl testInitiateApi call creates a payout entity. Also, test that this payout is associated with the
+    // payoutlink, via payoutlink_id
     // todo, pl test when payout goes to processed state, payout link also goes in processed state
     // todo, pl test when payout fails payout link becomes issued
     // todo, pl test when payout is reversed payout link becomes issued

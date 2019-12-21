@@ -316,6 +316,11 @@ class Core extends Base\Core
                     TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
                     $ftaData);
         }
+
+        // todo: A temporary push of information to Payout Links App. This should be replaced by a Pub-Sub architecture,
+        // or atleast by a webhook flow, where the source registers the webhook, where update events should be pushed.
+        // Right now, just making a direct function call
+        (new SourceUpdater($payout))->update();
     }
 
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)

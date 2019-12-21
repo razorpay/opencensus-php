@@ -134,52 +134,84 @@ class Core extends Base\Core
             $payoutLinkId,
             function() use ($payoutLinkId, $input)
             {
-                $payoutLink =  $this->repo->transaction(
-                        function() use ($payoutLinkId, $input)
+                return $this->repo->transaction(
+                    function() use ($payoutLinkId, $input)
+                    {
+                        $validator = (new Entity())->getValidator();
+
+                        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+
+                        $token = array_pull($input, Entity::TOKEN);
+
+                        (new TokenService())->verify($token);
+
+                        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+                        if ($payoutLink->getStatus() !== Status::ISSUED)
                         {
-                            $validator = (new Entity())->getValidator();
-
-                            $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
-
-                            $token = array_pull($input, Entity::TOKEN);
-
-                            (new TokenService())->verify($token);
-
-                            $payoutLink = $this->repo
-                                ->payout_link
-                                ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-
-                            if ($payoutLink->getStatus() !== Status::ISSUED)
-                            {
-                                return $payoutLink;
-                            }
-
-                            // Code to create/fetch fund account and associate it with the payoutlink
-                            $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
-                                                                                              $this->merchant,
-                                                                                              $payoutLink->contact);
-                            $payoutLink->fundAccount()->associate($fundAccount);
-
-                            // pushing this to DB layer, before going to payout create flow
-                            $this->repo->saveOrFail($payoutLink);
-
                             return $payoutLink;
-                        });
+                        }
 
-                // code to create a payout as this payout-link as the source
-                $mode = $this->getPayoutMode($payoutLink);
+                        // Code to create/fetch fund account and associate it with the payoutlink
+                        $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
+                                                                                          $this->merchant,
+                                                                                          $payoutLink->contact);
+                        $payoutLink->fundAccount()->associate($fundAccount);
 
-                $payout = (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+                        // pushing this to DB layer, before going to payout create flow
+                        $this->repo->saveOrFail($payoutLink);
 
-                $payoutLink->setStatus(Status::PROCESSING);
+                        // code to create a payout as this payout-link as the source
+                        $mode = $this->getPayoutMode($payoutLink);
 
-                return $payoutLink;
+                        (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+
+                        $payoutLink->setStatus(Status::PROCESSING);
+
+                        $this->repo->saveOrFail($payoutLink);
+
+                        return $payoutLink;
+                    });
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
 
-        // associate it with the payout-link entity
-        // trigger the flow for initiating the payout
+    /**
+     * This function will listen to payout updates, and update the corresponding payoutlink
+     * This will be inside a mutex. Transaction is not required, because its just a status update
+     *
+     * @param string $payoutLinkId
+     * @param string $payoutStatus
+     */
+    public function payoutUpdateListener(string $payoutLinkId, string $payoutStatus)
+    {
+        $nextPayoutLinkStatus = Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
+            [
+                'payout_link_id'          => $payoutLinkId,
+                'payout_id'               => $payoutStatus,
+                'next_payout_link_status' => $nextPayoutLinkStatus
+            ]);
+
+        $this->mutex->acquireAndRelease(
+            $payoutLinkId,
+            function () use ($payoutLinkId, $payoutStatus, $nextPayoutLinkStatus)
+            {
+                $payoutLink = $this->repo
+                                    ->payout_link
+                                    ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+                $payoutLink->setStatus($nextPayoutLinkStatus);
+
+                $this->repo->saveOrFail($payoutLink);
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function getPayoutMode(Entity $payoutLink)

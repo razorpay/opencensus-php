@@ -39,7 +39,8 @@ class Payout
             PayoutEntity::BALANCE_ID      => $payoutLink->getBalanceId(),
             PayoutEntity::FUND_ACCOUNT_ID => $payoutLink->fundAccount->getPublicId(),
             PayoutEntity::MODE            => $mode,
-            PayoutEntity::REFERENCE_ID    => $payoutLink->getReceipt()
+            PayoutEntity::REFERENCE_ID    => $payoutLink->getReceipt(),
+            PayoutEntity::PAYOUT_LINK_ID  => $payoutLink->getId()
         ];
 
         $payout = (new PayoutCore())->createPayoutToFundAccount($input, $merchant);
