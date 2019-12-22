@@ -30,6 +30,11 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
+    public function settings(array $input)
+    {
+        return $this->core->settings($input);
+    }
+
     public function initiate(string $payoutLinkId, array $input)
     {
         return $this->core->initiate($payoutLinkId, $input);

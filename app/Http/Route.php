@@ -854,7 +854,8 @@ final class Route
         'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}/verify-customer-otp', 'PayoutLinkController@verifyCustomerOtp'                            ],
         'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
         'payout_links_added_fund_accounts'         => ['get',       'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
-        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',                     'PayoutLinkController@initiate'                                          ],
+        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',            'PayoutLinkController@initiate'                                     ],
+        'payout_links_settings'                    => ['post',      'payout-links/settings',                          'PayoutLinkController@postSettings'                                     ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
@@ -2168,6 +2169,7 @@ final class Route
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
+        'payout_links_settings'
         ];
 
     //

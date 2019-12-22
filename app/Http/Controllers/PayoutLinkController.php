@@ -26,6 +26,16 @@ class PayoutLinkController extends Controller
     }
 
     /**
+     * Route for update the merchant level\ settings for payout links
+     */
+    public function postSettings()
+    {
+        $response = $this->service()->settings($this->input);
+
+        return $response;
+    }
+
+    /**
      * This api call will take the func-account details, and initiate the payout
      * @param string $payoutLinkId
      * @return array

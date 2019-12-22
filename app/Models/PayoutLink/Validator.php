@@ -19,6 +19,14 @@ class Validator extends Base\Validator
     const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
     const GENERATE_OTP                     = 'generate_otp';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
+    const SETTINGS_RULE                    = 'settings';
+    const UPI                              = 'upi';
+    const IMPS                             = 'imps';
+
+    protected static $settingsRules = [
+        self::UPI  => 'sometimes|boolean|filled',
+        self::IMPS => 'sometimes|boolean|filled',
+    ];
 
     protected static $addFundAccountRules = [
         Entity::FUND_ACCOUNT_ID => 'nullable|string|size:14',

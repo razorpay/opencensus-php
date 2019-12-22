@@ -807,4 +807,10 @@ class PayoutLinkTest extends TestCase
         $this->testData[$funcName]['request']['content']['account_number'] =
             $this->virtualAccount->bankAccount->getAccountNumber();
     }
+
+    //todo, pl  test that settings module takes on upi and imps
+    // todo, pl test that when imps is on but amount is more than 2 lacs, then NEFT is returned
+    // todo, pl test that when imps is enabled and amount is less than 2 lacs, then IMPS is returned
+    // todo, pl test that when VPA, UPI is enabled
+
 }

@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
@@ -33,13 +34,14 @@ class Core extends Base\Core
     const API_POUT_LNK_SCR        = 'api.pout_l';
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
-
-
-    const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
+    const TWO_LACS                = '200000000';
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
     const ACTIVE                  = 'active';
     const MUTEX_TIMEOUT           = 60;
+    const IMPS                    = 'IMPS';
+    const NEFT                    = 'NEFT';
+    const UPI                     = 'UPI';
 
     protected $elfin;
 
@@ -61,6 +63,34 @@ class Core extends Base\Core
         $this->redis = $this->app['redis']->connection();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Updates settings for payoutlinks on merchant level
+     * @param $input
+     * @return array
+     */
+    public function settings($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
+            $input
+        );
+
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::SETTINGS_RULE, $input);
+
+        $settingsAccessor = $this->getSettingsAccessor();
+
+        $settingsAccessor->upsert($input)->save();
+
+        return [self::SUCCESS => self::OK];
+    }
+
+    protected function getSettingsAccessor()
+    {
+        return Settings\Accessor::for($this->merchant, Settings\Module::PAYOUT_LINK);
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -181,6 +211,9 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+
+
+
     /**
      * This function will listen to payout updates, and update the corresponding payoutlink
      * This will be inside a mutex. Transaction is not required, because its just a status update
@@ -216,19 +249,34 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+    /**
+     * @param Entity $payoutLink
+     * @return string
+     */
     protected function getPayoutMode(Entity $payoutLink)
     {
-        // todo, pl will change when the merchant settings for Payout Links is done
+        $settingsAccessor = $this->getSettingsAccessor();
+
+        $amount = $payoutLink->getAmount();
+
         $fundAccount = $payoutLink->fundAccount;
 
         switch ($fundAccount->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                return 'NEFT';
-                break;
+                $isImpsEnabled = $settingsAccessor->get(self::IMPS);
+
+                if (($isImpsEnabled === 1) and
+                     ($amount < self::TWO_LACS))
+                {
+                    return self::IMPS;
+                }
+                else
+                {
+                    return self::NEFT;
+                }
             case Type::VPA:
-                return 'UPI';
-                break;
+                return self::UPI;
         }
     }
 
