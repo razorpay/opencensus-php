@@ -248,4 +248,59 @@ class ReconcileData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function getsimpl($entities)
+    {
+        if (isset($entities['reconRequest']['meta_data']['gateway_failure'])){
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                '',
+                '',
+                ['message' => 'Request to gateway failed']
+            );
+        }
+
+        if (isset($entities['reconRequest']['meta_data']['currency_missmatch'])){
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
+                '',
+                '',
+                ['message' => 'Currency Missmatch']
+            );
+        }
+
+        $response = [
+            'data' =>
+                [
+                    'records' =>[
+                                [
+                                    'amount_in_paise' => '100',
+                                    'order_id' => 'DXSh0fhShgw6np',
+                                    'phone_number'=> '1192521000',
+                                    'status'=> 'REFUND',
+                                    'transaction_id'=> 'e7f87958-abea-4f94-b8d5-b4ccf677e9e2',
+                                ],
+                                [
+                                    'amount_in_paise'=> '100',
+                                    'order_id'=> 'DXSg7YJuXEQs5Q',
+                                    'phone_number'=> '1192521000',
+                                    'status'=> 'CLAIMED',
+                                    'transaction_id'=> '4478925e-5139-4c34-84a7-24858d51fc2c',
+                                ]
+                    ],
+                    'status' => 'recon_successful',
+                    'Http_status' => '200',
+                    '_raw' => '',
+                    'total_pages' => 2,
+                    'current_page' => '1',
+                ],
+            'next' => [],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }

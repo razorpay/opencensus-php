@@ -63,6 +63,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB_V2,
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
+        RequestProcessor\Base::GETSIMPL,
     ];
 
     /**
