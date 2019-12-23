@@ -128,6 +128,11 @@ class FundTransfer extends Base
             $product = Constants::PENNY_TESTING;
         }
 
+        if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
+        {
+            $product .= '_' . $purpose;
+        }
+
         if (($sourceType === Constants::PAYOUT) and
             ($this->fta->isRefund() === true))
         {
