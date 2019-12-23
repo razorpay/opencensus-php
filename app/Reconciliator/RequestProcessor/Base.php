@@ -108,6 +108,7 @@ class Base extends Core
     const PAYPAL                 = 'Paypal';
     const BAJAJFINSERV           = 'BajajFinserv';
     const GETSIMPL               = 'Getsimpl';
+    const VAS_AXIS               = 'VasAxis';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -173,6 +174,7 @@ class Base extends Core
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
         self::BAJAJFINSERV           => [],
+        self::VAS_AXIS               => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
