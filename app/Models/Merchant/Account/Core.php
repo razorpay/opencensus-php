@@ -114,8 +114,6 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        (new Stork)->invalidateCacheForBothModeWithoutFail($account->getId());
-
         return $account;
     }
 

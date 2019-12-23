@@ -1043,7 +1043,7 @@ class Core extends Base\Core
             if (empty($status) === false)
             {
                 $eventPayload = [
-                    ApiEventSubscriber::MAIN => $merchantDetails->merchant,
+                    ApiEventSubscriber::MAIN => $merchant,
                 ];
 
                 $event = 'api.account.' . $status;
