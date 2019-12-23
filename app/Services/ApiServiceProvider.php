@@ -630,7 +630,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'batch'                     => Batch\Entity::class,
             'gateway_file'              => GatewayFile\Entity::class,
 
-
             // transaction
             'adjustment'                => Adjustment\Entity::class,
             'payment'                   => Payment\Entity::class,
