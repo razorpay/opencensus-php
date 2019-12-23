@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFssBob;
+namespace RZP\Reconciliator\CardFssSbi;
 
 use RZP\Reconciliator\Base;
 
