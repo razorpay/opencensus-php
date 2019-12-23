@@ -242,7 +242,6 @@ export default class App extends Component {
   fetchSupportedCurrencies() {
     return merchantFetch('currency/all/proxy');
   }
-
   setLiveTransactionDone = ({ live_transaction_done, id }) => {
     if (live_transaction_done === undefined) return;
 
