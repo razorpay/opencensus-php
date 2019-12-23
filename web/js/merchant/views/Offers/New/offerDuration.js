@@ -3,6 +3,7 @@ import Input from 'common/new-ui/Input';
 export default ({
   startsAt,
   block,
+  checkoutDisplay,
   getFormElementValidations,
   getFormOnChangeHandler,
   endsAt,
@@ -51,6 +52,14 @@ export default ({
       placeholder="Max Usage of this offer: Example - 100 times"
       defaultValue={maxOfferUsage}
       onChange={getFormOnChangeHandler()}
+    />
+    <Input.Check
+      label={'Checkout Visibility'}
+      onChange={getFormOnChangeHandler()}
+      className={'Input--vTop'}
+      fieldLabel={'Offer available for all users on checkout.'}
+      name="checkout_display"
+      defaultValue={checkoutDisplay}
     />
   </React.Fragment>
 );
