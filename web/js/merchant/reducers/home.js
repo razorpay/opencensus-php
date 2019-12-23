@@ -14,8 +14,6 @@ const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
-const SHOW_KYC_SUCCESS = 'SHOW_KYC_SUCCESS';
-const HIDE_KYC_SUCCESS = 'HIDE_KYC_SUCCESS';
 const SHOW_KYC_DETAILS = 'SHOW_KYC_DETAILS';
 const HIDE_KYC_DETAILS = 'HIDE_KYC_DETAILS';
 const SHOW_ACCEPT_PAYMENTS = 'SHOW_ACCEPT_PAYMENTS';
@@ -24,6 +22,8 @@ const SHOW_PRODUCTS = 'SHOW_PRODUCTS';
 const HIDE_PRODUCTS = 'HIDE_PRODUCTS';
 const SHOW_PAN_STATUS_MODAL = 'SHOW_PAN_STATUS_MODAL';
 const HIDE_PAN_STATUS_MODAL = 'HIDE_PAN_STATUS_MODAL';
+const SHOW_KYC_STATUS_MODAL = 'SHOW_KYC_STATUS_MODAL';
+const HIDE_KYC_STATUS_MODAL = 'HIDE_KYC_STATUS_MODAL';
 
 let initialState = {
   analytics: {
@@ -48,13 +48,14 @@ let initialState = {
     error: null,
   },
   instantActivations: {
-    showKYCActivationSuccess: false,
     showInstantActivationSuccess: false,
     showKYCDetails: false,
     showAcceptPayments: false,
     showProductsModal: false,
     showPANStatus: false,
+    showKYCStatus: false,
   },
+  kycStatusModalType: '',
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -135,15 +136,16 @@ export const showInstantActivationSuccessModal = () => {
   };
 };
 
-export const showKYCActivationSuccessModal = () => {
+export const showKYCStatusModal = ({ modalType = '' }) => {
   return {
-    type: SHOW_KYC_SUCCESS,
+    type: SHOW_KYC_STATUS_MODAL,
+    payload: { modalType },
   };
 };
 
-export const hideKYCActivationSuccessModal = () => {
+export const hideKYCStatusModal = () => {
   return {
-    type: HIDE_KYC_SUCCESS,
+    type: HIDE_KYC_STATUS_MODAL,
   };
 };
 
@@ -272,15 +274,25 @@ export default function(state = initialState, action) {
         showInstantActivationSuccess: true,
       });
 
-    case `SHOW_KYC_SUCCESS`:
-      return set(state, 'instantActivations', {
-        showKYCActivationSuccess: true,
-      });
+    case `SHOW_KYC_STATUS_MODAL`:
+      return {
+        ...state,
+        instantActivations: {
+          ...state.instantActivations,
+          showKYCStatus: true,
+        },
+        kycStatusModalType: action.payload.modalType,
+      };
 
-    case `HIDE_KYC_SUCCESS`:
-      return set(state, 'instantActivations', {
-        showKYCActivationSuccess: false,
-      });
+    case `HIDE_KYC_STATUS_MODAL`:
+      return {
+        ...state,
+        instantActivations: {
+          ...state.instantActivations,
+          showKYCStatus: false,
+        },
+        kycStatusModalType: '',
+      };
 
     case `SHOW_KYC_DETAILS`:
       return set(state, 'instantActivations', {

@@ -9,6 +9,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
 import { downloadSubmerchants } from 'merchant/reducers/submerchant';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -22,6 +23,7 @@ import {
   submerchantId as id,
   email as emailColumn,
 } from 'common/ui/item/pair';
+import { Modal, ModalContent, Header } from 'common/new-ui/Modal';
 
 import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
@@ -32,6 +34,8 @@ import {
   trackSearchAnalytics,
   trackClearAnalytics,
 } from '../ga';
+import { mediaWindowUrl } from './SocialShare';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 const name = isPurePlatform => ({
   ...submerchantColumn,
@@ -136,6 +140,18 @@ export default class SubMerchantsList extends ListContainer {
       component: <AddMerchant closeModal={this.props.closeModal} />,
     });
   };
+  handleShareReferralLink = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <ReferalBox
+          closeModal={this.props.closeModal}
+          referralUrl={this.state.referralUrl}
+          shareReferralOn={this.shareReferralOn.bind(this)}
+        />
+      ),
+    });
+  };
 
   handleSwitchMerchant = merchantId => () => {
     this.props
@@ -180,9 +196,29 @@ export default class SubMerchantsList extends ListContainer {
         });
       });
   };
-
-  componentDidMount() {
-    trackListEvents('Go To');
+  shareReferralOn(platform) {
+    mediaWindowUrl({
+      type: platform,
+      url: this.state.referralUrl,
+      title: 'Sign up on Razorpay!',
+      description:
+        "Start using a wide range of Razorpay's payment solutions and unlock growth for your business with just a few clicks. Go live in less than 10 minutes.",
+    });
+  }
+  constructor(props) {
+    merchantFetch({
+      url: 'merchant/referral',
+      mode: 'live',
+      method: 'post',
+      data: {},
+    })
+      .then(({ data }) => {
+        this.setState({
+          referralUrl: data.url,
+        });
+      })
+      .catch(() => {});
+    super(props);
   }
 
   render() {
@@ -211,7 +247,7 @@ export default class SubMerchantsList extends ListContainer {
         <tabbed-container>
           <header>
             <NavLink exact to="/partners/submerchants">
-              Affiliated Accounts
+              Affiliate Accounts
             </NavLink>
           </header>
           <content>
@@ -219,6 +255,13 @@ export default class SubMerchantsList extends ListContainer {
               <div>
                 <HeaderAction>
                   <>
+                    <button
+                      class="btn btn-link"
+                      onClick={this.handleShareReferralLink}
+                    >
+                      <i className="i i-share" />
+                      <span> Share Referral Link</span>
+                    </button>
                     <button
                       class="btn btn-default"
                       onClick={this.onDownload}
@@ -250,33 +293,108 @@ export default class SubMerchantsList extends ListContainer {
                   </>
                 </HeaderAction>
               </div>
-              <div class="content-wrapper">
-                <ListFilter
-                  form="SubmerchantListFilter"
-                  type="link"
-                  count={this.state.count}
-                  onSubmit={this.search}
-                  onSearchAnalytics={trackSearchAnalytics}
-                  onClearAnalytics={trackClearAnalytics}
-                  showAppIdFilter={user.isPartner('pure_platform')}
-                />
-                <DataTable
-                  title="Sub Merchants"
-                  count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={this.paginate}
-                  columns={[
-                    name(user.isPartner('pure_platform')),
-                    id,
-                    email,
-                    ...appIdColumn,
-                    addedOn,
-                    activationStatus,
-                    ...switchMerchantColumn,
-                  ]}
-                  {...this.props}
-                />
-              </div>
+              {Array.isArray(this.props.items) &&
+                this.props.items.length > 0 && (
+                  <div class="content-wrapper">
+                    <ListFilter
+                      form="SubmerchantListFilter"
+                      type="link"
+                      count={this.state.count}
+                      onSubmit={this.search}
+                      onSearchAnalytics={trackSearchAnalytics}
+                      onClearAnalytics={trackClearAnalytics}
+                      showAppIdFilter={user.isPartner('pure_platform')}
+                    />
+                    <DataTable
+                      title="Sub Merchants"
+                      count={this.state.count}
+                      skip={this.state.skip}
+                      paginate={this.paginate}
+                      columns={[
+                        name(user.isPartner('pure_platform')),
+                        id,
+                        email,
+                        ...appIdColumn,
+                        addedOn,
+                        activationStatus,
+                        ...switchMerchantColumn,
+                      ]}
+                      {...this.props}
+                    />
+                  </div>
+                )}
+              {Array.isArray(this.props.items) &&
+                this.props.items.length == 0 && (
+                  <div class="content-wrapper partner-welcome">
+                    <div style={{ flex: 2, textAlign: 'center' }}>
+                      <div>
+                        <h1 class="main-title">
+                          {' '}
+                          Welcome to Partner Dashboard
+                        </h1>
+                        <h3 class="sub-title">
+                          Get started by adding merchants to Razorpay
+                        </h3>
+                      </div>
+                    </div>
+                    <div style={{ flex: 3 }} class="action-area">
+                      <div>
+                        <div>
+                          <div>
+                            <img src="/dist/css/assets/onboarding/add-new-sub-merchants.png" />
+                          </div>
+                          <p>
+                            <strong>Invite a merchant</strong> by adding their
+                            details
+                          </p>
+                          <div style={{ paddingTop: '20px' }}>
+                            <button
+                              class="btn btn-primary pull-right m-l"
+                              onClick={this.handleAddMerchant}
+                            >
+                              <i class="i i-plus line-height-9" /> Add New
+                              Merchant
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <div>
+                            <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                          </div>
+                          <p>
+                            Share the <strong>invite link</strong> on social
+                            media
+                          </p>
+                          <div
+                            class="social-share-btn-grp"
+                            style={{ paddingTop: '20px' }}
+                          >
+                            <CustomClipboard value={this.state.referralUrl}>
+                              <button
+                                class="btn btn-primary pull-right m-l"
+                                onClick={() => {}}
+                              >
+                                <i class="i i-link line-height-9" /> Copy Link
+                              </button>
+                            </CustomClipboard>
+                            <img
+                              src="/dist/css/assets/onboarding/facebook.png"
+                              onClick={() => this.shareReferralOn('fb')}
+                            />
+                            <img
+                              src="/dist/css/assets/onboarding/twitter.png"
+                              onClick={() => this.shareReferralOn('twitter')}
+                            />
+                            <img
+                              src="/dist/css/assets/onboarding/whatsapp.png"
+                              onClick={() => this.shareReferralOn('whatsapp')}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
           </content>
         </tabbed-container>
@@ -284,3 +402,71 @@ export default class SubMerchantsList extends ListContainer {
     );
   }
 }
+
+const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
+  <div>
+    <div style={{ padding: '10px' }}>
+      <img
+        src="/dist/css/assets/onboarding/share-referral-link.png"
+        height="50"
+      />{' '}
+      <strong>
+        <strong>Share Referral Link</strong>
+      </strong>
+      <button
+        type="button"
+        class="close"
+        onClick={closeModal}
+        style={{ marginTop: '10px' }}
+      >
+        <i class="i i-close" />
+      </button>
+    </div>
+    <div style={{ padding: '14px' }}>
+      <p>
+        Share the following link to your merchants and{' '}
+        <strong>earn 0.1% commission on every payment</strong> received by your
+        merchants.
+      </p>
+      <div class="input-group">
+        <CustomClipboard value={referralUrl}>
+          <input
+            class="form-control input"
+            value={referralUrl}
+            style={{ width: '200px' }}
+          />
+          <button
+            class="btn btn-primary"
+            style={{
+              width: '100px',
+              borderRadius: '0px 2px 2px 0px',
+            }}
+          >
+            Copy
+          </button>
+        </CustomClipboard>
+      </div>
+      <div
+        class="social-share-btn-grp"
+        style={{
+          paddingTop: '40px',
+          display: 'flex',
+          justifyContent: 'space-around',
+        }}
+      >
+        <strong>
+          <p>Or Share Via</p>
+        </strong>
+        <a href="#" onClick={() => shareReferralOn('fb')}>
+          <img src="/dist/css/assets/onboarding/facebook.png" />
+        </a>
+        <a href="#" onClick={() => shareReferralOn('twitter')}>
+          <img src="/dist/css/assets/onboarding/twitter.png" />
+        </a>
+        <a href="#" onClick={() => shareReferralOn('whatsapp')}>
+          <img src="/dist/css/assets/onboarding/whatsapp.png" />
+        </a>
+      </div>
+    </div>
+  </div>
+);

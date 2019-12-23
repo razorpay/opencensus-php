@@ -92,6 +92,7 @@ app
       // signup state container
       var email = $location.search().email;
       var role = $location.search().r;
+      var referral_code = $location.search().referral_code;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -506,6 +507,9 @@ app
 
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
+        }
+        if (Boolean(referral_code)) {
+          $scope.signup.merchantData['referral_code'] = referral_code;
         }
         var payload = {
           method: 'post',
