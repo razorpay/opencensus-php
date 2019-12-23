@@ -5,9 +5,9 @@ namespace RZP\Models\Merchant\Account;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
-use RZP\Trace\TraceCode;
 
 class Response extends Core
 {

@@ -18,6 +18,7 @@ use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
+use RZP\Gateway\Worldline\Entity as WorldlineEntity;
 use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -32,6 +33,7 @@ use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymen
 use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\VasAxis\SubReconciliator\PaymentReconciliate as VasAxisPaymentRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskPaymentRecon;
 use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
@@ -709,6 +711,53 @@ class ReconciliationFileTest extends TestCase
         $this->assertNull($transaction['reconciled_type']);
 
         $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc_code']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($transaction['reconciled_type']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
+    }
+
+    // MIS row with trans_status as 'PENDING CREDIT'
+    public function testVirtualAccYesBankPendingCreditReconFile()
+    {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        // Change the row trans_status to Pending Credit
+        $entries[0][VirtualAccYesBank::COLUMN_TRANS_STATUS]  = 'PENDING CREDIT';
 
         $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
 
@@ -1631,6 +1680,18 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideWorldlineBqrPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['worldline_bqr_payment'];
+        $facade[VasAxisPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $payment[WorldlineEntity::TXN_AMOUNT];
+        $facade[VasAxisPaymentRecon::COLUMN_AUTH_CODE]      = $payment[WorldlineEntity::AUTH_CODE];
+        $facade[VasAxisPaymentRecon::COLUMN_RRN]            = $payment[WorldlineEntity::REF_NO];
+        $facade[VasAxisPaymentRecon::COLUMN_GATEWAY_AMOUNT] = intval($payment[WorldlineEntity::TXN_AMOUNT] * 0.8);
+        $facade[VasAxisPaymentRecon::COLUMN_GATEWAY_UTR]    = str_random(8);
+
+        return array_merge($facade, $forceOverride);
+    }
+
     private function overrideHitachiPayment(array $payment, array $forceOverride = [])
     {
         $facade = $this->testData['facades']['hitachi'];
@@ -1936,6 +1997,59 @@ class ReconciliationFileTest extends TestCase
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testWorldlineReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:bharat_qr_worldline_terminal');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will', 'virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->payViaBharatQr($qrCode['id'], 'worldline');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertNull($payment['reference1']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+
+        $gatewayPayment = $this->getLastEntity('worldline', true);
+
+        $entries[] = $this->overrideWorldlineBqrPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'vas_axis');
+
+        // VasAxis is the recon gateway for this
+        $this->runForFiles([$file], 'VasAxis');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][VasAxisPaymentRecon::COLUMN_RRN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][VasAxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $updatedGatewayPayment = $this->getLastEntity('worldline', true);
+
+        $this->assertEquals($entries[0][VasAxisPaymentRecon::COLUMN_AUTH_CODE], $updatedGatewayPayment['auth_code']);
+        $this->assertEquals($entries[0][VasAxisPaymentRecon::COLUMN_GATEWAY_UTR], $updatedGatewayPayment['gateway_utr']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(($entries[0][VasAxisPaymentRecon::COLUMN_PAYMENT_AMOUNT] * 100), $transactionEntity['gateway_amount']);
+        $this->assertNotNull($transactionEntity['gateway_settled_at']);
         $this->assertNotNull($transactionEntity['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);

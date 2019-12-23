@@ -5552,3 +5552,6 @@ ALTER TABLE merchant_details
 ALTER TABLE `terminals`
     CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
     CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+ALTER TABLE worldline
+	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;

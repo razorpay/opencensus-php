@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
@@ -121,21 +122,64 @@ class PennyTesting extends Base\Core
                                             $input);
     }
 
+
+    /**
+     * Updates merchant context depending upon penny testing results .
+     *
+     * 1. If penny testing is verified then update merchant status to activated or verified depending upon poa and poi
+     * status
+     * 2. If penny testing is failed then updates merchant status to needs_clarification and ask for cancelled cheque
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws LogicException
+     * @throws \Throwable
+     */
     protected function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         $detailCore = new Core();
 
-        $newActivationStatus = Status::UNDER_REVIEW;
-
-        if (($merchantDetails->isPoaVerified() === true) and
-            ($merchantDetails->isBankDetailStatusVerified() === true))
+        switch ($merchantDetails->getBankDetailsVerificationStatus())
         {
-            $newActivationStatus = Status::ACTIVATED;
+            case BankDetailsVerificationStatus::VERIFIED:
+
+                $newActivationStatus = (($merchantDetails->isPoaVerified() === true) and
+                                        ($merchantDetails->isPoiVerified() === true))
+                    ? Status::ACTIVATED : Status::UNDER_REVIEW;
+
+                break;
+            case BankDetailsVerificationStatus::FAILED:
+
+                $newActivationStatus = Status::NEEDS_CLARIFICATION;
+
+                $additionalDetails = [
+                    Merchant\Document\Type::CANCELLED_CHEQUE => [[
+                                                                     Merchant\Constants::REASON_TYPE => Merchant\Constants::PREDEFINED_REASON_TYPE,
+                                                                     Merchant\Constants::FIELD_TYPE  => Merchant\Constants::DOCUMENT,
+                                                                     Merchant\Constants::REASON_CODE => NeedsClarificationReasonsList::UNABLE_TO_VALIDATE_ACC_NUMBER,
+                                                                 ]],
+                ];
+
+                $clarificationCore = New Merchant\Detail\NeedsClarification\Core();
+
+                $existingKycClarificationReason = $merchantDetails->getKycClarificationReasons() ?? [];
+
+                $kycClarification = $clarificationCore->mergeKycClarificationReasons(
+                    $existingKycClarificationReason,
+                    null,
+                    $additionalDetails);
+                
+                $merchantDetails->setKycClarificationReasons($kycClarification);
+
+                break;
+            default:
+                throw  new LogicException("Unhandled bank detail verification status");
         }
 
         //
         // in case of Unregistered business if poa is successfully verified then merchant status will be in under review
-        // And in case of penny testing failure also $newActivationStatus will be under review
+        // And in case of penny testing failure user should be able to upload cancelled check
         //
         if ($newActivationStatus !== $merchantDetails->getActivationStatus())
         {
