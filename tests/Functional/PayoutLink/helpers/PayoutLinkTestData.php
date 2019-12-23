@@ -741,4 +741,20 @@ return [
             'content'     => [
             ]
         ]],
+
+    'testPayoutLinkSettingsApiSuccess' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/10000000000000/settings',
+            'content' => [
+                'upi'  => 1,
+                'imps' => 0,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => 'OK'
+            ]
+        ]
+    ],
 ];

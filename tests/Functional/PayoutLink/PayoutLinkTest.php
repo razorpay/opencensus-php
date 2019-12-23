@@ -7,6 +7,7 @@ use Redis;
 use Mockery;
 use Exception;
 use RZP\Models\Payout;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
@@ -777,6 +778,28 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
     }
 
+    public function testPayoutLinkSettingsApiSuccess()
+    {
+        dd($this->getDbEntities('admin_token'));
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->contact->merchant;
+
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $this->assertEquals($settingAccessor->get('imps') , 1);
+
+        $this->assertEquals($settingAccessor->get('upi') , 1);
+    }
+
+    //todo, pl  test that settings module takes on upi and imps
+    // todo, pl test that when imps is on but amount is more than 2 lacs, then NEFT is returned
+    // todo, pl test that when imps is enabled and amount is less than 2 lacs, then IMPS is returned
+    // todo, pl test that when VPA, UPI is enabled
+
     protected function mockRedisSuccess()
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
@@ -807,10 +830,4 @@ class PayoutLinkTest extends TestCase
         $this->testData[$funcName]['request']['content']['account_number'] =
             $this->virtualAccount->bankAccount->getAccountNumber();
     }
-
-    //todo, pl  test that settings module takes on upi and imps
-    // todo, pl test that when imps is on but amount is more than 2 lacs, then NEFT is returned
-    // todo, pl test that when imps is enabled and amount is less than 2 lacs, then IMPS is returned
-    // todo, pl test that when VPA, UPI is enabled
-
 }

@@ -70,7 +70,7 @@ class Core extends Base\Core
      * @param $input
      * @return array
      */
-    public function settings($input)
+    public function settings($merchantId, $input)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
@@ -81,16 +81,19 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::SETTINGS_RULE, $input);
 
-        $settingsAccessor = $this->getSettingsAccessor();
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
 
         $settingsAccessor->upsert($input)->save();
 
         return [self::SUCCESS => self::OK];
     }
 
-    protected function getSettingsAccessor()
+    protected function getSettingsAccessor($merchant)
     {
-        return Settings\Accessor::for($this->merchant, Settings\Module::PAYOUT_LINK);
+
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -255,7 +258,7 @@ class Core extends Base\Core
      */
     protected function getPayoutMode(Entity $payoutLink)
     {
-        $settingsAccessor = $this->getSettingsAccessor();
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
         $amount = $payoutLink->getAmount();
 
