@@ -120,7 +120,7 @@ class DopplerProcessor implements ProcessorInterface
     {
         $buildInput = [
             Entity::SOURCE          => Downtime\Source::DOPPLER,
-            Entity::PARTIAL         => false,
+            Entity::PARTIAL         => $input[Entity::PARTIAL] ?? null,
             Entity::SCHEDULED       => false,
             Entity::METHOD          => $input[Entity::METHOD],
             Entity::REASON_CODE     => $input[Entity::REASON_CODE],
@@ -175,6 +175,7 @@ class DopplerProcessor implements ProcessorInterface
 
                 $downtimeUpdate = [
                     Entity::REASON_CODE     => $downtimeData[Entity::REASON_CODE],
+                    Entity::PARTIAL         => $downtimeData[Entity::PARTIAL],
                 ];
 
                 $downtime = $this->core->edit( $id, $downtimeUpdate);
