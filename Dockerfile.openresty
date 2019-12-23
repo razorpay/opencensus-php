@@ -52,8 +52,8 @@ RUN echo "* Installing deps" && \
 
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/openresty.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/*.lua  /usr/local/openresty/nginx/lua/
-COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/api.openresty.conf.j2 /usr/local/openresty/ngnix/sites/
-COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/routes_meta.lua /usr/local/openresty/nginx/lua/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/api.openresty.conf.j2 /usr/local/openresty/nginx/sites/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/routes_meta.lua /usr/local/openresty/nginx/lua/
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/entrypoint.openresty.sh /app/entrypoint.openresty.sh
 
 EXPOSE 80
