@@ -43,20 +43,30 @@ class Repository extends Base\Repository
 
         $permission = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? 'create_payout';
 
+        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
+
         $query = $this->repo->permission->newQuery()
                                         ->where(Admin\Permission\Entity::NAME, $permission);
 
         $permissionIdArray = $query->pluck('id')->toArray();
         $permissionId = $permissionIdArray[0];
 
-        $results = $this->repo->workflow->newQuery()
-                                        ->whereIn('id', function ($query) use ($permissionId) {
-                                            $query->select('workflow_id')->from('workflow_permissions')->where('permission_id', $permissionId);
+        $query = $this->repo->workflow->newQuery()
+                                        ->whereIn('id', function ($q) use ($permissionId) {
+                                            $q->select('workflow_id')->from('workflow_permissions')->where('permission_id', $permissionId);
                                         })
-                                        ->distinct()
-                                        ->skip($offset)
-                                        ->take($limit)
-                                        ->pluck('merchant_id');
+                                        ->distinct();
+        if(empty($merchantId) === false)
+        {
+            $query->where(Entity::MERCHANT_ID, $merchantId);
+        }
+        else
+        {
+            $query->skip($offset)
+                  ->take($limit);
+        }
+
+        $results = $query->pluck('merchant_id');
 
         return $results;
     }
