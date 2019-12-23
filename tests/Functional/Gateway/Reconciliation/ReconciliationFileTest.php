@@ -2718,6 +2718,50 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFssSbiPaymentReconFile()
+    {
+        $this->fixtures->terminal->createSharedFssTerminal([], 'sbin');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
+
+        $entries[] = $this->createFssSbiReconRow($gatewayPayment1, $gatewayPayment1['payment_id']);
+
+        $file = $this->writeToCsvFile($entries, 'IPAYMIS_MID_Date');
+
+        $response = $this->runForFiles([$file], 'CardFssSbi');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        //Test We update payment reference2 from recon
+        $paymentEnity = $this->getDbLastEntity('payment');
+        $this->assertNotNull($paymentEnity['reference2']);
+        $this->assertNotNull($paymentEnity['reference1']);
+
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MTS_MSF_FIXFEE']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+
+        // Test that the gateway fee and tax sum is as expected
+        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
+
+        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testFssBobNewFormatPaymentReconFile()
     {
         $this->fixtures->create('terminal:shared_fss_terminal');
@@ -3086,6 +3130,21 @@ class ReconciliationFileTest extends TestCase
         $facade['Merchant Track ID'] = "''". $entityId;
 
         $facade['Transaction Type'] =  $transactionType;
+
+        return $facade;
+    }
+
+    private function createFssSbiReconRow(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
+    {
+        $facade = $this->testData['facades']['testFssSbiRecon'];
+
+        $facade['TXN_AMT'] = number_format($gatewayPayment['amount'] / 100, 2);
+
+        $facade['TRANSACTION_TYPE'] = $transactionType;
+
+        $facade['PRCHS_ MERCHANT_TXNNO'] = $entityId;
+
+        $facade['APPROVE_CODE'] = $gatewayPayment['auth'];
 
         return $facade;
     }
