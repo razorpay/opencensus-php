@@ -805,7 +805,8 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
-        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS)
+        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS or
+            $merchant->getId() === Preferences::MID_RBL_INTERIM_PROCESS2)
         {
             $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
         }
@@ -862,6 +863,39 @@ class Notifier extends Base\Core
                 $params = [
                     'invoice_link'    => $invoiceLink
                 ];
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                $subscriptionRegistration = $this->invoice->entity;
+
+                if ($subscriptionRegistration->isMethodCard() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_card';
+
+                    $merchantName = $merchant->getBillingLabel();
+
+                    $merchantName = substr($merchantName, 0, 30);
+
+                    $params   = [
+                        'merchant_name' => $merchantName,
+                        'invoice_link'  => $this->invoice->getShortUrl(),
+                        'amount'        => $this->invoice->getAmount() / 100,
+                    ];
+                }
+
+                if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $sender = 'RBLBNK';
+
+                    $template = 'sms.custom_invoice.rbl_interim_process2';
+
+                    $params = [
+                        'receipt'           => $receipt,
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
 
                 break;
 

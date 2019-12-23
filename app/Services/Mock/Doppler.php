@@ -31,18 +31,18 @@ class Doppler extends BaseDoppler
                 ]
             ];
         }
-        if($method === "PUT")
+        else if($method === "PUT")
         {
             return[
-                "method" => "upi",
-                "psp" => "paytm",
-                "high" => "5",
-                "medium" => "20",
+                [
+                    "method" => "upi",
+                    "psp" => "paytm",
+                    "high" => "5",
+                    "medium" => "20",
+                ]
             ];
-
         }
-        return [
 
-        ];
+        return [];
     }
 }
