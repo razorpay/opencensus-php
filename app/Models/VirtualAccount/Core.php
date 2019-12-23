@@ -46,12 +46,12 @@ class Core extends Base\Core
         //
         try
         {
-            $virtualAccount = $this->mutex->acquireAndRelease(
-                self::VA_BANK_ACCOUNT_GENERATION,
-                function() use ($input, $merchant, $customer, $order, $balance)
-                {
-                    $virtualAccount = $this->createEntityAndAssociate($merchant);
+            $virtualAccount = $this->createEntityAndAssociate($merchant);
 
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
+                function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)
+                {
                     return $this->buildVirtualAccountAndReceivers(
                         $virtualAccount, $input, $customer, $order, $balance);
                 },
