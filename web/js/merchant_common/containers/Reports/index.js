@@ -496,6 +496,26 @@ export default function Reports(store, opts) {
                   this.props.user.current,
                 ]);
               }
+              // this check should happen with error codes rather than with messages
+              // but API doesn't send error codes but only public description
+              if (data.error.includes('You reached maximum limit')) {
+                return this.props.showNotification({
+                  type: 'error',
+                  message: (
+                    <>
+                      {data.error} See more details on this error{' '}
+                      <NavLink
+                        to="https://razorpay.com/docs/payment-gateway/dashboard-guide/reports/"
+                        target="_blank"
+                      >
+                        here
+                      </NavLink>.
+                    </>
+                  ),
+                  closeTimeout: 5000,
+                });
+              }
+
               return this.props.showNotification({
                 type: 'error',
                 message: data.error,
