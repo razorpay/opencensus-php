@@ -11,6 +11,15 @@ import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import RTracking from 'react-tracking';
 
+export const PAYMENT_NETWORK_MAP = {
+  VISA: 'Visa',
+  RUPAY: 'RuPay',
+  MC: 'MasterCard',
+  DICL: 'Diners Club',
+  MAES: 'Maestro',
+  AMEX: 'American Express',
+};
+
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
 
@@ -72,7 +81,7 @@ const OfferDetails = props => {
             <EntityDetailRow label="IINs" value={iins} />
             <EntityDetailRow
               label="Network"
-              value={offer.payment_network || '--'}
+              value={PAYMENT_NETWORK_MAP[offer.payment_network] || '--'}
             />
           </React.Fragment>
         ) : null}
