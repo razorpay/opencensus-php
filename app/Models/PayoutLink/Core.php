@@ -165,7 +165,7 @@ class Core extends Base\Core
         // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         return $this->mutex->acquireAndRelease(
-            $payoutLinkId . time(),
+            $payoutLinkId,
             function() use ($payoutLinkId, $input)
             {
                 return $this->repo->transaction(
