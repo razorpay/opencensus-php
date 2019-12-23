@@ -97,6 +97,7 @@ class Base extends Core
     const HITACHI                = 'Hitachi';
     const CARD_FSS_HDFC          = 'CardFssHdfc';
     const CARD_FSS_BOB           = 'CardFssBob';
+    const CARD_FSS_SBI           = 'CardFssSbi';
     const ATOM                   = 'Atom';
     const ISG                    = 'isg';
     const UPI_HDFC               = 'UpiHdfc';
@@ -165,6 +166,7 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
+        self::CARD_FSS_SBI           => [],
         self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
@@ -259,7 +261,8 @@ class Base extends Core
 
         Gateway::CARD_FSS               => [
             Gateway::ACQUIRER_BARB   => self::CARD_FSS_BOB,
-            Gateway::ACQUIRER_HDFC   => self::CARD_FSS_HDFC
+            Gateway::ACQUIRER_HDFC   => self::CARD_FSS_HDFC,
+            Gateway::ACQUIRER_SBIN   => self::CARD_FSS_SBI,
         ],
 
         Gateway::WALLET_AIRTELMONEY     => self::AIRTEL,
