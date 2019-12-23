@@ -945,11 +945,10 @@ trait SettlementTrait
 
                         $transferAttempt = null;
 
-                        // TODO: have the config check here and send merchant ID accordingly
-                        if (false)
-                        {
-                            $destinationMerchantId = '100000Razorpay';
+                        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
 
+                        if ($destinationMerchantId !== null)
+                        {
                             $transferAttempt = (new Transfer\Core)->transfer(
                                 $settlement,
                                 $destinationMerchantId,
@@ -1287,5 +1286,35 @@ trait SettlementTrait
         );
 
         return $filterGroupedTxns;
+    }
+
+    /**
+     * given partner Id if the settlement has to be aggregated at parent level
+     * it'll give the merchant ID if there is any mapping found else will return null
+     * In case of multiple partner map it'll give null
+     *
+     * @param string $merchantId
+     *
+     * @return string|null
+     */
+    protected function settlementToPartner(string $merchantId)
+    {
+        $merchantList = $this->repo
+                             ->merchant_access_map
+                             ->fetchMerchantsMappedToPartnerList(
+                                 $merchantId,
+                                 Merchant\Preferences::AGGREGATE_SETTLEMENT_PARTNER_MERCHANT);
+
+        //
+        // if the list is empty then there is not partner to settle to
+        // if there are multiple partners then we ignore this
+        // currently this is specific to phonePe use case.
+        //
+        if (($merchantList->isEmpty() === true) or ($merchantList->count() > 1))
+        {
+            return null;
+        }
+
+        return $merchantList->first()->getEntityOwnerId();
     }
 }
