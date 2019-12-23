@@ -109,8 +109,13 @@ local function get_rate_limit_args(redis, req_ctx)
     -- and that too for normal cases and not oauth and route etc.
     local mid
     if req_ctx.auth == "private" then
+        -- If request is proxy then user definitely has mid.
         if req_ctx.proxy then
             mid = string.sub(req_ctx.user, 10)
+        -- Else if is partner etc just skip throttling. Not handling intentionally.
+        elseif string.find(req_ctx.user, "partner") ~= nil then
+            return {skip = 1}, nil
+        -- Else remap public key id to mid.
         else
             local res, err = redis:get(redis_key_prefix .. "km:" .. req_ctx.user)
             if err then
