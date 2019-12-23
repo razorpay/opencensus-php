@@ -249,6 +249,7 @@ class Type
         self::VIRTUAL_BANK_ACCOUNT,
         self::PARTNER_SUBMERCHANTS,
         self::OAUTH_MIGRATION_TOKEN,
+        self::LINKED_ACCOUNT_REVERSAL,
     ];
 
     /**
