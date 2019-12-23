@@ -22,9 +22,9 @@ server {
    
    {% set qa = ['perf', 'func','automation'] %}
     {% if env in qa  %}
-        server_name {{ env }}-api.razorpay.in {{ env }}-invoices.razorpay.in;
+        server_name {{ env }}-api.stage.razorpay.in {{ env }}-invoices.stage.razorpay.in;
     {% elif env == 'echo' %}
-        server_name {{ env }}-api.razorpay.in {{ env }}-invoices.razorpay.in;
+        server_name {{ env }}-api.stage.razorpay.in {{ env }}-invoices.stage.razorpay.in;
     {% elif env != 'prod' %}
         server_name {{ env }}-api.razorpay.com {{ env }}-invoices.razorpay.com;
     {% elif env == 'prod' %}
