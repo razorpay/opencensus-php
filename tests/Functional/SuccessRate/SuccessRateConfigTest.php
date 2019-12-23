@@ -25,8 +25,8 @@ class SuccessRateConfigTest extends TestCase
         $this->startTest();
     }
 
-//    public function testSuccessRateUpdateConfig()
-//    {
-//        $this->startTest();
-//    }
+    public function testSuccessRateUpdateConfig()
+    {
+        $this->startTest();
+    }
 }
