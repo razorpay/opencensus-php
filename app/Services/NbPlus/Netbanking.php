@@ -72,42 +72,6 @@ class Netbanking extends Service
 
     // ----------------------- Verify ---------------------------------------------
 
-    protected function verifyPayment($response)
-    {
-        $verify = new Verify($this->gateway, []);
-
-        $verify->verifyResponseContent = $response[self::DATA];
-
-        $verify->status = VerifyResult::STATUS_MATCH;
-
-        $this->checkGatewaySuccess($verify);
-
-        $this->checkApiSuccess($verify);
-
-        if ($verify->gatewaySuccess !== $verify->apiSuccess)
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-        }
-
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        if (($verify->match === true) and
-            ($verify->apiSuccess === false))
-        {
-            return $verify;
-        }
-
-        if (($verify->match === false) and
-            ($verify->throwExceptionOnMismatch))
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify);
-        }
-
-        return $verify;
-    }
-
     protected function processVerifyResponse($response)
     {
         $verify = $this->verifyPayment($response);
