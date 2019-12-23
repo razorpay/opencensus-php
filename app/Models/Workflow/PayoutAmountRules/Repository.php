@@ -2,12 +2,11 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
-use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Collection;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
+use Illuminate\Database\Query\JoinClause;
 
 class Repository extends Base\Repository
 {
@@ -21,7 +20,7 @@ class Repository extends Base\Repository
         $query =  $this->newQuery();
 
         // If adminAuth is used pass retrieve additional infomration such as steps and roles in the workflow
-        if($this->app['basicauth']->isAdminAuth())
+        if ($this->app['basicauth']->isAdminAuth())
         {
             $query = $query->with('steps','steps.role');
         }
@@ -41,24 +40,29 @@ class Repository extends Base\Repository
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        $permission = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? 'create_payout';
+        $permission = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? Admin\Permission\Name::CREATE_PAYOUT;
 
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
         $query = $this->repo->permission->newQuery()
                                         ->where(Admin\Permission\Entity::NAME, $permission);
 
-        $permissionIdArray = $query->pluck('id')->toArray();
+        $permissionIdArray = $query->pluck(Entity::ID)
+                                   ->toArray();
+
         $permissionId = $permissionIdArray[0];
 
         $query = $this->repo->workflow->newQuery()
                                         ->whereIn('id', function ($q) use ($permissionId) {
-                                            $q->select('workflow_id')->from('workflow_permissions')->where('permission_id', $permissionId);
-                                        })
+                                                            $q->select(Entity::WORKFLOW_ID)
+                                                              ->from(Table::WORKFLOW_PERMISSION)
+                                                              ->where(Entity::PERMISSION_ID, $permissionId);
+                                                        })
                                         ->distinct();
-        if(empty($merchantId) === false)
+
+        if (empty($merchantId) === false)
         {
-            $query->where(Entity::MERCHANT_ID, $merchantId);
+            $query->merchantId($merchantId);
         }
         else
         {
@@ -66,7 +70,7 @@ class Repository extends Base\Repository
                   ->take($limit);
         }
 
-        $results = $query->pluck('merchant_id');
+        $results = $query->pluck(Entity::MERCHANT_ID);
 
         return $results;
     }

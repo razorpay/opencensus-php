@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -19,22 +19,22 @@ class Validator extends Base\Validator
     public function checkForValidAmountRanges($rules)
     {
         usort($rules, function($a, $b) {
-            return $a['min_amount'] <=> $b['min_amount'];
+            return $a[Entity::MIN_AMOUNT] <=> $b[Entity::MIN_AMOUNT];
         });
 
         $presentAmount = 0;
 
-        for($index = 0; $index < count($rules); $index++)
+        for ($index = 0; $index < count($rules); $index++)
         {
             $rule = $rules[$index];
 
-            if($rule['min_amount'] != $presentAmount)
+            if ($rule[Entity::MIN_AMOUNT] != $presentAmount)
             {
                 break;
             }
-            if(empty($rule['max_amount']) === false)
+            if (empty($rule[Entity::MAX_AMOUNT]) === false)
             {
-                $presentAmount = $rule['max_amount'];
+                $presentAmount = $rule[Entity::MAX_AMOUNT];
             }
             else
             {
@@ -43,7 +43,7 @@ class Validator extends Base\Validator
             }
         }
 
-        if($index !== count($rules))
+        if ($index !== count($rules))
         {
             throw new BadRequestValidationFailureException(
                 'Ranges provided are not continuous and complete'
@@ -54,7 +54,7 @@ class Validator extends Base\Validator
     // Ensure that every workflow payout amount range is attached to only one workflow
     public function ensureDistinctWorkflowIds($rules)
     {
-        if(count($rules) != count(array_unique(array_column($rules, 'workflow_id'))))
+        if ( count($rules) != count(array_unique(array_column($rules, 'workflow_id'))))
         {
             throw new BadRequestValidationFailureException(
                 'Each workflow can have only one amount range'

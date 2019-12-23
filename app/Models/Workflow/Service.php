@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Permission;
-use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
@@ -15,6 +17,20 @@ class Service extends Base\Service
         Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
 
         Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
+
+        $orgId = $input[Entity::ORG_ID];
+
+        $permissions = $input[Entity::PERMISSIONS];
+
+        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
+        if ($this->core()->requestHasCreatePayoutPermission($permissions, $orgId) == true)
+        {
+            if (isset($input[Entity::MERCHANT_ID]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
+            }
+        }
 
         $workflow = $this->core()->create($input);
 

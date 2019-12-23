@@ -38,7 +38,7 @@ class Service extends Base\Service
         $merchantId = null;
 
         // Check if workflow exists and belongs to merchant in context
-        for($index = 0; $index < count($rules); $index++)
+        for ($index = 0; $index < count($rules); $index++)
         {
 
             \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
@@ -47,9 +47,9 @@ class Service extends Base\Service
 
             $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID]);
 
-            $workflowPermissionsArray = $workflow->permissions->toArrayPublic();
+            $workflowPermissionsArray = $workflow->permissions->toArray();
 
-            $permissionNames = (array_column($workflowPermissionsArray['items'], 'name'));
+            $permissionNames = (array_column($workflowPermissionsArray, 'name'));
 
             // Ensure that given workflows have create_payout permission
             if (in_array(Name::CREATE_PAYOUT, $permissionNames, true) === false)
@@ -63,7 +63,7 @@ class Service extends Base\Service
             $workflowsArray = $workflow->toArray();
 
             // Ensure that all merchants are the same
-            if((empty($merchantId) === false) and ($merchantId !== $workflowsArray[Entity::MERCHANT_ID]))
+            if ((empty($merchantId) === false) and ($merchantId !== $workflowsArray[Entity::MERCHANT_ID]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
@@ -77,7 +77,7 @@ class Service extends Base\Service
         }
 
         // Ensure that workflow rules do not exist already
-        if(!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
+        if (!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_RULES_UPDATE_OR_DELETE_NOT_ALLOWED,
@@ -90,6 +90,7 @@ class Service extends Base\Service
         (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
 
         $result = $this->core()->create($rules, $merchantId);
+
         return $result;
     }
 }

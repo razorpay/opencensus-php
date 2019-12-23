@@ -20,20 +20,11 @@ class Core extends Base\Core
         $permissions = $input[Entity::PERMISSIONS];
         $levels      = $input[Entity::LEVELS];
 
-        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
-        if ($this->requestHasCreatePayoutPermission($permissions, $orgId) == true)
+        if(empty($input[Entity::MERCHANT_ID]) === false)
         {
-            if(!isset($input[Entity::MERCHANT_ID]))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
-            }
-            else
-            {
-                $merchantId = $input[Entity::MERCHANT_ID];
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-                $workflow->merchant()->associate($merchant);
-            }
+            $merchantId = $input[Entity::MERCHANT_ID];
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $workflow->merchant()->associate($merchant);
         }
 
         // Check if atleast one level has been entered for all permissions other than the create_payout permission
