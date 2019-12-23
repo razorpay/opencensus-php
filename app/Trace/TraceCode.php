@@ -267,6 +267,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
+    const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -1334,6 +1336,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_ERROR                                       = 'BATCH_JOB_ERROR';
     const IRCTC_BATCH_JOB_RECEIVED                              = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                                 = 'IRCTC_BATCH_JOB_ERROR';
+    const IRCTC_REFUND_AMOUNT_MISMATCH                          = 'IRCTC_REFUND_AMOUNT_MISMATCH';
     const KUBERNETES_BATCH_JOB_CREATED                          = 'KUBERNETES_BATCH_JOB_CREATED';
     const KUBERNETES_BATCH_JOB_EXISTS                           = 'KUBERNETES_BATCH_JOB_EXISTS';
     const KUBERNETES_BATCH_JOB_ERROR                            = 'KUBERNETES_BATCH_JOB_ERROR';
@@ -1895,6 +1898,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MEMORY_USAGE_FTA_FETCHING_ENTITIES                    = 'MEMORY_USAGE_FTA_FETCHING_ENTITIES';
     const MEMORY_USAGE_FTA_ENTITIES_FETCHED                     = 'MEMORY_USAGE_FTA_ENTITIES_FETCHED';
     const FUND_TRANSFER_FILE_UPLOAD_FAILED                      = 'FUND_TRANSFER_FILE_UPLOAD_FAILED';
+    const FUND_TRANSFER_ATTEMPT_INITIATE_FAILED                 = 'FUND_TRANSFER_ATTEMPT_INITIATE_FAILED';
 
     // redis dual write
     const REDIS_DUAL_WRITE_STORE_ERROR                          = 'REDIS_DUAL_WRITE_STORE_ERROR';
@@ -1945,6 +1949,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED            = 'BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED';
     const BENEFICIARY_REGISTRATION_ALREADY_IN_PROGRESS          = 'BENEFICIARY_REGISTRATION_ALREADY_IN_PROGRESS';
     const BENEFICIARY_VERIFICATION_ALREADY_IN_PROGRESS          = 'BENEFICIARY_VERIFICATION_ALREADY_IN_PROGRESS';
+    const FAILED_TO_GET_TREATMENT_FOR_REGISTER_BENEFICIARY      = 'FAILED_TO_GET_TREATMENT_FOR_REGISTER_BENEFICIARY';
 
     //beneficiary verification trace codes
     const BENEFICIARY_VERIFY_PROCESS_RETRY                      = 'BENEFICIARY_VERIFY_PROCESS_RETRY';
@@ -2105,6 +2110,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_TRANSFER_RETRY_ACTION_COMPLETE                    = 'FTS_TRANSFER_RETRY_ACTION_COMPLETE';
     const FTS_FUND_TRANSFER_SOURCE_UPDATE_FAILED                = 'FTS_FUND_TRANSFER_SOURCE_UPDATE_FAILED';
     const FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION         = 'FTS_SOURCE_ACCOUNT_MAPPING_CREATION_EXCEPTION';
+    const FTS_BENEFICIARY_REGISTER_RAZORX_INIT                  = 'FTS_BENEFICIARY_REGISTER_RAZORX_INIT';
+    const FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE              = 'FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';

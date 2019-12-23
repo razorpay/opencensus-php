@@ -17,7 +17,7 @@ class RejectionReasons
     const UNSUPPORTED_BUSINESS_MODEL              = 'unsupported_business_model';
     const RISKY_BUSINESS                          = 'risky_business';
     const OTHERS                                  = 'others';
-
+    const PROHIBITED_BUSINESSES                   = 'prohibited_businesses';
     /*
      * Reason Codes
      * There is also 'others' reason code
@@ -58,6 +58,16 @@ class RejectionReasons
     const SALE_OF_LIVESTOCK_PETS                   = 'sale_of_livestock_or_pets';
     const STOCK_TRADING_TIPS                       = 'stock_trading_tips';
     const AUCTIONING                               = 'auctioning';
+    const DROPSHIPPING                             = 'dropshipping';
+    const DRUG_STORE_PHARMACY                      = 'drug_store_pharmacy';
+    const SEXUAL_WELLNESS_AND_ADULT_TOYS           = 'sexual_wellness_and_adult_toys';
+    const CHIT_FUNDS                               = 'chit_funds';
+    const BPO_SERVICES                             = 'bpo_services';
+    const TOBACCO_OR_MARHUANA                      = 'tobacco_or_marijuana';
+    const HOTEL_BOOKING                            = 'hotel_booking';
+    const VAPES_AND_E_CIGARETTES                   = 'vapes_and_e_cigarettes';
+    const TELEMARKETING_SERVICES                   = 'telemarketing_services';
+    const HAZARDOUS_CHEMICAL                       = 'hazardous_chemicals';
 
     /*
      * Reason Descriptions
@@ -68,14 +78,14 @@ class RejectionReasons
     const SOCIAL_MEDIA_MARKETING_DESCRIPTION                   = 'Merchant into unsupported social media marketing activtities like paid likes/views/re-tweets, inorganic leads, inorganic website hits, contact databases etc.';
     const SOCIAL_MEDIA_PLATFORM_DESCRIPTION                    = 'Merchant with own social media platform';
     const REAL_ESTATE_DESCRIPTION                              = 'Merchant into real estate';
-    const INSURANCE_SERVICES_DESCRIPTION                       = 'Merchant into insurance and related services';
+    const INSURANCE_SERVICES_DESCRIPTION                       = 'Merchant into insurance and related services without certification';
     const UNREGISTERED_INDIVIDUAL_DESCRIPTION                  = 'Merchant is an unregistered individual';
     const OTHERS_DESCRIPTION                                   = 'Merchant in an unsupported business model not elsewhere classified';
     const NOT_REGISTERED_IN_INDIA_DESCRIPTION                  = 'Merchant not registered in India';
     const FAKE_PRODUCTS_OR_UNLICENSED_DISTRIBUTION_DESCRIPTION = 'Merchant into imitation/fake products/unlicensed distribution';
     const REFURBISHED_GOODS_DESCRIPTION                        = 'Merchant selling second hand/refurbished goods';
     const DTH_OR_MOBILE_RECHARGE_DESCRIPTION                   = 'Merchant into DTH, mobile recharges';
-    const FINANCIAL_ADVISORY_DESCRIPTION                       = 'Merchant into financial/investment advisory';
+    const FINANCIAL_ADVISORY_DESCRIPTION                       = 'Merchant into financial/investment advisory without SEBI';
     const IT_SUPPORT_DESCRIPTION                               = 'Merchant into IT support services';
     const ONLINE_GAMES_OR_GAMBLING_DESCRIPTION                 = 'Merchant into online games/gambling/fantasy leagues etc.';
     const ALCOHOLIC_BEVERAGES_DESCRIPTION                      = 'Merchant into selling alcoholic beverages';
@@ -99,9 +109,29 @@ class RejectionReasons
     const SALE_OF_LIVESTOCK_PETS_DESCRIPTION                   = 'Merchant into sale of livestock/pets';
     const STOCK_TRADING_TIPS_DESCRIPTION                       = 'Merchant into stock trading tips providing service';
     const AUCTIONING_DESCRIPTION                               = 'Merchant into auctioning';
+    const DROPSHIPPING_DESCRIPTION                             = 'Dropshipping';
+    const DRUG_STORE_PHARMACY_DESCRIPTION                      = 'Merchant into drug store pharmacy';
+    const SEXUAL_WELLNESS_AND_ADULT_TOYS_DESCRIPTION           = 'Merchant into Sexual Wellness and Adult toys';
+    const CHIT_FUNDS_DESCRIPTION                               = 'Merchant into chit funds';
+    const BPO_SERVICES_DESCRIPTION                             = 'Merchant into BPO services';
+    const TOBACCO_OR_MARHUANA_DESCRIPTION                      = 'Merchant into Tobacco/Marijuana';
+    const HOTEL_BOOKING_DESCRIPTION                            = 'Merchant into Hotel booking';
+    const VAPES_AND_E_CIGARETTES_DESCRIPTION                   = 'Merchant into Vapes and E-cigarettes';
+    const TELEMARKETING_SERVICES_DESCRIPTION                   = 'Merchants into Telemarketing services';
+    const HAZARDOUS_CHEMICAL_DESCRIPTION                       = 'Merchant into and hazardous chemicals';
 
     // Reason codes descriptions mapping
     const REASON_CODES_DESCRIPTIONS_MAPPING = [
+        self::DROPSHIPPING                             => self::DROPSHIPPING_DESCRIPTION,
+        self::SEXUAL_WELLNESS_AND_ADULT_TOYS           => self::SEXUAL_WELLNESS_AND_ADULT_TOYS_DESCRIPTION,
+        self::DRUG_STORE_PHARMACY                      => self::DRUG_STORE_PHARMACY_DESCRIPTION,
+        self::CHIT_FUNDS                               => self::CHIT_FUNDS_DESCRIPTION,
+        self::BPO_SERVICES                             => self::BPO_SERVICES_DESCRIPTION,
+        self::TOBACCO_OR_MARHUANA                      => self::TOBACCO_OR_MARHUANA_DESCRIPTION,
+        self::HOTEL_BOOKING                            => self::HOTEL_BOOKING_DESCRIPTION,
+        self::VAPES_AND_E_CIGARETTES                   => self::VAPES_AND_E_CIGARETTES_DESCRIPTION,
+        self::TELEMARKETING_SERVICES                   => self::TELEMARKETING_SERVICES_DESCRIPTION,
+        self::HAZARDOUS_CHEMICAL                       => self::HAZARDOUS_CHEMICAL_DESCRIPTION,
         self::WEB_DEVELOPMENT_OR_WEB_HOSTING           => self::WEB_DEVELOPMENT_OR_WEB_HOSTING_DESCRIPTION,
         self::CHEMICAL_GOODS                           => self::CHEMICAL_GOODS_DESCRIPTION,
         self::CROWDFUNDING                             => self::CROWDFUNDING_DESCRIPTION,
@@ -288,6 +318,30 @@ class RejectionReasons
                 self::CODE        => self::MULTIPLE_VERTICALS,
                 self::DESCRIPTION => self::MULTIPLE_VERTICALS_DESCRIPTION,
             ],
+            [
+                self::CODE        => self::FINANCIAL_ADVISORY,
+                self::DESCRIPTION => self::FINANCIAL_ADVISORY_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::CROWDFUNDING,
+                self::DESCRIPTION => self::CROWDFUNDING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::REAL_ESTATE,
+                self::DESCRIPTION => self::REAL_ESTATE_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::INSURANCE_SERVICES,
+                self::DESCRIPTION => self::INSURANCE_SERVICES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::STOCK_TRADING_TIPS,
+                self::DESCRIPTION => self::STOCK_TRADING_TIPS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::DROPSHIPPING,
+                self::DESCRIPTION => self::DROPSHIPPING_DESCRIPTION,
+            ],
         ],
 
         // Others
@@ -299,6 +353,110 @@ class RejectionReasons
             [
                 self::CODE        => self::IMPROPER_DOCUMENTATION,
                 self::DESCRIPTION => self::IMPROPER_DOCUMENTATION_DESCRIPTION,
+            ],
+        ],
+
+        //prohibited business
+        Self::PROHIBITED_BUSINESSES => [
+            [
+                self::CODE        => self::IMPROPER_DOCUMENTATION,
+                self::DESCRIPTION => self::IMPROPER_DOCUMENTATION_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::DUPLICATE_OR_ERRENOUS_CREATION,
+                self::DESCRIPTION => self::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::TECHNICAL_SUPPORT,
+                self::DESCRIPTION => self::TECHNICAL_SUPPORT_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::ALCOHOLIC_BEVERAGES,
+                self::DESCRIPTION => self::ALCOHOLIC_BEVERAGES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::MULTIPLE_VERTICALS,
+                self::DESCRIPTION => self::MULTIPLE_VERTICALS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::MULTI_LEVEL_MARKETING,
+                self::DESCRIPTION => self::MULTI_LEVEL_MARKETING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::SELLING_ARMS_OR_AMMUNITION,
+                self::DESCRIPTION => self::SELLING_ARMS_OR_AMMUNITION_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES,
+                self::DESCRIPTION => self::DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::SOCIAL_MEDIA_MARKETING,
+                self::DESCRIPTION => self::SOCIAL_MEDIA_MARKETING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::OTHERS,
+                self::DESCRIPTION => self::OTHERS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::NOT_REGISTERED_IN_INDIA,
+                self::DESCRIPTION => self::NOT_REGISTERED_IN_INDIA_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::CRYPTOCURRENCY,
+                self::DESCRIPTION => self::CRYPTOCURRENCY_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::EARN_MONEY_ONLINE,
+                self::DESCRIPTION => self::EARN_MONEY_ONLINE_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::BETTING,
+                self::DESCRIPTION => self::BETTING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::SALE_OF_LIVESTOCK_PETS,
+                self::DESCRIPTION => self::SALE_OF_LIVESTOCK_PETS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::AUCTIONING,
+                self::DESCRIPTION => self::AUCTIONING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::DRUG_STORE_PHARMACY,
+                self::DESCRIPTION => self::DRUG_STORE_PHARMACY_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::SEXUAL_WELLNESS_AND_ADULT_TOYS,
+                self::DESCRIPTION => self::SEXUAL_WELLNESS_AND_ADULT_TOYS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::CHIT_FUNDS,
+                self::DESCRIPTION => self::CHIT_FUNDS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::BPO_SERVICES,
+                self::DESCRIPTION => self::BPO_SERVICES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::TOBACCO_OR_MARHUANA,
+                self::DESCRIPTION => self::TOBACCO_OR_MARHUANA_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::HOTEL_BOOKING,
+                self::DESCRIPTION => self::HOTEL_BOOKING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::VAPES_AND_E_CIGARETTES,
+                self::DESCRIPTION => self::VAPES_AND_E_CIGARETTES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::TELEMARKETING_SERVICES,
+                self::DESCRIPTION => self::TELEMARKETING_SERVICES_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::HAZARDOUS_CHEMICAL,
+                self::DESCRIPTION => self::HAZARDOUS_CHEMICAL_DESCRIPTION,
             ],
         ],
     ];

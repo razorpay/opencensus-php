@@ -2654,4 +2654,29 @@ return [
             ]
         ]
     ],
+    'testCreateJuspayIntentTerminal'           =>  [
+        'request'   => [
+            'content'   => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some',
+                'type'                          => [
+                    'non_recurring'             => '1',
+                    'pay'                       => '1'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
+            ]
+        ]
+    ],
 ];

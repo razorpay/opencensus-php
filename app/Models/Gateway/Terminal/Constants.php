@@ -22,6 +22,7 @@ class Constants
     // Default merchant details for merchant onboarding
     const DEFAULT_BUSINESS_OPERATION_ADDRESS      = 'SJR Cyber Laskar, Hosur Rd, Opp Adugodi Police Station, Bengaluru';
     const DEFAULT_BUSINESS_OPERATION_STATE        = 'Karnataka';
+    const DEFAULT_BUSINESS_OPERATION_STATE_CODE   = 'KA';
     const DEFAULT_BUSINESS_OPERATION_PIN          = '560030';
     const DEFAULT_BUSINESS_DBA                    = 'Razorpay';
     const DEFAULT_BUSINESS_NAME                   = 'Razorpay';

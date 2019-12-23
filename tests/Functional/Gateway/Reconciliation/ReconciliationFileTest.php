@@ -733,6 +733,53 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
     }
 
+    // MIS row with trans_status as 'PENDING CREDIT'
+    public function testVirtualAccYesBankPendingCreditReconFile()
+    {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        // Change the row trans_status to Pending Credit
+        $entries[0][VirtualAccYesBank::COLUMN_TRANS_STATUS]  = 'PENDING CREDIT';
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc_code']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($transaction['reconciled_type']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
+    }
+
     public function testVirtualAccYesBankReconFileWithWrongValues()
     {
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');

@@ -2,16 +2,21 @@
 
 namespace RZP\Mail\Invoice;
 
+use RZP\Constants\Entity;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
+use RZP\Models\SubscriptionRegistration\Entity as SubRegEntity;
 
 class Issued extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK                         => ' Requesting payment of %s %s (via Razorpay)',
-        Type::ECOD                         => ' Requesting payment of %s %s (via Razorpay)',
-        Type::INVOICE                      => ' Invoice from %s',
-        Preferences::MID_RBL_RETAIL_ASSETS => ' Mandate registration link from RBL Bank',
+        Type::LINK                              => ' Requesting payment of %s %s (via Razorpay)',
+        Type::ECOD                              => ' Requesting payment of %s %s (via Razorpay)',
+        Type::INVOICE                           => ' Invoice from %s',
+        Preferences::MID_RBL_RETAIL_ASSETS      => ' Mandate registration link from RBL Bank',
+        Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
     ];
 
     protected $fileData;
@@ -38,6 +43,20 @@ class Issued extends Base
             case Preferences::MID_BAGIC:
 
                 $this->view('emails.invoice.customer.custom.bagic');
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                if ($this->data[Entity::INVOICE][InvoiceEntity::ENTITY_TYPE] === Entity::SUBSCRIPTION_REGISTRATION and
+                    $this->data[Entity::INVOICE][Entity::SUBSCRIPTION_REGISTRATION][SubRegEntity::METHOD] === Constants::EMANDATE)
+                {
+                    $this->view('emails.invoice.customer.custom.rbl_interim_process2');
+                }
+                else
+                {
+                    $this->view('emails.invoice.customer.notification');
+                }
 
                 break;
 
