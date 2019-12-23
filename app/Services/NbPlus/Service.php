@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\NbPlus;
 
 use App;
 use RZP\Exception;
@@ -13,10 +13,9 @@ use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
-use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 
-class NbPlusPaymentService
+class Service
 {
     const CONTENT_TYPE_HEADER      = 'Content-Type';
     const ACCEPT_HEADER            = 'Accept';
@@ -48,6 +47,10 @@ class NbPlusPaymentService
         self::CALLBACK,
         self::VERIFY,
         self::AUTHORIZE_FAILED
+    ];
+
+    const GATEWAY_TO_METHOD_MAP = [
+      Payment\Gateway::ATOM => Payment\Method::NETBANKING
     ];
 
     protected $baseUrl;
@@ -123,39 +126,9 @@ class NbPlusPaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
-        $this->action = $action;
+        $driver = $this->getDriver($gateway);
 
-        $this->gateway = $gateway;
-
-        $this->input = $input;
-
-        if ($this->action === self::AUTHORIZE)
-        {
-            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
-        }
-
-        if (empty($input[Entity::TERMINAL]) === false)
-        {
-            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
-        }
-
-        foreach ($input as $key => $data)
-        {
-            if ((is_object($data) === true) and ($data instanceof PublicEntity))
-            {
-                $input[$key] = $data->toArray();
-            }
-        }
-
-        $content = [
-            self::ACTION  => $action,
-            self::GATEWAY => $gateway,
-            self::INPUT   => $input
-        ];
-
-        $response = $this->sendRequest('POST', 'action/' . $action, $content);
-
-        return $response;
+        return $driver->action($gateway, $action, $input);
     }
 
     public function sendRequest(string $method, string $url, array $data = [])
@@ -203,6 +176,7 @@ class NbPlusPaymentService
             {
                 $content = json_encode($request['content']);
             }
+            sd($request);
 
             $response = $this->request->request(
                 $request['url'],
@@ -495,5 +469,21 @@ class NbPlusPaymentService
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+    protected function getDriver($gateway)
+    {
+        $method = self::GATEWAY_TO_METHOD_MAP[$gateway];
+
+        switch ($method)
+        {
+            case 'netbanking':
+                $class = new Netbanking();
+                break;
+            default:
+                throw new Exception\LogicException('Should not have reached here');
+        }
+
+        return $class;
     }
 }

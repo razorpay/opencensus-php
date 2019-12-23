@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Services\Mock;
+namespace RZP\Services\Mock\NbPlus;
 
 use App;
 use Requests_Response;
 
-use RZP\Services\NbPlusPaymentService as BaseNbPlusPaymentService;
+use RZP\Services\NbPlus\Netbanking as NetbankingBase;
 
-class NbPlusPaymentService extends BaseNbPlusPaymentService
+class Netbanking extends NetbankingBase
 {
     public function sendRawRequest($request)
     {
