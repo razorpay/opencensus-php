@@ -812,14 +812,13 @@ return [
         ],
 
         PermissionCategory::DOWNTIME_CONFIG => [
-            Permission::CREATE_DOWNTIME_CONFIG => [
-                'description'   => 'Create Downtime Configuration',
-            ],
             Permission::UPDATE_DOWNTIME_CONFIG => [
-                'description'   => 'Create Downtime Configuration',
+                'description'   => 'Update Downtime Configuration',
+                'assignable'    => true
             ],
             Permission::LIST_DOWNTIME_CONFIG => [
-                'description'   => 'Create Downtime Configuration',
+                'description'   => 'List Downtime Configuration',
+                'assignable'    => true
             ],
         ],
     ],
