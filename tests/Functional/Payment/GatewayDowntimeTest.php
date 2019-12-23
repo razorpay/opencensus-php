@@ -1348,15 +1348,13 @@ class GatewayDowntimeTest extends TestCase
                 'method'    => 'upi',
                 'reason_code'   => 'ISSUER_DOWN',
                 'gateway'   => 'ALL',
-                'status'    => 'down'
+                'status'    => 'DOWN'
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
         ];
 
         $response = $this->makeRequestAndGetContent($request);
-
-        $id = $response['id'];
 
         $this->assertNull($response['end']);
 
@@ -1367,7 +1365,7 @@ class GatewayDowntimeTest extends TestCase
                 'method'    => 'upi',
                 'reason_code'   => 'ISSUER_DOWN',
                 'gateway'   => 'ALL',
-                'status'    => 'up'
+                'status'    => 'UP'
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
@@ -1376,8 +1374,6 @@ class GatewayDowntimeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertNotNull($response['end']);
-
-        $this->assertEquals($id, $response['id']);
     }
 
     public function testDopplerDowntimeUpdate()
@@ -1389,15 +1385,13 @@ class GatewayDowntimeTest extends TestCase
                 'method'    => 'upi',
                 'reason_code'   => 'LOW_SUCCESS_RATE',
                 'gateway'   => 'ALL',
-                'status'    => 'down'
+                'status'    => 'DOWN'
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
         ];
 
         $response = $this->makeRequestAndGetContent($request);
-
-        $id = $response['id'];
 
         $this->assertNull($response['end']);
 
@@ -1408,7 +1402,7 @@ class GatewayDowntimeTest extends TestCase
                 'method'    => 'upi',
                 'reason_code'   => 'ISSUER_DOWN',
                 'gateway'   => 'ALL',
-                'status'    => 'down'
+                'status'    => 'DOWN'
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
@@ -1417,8 +1411,6 @@ class GatewayDowntimeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertNull($response['end']);
-
-        $this->assertEquals($id, $response['id']);
 
         $this->assertEquals($response['reason_code'], "ISSUER_DOWN");
     }
