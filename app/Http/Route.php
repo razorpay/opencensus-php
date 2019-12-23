@@ -1383,10 +1383,16 @@ final class Route
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                     ],
 
         //route to add additional website through admin dashboard
-        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+
+        // resource parent for config inheritance
+        'resource_parent_fetch'                   => ['get',       'merchant/{id}/resource_parent',                             'MerchantController@getResourceParent'                      ],
+        'resource_parent_set'                     => ['post',      'merchant/{id}/resource_parent',                             'MerchantController@postResourceParent'                     ],
+        'resource_parent_delete'                  => ['delete',    'merchant/{id}/resource_parent',                             'MerchantController@deleteResourceParent'                   ],
+        
     ];
 
     public static $public = [
@@ -2659,6 +2665,10 @@ final class Route
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
+
+        'resource_parent_fetch',
+        'resource_parent_set',
+        'resource_parent_delete',
     ];
 
     public static $routePermission = [
@@ -3203,6 +3213,10 @@ final class Route
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        'resource_parent_fetch'                     =>  '*',
+        'resource_parent_set'                       =>  '*',
+        'resource_parent_delete'                    =>  '*',
     ];
 
     public static $direct = [

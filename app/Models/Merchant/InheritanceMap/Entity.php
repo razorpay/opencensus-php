@@ -1,0 +1,33 @@
+<?php
+
+namespace RZP\Models\Merchant\InheritanceMap;
+
+use RZP\Constants;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+
+class Entity extends Base\PublicEntity
+{
+    const MERCHANT_ID          = 'merchant_id';
+
+    const PARENT_MERCHANT_ID   = 'parent_merchant_id';
+
+    protected $entity = Constants\Entity::MERCHANT_INHERITANCE_MAP;
+
+
+    public function getParentMerchantId()
+    {
+        return $this->getAttribute(self::PARENT_MERCHANT_ID);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function parentMerchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class, self::PARENT_MERCHANT_ID);
+    }
+
+}

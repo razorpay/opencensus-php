@@ -31,6 +31,7 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -57,8 +58,8 @@ class MerchantTest extends TestCase
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
-    use OAuthTrait;
     use CreatesInvoice;
+    use PartnerTrait;    
 
     public function setUp()
     {
@@ -5288,6 +5289,31 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testSetResourceParent()
+    {        
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/' . $submerchant['id'] . '/resource_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+
+        $a = $this->startTest();
+        
+        $this->assertEquals($a['id'], '10000000000000');
+
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertEquals($merchantInheritanceMap['merchant_id'], '10000000000000');
+
+        $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], $submerchant['id']);
     }
 
     protected function enableRazorXTreatmentForRazorX()

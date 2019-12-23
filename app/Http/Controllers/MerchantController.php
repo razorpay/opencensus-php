@@ -1487,4 +1487,23 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getResourceParent()
+    {
+
+    }
+
+    public function postResourceParent(string $childMerchantId)
+    {
+        $input = Request::all();
+        
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postResourceParent($childMerchantId, $input['id']);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteResourceParent()
+    {
+
+    }
 }

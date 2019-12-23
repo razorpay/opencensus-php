@@ -5357,4 +5357,20 @@ return [
             'status_code'           => 200,
         ],
     ],
+
+    'testSetResourceParent'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchant/{id}/resource_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
 ];
