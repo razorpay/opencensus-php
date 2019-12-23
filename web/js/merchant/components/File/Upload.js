@@ -238,6 +238,7 @@ export default class FileUpload extends React.Component {
       renderStagedChildren,
       showFileSize,
       size,
+      dropZoneCavityClassName,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -318,7 +319,8 @@ export default class FileUpload extends React.Component {
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
               stagedFileStatus && 'Dropzone-cavity--' + stagedFileStatus,
-              disabled && 'Dropzone-cavity--disabled'
+              disabled && 'Dropzone-cavity--disabled',
+              dropZoneCavityClassName
             )}
           >
             {files.map((file, index) => (

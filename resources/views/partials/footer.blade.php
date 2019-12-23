@@ -14,7 +14,8 @@
       setUser:noop, //Set a user one time
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
-      onbr:()=>window.rzpQ,
+      onbr:()=>window.rzpQ, 
+      merchantActions:()=>window.rzpQ,
       productOnboarding: function() {
         return window.rzpQ;
       }
@@ -35,7 +36,7 @@
 
     if(window.analytics){
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj','taboola'],
+          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
           {
             ga: 'UA-53341507-2',
             fb: '697927486977350',
@@ -69,7 +70,15 @@
               propertyName:'event_group',
               value:'product-onboarding'
           }],
-        })
+          'merchantActions':[
+            { propertyName:'event_type',
+                value:'merchant_dashboard'
+            },
+            {
+                propertyName:'event_group',
+                value:'merchant_actions'
+            }]
+        });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
 

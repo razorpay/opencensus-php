@@ -10,6 +10,7 @@ import PowerDropdown from './PowerDropdown';
 import EnumList from './EnumList';
 import CurrencySelect from './CurrencySelect';
 import TextareaAutoResize from './TextareaAutoResize';
+import CurrencyInput from './CurrencyInput';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -649,5 +650,7 @@ Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
 Field.DateTime = DateTime;
 Field.CurrencySelect = CurrencySelect;
+Field.CurrencyInput = CurrencyInput;
+Field.DateTime = DateTime;
 
 Field.TextareaAutoResize = TextareaAutoResize;

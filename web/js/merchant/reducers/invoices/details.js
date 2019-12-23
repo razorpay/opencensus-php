@@ -34,7 +34,11 @@ export const fetchInvoice = id => {
     type: INVOICE_FETCH,
 
     // Expand fetches payments details and user details in this api
-    payload: invoice.fetch(id, {}, { expand: ['payments', 'user'] }),
+    payload: invoice.fetch(
+      id,
+      {},
+      { expand: ['payments', 'user', 'reminder_status'] }
+    ),
   };
 };
 

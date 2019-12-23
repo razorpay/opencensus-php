@@ -14,7 +14,7 @@ import Commission from 'merchant/models/Commission';
 import Team from 'merchant/models/Team';
 import Invitation from 'merchant/models/Invitation';
 
-import AuthLink from 'merchant/models/AuthLink';
+import RegistrationLink from 'merchant/models/RegistrationLink';
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -153,9 +153,11 @@ export const fetchSubmerchants = params =>
   fetchAll(params, Submerchant, 'SUB_MERCHANTS');
 export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
 
-export const fetchAuthLinks = params =>
-  fetchAll(params, AuthLink, 'AUTH_LINKS');
-export const authLinksReducer = makeActionCollectionReducer('AUTH_LINKS');
+export const fetchRegistrationLinks = params =>
+  fetchAll(params, RegistrationLink, 'REGISTRATION_LINKS');
+export const registrationLinksReducer = makeActionCollectionReducer(
+  'REGISTRATION_LINKS'
+);
 
 export const fetchTokens = params => fetchAll(params, Token, 'TOKENS');
 export const tokensReducer = makeActionCollectionReducer('TOKENS');

@@ -1,0 +1,142 @@
+import { connect } from 'react-redux';
+import ModalHeader from 'common/ui/ModalHeader';
+import Button from 'common/new-ui/Button';
+import Input from 'common/new-ui/Input';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { closeModal } from 'merchant_common/reducers/modals';
+import PreviewEmbedButton from './PreviewEmbedButton';
+import {
+  trackCreateButtonSizeSelection,
+  trackCreateButtonCancel,
+} from '../../../ga';
+
+const BTN_SIZES = ['Large', 'Medium', 'Small'];
+
+@connect(
+  state => ({
+    config: state.config.config,
+  }),
+  { closeModal }
+)
+export default class extends React.Component {
+  state = { btnSize: '0', btnLabel: 'Pay Now' };
+
+  updateButtonText = e => {
+    this.setState({
+      btnLabel: e.target.value,
+    });
+  };
+
+  updateButtonSize = e => {
+    this.setState({
+      btnSize: e.target.value,
+    });
+  };
+
+  get merchantThemeColor() {
+    return this.props.config.brand_color;
+  }
+
+  render() {
+    const { shortUrl, closeModal } = this.props;
+    const { btnLabel, btnSize } = this.state;
+    const el = document.getElementById('embed-btn-preview');
+
+    /* Embed Button */
+
+    const scriptURL = 'https://cdn.razorpay.com/static/embed_btn/bundle.js';
+    const buttonClass = 'razorpay-embed-btn';
+    const scriptTagID = 'razorpay-embed-btn-js';
+
+    const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
+      this.state.btnLabel
+    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
+      btnSize
+    ].toLowerCase()}">
+  <script>
+    (function(){
+      var d=document; var x=!d.getElementById('${scriptTagID}')
+      if(x){ var s=d.createElement('script'); s.defer=!0;s.id='${scriptTagID}';
+      s.src='${scriptURL}';d.body.appendChild(s);} else{var rzp=window['__rzp__'];
+      rzp && rzp.init && rzp.init()}})();
+  </script>
+</div>
+    `;
+
+    return (
+      <div>
+        <ModalHeader
+          title="Create Payment Button"
+          onCloseClick={() => {
+            closeModal();
+            trackCreateButtonCancel();
+          }}
+        />
+
+        <div class="modal-body embed-button-form" style={{ paddingTop: 0 }}>
+          <div class="ModalForm ModalForm--Share">
+            <Input
+              label="What will the button say?"
+              className="Input--vTop"
+              placeholder="Enter button text"
+              onChange={this.updateButtonText}
+              value={btnLabel}
+              autoFocus
+            />
+            <Input.Radio
+              label="Button size"
+              options={BTN_SIZES}
+              className="Input--vTop"
+              value={btnSize}
+              onChange={this.updateButtonSize}
+            />
+            <div className="Input Input--vTop Input--radio">
+              <div class="Input-label">Preview</div>
+              <PreviewEmbedButton
+                url={shortUrl}
+                btnSize={btnSize}
+                btnLabel={btnLabel}
+              />
+            </div>
+            <Input.Textarea
+              id="code-copier"
+              label={() => (
+                <div>
+                  HTML Code
+                  <div class="description">
+                    Copy & Paste this HTML in your code
+                    <CustomClipboard value={embedBtnCode}>
+                      <button
+                        class="btn btn-link btn-xs"
+                        onClick={() =>
+                          trackCreateButtonSizeSelection(BTN_SIZES[btnSize])
+                        }
+                      >
+                        <i class="i i-copy" style={{ marginRight: 4 }} />
+                        Copy
+                      </button>
+                    </CustomClipboard>
+                  </div>
+                </div>
+              )}
+              class="Input--vTop"
+              value={embedBtnCode.trim()}
+              readOnly
+            />
+
+            <br />
+            <Button.Primary
+              class="btn-block"
+              onClick={() => {
+                closeModal();
+                trackCreateButtonCancel();
+              }}
+            >
+              Done
+            </Button.Primary>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}

@@ -13,7 +13,7 @@ import {
   amountValidation,
   isPartialPayment,
   RefundType,
-} from 'merchant/containers/Payments/RefundModal';
+} from 'merchant/views/Transactions/Payments/components/RefundModal';
 import {
   fetchTransfer,
   fetchReversals,

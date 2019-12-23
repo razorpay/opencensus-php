@@ -19,10 +19,11 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
+import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'common/new-ui/Button';
-import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
+import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
@@ -130,6 +131,10 @@ class AnalyticsDesktop extends Component {
               : ''
           }`}
         >
+          {/* nps banner */}
+          {user.isNPSSurveyBannerEnabled &&
+            user.isAccepted && <NPSAnnouncement user={user} />}
+
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
@@ -199,16 +204,18 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
-                    <Button.Secondary
-                      class="settle-btn"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
+                    <ShowWhen myRole="owner admin finance">
+                      <Button.Secondary
+                        class="settle-btn"
+                        onClick={this.showOndemandSettlementForm}
+                        disabled={
+                          current_balance.loading ||
+                          current_balance.data.balance < 100
+                        }
+                      >
+                        Settle Now
+                      </Button.Secondary>
+                    </ShowWhen>
                   ) : (
                     <Link className="pull-right" to="/settlements">
                       <span

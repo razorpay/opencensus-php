@@ -11,6 +11,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 
 @withRouter
 @connect(
@@ -61,6 +62,11 @@ export default class BaseScreen extends React.Component {
   };
 
   onCompleteClick = () => {
+    triggerHotjarRecording('partner_onboarding_success');
+    fireAnalyticsEvents({
+      fbData: 'partner_activation_complete',
+      liData: 1668324,
+    });
     this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
     });
@@ -69,6 +75,19 @@ export default class BaseScreen extends React.Component {
   onNotIntrestedClick = () => {
     this.closeTransaction('merchant/partner-intent', { partner_intent: false });
   };
+
+  handleCloseClick = () => {
+    triggerHotjarRecording('partner_onboarding_cancelled');
+    this.props.closeModal();
+  };
+
+  handleNewUserGetStarted = () => {
+    fireAnalyticsEvents({
+      fbData: 'partner_activation_started',
+      liData: 1668340,
+    });
+  };
+
   render() {
     return (
       <div className="partner-onboarding-base-screen">
@@ -76,14 +95,20 @@ export default class BaseScreen extends React.Component {
           {!this.props.disableClose
             ? sliderProps => <S0 key={0} sliderProps={sliderProps} />
             : null}
-          {sliderProps => <S1 key={1} sliderProps={sliderProps} />}
+          {sliderProps => (
+            <S1
+              key={1}
+              sliderProps={sliderProps}
+              onNext={this.handleNewUserGetStarted}
+            />
+          )}
           {sliderProps => (
             <S2
               key={2}
               sliderProps={sliderProps}
               onRoleSelect={this.onRoleSelect}
               role={this.state.role}
-              abort={this.props.closeModal}
+              abort={this.handleCloseClick}
             />
           )}
           {sliderProps => (
@@ -98,7 +123,7 @@ export default class BaseScreen extends React.Component {
           <button
             type="button"
             class="close"
-            onClick={this.props.closeModal}
+            onClick={this.handleCloseClick}
             style={{ position: 'absolute', top: '20px', right: '20px' }}
           >
             <i class="i i-close" />
@@ -106,5 +131,12 @@ export default class BaseScreen extends React.Component {
         )}
       </div>
     );
+  }
+}
+
+function triggerHotjarRecording(trigger) {
+  if (window && typeof window.hj === 'function') {
+    window.hj('trigger', trigger);
+    window.hj('tagRecording', [trigger]);
   }
 }

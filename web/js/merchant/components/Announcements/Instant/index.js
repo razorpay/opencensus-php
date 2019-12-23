@@ -58,7 +58,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <React.Fragment>
               The central databse seems to be down, we couldn't verify you PAN
-              details. <span class="big-dot-separator" />{' '}
+              details. Please try again in a couple of minutes.{' '}
+              <span class="big-dot-separator" />{' '}
               <Link
                 to="/activation?auto-submit=l1-form"
                 onClick={() => {
@@ -96,10 +97,12 @@ export default class InstantActivationAnnouncements extends Component {
       }
     } else {
       if (user.isAccepted) {
-        theme = 'success';
-        title = 'Settlements Enabled';
-        content =
-          'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
+        if (!user.isNPSSurveyBannerEnabled) {
+          theme = 'success';
+          title = 'Settlements Enabled';
+          content =
+            'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
+        } else return null;
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
 
@@ -109,8 +112,15 @@ export default class InstantActivationAnnouncements extends Component {
             'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
         } else {
           title = 'KYC Clarification';
-          content =
-            'Your KYC details require further clarification. We have reached out to you seeking more information. Please check your email for details.';
+          content = (
+            <React.Fragment>
+              Your KYC details require further clarification. We have reached
+              out to you seeking more information. Please check your email for
+              details.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Review details</Link>
+            </React.Fragment>
+          );
         }
       } else {
         title = 'KYC under review';

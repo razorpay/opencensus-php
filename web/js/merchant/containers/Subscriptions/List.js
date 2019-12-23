@@ -10,7 +10,7 @@ import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions'
 
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+import CopyLink from 'merchant/components/CopyLink';
 import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';

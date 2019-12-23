@@ -151,16 +151,16 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Instant Settlements!',
-            'description' => 'Get your payments settled on the same working day! Avoid cash-flow issues and prepare better for working capital needs.',
-            'start_ts'    => 1569329294,
+            'title'       => 'Enable Daily Settlements',
+            'description' => 'Get your payments settled on the same working day automatically! Avoid cash-flow issues and prepare better for working capital needs.',
+            'start_ts'    => 1573187366,
             'end_ts'      => 1577791088,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/early-settlement.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Settle Now',
-                    'url'   => '/settlements#settlenow',
+                    'label' => 'Enable Daily Settlements',
+                    'url'   => '/settlements#automaticsettle',
                 ],
             ],
             'filters'     => [

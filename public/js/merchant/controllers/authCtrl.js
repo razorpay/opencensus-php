@@ -92,6 +92,7 @@ app
       // signup state container
       var email = $location.search().email;
       var role = $location.search().r;
+      var referral_code = $location.search().referral_code;
       try {
         email = atob(decodeURIComponent(email));
       } catch (e) {
@@ -120,7 +121,7 @@ app
         details: {
           business_type: {
             1: {
-              name: 'Not Yet Registered',
+              name: 'Not Registered',
               value: 11,
             },
             // 2: {
@@ -308,6 +309,20 @@ app
           },
         });
 
+        if ($scope.signup.settings.partner_intent) {
+          window.rzpAnalytics({
+            name: 'facebook',
+            event: 'partner_signup_start',
+          });
+
+          window.rzpAnalytics({
+            name: 'linkedIn',
+            value: {
+              conversionId: '1668332',
+            },
+          });
+        }
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -493,6 +508,9 @@ app
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
+        if (Boolean(referral_code)) {
+          $scope.signup.merchantData['referral_code'] = referral_code;
+        }
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -514,11 +532,6 @@ app
 
             window.rzpAnalytics({
               name: 'facebook',
-              event: 'signup_complete',
-            });
-
-            window.rzpAnalytics({
-              name: 'taboola',
               event: 'signup_complete',
             });
 
@@ -810,6 +823,20 @@ app
               mode: $scope.eventsMode,
             })
         );
+
+        if ($scope.signup.settings.partner_intent) {
+          window.rzpAnalytics({
+            name: 'facebook',
+            event: 'partner_signup_complete',
+          });
+
+          window.rzpAnalytics({
+            name: 'linkedIn',
+            value: {
+              conversionId: '1668316',
+            },
+          });
+        }
       };
 
       $scope.onCreateClick = function() {

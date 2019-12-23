@@ -21,9 +21,10 @@ import * as ConfigActions from 'merchant/reducers/config';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import AddGST from 'merchant/containers/Profile/AddGST';
+import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
   updateMerchantLiveTransactionFlag,
@@ -241,7 +242,6 @@ export default class App extends Component {
   fetchSupportedCurrencies() {
     return merchantFetch('currency/all/proxy');
   }
-
   setLiveTransactionDone = ({ live_transaction_done, id }) => {
     if (live_transaction_done === undefined) return;
 
@@ -255,6 +255,10 @@ export default class App extends Component {
                 eventAction: 'Login',
                 eventLabel: 'MTU-Funnel',
               })();
+              fireAnalyticsEvents({
+                fbData: 'live_mtu_funnel',
+                liData: 1668428,
+              });
             }
           })
           .catch(err => {});
@@ -265,6 +269,11 @@ export default class App extends Component {
           eventAction: 'Login',
           eventLabel: 'MTU-Audience',
         })();
+        fireAnalyticsEvents({
+          fbData: 'live_mtu_audience',
+          liData: 1668436,
+        });
+        break;
     }
   };
 
