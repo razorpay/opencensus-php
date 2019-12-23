@@ -24,8 +24,13 @@ class Constants
     const VOTER_ID_FRONT         = 'voter_id_front';
     const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
 
-    // penny testing constants
+    // Email constants
+    const MERCHANT             = 'merchant';
+    const ORG                  = 'org';
+    const HOSTNAME             = 'hostname';
+    const CLARIFICATION_REASON = 'clarification_reason';
 
+    // penny testing constants
     const MERCHANT_ID                                   = 'merchant_id';
     const ACCOUNT_STATUS                                = 'account_status';
     const REGISTERED_NAME                               = 'registered_name';

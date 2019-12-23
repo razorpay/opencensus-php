@@ -20,6 +20,7 @@ class Core extends Merchant\Core
      * @param Merchant\Entity $parentMerchant
      *
      * @return Entity
+     * @throws \Throwable
      */
     public function createLinkedAccount(array $input, Merchant\Entity $parentMerchant): Entity
     {
