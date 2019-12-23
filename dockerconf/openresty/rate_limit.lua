@@ -16,6 +16,7 @@ local redis_conf = {
     timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 1000,
     host        = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
     port        = os.getenv("RESTY_REDIS_PORT") or 6379,
+    password    = os.getenv("RESTY_REDIS_PASSWORD") or nil,
     max_idle_ms = os.getenv("RESTY_REDIS_MAX_IDLE_MS") or 10000,
     pool_size   = os.getenv("RESTY_REDIS_POOL_SIZE") or 100,
 }
@@ -23,8 +24,17 @@ local redis_conf = {
 -- get_redis_conn gets a new connection from redis pool of connections.
 local function get_redis_conn()
     local redis = redis_lib:new()
-    redis:set_timeouts(redis_conf.timeout_ms, redis_conf.timeout_ms, redis_conf.timeout_ms)
+    redis:set_timeout(redis_conf.timeout_ms)
     local ok, err = redis:connect(redis_conf.host, redis_conf.port)
+    if err then
+        return nil, "failed to connect to redis host: " .. err
+    end
+    if redis_conf.password ~= nil then
+        local res, err = redis:auth(redis_conf.password)
+        if err then
+            return nil, "failed to authenticate to redis host: " .. err
+        end
+    end
     return redis, err
 end
 
@@ -104,7 +114,7 @@ local function get_rate_limit_args(redis, req_ctx)
         else
             local res, err = redis:get(redis_key_prefix .. "km:" .. req_ctx.user)
             if err then
-                return nil, "failed to get key<>mid mapping from redis:" .. err
+                return nil, "failed to get key<>mid mapping from redis: " .. err
             end
             if res == ngx.null then
                 return nil, "key<>mid mapping does not exists"
@@ -124,7 +134,7 @@ local function get_rate_limit_args(redis, req_ctx)
     redis:hgetall(redis_key_prefix .. mid)
     local raw_res, err = redis:commit_pipeline()
     if err then
-        return nil, "failed to get settings from redis" .. err
+        return nil, "failed to get settings from redis: " .. err
     end
 
     -- Formats redis response in settings key<>value pair for ease use further.

@@ -20,7 +20,7 @@ log_format openresty-api escape=json
 server {
     listen 80;
    
-   {% set qa = ['perf', 'func','automation'] %}
+    {% set qa = ['perf', 'func','automation'] %}
     {% if env in qa  %}
         server_name {{ env }}-api.stage.razorpay.in {{ env }}-invoices.stage.razorpay.in;
     {% elif env == 'echo' %}
@@ -31,17 +31,13 @@ server {
         server_name api.razorpay.com invoices.razorpay.com;
     {% endif %}
 
-
     location / {
         access_by_lua_block {
             local lib = require 'rate_limit'
             lib.rate_limit_ngx(ngx)
         }
+
         proxy_pass http://localhost:8080;
-        proxy_buffering off;
-        #need to check this number with devops
-        proxy_connect_timeout   600;
-        proxy_read_timeout      600;
     }
 
     access_log /dev/stdout openresty-api
