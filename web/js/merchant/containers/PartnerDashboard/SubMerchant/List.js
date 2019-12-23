@@ -255,13 +255,19 @@ export default class SubMerchantsList extends ListContainer {
               <div>
                 <HeaderAction>
                   <>
-                    <button
-                      class="btn btn-link"
-                      onClick={this.handleShareReferralLink}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isPartner() && user.isPartner('reseller')
+                      }
                     >
-                      <i className="i i-share" />
-                      <span> Share Referral Link</span>
-                    </button>
+                      <button
+                        class="btn btn-link"
+                        onClick={this.handleShareReferralLink}
+                      >
+                        <i className="i i-share" />
+                        <span> Share Referral Link</span>
+                      </button>
+                    </ShowWhen>
                     <button
                       class="btn btn-default"
                       onClick={this.onDownload}
@@ -357,40 +363,47 @@ export default class SubMerchantsList extends ListContainer {
                             </button>
                           </div>
                         </div>
-                        <div>
+                        <ShowWhen
+                          additionalCondition={user =>
+                            user.isPartner() && user.isPartner('reseller')
+                          }
+                        >
                           <div>
-                            <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                            <div>
+                              <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                            </div>
+                            <p>
+                              Share the <strong>invite link</strong> on social
+                              media
+                            </p>
+
+                            <div
+                              class="social-share-btn-grp"
+                              style={{ paddingTop: '20px' }}
+                            >
+                              <CustomClipboard value={this.state.referralUrl}>
+                                <button
+                                  class="btn btn-primary pull-right m-l"
+                                  onClick={() => {}}
+                                >
+                                  <i class="i i-link line-height-9" /> Copy Link
+                                </button>
+                              </CustomClipboard>
+                              <img
+                                src="/dist/css/assets/onboarding/facebook.png"
+                                onClick={() => this.shareReferralOn('fb')}
+                              />
+                              <img
+                                src="/dist/css/assets/onboarding/twitter.png"
+                                onClick={() => this.shareReferralOn('twitter')}
+                              />
+                              <img
+                                src="/dist/css/assets/onboarding/whatsapp.png"
+                                onClick={() => this.shareReferralOn('whatsapp')}
+                              />
+                            </div>
                           </div>
-                          <p>
-                            Share the <strong>invite link</strong> on social
-                            media
-                          </p>
-                          <div
-                            class="social-share-btn-grp"
-                            style={{ paddingTop: '20px' }}
-                          >
-                            <CustomClipboard value={this.state.referralUrl}>
-                              <button
-                                class="btn btn-primary pull-right m-l"
-                                onClick={() => {}}
-                              >
-                                <i class="i i-link line-height-9" /> Copy Link
-                              </button>
-                            </CustomClipboard>
-                            <img
-                              src="/dist/css/assets/onboarding/facebook.png"
-                              onClick={() => this.shareReferralOn('fb')}
-                            />
-                            <img
-                              src="/dist/css/assets/onboarding/twitter.png"
-                              onClick={() => this.shareReferralOn('twitter')}
-                            />
-                            <img
-                              src="/dist/css/assets/onboarding/whatsapp.png"
-                              onClick={() => this.shareReferralOn('whatsapp')}
-                            />
-                          </div>
-                        </div>
+                        </ShowWhen>
                       </div>
                     </div>
                   </div>
