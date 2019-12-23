@@ -5,9 +5,9 @@ namespace RZP\Models\Merchant\Account;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
-use RZP\Trace\TraceCode;
 
 class Response extends Core
 {
@@ -23,8 +23,8 @@ class Response extends Core
             Constants::BUSINESS_ENTITY => $accountDetails->getBusinessType(),
             Constants::LEGAL_ENTITY_ID => $account->getLegalEntityId(),
             Constants::EMAIL           => $account->getEmail(),
-            Constants::REVIEW_STATUS   => $this->getReviewStatusData($account, $accountDetails),
-            Constants::PROFILE         => $this->getProfileData($account, $accountDetails),
+            Constants::REVIEW_STATUS   => $this->getReviewStatusData($account),
+            Constants::PROFILE         => $this->getProfileData($account),
             Constants::PAYMENT         => $this->getPaymentData($account),
             Constants::CREATED_AT      => $account->getCreatedAt(),
         ];
@@ -68,8 +68,10 @@ class Response extends Core
         return $data;
     }
 
-    protected function getReviewStatusData(Merchant\Entity $account, Detail\Entity $accountDetails): array
+    protected function getReviewStatusData(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
         $data = [
             Constants::CURRENT_STATE => [
                 Constants::STATUS             => $account->getAccountStatus(),
@@ -89,11 +91,11 @@ class Response extends Core
         // if activation form is not yet submitted
         if (empty($activationStatus) === true)
         {
-            $data[Constants::REQUIREMENTS] = $this->getRequirementsDataBeforeSubmission($accountDetails);
+            $data[Constants::REQUIREMENTS] = $this->getRequirementsDataBeforeSubmission($account);
         }
         else if ($activationStatus === Detail\Status::NEEDS_CLARIFICATION)
         {
-            $data[Constants::REQUIREMENTS] = $this->getRequirementsWhenNeedsClarification($accountDetails);
+            $data[Constants::REQUIREMENTS] = $this->getRequirementsWhenNeedsClarification($account);
         }
         else
         {
@@ -103,8 +105,10 @@ class Response extends Core
         return $data;
     }
 
-    protected function getRequirementsDataBeforeSubmission(Detail\Entity $accountDetails): array
+    protected function getRequirementsDataBeforeSubmission(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
         $response = (new Detail\Core)->createResponse($accountDetails);
 
         $requirements = [];
@@ -142,8 +146,10 @@ class Response extends Core
         return $requirements;
     }
 
-    protected function getRequirementsWhenNeedsClarification(Detail\Entity $accountDetails): array
+    protected function getRequirementsWhenNeedsClarification(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
         $reasons = $accountDetails->getKycClarificationReasons();
 
         if (empty($reasons) === true)
@@ -181,8 +187,10 @@ class Response extends Core
         return $requirements;
     }
 
-    protected function getProfileData(Merchant\Entity $account, Detail\Entity $accountDetails): array
+    protected function getProfileData(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
         $data = [
             Constants::ADDRESSES         => $this->getAddressesData($account, $accountDetails),
             Constants::NAME              => $account->getName(),
@@ -305,7 +313,7 @@ class Response extends Core
 
         $status = Constants::PENDING_VERIFICATION;
 
-        if (empty($bankAccount) === false)
+        if (($this->mode === Mode::LIVE) and (empty($bankAccount) === false))
         {
             $bankAccountArray = [
                 Constants::ID             => $bankAccount->getPublicId(),

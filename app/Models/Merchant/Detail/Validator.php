@@ -55,18 +55,23 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS     => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS_L2  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
@@ -114,6 +119,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $editRules = [
@@ -126,6 +133,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -199,12 +207,14 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::COUPON_CODE                     => 'filled|string|max:10',
-        Entity::REFERRAL_CODE                   => 'filled|string|max:14',
+        Entity::REFERRAL_CODE                   => 'filled|string',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
@@ -274,6 +284,10 @@ class Validator extends Base\Validator
 
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+    ];
+
+    protected static $additionalWebsitesRules = [
+        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
     ];
 
     protected static $patchMerchantDetailsRules = [

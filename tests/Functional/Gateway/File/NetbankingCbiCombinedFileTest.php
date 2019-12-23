@@ -8,18 +8,17 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Gateway\Mozart\NetbankingCbi\RefundFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NetbankingCbiCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -55,8 +54,18 @@ class NetbankingCbiCombinedFileTest extends TestCase
         // full refund
         $refundFull   = $this->refundPayment($payment1['id']);
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         //partial refund
         $refundPartial   = $this->refundPayment($payment2['id'], 500);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Cbi refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 

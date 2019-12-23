@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -16,6 +17,7 @@ use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 class NetbankingIciciRefundFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -37,6 +39,13 @@ class NetbankingIciciRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Icici refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -106,6 +115,8 @@ class NetbankingIciciRefundFileTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
 
         $this->fixtures->create('terminal:direct_settlement_refund_icici_terminal');
@@ -115,6 +126,14 @@ class NetbankingIciciRefundFileTest extends TestCase
         $payment = $this->doAuthPayment($payment);
 
         $this->refundPayment($payment['razorpay_payment_id']);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Icici refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 

@@ -13,6 +13,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
@@ -353,7 +354,24 @@ class FundTransfer extends Base
 
         $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
 
-        $this->updateSource($ftsTransferId);
+        try
+        {
+            $this->updateSource($this->fta);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_FUND_TRANSFER_SOURCE_UPDATE_FAILED,
+                [
+                    'fta_id'            => $this->fta->getId(),
+                    'source'            => $this->source->getId(),
+                    'status'            => $status,
+                    'failure_reason'    => $failureReason,
+                    'fts_transfer_id'   => $ftsTransferId,
+                ]);
+        }
     }
 
 //    /**
@@ -379,19 +397,26 @@ class FundTransfer extends Base
 //    }
 
     /**
-     * @param $ftsTransferId
+     * @param FundTransferAttempt\Entity $fta
      */
-    protected function updateSource($ftsTransferId)
+    protected function updateSource(FundTransferAttempt\Entity $fta)
     {
-        $sourceCoreClass = Entity::getEntityNamespace($this->source->getEntity()) . '\\Core';
+        $source = $fta->source;
+
+        $sourceCoreClass = Entity::getEntityNamespace($source->getEntity()) . '\\Core';
 
         $sourceCore = new $sourceCoreClass();
 
-        $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+        $sourceCore->updateEntityWithFtsTransferId($source, $fta->getFTSTransferId());
 
         if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
         {
-            $sourceCore->updateStatusAfterFtaInitiated($this->source, $this->fta);
+            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+        }
+
+        if ($fta->getStatus() === FundTransferAttempt\Status::FAILED)
+        {
+            (new FundTransferAttempt\Core)->updateSourceEntityByFta($fta);
         }
     }
 
@@ -585,11 +610,6 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
-        if ($mode === Mode::UPI)
-        {
-            return [false, 'Upi not supported'];
-        }
-
         $allowedModes = Mode::get24x7FtsTransferModes();
 
         if (in_array($mode, $allowedModes, true) === true)
@@ -622,7 +642,7 @@ class FundTransfer extends Base
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes(15)->getTimestamp());
             }
 
             return true;
@@ -635,7 +655,7 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
                                         ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,

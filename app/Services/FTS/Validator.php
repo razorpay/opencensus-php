@@ -16,11 +16,10 @@ class Validator extends Base\Validator
         'channel'          => 'filled|string|required|in:yesbank,icici,citi',
         'credentials'      => 'required|array',
         'mozartIdentifier' => 'filled|string|required|in:V1,V2',
-
+        'sourceAccountType'=> 'filled|string|required|in:current,nodal'
     ];
 
     protected static $deleteSourceAccountRules = [
-        'product'          => 'filled|string|required|in:PAYOUT,REFUND,PAYOUT_REFUND,SETTLEMENT,PENNY_TESTING',
-        'fund_account_id'  => 'filled|required|integer'
+        'source_account_id'  => 'filled|required|integer'
     ];
 }

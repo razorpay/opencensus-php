@@ -106,7 +106,6 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->assertEquals('authorized', $updatedPayment['status']);
     }
 
-
     public function testFailedUpiSbiReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
@@ -136,7 +135,7 @@ class UpiSbiGatewayReconTest extends TestCase
             $this->assertNull($transaction['reconciled_at']);
         }
 
-        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     private function assertUpiEntityChanged()

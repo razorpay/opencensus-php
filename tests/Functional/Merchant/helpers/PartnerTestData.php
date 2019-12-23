@@ -973,6 +973,7 @@ return [
                 'email'             => 'user@example.com',
                 'id'                => '10000000000009',
                 'activation_status' => 'under_review',
+                'merchant_id'       => ['10000000000009'],
             ],
         ],
         'response' => [

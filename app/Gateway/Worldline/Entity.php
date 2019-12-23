@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const TXN_CURRENCY     = 'txn_currency';
     const AGGREGATOR_ID    = 'aggregator_id';
     const TRANSACTION_TYPE = 'transaction_type';
+    const GATEWAY_UTR      = 'gateway_utr';
 
     protected $entity = 'worldline';
 
@@ -26,6 +27,7 @@ class Entity extends Base\Entity
         self::TXN_AMOUNT,
         self::AUTH_CODE,
         self::REF_NO,
+        self::GATEWAY_UTR,
         self::TRANSACTION_TYPE,
         self::BANK_CODE,
         self::AGGREGATOR_ID,
@@ -42,5 +44,15 @@ class Entity extends Base\Entity
     public function setCurrency($currency)
     {
         $this->setAttribute(self::TXN_CURRENCY, $currency);
+    }
+
+    public function setAuthCode($authCode)
+    {
+        $this->setAttribute(self::AUTH_CODE, $authCode);
+    }
+
+    public function setGatewayUtr($utr)
+    {
+        $this->setAttribute(self::GATEWAY_UTR, $utr);
     }
 }

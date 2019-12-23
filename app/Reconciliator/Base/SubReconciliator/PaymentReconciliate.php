@@ -13,6 +13,7 @@ use RZP\Reconciliator\Base;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -62,6 +63,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB_V2,
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
+        RequestProcessor\Base::GETSIMPL,
     ];
 
     /**
@@ -111,6 +113,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * If force authorize is enabled, we do not make gateway call and mark payments as authorized.
      */
     protected $allowForceAuthorization = false;
+
+    /**
+     * For some gateway we will revalidate the payment id if do not find that in Payment Table.
+     * 1. This is required because gateways by default consider 14 char id to be payment id.
+     * 2. We do not want to put unnecessary check on any 14 char id.
+     * 3. Once gateway checks if validated or not, we will not revalidate
+     *
+     * @var bool
+     */
+    protected $isPaymentIdRevalidatedOnGateway;
 
     public function __construct(string $gateway = null, Entity $batch = null)
     {
@@ -392,6 +404,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED,
                         'message'    => 'Recon status is failed, but authorized_at is set in API',
                         'payment_id' => $this->payment->getId(),
                         'gateway'    => $this->gateway
@@ -825,10 +838,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             return null;
         }
 
-        $referenceNumber = $this->getReferenceNumber($row);
-
-        $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
-
         $this->setPaymentAndTransaction($row, $paymentId);
 
         //If payment is not found, dont throw. mark it as Unprocessed. returning null will do that.
@@ -842,6 +851,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
         //
         $this->setAllowForceAuthorization($this->payment);
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -915,6 +928,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function setPaymentAndTransaction($row, $paymentId)
     {
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ID_NOT_AS_EXPECTED);
+
+            return null;
+        }
+
         try
         {
             $this->payment = null; //For every row $this->payment should be initialized to null.
@@ -940,16 +960,80 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
+            $validatedPaymentId = $this->revalidatePaymentId($row, $paymentId);
+
+            if (empty($validatedPaymentId) === false)
+            {
+                return $this->setPaymentAndTransaction($row, $validatedPaymentId);
+            }
+
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);
 
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
-                    'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
+                    'message'    => 'Payment not found in DB. -> ' . $ex->getCode(),
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
+        }
+    }
+
+    /**
+     * Will return payment id if gateway has implementation
+     * @param $row
+     * @param $paymentId
+     * @return |null
+     */
+    protected function revalidatePaymentId($row, $paymentId)
+    {
+        if ($this->isPaymentIdRevalidatedOnGateway === true)
+        {
+            return null;
+        }
+
+        $paymentId = $this->revalidatePaymentIdOnGateway($row, $paymentId);
+
+        $this->isPaymentIdRevalidatedOnGateway = true;
+
+        return $paymentId;
+    }
+
+    protected function revalidatePaymentIdOnGateway($row, $paymentId)
+    {
+        // We can first by default check for QrCode if Gateway is Qr Code Enabled
+        $gateways = Payment\Gateway::$upiQrGateways;
+
+        // It will either return Sting or false
+        $terminalGateway = array_search($this->gateway, RequestProcessor\Base::GATEWAY_NAME_MAPPING, true);
+
+        // `false` will not be in $gateways
+        if (in_array($terminalGateway, $gateways, true) === true)
+        {
+            // For UPI QR gateways, the recon payment id will be from QrCode Entity
+            $qrCode = $this->repo->qr_code->find($paymentId);
+
+            if (empty($qrCode) === false)
+            {
+                // This is QrCode payment, the recon payment id
+                // will be saved in UPI Entity as Merchant Reference.
+                // Note : We can not use QrCode entity to find payment id rather
+                //      : we will call UPI entity to find payment, now this way
+                //      : if callback was missed for QrCode will
+                $upiEntity = $this->repo->upi->fetchByMerchantReference($paymentId);
+
+                if (empty($upiEntity) === false)
+                {
+                    return $upiEntity->getPaymentId();
+                }
+
+                // Now, there might be case where UPI Entity is not created for QrCode
+                // either because we missed callback or some exception occurred in callback
+                // TODO: In this case, we are simply not allowing recon, this will be fixed separately
+
+                return null;
+            }
         }
     }
 

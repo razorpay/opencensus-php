@@ -38,6 +38,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
 {
@@ -668,21 +669,34 @@ class Core extends Base\Core
      * Use with caution
      *
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function saveDummyActivationFiles(Merchant\Entity $merchant)
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        $params = [
-            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
-            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
-            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
-            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
-        ];
+        $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $merchantDetails->fill($params);
+        $params = [];
+        
+        foreach ($requiredDocuments as $requiredDocument)
+        {
+            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+        }
 
-        $this->repo->saveOrFail($merchantDetails);
+        //
+        // Currently only for unregistered business we save documents in new table(Merchant documents) for
+        // other business type we still save document in merchant detail table and sync both tables .
+        //
+        if ($merchantDetails->isUnregisteredBusiness() === false)
+        {
+            $merchantDetails->fill($params);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
+        (new Document\Core)->storeInMerchantDocument($merchant, $params);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -992,7 +1006,26 @@ class Core extends Base\Core
                     $rejectionReasons);
             }
 
+            if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+            {
+
+                //
+                // For Older merchant who are still in old flow ,
+                // kyc clarification will be empty in this case form should not get unlocked
+                //
+                if (empty($merchantDetails->getKycClarificationReasons()) === false)
+                {
+                    $merchantDetails->setLocked(false);
+
+                    $this->sendNeedsClarificationEmail($merchant);
+                }
+
+                $this->deactivateIfFlawedWebsite($merchant, $merchantDetails->getIssueFields());
+            }
+
             $this->repo->saveOrFail($merchantDetails);
+
+            $this->repo->saveOrFail($merchant);
 
             $stateData = [
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
@@ -1010,7 +1043,7 @@ class Core extends Base\Core
             if (empty($status) === false)
             {
                 $eventPayload = [
-                    ApiEventSubscriber::MAIN => $merchantDetails->merchant,
+                    ApiEventSubscriber::MAIN => $merchant,
                 ];
 
                 $event = 'api.account.' . $status;
@@ -1033,6 +1066,53 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    /**
+     * @param $merchant
+     */
+    public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = New Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
+
+        $data = [
+            DEConstants::MERCHANT             => [
+                Merchant\Entity::NAME          => $merchant->getName(),
+                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Merchant\Entity::EMAIL         => $merchant->getEmail(),
+                DEConstants::ORG               => [
+                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
+                ]
+            ],
+            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+        ];
+
+        $email = new ClarificationEmail($data, $org->toArray());
+
+        Mail::queue($email);
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string|null     $issueFields
+     */
+    public function deactivateIfFlawedWebsite(Merchant\Entity $merchant, string $issueFields = null)
+    {
+        $issueFieldsArray = explode(',', $issueFields) ?? [];
+
+        if (in_array(Entity::BUSINESS_WEBSITE, $issueFieldsArray) === true)
+        {
+            $domain = (new Merchant\TLDExtract())->getEffectiveTLDPlusOne($merchant->getWebsite());
+
+            (new Merchant\Core)->removeDomainFromWhitelistedDomain($merchant, $domain);
+        }
+    }
+
     public function setBankAccountForMerchant(Merchant\Entity $merchant)
     {
         $bankCore = (new BankAccount\Core);
@@ -1045,9 +1125,12 @@ class Core extends Base\Core
 
     /**
      * Triggers workflow when activation status is changed to rejected
+     *
      * @param Entity $oldMerchantDetails
      * @param Entity $newMerchantDetails
-     * @param array $rejectionReasons
+     * @param array  $rejectionReasons
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionActivationStatusChange(
         Entity $oldMerchantDetails,
@@ -1096,7 +1179,18 @@ class Core extends Base\Core
             TraceCode::MERCHANT_UPDATE_WEBSITE_DETAILS,
             ['input' => $input]);
 
+        $originalMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->edit($input);
+
+        $dirtyMerchantDetails = $merchantDetails;
+
+        if ($merchantDetails->getActivationStatus() === Status::ACTIVATED)
+        {
+            $this->app['workflow']
+                ->setEntityAndId($originalMerchantDetails->getEntity(), $originalMerchantDetails->getMerchantId())
+                ->handle($originalMerchantDetails, $dirtyMerchantDetails);
+        }
 
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
         {
@@ -1116,7 +1210,6 @@ class Core extends Base\Core
             $response[Merchant\Entity::HAS_KEY_ACCESS] = $merchant->getHasKeyAccess();
 
             return $response;
-
         });
     }
 
@@ -1535,8 +1628,15 @@ class Core extends Base\Core
             return;
         }
 
-        // if bank detail is already verified then skip penny testing
-        if ($merchantDetails->isBankDetailStatusVerified() === true)
+        //
+        // if bank detail is already attempted then skip penny testing and send to manual queue .
+        //
+        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        if($this->shouldSkipBankAccountRegistration() == true)
         {
             return;
         }
@@ -1644,5 +1744,112 @@ class Core extends Base\Core
                 $requiredFields[] = $requiredDocumentField;
             }
         }
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     * @param array  $input
+     *
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function addAdditionalWebsiteDetails(Entity $merchantDetails, array $input)
+    {
+        $merchantDetails->getValidator()->validateInput('additionalWebsites', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ADD_ADDITIONAL_WEBSITE_DETAILS,
+            ['input' => $input]);
+
+        $merchant = $merchantDetails->merchant;
+
+        if ((empty($merchantDetails->getWebsite()) === true) and
+            (empty($merchantDetails->getAdditionalWebsites()) === true))
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
+                [
+                    'Additional_website' => $input[Entity::ADDITIONAL_WEBSITE],
+                    'has_key_access'     => $merchant->getHasKeyAccess()
+                ]);
+
+            $merchant->setHasKeyAccess(true);
+        }
+
+        $merchantCore = new Merchant\Core();
+
+        $merchantDetailsInput = $this->addAdditionalWebsites($input[Entity::ADDITIONAL_WEBSITE], $merchantDetails);
+
+        $merchantDetails->edit($merchantDetailsInput);
+
+        $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($input[Entity::ADDITIONAL_WEBSITE]);
+
+        $merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $merchant) {
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $this->repo->saveOrFail($merchant);
+
+            $response = [];
+
+            $response[Entity::ADDITIONAL_WEBSITES] = $merchantDetails->getAdditionalWebsites();
+
+            return $response;
+        });
+    }
+
+    /**
+     * @param string $website
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    protected function addAdditionalWebsites(string $website, Entity $merchantDetails)
+    {
+        $businessWebsite = $merchantDetails->getWebsite();
+
+        $additionalWebsites = $merchantDetails->getAdditionalWebsites() ?? [];
+
+        $merchantDetailsInput = [];
+
+        if (($website !== $businessWebsite) and
+            (in_array($website, $additionalWebsites) === false))
+        {
+            array_push($additionalWebsites, $website);
+
+            $merchantDetailsInput[Entity::ADDITIONAL_WEBSITES] = $additionalWebsites;
+        }
+
+        return $merchantDetailsInput;
+    }
+
+    /**
+     * Returns required document for L2 submission
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    private function getRequireActivationDocuments(Entity $merchantDetails): array
+    {
+        $response = $this->createResponse($merchantDetails);
+
+        $requiredFields = $response[DEConstants::VERIFICATION][DEConstants::REQUIRED_FIELDS] ?? [];
+
+        $requiredDocuments = [];
+
+        foreach ($requiredFields as $requiredField)
+        {
+            $documentFields = ValidationFields::getDocumentsRequired($requiredField);
+
+            if (empty($documentFields) === false)
+            {
+                $requiredDocuments = array_merge_recursive($requiredDocuments, $documentFields);
+            }
+        }
+
+        return $requiredDocuments;
     }
 }

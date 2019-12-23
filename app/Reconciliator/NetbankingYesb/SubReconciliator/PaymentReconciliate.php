@@ -25,10 +25,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED ,
+                    'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED,
                     'payment_id' => $row[ReconFields::PAYMENT_ID] ?? null,
                     'gateway'    => $this->gateway
                 ]);
+
+            $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::MIS_FILE_PAYMENT_FAILED);
 
             return null;
         }

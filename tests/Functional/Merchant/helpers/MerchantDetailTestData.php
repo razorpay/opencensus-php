@@ -253,6 +253,12 @@ return [
                         RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
                     ],
                 ],
+                RejectionReasons::PROHIBITED_BUSINESSES => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::IMPROPER_DOCUMENTATION,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::IMPROPER_DOCUMENTATION_DESCRIPTION,
+                    ],
+                ],
             ],
         ],
     ],
@@ -766,6 +772,25 @@ return [
                 'department'         => '7',
                 'contact_mobile'     => null,
                 'role'               => null,
+            ],
+        ],
+    ],
+
+    'testPutPreSignupDetailsForUnregisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'  => '11',
+                'contact_name'   => 'I am untegistered',
+                'contact_mobile' => '8722627189',
             ],
         ],
     ],
@@ -1284,6 +1309,23 @@ return [
                     'reason_code' => 'provide_poc',
                 ]],
             ],
+        ],
+    ],
+
+    'testAdditionalWebsite' => [
+        'request'  => [
+            'content' => [
+                'additional_website' => 'https://example.com',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'additional_websites' => [
+                    'https://example.com',
+                ]
+            ],
+            'status_code' => 200,
         ],
     ],
 

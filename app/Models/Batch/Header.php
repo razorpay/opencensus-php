@@ -508,6 +508,25 @@ class Header
     const ENTITY_FROM_TYPE     = 'entity_from_type';
     const ENTITY_TO_TYPE       = 'entity_to_type';
 
+
+    // Admin Entity Headers
+    const ADMIN_ID            = 'admin_id';
+    const EMAIL               = 'email';
+    const NAME                = 'name';
+    const USERNAME            = 'username';
+    const PASSWORD            = 'password';
+    const USER_TYPE           = 'user_type';
+    const EMPLOYEE_CODE       = 'employee_code';
+    const BRANCH_CODE         = 'branch_code';
+    const DEPARTMENT_CODE     = 'department_code';
+    const SUPERVISOR_CODE     = 'supervisor_code';
+    const LOCATION_CODE       = 'location_code';
+    const GROUPS              = 'groups';
+    const ROLES              = 'roles';
+    const DISABLED            = 'disabled';
+    const LOCKED              = 'locked';
+    const ALLOW_ALL_MERCHANTS = 'allow_all_merchants';
+
     //
     // Auth Link Headers
     //
@@ -2379,7 +2398,21 @@ class Header
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
             ]
-        ]
+        ],
+
+        Type::ADMIN_BATCH => [
+            self::INPUT => [
+                self::ADMIN_ID,
+            ],
+
+            self::OUTPUT => [
+                self::ADMIN_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
     ];
 
     /**
@@ -2435,6 +2468,10 @@ class Header
             $actualHeaders = [];
         }
 
+        if ($type === Type::ADMIN_BATCH)
+        {
+            $expectedHeaders [] = self::validateAdminBatchHeader($actualHeaders);
+        }
 
         if ($type === Type::MPAN)
         {
@@ -2459,10 +2496,28 @@ class Header
                 ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
                 null,
                 [
-                    'expected_headers'  => $expectedHeaders,
-                    'input_headers'     => $actualHeaders,
+                    'expected_headers' => $expectedHeaders,
+                    'input_headers'    => $actualHeaders,
                 ]);
         }
+    }
+
+    protected static function validateAdminBatchHeader($actualHeaders)
+    {
+        $validInputArray = ['allow_all_merchants'];
+
+        $expectedHeaders = '';
+
+        foreach ($validInputArray as $attribute)
+        {
+            if ((in_array($attribute, $actualHeaders, true) === true))
+            {
+                $expectedHeaders = $attribute;
+
+            }
+        }
+
+        return $expectedHeaders;
     }
 
     /**

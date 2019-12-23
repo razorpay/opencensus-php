@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Sbi\RefundFile;
 use RZP\Models\Base\PublicCollection;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class UpiSbi extends Base
 {
@@ -24,15 +25,49 @@ class UpiSbi extends Base
     const GATEWAY         = Payment\Gateway::UPI_SBI;
     const BEAM_FILE_TYPE  = 'refund';
 
-    public function fetchEntities(): PublicCollection
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
+        //
+        // Regular flow - fetching refunds from API DB
+        //
 
         $refunds = $this->repo->refund->findBetweenTimestampsForGateway($begin, $end, static::GATEWAY);
 
         return $refunds;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
     }
 
     protected function formatDataForFile(array $data)

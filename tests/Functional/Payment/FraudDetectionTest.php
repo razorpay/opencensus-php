@@ -200,6 +200,46 @@ class FraudDetectionTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testAllowByShieldWithHighRiskScore()
+    {
+        $this->mockShield();
+
+        $this->mockRazorx();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5149067611060906';
+
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD,
+            $riskEntity['reason']
+        );
+    }
+
     /*
      * In this test case, we simulate a failure to detect fraud on Shield(validateFraudDetectionV2).
      * In this case, we still want a fraud check to happen via Maxmind(validateFraudDetection)
@@ -296,5 +336,87 @@ class FraudDetectionTest extends TestCase
 
                         return 'shield_off';
                     }));
+    }
+
+    protected function runPlatformTest($platform, $value)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        // Bootstrap to call shield code
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        if ($platform !== null)
+        {
+            $payment['_'] = ['platform' => $platform];
+        }
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($value) {
+                return [
+                    "action" => (($payload['input']['platform'] === $value) ? 'allow': 'block'),
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    /*
+     * In these 6 tests we are trying to check if the parameter platform is getting passed
+     * to the shield service correctly or not.
+     *
+     * For that we have created a payment and mocked razorx and shield client.
+     *
+     * Then for each value of platform we would block the payment if the platform value
+     * in the received payload doesn't match the actual platform value which we passed.
+     *
+     * This ensures the correct testing of this parameter in the actual payment flow
+     * upto and after the shield client has been used.
+     *
+     * The only reason for separate tests is that binding mock services to app can occur only
+     * once in a test, and we had to create different mock services for different parameters.
+     */
+
+    public function testFraudDetectionWithPlatformNull()
+    {
+        $this->runPlatformTest(null, null);
+    }
+
+    public function testFraudDetectionWithPlatformBrowser()
+    {
+        $this->runPlatformTest('browser', 'browser');
+    }
+
+    public function testFraudDetectionWithPlatformMobileSdk()
+    {
+        $this->runPlatformTest('mobile_sdk', 'mobile_sdk');
+    }
+
+    public function testFraudDetectionWithPlatformCordova()
+    {
+        $this->runPlatformTest('cordova', 'cordova');
+    }
+
+    public function testFraudDetectionWithPlatformServer()
+    {
+        $this->runPlatformTest('server', 'server');
+    }
+
+    public function testFraudDetectionWithPlatformRandom()
+    {
+        $this->runPlatformTest('xyz', 'others');
     }
 }

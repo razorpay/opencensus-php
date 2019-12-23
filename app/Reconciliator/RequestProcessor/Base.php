@@ -107,6 +107,7 @@ class Base extends Core
     const PHONEPE                = 'Phonepe';
     const PAYPAL                 = 'Paypal';
     const BAJAJFINSERV           = 'BajajFinserv';
+    const GETSIMPL               = 'Getsimpl';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -181,7 +182,8 @@ class Base extends Core
     const GATEWAY_CRAWLERS = [
         self::NETBANKING_BOB_V2     => Gateway::NETBANKING_BOB_V2,
         self::NETBANKING_CUB        => Gateway::NETBANKING_CUB,
-        self::PAYPAL                => Gateway::WALLET_PAYPAL
+        self::PAYPAL                => Gateway::WALLET_PAYPAL,
+        self::GETSIMPL              => Gateway::GETSIMPL,
     ];
 
     /**
@@ -267,6 +269,7 @@ class Base extends Core
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
         Gateway::WALLET_PHONEPE         => self::PHONEPE,
         Gateway::WALLET_PAYPAL          => self::PAYPAL,
+        Gateway::GETSIMPL               => self::GETSIMPL,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],

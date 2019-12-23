@@ -152,7 +152,14 @@ class Generator extends Base\Core
             return;
         }
 
-        $localFilePath = $this->generateQrCodeImage();
+        if ($this->qrCode->getProvider() === VirtualAccount\Provider::UPI_QR)
+        {
+            $localFilePath = $this->generateUpiQrCodeImage();
+        }
+        else
+        {
+            $localFilePath = $this->generateQrCodeImage();
+        }
 
         $ext = self::QR_CODE_EXTENSION;
 
@@ -188,6 +195,37 @@ class Generator extends Base\Core
 
         imagecopymerge($logoImage, $qrCodeImage, 30, 200, 0, 0,
                 Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT, 100);
+
+        imagejpeg($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
+
+        return $localFilePath;
+    }
+
+    protected function generateUpiQrCodeImage()
+    {
+        $renderer = new Renderer\Image\Png;
+
+        $renderer->setMargin(0);
+
+        $renderer->setHeight(240);
+
+        $renderer->setWidth(240);
+
+        $writer = new Writer($renderer);
+
+        $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.' . self::QR_CODE_EXTENSION;
+
+        $qrCodeString = $writer->writeString($this->qrCode->getQrString());
+
+        $logoImage = imagecreatefromjpeg(public_path().'/img/upi_qr.jpg');
+
+        $qrCodeImage = imagecreatefromstring($qrCodeString);
+
+        imagecopymerge($logoImage, $qrCodeImage, 100, 180, 0, 0, 240, 240, 100);
 
         imagejpeg($logoImage, $localFilePath);
 

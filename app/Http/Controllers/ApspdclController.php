@@ -21,7 +21,21 @@ class ApspdclController extends Controller
         $method = Request::method();
         $input = Request::all();
         $headers         = ['Content-Type' => 'application/json'];
-        $apspdclEndpoint = config('services.apspdcl.base_url') . '/' . $path;
+
+        //In case of content and apspdcl endpoint is not present in payload, then continue the current flow
+        if (isset($input['url']) === true)
+        {
+            $apspdclEndpoint = $input['url'];
+            $inputParam      = $input['content'];
+        }
+        else
+        {
+            /*
+             * To handle the existing flow added this condition. this happens when route is called from old flow
+             */
+            $apspdclEndpoint = config('services.apspdcl.base_url') . '/' . $path;
+            $inputParam      = $input;
+        }
 
         $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('apspdclEndpoint', 'headers', 'input', 'method'));
 
@@ -32,7 +46,7 @@ class ApspdclController extends Controller
 
         try
         {
-            $resp        = Requests::request($apspdclEndpoint, $headers, json_encode($input), $method);
+            $resp        = Requests::request($apspdclEndpoint, $headers, json_encode($inputParam), $method);
             $respCode    = $resp->status_code;
             $respBody    = $resp->body;
             $respHeaders = $resp->headers->getAll();

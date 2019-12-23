@@ -733,6 +733,53 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
     }
 
+    // MIS row with trans_status as 'PENDING CREDIT'
+    public function testVirtualAccYesBankPendingCreditReconFile()
+    {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        // Change the row trans_status to Pending Credit
+        $entries[0][VirtualAccYesBank::COLUMN_TRANS_STATUS]  = 'PENDING CREDIT';
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc_code']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($transaction['reconciled_type']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
+    }
+
     public function testVirtualAccYesBankReconFileWithWrongValues()
     {
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
@@ -1869,6 +1916,56 @@ class ReconciliationFileTest extends TestCase
 
         // set the payment status to 'failed' and try to reconcile it with force authorize
         $this->fixtures->edit('payment', $gatewayPayment1['payment_id'], ['status' => Payment\Status::FAILED]);
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($updatedPayment['status'], Payment\Status::FAILED);
+
+        $this->runForFiles([$file], 'Hitachi', [], [$payment['id']]);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
+
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // For payments being routed via Card Payment Service
+    public function testHitachiForceAuthorizeFailedCpsPayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment['reference2']]);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        // set the payment cps_route to 2 and status to 'failed' and
+        // try to reconcile it with force authorize
+        $this->fixtures->edit(
+            'payment',
+            $gatewayPayment1['payment_id'],
+            [
+                'status'    => Payment\Status::FAILED,
+                'cps_route' => 2,
+            ]);
 
         $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
 
