@@ -16,8 +16,8 @@ import OrderDetails from 'merchant/views/Transactions/Orders/Details';
 import VirtualAccountEntity from 'merchant/containers/VirtualAccounts/Entity';
 import VirtualAccountCreate from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
 
-import OffersNew from 'views/Offers/New';
-import OfferEntity from 'views/Offers/Entity';
+import OffersNew from 'merchant/views/Offers/New';
+import OfferEntity from 'merchant/views/Offers/Entity';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
