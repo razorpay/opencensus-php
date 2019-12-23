@@ -594,6 +594,7 @@ class Entity extends Base\PublicEntity
             self::ISSUER          => $this->getAttribute(self::ISSUER),
             self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
             self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
+            self::TYPE            => $this->getAttribute(self::TYPE),
         ];
 
         //
