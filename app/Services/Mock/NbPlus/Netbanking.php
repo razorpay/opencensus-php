@@ -64,18 +64,6 @@ class Netbanking extends NetbankingBase
         ];
     }
 
-    protected function authorizeFailed($input)
-    {
-        return [
-            'data' => [
-                'gateway_success' => true,
-                'acquirer' => [
-                    'reference1' => '1234'
-                ],
-            ]
-        ];
-    }
-
     public function content(& $content, $action = '')
     {
         return $content;
