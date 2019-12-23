@@ -5550,3 +5550,8 @@ ALTER TABLE merchant_details
 
 ALTER TABLE banking_accounts
     ADD COLUMN last_statement_attempt_at INT UNSIGNED DEFAULT NULL AFTER  `updated_at`;
+
+// Already ran on production.
+ALTER TABLE `terminals`
+    CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
+    CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;

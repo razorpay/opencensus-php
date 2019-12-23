@@ -542,7 +542,15 @@ class GatewayController extends Controller
 
         $input['payment'] = $payment;
 
-        return (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+
+        if ($input['token'] === 'Test_Token')
+        {
+            return $data;
+        }
+        assertTrue ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function callbackYesbank()

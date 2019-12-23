@@ -63,6 +63,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB_V2,
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
+        RequestProcessor\Base::GETSIMPL,
     ];
 
     /**
@@ -959,11 +960,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            $paymentId = $this->revalidatePaymentId($row, $paymentId);
+            $validatedPaymentId = $this->revalidatePaymentId($row, $paymentId);
 
-            if (empty($paymentId) === false)
+            if (empty($validatedPaymentId) === false)
             {
-                return $this->setPaymentAndTransaction($row, $paymentId);
+                return $this->setPaymentAndTransaction($row, $validatedPaymentId);
             }
 
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);

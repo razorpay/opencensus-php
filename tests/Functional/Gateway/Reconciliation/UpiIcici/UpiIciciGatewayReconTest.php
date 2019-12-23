@@ -205,6 +205,10 @@ class UpiIciciGatewayReconTest extends TestCase
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNotNull($transaction['reconciled_at']);
+
+            $upi = $this->getDbLastEntity('upi');
+
+            $this->assertEquals($upi['npci_reference_id'], '734122607521');
         }
 
         $this->assertBatchStatus(Status::PROCESSED);
