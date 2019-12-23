@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Base;
+use RZP\Models\Payout\Mode;
 
 class Validator extends Base\Validator
 {
@@ -20,12 +21,10 @@ class Validator extends Base\Validator
     const GENERATE_OTP                     = 'generate_otp';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
     const SETTINGS_RULE                    = 'settings';
-    const UPI                              = 'upi';
-    const IMPS                             = 'imps';
 
     protected static $settingsRules = [
-        self::UPI  => 'sometimes|boolean|filled',
-        self::IMPS => 'sometimes|boolean|filled',
+        Mode::UPI  => 'sometimes|boolean|filled',
+        Mode::IMPS => 'sometimes|boolean|filled',
     ];
 
     protected static $addFundAccountRules = [

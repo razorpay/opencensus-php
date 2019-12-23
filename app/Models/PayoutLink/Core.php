@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Mode;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
@@ -34,14 +35,12 @@ class Core extends Base\Core
     const API_POUT_LNK_SCR        = 'api.pout_l';
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
-    const TWO_LACS                = '200000000';
+    const TWO_LACS                =  20000000;
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
     const ACTIVE                  = 'active';
     const MUTEX_TIMEOUT           = 60;
-    const IMPS                    = 'IMPS';
-    const NEFT                    = 'NEFT';
-    const UPI                     = 'UPI';
+
 
     protected $elfin;
 
@@ -166,7 +165,7 @@ class Core extends Base\Core
         // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         return $this->mutex->acquireAndRelease(
-            $payoutLinkId,
+            $payoutLinkId . time(),
             function() use ($payoutLinkId, $input)
             {
                 return $this->repo->transaction(
@@ -267,19 +266,19 @@ class Core extends Base\Core
         switch ($fundAccount->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                $isImpsEnabled = $settingsAccessor->get(self::IMPS);
+                $isImpsEnabled = $settingsAccessor->get(Entity::IMPS);
 
-                if (($isImpsEnabled === 1) and
-                     ($amount < self::TWO_LACS))
+                if (($isImpsEnabled == true) and
+                    ($amount < self::TWO_LACS))
                 {
-                    return self::IMPS;
+                    return Mode::IMPS;
                 }
                 else
                 {
-                    return self::NEFT;
+                    return Mode::NEFT;
                 }
             case Type::VPA:
-                return self::UPI;
+                return Mode::UPI;
         }
     }
 

@@ -747,8 +747,8 @@ return [
             'method'  => 'POST',
             'url'     => '/payout-links/10000000000000/settings',
             'content' => [
-                'upi'  => 1,
-                'imps' => 1,
+                'UPI'  => 1,
+                'IMPS' => 1,
             ]
         ],
         'response'  => [
@@ -757,4 +757,51 @@ return [
             ]
         ]
     ],
+
+    'testUpiPayoutModeWhenVpaFundAccountAdded' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'account_type' => 'vpa',
+                'vpa'          => [
+                    'address' => 'test@okhdfcbank'
+                ],
+                'token'        => 'random token string'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+    ]],
+
+    'testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'account_type'    => 'bank_account',
+                'fund_account_id' => '100000000003fa',
+                'token'           => 'random token string'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]],
+
+    'testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'account_type'    => 'bank_account',
+                'fund_account_id' => '100000000003fa',
+                'token'           => 'random token string'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]]
 ];

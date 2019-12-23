@@ -788,15 +788,98 @@ class PayoutLinkTest extends TestCase
 
         $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
 
-        $this->assertEquals($settingAccessor->get('imps') , 1);
+        $this->assertEquals($settingAccessor->get(Payout\Mode::IMPS) , 1);
 
-        $this->assertEquals($settingAccessor->get('upi') , 1);
+        $this->assertEquals($settingAccessor->get(Payout\Mode::UPI) , 1);
     }
 
-    //todo, pl  test that settings module takes on upi and imps
-    // todo, pl test that when imps is on but amount is more than 2 lacs, then NEFT is returned
-    // todo, pl test that when imps is enabled and amount is less than 2 lacs, then IMPS is returned
-    // todo, pl test that when VPA, UPI is enabled
+    public function testUpiPayoutModeWhenVpaFundAccountAdded()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+        $merchant = $this->contact->merchant;
+
+        //enable UPI
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert(Payout\Mode::UPI , 1);
+
+        $this->startTest();
+
+        $payoutLink->refresh();
+
+        $this->assertEquals(Payout\Mode::UPI, $payoutLink->payouts()->first()->getMode());
+    }
+
+    public function testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId(),
+                                                  'amount'     => '100000'
+                                              ]);
+        $merchant = $this->contact->merchant;
+
+        //enable IMPS
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert(Payout\Mode::IMPS , true)->save();
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->startTest();
+
+        $payoutLink->refresh();
+
+        $this->assertEquals(Payout\Mode::IMPS, $payoutLink->payouts()->first()->getMode());
+    }
+
+    public function testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs()
+    {
+        $this->mockRedisSuccess();
+
+        $this->bankingBalance->balance = '300000000';
+
+        $this->bankingBalance->save();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId(),
+                                                  'amount'     => 30000000
+                                              ]);
+        $merchant = $this->contact->merchant;
+
+        //enable IMPS
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert('IMPS' , true)->save();
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->startTest();
+
+        $payoutLink->refresh();
+
+        $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
+    }
 
     protected function mockRedisSuccess()
     {

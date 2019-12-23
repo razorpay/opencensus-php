@@ -46,6 +46,9 @@ class Entity extends Base\PublicEntity
     const CONTEXT              = 'context';
     const OTP                  = 'otp';
     const TOKEN                = 'token';
+    const IMPS                 = 'IMPS';
+    const NEFT                 = 'NEFT';
+    const UPI                  = 'UPI';
 
     protected $generateIdOnCreate = true;
 
