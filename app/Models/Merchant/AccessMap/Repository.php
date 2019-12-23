@@ -143,20 +143,4 @@ class Repository extends Base\Repository
 
         return $subMerchantIds;
     }
-
-    /**
-     * returns the entries where merchant Id belongs to given owner IDs
-     *
-     * @param string $merchantId
-     * @param array $partnerList
-     *
-     * @return Base\PublicCollection
-     */
-    public function fetchMerchantsMappedToPartnerList(string $merchantId, array $partnerList): Base\PublicCollection
-    {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->whereIn(Entity::ENTITY_OWNER_ID, $partnerList)
-                    ->get();
-    }
 }

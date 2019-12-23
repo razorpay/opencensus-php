@@ -199,13 +199,6 @@ class Preferences
         self::MID_IPAY,
     ];
 
-    /**
-     * List of partner merchant who has settlement aggregation
-     */
-    const AGGREGATE_SETTLEMENT_PARTNER_MERCHANT = [
-        '100000Razorpay',
-    ];
-
     const X_AGGREGATOR_HEADER = 'x-aggregator';
 
     //

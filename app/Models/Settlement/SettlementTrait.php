@@ -18,6 +18,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 use RZP\Constants\SettlementChannelMedium as Medium;
@@ -1301,9 +1302,7 @@ trait SettlementTrait
     {
         $merchantList = $this->repo
                              ->merchant_access_map
-                             ->fetchMerchantsMappedToPartnerList(
-                                 $merchantId,
-                                 Merchant\Preferences::AGGREGATE_SETTLEMENT_PARTNER_MERCHANT);
+                             ->fetchAffiliatedPartnersForSubmerchant($merchantId);
 
         //
         // if the list is empty then there is not partner to settle to
@@ -1315,6 +1314,19 @@ trait SettlementTrait
             return null;
         }
 
-        return $merchantList->first()->getEntityOwnerId();
+        $parentMerchantID = $merchantList->first()
+                                         ->getEntityOwnerId();
+
+        //
+        // check if the parent is enabled with aggregate settlement feature
+        //
+        $feature = $this->repo
+                        ->feature
+                        ->findByEntityTypeEntityIdAndName(
+                            EntityConstant::MERCHANT,
+                            $parentMerchantID,
+                            Feature\Constants::AGGREGATE_SETTLEMENT);
+
+        return ($feature === null) ? null : $parentMerchantID;
     }
 }
