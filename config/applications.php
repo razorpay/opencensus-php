@@ -374,7 +374,9 @@ return [
     'doppler' => [
         'mock'      => env('DOPPLER_MOCK'),
         'topic'     => env('DOPPLER_SNS_TOPIC'),
-        'url'       => env('DOPPLER_LIVE_URL')
+        'url'       => env('DOPPLER_LIVE_URL'),
+        'key'       => env('DOPPLER_KEY'),
+        'secret'    => env('DOPPLER_API_SECRET')
     ],
 
     'non_blocking_http' => [

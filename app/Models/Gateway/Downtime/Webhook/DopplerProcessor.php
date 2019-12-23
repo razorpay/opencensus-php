@@ -11,8 +11,8 @@ use RZP\Models\Gateway\Downtime\ReasonCode;
 
 class DopplerProcessor implements ProcessorInterface
 {
-    const STATUS_UP = 'up';
-    const STATUS_DOWN = 'down';
+    const STATUS_UP = 'UP';
+    const STATUS_DOWN = 'DOWN';
 
     protected $app;
 
@@ -106,15 +106,14 @@ class DopplerProcessor implements ProcessorInterface
             {
                 return $this->resolveDowntime($data);
             }
-
-            return [];
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e);
+
+            return $e;
         }
 
-        return [];
     }
 
     private function buildInput(array $input)
