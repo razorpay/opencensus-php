@@ -748,7 +748,7 @@ return [
             'url'     => '/payout-links/10000000000000/settings',
             'content' => [
                 'upi'  => 1,
-                'imps' => 0,
+                'imps' => 1,
             ]
         ],
         'response'  => [

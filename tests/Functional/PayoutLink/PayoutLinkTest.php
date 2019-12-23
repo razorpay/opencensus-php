@@ -780,8 +780,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkSettingsApiSuccess()
     {
-        dd($this->getDbEntities('admin_token'));
-
         $this->ba->adminAuth();
 
         $this->startTest();
