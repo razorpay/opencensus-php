@@ -9,7 +9,14 @@ class TLDExtract
 
     public function getEffectiveTLDPlusOne(string $url)
     {
+        if (empty($url) === true)
+        {
+            return null;
+        }
+
         $host = parse_url($url, PHP_URL_HOST);
+
+        $host = strtolower($host);
 
         list($registeredDomain, $tld) = $this->extract($host);
 
