@@ -15,7 +15,7 @@ use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 
-class Service
+abstract class Service
 {
     const CONTENT_TYPE_HEADER      = 'Content-Type';
     const ACCEPT_HEADER            = 'Accept';
@@ -176,7 +176,6 @@ class Service
             {
                 $content = json_encode($request['content']);
             }
-            sd($request);
 
             $response = $this->request->request(
                 $request['url'],
@@ -193,25 +192,6 @@ class Service
         }
 
         return $response;
-    }
-
-    protected function processResponse($response, $method)
-    {
-        $code = $response->status_code;
-
-        $responseBody = $this->jsonToArray($response->body);
-
-        if ($this->action === self::AUTHORIZE_FAILED)
-        {
-            return $this->processAuthorizeFailedFlow($responseBody);
-        }
-
-        if ($this->isSuccessResponse($code, $responseBody) and ($this->action === self::VERIFY))
-        {
-            return $this->processVerifyResponse($responseBody);
-        }
-
-        return $responseBody;
     }
 
     protected function traceResponse($response)
@@ -257,43 +237,6 @@ class Service
 
     // ----------------------- Verify ---------------------------------------------
 
-    protected function processVerifyResponse($response)
-    {
-        $verify = $this->verifyPayment($response);
-
-        return $verify->getDataToTrace();
-    }
-
-    protected function processAuthorizeFailedFlow($response)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verifyPayment($response);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-                [
-                    'message'    => 'Payment verification failed. Now converting to authorized',
-                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID]
-                ]);
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not',
-                null,
-                $this->input[Entity::PAYMENT]);
-        }
-
-        return $response;
-    }
-
     protected function verifyPayment($response)
     {
         $verify = new Verify($this->gateway, []);
@@ -328,23 +271,6 @@ class Service
         }
 
         return $verify;
-    }
-
-    protected function checkApiSuccess(Verify &$verify)
-    {
-        $verify->apiSuccess = true;
-
-        // If payment status is either failed or created, this is an api failure
-        if (($this->input[Entity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($this->input[Entity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
-    protected function checkGatewaySuccess(Verify &$verify)
-    {
-        $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
     }
 
     // ----------------------- Error ---------------------------------------------
@@ -486,4 +412,12 @@ class Service
 
         return $class;
     }
+
+    // ----------------------- Abstract functions ---------------------------------------------
+
+    abstract protected function processResponse($response, $method);
+
+    abstract protected function checkApiSuccess(Verify &$verify);
+
+    abstract protected function checkGatewaySuccess(Verify &$verify);
 }
