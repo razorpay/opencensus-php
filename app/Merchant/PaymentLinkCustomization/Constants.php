@@ -9,43 +9,12 @@ class Constants
 
     const DEFAULT_EXPIRY = [
         self::BHARTI_AXA => 72,
-        self::TEST_MID => 72
     ];
 
     const EXTRA_FORM_FIELDS = [
         self::BHARTI_AXA => [
             [
                 'name' => 'extra_field_1', // Should be unique
-                'label' => 'Product',
-                'fieldType' => 'Select',
-                'required' => true,
-                'options' => [
-                    [
-                        'label' => '--Select--',
-                        'value' => ''
-                    ],
-                    [
-                        'label' => 'Car',
-                        'value' => 'Car'
-                    ],
-                    [
-                        'label' => 'Health',
-                        'value' => 'Health'
-                    ],
-                    [
-                        'label' => 'Travel',
-                        'value' => 'Travel'
-                    ]
-                ],
-                'addAt' => [
-                    'fieldName' => 'description',
-                    'as' => 'prefix'
-                ]
-            ]
-        ],
-        self::TEST_MID => [
-            [
-                'name' => 'extra_field_1',
                 'label' => 'Product',
                 'fieldType' => 'Select',
                 'required' => true,
@@ -96,22 +65,11 @@ class Constants
                 'label' => 'Policy/Vehicle Registration  Number',
                 'placeholder' => ''
             ]
-        ],
-        self::TEST_MID => [
-            'receipt' => [
-                'label' => 'Reference Number',
-                'placeholder' => ''
-            ],
-            'description' => [
-                'label' => 'Policy/Vehicle Registration  Number',
-                'placeholder' => ''
-            ]
         ]
     ];
 
     const ENABLE_CUSTOMER_NAME_FIELD = [
         self::BHARTI_AXA => true,
-        self::TEST_MID => true
     ];
 
     public static function getDefaultExpiryTimeForPaymentLinksByMID($mid)
