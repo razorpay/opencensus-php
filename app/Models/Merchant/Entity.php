@@ -1139,6 +1139,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function inheritanceChildren()
+    {
+
+    }
+
+    public function inheritanceParent()
+    {
+
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);

@@ -5291,7 +5291,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testSetResourceParent()
+    public function testSetInheritanceParent()
     {        
         $this->ba->adminAuth();
 
@@ -5299,21 +5299,23 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/' . $submerchant['id'] . '/resource_parent';
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/' . $submerchant['id'] . '/inheritance_parent';
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'id'    =>  '10000000000000'
         ];
 
         $a = $this->startTest();
-        
-        $this->assertEquals($a['id'], '10000000000000');
+
+        $this->assertEquals($a['merchant_id'], $submerchant['id']);
+
+        $this->assertEquals($a['parent_merchant_id'], '10000000000000');
 
         $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
 
-        $this->assertEquals($merchantInheritanceMap['merchant_id'], '10000000000000');
+        $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], '10000000000000');
 
-        $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], $submerchant['id']);
+        $this->assertEquals($merchantInheritanceMap['merchant_id'], $submerchant['id']);
     }
 
     protected function enableRazorXTreatmentForRazorX()

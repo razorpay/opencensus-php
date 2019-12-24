@@ -5358,10 +5358,10 @@ return [
         ],
     ],
 
-    'testSetResourceParent'     =>  [
+    'testSetInheritanceParent'     =>  [
         'request'   => [
             'method'    => 'POST',
-            'url'       => '/merchant/{id}/resource_parent',
+            'url'       => '/merchant/{id}/inheritance_parent',
             'content'   =>  [
                 'id'    =>  'parents_id'
             ]

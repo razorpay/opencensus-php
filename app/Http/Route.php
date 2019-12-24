@@ -1388,11 +1388,10 @@ final class Route
         //route to add additional website through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
 
-        // resource parent for config inheritance
-        'resource_parent_fetch'                   => ['get',       'merchant/{id}/resource_parent',                             'MerchantController@getResourceParent'                      ],
-        'resource_parent_set'                     => ['post',      'merchant/{id}/resource_parent',                             'MerchantController@postResourceParent'                     ],
-        'resource_parent_delete'                  => ['delete',    'merchant/{id}/resource_parent',                             'MerchantController@deleteResourceParent'                   ],
-        
+        // merchant config inheritance
+        'inheritance_parent_fetch'                => ['get',       'merchant/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
+        'inheritance_parent_set'                  => ['post',      'merchant/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
+        'inheritance_parent_delete'               => ['delete',    'merchant/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
     ];
 
     public static $public = [
@@ -2666,9 +2665,9 @@ final class Route
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
 
-        'resource_parent_fetch',
-        'resource_parent_set',
-        'resource_parent_delete',
+        'inheritance_parent_fetch',
+        'inheritance_parent_set',
+        'inheritance_parent_delete',
     ];
 
     public static $routePermission = [
@@ -3211,12 +3210,12 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
+        'inheritance_parent_fetch'                  =>  '*',
+        'inheritance_parent_set'                    =>  '*',
+        'inheritance_parent_delete'                 =>  '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
-
-        'resource_parent_fetch'                     =>  '*',
-        'resource_parent_set'                       =>  '*',
-        'resource_parent_delete'                    =>  '*',
     ];
 
     public static $direct = [

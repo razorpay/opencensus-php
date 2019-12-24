@@ -13,9 +13,9 @@ class Service extends Base\Service
 
         $parentMerchant = $this->repo->merchant->findOrFailPublic($parentMerchantId);
         
-        $this->core()->create($merchant, $parentMerchant);
-
-        return $parentMerchant;
+        $inheritanceMap = $this->core()->create($merchant, $parentMerchant);
+        
+        return $inheritanceMap;
     }
 
 }

@@ -8,21 +8,21 @@ use RZP\Models\Merchant;
 class Core extends Base\Core
 {
     public function create(
-        Merchant\Entity $parentMerchant,
-        Merchant\Entity $merchant
+        Merchant\Entity $merchant,
+        Merchant\Entity $parentMerchant
        )
     {
-        $resourceMapping = (new Entity)->build();
+        $inheritanceMapping = (new Entity)->build();
 
-        $resourceMapping->generateId();
+        $inheritanceMapping->generateId();
 
-        $resourceMapping->merchant()->associate($merchant);
+        $inheritanceMapping->merchant()->associate($merchant);
 
-        $resourceMapping->parentMerchant()->associate($parentMerchant);
+        $inheritanceMapping->parentMerchant()->associate($parentMerchant);
 
-        $this->repo->merchant_inheritance_map->saveOrFail($resourceMapping);
+        $this->repo->merchant_inheritance_map->saveOrFail($inheritanceMapping);
 
-        return $resourceMapping;
+        return $inheritanceMapping;
     }
 
 }
