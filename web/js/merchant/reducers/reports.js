@@ -1,7 +1,6 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import poll from 'common/utils/poll/longPoll';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
