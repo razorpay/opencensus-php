@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\NbPlus;
 
 use App;
 use RZP\Exception;
@@ -13,10 +13,9 @@ use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
-use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 
-class NbPlusPaymentService
+class Service
 {
     const CONTENT_TYPE_HEADER      = 'Content-Type';
     const ACCEPT_HEADER            = 'Accept';
@@ -43,14 +42,15 @@ class NbPlusPaymentService
     const VERIFY           = 'verify';
     const AUTHORIZE_FAILED = 'authorize_failed';
 
-    // admin path
-    const ADMIN_PATH = 'admin/entities/';
-
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
         self::CALLBACK,
         self::VERIFY,
         self::AUTHORIZE_FAILED
+    ];
+
+    const GATEWAY_TO_METHOD_MAP = [
+      Payment\Gateway::ATOM => Payment\Method::NETBANKING
     ];
 
     protected $baseUrl;
@@ -126,53 +126,9 @@ class NbPlusPaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
-        $this->action = $action;
+        $driver = $this->getDriver($gateway);
 
-        $this->gateway = $gateway;
-
-        $this->input = $input;
-
-        if ($this->action === self::AUTHORIZE)
-        {
-            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
-        }
-
-        if (empty($input[Entity::TERMINAL]) === false)
-        {
-            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
-        }
-
-        foreach ($input as $key => $data)
-        {
-            if ((is_object($data) === true) and ($data instanceof PublicEntity))
-            {
-                $input[$key] = $data->toArray();
-            }
-        }
-
-        $content = [
-            self::ACTION  => $action,
-            self::GATEWAY => $gateway,
-            self::INPUT   => $input
-        ];
-
-        $response = $this->sendRequest('POST', 'action/' . $action, $content);
-
-        return $response;
-    }
-
-    public function fetchMultiple(string $entityName, array $input)
-    {
-        $path = self::ADMIN_PATH . $entityName;
-
-        return $this->sendRequest('GET', $path, $input);
-    }
-
-    public function fetch(string $entityName, string $id, $input)
-    {
-        $path = self::ADMIN_PATH . $entityName . '/' . $id;
-
-        return $this->sendRequest('GET', $path, $input);
+        return $driver->action($gateway, $action, $input);
     }
 
     // TODO revisit
@@ -238,6 +194,7 @@ class NbPlusPaymentService
             {
                 $content = json_encode($request['content']);
             }
+            sd($request);
 
             $response = $this->request->request(
                 $request['url'],
@@ -254,25 +211,6 @@ class NbPlusPaymentService
         }
 
         return $response;
-    }
-
-    protected function processResponse($response, $method)
-    {
-        $code = $response->status_code;
-
-        $responseBody = $this->jsonToArray($response->body);
-
-        if ($this->action === self::AUTHORIZE_FAILED)
-        {
-            return $this->processAuthorizeFailedFlow($responseBody);
-        }
-
-        if ($this->isSuccessResponse($code, $responseBody) and ($this->action === self::VERIFY))
-        {
-            return $this->processVerifyResponse($responseBody);
-        }
-
-        return $responseBody;
     }
 
     protected function traceResponse($response)
@@ -318,43 +256,6 @@ class NbPlusPaymentService
 
     // ----------------------- Verify ---------------------------------------------
 
-    protected function processVerifyResponse($response)
-    {
-        $verify = $this->verifyPayment($response);
-
-        return $verify->getDataToTrace();
-    }
-
-    protected function processAuthorizeFailedFlow($response)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verifyPayment($response);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-                [
-                    'message'    => 'Payment verification failed. Now converting to authorized',
-                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID]
-                ]);
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not',
-                null,
-                $this->input[Entity::PAYMENT]);
-        }
-
-        return $response;
-    }
-
     protected function verifyPayment($response)
     {
         $verify = new Verify($this->gateway, []);
@@ -389,23 +290,6 @@ class NbPlusPaymentService
         }
 
         return $verify;
-    }
-
-    protected function checkApiSuccess(Verify &$verify)
-    {
-        $verify->apiSuccess = true;
-
-        // If payment status is either failed or created, this is an api failure
-        if (($this->input[Entity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($this->input[Entity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
-    protected function checkGatewaySuccess(Verify &$verify)
-    {
-        $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
     }
 
     // ----------------------- Error ---------------------------------------------
@@ -530,5 +414,21 @@ class NbPlusPaymentService
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+    protected function getDriver($gateway)
+    {
+        $method = self::GATEWAY_TO_METHOD_MAP[$gateway];
+
+        switch ($method)
+        {
+            case 'netbanking':
+                $class = new Netbanking();
+                break;
+            default:
+                throw new Exception\LogicException('Should not have reached here');
+        }
+
+        return $class;
     }
 }

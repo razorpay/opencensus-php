@@ -11,11 +11,11 @@ use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
-use RZP\Services\NbPlusPaymentService;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Services\NbPlus\Service as NbPlusPaymentService;
 
 class NbPlusPaymentServiceTest extends TestCase
 {
@@ -73,7 +73,7 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->enableNbPlusConfig();
 
-        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlusPaymentService', [$this->app])->makePartial();
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
     }

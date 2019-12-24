@@ -183,7 +183,7 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\NbPlusPaymentService();
             }
 
-            return new NbPlusPaymentService();
+            return new NbPlus\Service();
         });
 
         $this->app->singleton('card.otpelf', function($app)

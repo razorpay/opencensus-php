@@ -45,7 +45,7 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
-use RZP\Services\NbPlusPaymentService;
+use RZP\Services\NbPlus\Service as NbPlusPaymentService;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Transfer\Core as TransferCore;
 
