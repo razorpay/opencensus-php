@@ -112,8 +112,15 @@ export default class InstantActivationAnnouncements extends Component {
             'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
         } else {
           title = 'KYC Clarification';
-          content =
-            'Your KYC details require further clarification. We have reached out to you seeking more information. Please check your email for details.';
+          content = (
+            <React.Fragment>
+              Your KYC details require further clarification. We have reached
+              out to you seeking more information. Please check your email for
+              details.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Review details</Link>
+            </React.Fragment>
+          );
         }
       } else {
         title = 'KYC under review';

@@ -71,6 +71,12 @@ export default class Payment extends GenericEntity {
     });
   }
 
+  fetchUPITransfer() {
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/upi_transfer`,
+    });
+  }
+
   didDeserialize() {
     let session = this.getSession();
     this.capturableAmount = this.amount;

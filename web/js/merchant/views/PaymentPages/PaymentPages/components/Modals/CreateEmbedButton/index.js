@@ -4,14 +4,15 @@ import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { closeModal } from 'merchant_common/reducers/modals';
+import PreviewEmbedButton from './PreviewEmbedButton';
 import {
   trackCreateButtonSizeSelection,
   trackCreateButtonCancel,
-} from '../../ga';
+} from '../../../ga';
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
-@connect(state => ({}), { closeModal })
+@connect(state => ({ config: state.config.config }), { closeModal })
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
 
@@ -27,6 +28,10 @@ export default class extends React.Component {
     });
   };
 
+  get merchantThemeColor() {
+    return this.props.config.brand_color;
+  }
+
   render() {
     const { shortUrl, closeModal } = this.props;
     const { btnLabel, btnSize } = this.state;
@@ -40,7 +45,7 @@ export default class extends React.Component {
 
     const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
       this.state.btnLabel
-    }" data-color="${this.color}" data-size="${BTN_SIZES[
+    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
       btnSize
     ].toLowerCase()}">
   <script>
@@ -82,9 +87,8 @@ export default class extends React.Component {
             />
             <div className="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
-              <PreviewPaymentPageButton
+              <PreviewEmbedButton
                 url={shortUrl}
-                textClr={this.state.textClr}
                 btnSize={btnSize}
                 btnLabel={btnLabel}
               />

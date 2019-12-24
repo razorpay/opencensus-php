@@ -26,7 +26,7 @@ const S1 = props => {
           </p>
         </div>
       </div>
-      <SlideContoller sliderProps={props.sliderProps} />
+      <SlideContoller sliderProps={props.sliderProps} onNext={props.onNext} />
     </>
   );
 };

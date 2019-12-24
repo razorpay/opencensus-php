@@ -13,7 +13,7 @@ import Button from 'common/new-ui/Button';
 
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { showKYCActivationSuccessModal } from 'merchant/reducers/home';
+import { showKYCStatusModal } from 'merchant/reducers/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
@@ -40,7 +40,7 @@ const successImg = '/img/activation/submit-success.svg';
   {
     showNotification,
     updateSession,
-    showKYCActivationSuccessModal,
+    showKYCStatusModal,
   }
 )
 export default class ActivationContainer extends React.Component {
@@ -256,7 +256,7 @@ export default class ActivationContainer extends React.Component {
     this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
-  saveFile = (fieldName, file, progressTracker, destinationUrl) => {
+  saveFile = (fieldName, file, progressTracker, destinationUrl, uploadAs) => {
     const url =
       Boolean(destinationUrl) &&
       typeof destinationUrl === 'string' &&
@@ -277,13 +277,15 @@ export default class ActivationContainer extends React.Component {
       form_12a_url: 'form_12a_url',
       form_80g_url: 'form_80g_url',
     };
-    //If field name doesn't exist in mapping use document type and generice file name
-    if (!Boolean(fieldNameMapping[fieldName])) {
+    if (typeof uploadAs === 'string') {
+      fieldName = uploadAs;
+    }
+    //If field name doesn't exist in mapping use document type and generic file name
+    if (Boolean(uploadAs) || !Boolean(fieldNameMapping[fieldName])) {
       formData.append('document_type', fieldName);
       fieldName = 'file';
     }
     formData.append(fieldName, file);
-
     return merchantFetch({
       url: url,
       method: 'post',
@@ -404,7 +406,9 @@ export default class ActivationContainer extends React.Component {
         modalClass = 'Activation--success';
         content = <SuccessScreen />;
       } else {
-        this.props.showKYCActivationSuccessModal();
+        this.props.showKYCStatusModal({
+          modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
+        });
         this.props.history.replace(`/`);
         content = null;
       }

@@ -11,6 +11,11 @@ export default class DateTime extends React.Component {
     mature: this.props.mature || false,
   };
 
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+
   onDateChange = date => {
     const curSelectedDateTime = this.state.value;
 
@@ -53,9 +58,13 @@ export default class DateTime extends React.Component {
             onChange={e => {
               if (!e.target.checked) {
                 setTimeout(() => {
-                  document.querySelector('[data-name="date"]').focus();
-                  document.querySelector('[data-name="date"]').click();
+                  this.ref.current.focus();
+                  this.ref.current.click();
                 }, 10);
+
+                if (value) {
+                  this.props.onChange && this.props.onChange(value);
+                }
               } else {
                 this.props.onChange && this.props.onChange(null);
               }
@@ -88,6 +97,7 @@ export default class DateTime extends React.Component {
               allowToday={true}
               disablePastDates={true}
               required
+              ref={this.ref}
             />
             {!!value && (
               <Input.TimePicker

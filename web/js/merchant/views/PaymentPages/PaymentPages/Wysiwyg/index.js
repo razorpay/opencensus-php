@@ -12,6 +12,7 @@ import FormSection from './FormSection';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
+import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
 import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
@@ -37,6 +38,7 @@ import {
   trackConfirmWYSIWYGCloseIntent,
   trackPageSettingsClick,
   trackPageSave,
+  trackClickOnCreateEmbedButton,
 } from '../ga';
 
 const ERROR = {
@@ -250,10 +252,35 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormSection />, document.getElementById('form-section'));
   };
 
-  openPPShareView = (id, shortUrl, title, description, isEditExistingId) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
+  openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
+    const isNewPPSuccessModalEnabled = this.props.user
+      .isNewPPSuccessModalEnabled;
+    let modalContent;
+
+    if (isNewPPSuccessModalEnabled) {
+      modalContent = (
+        <Success
+          handleClose={this.props.closeModal}
+          openModal={this.props.openModal}
+          handleSendLink={sendLink.bind(null, id)}
+          showNotification={this.props.showNotification}
+          url={shortUrl}
+          title={title}
+          trackerFn={function() {}}
+          trackClickOnCreateEmbedButton={_ =>
+            trackClickOnCreateEmbedButton('new')
+          }
+          closeModal={this.props.closeModal}
+          isEditExistingId={isEditExistingId}
+          openSettingsModal={_ => {
+            trackPageSettingsClick();
+            this.props.closeModal();
+            this.setState({ isSettingsOpened: true });
+          }}
+        />
+      );
+    } else {
+      modalContent = (
         <PPShareView
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
@@ -265,26 +292,21 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={title}
           description={description}
           trackerFn={function() {}}
+          trackClickOnCreateEmbedButton={trackClickOnCreateEmbedButton}
           closeModal={this.props.closeModal}
           isEditExistingId={isEditExistingId}
-          AddonAction={
-            <div class="label--faded m-t">
-              You can customize this url from{' '}
-              <Button.Transparent
-                type="submit"
-                class="Button--Link"
-                onClick={() => {
-                  trackPageSettingsClick();
-                  this.props.closeModal();
-                  this.setState({ isSettingsOpened: true });
-                }}
-              >
-                Page Settings
-              </Button.Transparent>
-            </div>
-          }
+          openSettingsModal={_ => {
+            trackPageSettingsClick();
+            this.props.closeModal();
+            this.setState({ isSettingsOpened: true });
+          }}
         />
-      ),
+      );
+    }
+
+    this.props.openModal({
+      size: 'medium',
+      component: modalContent,
     });
   };
 
@@ -506,7 +528,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           const entityId = resp.data.id;
 
           this.props.history.push(`/paymentpages/${entityId}/edit`);
-          this.openPPShareView(
+          this.openSuccessView(
             entityId,
             resp.data.short_url,
             resp.data.title,

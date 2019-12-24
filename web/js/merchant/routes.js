@@ -8,14 +8,16 @@ import {
 import SettlementDetails from 'merchant/views/Settlements/Details';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Links/Details';
 import PaymentPageDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
-import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
+import PaymentLinkCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
 import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
 import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
+import VirtualAccountEntity from 'merchant/containers/VirtualAccounts/Entity';
+import VirtualAccountCreate from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
+
 import OffersNew from 'merchant/containers/Offers/New';
 import OfferEntity from 'merchant/containers/Offers/Entity';
-import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
@@ -89,7 +91,7 @@ const entityDetailsMap = {
 
   '/route/payments/:id': { component: PaymentsDetails },
   '/route/accounts/:id': { component: AccountDetailsNew },
-  '/virtualaccounts/:id': { component: VirtualAccountDetails },
+  '/virtualaccounts/:id': { component: VirtualAccountEntity },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
   '/registration_links/:id(inv_.+)': {
@@ -152,7 +154,7 @@ const entityDetailsMap = {
 
 /*
  * Example:
- * - '/paymentlinks/new': {component: PaymentLinksCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
+ * - '/paymentlinks/new': {component: PaymentLinkCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
  * */
 const entityModalsMap = {
   '/activation': {
@@ -164,7 +166,7 @@ const entityModalsMap = {
     additionalCondition: user => user.isAllowedEdit('offers'),
   },
   '/paymentlinks/new': {
-    component: PaymentLinksCreate,
+    component: PaymentLinkCreate,
     additionalCondition: user => user.isAllowedEdit('payment_links'),
   },
   '/registration_links/:id(inv_.+)/upload_nach': {
@@ -180,6 +182,9 @@ const entityModalsMap = {
   },
   '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
+  },
+  '/virtualaccounts/new': {
+    component: VirtualAccountCreate,
   },
 };
 
