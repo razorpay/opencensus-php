@@ -8,6 +8,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Hdfc extends Base
 {
@@ -71,11 +72,16 @@ class Hdfc extends Base
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 
-    public function fetchEntities(): PublicCollection
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
+        //
+        // Regular flow - fetching refunds from API DB
+        //
 
         $refunds = $this->repo->refund->fetchRefundsForMethodGatewaysBetweenTimestamps(
             static::PAYMENT_TYPE_ATTRIBUTE,
@@ -86,5 +92,39 @@ class Hdfc extends Base
         );
 
         return $refunds;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
+                    RefundConstants::SCROOGE_METHOD     => Payment\Method::NETBANKING,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
     }
 }

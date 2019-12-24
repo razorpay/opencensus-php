@@ -20,9 +20,13 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
         Entity::NOTES                           => 'sometimes|notes',
+    ];
+
+    protected static $createValidators = [
+        Entity::AUTH_TYPE,
     ];
 
     protected static $autochargeRules = [
@@ -65,11 +69,19 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
         Entity::NACH                            => 'sometimes_if:method,nach|custom',
+    ];
+
+    protected static $nachAuthTypeRules = [
+        Entity::AUTH_TYPE => 'required|string|in:physical',
+    ];
+
+    protected static $emandateAuthTypeRules = [
+        Entity::AUTH_TYPE => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
     ];
 
     protected static $nachArrayRules = [
@@ -77,6 +89,24 @@ class Validator extends Base\Validator
         Entity::FORM_REFERENCE1 => 'sometimes|string',
         Entity::FORM_REFERENCE2 => 'sometimes|string',
     ];
+
+    public function validateAuthType(array $input)
+    {
+        if (($input[Entity::METHOD] ?? null) === Method::NACH)
+        {
+            $this->validateInput(
+                'nach_auth_type',
+                [Entity::AUTH_TYPE => $input[Entity::AUTH_TYPE] ?? null]
+            );
+        }
+        else
+        {
+            $this->validateInput(
+                'emandate_auth_type',
+                [Entity::AUTH_TYPE => $input[Entity::AUTH_TYPE] ?? null]
+            );
+        }
+    }
 
     public function validateMethodAndFirstPaymentAmount(array $input)
     {

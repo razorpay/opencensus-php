@@ -12,11 +12,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Gateway\Mozart\NetbankingKvb\RefundFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingKvbCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -64,8 +66,18 @@ class NetbankingKvbCombinedFileTest extends TestCase
         // full refund
         $refundFull = $this->refundPayment($payment1['id']);
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         //partial refund
         $refundPartial = $this->refundPayment($payment2['id'], 500);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking Kvb refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 

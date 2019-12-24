@@ -261,6 +261,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($txn);
+
+        $txnCore->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
     }
 
     /**

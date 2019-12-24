@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::AMOUNT    => 'sometimes|integer|nullable',
-        Entity::PROVIDER  => 'required|in:bharat_qr',
+        Entity::PROVIDER  => 'required|in:bharat_qr,upi_qr',
         Entity::REFERENCE => 'sometimes|string|custom',
     ];
 

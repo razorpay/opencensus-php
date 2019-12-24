@@ -2,12 +2,18 @@
 
 namespace RZP\Tests\Functional\Merchant\Account;
 
+use DB;
 use Mail;
+use Mockery;
+use Closure;
 use Illuminate\Database\Eloquent\Factory;
+
+use Psr\Http\Message\ResponseInterface;
 
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use RZP\Models\Merchant\Webhook;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -40,7 +46,17 @@ class PartnerAccountTest extends TestCase
     {
         Mail::fake();
 
-        $this->setUpPartnerWithKycHandled();
+        [$client] = $this->setUpPartnerWithKycHandled();
+
+        $this->createPartnerWebhook($client->getApplicationId(), ['events' => ['account.under_review' => '1']]);
+
+        $webhookData = [];
+        $this->mockInfernoSendRequest(function ($request, $entity) use (& $webhookData)
+        {
+            $webhookData = $request;
+
+            return false;
+        });
 
         $response = $this->startTest();
 
@@ -52,6 +68,10 @@ class PartnerAccountTest extends TestCase
         $this->assertEquals($legalEntity->getMcc(), 7011);
         $this->assertEquals('tours_and_travel', $legalEntity->getBusinessCategory());
         $this->assertEquals('accommodation', $legalEntity->getBusinessSubcategory());
+
+        $webhookData['content'] = json_decode($webhookData['content'], true);
+
+        $this->assertEquals('account.under_review', $webhookData['content']['event']);
 
         // check that user creation email is not sent to submerchant from rzp
         Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
@@ -299,7 +319,17 @@ class PartnerAccountTest extends TestCase
 
     public function testFetchAccountForKycNotHandledAndNeedsClarification()
     {
-        $this->setUpPartnerWithKycNotHandled();
+        [$client] = $this->setUpPartnerWithKycNotHandled();
+
+        $this->createPartnerWebhook($client->getApplicationId(), ['events' => ['account.under_review' => '1']]);
+
+        $webhookData = [];
+        $this->mockInfernoSendRequest(function ($request, $entity) use (& $webhookData)
+        {
+            $webhookData = $request;
+
+            return false;
+        });
 
         // testUpdateKYCClarificationReason
         $subMerchant = $this->createUnderReviewAccount();
@@ -321,6 +351,10 @@ class PartnerAccountTest extends TestCase
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest($testData);
+
+        $webhookData['content'] = json_decode($webhookData['content'], true);
+
+        $this->assertEquals('account.under_review', $webhookData['content']['event']);
     }
 
     public function testAddAccountUnderLegalEntityWithKycNotHandled()
@@ -407,6 +441,42 @@ class PartnerAccountTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testSimulateInternationalActivationForPartner()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $this->fixtures->merchant->addFeatures([FName::PARTNER_ACTIVATE_MERCHANT, FName::SKIP_WEBSITE_INTERNAT]);
+
+        $subMerchant = $this->createUnderReviewAccount();
+
+        $merchantAttributes = [
+            'website'        => null,
+            'has_key_access' => false,
+        ];
+
+        $this->fixtures->on('test')->edit('merchant', $subMerchant->getId(), $merchantAttributes);
+        $this->fixtures->on('live')->edit('merchant', $subMerchant->getId(), $merchantAttributes);
+
+        $detail = [
+            'business_website' => null
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $detail);
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $detail);
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData['testSimulateActivationForPartner'];
+
+        $testData['request']['url'] = '/partner/merchant/acc_' . $subMerchant->getId() . '/activation/status';
+
+        $this->runRequestResponseFlow($testData);
+
+        $sm = $this->getDbEntityById('merchant', $subMerchant->getId());
+
+        $this->assertEquals($sm['international'], true);
+    }
+
     protected function changeActivationStatus($merchantId, $status)
     {
         $testData = $this->testData['changeActivationStatus'];
@@ -445,7 +515,7 @@ class PartnerAccountTest extends TestCase
 
         $testData = $this->testData['submitKyc'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant->getId());
+        $this->ba->proxyAuth('rzp_live_' . $merchant->getId());
 
         $this->runRequestResponseFlow($testData);
 
@@ -454,8 +524,6 @@ class PartnerAccountTest extends TestCase
 
     protected function setUpPartnerWithKycHandled()
     {
-        $this->setUpNonPurePlatformPartner();
-
         $features = [
             FName::NO_COMM_WITH_SUBMERCHANTS,
             FName::KYC_HANDLED_BY_PARTNER,
@@ -463,12 +531,12 @@ class PartnerAccountTest extends TestCase
         ];
 
         $this->fixtures->merchant->addFeatures($features);
+
+        return $this->setUpNonPurePlatformPartner();
     }
 
     protected function setUpPartnerWithKycNotHandled()
     {
-        $this->setUpNonPurePlatformPartner();
-
         $features = [
             FName::NO_COMM_WITH_SUBMERCHANTS,
             FName::SUBMERCHANT_ONBOARDING,
@@ -476,13 +544,15 @@ class PartnerAccountTest extends TestCase
         ];
 
         $this->fixtures->merchant->addFeatures($features);
+
+        return $this->setUpNonPurePlatformPartner();
     }
 
     protected function setUpNonPurePlatformPartner()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
+        $client = $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::OWNER, Mode::LIVE);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::OWNER, Mode::LIVE);
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
@@ -497,6 +567,8 @@ class PartnerAccountTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        return [$client, $user];
     }
 
     protected function setUpPartnerAuthWithoutSubMerchantAccountId()
@@ -517,5 +589,42 @@ class PartnerAccountTest extends TestCase
         $partner = $this->getDbEntityById('merchant', '10000000000000');
 
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+    }
+
+    protected function mockInferno()
+    {
+        $class = Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class, [])->makePartial();
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        return $inferno;
+    }
+
+    protected function mockInfernoSendRequest(Closure $closure, $times = 1)
+    {
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function createPartnerWebhook($appId, $params = [])
+    {
+        $webhookInput = [
+            'url'         => 'http://webhook.com/v1/dummy/route',
+            'entity_type' => 'application',
+            'entity_id'   => $appId,
+            'events'      => ['account.suspended' => '1'],
+        ];
+
+        $webhookInput = array_merge($webhookInput, $params);
+
+        $this->fixtures->on('live')->create('webhook', $webhookInput);
+        $this->fixtures->on('test')->create('webhook', $webhookInput);
     }
 }

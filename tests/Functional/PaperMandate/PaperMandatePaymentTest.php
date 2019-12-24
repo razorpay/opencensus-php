@@ -41,6 +41,7 @@ class PaperMandatePaymentTest extends TestCase
             E::INVOICE => [
                 'amount' => 0,
                 E::SUBSCRIPTION_REGISTRATION => [
+                    'auth_type' => 'physical',
                     E::PAPER_MANDATE => [
                         PaperMandate\Entity::AMOUNT           => 0,
                         PaperMandate\Entity::STATUS           => PaperMandate\Status::CREATED,
@@ -61,6 +62,7 @@ class PaperMandatePaymentTest extends TestCase
             E::INVOICE => [
                 'amount' => 0,
                 E::SUBSCRIPTION_REGISTRATION => [
+                    'auth_type' => 'physical',
                     E::PAPER_MANDATE => [
                         'amount' => 0,
                         PaperMandate\Entity::STATUS => PaperMandate\Status::CREATED,
@@ -92,6 +94,7 @@ class PaperMandatePaymentTest extends TestCase
                         'amount' => 0,
                         E::SUBSCRIPTION_REGISTRATION => [
                             'token_id' => '100000000token',
+                            'auth_type' => 'physical',
                             E::PAPER_MANDATE => [
                                 'amount' => 0,
                                 'status' => PaperMandate\Status::AUTHENTICATED,
@@ -125,6 +128,7 @@ class PaperMandatePaymentTest extends TestCase
                         'amount' => 0,
                         E::SUBSCRIPTION_REGISTRATION => [
                             'token_id' => '100000000token',
+                            'auth_type' => 'physical',
                             E::PAPER_MANDATE => [
                                 'amount' => 0,
                                 'uploaded_file_id' => '1000000000file',

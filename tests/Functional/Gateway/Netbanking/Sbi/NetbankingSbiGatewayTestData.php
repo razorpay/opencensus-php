@@ -253,9 +253,9 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
-        'received'        => false,
         'bank'            => 'SBIN',
-        'status'          => null
+        'status'          => 'Failed',
+        'error_message'   => 'failed at bank end'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [

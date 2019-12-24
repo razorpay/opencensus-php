@@ -392,6 +392,19 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        if (empty($verify->payment[Entity::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            // Ideally verify fail cron wont pick up paysecure payments, because gateway error exception
+            // is thrown with action "authenticate". But, in case some error happens before the gateway error is thrown
+            // these payments would be moved to verify failed bucket.
+            // Here, it calls verify and if trans id is not set we send a payment verify exception with action finish
+            // so that these payments won't again be picked up for verify.
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
+
         $response = $this->transactionStatus($verify->payment);
 
         $verify->setVerifyResponseContent($response);
@@ -427,7 +440,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    // @codingStandardsIgnoreStart
     protected function checkGatewaySuccess(Base\Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -440,7 +452,6 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
         }
     }
-    // @codingStandardsIgnoreEnd
 
     protected function saveVerifyContentIfNeeded($verify)
     {

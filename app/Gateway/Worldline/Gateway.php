@@ -34,14 +34,6 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
-
         if ($isBharatQr === true)
         {
             $qrData = $this->getQrData($input);
@@ -58,14 +50,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
 
         if ($this->isBharatQrPayment() === true)
         {
@@ -86,14 +70,6 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
-
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
 
         $verify = new Verify($this->gateway, $input);
 
@@ -473,7 +449,7 @@ class Gateway extends Base\Gateway
         {
             $response = [
                 'status'    => 'Failure',
-                'errorMsg'  => $exception->getMessage(),
+                'errorMsg'  => '',
             ];
         }
 
