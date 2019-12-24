@@ -3,22 +3,19 @@
 namespace RZP\Tests\Functional\Workflow;
 
 use DB;
-use RZP\Constants\Table;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 
 class WorkflowPayoutAmountRulesTest extends TestCase
 {
-    use RequestResponseFlowTrait;
-    use DbEntityFetchTrait;
     use HeimdallTrait;
     use WorkflowTrait;
+    use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     protected $org = null;
     protected $input = null;
