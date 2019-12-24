@@ -44,6 +44,8 @@ class Netbanking extends Service
             }
         }
 
+        $input = $this->addTransactionType($input);
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -132,5 +134,13 @@ class Netbanking extends Service
         }
 
         return $response;
+    }
+
+    // TODO Add more logic for this
+    protected function addTransactionType($input)
+    {
+        $input[self::METHOD_DATA] = ['transaction_type' => 'retail'];
+
+        return $input;
     }
 }

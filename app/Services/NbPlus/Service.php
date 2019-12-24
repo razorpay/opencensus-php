@@ -29,12 +29,13 @@ class Service
     const MAX_RETRY_COUNT = 1;
 
     // request and response fields
-    const GATEWAY   = 'gateway';
-    const ACTION    = 'action';
-    const INPUT     = 'input';
-    const DATA      = 'data';
-    const ACQUIRER  = 'acquirer';
-    const ERROR     = 'error';
+    const GATEWAY     = 'gateway';
+    const ACTION      = 'action';
+    const INPUT       = 'input';
+    const METHOD_DATA = 'method_data';
+    const DATA        = 'data';
+    const ACQUIRER    = 'acquirer';
+    const ERROR       = 'error';
 
     // Supported Actions
     const AUTHORIZE        = 'authorize';
@@ -97,7 +98,8 @@ class Service
 
         $url = $this->config['url'][$mode];
 
-        return $url;
+        // TODO how to determine versioning? Defaulted to v1 for now
+        return $url . 'v1/';
     }
 
     protected function getDefaultOptions(): array
