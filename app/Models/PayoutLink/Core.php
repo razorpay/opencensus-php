@@ -7,13 +7,19 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
+use RZP\Models\Payout\Mode;
+use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Models\PayoutLink\External\FundAccount;
+use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
+use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
 class Core extends Base\Core
 {
@@ -30,31 +36,87 @@ class Core extends Base\Core
     const API_POUT_LNK_SCR        = 'api.pout_l';
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
-
-    const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
+    const TWO_LACS                =  20000000;
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
+    const ACTIVE                  = 'active';
     const MUTEX_TIMEOUT           = 60;
+
 
     protected $elfin;
 
     protected $raven;
 
-    protected $redis;
+    protected $tokenService;
 
     protected $mutex;
 
     public function __construct()
     {
         parent::__construct();
-
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
 
+        $this->tokenService = new TokenService();
+
         $this->redis = $this->app['redis']->connection();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Updates settings for payoutlinks on merchant level
+     * @param $input
+     * @return array
+     */
+    public function settings($merchantId, $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
+            $input
+        );
+
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::SETTINGS_RULE, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        $settingsAccessor->upsert($input)->save();
+
+        return [self::SUCCESS => self::OK];
+    }
+
+    protected function getSettingsAccessor($merchant)
+    {
+
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+    }
+
+    public function getFundAccountsOfContact(string $payoutLinkId, array $input)
+    {
+        $validator = (new Entity())->getValidator();
+
+        $validator->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
+
+        (new TokenService())->verify($input[Entity::TOKEN]);
+
+        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $fundAccounts = $payoutLink->contact->fundAccounts;
+
+        return $this->filterOutInActiveFundAccounts($fundAccounts);
+    }
+
+    // todo, pl this looks like a  repo funtionality, but unsure how to push it there. #reviewer ?
+    public function filterOutInActiveFundAccounts(PublicCollection $fundAccounts)
+    {
+        return $fundAccounts->where(self::ACTIVE, '=' , '1');
     }
 
     public function cancel(string $payoutLinkId): Entity
@@ -88,6 +150,137 @@ class Core extends Base\Core
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * @param string $payoutLinkId
+     * @param array $input
+     * @return array
+     */
+    public function initiate(string $payoutLinkId, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
+            $input);
+
+        // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
+        // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
+        return $this->mutex->acquireAndRelease(
+            $payoutLinkId,
+            function() use ($payoutLinkId, $input)
+            {
+                return $this->repo->transaction(
+                    function() use ($payoutLinkId, $input)
+                    {
+                        $validator = (new Entity())->getValidator();
+
+                        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+
+                        $token = array_pull($input, Entity::TOKEN);
+
+                        (new TokenService())->verify($token);
+
+                        $payoutLink = $this->repo
+                            ->payout_link
+                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+                        if ($payoutLink->getStatus() !== Status::ISSUED)
+                        {
+                            return $payoutLink;
+                        }
+
+                        // Code to create/fetch fund account and associate it with the payoutlink
+                        $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
+                                                                                          $this->merchant,
+                                                                                          $payoutLink->contact);
+                        $payoutLink->fundAccount()->associate($fundAccount);
+
+                        // pushing this to DB layer, before going to payout create flow
+                        $this->repo->saveOrFail($payoutLink);
+
+                        // code to create a payout as this payout-link as the source
+                        $mode = $this->getPayoutMode($payoutLink);
+
+                        (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+
+                        $payoutLink->setStatus(Status::PROCESSING);
+
+                        $this->repo->saveOrFail($payoutLink);
+
+                        return $payoutLink;
+                    });
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+
+
+
+    /**
+     * This function will listen to payout updates, and update the corresponding payoutlink
+     * This will be inside a mutex. Transaction is not required, because its just a status update
+     *
+     * @param string $payoutLinkId
+     * @param string $payoutStatus
+     */
+    public function payoutUpdateListener(string $payoutLinkId, string $payoutStatus)
+    {
+        $nextPayoutLinkStatus = Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
+            [
+                'payout_link_id'          => $payoutLinkId,
+                'payout_status'           => $payoutStatus,
+                'next_payout_link_status' => $nextPayoutLinkStatus
+            ]);
+
+        $this->mutex->acquireAndRelease(
+            $payoutLinkId,
+            function () use ($payoutLinkId, $payoutStatus, $nextPayoutLinkStatus)
+            {
+                $payoutLink = $this->repo
+                                   ->payout_link
+                                   ->findByIdAndMerchant($payoutLinkId, $this->merchant);
+
+                $payoutLink->setStatus($nextPayoutLinkStatus);
+
+                $this->repo->saveOrFail($payoutLink);
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * @param Entity $payoutLink
+     * @return string
+     */
+    protected function getPayoutMode(Entity $payoutLink)
+    {
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+
+        $amount = $payoutLink->getAmount();
+
+        $fundAccount = $payoutLink->fundAccount;
+
+        switch ($fundAccount->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                $isImpsEnabled = $settingsAccessor->get(Entity::IMPS);
+
+                if (($isImpsEnabled == true) and
+                    ($amount < self::TWO_LACS))
+                {
+                    return Mode::IMPS;
+                }
+                else
+                {
+                    return Mode::NEFT;
+                }
+            case Type::VPA:
+                return Mode::UPI;
+        }
     }
 
     public function create(array $input): Entity
@@ -128,7 +321,7 @@ class Core extends Base\Core
         $payoutLink->balance()->associate($balance);
 
         // todo: pl , unsure how to get the user entity from the request in core
-        // $payoutLink->user()->associate($this->app->basicauth->getUser());
+//         $payoutLink->user()->associate($this->app['basicauth']->getUser());
 
         $payoutLink->setStatus(Status::ISSUED);
 
@@ -222,12 +415,10 @@ class Core extends Base\Core
 
         $this->raven->verifyOtp($payload);
 
-        $uniqueToken = $this->generateUniqueRequestToken($payoutLinkId);
-
-        $this->redis->set($uniqueToken, '', 'ex', self::TOKEN_EXPIRE_IN_SECONDS);
+        $token = $this->tokenService->generate($payoutLinkId);
 
         return [
-            'token' => $uniqueToken
+            'token' => $token
         ];
     }
 
@@ -241,19 +432,6 @@ class Core extends Base\Core
         }
 
         return $requestContext;
-    }
-
-    /**
-     * This will be stored in redis after OTP verification
-     * and will be used in subsequent api calls
-     * @param string $payoutLinkId
-     * @return string
-     */
-    protected function generateUniqueRequestToken(string $payoutLinkId): string
-    {
-        $timestamp =  Carbon::now(Timezone::IST)->getTimestamp();
-
-        return $payoutLinkId . '.' . $timestamp;
     }
 
     /**
@@ -293,9 +471,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns true, if atkleast one delivery worked. else returns false
+     * * Returns true, if atleast one delivery worked. else returns false
      * @param Entity $payoutLink
-     * @param ContactEntity $contact
      * @param string $otp
      * @return void
      * @throws BadRequestException

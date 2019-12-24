@@ -4,6 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payout\Status as PayoutStatus;
 
 class Status
 {
@@ -18,6 +19,17 @@ class Status
         self::PROCESSING,
         self::PAID,
         self::CANCELLED
+    ];
+
+    const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
+        PayoutStatus::PROCESSING => self::PROCESSING,
+        PayoutStatus::CANCELLED  => self::ISSUED,
+        PayoutStatus::FAILED     => self::ISSUED,
+        PayoutStatus::REVERSED   => self::ISSUED,
+        PayoutStatus::CREATED    => self::PROCESSING,
+        PayoutStatus::INITIATED  => self::PROCESSING,
+        PayoutStatus::PROCESSED  => self::PAID,
+        PayoutStatus::QUEUED     => self::PROCESSING,
     ];
 
     /**
@@ -41,8 +53,11 @@ class Status
         self::CANCELLED => [] // this is a final state
     ];
 
-    // This is to handle the create entity flows, in which both the Status and ID will be null to start with
-    static function validateStatusUpdate(string $nextStatus, string $currentStatus = null, string $payoutLinkId = null)
+    // This is to handle the create entity flows, in which both the Status and ID
+    // will be null to start with
+    public static function validateStatusUpdate(string $nextStatus,
+                                                string $currentStatus = null,
+                                                string $payoutLinkId = null)
     {
         $context = [
             'id'             => $payoutLinkId,

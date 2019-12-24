@@ -43,9 +43,12 @@ class Entity extends Base\PublicEntity
     const CANCELLED_AT         = 'cancelled_at';
     const CREATED_AT           = 'created_at';
     const UPDATED_AT           = 'updated_at';
-
-    const CONTEXT = 'context';
-    const OTP = 'otp';
+    const CONTEXT              = 'context';
+    const OTP                  = 'otp';
+    const TOKEN                = 'token';
+    const IMPS                 = 'IMPS';
+    const NEFT                 = 'NEFT';
+    const UPI                  = 'UPI';
 
     protected $generateIdOnCreate = true;
 
@@ -181,9 +184,34 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
     }
 
     public function getStatus()
@@ -221,7 +249,14 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($newStatus)
     {
-        Status::validateStatusUpdate($newStatus, $this->getStatus(), $this->getId());
+        $currentStatus = $this->getStatus();
+
+        if ($currentStatus === $newStatus)
+        {
+            return;
+        }
+
+        Status::validateStatusUpdate($newStatus, $currentStatus, $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
     }

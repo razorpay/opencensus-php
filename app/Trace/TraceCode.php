@@ -51,6 +51,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
+    const PAYOUT_LINK_SETTINGS_UPDATE                           = 'PAYOUT_LINK_SETTINGS_UPDATE';
     const PAYOUT_LINK_PROCESS_CONTACT_REQUEST                   = 'PAYOUT_LINK_PROCESS_CONTACT_REQUEST';
     const PAYOUT_LINK_SHORT_URL_GENERATION_FAILED               = 'PAYOUT_LINK_SHORT_URL_GENERATION_FAILED';
     const PAYOUT_LINK_CUSTOMER_OTP_GENERATE                     = 'PAYOUT_LINK_CUSTOMER_OTP_GENERATE';
@@ -60,6 +61,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED                   = 'PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED';
     const PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED                  = 'PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED';
     const PAYOUT_LINK_CANCEL_REQUEST                            = 'PAYOUT_LINK_CANCEL_REQUEST';
+    const PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD                 = 'PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD';
+    const PAYOUT_LINK_PAYOUT_UPDATE_PUSH                        = 'PAYOUT_LINK_PAYOUT_UPDATE_PUSH';
+    const PAYOUT_LINK_PROCESS_FUND_ACCOUNT_REQUEST              = 'PAYOUT_LINK_PROCESS_FUND_ACCOUNT_REQUEST';
 
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';

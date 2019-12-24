@@ -854,6 +854,9 @@ final class Route
         'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}/verify-customer-otp', 'PayoutLinkController@verifyCustomerOtp'                            ],
         'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                         'PayoutLinkController@viewHostedPage'                                       ],
+        'payout_links_added_fund_accounts'         => ['get',       'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
+        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',            'PayoutLinkController@initiate'                                     ],
+        'payout_links_settings'                    => ['post',      'payout-links/{merdchantId}/settings',                     'PayoutLinkController@postSettings'                                     ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
@@ -1466,6 +1469,8 @@ final class Route
         'payout_links_generate_end_user_otp',
         'payout_links_verify_customer_otp',
         'payout_links_customer_hosted_page'
+        'payout_links_added_fund_accounts',
+        'payout_links_initiate'
     ];
 
     public static $device = [
@@ -2173,6 +2178,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'payout_links_settings',
         'add_additional_website',
         'reminder_admin',
         'merchant_document_admin_fetch',
@@ -2661,6 +2667,7 @@ final class Route
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => '*',
+        'payout_links_settings'                    => '*',
         'pricing_add_plan_rule_bulk'               => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
