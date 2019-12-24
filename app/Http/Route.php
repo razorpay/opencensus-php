@@ -1468,7 +1468,7 @@ final class Route
         'auth_link_paper_mandate_validate',
         'payout_links_generate_end_user_otp',
         'payout_links_verify_customer_otp',
-        'payout_links_customer_hosted_page'
+        'payout_links_customer_hosted_page',
         'payout_links_added_fund_accounts',
         'payout_links_initiate'
     ];
