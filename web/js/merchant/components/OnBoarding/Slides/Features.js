@@ -109,7 +109,7 @@ class FeatureLink extends React.PureComponent {
     this.props.tracking.trackEvent(
       window.rzpQ
         .productOnboarding()
-        .success(`${props.feature}.onboarding.features_hyperlink`)
+        .success(`${feature}.onboarding.features_hyperlink`)
     );
 
     window.open(url);

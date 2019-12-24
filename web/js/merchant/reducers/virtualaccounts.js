@@ -17,7 +17,7 @@ const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
 export const fetchVirtualAccounts = params => {
   if (!params.notes) {
-    params.receiver_type = 'bank_account';
+    // params.receiver_type = 'bank_account'; // TODO: To add receiver_type as 'bank_account' and 'vpa' once api supports.
   }
   return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
@@ -52,6 +52,14 @@ export const closeVirtualAccount = params => {
   return {
     type: VIRTUAL_ACCOUNT_EDIT,
     payload: virtualAccount.close(),
+  };
+};
+
+export const updateVirtualAccountDetails = (id, data) => {
+  const virtualAccount = new VirtualAccount();
+  return {
+    type: VIRTUAL_ACCOUNT_EDIT,
+    payload: virtualAccount.updateAccountDetails(id, data),
   };
 };
 

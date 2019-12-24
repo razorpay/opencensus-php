@@ -309,6 +309,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             data.formReference2;
         }
       }
+
+      payload.subscription_registration.auth_type = 'physical';
     }
 
     if (this.isEmandatePayment || this.isNACHPayment) {
@@ -318,7 +320,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         );
       }
 
-      let max_amount = this.DEFAULT_MAX_AMOUNT;
+      let max_amount = rupeesToPaise(this.DEFAULT_MAX_AMOUNT);
 
       if (data.mandateMaxAmount) {
         max_amount = rupeesToPaise(data.mandateMaxAmount);

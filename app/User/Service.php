@@ -423,6 +423,12 @@ class Service extends Base\Service
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
+            //
+            // This is temporary code to get merchant waitlist
+            // This code will be removed, in few weeks
+            //
+            $data['current_account_waitlist_number'] = Merchant\Constants::MERCHANT_WAITLIST[$currentMerchantId] ?? null;
+
             $merchantService = new Merchant\Service;
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
@@ -878,7 +884,9 @@ class Service extends Base\Service
             'show_commission_balance',
             'custom_notes',
             'sellerapp_PL_batch_upload',
-            'nps_survey_banner'
+            'nps_survey_banner',
+            'vpa_enabled',
+            'new_pp_success_modal'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
