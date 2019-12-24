@@ -777,6 +777,30 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
     }
 
+    public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+        $payoutLink->setStatus(Status::PROCESSING);
+
+        $payoutLink->saveOrFail();
+
+        $this->startTest();
+    }
+
+
     protected function mockRedisSuccess()
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])

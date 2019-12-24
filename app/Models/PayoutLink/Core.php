@@ -114,7 +114,7 @@ class Core extends Base\Core
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
@@ -153,12 +153,12 @@ class Core extends Base\Core
 
                         if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
                         {
-                            $this->trace->warning(TraceCode::PAYOUT_LINK_INVALID_STARTING_STATE,
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
                                 [
-                                    'payout_link_id' => $payoutLinkId
+                                    self::PAYOUT_LINK_ID => $payoutLinkId,
+                                    'status'             => $payoutLink->getStatus()
                                 ]);
-
-                            return $payoutLink;
                         }
 
                         // Code to create/fetch fund account and associate it with the payoutlink
@@ -191,7 +191,7 @@ class Core extends Base\Core
                     });
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
@@ -236,7 +236,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($payoutLink);
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function getPayoutMode(Entity $payoutLink)
