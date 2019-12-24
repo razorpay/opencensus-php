@@ -104,11 +104,9 @@ class Core extends Base\Core
 
         (new TokenService())->verify($input[Entity::TOKEN]);
 
-        $payoutLink = $this->repo
-                            ->payout_link
-                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-
-        $fundAccounts = $payoutLink->contact->fundAccounts;
+        $fundAccounts = $this->repo
+                             ->payout_link
+                             ->getFundAccountByPayoutLinkIdAdnMerchant($payoutLinkId, $this->merchant);
 
         return $this->filterOutInActiveFundAccounts($fundAccounts);
     }
@@ -172,20 +170,27 @@ class Core extends Base\Core
                 return $this->repo->transaction(
                     function() use ($payoutLinkId, $input)
                     {
+                        $tokenService = new TokenService();
+
                         $validator = (new Entity())->getValidator();
 
                         $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
 
                         $token = array_pull($input, Entity::TOKEN);
 
-                        (new TokenService())->verify($token);
+                        $tokenService->verify($token);
 
                         $payoutLink = $this->repo
-                            ->payout_link
-                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                                           ->payout_link
+                                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-                        if ($payoutLink->getStatus() !== Status::ISSUED)
+                        if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
                         {
+                            $this->trace->warning(TraceCode::PAYOUT_LINK_INVALID_STARTING_STATE,
+                                [
+                                    'payout_link_id' => $payoutLinkId
+                                ]);
+
                             return $payoutLink;
                         }
 
@@ -207,6 +212,14 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($payoutLink);
 
+                        $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
+                                           [
+                                               'payout_link_id'     => $payoutLinkId,
+                                               'payout_link_status' => $payoutLink->getStatus()
+                                           ]);
+
+                        $tokenService->invalidate($token);
+
                         return $payoutLink;
                     });
             },
@@ -226,6 +239,16 @@ class Core extends Base\Core
      */
     public function payoutUpdateListener(string $payoutLinkId, string $payoutStatus)
     {
+        if (isset(Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus]) === false)
+        {
+            $this->trace->warning(TraceCode::PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS,
+                                  [
+                                      'payout_link_id' => $payoutLinkId,
+                                      'payout_status'  => $payoutStatus,
+                                  ]);
+            return;
+        }
+
         $nextPayoutLinkStatus = Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus];
 
         $this->trace->info(

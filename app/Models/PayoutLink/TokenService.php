@@ -69,6 +69,6 @@ class TokenService
 
     public function invalidate($token)
     {
-        // todo, pl will be done in a later PR, currently not required
+        $this->redis->del($token);
     }
 }
