@@ -23,6 +23,11 @@ class Status
         self::CANCELLED
     ];
 
+    const VALID_STARTING_STATUSES = [
+        self::ISSUED,
+        self::ATTEMPTED
+    ];
+
     const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
         PayoutStatus::CANCELLED  => self::CANCELLED,
         PayoutStatus::FAILED     => self::ATTEMPTED,
@@ -46,6 +51,10 @@ class Status
             self::ISSUED
         ],
         self::ISSUED => [
+            self::PROCESSING,
+            self::CANCELLED
+        ],
+        self::ATTEMPTED => [
             self::PROCESSING,
             self::CANCELLED
         ],
@@ -97,4 +106,5 @@ class Status
     {
         return self::INTERNAL_TO_PUBLIC_STATUS[$internalStatus] ?? $internalStatus;
     }
+
 }
