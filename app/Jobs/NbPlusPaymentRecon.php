@@ -43,7 +43,7 @@ class NbPlusPaymentRecon extends Job
 
         try
         {
-            $response = App::getFacadeRoot()['nbplus.payments']->fetchAuthorizationData($request);
+            $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
 
             $this->trace->info(
                 TraceCode::RECON_INFO,

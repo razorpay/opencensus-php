@@ -131,11 +131,10 @@ class Service
         return $driver->action($gateway, $action, $input);
     }
 
-    // TODO revisit
-    public function fetchAuthorizationData(array $input)
+    public function fetchNetbankingData(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'url'     => $this->getBaseUrl() . 'entities/netbanking',
             'method'  => 'POST',
             'content' => $input,
             'headers' => [
