@@ -112,7 +112,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
-        self::STATUS
+        self::STATUS,
+        self::ID
     ];
 
     protected $hosted = [

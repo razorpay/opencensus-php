@@ -728,7 +728,7 @@ return [
             ]
         ]],
 
-    'testPayoutStatusReversedMakesLinkStatusIssued' => [
+    'testPayoutStatusReversedMakesLinkStatusAttempted' => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',

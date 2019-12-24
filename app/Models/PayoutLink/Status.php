@@ -59,7 +59,7 @@ class Status
             self::CANCELLED
         ],
         self::PROCESSING => [
-            self::ISSUED, // in case payout fails
+            self::ATTEMPTED, // in case payout fails
             self::PAID,    // in case payout is successful,
             self::CANCELLED // in case the payout is cancelled
         ],

@@ -711,7 +711,7 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals(Payout\Status::CREATED, $payout->getStatus());
     }
 
-    public function testPayoutStatusReversedMakesLinkStatusIssued()
+    public function testPayoutStatusReversedMakesLinkStatusAttempted()
     {
         $this->mockRedisSuccess();
 
@@ -739,7 +739,7 @@ class PayoutLinkTest extends TestCase
 
         $payoutLink->refresh();
 
-        $this->assertEquals(Status::ISSUED, $payoutLink->getStatus());
+        $this->assertEquals(Status::ATTEMPTED, $payoutLink->getStatus());
 
         $this->assertEquals($payout->getStatus() , Payout\Status::REVERSED);
     }
@@ -779,12 +779,15 @@ class PayoutLinkTest extends TestCase
 
     protected function mockRedisSuccess()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])
                           ->getMock();
 
         Redis::shouldReceive('zadd')->andReturn($redisMock);
 
         Redis::shouldReceive('connection')->andReturn($redisMock);
+
+        $redisMock->method('del')
+                  ->will($this->returnValue(1));
 
         $redisMock->method('get')
                   ->will($this->returnValue('Token valid as a non-null value is being returned'));
@@ -792,13 +795,16 @@ class PayoutLinkTest extends TestCase
 
     protected function mockRedisFail()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])
                           ->getMock();
 
         Redis::shouldReceive('connection')->andReturn($redisMock);
 
         $redisMock->method('get')
                   ->will($this->returnValue(null));
+
+        $redisMock->method('del')
+                  ->will($this->returnValue(1));
     }
 
 
