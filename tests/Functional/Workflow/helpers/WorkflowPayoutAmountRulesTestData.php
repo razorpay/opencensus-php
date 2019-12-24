@@ -126,6 +126,43 @@ return [
         ],
     ],
 
+    'testCreateRulesWithExtraRanges' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100000
+                    ],
+                    [
+                        'min_amount'	=>	100000,
+                        'max_amount'	=>	null
+                    ],
+                    [
+                        'min_amount'	=>	100000,
+                        'max_amount'	=>  200000
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Ranges provided are not continuous and complete',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateRulesWithWrongWorkflowId' => [
         'request' => [
             'method'  => 'POST',

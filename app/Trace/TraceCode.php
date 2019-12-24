@@ -2522,6 +2522,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TRACE_REQUEST_METRIC                                  = 'TRACE_REQUEST_METRIC';
 
+    // Trace code for workflow rules
+    const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -2677,6 +2680,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                              => 'Negative Balance has crossed the negative limit threshold',
         ];
+
+        self::WORKFLOW_PAYOUT_RULES_ATTACHMENT                      => 'Attaching payout amount rules to workflow',
+    ];
 
     /**
      * Translate event code to message

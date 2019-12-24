@@ -32,6 +32,8 @@ class Repository extends Base\Repository
         return $results;
     }
 
+    // Returns list of merchant ids which have workflows with create_payout permission
+    // On selecting a certain merchant id, a second api shall be called which will return the rules for that merchant
     public function getMerchantIdsForWorkflowPermission($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection

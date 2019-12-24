@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name;
@@ -37,7 +38,11 @@ class Service extends Base\Service
 
         $merchantId = null;
 
-        // Check if workflow exists and belongs to merchant in context
+        $this->trace->info(TraceCode::WORKFLOW_PAYOUT_RULES_ATTACHMENT, $input);
+
+        // The following loop will check for each of the rules whether :
+        // 1. That all workflow ids exist and have create_payout permission
+        // 2. That all workflow ids have the same merchant id.
         for ($index = 0; $index < count($rules); $index++)
         {
 
