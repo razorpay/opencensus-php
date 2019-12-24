@@ -1001,6 +1001,37 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
     }
 
+    public function testStoreCaseInsensitiveDomain()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotContains('abc.com',$merchant->getWhitelistedDomains());
+        $this->assertContains('example.com',$merchant->getWhitelistedDomains());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['business_website'] = '';
+        $testData['response']['content']['business_website'] = '';
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWhitelistedDomains(),[]);
+
+    }
+
     public function testFileUploadSyncInDetailAndDocumentTable()
     {
         $merchantId = "1cXSLlUU8V9sXl";

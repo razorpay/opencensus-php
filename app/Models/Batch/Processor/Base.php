@@ -1532,15 +1532,38 @@ class Base extends BaseModel\Core
             //
             $razorxTreatment = 'batch_service_' . $this->batch->getType() . '_migration';
 
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        $razorxTreatment,
-                                                        $this->mode
-                                                        );
+            $variant = $this->getVariant($razorxTreatment);
 
             $result = (strtolower($variant) === 'on');
         }
 
         return $result;
+    }
+
+    /**
+     * @param $razorxTreatment
+     * @return mixed
+     */
+    protected function getVariant($razorxTreatment)
+    {
+        //
+        // For reconciliation batch type we are using gateway as key
+        // for other batch types the key is Merchant id
+        //
+
+        $key = $this->merchant->getId();
+
+        if ($this->batch->getType() === Batch\Type::RECONCILIATION)
+        {
+            $key = $this->batch->getGateway();
+        }
+
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+
+        return $variant;
     }
 
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
