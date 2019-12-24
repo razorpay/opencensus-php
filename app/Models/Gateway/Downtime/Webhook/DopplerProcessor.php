@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime\Webhook;
 
 use App;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -131,7 +132,11 @@ class DopplerProcessor implements ProcessorInterface
         {
             $this->trace->traceException($e);
 
-            return $e;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_DOPPLER,
+                null,
+                $e
+            );
         }
 
     }
@@ -280,11 +285,11 @@ class DopplerProcessor implements ProcessorInterface
 
     protected function shouldHitDowntimeDatabase()
     {
-        if (($this->env !== Environment::PRODUCTION) or
-            ($this->mode !== Mode::LIVE))
-        {
-            return true;
-        }
+//        if (($this->env !== Environment::PRODUCTION) or
+//            ($this->mode !== Mode::LIVE))
+//        {
+//            return true;
+//        }
 
         $response = $this->app->razorx->getTreatment(
             $this->app['request']->getId(),
