@@ -114,6 +114,11 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT
     ];
 
+    protected $publicSetters = [
+        self::STATUS,
+        self::ID
+    ];
+
     protected $hosted = [
         self::ID,
         self::STATUS,
@@ -237,6 +242,15 @@ class Entity extends Base\PublicEntity
     public function getContactEmail()
     {
         return $this->getAttribute(self::CONTACT_EMAIL);
+    }
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
     }
     // -------------------------------------- End Getters -----------------------------
 

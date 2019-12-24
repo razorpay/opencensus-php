@@ -11,25 +11,36 @@ class Status
     // There is no Failed state, because in case of failures the customer can retry the Payout from his side
     const ISSUED     = 'issued';
     const PROCESSING = 'processing';
+    const ATTEMPTED  = 'attempted';
     const PAID       = 'paid';
     const CANCELLED  = 'cancelled';
 
     const VALID_STATUSES = [
         self::ISSUED,
         self::PROCESSING,
+        self::ATTEMPTED,
         self::PAID,
         self::CANCELLED
     ];
 
+    const VALID_STARTING_STATUSES = [
+        self::ISSUED,
+        self::ATTEMPTED
+    ];
+
     const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
-        PayoutStatus::PROCESSING => self::PROCESSING,
-        PayoutStatus::CANCELLED  => self::ISSUED,
-        PayoutStatus::FAILED     => self::ISSUED,
-        PayoutStatus::REVERSED   => self::ISSUED,
+        PayoutStatus::CANCELLED  => self::CANCELLED,
+        PayoutStatus::FAILED     => self::ATTEMPTED,
+        PayoutStatus::REVERSED   => self::ATTEMPTED,
         PayoutStatus::CREATED    => self::PROCESSING,
         PayoutStatus::INITIATED  => self::PROCESSING,
-        PayoutStatus::PROCESSED  => self::PAID,
+        PayoutStatus::PROCESSING => self::PROCESSING,
         PayoutStatus::QUEUED     => self::PROCESSING,
+        PayoutStatus::PROCESSED  => self::PAID,
+    ];
+
+    const INTERNAL_TO_PUBLIC_STATUS = [
+        self::ATTEMPTED => self::ISSUED
     ];
 
     /**
@@ -43,12 +54,17 @@ class Status
             self::PROCESSING,
             self::CANCELLED
         ],
+        self::ATTEMPTED => [
+            self::PROCESSING,
+            self::CANCELLED
+        ],
         self::PROCESSING => [
-            self::ISSUED, // in case payout fails
-            self::PAID    // in case payout is successful,
+            self::ATTEMPTED, // in case payout fails
+            self::PAID,    // in case payout is successful,
+            self::CANCELLED // in case the payout is cancelled
         ],
         self::PAID => [
-            self::ISSUED    // in case of a reversal
+            self::ATTEMPTED    // in case of a reversal
         ],
         self::CANCELLED => [] // this is a final state
     ];
@@ -85,4 +101,10 @@ class Status
             );
         }
     }
+
+    public static function getPublicStatusFromInternalStatus($internalStatus): string
+    {
+        return self::INTERNAL_TO_PUBLIC_STATUS[$internalStatus] ?? $internalStatus;
+    }
+
 }
