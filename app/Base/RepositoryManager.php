@@ -55,7 +55,8 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Mpan\Repository                        $mpan
  * @property Models\Merchant\Document\Repository           $merchant_document
  * @property Models\Card\Repository                        $card
- * @property Models\Settlement\bucket\Repository           $settlement_bucket
+ * @property Models\Settlement\Bucket\Repository           $settlement_bucket
+ * @property Models\Settlement\Destination\Repository      $settlement_destination
  * @property Models\D2cBureauDetail\Repository             $d2c_bureau_detail
  * @property Models\D2cBureauReport\Repository             $d2c_bureau_report
  * @property Models\Merchant\MerchantUser\Repository       $merchant_user

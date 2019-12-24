@@ -130,6 +130,15 @@ trait AttemptTrait
 
         $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $setlCount);
 
+        $setl = $this->getLastEntity('settlement', true);
+
+        if (empty($setl) === false)
+        {
+            $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+            $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+        }
+
         return $content;
     }
 
@@ -390,5 +399,18 @@ trait AttemptTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function validationSettlementDestination(string $settlementId, string $destinationType, string $destinationId)
+    {
+        $destinationPrefix = ($destinationType === Entity::FUND_TRANSFER_ATTEMPT) ? 'fta_' : 'stf_';
+
+        $content = $this->getLastEntity('settlement_destination', true);
+
+        $this->assertEquals($settlementId, 'setl_' . $content['settlement_id']);
+
+        $this->assertEquals($destinationType, $content['destination_type']);
+
+        $this->assertEquals($destinationId, $destinationPrefix . $content['destination_id']);
     }
 }
