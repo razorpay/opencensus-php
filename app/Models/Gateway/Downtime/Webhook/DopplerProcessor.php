@@ -107,6 +107,13 @@ class DopplerProcessor implements ProcessorInterface
         {
             $status = $input['status'];
 
+            $this->trace->info(
+                TraceCode::GATEWAY_DOWNTIME_DOPPLER_REQUEST,
+                [
+                    'input' => $input,
+                ]
+            );
+
             $this->validateRequiredKeys($input);
 
             $data = $this->buildInput($input);
