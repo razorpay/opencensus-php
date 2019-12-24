@@ -12,13 +12,23 @@ use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
-    // Gets workflow rules for a single merchant whose id is passed through proxyAuth or url in adminAuth
+    /**
+     * Gets workflow rules for a single merchant whose id is passed through proxyAuth or url in adminAuth
+     *
+     * @param string $merchantId
+     * @return array
+     */
     public function getWorkflowRules($merchantId = null): array
     {
         return $this->core()->getWorkflowRules($merchantId);
     }
 
-    // Gets workflow rules for all merchants
+    /**
+     * Gets merchant ids which have a workflow with create_payout (or any other specified) permission
+     *
+     * @param string $merchantId
+     * @return array
+     */
     public function getMerchantIdsForWorkflowPermission($input)
     {
         $orgId = $this->auth->getOrgId();
@@ -32,6 +42,12 @@ class Service extends Base\Service
         return $results->toArrayWithItems();
     }
 
+    /**
+     * Creation of Payout amount rules
+     *
+     * @param array $input
+     * @return array
+     */
     public function createWorkflowPayoutAmountRules($input): array
     {
         $rules = $input[Entity::RULES];
