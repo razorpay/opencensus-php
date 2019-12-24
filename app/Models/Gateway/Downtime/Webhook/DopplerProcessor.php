@@ -222,6 +222,8 @@ class DopplerProcessor implements ProcessorInterface
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_CREATE,
                 [
+                    'env'   => $this->env,
+                    'mode'  => $this->mode,
                     'data' => $downtimeData,
                     'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
                 ]
@@ -237,21 +239,22 @@ class DopplerProcessor implements ProcessorInterface
 
         $razorXDowntimeDatabase = $this->shouldHitDowntimeDatabase();
 
-        if(is_null($downtime) === true)
-        {
-            throw new Exception\LogicException(
-                'Doppler Trying to resolve a non-existent downtime',
-                null,
-                [
-                    'downtimeData' => $downtimeData,
-                ]
-            );
-        }
-
-        $downtime->setEnd();
-
         if ($razorXDowntimeDatabase === true)
         {
+
+            if(is_null($downtime) === true)
+            {
+                throw new Exception\LogicException(
+                    'Doppler Trying to resolve a non-existent downtime',
+                    null,
+                    [
+                        'downtimeData' => $downtimeData,
+                    ]
+                );
+            }
+
+            $downtime->setEnd();
+
             $this->repo->saveOrFail($downtime);
         }
         else
@@ -259,7 +262,9 @@ class DopplerProcessor implements ProcessorInterface
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_RESOLVE,
                 [
-                    'data' => $downtimeData,
+                    'env'   => $this->env,
+                    'mode'  => $this->mode,
+                    'data'  => $downtimeData,
                     'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
                 ]
             );
