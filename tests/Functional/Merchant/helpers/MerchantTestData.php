@@ -5361,7 +5361,7 @@ return [
     'testSetInheritanceParent'     =>  [
         'request'   => [
             'method'    => 'POST',
-            'url'       => '/merchant/{id}/inheritance_parent',
+            'url'       => '/merchants/{id}/inheritance_parent',
             'content'   =>  [
                 'id'    =>  'parents_id'
             ]

@@ -5299,7 +5299,7 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/' . $submerchant['id'] . '/inheritance_parent';
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'id'    =>  '10000000000000'

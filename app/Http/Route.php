@@ -1389,9 +1389,9 @@ final class Route
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
 
         // merchant config inheritance
-        'inheritance_parent_fetch'                => ['get',       'merchant/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
-        'inheritance_parent_set'                  => ['post',      'merchant/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
-        'inheritance_parent_delete'               => ['delete',    'merchant/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
+        'inheritance_parent_fetch'                => ['get',       'merchants/{id}/inheritance_parent',                         'MerchantController@getInheritanceParent'                   ],
+        'inheritance_parent_set'                  => ['post',      'merchants/{id}/inheritance_parent',                         'MerchantController@postInheritanceParent'                  ],
+        'inheritance_parent_delete'               => ['delete',    'merchants/{id}/inheritance_parent',                         'MerchantController@deleteInheritanceParent'                ],
     ];
 
     public static $public = [
