@@ -30,6 +30,9 @@ class Entity extends Base\Entity
     const WORKFLOW = 'workflow';
     const STEPS    = 'steps';
 
+    // Input parameters
+    const RULES    = 'rules';
+
     protected $generateIdOnCreate = false;
 
     public $incrementing = true;

@@ -33,7 +33,7 @@ class Service extends Base\Service
 
     public function createWorkflowPayoutAmountRules($input): array
     {
-        $rules = $input['rules'];
+        $rules = $input[Entity::RULES];
 
         $merchantId = null;
 

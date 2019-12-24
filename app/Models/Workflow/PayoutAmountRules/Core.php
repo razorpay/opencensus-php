@@ -86,7 +86,7 @@ class Core extends Base\Core
     public function getWorkflowRules($merchantId = null)
     {
         // If merchant id is passed through proxyAuth and not url
-        if($this->merchant)
+        if ($this->merchant)
         {
             $merchantId = $this->merchant->getId();
         }
@@ -95,12 +95,12 @@ class Core extends Base\Core
                             ->workflow_payout_amount_rules
                             ->fetchWorkflowRulesForMerchant($merchantId);
 
-        if($this->app['basicauth']->isProxyAuth())
+        if ($this->app['basicauth']->isProxyAuth())
         {
             // An existing api returns in this format for proxyAuth which is maintained
             return $amountRules->toArrayPublic();
         }
-        elseif($this->app['basicauth']->isAdminAuth())
+        elseif ($this->app['basicauth']->isAdminAuth())
         {
             // Returns in a format including containing more fields like id in database useful for admin
             return $amountRules->toArrayWithItems();
