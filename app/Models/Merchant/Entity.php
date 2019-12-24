@@ -1149,6 +1149,11 @@ class Entity extends Base\PublicEntity
 
     }
 
+    public function merchantInheritanceMap()
+    {
+        return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);

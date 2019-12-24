@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\InheritanceMap;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const MERCHANT_ID          = 'merchant_id';
 
     const PARENT_MERCHANT_ID   = 'parent_merchant_id';

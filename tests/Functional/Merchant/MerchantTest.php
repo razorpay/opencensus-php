@@ -5297,8 +5297,6 @@ class MerchantTest extends TestCase
 
         $submerchant = $this->fixtures->create('merchant');
 
-        $testData = $this->testData[__FUNCTION__];
-
         $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
 
         $this->testData[__FUNCTION__]['request']['content'] = [
@@ -5316,6 +5314,60 @@ class MerchantTest extends TestCase
         $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], '10000000000000');
 
         $this->assertEquals($merchantInheritanceMap['merchant_id'], $submerchant['id']);
+    }
+
+    public function testGetInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $submerchant['id'] . '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+
+        $a = $this->startTest();
+        
+        $this->assertEquals($a['merchant_id'], $submerchant['id']);
+
+        $this->assertEquals($a['parent_merchant_id'], '10000000000000');     
+    }
+
+    public function testDeleteInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $submerchant['id'] . '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+
+        $a = $this->startTest();
+
+        $this->assertEmpty($a);
+        
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertNull($merchantInheritanceMap);
     }
 
     protected function enableRazorXTreatmentForRazorX()

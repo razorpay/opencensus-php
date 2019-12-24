@@ -5373,4 +5373,28 @@ return [
         ],
     ],
 
+    'testGetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
 ];

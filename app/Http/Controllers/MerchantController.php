@@ -1488,22 +1488,26 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getInheritanceParent()
+    public function getInheritanceParent(string $merchantId)
     {
-
-    }
-
-    public function postInheritanceParent(string $childMerchantId)
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postResourceParent($childMerchantId, $input['id']);
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->getInheritanceParent($merchantId);
 
         return ApiResponse::json($response);
     }
 
-    public function deleteInheritanceParent()
+    public function postInheritanceParent(string $merchantId)
     {
+        $input = Request::all();
 
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $input['id']);
+        
+        return ApiResponse::json($response);
+    }
+
+    public function deleteInheritanceParent(string $merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->deleteInheritanceParent($merchantId);
+
+        return ApiResponse::json($response);
     }
 }
