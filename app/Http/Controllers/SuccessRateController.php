@@ -9,6 +9,11 @@ use RZP\Services\Doppler;
 
 class SuccessRateController extends Controller
 {
+    /**
+     * Here in this function we are passing the
+     * request coming from dashboard to doppler
+     */
+
     public function proxy()
     {
         $method = Request::method();

@@ -103,9 +103,9 @@ class Core extends Base\Core
 
     public function edit(string $id, array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_EDIT, $input);
-
         $downtime = $this->repo->gateway_downtime->findOrFailPublic($id);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_EDIT, $input);
 
         $downtime->edit($input);
 
