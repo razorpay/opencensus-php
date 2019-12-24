@@ -34,6 +34,7 @@ class NbPlusPaymentServiceTest extends TestCase
         'merchant_detail',
         'gateway_config',
         'gateway',
+        'method_data',
     ];
 
     const CALLBACK_ACTION_INPUT = [
@@ -44,6 +45,7 @@ class NbPlusPaymentServiceTest extends TestCase
         'cps_route',
         'merchant_detail',
         'gateway_config',
+        'method_data'
     ];
 
     public function setUp()
