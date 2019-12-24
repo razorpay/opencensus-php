@@ -245,7 +245,7 @@ export default class CreateNewContainer extends React.Component {
   }
 
   fetchIfIntentDuplicate(invoiceId) {
-    this.props
+    return this.props
       .fetchInvoice(invoiceId)
       .then(data => {
         this.isIntentDuplicate = true;
