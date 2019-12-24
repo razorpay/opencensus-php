@@ -72,6 +72,7 @@ class Repository extends Base\Repository
                                                               ->from(Table::WORKFLOW_PERMISSION)
                                                               ->where(Entity::PERMISSION_ID, $permissionId);
                                                         })
+                                        ->orgId($orgId)
                                         ->distinct();
 
         if (empty($merchantId) === false)
