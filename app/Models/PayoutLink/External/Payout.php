@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutLink\External;
 
 use App;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -31,16 +32,17 @@ class Payout
     public function processPayout(PayoutLinkEntity $payoutLink, MerchantEntity $merchant, string $mode): PayoutEntity
     {
         $input = [
-            PayoutEntity::NARRATION       => $payoutLink->getDescription(),
-            PayoutEntity::PURPOSE         => 'payout',
-            PayoutEntity::AMOUNT          => $payoutLink->getAmount(),
-            PayoutEntity::CURRENCY        => $payoutLink->getCurrency(),
-            PayoutEntity::NOTES           => $payoutLink->getNotes()->toArray(),
-            PayoutEntity::BALANCE_ID      => $payoutLink->getBalanceId(),
-            PayoutEntity::FUND_ACCOUNT_ID => $payoutLink->fundAccount->getPublicId(),
-            PayoutEntity::MODE            => $mode,
-            PayoutEntity::REFERENCE_ID    => $payoutLink->getReceipt(),
-            PayoutEntity::PAYOUT_LINK_ID  => $payoutLink->getId()
+            PayoutEntity::NARRATION            => $payoutLink->getDescription(),
+            PayoutEntity::PURPOSE              => Purpose::PAYOUT,
+            PayoutEntity::AMOUNT               => $payoutLink->getAmount(),
+            PayoutEntity::CURRENCY             => $payoutLink->getCurrency(),
+            PayoutEntity::NOTES                => $payoutLink->getNotes()->toArray(),
+            PayoutEntity::BALANCE_ID           => $payoutLink->getBalanceId(),
+            PayoutEntity::FUND_ACCOUNT_ID      => $payoutLink->fundAccount->getPublicId(),
+            PayoutEntity::MODE                 => $mode,
+            PayoutEntity::REFERENCE_ID         => $payoutLink->getReceipt(),
+            PayoutEntity::PAYOUT_LINK_ID       => $payoutLink->getId(),
+            PayoutEntity::QUEUE_IF_LOW_BALANCE => true
         ];
 
         $payout = (new PayoutCore())->createPayoutToFundAccount($input, $merchant);
