@@ -802,8 +802,8 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
-        'workflow_payout_amount_rules_admin'       => ['get',      'workflows/rules/payout_amount/{id}',             'WorkflowController@getWorkflowRulesForMerchant'                    ],
-        'workflow_payout_amount_rules_all'         => ['get',      'workflows/rules/payout_amount/merchants',        'WorkflowController@getMerchantIdsForWorkflowPermission'            ],
+        'workflow_payout_amount_rules_merchant'    => ['get',      'workflows/rules/payout_amount/{id}',             'WorkflowController@getWorkflowRulesForMerchant'                    ],
+        'workflow_payout_amount_rules_merchants'   => ['get',      'workflows/rules/payout_amount/merchants',        'WorkflowController@getMerchantIdsForWorkflowPermission'            ],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -2172,7 +2172,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
-        'workflow_payout_amount_rules_all',
+        'workflow_payout_amount_rules_merchants',
         'workflow_payout_amount_rules_create',
         'add_additional_website',
         'reminder_admin',
@@ -2246,7 +2246,7 @@ final class Route
         'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
-        'workflow_payout_amount_rules_admin',
+        'workflow_payout_amount_rules_merchant',
         'action_checker_create',
         'action_diff_get',
         'action_request_execute',
@@ -2726,9 +2726,9 @@ final class Route
         'workflow_create'                          => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
-        'workflow_payout_amount_rules_admin'       => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_merchant'    => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
-        'workflow_payout_amount_rules_all'         => Permission::VIEW_ALL_WORKFLOW,
+        'workflow_payout_amount_rules_merchants'   => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => '*',
