@@ -115,6 +115,18 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateRulesWithExtraRanges()
+    {
+        $this->ba->adminAuth();
+
+        // Attach rules to first three workflows with merchant id '1000000000000' with ranges leaving gaps
+        for ($index = 0; $index < 3; $index++) {
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
+        }
+
+        $this->startTest();
+    }
+
     public function testCreateRulesWithWrongWorkflowId()
     {
         $this->ba->adminAuth();

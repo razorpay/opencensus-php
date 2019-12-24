@@ -23,7 +23,9 @@ class Core extends Base\Core
         if(empty($input[Entity::MERCHANT_ID]) === false)
         {
             $merchantId = $input[Entity::MERCHANT_ID];
+
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
             $workflow->merchant()->associate($merchant);
         }
 
