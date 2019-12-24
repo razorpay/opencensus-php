@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE          = 'entity_type';
     const BALANCE_ID           = 'balance_id';
     const NOTES                = 'notes';
+    const CUSTOMER             = 'customer';
 
     const RECEIVER_TYPE        = 'receiver_type';
     const RECEIVER_TYPES       = 'receiver_types';

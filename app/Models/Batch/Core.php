@@ -59,6 +59,8 @@ class Core extends Base\Core
 
         if ($processor->shouldSendToBatchService())
         {
+            $processor->addSettingsIfRequired($input);
+
             $batchResponse = $this->app->batchService->forwardToBatchServiceRequest($input, $merchant, $ufhFile);
 
             return (new ResponseEntity)->fill($batchResponse);

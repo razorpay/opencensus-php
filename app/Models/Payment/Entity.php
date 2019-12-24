@@ -1830,6 +1830,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
+    public function isFlowIntent(): bool
+    {
+        return ($this->getMetadata('flow') === Flow::INTENT);
+    }
+
+    public function isUpiQr(): bool
+    {
+        // By definition if receiver type is qr_code and flow is intent, its upi qr payment
+        // Not relying on isBharatQr method as its implementation may change over time.
+        return (($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE) and $this->isFlowIntent());
+    }
+
     /**
      * UPI transfer is the case of smart collect where payment method is UPI and
      * receiver type will be VPA and is different from normal UPI transactions.
@@ -1974,22 +1986,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hiddenInReport;
     }
 
-    public function getPspFromVpa()
+    public function getVpaHandleFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
     {
-        $psp = $this->getPspFromVpa();
+        $vpaHandle = $this->getVpaHandleFromVpa();
 
-        return ProviderCode::getBankCode($psp);
+        return ProviderCode::getBankCode($vpaHandle);
     }
 
     public function getTransferId()
@@ -2399,7 +2411,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpi() === true)
         {
-            $issuer = $this->getPspFromVpa();
+            $issuer = $this->getVpaHandleFromVpa();
         }
         else if ($this->isPayLater() === true)
         {
@@ -3386,7 +3398,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 break;
 
             case Method::UPI:
-                $paymentArray[self::VPA] = self::DUMMY_VPA;
+                if (array_get($paymentArray, '_.flow') !== 'intent')
+                {
+                    $paymentArray[self::VPA] = self::DUMMY_VPA;
+                }
                 break;
 
             case Method::NACH:

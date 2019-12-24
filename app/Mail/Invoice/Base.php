@@ -7,6 +7,7 @@ use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
+use RZP\Constants as C;
 
 class Base extends Mailable
 {
@@ -138,6 +139,17 @@ class Base extends Mailable
             case Preferences::MID_RBL_RETAIL_ASSETS:
 
                 if (empty(static::SUBJECT_TEMPLATES[$merchantId]) === false)
+                {
+                    $template = static::SUBJECT_TEMPLATES[$merchantId];
+
+                    $args = [];
+                }
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                if ($this->data['invoice']['entity_type'] === C\Entity::SUBSCRIPTION_REGISTRATION)
                 {
                     $template = static::SUBJECT_TEMPLATES[$merchantId];
 

@@ -152,4 +152,32 @@ class Server extends Base\Mock\Server
 
         return $attributes;
     }
+
+    public function getBharatQrCallbackForRecon($qrCodeId)
+    {
+        return $this->getBharatQrCallback($qrCodeId, 123456789012);
+    }
+
+    public function getBharatQrCallback($qrCodeId, $ref = null, $input = [])
+    {
+        $data = [
+            Fields::MID                 => '037122003842039',
+            Fields::M_PAN               => '4604901004774122',
+            Fields::CUSTOMER_NAME       => 'Vishnu',
+            Fields::TXN_CURRENCY        => Currency\Currency::INR,
+            Fields::TXN_AMOUNT          => '200.00',
+            Fields::AUTH_CODE           => 'AUTH',
+            Fields::REF_NO              => '721304414190',
+            Fields::PRIMARY_ID          => $qrCodeId,
+            Fields::SECONDARY_ID        => 'CARD',
+            Fields::SETTLEMENT_AMOUNT   => '200.00',
+            Fields::TIME_STAMP          => '20170801093103',
+            Fields::TRANSACTION_TYPE    => '1',
+            Fields::BANK_CODE           => '00031',
+            Fields::AGGREGATOR_ID       => 'AG1',
+            Fields::CONSUMER_PAN        => $this->encryptAes('438628xxxxxx3456'),
+        ];
+
+        return $data;
+    }
 }

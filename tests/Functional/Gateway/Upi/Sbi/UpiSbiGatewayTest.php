@@ -25,11 +25,13 @@ use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiSbiGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * @var Payment variable
@@ -536,10 +538,18 @@ class UpiSbiGatewayTest extends TestCase
         $refundAmount = [50000, 50000, 10000];
 
         $refunds = [];
+        $refundEntities = [];
 
         foreach ($payments as $count => $payment)
         {
             $refunds[] = $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
+
+            $refundEntity = $this->getDbLastEntity('refund');
+
+            $refundEntities[] = $refundEntity;
+
+            // Upi Sbi refunds have moved to scrooge
+            $this->assertEquals(1, $refundEntity['is_scrooge']);
         }
 
         foreach ($refunds as $refund)
@@ -551,6 +561,15 @@ class UpiSbiGatewayTest extends TestCase
         // Refund a 4th payment
         $payment = $this->createCapturedPayment();
         $this->refundPayment($payment[Payment\Entity::ID]);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $refundEntities[] = $refundEntity;
+
+        // Upi Sbi refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundEntities);
 
         $data = $this->generateRefundsExcelForSbiUpi();
 

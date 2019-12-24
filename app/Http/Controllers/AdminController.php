@@ -377,4 +377,11 @@ class AdminController extends Controller
         $this->trace->info(TraceCode::STORK_ADMIN_RESPONSE, $response);
         return ApiResponse::json($response);
     }
+
+    public function getModeConfigInstruments()
+    {
+        $data = $this->service()->getModeConfigInstruments();
+
+        return ApiResponse::json($data);
+    }
 }
