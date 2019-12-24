@@ -1,5 +1,4 @@
-import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 
 export var pokeConfig = {
   merchantId: '',

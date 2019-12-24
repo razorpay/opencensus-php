@@ -1,7 +1,6 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import { createLineData } from 'common/utils/chart/index.js';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 // graph data
 // fetched everytime date is changed
