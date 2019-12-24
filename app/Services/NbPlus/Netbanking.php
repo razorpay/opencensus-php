@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Base\PublicEntity;
-use RZP\Gateway\Base\VerifyResult;
 
 class Netbanking extends Service
 {
@@ -51,7 +50,9 @@ class Netbanking extends Service
             self::INPUT   => $input
         ];
 
-        $response = $this->sendRequest('POST', 'action/' . $action, $content);
+        $method = $input[Entity::PAYMENT][Payment\Entity::METHOD];
+
+        $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 
         return $response;
     }

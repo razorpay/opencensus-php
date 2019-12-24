@@ -176,7 +176,6 @@ class Service
             {
                 $content = json_encode($request['content']);
             }
-            sd($request);
 
             $response = $this->request->request(
                 $request['url'],
