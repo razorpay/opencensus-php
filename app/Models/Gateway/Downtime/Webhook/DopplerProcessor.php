@@ -259,6 +259,8 @@ class DopplerProcessor implements ProcessorInterface
         }
         else
         {
+            $downtime = (new Entity)->build($downtimeData);
+
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_RESOLVE,
                 [
