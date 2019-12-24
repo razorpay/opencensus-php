@@ -37,9 +37,10 @@ abstract class Processor extends Base\Core
         $this->validator = new Validator;
     }
 
-    protected function getPaymentProcessor(): PaymentProcessor
+    protected function getPaymentProcessor(bool $forceCreate = false): PaymentProcessor
     {
-        if (isset($this->paymentProcessor) === false)
+        if ((isset($this->paymentProcessor) === false) or
+            ($forceCreate === true))
         {
             $this->paymentProcessor = new PaymentProcessor($this->merchant);
         }

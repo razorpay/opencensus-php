@@ -172,7 +172,9 @@ class NetbankingSbiGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content[ResponseFields::STATUS] = 'Failed';
+                $content[ResponseFields::STATUS]      = 'Failed';
+                $content[ResponseFields::STATUS_DESC] = 'failed at bank end';
+                $content[ResponseFields::BANK_REF_NO] = null;
             }
         });
 
@@ -182,6 +184,11 @@ class NetbankingSbiGatewayTest extends TestCase
         {
             $this->doNetbankingSbiAuthAndCapturePayment();
         });
+
+        $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentFailedNetbankingEntity'], $netbankingEntity);
     }
 
     public function testAuthInvalidStatus()

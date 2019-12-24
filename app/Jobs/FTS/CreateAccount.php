@@ -34,6 +34,11 @@ class CreateAccount extends Job
     protected $status;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_create_account';
@@ -75,6 +80,19 @@ class CreateAccount extends Job
             $accountService = App::getFacadeRoot()['fts_create_account'];
 
             $accountService->initialize($this->id, $this->type, $this->product, $this->status);
+
+            if (empty($accountService->getAccount()) === true)
+            {
+                $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_INVALID_ID,
+                    [
+                        'id'      => $this->id,
+                        'type'    => $this->type,
+                    ]);
+
+                $this->delete();
+
+                return;
+            }
 
             $createFundAccount = $accountService->isAccountCreatedInFts();
 

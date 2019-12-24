@@ -128,10 +128,24 @@ class FundTransfer extends Base
             $product = Constants::PENNY_TESTING;
         }
 
-        if (($sourceType === Constants::PAYOUT) and
-            ($this->fta->isRefund() === true))
+        if ($sourceType === Constants::PAYOUT)
         {
-            $product = Constants::PAYOUT_REFUND;
+            // Note: Yesbank NEFT/RTGS and UPI integration both uses same source account in FTS.
+            // Now, if Mode is UPI then beneficiary registration is not required.
+            // As a result, transfers via mode UPI will not have a entry in beneficiary status entity.
+            // So, adding a temporary fix for this now to enable yesbank UPI.
+            // TODO: Need to have a better way of handling such situations.
+            // Thread: https://razorpay.slack.com/archives/CNXASR0H3/p1576752834010000
+            // JIRA: https://razorpay.atlassian.net/browse/RX-1112
+            if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
+
+            if ($this->fta->isRefund() === true)
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
         }
 
         $request = [
@@ -610,11 +624,6 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
-        if ($mode === Mode::UPI)
-        {
-            return [false, 'Upi not supported'];
-        }
-
         $allowedModes = Mode::get24x7FtsTransferModes();
 
         if (in_array($mode, $allowedModes, true) === true)
@@ -647,7 +656,7 @@ class FundTransfer extends Base
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes(15)->getTimestamp());
             }
 
             return true;
@@ -660,7 +669,7 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
                                         ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,

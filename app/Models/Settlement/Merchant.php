@@ -629,7 +629,7 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if ($ba === null and isset($this->merchantSettleToPartner[$mid]) === false)
+            if (($ba === null) and (isset($this->merchantSettleToPartner[$mid]) === false))
             {
                 throw new Exception\LogicException(
                     'Settling bank account not found');

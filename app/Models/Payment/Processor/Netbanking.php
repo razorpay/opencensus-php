@@ -587,11 +587,6 @@ class Netbanking
                 self::PUNB_C
             ]
         ],
-        Gateway::NETBANKING_EQUITAS => [
-            'retail' => [
-                IFSC::ESFB,
-            ]
-        ],
 
         Gateway::NETBANKING_SBI => [
             'retail' => [
