@@ -772,7 +772,7 @@ class PayoutLinkTest extends TestCase
 
         $payoutLink->refresh();
 
-        $this->assertEquals(Status::PAID, $payoutLink->getStatus());
+        $this->assertEquals(Status::PROCESSED, $payoutLink->getStatus());
 
         $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
     }
