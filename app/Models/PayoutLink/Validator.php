@@ -14,7 +14,7 @@ class Validator extends Base\Validator
     const GENERATE_OTP          = 'generate_otp';
 
     protected static $generateOtpRules = [
-        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
+        Entity::CONTEXT => 'sometimes|string|min:5|max:15'
     ];
     protected static $createRules = [
         Entity::CONTACT_NAME         => 'required|string|max:50',

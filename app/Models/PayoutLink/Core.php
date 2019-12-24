@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PayoutLink;
 
+use View;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
@@ -134,6 +135,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payoutLink);
 
         return $payoutLink;
+    }
+
+    public function viewHostedPage($payoutLinkId)
+    {
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        return View::make('payout_link.customer_hosted', []);
     }
 
     protected function getBalance(array $input)

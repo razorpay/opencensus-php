@@ -23,7 +23,7 @@ class Raven
 
     const TEST_SMS_ID     = '10000000000sms';
     // If raven service is mock, this OTP only is evaluated as true in verify.
-    const MOCK_VALID_OTP = '0007';
+    const MOCK_VALID_OTP = '000007';
 
     protected $baseUrl;
 

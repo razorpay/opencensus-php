@@ -44,6 +44,11 @@ class Service extends Base\Service
         return $this->core->cancel($payoutLinkId);
     }
 
+    public function viewHostedPage($payoutLinkId)
+    {
+        return $this->core->viewHostedPage($payoutLinkId);
+    }
+
     public function verifyCustomerOtp($payoutLinkId, $input)
     {
         return $this->core->verifyCustomerOtp($payoutLinkId, $input);
