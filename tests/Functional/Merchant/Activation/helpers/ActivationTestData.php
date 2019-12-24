@@ -2159,6 +2159,28 @@ return [
         ],
     ],
 
+    'testReleaseFundsWithParntersBankAccount' => [
+        'request'   => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
+
     'testPostInstantActivationFetaureCheck' => [
         'request'     => [
             'method'  => 'POST',
@@ -2580,6 +2602,25 @@ return [
         ],
     ],
 
+    'testValidateNeedsClarificationStatusChange' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+                'locked'            => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
@@ -2590,7 +2631,7 @@ return [
                 'contact_name'         => [
                     'reasons' => [
                         'provide_poc' => [
-                            'description' => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',
+                            'description' => 'Please provide a POC that we can reach out to in case of issues associated with your account.',
                         ],
                     ],
                 ],
@@ -2605,20 +2646,6 @@ return [
                     'reasons' => [
                         'is_company_reg' => [
                             'description' => 'Is your company a registered entity?',
-                        ],
-                    ],
-                ],
-                'business_category'    => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
-                        ],
-                    ],
-                ],
-                'business_subcategory' => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
                         ],
                     ],
                 ],

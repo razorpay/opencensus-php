@@ -88,31 +88,18 @@ class Cbi extends Base
         return static::FILE_NAME . $dateTime;
     }
 
-    public function generateData(PublicCollection $refunds)
+    protected function collectPaymentData(Payment\Entity $payment): array
     {
-        $data = [];
+        $terminal = $payment->terminal;
 
-        foreach ($refunds as $refund)
-        {
-            $payment = $refund->payment;
+        $merchant = $payment->merchant;
 
-            $terminal = $payment->terminal;
+        $col['payment'] = $payment->toArray();
 
-            $merchant = $payment->merchant;
+        $col['terminal'] = $terminal->toArray();
 
-            $col['refund'] = $refund->toArray();
+        $col['merchant'] = $merchant;
 
-            $col['payment'] = $payment->toArray();
-
-            $col['terminal'] = $terminal->toArray();
-
-            $col['merchant'] = $merchant;
-
-            $data[] = $col;
-        }
-
-        $data = $this->addGatewayEntitiesToData($data, $refunds);
-
-        return $data;
+        return $col;
     }
 }

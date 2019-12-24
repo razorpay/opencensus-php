@@ -68,6 +68,18 @@ class PayInitData extends Base\Mock\Server
             'next' => [],
             'success' => true,
         ];
+
+        switch ($entities['payment']['description']) {
+            case 'intentPayment':
+                $response['data'] = [];
+                $response['next'] = [
+                   'redirect' => [
+                       'method' => 'post',
+                       "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                   ]
+                ];
+             break;
+        }
         return $response;
     }
 
@@ -266,6 +278,53 @@ class PayInitData extends Base\Mock\Server
                     ],
                 ],
             ],
+        ];
+
+        return $response;
+    }
+
+    public function getsimpl($entities)
+    {
+        $response = [
+            'data' => [
+                'payment_id'    => $entities['payment']['public_id'],
+                '_raw'          => '{\"amount\":400,\"Http_status\":200,\"transaction_id\":\"05f7e47f-64d2-45e2-b8db-b09a7d112606\",\"success\":true,\"paymentId\":\"pg_payment_id15\"}',
+                'api_version'   => '4.0',
+                'data' => [
+                    'due_by' => [
+                        'due_by_in_time'  => '2019-09-20T23:59:59+05:30',
+                        'due_by_in_words' => '20 September, 2019'
+                    ],
+                    'transaction' => [
+                        'amount_in_paise'          => $entities['payment']['amount'],
+                        'billing_address'          => null,
+                        'delivered'                => true,
+                        'discount_amount_in_paise' => 0,
+                        'id'                       => '05f7e47f-64d2-45e2-b8db-b09a7d112606',
+                        'items' => [
+                            [
+                                'sku' => $entities['payment']['public_id']
+                            ]
+                        ],
+                        'metadata' => [
+                            'customer_id' => $entities['payment']['public_id'],
+                            'email'       => 'rzp@simpl.com'
+                        ],
+                        'order' => [
+                            'merchant_order_id' => $entities['payment']['public_id'],
+                        ],
+                        'shipping_address'         => null,
+                        'shipping_amount_in_paise' => 0,
+                        'status'                   => 'CLAIMED'
+                    ]
+                ],
+                'status'  => 'payment_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
         ];
 
         return $response;

@@ -1951,12 +1951,54 @@ trait Refund
         return $data;
     }
 
+    protected function loadFTADataForScroogeRefund(
+        array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
+    {
+        if (isset($input['vpa']) === true)
+        {
+            $scroogeData['fta_data']['vpa'] = $input['vpa'];
+
+            return;
+        }
+
+        // Shouldn't enter this flow once instant refund fails and load fta data from input
+        if (($refund->isRefundSpeedInstant() === true) and ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
+        {
+            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $cardInput = $this->getCardIdInput($payment, $input);
+
+                if (empty($cardInput) === false)
+                {
+                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
+
+                    return;
+                }
+            }
+
+            if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
+
+                return;
+            }
+        }
+
+        $bankAccountInput = $this->getBankAccountInput($payment, $input);
+
+        if (empty($bankAccountInput) === false)
+        {
+            $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+        }
+    }
+
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         $refundData = $refund->toArray();
 
         $extraData = [
             'method'                    => $payment->getMethod(),
+            'bank'                      => $payment->getBank(),
             'payment_amount'            => $payment->getAmount(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
@@ -1975,45 +2017,12 @@ trait Refund
 
         $scroogeData = array_merge($refundData, $extraData);
 
-        if ($payment->isNetbanking() === true)
-        {
-            $scroogeData['bank'] = $payment->getBank();
-        }
-
-        if (isset($input['vpa']) === true)
-        {
-            $scroogeData['fta_data']['vpa'] = $input['vpa'];
-        }
-        else if ($refund->isRefundSpeedInstant() === true)
-        {
-            if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $cardInput = $this->getCardIdInput($payment, $input);
-
-                if (empty($cardInput) === false)
-                {
-                    $scroogeData['fta_data']['card_transfer'] = $cardInput;
-                }
-            }
-            else if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
-            {
-                $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
-            }
-        }
-        else
-        {
-            $bankAccountInput = $this->getBankAccountInput($payment, $input);
-
-            if (empty($bankAccountInput) === false)
-            {
-                $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
-            }
-        }
-
         if (isset($input['refund'][RefundEntity::MODE_REQUESTED]) === true)
         {
             $scroogeData[RefundEntity::MODE_REQUESTED] = $input['refund'][RefundEntity::MODE_REQUESTED];
         }
+
+        $this->loadFTADataForScroogeRefund($scroogeData, $refund, $payment, $input);
 
         //
         // These attributes are already in scrooge, need to be reset before sending scrooge request
@@ -2606,17 +2615,8 @@ trait Refund
         {
             $paymentId = $payment->getId();
 
-            $haystack = [
-                'A0DbFSFMubDEAy',
-                'AEYsLhL8DAQAeh',
-                'AFG1ItI8zwijGP',
-                'AGsXWuKUv6XiVU',
-                'AMqpPrSMsxKKPc',
-                'AQNG7kHM5tfk4G',
-                'ATCKgAcp7cswbo'
-            ];
-
-            if (in_array($paymentId, $haystack, true) === true)
+            // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
+            if ($paymentId === 'AQNG7kHM5tfk4G')
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,

@@ -15,6 +15,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Methods\Entity as MerchantMethods;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 
 class MethodsTest extends TestCase
@@ -311,6 +312,21 @@ class MethodsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchGooglePayForCardsMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertFalse($response[MerchantMethods::GOOGLE_PAY_CARDS]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
+
+        $response = $this->startTest();
+
+        $this->assertTrue($response[MerchantMethods::GOOGLE_PAY_CARDS]);
     }
 
     public function testEnableEmi()

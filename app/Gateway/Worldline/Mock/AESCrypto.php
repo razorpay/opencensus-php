@@ -8,6 +8,6 @@ class AESCrypto extends Worldline\AESCrypto
 {
     public function encryptString(string $string)
     {
-        return base64_encode(parent::encryptString($string));
+        return bin2hex(parent::encryptString($string));
     }
 }

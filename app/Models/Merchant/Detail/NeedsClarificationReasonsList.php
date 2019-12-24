@@ -30,7 +30,7 @@ class NeedsClarificationReasonsList
 
     const REASON_DETAILS = [
         self::PROVIDE_POC                               => [
-            NeedsClarificationMetaData::DESCRIPTION => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Please provide a POC that we can reach out to in case of issues associated with your account.',],
         self::INVALID_CONTACT_NUMBER                    => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please provide a valid contact number',],
         self::IS_COMPANY_REG                            => [
