@@ -5,10 +5,13 @@ namespace RZP\Tests\Functional\PayoutLink;
 use Mail;
 use Redis;
 use Mockery;
+use Closure;
 use Exception;
 use RZP\Models\Payout;
 use RZP\Models\Settings;
+
 use RZP\Error\ErrorCode;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
@@ -16,6 +19,7 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -26,6 +30,8 @@ class PayoutLinkTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use EntityActionTrait;
+    use MocksDnsTrait;
 
     const TEST_PAYOUT_LINK_PAYLOAD = [
         'id'           => 'DnhDjMDHlQEjgM',
@@ -881,6 +887,50 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
     }
 
+    public function testPayoutLinkInitiatedWebhookTriggered()
+    {
+        $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->createWebhook(
+            [
+                'events' => [
+                    'payout_link.created' => '1',
+                ]
+            ]);
+//
+//        $testData = $this->testData[__FUNCTION__];
+//
+//        $this->mockInfernoFire(function ($data) use ($testData)
+//        {
+//            dd('dskjsdks');
+////            $data['event'] = json_decode($data['event'], true);
+//
+////            $this->assertEquals('virtual_account.created', $data['event']['event']);
+//
+////            $this->assertArraySelectiveEquals($testData, $data);
+//
+//            return true;
+//        });
+
+
+        $this->startTest();
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
+    }
+
     protected function mockRedisSuccess()
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])
@@ -917,4 +967,5 @@ class PayoutLinkTest extends TestCase
         $this->testData[$funcName]['request']['content']['account_number'] =
             $this->virtualAccount->bankAccount->getAccountNumber();
     }
+
 }

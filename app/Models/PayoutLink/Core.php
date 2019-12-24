@@ -144,6 +144,9 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
+                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::CANCELLED],
+                                         [$payoutLink]);
+
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
@@ -212,6 +215,9 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($payoutLink);
 
+                        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::PROCESSING],
+                                                 [$payoutLink]);
+
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
                                                'payout_link_id'     => $payoutLinkId,
@@ -270,6 +276,9 @@ class Core extends Base\Core
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
                 $this->repo->saveOrFail($payoutLink);
+
+                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus],
+                                         [$payoutLink]);
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
@@ -349,6 +358,9 @@ class Core extends Base\Core
         $payoutLink->setStatus(Status::ISSUED);
 
         $this->repo->saveOrFail($payoutLink);
+
+        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
+                                 [$payoutLink]);
 
         return $payoutLink;
     }

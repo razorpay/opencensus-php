@@ -803,5 +803,37 @@ return [
         'response' => [
             'content' => [
             ]
-        ]]
+        ]
+    ],
+
+    'testPayoutLinkInitiatedWebhookTriggered' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'receipt'     => 'Test Payout Receipt',
+                'notes'       => [
+                    'hi' => 'hello'
+                ],
+                'status'      => 'issued',
+            ]
+        ]
+    ],
 ];
