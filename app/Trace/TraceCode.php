@@ -2090,6 +2090,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_CREATE_ACCOUNT_COMPLETE                           = 'FTS_CREATE_ACCOUNT_COMPLETE';
     const FTS_TRANSFER_ACTION_COMPLETE                          = 'FTS_TRANSFER_ACTION_COMPLETE';
     const FTS_CREATE_ACCOUNT_DUPLICATE                          = 'FTS_CREATE_ACCOUNT_DUPLICATE';
+    const FTS_CREATE_ACCOUNT_INVALID_ID                         = 'FTS_CREATE_ACCOUNT_INVALID_ID';
     const FTS_FUND_TRANSFER_NOT_ALLOWED                         = 'FTS_FUND_TRANSFER_NOT_ALLOWED';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
