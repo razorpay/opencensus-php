@@ -5548,6 +5548,18 @@ ALTER TABLE partner_configs
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
 
+ALTER TABLE `transfers`
+    ADD INDEX `transfers_source_id_index` (`source_id`),
+    ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);
+
+// Already ran on production.
+ALTER TABLE `terminals`
+    CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
+    CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+ALTER TABLE worldline
+	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
+
 ALTER TABLE payouts
     ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
     ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);

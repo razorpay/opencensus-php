@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -25,6 +26,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
+        Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -45,6 +47,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:30',
     ];
 
+    protected static $createValidators = [
+        Entity::RECEIVER_TYPES,
+    ];
+
     protected function validateReceivers(string $key, array $value, array $data)
     {
         if ((isset($value[Entity::TYPES]) === true) and
@@ -55,6 +61,70 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
                 'receiver_type',
                 $data);
+        }
+    }
+
+    /**
+     * Currently only validating the the receivers.qr_code
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    protected function validateReceiverTypes(array $input)
+    {
+        if (isset($input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD]) === false)
+        {
+            // This case is already validated separately
+            return;
+        }
+
+        if ((isset($input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD]) === true) and
+            (isset($input[Entity::RECEIVERS][Entity::TYPES])) and
+            (is_array($input[Entity::RECEIVERS][Entity::TYPES])))
+        {
+            // QR code should not be passed if receiver types has bank account
+            if (in_array(Receiver::QR_CODE, $input[Entity::RECEIVERS][Entity::TYPES], true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                    'receiver_type',
+                    $input);
+            }
+        }
+
+        // All we want to make sure if receivers.qr_code.method is passes
+        $method = $input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD];
+
+        if (is_array($method) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                'receiver_qr_code_method',
+                $method);
+        }
+
+        $upi  = filter_var(array_get($method, Payment\Method::UPI), FILTER_VALIDATE_BOOLEAN);
+        $card = filter_var(array_get($method, Payment\Method::CARD), FILTER_VALIDATE_BOOLEAN);
+
+        $onlyUpi = (($upi === true) and ($card === false));
+
+        // Currently no other combination is allowed
+        if ($onlyUpi === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                'receiver_method',
+                $method);
+        }
+
+        // Order support is not provided for Only UPI QR
+        if (($onlyUpi === true) and
+            (isset($input[Entity::ORDER_ID]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER,
+                'receiver_qr_code_method',
+                $method);
         }
     }
 

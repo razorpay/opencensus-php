@@ -28,4 +28,36 @@ class Issuer
     const SYNB = 'SYNB';
     const CORP = 'CORP';
     const BKID = 'BKID';
+
+    protected static $issuers = [
+        self::ALLA,
+        self::ANDB,
+        self::AXIS,
+        self::BARB,
+        self::BOFA,
+        self::CITI,
+        self::HDFC,
+        self::IBKL,
+        self::ICIC,
+        self::KKBK,
+        self::PUNB,
+        self::SBIN,
+        self::UTIB,
+        self::INDB,
+        self::SCBL,
+        self::HSBC,
+        self::CNRB,
+        self::UBIN,
+        self::RATN,
+        self::YESB,
+        self::IOBA,
+        self::SYNB,
+        self::CORP,
+        self::BKID,
+    ];
+
+    public static function getAllIssuers():array
+    {
+        return self::$issuers;
+    }
 }

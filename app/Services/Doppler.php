@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 
@@ -127,6 +128,7 @@ class Doppler
             $card['card_type'] = $payment->card->getType();
             $card['card_issuer'] = $payment->card->getIssuer();
             $upi['vpa'] = null;
+            $upi['vpa_handle'] = null;
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
@@ -135,18 +137,19 @@ class Doppler
 
         if($payment->isUPI() === true)
         {
-            $psp = $payment->getPspFromVpa();
-            if (strlen($psp) == 0)
+            $vpaHandle = $payment->getVpaHandleFromVpa();
+            if (strlen($vpaHandle) == 0)
             {
-                $psp = null;
+                $vpaHandle = null;
             }
             $card['card_iin'] = null;
             $card['card_network'] = null;
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = $payment->getVpa();
-            $upi['psp'] = $psp;
-            $upi['bank'] = $payment->getBankName();
+            $upi['vpa_handle'] = $vpaHandle;
+            $upi['psp'] = ProviderCode::getPsp($vpaHandle) ?? null;
+            $upi['bank'] = $payment->getBankName() ?? null;
             $upi['type'] = $payment->getMetadata('flow');
             $netbanking['bank'] = null;
         }
@@ -158,6 +161,7 @@ class Doppler
             $card['card_type'] = null;
             $card['card_issuer'] = null;
             $upi['vpa'] = null;
+            $upi['vpa_handle'] = null;
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
@@ -183,6 +187,7 @@ class Doppler
             'error_code'            => $errorCode ?? null,
             'internal_error_code'   => $internalErrorCode ?? null,
         ];
+
 
         $data = [
             'session_id' => self::SESSION_ID,

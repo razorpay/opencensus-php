@@ -12,6 +12,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Axis extends Base
 {
@@ -37,16 +38,22 @@ class Axis extends Base
         'REFUND Amount',
     ];
 
-    public function fetchEntities(): PublicCollection
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
+        //
+        // Regular flow - fetching refunds from API DB
+        //
 
         $corporate = $this->gatewayFile->getCorporate();
 
         $gatewayCode = ($corporate === true) ?
-                        self::CORPORATE_GATEWAY_CODE :
-                        self::NON_CORPORATE_GATEWAY_CODE;
+            self::CORPORATE_GATEWAY_CODE :
+            self::NON_CORPORATE_GATEWAY_CODE;
 
         $refunds = $this->repo->refund->fetchCorporateRefundsBetweenTimestamps(
             static::PAYMENT_TYPE_ATTRIBUTE,
@@ -57,6 +64,45 @@ class Axis extends Base
         );
 
         return $refunds;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $corporate = $this->gatewayFile->getCorporate();
+
+        $gatewayCode = ($corporate === true) ?
+            self::CORPORATE_GATEWAY_CODE :
+            self::NON_CORPORATE_GATEWAY_CODE;
+
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => $gatewayCode,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
     }
 
     protected function formatDataForFile(array $data)

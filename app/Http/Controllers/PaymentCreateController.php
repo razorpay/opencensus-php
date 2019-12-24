@@ -35,7 +35,14 @@ class PaymentCreateController extends Controller
         if ((is_array($ret)) and
             (isset($ret['request']) === false))
         {
-            return ApiResponse::json($ret);
+            if((isset($this->input['provider'])) and ($this->input['provider'] === Payment\Gateway::GETSIMPL) and ($this->app['rzp.mode'] != 'test'))
+            {
+                assertTrue ($ret !== null);
+                return $this->returnCheckoutCallbackView($ret);
+            }
+            else {
+                return ApiResponse::json($ret);
+            }
         }
 
         return $ret;

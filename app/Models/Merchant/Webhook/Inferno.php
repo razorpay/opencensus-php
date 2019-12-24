@@ -484,7 +484,7 @@ class Inferno
 
             $merchant = $this->app['repo']->merchant->findOrFailPublic($merchantId);
 
-            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $event);
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $event, $this->mode);
 
             $headers = $response['headers'];
             $event   = $response['content'];

@@ -33,6 +33,8 @@ class Core extends Base\Core
 
         $rule->getValidator()->validateTypeMatch($plan);
 
+        $rule->getValidator()->validateRuleForFeeBearer($plan, $rule);
+
         $rule->getValidator()->validatePlanTypeForOrg();
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
@@ -101,6 +103,8 @@ class Core extends Base\Core
         $newRule = $newRule->generateId();
 
         $newRule->getValidator()->validateRuleDoesNotMatch($planWithoutOldRule);
+
+        $newRule->getValidator()->validateRuleForFeeBearer($plan, $newRule);
 
         $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
 
