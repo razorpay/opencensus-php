@@ -6,6 +6,7 @@ use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Base\Collection;
 use Illuminate\Database\Query\JoinClause;
 
 class Repository extends Base\Repository
@@ -15,6 +16,12 @@ class Repository extends Base\Repository
     const DEFAULT_FETCH_LIMIT = 10;
     const DEFAULT_FETCH_OFFSET = 0;
 
+    /**
+     * Gets payout amount rules for a single merchant
+     *
+     * @param string $merchantId
+     * @return array
+     */
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         $query =  $this->newQuery();
@@ -32,8 +39,14 @@ class Repository extends Base\Repository
         return $results;
     }
 
-    // Returns list of merchant ids which have workflows with create_payout permission
-    // On selecting a certain merchant id, a second api shall be called which will return the rules for that merchant
+    /**
+     * Returns list of merchant ids which have a workflow with create_payout permission
+     * On selecting a certain merchant id, a second api shall be called which will return the rules for that merchant
+     *
+     * @param string $orgId
+     * @param array $params
+     * @return Collection
+     */
     public function getMerchantIdsForWorkflowPermission($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
