@@ -948,6 +948,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => Action::PAY_VERIFY,
+                Action::REFUND        => Action::PAY_VERIFY,
             ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
@@ -1040,6 +1041,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
             ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT   => null,
@@ -1529,7 +1531,6 @@ class Gateway extends Base\Gateway
     {
         return in_array($gateway, [
             Payment\Gateway::UPI_CITI,
-            Payment\Gateway::UPI_JUSPAY,
         ], true);
     }
 
