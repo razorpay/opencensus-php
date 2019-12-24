@@ -45,10 +45,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
         ->name('extension_user_logout')
         ->middleware(['jwt']);
-    
+
     // Org
+    Route::get('/org', 'AdminController@getOrg');
+
     Route::group(['prefix' => 'admin'], function () {
-        Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
         Route::get('/', 'AdminController@getIndex');
     });

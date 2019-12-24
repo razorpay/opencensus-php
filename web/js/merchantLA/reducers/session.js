@@ -29,7 +29,7 @@ export const fetchOrg = () => {
   return {
     type: ORG_FETCH,
     payload: ajax({
-      url: '/admin/org',
+      url: '/org',
       appendModeInURL: false,
     }),
   };
