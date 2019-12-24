@@ -22,7 +22,7 @@ class AtomGatewayTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
-    public function testNetbankingPaymentAuthorize()
+    /*public function testNetbankingPaymentAuthorize()
     {
         $this->ba->publicAuth();
 
@@ -634,5 +634,5 @@ class AtomGatewayTest extends TestCase
                 unset($content[$field]);
             }
         });
-    }
+    }*/
 }

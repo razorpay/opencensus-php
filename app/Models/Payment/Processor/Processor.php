@@ -1180,6 +1180,12 @@ class Processor
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
     {
+        if ($payment->getGateway() === Payment\Gateway::ATOM)
+        {
+            // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
+            return 'nbplusps';
+        }
+
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
         if (empty($payment->getAuthenticationGateway()) === false)
@@ -1204,9 +1210,6 @@ class Processor
         }
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
-
-        // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
-        $variant = 'nbplusps';
 
         return $variant;
     }
