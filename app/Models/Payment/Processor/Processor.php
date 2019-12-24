@@ -1173,7 +1173,9 @@ class Processor
 
     protected function isNbPlusServiceConfigEnabled(): bool
     {
-        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
+        //return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
+        // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
+        return true;
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
