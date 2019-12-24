@@ -64,12 +64,21 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
+    public function getSettings($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        return $settingsAccessor->all();
+    }
+
     /**
      * Updates settings for payoutlinks on merchant level
      * @param $input
      * @return array
      */
-    public function settings($merchantId, $input)
+    public function updateSettings($merchantId, $input)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
@@ -291,7 +300,7 @@ class Core extends Base\Core
             case Type::BANK_ACCOUNT:
                 $isImpsEnabled = $settingsAccessor->get(Entity::IMPS);
 
-                if (($isImpsEnabled == true) and
+                if (($isImpsEnabled === '1') and
                     ($amount < self::TWO_LACS))
                 {
                     return Mode::IMPS;

@@ -793,6 +793,23 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($settingAccessor->get(Payout\Mode::UPI) , 1);
     }
 
+    public function testPayoutLinkSettingsGetApiSuccess()
+    {
+        $merchant = $this->contact->merchant;
+
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert([
+                                     Payout\Mode::UPI  => true,
+                                     Payout\Mode::IMPS => 0
+                                 ])
+                        ->save();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testUpiPayoutModeWhenVpaFundAccountAdded()
     {
         $this->mockRedisSuccess();

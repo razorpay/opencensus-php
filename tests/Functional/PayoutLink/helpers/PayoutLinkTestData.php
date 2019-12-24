@@ -726,7 +726,22 @@ return [
         'response'  => [
             'content'     => [
             ]
-        ]],
+        ]
+    ],
+
+    'testPayoutLinkSettingsGetApiSuccess' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/10000000000000/settings',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'UPI'  => '1',
+                'IMPS' => '0',
+            ]
+        ]
+    ],
 
     'testPayoutStatusReversedMakesLinkStatusAttempted' => [
         'request'   => [

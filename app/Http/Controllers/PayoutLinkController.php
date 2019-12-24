@@ -28,9 +28,19 @@ class PayoutLinkController extends Controller
     /**
      * Route for update the merchant level\ settings for payout links
      */
-    public function postSettings($merchantId)
+    public function updateSettings($merchantId)
     {
-        $response = $this->service()->settings($merchantId, $this->input);
+        $response = $this->service()->updateSettings($merchantId, $this->input);
+
+        return $response;
+    }
+
+    /**
+     * Route for update the merchant level\ settings for payout links
+     */
+    public function getSettings($merchantId)
+    {
+        $response = $this->service()->getSettings($merchantId, $this->input);
 
         return $response;
     }
