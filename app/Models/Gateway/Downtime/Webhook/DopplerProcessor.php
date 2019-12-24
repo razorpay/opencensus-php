@@ -168,7 +168,7 @@ class DopplerProcessor implements ProcessorInterface
 
         $razorXDowntimeDatabase = $this->shouldHitDowntimeDatabase();
 
-        if(is_null($downtime) === false)
+        if (is_null($downtime) === false)
         {
             if($downtime->getReasonCode() === $downtimeData['reason_code'])
             {
@@ -222,8 +222,6 @@ class DopplerProcessor implements ProcessorInterface
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_CREATE,
                 [
-                    'env'   => $this->env,
-                    'mode'  => $this->mode,
                     'data' => $downtimeData,
                     'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
                 ]
@@ -262,8 +260,6 @@ class DopplerProcessor implements ProcessorInterface
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_RESOLVE,
                 [
-                    'env'   => $this->env,
-                    'mode'  => $this->mode,
                     'data'  => $downtimeData,
                     'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
                 ]
@@ -277,11 +273,11 @@ class DopplerProcessor implements ProcessorInterface
 
     protected function shouldHitDowntimeDatabase()
     {
-//        if (($this->env !== Environment::PRODUCTION) or
-//            ($this->mode !== Mode::LIVE))
-//        {
-//            return true;
-//        }
+        if (($this->env !== Environment::PRODUCTION) or
+            ($this->mode !== Mode::LIVE))
+        {
+            return true;
+        }
 
         $response = $this->app->razorx->getTreatment(
             $this->app['request']->getId(),

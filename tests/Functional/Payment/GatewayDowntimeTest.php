@@ -1339,42 +1339,42 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
-//    public function testDopplerDowntimeCreation()
-//    {
-//        $this->ba->directAuth();
-//
-//        $request = [
-//            'content' => [
-//                'method'    => 'upi',
-//                'reason_code'   => 'ISSUER_DOWN',
-//                'gateway'   => 'ALL',
-//                'status'    => 'DOWN'
-//            ],
-//            'url'   => '/gateway/downtimes/doppler/webhook',
-//            'method'    => 'POST',
-//        ];
-//
-//        $response = $this->makeRequestAndGetContent($request);
-//
-//        $this->assertNull($response['end']);
-//
-//        Carbon::setTestNow(Carbon::now()->addMinutes(10));
-//
-//        $request = [
-//            'content' => [
-//                'method'    => 'upi',
-//                'reason_code'   => 'ISSUER_DOWN',
-//                'gateway'   => 'ALL',
-//                'status'    => 'UP'
-//            ],
-//            'url'   => '/gateway/downtimes/doppler/webhook',
-//            'method'    => 'POST',
-//        ];
-//
-//        $response = $this->makeRequestAndGetContent($request);
-//
-//        $this->assertNotNull($response['end']);
-//    }
+    public function testDopplerDowntimeCreation()
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'DOWN'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($response['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'UP'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['end']);
+    }
 
     public function testDopplerDowntimeUpdate()
     {
