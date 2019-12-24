@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Destination;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 
 class Core extends Base\Core
@@ -29,6 +30,14 @@ class Core extends Base\Core
         $entity->generateId();
 
         $this->repo->saveOrFail($entity);
+
+        $this->trace->info(TraceCode::SETTLEMENT_DESTINATION,
+            [
+                'action'           => 'create',
+                'settlement_id'    => $entity->getSettlementId(),
+                'destination_type' => $entity->getDestinationType(),
+                'destination_id'   => $entity->getDestinationId(),
+            ]);
     }
 
     /**
@@ -47,6 +56,14 @@ class Core extends Base\Core
             $this->repo
                  ->settlement_destination
                  ->deleteOrFail($destination);
+
+            $this->trace->info(TraceCode::SETTLEMENT_DESTINATION,
+                [
+                    'action'           => 'delete',
+                    'settlement_id'    => $destination->getSettlementId(),
+                    'destination_type' => $destination->getDestinationType(),
+                    'destination_id'   => $destination->getDestinationId(),
+                ]);
         }
     }
 }

@@ -52,4 +52,19 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphTo('destination', self::DESTINATION_TYPE, self::DESTINATION_ID);
     }
+
+    public function getSettlementId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_ID);
+    }
+
+    public function getDestinationType()
+    {
+        return $this->getAttribute(self::DESTINATION_TYPE);
+    }
+
+    public function getDestinationId()
+    {
+        return $this->getAttribute(self::DESTINATION_ID);
+    }
 }
