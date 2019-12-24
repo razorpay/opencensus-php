@@ -6,9 +6,9 @@ import { classList } from 'common/utils/rzp-utils';
 import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
-} from '../../Amount_Fields/V3';
-import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
-import FieldOptionsDropdown, { OptionsItem } from '../../FieldOptionsDropdown';
+} from '../Amount/helpers';
+import FIELD_TYPES from '../Amount/helpers/fieldTypes';
+import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
