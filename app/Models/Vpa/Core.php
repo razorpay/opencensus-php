@@ -26,7 +26,7 @@ class Core extends Base\Core
 
     public function getVpaEntity($id)
     {
-        return $this->repo->vpa->findOrFailPublic($id);
+        return $this->repo->vpa->find($id);
     }
 
 //    public function updateVpaWithFtsId(Entity $entity, $ftsFundAccountId)

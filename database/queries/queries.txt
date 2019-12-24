@@ -5548,6 +5548,10 @@ ALTER TABLE partner_configs
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
 
+ALTER TABLE `transfers`
+    ADD INDEX `transfers_source_id_index` (`source_id`),
+    ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);
+
 // Already ran on production.
 ALTER TABLE `terminals`
     CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,

@@ -128,6 +128,51 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertArraySubset([
             Refund\Entity::PAYMENT_ID   => $payment->getId(),
             Refund\Entity::AMOUNT       => $payment->getAmount(),
+            Refund\Entity::STATUS       => 'processed',
+            Refund\Entity::GATEWAY      => $payment->getGateway(),
+            Refund\Entity::GATEWAY_REFUNDED   => true
+        ], $refund->toArray());
+    }
+
+    public function testFailedRefundPayment()
+    {
+        $this->createTestTerminal();
+
+        $this->payment['description'] = 'failedRefund';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['success' => true], $response);
+
+        $payment->refresh();
+
+        $this->assertTrue($payment->isAuthorized());
+
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->refresh();
+
+        $this->assertTrue($payment->isCaptured());
+
+        $response = $this->refundPayment($payment->getPublicId());
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            Entity::STATUS => 'refunded'
+        ], $payment->toArray());
+
+        $refund = $this->getDbLastRefund();
+
+        $this->assertArraySubset([
+            Refund\Entity::PAYMENT_ID   => $payment->getId(),
+            Refund\Entity::AMOUNT       => $payment->getAmount(),
             Refund\Entity::STATUS       => 'failed',
             Refund\Entity::GATEWAY      => $payment->getGateway(),
             Refund\Entity::GATEWAY_REFUNDED   => false
