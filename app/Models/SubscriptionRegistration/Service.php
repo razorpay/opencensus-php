@@ -280,6 +280,8 @@ class Service extends Base\Service
 
         $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
 
+        $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
+
         $paymentService = new Payment\Service();
 
         return $paymentService->process($paymentInput);

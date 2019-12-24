@@ -146,6 +146,30 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findActivatedTerminalByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
+    {
+        return $this->newQuery()
+            ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+            ->where(Entity::GATEWAY, '=', $gateway)
+            ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+            ->first();
+    }
+
+    public function findActivatedTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
+    {
+        return $this->newQuery()
+        ->where(Entity::GATEWAY, '=', $gateway)
+        ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+        ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+        ->where(function ($query) use ($mpan)
+        {
+            $query->where(Entity::VISA_MPAN, '=', $mpan)
+                  ->orWhere(Entity::MC_MPAN, '=', $mpan)
+                  ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
+        })
+        ->first();
+    }
+
     public function getByParams(array $params)
     {
         $query = $this->buildFetchByParamsQuery($params);

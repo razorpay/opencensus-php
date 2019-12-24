@@ -101,7 +101,9 @@ class Entity extends Base\PublicEntity
 
     public function modifyMerchantPayback(& $input)
     {
-        if ((isset($input[self::RATE]) === true) and
+        // Should respect the merchant payback field if sent from the create request
+        if ((isset($input[self::MERCHANT_PAYBACK]) === false) and
+            (isset($input[self::RATE]) === true) and
             (isset($input[self::DURATION]) == true))
         {
             $input[self::MERCHANT_PAYBACK] = Calculator::calculateMerchantPayback($input[self::RATE], $input[self::DURATION]);

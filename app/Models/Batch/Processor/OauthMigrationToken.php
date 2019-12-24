@@ -168,4 +168,19 @@ class OauthMigrationToken extends Base
         // Don't send an email
         return;
     }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        $config =[];
+
+        if (isset($input['config']) === true) {
+            $config = $input['config'];
+        }
+
+        $config[H::CLIENT_ID]     = $input[H::CLIENT_ID];
+        $config[H::USER_ID]       = $input[H::USER_ID];
+        $config[H::REDIRECT_URI]  = $input[H::REDIRECT_URI];
+
+        $input['config']          = $config;
+    }
 }

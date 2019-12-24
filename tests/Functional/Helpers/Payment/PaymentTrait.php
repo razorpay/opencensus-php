@@ -13,15 +13,13 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
@@ -39,6 +37,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
+    use PaymentGetsimplTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1070,6 +1069,11 @@ trait PaymentTrait
                 case 3471:
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
                     break;
             }
 
@@ -2458,4 +2462,38 @@ trait PaymentTrait
         return $address;
     }
 
+    protected function setFetchFileBasedRefundsFromScroogeMockResponse(array $refundEntities)
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        foreach ($refundEntities as $refundEntity)
+        {
+            $scroogeResponse['body']['data'][] = [
+                'id'          => $refundEntity['id'],
+                'amount'      => $refundEntity['amount'],
+                'base_amount' => $refundEntity['base_amount'],
+                'payment_id'  => $refundEntity['payment_id'],
+                'bank'        => $refundEntity->payment['bank'],
+                'gateway'     => $refundEntity['gateway'],
+                'currency'    => $refundEntity['currency'],
+                'method'      => $refundEntity->payment['method'],
+                'created_at'  => $refundEntity['created_at'],
+            ];
+        }
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
+    }
 }

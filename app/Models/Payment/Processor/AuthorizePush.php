@@ -16,18 +16,16 @@ trait AuthorizePush
     {
         $paymentInput = $data['payment'];
 
-        $gateway = $terminal->getGateway();
-
-        $mutexResource = 'unexpected_' . $gateway . '_' . $referenceId;
+        $mutexResource = 'unexpected_' . $terminal->getGateway() . '_' . $referenceId;
 
         $success = $this->app['api.mutex']->acquireAndRelease(
             $mutexResource,
-            function() use ($gateway, $callbackData, $terminal, $paymentInput, $referenceId) {
+            function() use ($callbackData, $terminal, $paymentInput, $referenceId) {
                 try
                 {
-                    $this->validatePushPayment($gateway, $callbackData, $terminal);
+                    $this->validateAuthorizePushPayment($callbackData, $terminal);
 
-                    $this->createPaymentFromS2SCallback($gateway, $callbackData, $paymentInput, $terminal);
+                    $this->createPaymentFromS2SCallback($callbackData, $paymentInput, $terminal);
 
                     $this->authorizePushPayment($this->payment, $callbackData);
 
@@ -40,8 +38,8 @@ trait AuthorizePush
                         Trace::CRITICAL,
                         TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
                         [
-                            'gateway' => $gateway,
-                            'payment_id' => $referenceId
+                            'gateway'       => $terminal->getGateway(),
+                            'payment_id'    => $referenceId
                         ]);
 
                     return false;
@@ -58,15 +56,40 @@ trait AuthorizePush
         return $response;
     }
 
-    protected function validatePushPayment(string $gateway, array $callbackData, Terminal\Entity $terminal)
+    /**
+     * A wrapper over the validatePushPayment, which check for pending payment
+     * We need to create pending payment in our system with later will be
+     * marked Failed by authorizePush function
+     */
+    protected function validateAuthorizePushPayment(array $callbackData, Terminal\Entity $terminal)
+    {
+        try
+        {
+            $this->validatePushPayment($callbackData, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            // Currently MindGate is throwing the exception for pending, and Axis does not
+            // In both cases, it will be considered valid authorize push payment
+            if ($exception->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING)
+            {
+                return;
+            }
+
+            throw $exception;
+        }
+    }
+
+    public function validatePushPayment(array $callbackData, Terminal\Entity $terminal)
     {
         $mode = $this->app['basicauth']->getMode();
+
+        $gateway = $terminal->getGateway();
 
         $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
     }
 
-    protected function createPaymentFromS2SCallback(
-        string $gateway,
+    public function createPaymentFromS2SCallback(
         array $callbackData,
         array $paymentInput,
         Terminal\Entity $terminal)
@@ -83,7 +106,7 @@ trait AuthorizePush
         return $payment;
     }
 
-    protected function authorizePushPayment(
+    public function authorizePushPayment(
         Payment\Entity $payment,
         array $callbackData)
     {

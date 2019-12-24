@@ -399,9 +399,15 @@ $hostedpage_options             = $data['options']['hosted_page'];
                             <div id="header-details">
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
-                                        <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        @if(isset($data['checkout_options']['description']))
-                                            <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                                        <div id="merchant-name">
+                                            @if(isset($checkout_options['name']))
+                                                {{{ $checkout_options['name'] }}}
+                                            @else
+                                                {{{ $invoice_data['merchant_label'] }}}
+                                            @endif
+                                        </div>
+                                        @if(isset($checkout_options['description']))
+                                            <div id="merchant-desc">{{$checkout_options['description']}}</div>
                                         @endif
                                     </div>
                                 @endif
@@ -461,9 +467,15 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 <div id="header-details">
                     @if (isset($data['merchant']))
                         <div id="merchant">
-                            <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            @if(isset($data['checkout_options']['description']))
-                                <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                            <div id="merchant-name">
+                                @if(isset($checkout_options['name']))
+                                    {{{ $checkout_options['name'] }}}
+                                @else
+                                    {{{ $invoice_data['merchant_label'] }}}
+                                @endif
+                            </div>
+                            @if(isset($checkout_options['description']))
+                                <div id="merchant-desc">{{$checkout_options['description']}}</div>
                             @endif
                         </div>
                     @endif
@@ -767,8 +779,9 @@ $hostedpage_options             = $data['options']['hosted_page'];
             // }
 
             // set from Rendering preferences
-            options.name = $checkout_options.name || invoiceObj.merchant_label;
+            options.name = $checkout_options.name || invoiceObj.merchant_label; // Same used in dummy  checkout as well
             options.description = $checkout_options.description;
+            options.min_amount_label = $checkout_options.first_payment_min_amount;
 
             // : hidden option
             options.hidden = $checkout_options.hidden; // Eg: email, contact

@@ -1331,7 +1331,7 @@ class MerchantCreateTest extends TestCase
     {
         foreach (['test', 'live'] as $mode)
         {
-            $otpAuthFeature = $this->getDbEntity('feature', [], $mode);
+            $otpAuthFeature = $this->getDbEntity('feature', ['name' => 'otp_auth_default'], $mode);
 
             $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
         }

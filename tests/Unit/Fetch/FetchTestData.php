@@ -292,6 +292,9 @@ return [
         ],
     ],
 
+    E::PAYOUT_LINK => [
+    ],
+
     E::PLAN => [
         Type::PROXY_AUTH => [
             [

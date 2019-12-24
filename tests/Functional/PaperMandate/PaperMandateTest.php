@@ -36,6 +36,13 @@ class PaperMandateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAuthLinkForPaperMandateWithoutAuthType()
+    {
+        $this->mockGenerateNACH();
+
+        $this->startTest();
+    }
+
     public function testCreateAuthLinkForPaperMandateWithoutBankAccountForMandate()
     {
         $this->mockGenerateNACH();

@@ -24,8 +24,24 @@ class Constants
     const VOTER_ID_FRONT         = 'voter_id_front';
     const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
 
+    // Email constants
+    const MERCHANT             = 'merchant';
+    const ORG                  = 'org';
+    const HOSTNAME             = 'hostname';
+    const CLARIFICATION_REASON = 'clarification_reason';
+
     // penny testing constants
-    const MERCHANT_ID     = 'merchant_id';
-    const ACCOUNT_STATUS  = 'account_status';
-    const REGISTERED_NAME = 'registered_name';
+    const MERCHANT_ID                                   = 'merchant_id';
+    const ACCOUNT_STATUS                                = 'account_status';
+    const REGISTERED_NAME                               = 'registered_name';
+    const FUZZY_MATCH_PERCENTAGE_WITH_PAN               = 'fuzzy_match_percentage_with_pan';
+    const FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME = 'fuzzy_match_percentage_with_bank_account_name';
+    const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
+    const BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  = 'bank_detail_verification_threshold_for_bank_account';
+
+    // merchant verification
+    const VERIFICATION    = 'verification';
+    const REQUIRED_FIELDS = 'required_fields';
+
+    const DUMMY_ACTIVATION_FILE = '100000000Dummy';
 }

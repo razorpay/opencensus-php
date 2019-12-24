@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -15,6 +16,7 @@ use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 class NetbankingHdfcRefundFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -36,6 +38,13 @@ class NetbankingHdfcRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -99,6 +108,13 @@ class NetbankingHdfcRefundFileTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Hdfc refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 

@@ -429,9 +429,19 @@ class EventCode
         'name'  => 'kyc.save_modifications.success',
     ];
 
+    const KYC_PENNY_TESTING_SUCCESS_RATE = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.penny_testing.success.rate',
+    ];
+
     const KYC_UPLOAD_DOCUMENT_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'kyc.upload_document.success',
+    ];
+
+    const DOCUMENT_VERIFICATION_OCR = [
+        'group' => 'onboarding',
+        'name'  => 'document.verification.ocr',
     ];
 
     const KYC_UPLOAD_DOCUMENT_FAILED = [

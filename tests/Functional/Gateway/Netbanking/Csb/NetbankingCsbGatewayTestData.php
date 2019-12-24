@@ -39,7 +39,7 @@ return [
         'amount'          => 50000,
         'action'          => 'authorize',
         'bank'            => 'CSBK',
-        'bank_payment_id' => null,
+        'bank_payment_id' => '0',
         'status'          => 'N',
         'reference1'      => null,
         'received'        => true,
