@@ -23,7 +23,7 @@ import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import OffersHome from '../containers/Offers';
+import OffersHome from '../views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {

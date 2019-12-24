@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
 
-import { PAYMENT_NETWORK_MAP } from './../Entity';
+import { PAYMENT_NETWORK_MAP } from '../Entity';
 
 const TERMS_CONDITIONS_STRING =
   'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';

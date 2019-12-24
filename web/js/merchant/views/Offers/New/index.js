@@ -15,11 +15,11 @@ import { luminateRow } from 'merchant/reducers/app';
 import Offer from 'merchant/models/Offer';
 import { appendOfferInReduxList } from 'merchant/reducers/offers/offersList';
 
-import PaymentMethods from 'merchant/containers/Offers/New/paymentMethods';
-import OfferDescription from 'merchant/containers/Offers/New/offerDescription';
-import OfferDiscount from 'merchant/containers/Offers/New/offerDiscount';
-import OfferDuration from 'merchant/containers/Offers/New/offerDuration';
-import OfferReview from 'merchant/containers/Offers/New/offerReview';
+import PaymentMethods from 'merchant/views/Offers/New/paymentMethods';
+import OfferDescription from 'merchant/views/Offers/New/offerDescription';
+import OfferDiscount from 'merchant/views/Offers/New/offerDiscount';
+import OfferDuration from 'merchant/views/Offers/New/offerDuration';
+import OfferReview from 'merchant/views/Offers/New/offerReview';
 
 const MAX_INT = 21474836;
 const CURRENCY = 'INR';
@@ -326,7 +326,7 @@ export default class CreateOfferWizard extends React.Component {
 
   renderWizard() {
     const { currentTab, validTabs } = this.state;
-    const isLastTab = (currentTab === this.tabsData.length - 1);
+    const isLastTab = currentTab === this.tabsData.length - 1;
 
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
