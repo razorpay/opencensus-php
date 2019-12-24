@@ -62,8 +62,7 @@ class Repository extends Base\Repository
         $query = $this->repo->permission->newQuery()
                                         ->where(Admin\Permission\Entity::NAME, $permission);
 
-        $permissionIdArray = $query->pluck(Entity::ID)
-                                   ->toArray();
+        $permissionIdArray = $query->pluck(Entity::ID)->toArray();
 
         $permissionId = $permissionIdArray[0];
 
