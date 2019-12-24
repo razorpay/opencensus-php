@@ -1203,6 +1203,9 @@ class Processor
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
 
+        // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
+        $variant = 'nbplusps';
+
         return $variant;
     }
 
