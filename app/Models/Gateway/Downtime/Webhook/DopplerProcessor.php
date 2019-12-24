@@ -259,8 +259,6 @@ class DopplerProcessor implements ProcessorInterface
         }
         else
         {
-            $downtime = (new Entity)->build($downtimeData);
-
             $this->trace->info(
                 TraceCode::GATEWAY_DOWNTIME_DOPPLER_RESOLVE,
                 [
@@ -270,6 +268,8 @@ class DopplerProcessor implements ProcessorInterface
                     'doppler_hitting_downtime_database' => $razorXDowntimeDatabase
                 ]
             );
+
+            return $downtimeData;
         }
 
         return $downtime->toArrayAdmin();
