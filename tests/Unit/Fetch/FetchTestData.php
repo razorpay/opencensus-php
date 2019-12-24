@@ -291,6 +291,14 @@ return [
             ],
         ],
     ],
+    
+    E::PAYOUT_LINK => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
 
     E::PLAN => [
         Type::PROXY_AUTH => [
