@@ -68,11 +68,9 @@ class Core extends Base\Core
 
         (new TokenService())->verify($input[Entity::TOKEN]);
 
-        $payoutLink = $this->repo
-                            ->payout_link
-                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-
-        $fundAccounts = $payoutLink->contact->fundAccounts;
+        $fundAccounts = $this->repo
+                             ->payout_link
+                             ->getFundAccountByPayoutLinkIdAdnMerchant($payoutLinkId, $this->merchant);
 
         return $this->filterOutInActiveFundAccounts($fundAccounts);
     }
