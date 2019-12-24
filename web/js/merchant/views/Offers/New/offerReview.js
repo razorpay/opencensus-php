@@ -1,5 +1,3 @@
-import Input from 'common/new-ui/Input';
-
 import { PAYMENT_NETWORK_MAP } from '../Entity';
 
 const TERMS_CONDITIONS_STRING =
@@ -37,6 +35,12 @@ const progressionList = progression => {
       ))}
     </ul>
   );
+};
+
+const OFFER_TYPE_MAP = {
+  instant: 'Instant',
+  deferred: 'Deferred',
+  already_discounted: 'Already Discounted',
 };
 
 const BANK_MAP = {
@@ -138,6 +142,7 @@ export default ({
     percent_rate,
     max_cashback,
     creation_terms_accepted,
+    type,
   },
   currencySymbol,
   getFormOnChangeHandler,
@@ -151,6 +156,7 @@ export default ({
               <strong>Description:</strong>
             </p>
             {getDualColumnTable('Display Text', display_text)}
+            {getDualColumnTable('Offer Type', OFFER_TYPE_MAP[type])}
             {getDualColumnTable('Offer Terms', terms)}
           </div>,
           <div>
