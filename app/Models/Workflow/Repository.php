@@ -5,7 +5,6 @@ namespace RZP\Models\Workflow;
 use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Workflow\Step;
 
 class Repository extends Base\Repository
@@ -43,9 +42,9 @@ class Repository extends Base\Repository
         if(empty($permission) === false)
         {
             $query->whereIn('id', function ($q) use ($permissionId) {
-                                  $q->select(Step\Entity::WORKFLOW_ID)
-                                  ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
-                                  ->where(Entity::PERMISSION_ID, $permissionId);
+                                      $q->select(Step\Entity::WORKFLOW_ID)
+                                        ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
+                                        ->where(Entity::PERMISSION_ID, $permissionId);
                                   });
         }
 

@@ -92,8 +92,8 @@ class Core extends Base\Core
         }
 
         $amountRules = $this->repo
-            ->workflow_payout_amount_rules
-            ->fetchWorkflowRulesForMerchant($merchantId);
+                            ->workflow_payout_amount_rules
+                            ->fetchWorkflowRulesForMerchant($merchantId);
 
         if($this->app['basicauth']->isProxyAuth())
         {
