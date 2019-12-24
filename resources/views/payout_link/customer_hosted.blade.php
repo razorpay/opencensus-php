@@ -30,7 +30,7 @@
                     'Some description that will be given in by the business. Should allow only a maximum number of characters here.',
                 referenceId: '1467890',
             },
-            apiHost: 'http://bad88495.ngrok.io/v1/',
+            apiHost: 'http://4abd72e4.ngrok.io/v1/',
             // apiHost: 'http://api.razorpay.in/',
             payoutLinkId: 'poutlk_Dteuw6gFD6YmUT',
         };
