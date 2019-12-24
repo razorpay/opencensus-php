@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
 
 class Service extends Base\Service
 {
@@ -327,6 +328,12 @@ class Service extends Base\Service
         $this->repo->saveOrFail($virtualAccount);
     }
 
+    /*
+     * If customer_id is there it will return customer based on that,
+     * otherwise if any of customer name, email or contact is given
+     * then it will create customer based on that and return that customer.
+     */
+
     protected function getCustomerIfGiven(array $input)
     {
         $customer = null;
@@ -338,6 +345,12 @@ class Service extends Base\Service
             $customer = $this->repo
                              ->customer
                              ->findByPublicIdAndMerchant($customerId, $this->merchant);
+            return $customer;
+        }
+
+        if (empty($input[Entity::CUSTOMER]) === false)
+        {
+            $customer = (new Customer\Core())->createLocalCustomer($input[Entity::CUSTOMER], $this->merchant, false);
         }
 
         return $customer;

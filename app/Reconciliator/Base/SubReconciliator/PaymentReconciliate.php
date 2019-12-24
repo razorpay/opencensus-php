@@ -63,6 +63,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB_V2,
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
+        RequestProcessor\Base::GETSIMPL,
     ];
 
     /**
@@ -112,6 +113,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * If force authorize is enabled, we do not make gateway call and mark payments as authorized.
      */
     protected $allowForceAuthorization = false;
+
+    /**
+     * For some gateway we will revalidate the payment id if do not find that in Payment Table.
+     * 1. This is required because gateways by default consider 14 char id to be payment id.
+     * 2. We do not want to put unnecessary check on any 14 char id.
+     * 3. Once gateway checks if validated or not, we will not revalidate
+     *
+     * @var bool
+     */
+    protected $isPaymentIdRevalidatedOnGateway;
 
     public function __construct(string $gateway = null, Entity $batch = null)
     {
@@ -298,6 +309,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
+        $this->persistGatewayAmount($this->payment, $rowDetails);
+
         if ($this->payment->isRoutedThroughCardPayments() === true)
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
@@ -393,6 +406,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'info_code'  => Base\InfoCode::MIS_FILE_PAYMENT_FAILED,
                         'message'    => 'Recon status is failed, but authorized_at is set in API',
                         'payment_id' => $this->payment->getId(),
                         'gateway'    => $this->gateway
@@ -795,6 +809,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
+        $this->persistGatewayAmount($this->payment, $rowDetails);
+
         return $recordSuccess;
     }
 
@@ -856,6 +872,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
+        $gatewayAmount = $this->getGatewayAmount($row);
+
         $customerDetails = $this->getCustomerDetails($row);
 
         $accountDetails = $this->getAccountDetails($row);
@@ -864,17 +882,21 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $arn = $this->getArn($row);
 
+        $gatewayUtr = $this->getGatewayUtr($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID             => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
             BaseReconciliate::GATEWAY_FEE            => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::GATEWAY_AMOUNT         => $gatewayAmount,
             BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
             BaseReconciliate::GATEWAY_PAYMENT_ID     => trim($gatewayPaymentId),
             BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
             BaseReconciliate::GATEWAY_PAYMENT_DATE   => trim($gatewayPaymentDate),
             BaseReconciliate::AUTH_CODE              => trim($authCode),
             BaseReconciliate::ARN                    => trim($arn),
+            BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -948,6 +970,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
+            $validatedPaymentId = $this->revalidatePaymentId($row, $paymentId);
+
+            if (empty($validatedPaymentId) === false)
+            {
+                return $this->setPaymentAndTransaction($row, $validatedPaymentId);
+            }
+
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);
 
             $this->messenger->raiseReconAlert(
@@ -958,6 +987,63 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
+        }
+    }
+
+    /**
+     * Will return payment id if gateway has implementation
+     * @param $row
+     * @param $paymentId
+     * @return |null
+     */
+    protected function revalidatePaymentId($row, $paymentId)
+    {
+        if ($this->isPaymentIdRevalidatedOnGateway === true)
+        {
+            return null;
+        }
+
+        $paymentId = $this->revalidatePaymentIdOnGateway($row, $paymentId);
+
+        $this->isPaymentIdRevalidatedOnGateway = true;
+
+        return $paymentId;
+    }
+
+    protected function revalidatePaymentIdOnGateway($row, $paymentId)
+    {
+        // We can first by default check for QrCode if Gateway is Qr Code Enabled
+        $gateways = Payment\Gateway::$upiQrGateways;
+
+        // It will either return Sting or false
+        $terminalGateway = array_search($this->gateway, RequestProcessor\Base::GATEWAY_NAME_MAPPING, true);
+
+        // `false` will not be in $gateways
+        if (in_array($terminalGateway, $gateways, true) === true)
+        {
+            // For UPI QR gateways, the recon payment id will be from QrCode Entity
+            $qrCode = $this->repo->qr_code->find($paymentId);
+
+            if (empty($qrCode) === false)
+            {
+                // This is QrCode payment, the recon payment id
+                // will be saved in UPI Entity as Merchant Reference.
+                // Note : We can not use QrCode entity to find payment id rather
+                //      : we will call UPI entity to find payment, now this way
+                //      : if callback was missed for QrCode will
+                $upiEntity = $this->repo->upi->fetchByMerchantReference($paymentId);
+
+                if (empty($upiEntity) === false)
+                {
+                    return $upiEntity->getPaymentId();
+                }
+
+                // Now, there might be case where UPI Entity is not created for QrCode
+                // either because we missed callback or some exception occurred in callback
+                // TODO: In this case, we are simply not allowing recon, this will be fixed separately
+
+                return null;
+            }
         }
     }
 
@@ -1084,6 +1170,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewayTransactionId($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentId($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayUtr($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 

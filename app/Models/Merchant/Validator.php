@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -1220,7 +1221,15 @@ class Validator extends Base\Validator
 
         if ($bankAccount === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            // check partner bank account exists
+            $partner = (new Core)->getSettledToPartnersTypeOfMerchantIfExists($merchant);
+
+            $partnerbankAccountExits = (new Core)->isValidBankAccountForSettledToPartner($merchant, $partner);
+
+            if ($partnerbankAccountExits === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            }
         }
     }
 

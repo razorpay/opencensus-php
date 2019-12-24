@@ -20,8 +20,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYEE_ACCOUNT      = 'bene_account_no';
     const COLUMN_PAYER_IFSC         = 'rmtr_account_ifsc';
     const COLUMN_TRANS_STATUS       = 'trans_status';
+    const COLUMN_VALIDATION_STATUS  = 'validation_status';
 
-    const RECON_STATUS_CREDITED     = 'credited';
+    const RECON_STATUS_VALIDATED_OK = 'validated: ok';
 
     const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
@@ -200,11 +201,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
+    /**
+     * Earlier we used to consider column 'trans_status' and
+     * compare it with the value 'CREDITED'. But that led to
+     * too many false alerts, so using column 'validation_status' now.
+     *
+     * @param array $row
+     * @return null|string
+     */
     protected function getReconPaymentStatus(array $row)
     {
-        $reconStatus = $row[self::COLUMN_TRANS_STATUS];
+        $reconStatus = trim($row[self::COLUMN_VALIDATION_STATUS]);
 
-        if (strcasecmp($reconStatus, self::RECON_STATUS_CREDITED) !== 0)
+        if (strcasecmp($reconStatus, self::RECON_STATUS_VALIDATED_OK) !== 0)
         {
             return Status::FAILED;
         }

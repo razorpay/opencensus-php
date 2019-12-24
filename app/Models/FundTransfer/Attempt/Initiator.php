@@ -187,21 +187,21 @@ class Initiator extends Base\Core
         $medium = (in_array($channel, Channel::getApiBasedChannels(), true) === true) ?
             Medium::API : Medium::FILE;
 
+        $customProperties = [
+            'channel'                       => $channel,
+            'fund_transfer_attempt_count'   => $count,
+            'fund_transfer_attempt_purpose' => $purpose,
+            'fund_transfer_attempt_medium'  => $medium,
+        ];
+
+        $this->raiseSettlementEvent(
+            EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+            null,
+            null,
+            $customProperties);
+
         try
         {
-            $customProperties = [
-                'channel'                       => $channel,
-                'fund_transfer_attempt_count'   => $count,
-                'fund_transfer_attempt_purpose' => $purpose,
-                'fund_transfer_attempt_medium'  => $medium,
-            ];
-
-            $this->raiseSettlementEvent(
-                EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
-                null,
-                null,
-                $customProperties);
-
             list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
                 $attempts,
                 function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
@@ -231,12 +231,12 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            if(empty($attemptedFTAs) === false)
+            if($attemptedFTAs->isEmpty() === false)
             {
                 $this->raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium);
             }
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $customProperties = [
                 'channel'                       => $channel,
@@ -251,6 +251,19 @@ class Initiator extends Base\Core
                 $exception,
                 $customProperties);
 
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_FAILED,
+                [
+                    'channel'                       => $channel,
+                    'fund_transfer_attempt_count'   => $count,
+                    'fund_transfer_attempt_purpose' => $purpose,
+                    'fund_transfer_attempt_medium'  => $medium,
+                ]
+               );
+
+            throw  $exception;
         }
 
         return $data;

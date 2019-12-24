@@ -1,0 +1,69 @@
+<?php
+
+namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Rbl;
+
+use View;
+use Carbon\Carbon;
+use mikehaertl\wkhtmlto\Pdf as PdfLibrary;
+
+use RZP\Exception;
+use RZP\Constants\Timezone;
+use RZP\Models\BankingAccountStatement\Generator\SupportedFormats;
+
+class Pdf extends Generator
+{
+    protected const TEMPLATE_FILE_NAME = 'bank_account_statement.RBL.statement';
+
+    public function getStatement()
+    {
+        $htmlAccountStatement = View::make(self::TEMPLATE_FILE_NAME, $this->data);
+
+        $pdfAccountStatement = $this->getPdfContent($htmlAccountStatement);
+
+        $tmpFileName = $this->generateFileName(SupportedFormats::PDF);
+
+        $tmpFileFullPath = self::TEMP_STORAGE_DIR . $tmpFileName;
+
+        $fileHandle = fopen($tmpFileFullPath, 'w');
+
+        fwrite($fileHandle, $pdfAccountStatement);
+
+        fclose($fileHandle);
+
+        return $tmpFileFullPath;
+    }
+
+    protected function getPdfContent(string $html): string
+    {
+        $options = [
+            'print-media-type',
+            'footer-font-size' => '6',
+            'footer-right'     => 'Page [page] of [topage]',
+            'footer-left'      => 'Date and Time: ' . Carbon::createFromTimestamp(Carbon::now()->getTimestamp(),
+                                                                                  Timezone::IST)
+                                                            ->format('d/m/Y h:i A'),
+            'dpi'              => 290,
+            'zoom'             => 1,
+            'ignoreWarnings'   => false,
+            'encoding'         => 'UTF-8',
+        ];
+
+        $pdf = (new PdfLibrary($options))->addPage($html);
+
+        $pdfContent = $pdf->toString();
+
+        if ($pdfContent === false)
+        {
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError(),
+                                               null,
+                                               [
+                                                   'account_number' => $this->accountNumber,
+                                                   'channel'        => $this->channel,
+                                                   'from_date'      => $this->fromDate,
+                                                   'to_date'        => $this->toDate,
+                                               ]);
+        }
+
+        return $pdfContent;
+    }
+}

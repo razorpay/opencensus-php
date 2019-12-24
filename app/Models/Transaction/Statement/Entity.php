@@ -10,6 +10,7 @@ use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
+use RZP\Models\BankingAccountStatement;
 
 /**
  * Class Entity
@@ -60,6 +61,10 @@ class Entity extends Transaction\Entity
         self::ACCOUNT_NUMBER,
     ];
 
+    public function bankingAccountStatement()
+    {
+        return $this->hasOne(BankingAccountStatement\Entity::class, 'transaction_id');
+    }
 
     // Public setters
 
@@ -127,7 +132,7 @@ class Entity extends Transaction\Entity
             ]);
 
         // Returning only absolute amount regardless of credit/debit
-        $array["source"]["amount"] = abs($array["source"]["amount"]);
+        $array['source']['amount'] = abs($array['source']['amount']);
     }
 
     protected function setPublicSourceAttributeForPayout(array & $array)

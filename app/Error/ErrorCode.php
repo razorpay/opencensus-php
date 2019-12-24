@@ -822,6 +822,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                          = 'BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY';
     const BAD_REQUEST_EMI_PLAN_EXIST                                                = 'BAD_REQUEST_EMI_PLAN_EXIST';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                                = 'BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND';
+    const BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND                                 = 'BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                        = 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                         = 'BAD_REQUEST_MERCHANT_LOGO_TOO_BIG';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                      = 'BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE';
@@ -891,6 +892,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
+    const BAD_REQUEST_UFH_INTEGRATION                                               = 'BAD_REQUEST_UFH_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
 
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
@@ -1170,6 +1172,7 @@ class ErrorCode
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
+    const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                         = 'BAD_REQUEST_NOT_SUPPORTED_FEATURE';
 
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
 
@@ -1384,6 +1387,7 @@ class ErrorCode
     // Mozart Service
     const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_SERVICE_ERROR';
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
+    const SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON                              = 'SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 
     // Fund transfer service
@@ -1431,4 +1435,7 @@ class ErrorCode
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND';
 
     const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED            = 'BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED';
+  
+    //IRCTC Error codes
+    const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 }

@@ -71,6 +71,7 @@ final class Constants
     const REASON_CODE            = 'reason_code';
     const CUSTOM_REASON_TYPE     = 'custom';
     const PREDEFINED_REASON_TYPE = 'predefined';
+    const DOCUMENT               = 'document';
 
     /**
      * Partner types that are allowed to view and manage

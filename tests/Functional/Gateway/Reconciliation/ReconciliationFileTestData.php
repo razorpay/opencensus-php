@@ -275,6 +275,28 @@ return [
             'Net Amount to be Paid' => 0,
         ],
 
+        'worldline_bqr_payment' => [
+            'TERM_ID'           =>  '17373069',
+            'TRAN_DATE'         =>  '11-Nov-2019',
+            'TRAN_TIME'         =>  '000000',
+            'BATCH_NO'          =>  6390,
+            'CARD_TYPE'         =>  'VC',
+            'TI'                =>  'Bharat QR',
+            'CARD_NO'           =>  '461119XXXXXX5890',
+            'APPROVE_CODE'      =>  984980,
+            'RRN'               =>  931523210200,
+            'GROSS_AMT'         =>  200,
+            'MDR'               =>  24,
+            'GST'               =>  6,
+            'NET_AMT'           =>  170,
+            'MID'               =>  37011000076590,
+            'INTL_FLAG'         =>  'N',
+            'CASH_TYPE'         =>  null,
+            'CASH_AMOUNT'       =>  '0',
+            'PROCESS_DATE'      =>  '12-APR-2019',
+            'UTR'               =>  12345678
+        ],
+
         'hitachi' => [
             'terminal_id'           => '38R00001',
             'amount'                => 500,

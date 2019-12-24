@@ -41,6 +41,7 @@ class Gateway extends Base\Gateway
         Base\Entity::RECEIVED                => Base\Entity::RECEIVED,
         ResponseFields::BANK_REF_NO          => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS               => Base\Entity::STATUS,
+        ResponseFields::STATUS_DESC          => Base\Entity::ERROR_MESSAGE,
 
         /**
          *  Fields from emandate authorize response
@@ -137,6 +138,8 @@ class Gateway extends Base\Gateway
 
         // unsetting here as we do not want the amount to be updated again
         unset($gatewayInput[ResponseFields::AMOUNT]);
+        // unsetting here as we do not want to set error_message in case of successful payment
+        unset($gatewayInput[ResponseFields::STATUS_DESC]);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 
@@ -230,14 +233,17 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequest(array $input)
     {
-        $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_MANDATE_' .$this->mode);
+
             $requestArray = $this->getEmandateParams($input);
         }
         else
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
+
             $requestArray = [
                 RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
                 RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,
