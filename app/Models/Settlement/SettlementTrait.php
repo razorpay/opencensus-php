@@ -18,6 +18,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 use RZP\Constants\SettlementChannelMedium as Medium;
@@ -944,10 +945,10 @@ trait SettlementTrait
 
                         $transferAttempt = null;
 
-                        // TODO: have the config check here and send merchant ID accordingly
-                        if (false)
+                        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
+
+                        if ($destinationMerchantId !== null)
                         {
-                            $destinationMerchantId = '100000Razorpay';
 
                             $transferAttempt = (new Transfer\Core)->transfer(
                                 $settlement,
@@ -1286,5 +1287,46 @@ trait SettlementTrait
         );
 
         return $filterGroupedTxns;
+    }
+
+    /**
+     * given partner Id if the settlement has to be aggregated at parent level
+     * it'll give the merchant ID if there is any mapping found else will return null
+     * In case of multiple partner map it'll give null
+     *
+     * @param string $merchantId
+     *
+     * @return string|null
+     */
+    protected function settlementToPartner(string $merchantId)
+    {
+        $merchantList = $this->repo
+                             ->merchant_access_map
+                             ->fetchAffiliatedPartnersForSubmerchant($merchantId);
+
+        //
+        // if the list is empty then there is not partner to settle to
+        // if there are multiple partners then we ignore this
+        // currently this is specific to phonePe use case.
+        //
+        if (($merchantList->isEmpty() === true) or ($merchantList->count() > 1))
+        {
+            return null;
+        }
+
+        $parentMerchantID = $merchantList->first()
+                                         ->getEntityOwnerId();
+
+        //
+        // check if the parent is enabled with aggregate settlement feature
+        //
+        $feature = $this->repo
+                        ->feature
+                        ->findByEntityTypeEntityIdAndName(
+                            EntityConstant::MERCHANT,
+                            $parentMerchantID,
+                            Feature\Constants::AGGREGATE_SETTLEMENT);
+
+        return ($feature === null) ? null : $parentMerchantID;
     }
 }

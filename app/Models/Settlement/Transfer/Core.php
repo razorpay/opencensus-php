@@ -3,10 +3,12 @@
 namespace RZP\Models\Settlement\Transfer;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Status;
+use RZP\Models\Settlement\Destination;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -36,6 +38,13 @@ class Core extends Base\Core
         string $destinationMerchantId,
         string $balanceType): Entity
     {
+        $this->trace->info(TraceCode::SETTLEMENT_TRANSFER_CREATE_INITIATED,
+            [
+                'balance_type'            => $balanceType,
+                'settlement_id'           => $settlement->getId(),
+                'destination_merchant_id' => $destinationMerchantId,
+            ]);
+
         $destinationBalance = $this->repo
                                    ->balance
                                    ->getMerchantBalanceByType($destinationMerchantId, $balanceType);
@@ -67,6 +76,16 @@ class Core extends Base\Core
             $this->repo->saveOrFail($transaction);
 
             $this->repo->saveOrFail($settlement);
+
+            (new Destination\Core)->register($settlement, $settlementTransfer);
+
+            $this->trace->info(TraceCode::SETTLEMENT_TRANSFER_CREATED,
+                [
+                    'destination_balance_id'            => $destinationBalance->getId(),
+                    'settlement_id'                     => $settlement->getId(),
+                    'transaction_id'                    => $transaction->getId(),
+                    'settlement_transfer_id'            => $settlementTransfer->getId(),
+                ]);
 
             return $settlementTransfer;
         });

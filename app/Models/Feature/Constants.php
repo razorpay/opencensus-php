@@ -135,8 +135,14 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-  
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
 
     /**
      * When adding submerchant, whether to set international activation flow to greylist
@@ -455,6 +461,7 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
     ];
 
     // Entity type constants
