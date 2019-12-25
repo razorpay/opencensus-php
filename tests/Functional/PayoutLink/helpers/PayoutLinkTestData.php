@@ -764,12 +764,35 @@ return [
             'content' => [
                 'UPI'  => 1,
                 'IMPS' => 1,
-            ]
-        ],
+        ]],
         'response'  => [
             'content'     => [
                 'success' => 'OK'
             ]
+        ]
+    ],
+
+    'testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'content' => [
+                'token'           => 'random token string',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
         ]
     ],
 

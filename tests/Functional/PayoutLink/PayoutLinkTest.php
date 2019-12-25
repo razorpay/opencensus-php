@@ -778,6 +778,7 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
     }
 
+
     public function testPayoutLinkSettingsApiSuccess()
     {
         $this->ba->adminAuth();
@@ -897,6 +898,24 @@ class PayoutLinkTest extends TestCase
 
         $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
     }
+
+    public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::PROCESSING);
+
+        $payoutLink->saveOrFail();
+
+        $this->startTest();
+    }
+
+
 
     protected function mockRedisSuccess()
     {
