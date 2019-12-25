@@ -773,10 +773,11 @@ class PayoutLinkTest extends TestCase
 
         $payoutLink->refresh();
 
-        $this->assertEquals(Status::PAID, $payoutLink->getStatus());
+        $this->assertEquals(Status::PROCESSED, $payoutLink->getStatus());
 
         $this->assertEquals($payout->getStatus() , Payout\Status::PROCESSED);
     }
+
 
     public function testPayoutLinkSettingsApiSuccess()
     {
@@ -791,6 +792,23 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($settingAccessor->get(Payout\Mode::IMPS) , 1);
 
         $this->assertEquals($settingAccessor->get(Payout\Mode::UPI) , 1);
+    }
+
+    public function testPayoutLinkSettingsGetApiSuccess()
+    {
+        $merchant = $this->contact->merchant;
+
+        $settingAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        $settingAccessor->upsert([
+                                     Payout\Mode::UPI  => true,
+                                     Payout\Mode::IMPS => 0
+                                 ])
+                        ->save();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testUpiPayoutModeWhenVpaFundAccountAdded()
@@ -880,6 +898,24 @@ class PayoutLinkTest extends TestCase
 
         $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
     }
+
+    public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
+    {
+        $this->mockRedisSuccess();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::PROCESSING);
+
+        $payoutLink->saveOrFail();
+
+        $this->startTest();
+    }
+
+
 
     protected function mockRedisSuccess()
     {
