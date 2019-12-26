@@ -66,12 +66,21 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
+    public function getSettings($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        return $settingsAccessor->all();
+    }
+
     /**
      * Updates settings for payoutlinks on merchant level
      * @param $input
      * @return array
      */
-    public function settings($merchantId, $input)
+    public function updateSettings($merchantId, $input)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
@@ -151,7 +160,7 @@ class Core extends Base\Core
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
@@ -190,12 +199,12 @@ class Core extends Base\Core
 
                         if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
                         {
-                            $this->trace->warning(TraceCode::PAYOUT_LINK_INVALID_STARTING_STATE,
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
                                 [
-                                    'payout_link_id' => $payoutLinkId
+                                    self::PAYOUT_LINK_ID => $payoutLinkId,
+                                    'status'             => $payoutLink->getStatus()
                                 ]);
-
-                            return $payoutLink;
                         }
 
                         // Code to create/fetch fund account and associate it with the payoutlink
@@ -231,7 +240,7 @@ class Core extends Base\Core
                     });
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
 
@@ -282,7 +291,7 @@ class Core extends Base\Core
                                          [$payoutLink]);
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
@@ -302,7 +311,7 @@ class Core extends Base\Core
             case Type::BANK_ACCOUNT:
                 $isImpsEnabled = $settingsAccessor->get(Entity::IMPS);
 
-                if (($isImpsEnabled == true) and
+                if (($isImpsEnabled === '1') and
                     ($amount < self::TWO_LACS))
                 {
                     return Mode::IMPS;

@@ -12,14 +12,14 @@ class Status
     const ISSUED     = 'issued';
     const PROCESSING = 'processing';
     const ATTEMPTED  = 'attempted';
-    const PAID       = 'paid';
+    const PROCESSED  = 'processed';
     const CANCELLED  = 'cancelled';
 
     const VALID_STATUSES = [
         self::ISSUED,
         self::PROCESSING,
         self::ATTEMPTED,
-        self::PAID,
+        self::PROCESSED,
         self::CANCELLED
     ];
 
@@ -44,7 +44,7 @@ class Status
         PayoutStatus::INITIATED  => self::PROCESSING,
         PayoutStatus::PROCESSING => self::PROCESSING,
         PayoutStatus::QUEUED     => self::PROCESSING,
-        PayoutStatus::PROCESSED  => self::PAID,
+        PayoutStatus::PROCESSED  => self::PROCESSED,
     ];
 
     const INTERNAL_TO_PUBLIC_STATUS = [
@@ -55,26 +55,26 @@ class Status
      * Valid state transitions.
      */
     const STATE_MACHINE = [
-        null => [
+        null             => [
             self::ISSUED
         ],
-        self::ISSUED => [
+        self::ISSUED     => [
             self::PROCESSING,
             self::CANCELLED
         ],
-        self::ATTEMPTED => [
+        self::ATTEMPTED  => [
             self::PROCESSING,
             self::CANCELLED
         ],
         self::PROCESSING => [
             self::ATTEMPTED, // in case payout fails
-            self::PAID,    // in case payout is successful,
+            self::PROCESSED,    // in case payout is successful,
             self::CANCELLED // in case the payout is cancelled
         ],
-        self::PAID => [
+        self::PROCESSED  => [
             self::ATTEMPTED    // in case of a reversal
         ],
-        self::CANCELLED => [] // this is a final state
+        self::CANCELLED  => [] // this is a final state
     ];
 
     // This is to handle the create entity flows, in which both the Status and ID
