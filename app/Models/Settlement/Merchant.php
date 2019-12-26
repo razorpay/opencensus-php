@@ -248,6 +248,7 @@ class Merchant
             {
                 case Transaction\Type::PAYMENT:
                 case Transaction\Type::REVERSAL:
+                case Transaction\Type::SETTLEMENT_TRANSFER:
                     $details[$componentType]['amount'] += $txn->getAmount();
                     break;
 
