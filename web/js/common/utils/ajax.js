@@ -27,7 +27,7 @@ export default function ajax(params = {}) {
 
         // Error code is verified to handle api resolution to HTML doc / raw text.
         // Eg: For downloading csv file for api key-secret comes as raw text.
-        if (data.success || (resp.status >= 200 && resp.status < 300)) {
+        if (!data.hasOwnProperty('success') || data.success == true) {
           resolve(data);
         } else {
           reject(
