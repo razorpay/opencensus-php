@@ -163,7 +163,7 @@ export const generateReportV2 = (
 
           const fileId = resp.data.file_id;
 
-          if (!fileId) {
+          if (resp.data.status === 'processed' && !fileId) {
             onProgress && onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
@@ -184,7 +184,13 @@ export const generateReportV2 = (
         })
         .catch(handleError);
     })
-    .catch(handleError);
+    .catch(response => {
+      if (response.errors) {
+        const error = response.errors[0];
+        return { error };
+      }
+      return downloadReportErrorMsg;
+    });
 };
 
 export const emailReportV2 = (
