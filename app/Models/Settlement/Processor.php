@@ -283,7 +283,7 @@ class Processor extends Base\Core
 
             $destinationMerchantId = $this->settlementToPartner($setl->merchant->getId());
 
-            $isAggregateSettlement = (($destinationMerchantId !== null) === true);
+            $isAggregateSettlement = (bool) $destinationMerchantId;
 
             $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo,
                 false,  $merchantSettleToPartner, $isAggregateSettlement);

@@ -92,6 +92,10 @@ trait SettlementTrait
 
         $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
 
+        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
+
+        $isAggregateSettlement = (bool) $destinationMerchantId;
+
         if (isset($merchantSettleToPartner[$merchant->getId()]) === true)
         {
             $bankAccountId = $merchantSettleToPartner[$merchant->getId()];
@@ -103,8 +107,9 @@ trait SettlementTrait
             $bankAccount = $merchant->bankAccount;
         }
 
-        // Do not proceed if merchant does not have active bank account
-        if ($bankAccount === null)
+        // Do not proceed if merchant does not have active bank account and the merchant is not settling to the partner.
+        if ($bankAccount === null and
+            ($isAggregateSettlement === false))
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
@@ -932,7 +937,7 @@ trait SettlementTrait
                 {
                         $destinationMerchantId = $this->settlementToPartner($merchant->getId());
 
-                        $isAggregateSettlement = ($destinationMerchantId !== null);
+                        $isAggregateSettlement = (bool) $destinationMerchantId;
 
                         // create settlement and attempt
                         $merchantSettler = new SetlMerchant(
