@@ -459,8 +459,7 @@ export default class App extends Component {
     let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
     const hasGSTIN =
-      this.props.merchant_gst &&
-      (this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin);
+      this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
