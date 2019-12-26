@@ -157,5 +157,46 @@ class RefundData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' => [
+                    "_raw" => '{\"status\":\"SUCCESS\",\"responseCode\":\"SUCCESS\",\"responseMessage\":\"SUCCESS\",\"payload\":{\"merchantId\":\"MERCHANT\",\"merchantChannelId\":\"MERCHANTAPP\",\"merchantRequestId\":\"heyyourefund4\",\"transactionAmount\":\"20.00\",\"refundAmount\":\"19.00\",\"gatewayTransactionId\":\"Some transaction id\",\"gatewayResponseCode\":\"00\",\"gatewayResponseMessage\":\"Refund accepted successfully\"},\"udfParameters\":\"{}\"}',
+                    "gatewayResponseCode"       => "00",
+                    "gatewayResponseMessage"    => "Refund accepted successfully",
+                    "gatewayTransactionId"      => "Some transaction id",
+                    "merchantChannelId"         => "MERCHANTAPP",
+                    "merchantId"                => "MERCHANT",
+                    "merchantRequestId"         => "heyyourefund4",
+                    "refundAmount"              => "19.00",
+                    "responseCode"              => "SUCCESS",
+                    "responseMessage"           => "SUCCESS",
+                    "status"                    => "refund_initiated_successfully",
+                    "apiStatus"                 => "SUCCESS",
+                    "transactionAmount"         => $entities['payment']['amount']
+                ],
+                'error'             => null,
+                'success'           => true,
+                'mozart_id'         => '',
+                'external_trace_id' => '',
+        ];
+
+        switch ($entities['payment']['description']){
+            case 'failedRefund':
+                $response['success'] = false;
+                $response['data']['_raw'] = '{\"status\":\"SUCCESS\",\"responseCode\":\"SUCCESS\",\"responseMessage\":\"SUCCESS\",\"payload\":{\"merchantId\":\"MERCHANT\",\"merchantChannelId\":\"MERCHANTAPP\",\"merchantRequestId\":\"heyyourefund4\",\"transactionAmount\":\"20.00\",\"refundAmount\":\"19.00\",\"gatewayTransactionId\":\"Some transaction id\",\"gatewayResponseCode\":\"Else\",\"gatewayResponseMessage\":\"Refund initiation failed\"},\"udfParameters\":\"{}\"}';
+                $response['error']   = [
+                    "description"                  => "Transaction Failed",
+                    "gateway_error_code"           => "Else",
+                    "gateway_error_description"    => "Transaction Failed",
+                    "gateway_status_code"          => 200,
+                    "internal_error_code"          => "GATEWAY_ERROR_TRANSACTION_FAILED"
+                ];
+                break;
+        }
+
+        return $response;
+    }
 }
 

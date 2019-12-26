@@ -1237,6 +1237,10 @@ class ErrorCode
     const SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT                                     = 'SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT';
     const BAD_REQUEST_ERROR_GOVERNOR                                                = 'BAD_REQUEST_ERROR_GOVERNOR';
 
+    const BAD_REQUEST_ERROR_DOPPLER                                                 = 'BAD_REQUEST_ERROR_DOPPLER';
+    const SERVER_ERROR_DOPPLER_SERVICE_TIMEOUT                                      = 'SERVER_ERROR_DOPPLER_SERVICE_TIMEOUT';
+    const SERVER_ERROR_DOPPLER_SERVICE_FAILURE                                      = 'SERVER_ERROR_DOPPLER_SERVICE_FAILURE';
+
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                     = 'BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS';
 
     const BAD_REQUEST_INVALID_LOCALE                                                = 'BAD_REQUEST_INVALID_LOCALE';

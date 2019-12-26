@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mail;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -25,6 +26,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
+use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 /**
@@ -1519,6 +1521,7 @@ class ActivationTest extends OAuthTestCase
                                                    'promoter_pan_name'       => 'pankaj kumar',
                                                    'bank_account_name'       => 'pankaj k',
                                                    'poa_verification_status' => 'verified',
+                                                   'poi_verification_status' => 'verified',
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
@@ -1549,8 +1552,10 @@ class ActivationTest extends OAuthTestCase
     public function testFailureBankDetailsVerification()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type' => 2,
-                                                   "promoter_pan_name"       => "pankaj kumar",]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                  ]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "pankaj kumar",
@@ -1566,11 +1571,12 @@ class ActivationTest extends OAuthTestCase
     public function testFailureBankDetailsVerificationForNameMismatchCase()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'poa_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'poa_verification_status'   => 'verified',
+                                                   'submitted'                 => 1,
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                   'submitted_at'              => now()->getTimestamp()]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
@@ -1586,12 +1592,13 @@ class ActivationTest extends OAuthTestCase
     public function testFailureBankDetailsVerificationForBankNameMismatchCase()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'bank_account_name'       => 'puneet jain',
-                                                   'poa_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'bank_account_name'         => 'puneet jain',
+                                                   'poa_verification_status'   => 'verified',
+                                                   'submitted'                 => 1,
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                   'submitted_at'              => now()->getTimestamp()]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "pankaj kumar",
@@ -1610,6 +1617,8 @@ class ActivationTest extends OAuthTestCase
      */
     protected function validateBankDetailFailureCase($attribute, $merchantDetail): void
     {
+        Mail::fake();
+
         $this->fixtures->create('fund_account_validation', $attribute);
 
         $fav = $this->getLastEntity('fund_account_validation', true, 'test');
@@ -1622,7 +1631,61 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'failed');
 
-        $this->assertEquals($merchantDetail->getActivationStatus(), 'under_review');
+        $this->assertEquals($merchantDetail->getActivationStatus(), 'needs_clarification');
+
+        $this->assertEquals($merchantDetail->getKycClarificationReasons(), $this->getClarificationReasonsForPennyTestingFailure());
+
+        Mail::assertQueued(NeedsClarificationEmail::class);
+    }
+
+    protected function getClarificationReasonsForPennyTestingFailure()
+    {
+        return [
+            Entity::ADDITIONAL_DETAILS => [
+                "address_proof_url" => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+                "cancelled_cheque"  => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+            ],
+        ];
+    }
+
+    protected function getClarificationReason()
+    {
+        return [
+            Entity::ADDITIONAL_DETAILS => [
+                "address_proof_url" => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+            ],
+        ];
+    }
+
+    /**
+     * @param $attribute
+     * @param $merchantDetail
+     */
+    public function testValidateNeedsClarificationStatusChange(): void
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 1,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'activation_status'       => 'needs_clarification',
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
     }
 
     /**

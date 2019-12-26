@@ -23,7 +23,8 @@ class Service extends Base\Service
 
     private function validateBatchTypeForUserRole($input)
     {
-        if ($this->auth->isProxyAuth() === true)
+        if (($this->auth->isProxyAuth() === true) and
+            (empty($this->auth->getAdmin()) === true))
         {
             $mode = $this->mode ?? 'live';
 

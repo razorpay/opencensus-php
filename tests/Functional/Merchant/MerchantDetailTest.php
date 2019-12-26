@@ -313,6 +313,8 @@ class MerchantDetailTest extends OAuthTestCase
         $responseContent['activation_status'] = 'needs_clarification';
 
         $responseContent['clarification_mode'] = 'email';
+
+        $responseContent['locked']             = false;
     }
 
     protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $requestContent, & $responseContent)
@@ -997,6 +999,37 @@ class MerchantDetailTest extends OAuthTestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
         $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
+    }
+
+    public function testStoreCaseInsensitiveDomain()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotContains('abc.com',$merchant->getWhitelistedDomains());
+        $this->assertContains('example.com',$merchant->getWhitelistedDomains());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['business_website'] = '';
+        $testData['response']['content']['business_website'] = '';
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWhitelistedDomains(),[]);
+
     }
 
     public function testFileUploadSyncInDetailAndDocumentTable()

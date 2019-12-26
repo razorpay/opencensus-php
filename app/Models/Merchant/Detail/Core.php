@@ -38,6 +38,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
 {
@@ -497,14 +498,15 @@ class Core extends Base\Core
         }
 
         $input = [
-            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
+            DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+            Document\Entity::DOCUMENT_TYPE => DEConstants::PROMOTER_PAN,
         ];
 
         $response = null;
 
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input);
+            $verifier = FactoryVerifier::getPoiVerifier($input, $merchant);
 
             $response = $verifier->verifyDetails();
 
@@ -678,7 +680,7 @@ class Core extends Base\Core
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
         $params = [];
-        
+
         foreach ($requiredDocuments as $requiredDocument)
         {
             $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
@@ -1007,6 +1009,18 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
             {
+
+                //
+                // For Older merchant who are still in old flow ,
+                // kyc clarification will be empty in this case form should not get unlocked
+                //
+                if (empty($merchantDetails->getKycClarificationReasons()) === false)
+                {
+                    $merchantDetails->setLocked(false);
+
+                    $this->sendNeedsClarificationEmail($merchant);
+                }
+
                 $this->deactivateIfFlawedWebsite($merchant, $merchantDetails->getIssueFields());
             }
 
@@ -1030,7 +1044,7 @@ class Core extends Base\Core
             if (empty($status) === false)
             {
                 $eventPayload = [
-                    ApiEventSubscriber::MAIN => $merchantDetails->merchant,
+                    ApiEventSubscriber::MAIN => $merchant,
                 ];
 
                 $event = 'api.account.' . $status;
@@ -1051,6 +1065,37 @@ class Core extends Base\Core
                 $currentActivationStatus));
 
         return $merchantDetails;
+    }
+
+    /**
+     * @param $merchant
+     */
+    public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = New Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
+
+        $data = [
+            DEConstants::MERCHANT             => [
+                Merchant\Entity::NAME          => $merchant->getName(),
+                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Merchant\Entity::EMAIL         => $merchant->getEmail(),
+                DEConstants::ORG               => [
+                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
+                ]
+            ],
+            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+        ];
+
+        $email = new ClarificationEmail($data, $org->toArray());
+
+        Mail::queue($email);
     }
 
     /**
@@ -1081,9 +1126,12 @@ class Core extends Base\Core
 
     /**
      * Triggers workflow when activation status is changed to rejected
+     *
      * @param Entity $oldMerchantDetails
      * @param Entity $newMerchantDetails
-     * @param array $rejectionReasons
+     * @param array  $rejectionReasons
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionActivationStatusChange(
         Entity $oldMerchantDetails,
@@ -1582,9 +1630,9 @@ class Core extends Base\Core
         }
 
         //
-        // if bank detail is already verified then skip penny testing
+        // if bank detail is already attempted then skip penny testing and send to manual queue .
         //
-        if ($merchantDetails->isBankDetailStatusVerified() === true)
+        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
         {
             return;
         }

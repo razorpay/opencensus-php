@@ -231,7 +231,7 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            if(empty($attemptedFTAs) === false)
+            if($attemptedFTAs->isEmpty() === false)
             {
                 $this->raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium);
             }

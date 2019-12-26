@@ -381,6 +381,6 @@ class Core extends Base\Core
 
     public function getCardEntity($id)
     {
-        return $this->repo->card->findOrFailPublic($id);
+        return $this->repo->card->find($id);
     }
 }
