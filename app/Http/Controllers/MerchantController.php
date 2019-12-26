@@ -14,7 +14,6 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
-use RZP\Models\Base\PublicCollection;
 
 class MerchantController extends Controller
 {
@@ -1485,68 +1484,6 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->putAdditionalWebsite($merchantId, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function getInheritanceParent(string $merchantId)
-    {
-        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->getInheritanceParent($merchantId);
-
-        return ApiResponse::json($response);
-    }
-
-    public function postInheritanceParent(string $merchantId)
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $input['id']);
-        
-        return ApiResponse::json($response);
-    }
-
-    public function deleteInheritanceParent(string $merchantId)
-    {
-        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->deleteInheritanceParent($merchantId);
-
-        return ApiResponse::json($response);
-    }
-
-    public function postInheritanceParentBatch()
-    {
-        $input = Request::all();
-
-        $response = [];
-
-        foreach ($input as $row)
-        {
-            $merchantId = $row['merchant_id'];
-
-            $parentMerchantId = $row['parent_merchant_id'];
-
-            try
-            {
-                $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $parentMerchantId);
-
-                $data = [
-                    'merchant_id'        => $merchantId,
-                    'parent_merchant_id' => $parentMerchantId,
-                ];
-    
-                $data['idempotency_key'] = $row['idempotency_key'];
-                $data['success']   = true;
-    
-                array_push($response, $data);
-    
-            }
-            catch(\Throwable $ex)
-            {
-
-                //TODO 
-
-            }
-    
-        }
 
         return ApiResponse::json($response);
     }

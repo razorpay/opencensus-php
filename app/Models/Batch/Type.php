@@ -52,8 +52,6 @@ class Type
 
     const PRICING_RULE              = 'pricing_rule';
 
-    const PARENT_CONFIG_INHERITANCE = 'parent_config_inheritance';
-
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -116,7 +114,6 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
-        self::PARENT_CONFIG_INHERITANCE,
     ];
 
     /**
@@ -265,7 +262,6 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
-        self::PARENT_CONFIG_INHERITANCE,
     ];
 
     public static function exists(string $type)
