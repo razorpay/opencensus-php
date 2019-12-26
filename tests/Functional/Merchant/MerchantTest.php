@@ -5363,6 +5363,32 @@ class MerchantTest extends TestCase
         $this->assertEquals($merchantInheritanceMap['merchant_id'], $subMerchantId);
     }
 
+    public function testSetInheritanceParentBatch()
+    {        
+        $this->ba->proxyAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $subMerchantId2 = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            [
+                'idempotency_key'    =>  '12345',
+                'merchant_id'        =>  $subMerchantId,
+                'parent_merchant_id' =>  '10000000000000'
+            ],
+            [
+                'idempotency_key'    =>  '12346',
+                'merchant_id'        =>  $subMerchantId2,
+                'parent_merchant_id' =>  '10000000000000'
+            ]
+        ];
+
+        $a = $this->startTest();
+
+        // TODO
+    }
+
     public function testSetNonPartnerInheritanceParent()
     {
         $this->ba->adminAuth();

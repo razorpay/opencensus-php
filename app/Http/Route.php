@@ -1391,7 +1391,7 @@ final class Route
         // merchant config inheritance
         'inheritance_parent_fetch'                => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
         'inheritance_parent_set'                  => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
-        'inheritance_parent_set_bulk'             => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'              ],
+        'inheritance_parent_set_bulk'             => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBatch'             ],
         'inheritance_parent_delete'               => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
 
         // Route for Success Rate Global Configurations

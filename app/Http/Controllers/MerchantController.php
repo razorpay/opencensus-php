@@ -1512,48 +1512,42 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postInheritanceParentBulk()
+    public function postInheritanceParentBatch()
     {
         $input = Request::all();
 
+        $response = [];
 
-
-        $response = new PublicCollection();
-
-        foreach ($input as $i)
+        foreach ($input as $row)
         {
-            $j= rand(1, 10);
+            $merchantId = $row['merchant_id'];
 
-            if ($j > 7)
-            {
-                $response->push(
-                    [
-                        'idempotency_key'   => $i['idempotency_key'],
-                        'merchant_id'   => $i['merchant_id'],
-                        'parent_merchant_id'    => $i['parent_merchant_id'],
-                        'error' => [                         // set the error code and description here
-                            'code'  => 'dummy error code',
-                            'description'   => 'dummy error description',
-                        ],
-                        'success'   => false,            // set success to false
-                        'http_status_code' => 400 // when error happens, catch the error and set the status code here
-                    ]
+            $parentMerchantId = $row['parent_merchant_id'];
 
-                );
-            }
-            else
+            try
             {
+                $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $parentMerchantId);
+
                 $data = [
-                    'merchant_id'        => $i['merchant_id'],
-                    'parent_merchant_id' => $i['parent_merchant_id'],
+                    'merchant_id'        => $merchantId,
+                    'parent_merchant_id' => $parentMerchantId,
                 ];
-
-                $data['idempotency_key'] = $i['idempotency_key'];
+    
+                $data['idempotency_key'] = $row['idempotency_key'];
                 $data['success']   = true;
-                $response->push($data);
+    
+                array_push($response, $data);
+    
             }
+            catch(\Throwable $ex)
+            {
+
+                //TODO 
+
+            }
+    
         }
 
-        return ApiResponse::json($response->toArrayWithItems());
+        return ApiResponse::json($response);
     }
 }

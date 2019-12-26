@@ -5373,6 +5373,22 @@ return [
         ],
     ],
 
+
+    'testSetInheritanceParentBatch'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/inheritance_parent/bulk',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
     'testSetNonPartnerInheritanceParent'    =>  [
         'request'   => [
             'method'    => 'POST',
