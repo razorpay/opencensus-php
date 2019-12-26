@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
 
 class BankingAccountStatement extends Job
@@ -92,8 +93,12 @@ class BankingAccountStatement extends Job
                 'channel'           => $this->params['channel'],
                 'accountNumber'     => $this->params['accountNumber'],
                 'job_attempts'      => $this->attempts(),
-                'message'           => 'Deleting the job after configured number of tries exhaust. Still unsuccessful.'
+                'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);
+
+            $operation = 'banking account statement fetch job failed';
+
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'channel_name_to_decide');
 
             $this->delete();
         }

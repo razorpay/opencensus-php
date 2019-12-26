@@ -1326,6 +1326,7 @@ final class Route
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
+        'banking_account_statement_channel_cron'  => ['post',     'banking_account_statement/processChannel',                  'BankingAccountStatementController@processAccountStatementForChannel'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1847,6 +1848,7 @@ final class Route
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
         'banking_account_statement_process_cron',
+        'banking_account_statement_channel_cron',
         'subscription_registration_auto_charge',
         'partner_submerchant_map',
         'fund_transfer_attempts_process_fts',
@@ -3467,6 +3469,7 @@ final class Route
             'create_fts_nodal_beneficiary',
             'transfer_process',
             'banking_account_statement_process_cron',
+            'banking_account_statement_channel_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
         ],
