@@ -84,7 +84,7 @@ class Service extends Base\Service
             $nextSettlementTime = Carbon::createFromTimestamp($response['next_settlement_time'], Timezone::IST);
 
             $response += [
-                'details' => Holidays::constructDetailsMessage($nextSettlementTime),
+                'reason_for_delay' => Holidays::constructDetailsMessage($nextSettlementTime),
             ];
         }
 
