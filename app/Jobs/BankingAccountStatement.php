@@ -9,7 +9,7 @@ use RZP\Models\BankingAccountStatement as BAS;
 
 class BankingAccountStatement extends Job
 {
-    const MAX_RETRY_ATTEMPT   = 3;
+    const MAX_RETRY_ATTEMPT = 3;
 
     const MAX_RETRY_DELAY = 60;
 
@@ -23,7 +23,9 @@ class BankingAccountStatement extends Job
      */
     protected $params;
 
-    /** @var BAS\Core */
+    /**
+     *  @var BAS\Core
+     */
     protected $basCore;
 
 
@@ -39,7 +41,7 @@ class BankingAccountStatement extends Job
 
         $this->basCore = new BAS\Core;
 
-        //$this->setQueueConfigKeyFromBatchType($this->params['channel']);
+        //$this->setQueueConfigKeyForChannelType($this->params['channel']);
 
         parent::__construct($mode);
     }
@@ -50,7 +52,10 @@ class BankingAccountStatement extends Job
         {
             parent::handle();
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT, ['params' => $this->params]);
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT, [
+                'channel'       => $this->params['channel'],
+                'accountNumber' => $this->params['accountNumber']
+            ]);
 
             $result = $this->basCore->processStatementForAccount($this->params);
 
@@ -73,16 +78,20 @@ class BankingAccountStatement extends Job
     {
         if ($this->attempts() <= self::MAX_RETRY_ATTEMPT)
         {
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, ['params' => $this->params]);
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
+                'channel'       => $this->params['channel'],
+                'accountNumber' => $this->params['accountNumber']
+            ]);
 
             $this->release(self::MAX_RETRY_DELAY);
         }
         else
         {
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
-                'params'            => $this->params,
+                'channel'           => $this->params['channel'],
+                'accountNumber'     => $this->params['accountNumber'],
                 'job_attempts'      => $this->attempts(),
-                'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
+                'message'           => 'Deleting the job after configured number of tries exhaust. Still unsuccessful.'
             ]);
 
             $this->delete();
@@ -94,7 +103,7 @@ class BankingAccountStatement extends Job
      *
      * @param $channel
      */
-    protected function setQueueConfigKeyFromBatchType(string $channel = null)
+    protected function setQueueConfigKeyForChannelType(string $channel = null)
     {
         $configKey = $channel . '_account_statement';
 
