@@ -50,12 +50,12 @@ export default class SettlementDetail extends Component {
                 <p>
                   {isOnHold ? (
                     <span>
-                      Your settlements are currently not being processed
+                      Your settlements are currently not being processed.
                     </span>
                   ) : (
                     <Fragment>
-                      The actual time taken to settle the money on your account
-                      will be vary by bank.
+                      The actual time taken for the settled amount to reflect in
+                      your bank account depends on the bank’s processing time.
                     </Fragment>
                   )}
                 </p>
@@ -75,9 +75,10 @@ export default class SettlementDetail extends Component {
                 </p>
               ) : (
                 <p class="grey">
-                  This is just a expected settlement amount that to be settled
-                  till this time (Not a 100% accurate), Final amount will be
-                  accounted for refunds also.
+                  This is an estimate of the settlement amount and may vary from
+                  the actual amount settled to your bank account. For example,
+                  any refunds initiated from your account will reduce the
+                  settlement amount by that refunded amount.
                 </p>
               )}
             </div>
