@@ -6,6 +6,7 @@ use View;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
@@ -25,7 +26,7 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
+    const LONG_URL_FORMAT         = '%s/v1/payout-links/%s/view';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
     const TEMPLATE                = 'template';
@@ -381,7 +382,107 @@ class Core extends Base\Core
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        return View::make('payout_link.customer_hosted', []);
+        $hostedPageData = $this->getDataForHostedPage($payoutLink);
+
+        return View::make('payout_link.customer_hosted', $hostedPageData);
+    }
+
+    protected function getDataForHostedPage(Entity $payoutLink): array
+    {
+        $contact = $payoutLink->contact;
+
+        $maskedEmail = $this->getMaskedEmail($contact);
+
+        $maskedPhone = $this->getMaskedPhone($contact);
+
+        $data = [
+            'api_host'                => $this->config['url.api.production'],
+            'payout_link_id'          => $payoutLink->getPublicId(),
+            'payout_link_status'      => $payoutLink->getStatus(),
+            'amount'                  => $payoutLink->getAmount(),
+            'currency'                => $payoutLink->getCurrency(),
+            'user_name'               => $contact->getName(),
+            'description'             => $payoutLink->getDescription(),
+            'user_email'              => $maskedEmail,
+            'user_phone'              => $maskedPhone,
+            'receipt'                 => $payoutLink->getReceipt(),
+            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'payout_link_description' => $payoutLink->getDescription(),
+            'primary_color'           => $this->merchant->getBrandColor(),
+            'merchant_name'           => $this->merchant->getName()
+        ];
+
+        return $data;
+    }
+
+    protected function getMaskedEmail(ContactEntity $contact)
+    {
+        $email = $contact->getEmail();
+
+        $maskedEmail = $email;
+
+        if (empty($email) === true)
+        {
+            return '';
+        }
+
+        try
+        {
+            // assuming that if this is filled, then its a valid email
+
+            $email = explode('@', $email);
+
+            $emailName = $email[0];
+
+            $emailDomain = $email[1];
+
+            $emailDomain = explode('.', $emailDomain);
+
+            $domain = $emailDomain[0];
+
+            $topLevelDomain = $emailDomain[1];
+
+            // replace the name except first 3 characters with *
+            $maskedEmailName = substr($emailName, 0, 3) .
+                           str_repeat('*', strlen($emailName) - 3);
+
+            $maskedDomain = $domain[0] .
+                            str_repeat('*', strlen($domain) - 2) .
+                            $domain[strlen($domain) - 1];
+
+            $maskedEmail = sprintf('%s@%s.%s',$maskedEmailName, $maskedDomain, $topLevelDomain);
+        }
+        catch(\Exception $e)
+        {
+            // I do not want the page load to fail because the email was incorrect
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::INVALID_EMAIL_CANNOT_MASK,
+                                         [
+                                             'email'      => $email,
+                                             'contact_id' => $contact->getId()
+                                         ]
+            );
+        }
+
+        return $maskedEmail;
+    }
+
+    public function getMaskedPhone(ContactEntity $contact)
+    {
+        $phone = $contact->getContact();
+
+        if ((empty($phone) === true))
+        {
+            return '';
+        }
+
+        $phoneLen = strlen($phone);
+
+        return substr($phoneLen, 0,2) .
+               str_repeat('*', $phoneLen - 4) .
+               substr($phone, $phoneLen - 2, $phoneLen - 1);
+
     }
 
     protected function getBalance(array $input)
@@ -558,11 +659,15 @@ class Core extends Base\Core
         {
             $customerEmailOtp = new CustomerOtp($email,
                                                 $otp,
-                                                $this->merchant->getName(),
-                                                $payoutLink->getDescription());
+                                                $this->merchant->getDisplayName(),
+                                                $payoutLink->getPurpose(),
+                                                $this->merchant->getLogoUrl(),
+                                                $this->merchant->getBrandColor()
+
+            );
+
             try
             {
-                // Todo, pl update the template with the new html. Currently this is a plain test email
                 Mail::queue($customerEmailOtp);
 
                 $successfulChannelPushCount++;
