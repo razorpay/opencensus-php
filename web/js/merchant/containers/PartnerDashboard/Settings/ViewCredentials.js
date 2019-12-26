@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
 import { closeModal } from 'merchant_common/reducers/modals';
-
+import { showNotification } from 'merchant_common/reducers/notifications';
 import InputField from 'common/ui/Forms/InputField';
-
 import ModalHeader from 'common/ui/ModalHeader';
+import ajax from 'merchant/utils/ajax';
+import fileDownload from 'common/utils/file-download';
 
-@connect(null, { closeModal })
+@connect(null, { closeModal, showNotification })
 export default class ViewCredentials extends Component {
   state = {
     showClientSecret: false,
@@ -19,8 +19,32 @@ export default class ViewCredentials extends Component {
     });
   };
 
+  handleDownloadToken = () => {
+    const { credentials } = this.props;
+
+    return ajax({
+      url: 'keys/csv',
+      method: 'post',
+      appendModeInQueryParam: true,
+      data: {
+        id: credentials.id,
+        secret: credentials.secret,
+      },
+    })
+      .then(data => {
+        fileDownload(data, 'rzp.csv');
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+      });
+  };
+
   render() {
     const { mode, credentials } = this.props;
+
     return (
       <div class="Partner-Dashboard__View-Credentials">
         <ModalHeader
@@ -53,14 +77,12 @@ export default class ViewCredentials extends Component {
           </div>
 
           <div class="Modal__Actions clearfix">
-            <a
+            <button
               class="btn btn-primary btn-block"
-              href={`/keys/csv/?id=${credentials.id}&secret=${
-                credentials.secret
-              }`}
+              onClick={this.handleDownloadToken}
             >
               Download Token
-            </a>
+            </button>
           </div>
         </div>
       </div>
