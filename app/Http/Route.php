@@ -1389,9 +1389,10 @@ final class Route
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
 
         // merchant config inheritance
-        'inheritance_parent_fetch'                => ['get',       'merchant/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
-        'inheritance_parent_set'                  => ['post',      'merchant/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
-        'inheritance_parent_delete'               => ['delete',    'merchant/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
+        'inheritance_parent_fetch'                => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
+        'inheritance_parent_set'                  => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
+        'inheritance_parent_set_bulk'             => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'              ],
+        'inheritance_parent_delete'               => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
     ];
 
     public static $public = [
@@ -1708,6 +1709,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'inheritance_parent_set_bulk',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -3212,6 +3214,7 @@ final class Route
 
         'inheritance_parent_fetch'                  =>  '*',
         'inheritance_parent_set'                    =>  '*',
+        'inheritance_parent_set_bulk'               =>  '*',
         'inheritance_parent_delete'                 =>  '*',
 
         'subscription_registration_resend_links_batch'      => '*',
@@ -3611,6 +3614,7 @@ final class Route
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
             'oauth_token_create',
+            'inheritance_parent_set_bulk',
         ],
 
         'stork' => [

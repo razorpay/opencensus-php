@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Base\PublicCollection;
 
 class MerchantController extends Controller
 {
@@ -1500,6 +1501,51 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postResourceParent($childMerchantId, $input['id']);
 
         return ApiResponse::json($response);
+    }
+
+    public function postInheritanceParentBulk()
+    {
+        $input = Request::all();
+
+
+
+        $response = new PublicCollection();
+
+        foreach ($input as $i)
+        {
+            $j= rand(1, 10);
+
+            if ($j > 7)
+            {
+                $response->push(
+                    [
+                        'idempotency_key'   => $i['idempotency_key'],
+                        'merchant_id'   => $i['merchant_id'],
+                        'parent_merchant_id'    => $i['parent_merchant_id'],
+                        'error' => [                         // set the error code and description here
+                            'code'  => 'dummy error code',
+                            'description'   => 'dummy error description',
+                        ],
+                        'success'   => false,            // set success to false
+                        'http_status_code' => 400 // when error happens, catch the error and set the status code here
+                    ]
+
+                );
+            }
+            else
+            {
+                $data = [
+                    'merchant_id'        => $i['merchant_id'],
+                    'parent_merchant_id' => $i['parent_merchant_id'],
+                ];
+
+                $data['idempotency_key'] = $i['idempotency_key'];
+                $data['success']   = true;
+                $response->push($data);
+            }
+        }
+
+        return ApiResponse::json($response->toArrayWithItems());
     }
 
     public function deleteInheritanceParent()
