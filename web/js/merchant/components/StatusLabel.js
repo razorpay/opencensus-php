@@ -43,6 +43,7 @@ export const refundStatusMap = {
 };
 
 export const settlementStatusMap = {
+  initiated: 'label-info',
   created: 'bg-light',
   scheduled: 'bg-light',
   processed: 'label-success',
