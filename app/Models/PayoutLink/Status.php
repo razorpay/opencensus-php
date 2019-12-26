@@ -27,7 +27,7 @@ class Status
         self::ISSUED     => 'api.payout_link.issued',
         self::PROCESSING => 'api.payout_link.processing',
         self::ATTEMPTED  => 'api.payout_link.issued',
-        self::PAID       => 'api.payout_link.paid',
+        self::PROCESSED  => 'api.payout_link.processed',
         self::CANCELLED  => 'api.payout_link.cancelled',
     ];
 
