@@ -52,7 +52,7 @@ export default class PaymentDetailsContainer extends Component {
       if (payment.method === 'bank_transfer') {
         this.props.fetchBankTransfer(payment);
       } else if (payment.method === 'upi') {
-        // this.props.fetchUPITransfer(payment); // TODO: Currently, api isn't able to identify receiver type as vpa/upi. So, holding this feature
+        this.props.fetchUPITransfer(payment);
       }
 
       if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
