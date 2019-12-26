@@ -20,6 +20,12 @@ import TransfersListFilter from 'merchant/components/Marketplace/TransfersListFi
 
 import ListContainer from 'merchant/containers/ListContainer';
 
+const baseUrl = {
+  pay: '/payments/',
+  order: '/orders/',
+  acc: '/route/accounts/',
+};
+
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
   render() {
@@ -40,7 +46,7 @@ export default class TransfersListContainer extends ListContainer {
 
         <DataTable
           title="Transfers"
-          columns={[transferId, source, recipient, amount, createdAt]}
+          columns={[transferId, source(baseUrl), recipient, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
