@@ -89,10 +89,7 @@ export const customerRefundId = {
 export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
 export const reversalId = { title: 'Reversal Id', value: id.reversal };
-export const source = custom_base_url => ({
-  title: 'Source',
-  value: item => id.source(item, custom_base_url),
-});
+export const source = { title: 'Source', value: id.source };
 export const recipient = { title: 'Recipient', value: id.recipient };
 export const batchId = { title: 'Batch Id', value: id.batch };
 export const batchIdLink = { title: 'Batch Id', value: id.batchLink };
