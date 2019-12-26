@@ -98,10 +98,10 @@ export default class SettlementSchedule extends Component {
               <div class="emphzd-div">
                 {this.state.defaultDomestic.length > 0 && (
                   <div class="flex">
-                    <div class="w50">
+                    <div class="w50 text-left">
                       Domestic Payments<span class="text-danger">*</span>
                     </div>
-                    <div class="w50">
+                    <div class="w50 text-right">
                       {this.state.defaultDomestic[0]
                         .is_early_settlement_schedule
                         ? this.formatTime(this.state.defaultDomestic[0].hour)
@@ -114,10 +114,10 @@ export default class SettlementSchedule extends Component {
 
                 {this.state.defaultInternational.length > 0 && (
                   <div class="flex">
-                    <div class="w50">
+                    <div class="w50 text-left">
                       International Payments<span class="text-danger">*</span>
                     </div>
-                    <div class="w50">
+                    <div class="w50 text-right">
                       {this.state.defaultInternational[0]
                         .is_early_settlement_schedule
                         ? this.formatTime(
@@ -140,8 +140,8 @@ export default class SettlementSchedule extends Component {
                     class="flex"
                     style={{ margin: '10px', fontSize: '16px' }}
                   >
-                    <div class="w50">{item.method}</div>
-                    <div class="w50">
+                    <div class="w50 text-left p20">{item.method}</div>
+                    <div class="w50 text-right p20">
                       {item.is_early_settlement_schedule
                         ? this.formatTime(item.hour)
                         : `T+${item.delay} working days`}
@@ -150,10 +150,12 @@ export default class SettlementSchedule extends Component {
                 </div>;
               })}
               <div class="settlement-default-note" style={{ fontSize: '13px' }}>
-                <div class="w50">
+                <div class="w50 text-left p20">
                   <span class="text-danger">*</span> for Default Schedules
                 </div>
-                <div class="w50">(T is the date of payment capture)</div>
+                <div class="w50 text-right p20">
+                  (T is the date of payment capture)
+                </div>
               </div>
               <hr />
             </div>
