@@ -326,11 +326,15 @@ class Core extends Base\Core
         {
             $customerEmailOtp = new CustomerOtp($email,
                                                 $otp,
-                                                $this->merchant->getName(),
-                                                $payoutLink->getDescription());
+                                                $this->merchant->getDisplayName(),
+                                                $payoutLink->getPurpose(),
+                                                $this->merchant->getLogoUrl(),
+                                                $this->merchant->getBrandColor()
+
+            );
+
             try
             {
-                // Todo, pl update the template with the new html. Currently this is a plain test email
                 Mail::queue($customerEmailOtp);
 
                 $successfulChannelPushCount++;

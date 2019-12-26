@@ -185,6 +185,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
