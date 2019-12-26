@@ -20,6 +20,7 @@ import Amount from 'common/ui/Amount';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import { openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect(
   state => {
@@ -94,7 +95,7 @@ export default class TransactionsContainer extends Component {
             </ShowWhen>
           )}
           {settlement_ux_revamp && !nextSettlement ? (
-            <div class="text-right" style={{ width: '65%' }}>
+            <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
                   value={this.props.settlement_amount.data.settlement_amount}
@@ -106,6 +107,19 @@ export default class TransactionsContainer extends Component {
                 value={this.props.settlement_amount.data.next_settlement_time}
                 format={'DD MMM YYYY, hh:mm:ss a'}
               />{' '}
+              <React.Fragment>
+                <div style={{ display: 'inline' }}>
+                  <i class="i i-info-circle" />
+                  <Popover theme="dark" align="left">
+                    <PopoverBody>
+                      <div>
+                        If you’ve already received the customer’s NACH form, you
+                        can upload it after the registration link is created.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </div>
+              </React.Fragment>
               <span
                 class="btn-link"
                 style={{ marginLeft: '5px' }}

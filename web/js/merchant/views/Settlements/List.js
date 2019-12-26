@@ -347,6 +347,16 @@ export default class SettlementsListContainer extends ListContainer {
                                 }
                                 format={'DD MMM YYYY, hh:mm:ss a'}
                               />
+                              <i class="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>
+                                    If you’ve already received the customer’s
+                                    NACH form, you can upload it after the
+                                    registration link is created.
+                                  </div>
+                                </PopoverBody>
+                              </Popover>
                               <span
                                 onClick={() => {
                                   this.props.openModal({
