@@ -38,6 +38,8 @@ class Core extends Base\Core
         string $destinationMerchantId,
         string $balanceType): Entity
     {
+        assert($settlement->hasTransaction(), true);
+
         $this->trace->info(TraceCode::SETTLEMENT_TRANSFER_CREATE_INITIATED,
             [
                 'balance_type'            => $balanceType,
