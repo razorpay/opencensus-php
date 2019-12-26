@@ -262,7 +262,7 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
-    const BLOCK_OFFER_CREATION  ='block_offer_creation';
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can

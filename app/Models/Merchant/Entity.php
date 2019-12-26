@@ -713,9 +713,7 @@ class Entity extends Base\PublicEntity
 
     public function isInsuranceCategory()
     {
-        $insuranceCategories = array(
-            '6211',
-            '6300');
+        $insuranceCategories = Constants::INSURANCE_CATEGORIES;
 
         return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
     }

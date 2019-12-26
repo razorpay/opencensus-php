@@ -618,7 +618,7 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($order, $data, $merchant);
+            $this->checkAndFillOrderOffers($order, $data);
         }
         else
         {
@@ -626,7 +626,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data, Merchant\Entity $merchant)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
     {
         $offers = $order->offers;
 
@@ -680,7 +680,7 @@ class Checkout
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
     {
-        $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+        $nonOrderOffers = (new Offer\Core)->fetchSharedAccOffersForCheckout($merchant);
 
         foreach ($nonOrderOffers as $offer)
         {

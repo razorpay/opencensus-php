@@ -83,7 +83,7 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
-        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
+        Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
     ];
 
     protected static $editRules = [
@@ -416,7 +416,7 @@ class Validator extends Base\Validator
     {
         $isInsuranceCategory = $this->entity->merchant->isInsuranceCategory($this->entity->merchant->getCategory());
 
-        if($isInsuranceCategory)
+        if($isInsuranceCategory === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Offer creation is not allowed for this Merchant category');
@@ -427,7 +427,7 @@ class Validator extends Base\Validator
     {
         $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
 
-        if($hasBlockingFeature)
+        if($hasBlockingFeature === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Offer creation is not allowed for Merchant');

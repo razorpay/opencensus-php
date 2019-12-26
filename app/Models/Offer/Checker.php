@@ -118,7 +118,7 @@ class Checker extends Base\Core
     {
         $offerActive = $this->offer->isActive();
 
-        if(!$offerActive)
+        if($offerActive === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_ACTIVE);
         }
@@ -128,7 +128,6 @@ class Checker extends Base\Core
 
     protected function checkPaymentMethod(): bool
     {
-
         $paymentMethod = $this->payment->getMethod();
 
         $offerPaymentMethod = $this->offer->getPaymentMethod();
@@ -246,6 +245,12 @@ class Checker extends Base\Core
 
             default:
                 $result;
+                $this->traceCheckResult(
+                    TraceCode::OFFER_CARD_ISSUER_CHECK,
+                    [
+                        'result'                   => $result,
+                        'offer_issuer'             => $offerIssuer,
+                    ]);
         }
         if(!$result)
         {
@@ -475,7 +480,7 @@ class Checker extends Base\Core
             return true;
         }
 
-        $core = new \RZP\Models\Offer\Core();
+        $core = new Core();
 
         $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
@@ -525,12 +530,6 @@ class Checker extends Base\Core
 
         $result = $this->order->getAmount() >= $this->offer->getMinAmount();
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_MIN_ORDER_AMOUNT_CHECK,
-            [
-                    'result' => $result,
-            ]);
-
         if(!$result)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
@@ -547,12 +546,6 @@ class Checker extends Base\Core
         }
 
         $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
-
-        $this->traceCheckResult(
-            TraceCode::OFFER_MAX_ORDER_AMOUNT_CHECK,
-            [
-                'result' => $result,
-            ]);
 
         if(!$result)
         {

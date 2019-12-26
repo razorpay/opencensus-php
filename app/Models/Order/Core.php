@@ -106,8 +106,7 @@ class Core extends Base\Core
 
     protected function associateOffers(Entity $order, array $input)
     {
-
-        if(!$order->isOfferForced())
+        if($order->isOfferForced() === false)
         {
             $this->associateDefaultOffers( $order);
         }
@@ -121,19 +120,16 @@ class Core extends Base\Core
         {
             $this->validateAndAssociateOffer($order, $offerId);
         }
-
     }
 
     protected function validateAndAssociateOffer(Entity $order, string $offerId)
     {
         $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
 
-        if(!$offer->isDefaultOffer() || $order->isOfferForced())
+        if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
         {
             $this->associateOffer($order, $offer);
         }
-
-
     }
 
     protected function associateDefaultOffers(Entity $order)

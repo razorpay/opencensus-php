@@ -151,7 +151,7 @@ class Core extends Base\Core
         $payment->dissociateOffer($offer);
     }
 
-    public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
+    public function fetchSharedAccOffersForCheckout(Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
 

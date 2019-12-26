@@ -5417,9 +5417,6 @@ ALTER TABLE settlement_bucket
 ALTER TABLE offers
     ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
     ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
-    ADD COLUMN default_offer bool DEFAULT 0;
-    ADD COLUMN max_order_amount int(11) DEFAULT NULL;
-    MODIFY type VARCHAR(20) ;
 
 # adds fee_bearer column for payments (renaming the existing column 'reference12')
 ALTER TABLE payments
@@ -5558,4 +5555,9 @@ ALTER TABLE `terminals`
 
 ALTER TABLE worldline
 	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
-  
+
+ALTER TABLE offers
+    ADD COLUMN default_offer bool DEFAULT 0;
+    ADD COLUMN max_order_amount int(11) DEFAULT NULL;
+    MODIFY type VARCHAR(20) ;
+
