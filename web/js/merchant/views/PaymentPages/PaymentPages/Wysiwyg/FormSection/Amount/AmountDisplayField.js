@@ -7,8 +7,8 @@ import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditL
 import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
-} from '../../Amount_Fields/V3';
-import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
+} from '../Amount/helpers';
+import FIELD_TYPES from '../Amount/helpers/fieldTypes';
 import { getCurrency } from 'common/ui/Amount';
 
 const DragHandle = sortableHandle(() => (

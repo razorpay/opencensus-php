@@ -4,7 +4,7 @@ import Croppie from 'croppie';
 import Button from 'common/new-ui/Button';
 import CreatorModal from '../CreatorModal';
 import FileUpload from 'merchant/components/File/Upload';
-import { uploadImageInDescription } from '../../../../model';
+import { uploadImageInDescription } from '../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { classList } from 'common/utils/rzp-utils';
 

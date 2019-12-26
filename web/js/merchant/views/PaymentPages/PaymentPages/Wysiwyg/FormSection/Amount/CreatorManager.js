@@ -2,11 +2,11 @@ import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 import { ImageCropperModal } from './ImageCropper';
-import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
+import FIELD_TYPES from '../Amount/helpers/fieldTypes';
 import {
   isMandatoryToBool,
   mapFieldToAmountFieldType,
-} from '../../Amount_Fields/V3';
+} from '../Amount/helpers';
 import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 

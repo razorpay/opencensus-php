@@ -1,17 +1,18 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import { Field, reduxForm } from 'redux-form';
-import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
 import { isBlank } from 'common/utils/rzp-utils';
 import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import ajax from 'merchant/utils/ajax';
+import fileDownload from 'common/utils/file-download';
 
-@connect(state => state.session, { closeModal })
+@connect(state => state.session, { closeModal, showNotification })
 @reduxForm({
   form: 'newKeyModal',
 })
@@ -45,6 +46,29 @@ export default class NewKey extends Component {
       affirmativeLabel: 'OK',
       action: () => this.props.closeModal(),
     });
+  };
+
+  handleDownloadToken = () => {
+    const { apiKey: key } = this.props;
+
+    return ajax({
+      url: 'keys/csv',
+      method: 'post',
+      appendModeInQueryParam: true,
+      data: {
+        id: key.id,
+        secret: key.secret,
+      },
+    })
+      .then(data => {
+        fileDownload(data, 'rzp.csv');
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+      });
   };
 
   render() {
@@ -90,9 +114,12 @@ export default class NewKey extends Component {
             </div>
             <div class="form-group">
               <div class="col-md-8 col-md-offset-3">
-                <a href={`/keys/csv?id=${key.id}&secret=${key.secret}`}>
+                <button
+                  class="btn-link no-padding"
+                  onClick={this.handleDownloadToken}
+                >
                   Download Key Details
-                </a>
+                </button>
               </div>
             </div>
           </div>

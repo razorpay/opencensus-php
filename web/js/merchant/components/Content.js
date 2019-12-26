@@ -23,7 +23,7 @@ import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import OffersHome from '../containers/Offers';
+import OffersHome from '../views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
@@ -135,11 +135,6 @@ export default class Content extends Component {
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-          <Redirect
-            to={user.isPartner() ? '/partners' : '/dashboard'}
-            from="/"
-            exact
-          />
 
           <ShowWhenRoute
             path="/partners"
@@ -201,9 +196,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
-            additionalCondition={user =>
-              user.isAllowedView('payment_pages') && user.isPPMLIEnabled
-            }
+            additionalCondition={user => user.isAllowedView('payment_pages')}
           />
 
           <ShowWhenRoute

@@ -6,7 +6,7 @@ import Input from 'common/new-ui/Input';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 
-import FIELD_TYPES from '../../Amount_Fields/fieldTypes';
+import FIELD_TYPES from '../Amount/helpers/fieldTypes';
 
 @connect(state => ({
   user: state.session.user,

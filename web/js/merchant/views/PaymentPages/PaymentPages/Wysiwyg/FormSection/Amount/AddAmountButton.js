@@ -1,9 +1,9 @@
 import Button from 'common/new-ui/Button';
-import FieldsDropdown from '../../FieldsDropdown';
+import FieldsDropdown from '../FieldsDropdown';
 import {
   getAmountFieldTypes,
   getBaseFieldForAmountFieldType,
-} from '../../Amount_Fields/V3';
+} from '../Amount/helpers';
 import CreatorManager from './CreatorManager';
 
 class AddAmountButton extends React.PureComponent {
