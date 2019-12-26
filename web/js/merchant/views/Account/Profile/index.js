@@ -29,6 +29,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
     return {
       user: state.session.user,
       profile: state.profile,
+      config: state.config.config,
     };
   },
   {
@@ -281,6 +282,8 @@ export default class Profile extends Component {
     let { bankAccount } = profile;
     let invitations = user.user.invitations;
 
+    const { settlement_ux_revamp } = this.props.config;
+
     if (!user.isAuthenticated) {
       return (
         <div class="page-spinner-container">
@@ -348,7 +351,7 @@ export default class Profile extends Component {
           ) : null}
 
           {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-          <SettlementDetails />
+          {settlement_ux_revamp && <SettlementDetails />}
         </div>
       </div>
     );
