@@ -19,6 +19,7 @@ use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -27,6 +28,7 @@ use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -5295,9 +5297,9 @@ class MerchantTest extends TestCase
     {        
         $this->ba->adminAuth();
 
-        $submerchant = $this->fixtures->create('merchant');
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'id'    =>  '10000000000000'
@@ -5305,7 +5307,7 @@ class MerchantTest extends TestCase
 
         $a = $this->startTest();
 
-        $this->assertEquals($a['merchant_id'], $submerchant['id']);
+        $this->assertEquals($a['merchant_id'], $subMerchantId);
 
         $this->assertEquals($a['parent_merchant_id'], '10000000000000');
 
@@ -5313,7 +5315,30 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], '10000000000000');
 
-        $this->assertEquals($merchantInheritanceMap['merchant_id'], $submerchant['id']);
+        $this->assertEquals($merchantInheritanceMap['merchant_id'], $subMerchantId);
+    }
+
+    public function testSetNonPartnerInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+        
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT);
+
+        $this->expectExceptionMessage(
+            'Inheritance parent should be aggregator or fully-managed partner of the submerchant');
+
+        $this->startTest();
     }
 
     public function testGetInheritanceParent()
@@ -5381,5 +5406,29 @@ class MerchantTest extends TestCase
                    ->will($this->onConsecutiveCalls('on', 'off'));
 
         $this->app->instance('razorx', $razorxMock);
+    }
+
+    protected function setUpPartnerAndGetSubMerchantId()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return $subMerchantId;
     }
 }
