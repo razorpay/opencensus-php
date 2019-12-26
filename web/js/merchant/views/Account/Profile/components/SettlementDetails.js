@@ -7,16 +7,19 @@ import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Group, { GroupItem } from 'common/ui/Group';
+import Amount from 'common/ui/Amount';
 
-@connect(state => ({ ...state.profile, user: state.session.user }), {
-  fetchGST,
-  openModal,
-})
-export default class SettlementDetails extends Component {
-  componentWillMount() {
-    this.props.fetchGST();
+@connect(
+  state => ({
+    ...state.profile,
+    user: state.session.user,
+    current_balance: state.home.current_balance,
+  }),
+  {
+    openModal,
   }
-
+)
+export default class SettlementDetails extends Component {
   openAddGSTModal = () => {
     this.props.openModal({
       size: 'small',
@@ -29,7 +32,7 @@ export default class SettlementDetails extends Component {
   };
 
   render() {
-    let { merchant_gst, rzp_gst, user } = this.props;
+    let { current_balance } = this.props;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -43,31 +46,9 @@ export default class SettlementDetails extends Component {
         <div class="list-group details-row-container">
           <div class="list-group-item">
             <span>Current Balance</span>
-            <span>₹7,12,618.36 </span>
-          </div>
-
-          <div class="list-group-item">
-            <div>
-              Next Settlement
-              <i class="i i-info-circle" />
-              <Popover theme="dark">
-                <PopoverBody>
-                  This is a tentative amount, it might vary by refund and
-                  others.
-                </PopoverBody>
-              </Popover>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                width: '40%',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              <div>₹7,12,618.36</div>
-              <div>01 Dec, 5PM</div>
-              <div class="btn-link">Know More</div>
-            </div>
+            <span>
+              <Amount value={current_balance.data.balance} currency={'INR'} />
+            </span>
           </div>
         </div>
       </div>
