@@ -378,9 +378,9 @@ class Core extends Base\Core
     {
         $contact = $payoutLink->contact;
 
-        $maskedEmail = $contact->getEmail();//$this->getMaskedEmail($contact);
+        $maskedEmail = $this->getMaskedEmail($contact);
 
-        $maskedPhone = $contact->getContact();//$this->getMaskedPhone($contact->getContact());
+        $maskedPhone = $this->getMaskedPhone($contact);
 
         $data = [
             'api_host'                => $this->config['url.api.production'],
@@ -404,9 +404,9 @@ class Core extends Base\Core
 
     protected function getMaskedEmail(ContactEntity $contact)
     {
-        $maskedEmail = '';
-
         $email = $contact->getEmail();
+
+        $maskedEmail = $email;
 
         if (empty($email) === true)
         {
@@ -423,10 +423,21 @@ class Core extends Base\Core
 
             $emailDomain = $email[1];
 
+            $emailDomain = explode('.', $emailDomain);
+
+            $domain = $emailDomain[0];
+
+            $topLevelDomain = $emailDomain[1];
+
             // replace the name except first 3 characters with *
-            $maskedEmail = substr($emailName, 0, 3) .
+            $maskedEmailName = substr($emailName, 0, 3) .
                            str_repeat('*', strlen($emailName) - 3);
 
+            $maskedDomain = $domain[0] .
+                            str_repeat('*', strlen($domain) - 2) .
+                            $domain[strlen($domain) - 1];
+
+            $maskedEmail = sprintf('%s@%s.%s',$maskedEmailName, $maskedDomain, $topLevelDomain);
         }
         catch(\Exception $e)
         {
@@ -435,10 +446,29 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::INVALID_EMAIL_CANNOT_MASK,
                                          [
-                                             'email' => $email
+                                             'email'      => $email,
+                                             'contact_id' => $contact->getId()
                                          ]
             );
         }
+
+        return $maskedEmail;
+    }
+
+    public function getMaskedPhone(ContactEntity $contact)
+    {
+        $phone = $contact->getContact();
+
+        if ((empty($phone) === true))
+        {
+            return '';
+        }
+
+        $phoneLen = strlen($phone);
+
+        return substr($phoneLen, 0,2) .
+               str_repeat('*', $phoneLen - 4) .
+               substr($phone, $phoneLen - 2, $phoneLen - 1);
 
     }
 
