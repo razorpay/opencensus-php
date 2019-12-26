@@ -13,6 +13,7 @@ use RZP\Reconciliator\Core;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\RequestProcessor;
@@ -397,6 +398,24 @@ class SubReconciliate extends Base\Core
         }
     }
 
+    protected function persistGatewayAmount(Base\Entity $entity, array $rowDetails)
+    {
+        $gatewayAmount = $rowDetails[BaseReconciliate::GATEWAY_AMOUNT];
+
+        $transaction = $entity->transaction;
+
+        if (($gatewayAmount === null) or
+            ($transaction === null) or
+            ($transaction->getGatewayAmount() !== null))
+        {
+            return;
+        }
+
+        $transaction->setGatewayAmount($gatewayAmount);
+
+        $this->repo->saveOrFail($transaction);
+    }
+
     protected function checkIfAlreadyReconciled($entity)
     {
         $transaction = $entity->transaction;
@@ -450,6 +469,25 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * To be overridden in child class
+     * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistGatewayUtr(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        return;
+    }
+
+    /**
+     * Being used in Worldline gateway (VasAxis) only.
+     * If present, will be saved in worldline entity
+     */
+    protected function getGatewayUtr($row)
+    {
+        return null;
+    }
+
+    /**
      * Not all gateways provide us with gateway_settled_at.
      * Hence, we send back null for these gateways.
      *
@@ -457,6 +495,18 @@ class SubReconciliate extends Base\Core
      * @return null
      */
     protected function getGatewaySettledAt(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * Not all gateways provide us with gateway_amount.
+     * Hence, we send back null for these gateways.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayAmount(array $row)
     {
         return null;
     }

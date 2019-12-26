@@ -548,4 +548,9 @@ class CreateAccount extends Base
             Requests::DELETE,
             $input);
     }
+
+    public function getAccount()
+    {
+        return $this->account;
+    }
 }

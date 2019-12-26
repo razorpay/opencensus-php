@@ -1360,4 +1360,19 @@ return [
             ],
         ],
     ],
+    'testStoreCaseInsensitiveDomain' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://EXAMPLE.CoM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://EXAMPLE.CoM',
+            ],
+        ],
+    ],
 ];

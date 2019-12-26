@@ -17,6 +17,7 @@ use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -769,6 +770,10 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
+        $gatewayName = $this->getGateway($input);
+
+        $this->restrictPaymentVerifyGatewayIfApplicable($gatewayName, $verify);
+
         return $verify->status;
     }
 
@@ -948,6 +953,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => Action::PAY_VERIFY,
+                Action::REFUND        => Action::PAY_VERIFY,
             ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
@@ -1040,6 +1046,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
             ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT   => null,
@@ -1396,6 +1403,26 @@ class Gateway extends Base\Gateway
         return in_array($gateway, $formattedAmountGateways, true);
     }
 
+    protected function restrictPaymentVerifyGatewayIfApplicable($gateway, $verify)
+    {
+        $verifyRestrictedGateways = [
+            Payment\Gateway::NETBANKING_KVB,
+        ];
+
+        if (in_array($gateway, $verifyRestrictedGateways, true) === true)
+        {
+            if (($verify->match === true) and
+                ($this->app['basicauth']->isCron() === true))
+            {
+                throw new Exception\PaymentVerificationException(
+                    $verify->getDataToTrace(),
+                    null,
+                    VerifyAction::FINISH
+                );
+            }
+        }
+    }
+
     protected function getResponseData($input, $mozartResponse, $gatewayPayment)
     {
         if ((isset($input['gateway']['redirect']['mandateDtls']) === true) and
@@ -1529,7 +1556,6 @@ class Gateway extends Base\Gateway
     {
         return in_array($gateway, [
             Payment\Gateway::UPI_CITI,
-            Payment\Gateway::UPI_JUSPAY,
         ], true);
     }
 

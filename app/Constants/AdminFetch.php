@@ -2356,6 +2356,26 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ]
             ],
+
+            Entity::UPI_TRANSFER => [
+                'payment_id'            => Fetch::FIELD_PAYMENT_ID,
+                'virtual_account_id'    => [
+                    Fetch::LABEL => 'Virtual Account ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payer_vpa'             => [
+                    Fetch::LABEL => 'Payer VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payee_vpa'             => [
+                    Fetch::LABEL => 'Payee VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'npci_reference_id'     => [
+                    Fetch::LABEL => 'NPCI Reference Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ]
         ];
 
         //

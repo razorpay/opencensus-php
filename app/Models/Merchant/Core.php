@@ -637,14 +637,17 @@ class Core extends Base\Core
 
         $function = camel_case($action);
 
-        $merchant->$function();
-
-        if ($useWorkflows === true)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $function, $useWorkflows, $originalMerchant, $action)
         {
-            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
-        }
+            $merchant->$function();
 
-        $this->repo->saveOrFail($merchant);
+            if ($useWorkflows === true)
+            {
+                $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+            }
+
+            $this->repo->saveOrFail($merchant);
+        });
 
         if($action === Merchant\Action::RELEASE_FUNDS)
         {

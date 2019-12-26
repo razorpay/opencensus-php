@@ -1392,6 +1392,11 @@ final class Route
         'inheritance_parent_fetch'                => ['get',       'merchants/{id}/inheritance_parent',                         'MerchantController@getInheritanceParent'                   ],
         'inheritance_parent_set'                  => ['post',      'merchants/{id}/inheritance_parent',                         'MerchantController@postInheritanceParent'                  ],
         'inheritance_parent_delete'               => ['delete',    'merchants/{id}/inheritance_parent',                         'MerchantController@deleteInheritanceParent'                ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+
+        // Route for Success Rate Global Configurations
+        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
     ];
 
     public static $public = [
@@ -2668,6 +2673,10 @@ final class Route
         'inheritance_parent_fetch',
         'inheritance_parent_set',
         'inheritance_parent_delete',
+        
+        // SuccessRate Config Routes
+        'update_sr_level_global_config',
+        'get_all_sr_level_global_config',
     ];
 
     public static $routePermission = [
@@ -3203,6 +3212,7 @@ final class Route
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
+
         'setl_holidays'                             => '*',
 
         'create_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
@@ -3216,6 +3226,13 @@ final class Route
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        //Todo update permission later
+        //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
+        'update_sr_level_global_config'             => '*',
+        //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
+        'get_all_sr_level_global_config'            => '*',
+
     ];
 
     public static $direct = [
@@ -3610,6 +3627,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'virtual_account_create',
             'oauth_token_create',
         ],
 

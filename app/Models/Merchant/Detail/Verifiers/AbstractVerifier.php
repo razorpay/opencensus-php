@@ -8,8 +8,10 @@ use Requests_Response;
 use Requests_Exception;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Metric;
@@ -27,12 +29,14 @@ abstract class AbstractVerifier
 
     protected $mockStatus = 'success';
 
+    protected $merchant;
+
     /**
      * @var int Default timeout
      */
     protected $timeout = 10; //seconds
 
-    public function __construct(array $input)
+    public function __construct(array $input, Merchant\Entity $merchant)
     {
         $app = App::getFacadeRoot();
 
@@ -40,6 +44,7 @@ abstract class AbstractVerifier
         $this->config = $app['config']['applications.mozart'];
         $this->trace  = $app['trace'];
 
+        $this->merchant = $merchant;
         $this->input  = $input;
     }
 
@@ -213,11 +218,29 @@ abstract class AbstractVerifier
 
         $timeDuration = millitime() - $startAt;
 
+        $statusCode = $this->getStatusCodeForVerifier($response);
+
+        $this->traceAndPushEvent($timeDuration, $statusCode);
+
+        return $response;
+    }
+
+    protected function traceAndPushEvent($timeDuration, $statusCode)
+    {
         $dimensions = $this->getMetricDimensions();
 
         $this->trace->histogram(Metric::EXTERNAL_VERIFIER_API_CALL_DURATION_MS, $timeDuration, $dimensions);
 
-        return $response;
+        $eventAttribute = [
+            Constants::RESPONSE_TIME => $timeDuration,
+            Constants::STATUS_CODE => $statusCode,
+            Constants::DOCUMENT_TYPE => $this->input[Constants::DOCUMENT_TYPE] ?? '',
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_VERIFIER_SERVICE_RESPONSE_TIME,
+                                                 $this->merchant,
+                                                 null,
+                                                 $eventAttribute);
     }
 
     public function setMockStatus(string $status)
@@ -234,5 +257,15 @@ abstract class AbstractVerifier
         ];
 
         return $dimensions;
+    }
+
+    protected function getStatusCodeForVerifier(Requests_Response $response)
+    {
+        $body = json_decode($response->body, true);
+
+        $statusCode = $body['data']['content']['response']['status-code'] ??
+                      ($body['data']['content']['response']['statusCode'] ?? $response->status_code);
+
+        return $statusCode;
     }
 }

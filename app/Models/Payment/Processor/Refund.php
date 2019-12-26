@@ -1632,13 +1632,13 @@ trait Refund
         $refundData = $this->prepareScroogeRefundResponse($gatewayResponse, true);
 
         //
+        // TODO: handle for capture queue later
         // refund/reverse on gateway. If capture_queue feature is enabled on a merchant so payment will have txn id
         // even if gateway captured is not set, in that case, reversal request should be sent.
         // If txn id is present and capture queue is not enabled, we will call refund request as that means
         // payment would have been gateway captured.
         //
-        if ((($payment->getTransactionId() !== null) and
-            ($this->merchant->isFeatureEnabled(Feature::CAPTURE_QUEUE) === false)) or
+        if (($payment->getTransactionId() !== null) or
             ($payment->isGatewayCaptured() === true))
         {
             $refundData = $this->refundOnGateway($data, $retry);
