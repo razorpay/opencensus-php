@@ -11,16 +11,17 @@ use RZP\Models\Payout;
 use RZP\Models\Settings;
 
 use RZP\Error\ErrorCode;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Elfin\Service as ElfinService;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
@@ -32,6 +33,7 @@ class PayoutLinkTest extends TestCase
     use DbEntityFetchTrait;
     use EntityActionTrait;
     use MocksDnsTrait;
+    use WebhookTrait;
 
     const TEST_PAYOUT_LINK_PAYLOAD = [
         'id'           => 'DnhDjMDHlQEjgM',
@@ -887,36 +889,28 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
     }
 
-    public function testPayoutLinkInitiatedWebhookTriggered()
-    {
-        $this->ba->privateAuth();
-
-        $this->addAccountNumberParameter(__FUNCTION__);
-
-        $this->createWebhook(
-            [
-                'events' => [
-                    'payout_link.created' => '1',
-                ]
-            ]);
+//    public function testPayoutLinkIssuedWebhookTriggered()
+//    {
+//        $this->setupMockDns();
 //
-//        $testData = $this->testData[__FUNCTION__];
+//        $this->createWebhook(['events' => ['payout_link.issued' => '1']]);
 //
-//        $this->mockInfernoFire(function ($data) use ($testData)
-//        {
-//            dd('dskjsdks');
-////            $data['event'] = json_decode($data['event'], true);
+//        $this->setInfernoExpectations(['PayoutLinkIssuedWebHook']);
 //
-////            $this->assertEquals('virtual_account.created', $data['event']['event']);
+//        $this->fixtures->create('fund_account:bank_account',
+//                                [
+//                                    'id'          => '100000000003fa',
+//                                    'source_type' => 'contact',
+//                                    'source_id'   => $this->contact->getId(),
+//                                    'merchant_id' => $this->contact->merchant->getId()
+//                                ]);
 //
-////            $this->assertArraySelectiveEquals($testData, $data);
+//        $this->addAccountNumberParameter(__FUNCTION__);
 //
-//            return true;
-//        });
-
-
-        $this->startTest();
-    }
+//        $this->ba->privateAuth();
+//
+//        $this->startTest();
+//    }
 
     protected function mockInfernoFire(Closure $closure)
     {

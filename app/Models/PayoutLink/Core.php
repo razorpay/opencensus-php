@@ -54,6 +54,7 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
@@ -359,8 +360,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payoutLink);
 
-        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
-                                 [$payoutLink]);
+        $this->app['events']->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
+                                   [$payoutLink]);
 
         return $payoutLink;
     }

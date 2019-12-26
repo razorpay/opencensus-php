@@ -806,7 +806,7 @@ return [
         ]
     ],
 
-    'testPayoutLinkInitiatedWebhookTriggered' => [
+    'testPayoutLinkIssuedWebhookTriggered' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payout-links',
@@ -836,4 +836,27 @@ return [
             ]
         ]
     ],
+
+    'PayoutLinkIssuedWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.created',
+        'contains' => [
+            'payment_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => 'bad email',
+                    'contact_email'        => 'a@g.com',
+                    'contact_phone_number' => null,
+                    'fund_account_id'      => null,
+                    'status'               => 'issued',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'sdkjnweisd',
+                ],
+            ],
+        ],
+    ]
 ];
