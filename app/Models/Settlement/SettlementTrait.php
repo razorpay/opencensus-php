@@ -743,11 +743,23 @@ trait SettlementTrait
                 $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
                     Medium::API : Medium::FILE;
 
+                $destination = $this->repo
+                                    ->settlement_destination
+                                    ->fetchActiveDestination($setl->getId());
+
+                $destinationType = null;
+
+                if($destination !==null)
+                {
+                    $destinationType = $destination->getDestinationType();
+                }
+
                 $customProperties += [
                     'fund_transfer_attempt_id'                => $transferAttempt->getId(),
                     'fund_transfer_attempt_mode'              => $transferAttempt->getMode(),
                     'fund_transfer_attempt_medium'            => $medium,
                     'fund_transfer_attempt_purpose'           => Purpose::SETTLEMENT,
+                    'destination_type'                        => $destinationType,
                 ];
 
                 $this->app['diag']->trackSettlementEvent(
@@ -918,13 +930,18 @@ trait SettlementTrait
                  $merchantSettleToPartner, $balance, $params) {
                 try
                 {
+                        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
+
+                        $isAggregateSettlement = ($destinationMerchantId !== null);
+
                         // create settlement and attempt
                         $merchantSettler = new SetlMerchant(
                             $merchant,
                             $channel,
                             $this->repo,
                             $this->isDebugEnabled(),
-                            $merchantSettleToPartner);
+                            $merchantSettleToPartner,
+                            $isAggregateSettlement);
 
                         $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
@@ -944,8 +961,6 @@ trait SettlementTrait
                         $merchantSettler->createTransaction($settlement);
 
                         $transferAttempt = null;
-
-                        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
 
                         if ($destinationMerchantId !== null)
                         {
