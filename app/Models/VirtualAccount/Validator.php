@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
+        Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
     protected static $editRules = [

@@ -1345,12 +1345,12 @@ class GatewayDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'gateway'     => 'upi_mindgate',
-                'method'      => 'upi',
-                'source'      => 'doppler',
-                'psp'         => 'bhim',
+                'gateway' => 'upi_mindgate',
+                'method' => 'upi',
+                'source' => 'doppler',
+                'psp' => 'bhim',
                 'reason_code' => 'ISSUER_DOWN',
-                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
+                'begin' => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
@@ -1363,6 +1363,82 @@ class GatewayDowntimeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($response['psp'], 'bhim');
+    }
+
+    public function testDopplerDowntimeCreation()
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'DOWN'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($response['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'UP'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['end']);
+    }
+
+    public function testDopplerDowntimeUpdate()
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'LOW_SUCCESS_RATE',
+                'gateway'   => 'ALL',
+                'status'    => 'DOWN'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($response['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'content' => [
+                'method'    => 'upi',
+                'reason_code'   => 'ISSUER_DOWN',
+                'gateway'   => 'ALL',
+                'status'    => 'DOWN'
+            ],
+            'url'   => '/gateway/downtimes/doppler/webhook',
+            'method'    => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($response['end']);
+
+        $this->assertEquals($response['reason_code'], "ISSUER_DOWN");
     }
 
     protected function getDowntimeCreationRequest(): array

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\BankTransfer;
+use RZP\Models\Customer\Entity;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
@@ -1584,6 +1585,43 @@ class VirtualAccountTest extends TestCase
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
 
         $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $this->fetchVirtualAccounts());
+    }
+
+    public function testCreateVirtualAccountWithoutCustomerIdWithCustomerDetails()
+    {
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['customer_id']);
+    }
+
+    public function testCreateVirtualAccountWithoutCustomerIdWithoutCustomerDetails()
+    {
+        $response = $this->startTest();
+
+        $this->assertNull($response['customer_id']);
+    }
+
+    public function testCreateVirtualAccountWithCustomerIdWithCustomerDetails()
+    {
+        $customer = $this->fixtures->create(
+            'customer',
+            [
+                'id'          => '100022customer',
+                'contact'     => null,
+                'email'       => null,
+                'merchant_id' => '10000000000000',
+            ]);
+        $response = $this->startTest();
+
+        $customerId = Entity::stripDefaultSign($response['customer_id']);
+
+        $this->assertEquals($customer['id'], $customerId);
+    }
+
+    public function testCreateVirtualAccountInvalidCustomerEmail()
+    {
+        $response = $this->startTest();
     }
 
     protected function mockInfernoFire(Closure $closure)

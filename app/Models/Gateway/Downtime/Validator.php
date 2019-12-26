@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::PSP             => 'sometimes|string|max:50',
+        Entity::PSP             => 'sometimes|string|max:255',
     ];
 
     protected static $editRules = [
@@ -62,7 +62,7 @@ class Validator extends Base\Validator
         Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::PSP             => 'sometimes|string|max:50',
+        Entity::PSP             => 'sometimes|string|max:255',
     ];
 
     protected static $createValidators = [

@@ -392,6 +392,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+
     public function setEnd()
     {
         $this->setAttribute(self::END, time());

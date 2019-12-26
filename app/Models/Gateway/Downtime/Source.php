@@ -10,9 +10,9 @@ class Source
     const BILLDESK    = 'BILLDESK';
     const BANK        = 'BANK';
     const VAJRA       = 'VAJRA';
+    const DOPPLER     = 'DOPPLER';
     const INTERNAL    = 'INTERNAL';
     const OTHER       = 'OTHER';
-    const DOPPLER     = 'DOPPLER';
 
     const DUMMY       = 'dummy';
 
@@ -21,9 +21,9 @@ class Source
         Source::BILLDESK,
         Source::BANK,
         Source::VAJRA,
+        Source::DOPPLER,
         Source::INTERNAL,
         Source::OTHER,
-        Source::DOPPLER,
     ];
 
     public static function isValid($source)

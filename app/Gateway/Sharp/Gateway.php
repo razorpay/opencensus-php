@@ -676,6 +676,24 @@ class Gateway extends Base\Gateway
                 $response['status_code']    = ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS;
                 break;
 
+            // Hard failure + FTA retry
+            case ($amount === 1357):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_FORBIDDEN;
+                break;
+
+            // Hard failure
+            case ($amount === 2468):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::SERVER_ERROR_LOGICAL_ERROR;
+                break;
+
+            // Soft failure
+            case ($amount === 7531):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_FATAL_ERROR;
+                break;
+
             default:
                 $response = [
                     'result'                => 'REFUND SUCCESSFUL',

@@ -70,8 +70,9 @@ class Messenger
     {
         $flag = false;
 
-        if ((isset($data[self::TRACE_CODE]) === true)                 and
-            ($data[self::TRACE_CODE] === TraceCode::RECON_INFO_ALERT) and
+        if ((isset($data[self::TRACE_CODE]) === true)                    and
+            (($data[self::TRACE_CODE] === TraceCode::RECON_INFO_ALERT)     or
+            ($data[self::TRACE_CODE] === TraceCode::RECON_CRITICAL_ALERT)) and
             (isset($data[self::INFO_CODE]) === true))
         {
             switch ($data[self::INFO_CODE])
@@ -96,6 +97,7 @@ class Messenger
                     {
                         $flag = true;
                     }
+                    break;
 
                 case InfoCode::MIS_FILE_PAYMENT_FAILED:
                     //Disabling slack alert for VirtualAccYesBank,

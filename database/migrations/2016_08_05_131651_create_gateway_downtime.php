@@ -46,7 +46,7 @@ class CreateGatewayDowntime extends Migration
 
             $table->string(Downtime::METHOD, 30);
 
-            $table->string(Downtime::PSP, 50)
+            $table->string(Downtime::PSP, 255)
                 ->nullable();
 
             $table->text(Downtime::COMMENT)
