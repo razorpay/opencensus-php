@@ -589,6 +589,6 @@ class Core extends Base\Core
                 [ 'channel' => $channel, 'accountNumber' => $accountNumber]);
         }
 
-        return $MIDs;
+        return $accountNumbers;
     }
 }
