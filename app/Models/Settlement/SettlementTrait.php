@@ -108,7 +108,7 @@ trait SettlementTrait
         }
 
         // Do not proceed if merchant does not have active bank account and the merchant is not settling to the partner.
-        if ($bankAccount === null and
+        if (($bankAccount === null) and
             ($isAggregateSettlement === false))
         {
             $this->traceMerchantSettlementSkip(
