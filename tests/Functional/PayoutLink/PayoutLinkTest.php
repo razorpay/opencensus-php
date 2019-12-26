@@ -225,7 +225,7 @@ class PayoutLinkTest extends TestCase
 
     public function testShortUrlGenerationExceptionThrown()
     {
-        $urlFormat = '%s/payout-links/%s/view';
+        $urlFormat = '%s/v1/payout-links/%s/view';
 
         $this->ba->privateAuth();
 

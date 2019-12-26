@@ -26,7 +26,7 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT         = '%s/payout-links/v1/%s/view';
+    const LONG_URL_FORMAT         = '%s/v1/payout-links/%s/view';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
     const TEMPLATE                = 'template';
