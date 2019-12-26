@@ -14,13 +14,22 @@ class CustomerOtp extends Mailable
 
     protected $otp;
 
-    protected $description;
+    protected $purpose;
 
-    protected $merchantName;
+    protected $merchantDisplayName;
 
     protected $customerEmail;
 
-    public function __construct(string $customerEmail, string $otp, $merchantName, $description)
+    protected $logoUrl;
+
+    protected $primaryColor;
+
+    public function __construct(string $customerEmail,
+                                string $otp,
+                                string $merchantDisplayName = null,
+                                string $purpose = null,
+                                string $logoUrl = null,
+                                string $primaryColor = null)
     {
         parent::__construct();
 
@@ -28,9 +37,13 @@ class CustomerOtp extends Mailable
 
         $this->otp = $otp;
 
-        $this->description = $description;
+        $this->purpose = $purpose;
 
-        $this->merchantName = $merchantName;
+        $this->merchantDisplayName = $merchantDisplayName;
+
+        $this->primaryColor = $primaryColor;
+
+        $this->logoUrl = $logoUrl;
     }
 
     protected function addRecipients()
@@ -72,9 +85,11 @@ class CustomerOtp extends Mailable
     protected function addMailData()
     {
         $data = [
-            'otp'           => $this->otp,
-            'merchant_name' => $this->merchantName,
-            'description'   => $this->description,
+            'otp'                   => $this->otp,
+            'merchant_display_name' => $this->merchantDisplayName,
+            'purpose'               => $this->purpose,
+            'logoUrl'               => $this->logoUrl,
+            'primary_color'          => $this->primaryColor,
         ];
 
         $this->with($data);

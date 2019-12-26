@@ -213,6 +213,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FUND_ACCOUNT_ID);
     }
 
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
