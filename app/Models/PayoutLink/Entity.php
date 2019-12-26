@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const STATUS               = 'status';
     const AMOUNT               = 'amount';
     const NOTES                = 'notes';
+    const PURPOSE              = 'purpose';
     const DESCRIPTION          = 'description';
     const RECEIPT              = 'receipt';
     const CURRENCY             = 'currency';
@@ -61,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::PURPOSE,
         self::RECEIPT,
         self::NOTES,
         self::BALANCE_ID,
@@ -73,12 +75,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::USER_ID,
+        self::PURPOSE,
         self::CONTACT_ID,
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
-
         self::SHORT_URL,
         self::STATUS,
         self::AMOUNT,
@@ -100,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
         self::FUND_ACCOUNT_ID,
+        self::PURPOSE,
         self::STATUS,
         self::AMOUNT,
         self::CURRENCY,
@@ -120,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::STATUS,
         self::AMOUNT,
+        self::PURPOSE,
         self::CURRENCY,
         self::DESCRIPTION,
         self::RECEIPT,
