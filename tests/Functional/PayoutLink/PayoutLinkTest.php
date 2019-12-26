@@ -35,6 +35,7 @@ class PayoutLinkTest extends TestCase
         'user_id'      => null,
         'currency'     => 'INR',
         'description'  => 'This is a test payout',
+        'purpose'      => 'refund',
         'receipt'      => 'Test Payout Receipt',
         'notes'        => [
             'hi' => 'hello'
@@ -73,9 +74,10 @@ class PayoutLinkTest extends TestCase
     public function testPayoutLinkCreation()
     {
         $input = [
-            PayoutLink::AMOUNT     => 1000,
-            PayoutLink::CURRENCY   => Currency::INR,
-            PayoutLink::DESCRIPTION   => 'TEST DESCRIPTION',
+            PayoutLink::AMOUNT       => 1000,
+            PayoutLink::CURRENCY     => Currency::INR,
+            PayoutLink::DESCRIPTION  => 'TEST DESCRIPTION',
+            PayoutLink::PURPOSE      => 'refund',
             PayoutLink::CONTACT_NAME => $this->contact->getName()
         ];
 
