@@ -960,8 +960,6 @@ trait SettlementTrait
                             $transferAttempt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
                         }
 
-                        // TODO: make entry in settlement destination here
-
                         return [$settlement, $transferAttempt];
                 }
                 catch (\Exception $ex)
