@@ -106,7 +106,7 @@ class Core extends Base\Core
 
     protected function associateOffers(Entity $order, array $input)
     {
-        if($order->isOfferForced() === false)
+        if($order->isOfferForced() === null or $order->isOfferForced() === false)
         {
             $this->associateDefaultOffers( $order);
         }
