@@ -7,6 +7,7 @@ use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Base\Collection;
+use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Query\JoinClause;
 
 class Repository extends Base\Repository
@@ -47,7 +48,7 @@ class Repository extends Base\Repository
      * @param array $params
      * @return Collection
      */
-    public function getMerchantIdsForWorkflowPermission($orgId, $params)
+    public function getMerchantIdsForCreatePayoutWorkflowPermission($orgId, $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
         // which cannot be filtered further according to permission which is required here.
@@ -55,37 +56,37 @@ class Repository extends Base\Repository
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        $permission = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? Admin\Permission\Name::CREATE_PAYOUT;
-
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
         $query = $this->repo->permission->newQuery()
-                                        ->where(Admin\Permission\Entity::NAME, $permission);
+                                        ->where(Admin\Permission\Entity::NAME, Admin\Permission\Name::CREATE_PAYOUT);
 
         $permissionIdArray = $query->pluck(Entity::ID)->toArray();
 
-        $permissionId = $permissionIdArray[0];
+        $createPayoutPermissionId = $permissionIdArray[0];
 
         $query = $this->repo->workflow->newQuery()
-                                        ->whereIn('id', function ($q) use ($permissionId) {
-                                                            $q->select(Entity::WORKFLOW_ID)
-                                                              ->from(Table::WORKFLOW_PERMISSION)
-                                                              ->where(Entity::PERMISSION_ID, $permissionId);
-                                                        })
-                                        ->orgId($orgId)
-                                        ->distinct();
+                                      ->whereIn(Entity::ID,
+                                                function ($query) use ($createPayoutPermissionId)
+                                                {
+                                                    $query->select(Entity::WORKFLOW_ID)
+                                                          ->from(Table::WORKFLOW_PERMISSION)
+                                                          ->where(Entity::PERMISSION_ID, $createPayoutPermissionId);
+                                                })
+                                      ->orgId($orgId)
+                                      ->distinct();
 
         if (empty($merchantId) === false)
         {
             $query->merchantId($merchantId);
         }
-        else
-        {
-            $query->skip($offset)
-                  ->take($limit);
-        }
 
-        $results = $query->pluck(Entity::MERCHANT_ID);
+        $query->skip($offset)
+              ->take($limit);
+
+        $resultArray = $query->pluck(Entity::MERCHANT_ID);
+
+        $results = new PublicCollection($resultArray);
 
         return $results;
     }

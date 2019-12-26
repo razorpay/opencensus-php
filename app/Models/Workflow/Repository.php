@@ -18,20 +18,21 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
+    // TODO: make changes here
     public function findByOrgId(string $orgId, $params)
     {
         $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        $permissionName = $params[\RZP\Models\Workflow\Entity::PERMISSIONS] ?? null;
+        $permissionName = $params[Entity::PERMISSIONS] ?? null;
 
         $query = $this->repo->permission->newQuery()
-            ->where(Admin\Permission\Entity::NAME, $permissionName);
+                                        ->where(Admin\Permission\Entity::NAME, $permissionName);
 
         $permission = $query->pluck(Entity::ID)->toArray();
 
-        if(empty($permission) === false)
+        if (empty($permission) === false)
         {
             $permissionId = $permission[0];
         }
@@ -39,9 +40,9 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->where(Entity::ORG_ID, '=', $orgId);
 
-        if(empty($permission) === false)
+        if (empty($permission) === false)
         {
-            $query->whereIn('id', function ($q) use ($permissionId) {
+            $query->whereIn(Entity::ID, function ($q) use ($permissionId) {
                                       $q->select(Step\Entity::WORKFLOW_ID)
                                         ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
                                         ->where(Entity::PERMISSION_ID, $permissionId);
@@ -102,5 +103,4 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::DELETED_AT)
                     ->pluck(Entity::ID);
     }
-
 }

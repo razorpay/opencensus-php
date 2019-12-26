@@ -4,11 +4,11 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name;
-use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -35,9 +35,8 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForWorkflowPermission($orgId, $input);
-
-        $results = (new PublicCollection($results));
+        $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForCreatePayoutWorkflowPermission($orgId,
+                                                                                                              $input);
 
         return $results->toArrayWithItems();
     }
@@ -52,66 +51,63 @@ class Service extends Base\Service
     {
         $rules = $input[Entity::RULES];
 
-        $merchantId = null;
+        $validator = new Validator();
+
+        $validator->checkForValidAmountRanges($rules);
+
+        $validator->ensureDistinctWorkflowIds($rules);
+
+        $merchantId = $this->merchant->getId();
+
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $this->trace->info(TraceCode::WORKFLOW_PAYOUT_RULES_ATTACHMENT, $input);
 
-        // The following loop will check for each of the rules whether :
-        // 1. That all workflow ids exist and have create_payout permission
-        // 2. That all workflow ids have the same merchant id.
-        for ($index = 0; $index < count($rules); $index++)
-        {
+        /** @var Entity $wfPayoutAmountRules */
+        $wfPayoutAmountRules = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId);
 
-            \RZP\Models\Workflow\Entity::verifyIdAndStripSign($rules[$index][Entity::WORKFLOW_ID]);
-
-            $rule = $rules[$index];
-
-            $workflow = $this->repo->workflow->findOrFailPublic($rule[Entity::WORKFLOW_ID]);
-
-            $workflowPermissionsArray = $workflow->permissions->toArray();
-
-            $permissionNames = (array_column($workflowPermissionsArray, 'name'));
-
-            // Ensure that given workflows have create_payout permission
-            if (in_array(Name::CREATE_PAYOUT, $permissionNames, true) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
-                    null,
-                    ['id' => $rule[Entity::WORKFLOW_ID]]);
-            }
-
-            $workflowsArray = $workflow->toArray();
-
-            // Ensure that all merchants are the same
-            if ((empty($merchantId) === false) and ($merchantId !== $workflowsArray[Entity::MERCHANT_ID]))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
-                    null,
-                    ['id' => $rule[Entity::WORKFLOW_ID]]);
-            }
-            elseif (empty($merchantId) === true)
-            {
-                $merchantId = $workflowsArray[Entity::MERCHANT_ID];
-            }
-        }
-
-        // Ensure that workflow rules do not exist already
-        if (!empty($this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId)->toArray()))
+        // Ensure that workflow_payout_amount_rules rules do not exist already
+        // We fail here because editing existing workflow_payout_amount_rules could cause conflicts with the new ones
+        // Alternative is to delete and create new workflow and attach workflow_payout_amount_rules to the new workflow
+        if ($wfPayoutAmountRules->count() > 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_RULES_UPDATE_OR_DELETE_NOT_ALLOWED,
                 null,
-                ['id' => $merchantId]);
+                [
+                    'merchant_id'   => $merchantId,
+                    'input'         => $input,
+                ]);
         }
 
-        (new Entity())->getValidator()->checkForValidAmountRanges($rules);
+        $workflowIdsFromInput = array_column($rules, Entity::WORKFLOW_ID);
 
-        (new Entity())->getValidator()->ensureDistinctWorkflowIds($rules);
+        // Fetch workflows with create_payout permission
+        $workflows = (new Workflow\Action\Core)->getWorkflowsForPermission(Name::CREATE_PAYOUT,
+                                                                           $orgId,
+                                                                           $merchantId);
 
-        $result = $this->core()->create($rules, $merchantId);
+        $workflowIds = $workflows->pluck(Entity::ID)->toArray();
 
-        return $result;
+        Workflow\Entity::verifyIdAndStripSignMultiple($workflowIdsFromInput);
+
+        $diff = array_diff($workflowIdsFromInput, $workflowIds);
+
+        if (count($diff) > 0)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
+                    null,
+                    [
+                        'merchant_id'   => $merchantId,
+                        'diff'          => $diff
+                    ]);
+        }
+
+        $result = $this->core()->create($rules, $this->merchant);
+
+        return $result->toArrayWithItems();
     }
 }
