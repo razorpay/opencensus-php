@@ -389,6 +389,7 @@ class Core extends Base\Core
             'amount'                  => $payoutLink->getAmount(),
             'currency'                => $payoutLink->getCurrency(),
             'user_name'               => $contact->getName(),
+            'description'             => $payoutLink->getDescription(),
             'user_email'              => $maskedEmail,
             'user_phone'              => $maskedPhone,
             'receipt'                 => $payoutLink->getReceipt(),

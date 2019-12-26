@@ -6,7 +6,6 @@
     <div id="app"></div>
     <script>
         window.data={
-
             primary_color: '{{ $primary_color }}',
             logo: '{{ $merchant_logo_url }}',
             client: '{{ $merchant_name }}',
