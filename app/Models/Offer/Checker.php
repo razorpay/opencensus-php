@@ -69,7 +69,17 @@ class Checker extends Base\Core
 
         $validMinOrderAmount = $this->checkMinAmount();
 
+        if($validMinOrderAmount === false)
+        {
+            return false;
+        }
+
         $validMaxOrderAmount = $this->checkMaxOrderAmount();
+
+        if($validMaxOrderAmount === false)
+        {
+            return false;
+        }
 
         $isMaxOfferUsageExceeded = true;
 
@@ -78,8 +88,17 @@ class Checker extends Base\Core
             $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
         }
 
-        return (($validMinOrderAmount === true) and ($validMaxOrderAmount === true) and
-                ($this->checkApplicabilityOnOrder($order) === true) and $isMaxOfferUsageExceeded);
+        if($isMaxOfferUsageExceeded === false)
+        {
+            return false;
+        }
+
+        if($this->checkApplicabilityOnOrder($order) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
@@ -141,7 +160,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_METHOD_NOT_AVAILABLE);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_METHOD_NOT_AVAILABLE);
         }
 
         return $result;
@@ -171,7 +190,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::CARD_TYPE_DOES_NOT_MATCH);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_TYPE_DOES_NOT_MATCH);
         }
 
         return $result;
@@ -200,7 +219,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::PAYMENT_NETWORK_NOT_AVAILABLE);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_NETWORK_NOT_AVAILABLE);
         }
 
         return $result;
@@ -250,6 +269,7 @@ class Checker extends Base\Core
                     [
                         'result'                   => $result,
                         'offer_issuer'             => $offerIssuer,
+                        'payment_method'           => $paymentMethod,
                     ]);
         }
         if(!$result)
@@ -275,7 +295,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::EMI_DURATION_NOT_SAME);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_EMI_DURATION_NOT_SAME);
         }
 
         return $result;
@@ -340,7 +360,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::IINS_DOES_NOT_MATCH);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_IINS_DOES_NOT_MATCH);
         }
 
         return $result;
@@ -459,7 +479,7 @@ class Checker extends Base\Core
                     if(!$result)
                     {
                         $this->offer
-                             ->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                             ->setErrorMessage(PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED);
                     }
 
                     return $result;
@@ -496,7 +516,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_MAX_OFFER_LIMIT_EXCEEDED);
         }
 
         return $result;
@@ -532,7 +552,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
         }
 
         return $result;
@@ -549,7 +569,7 @@ class Checker extends Base\Core
 
         if(!$result)
         {
-            $this->offer->setErrorMessage(PublicErrorDescription::ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT);
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT);
         }
 
         return $result;

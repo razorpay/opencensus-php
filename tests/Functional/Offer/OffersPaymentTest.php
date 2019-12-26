@@ -723,7 +723,7 @@ class OffersPaymentTest extends TestCase
                 $response = $this->doAuthPayment($payment);
             },
             \RZP\Exception\BadRequestValidationFailureException::class,
-            PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
+            PublicErrorDescription::OFFER_MAX_OFFER_LIMIT_EXCEEDED);
     }
 
     public function testMaxCardUsage()
@@ -776,7 +776,7 @@ class OffersPaymentTest extends TestCase
                 $response = $this->doAuthPayment($payment);
             },
             \RZP\Exception\BadRequestValidationFailureException::class,
-            PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+            PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED);
     }
 
     public function testOfferPaymentMultipleOffers()

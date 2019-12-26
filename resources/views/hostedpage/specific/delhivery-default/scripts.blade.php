@@ -49,7 +49,7 @@
                 amount: amountDue,
                 notes: udfData,
                 handler: function(response) {
-                    var amountPaid = amount;
+                    var amountPaid = amountDue;
 
                     if (globalScope.hasRedirect()) {
 

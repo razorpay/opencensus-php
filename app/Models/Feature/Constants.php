@@ -135,7 +135,6 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**

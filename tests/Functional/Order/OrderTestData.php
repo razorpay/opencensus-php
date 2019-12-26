@@ -1335,7 +1335,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1351,7 +1351,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1367,7 +1367,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
