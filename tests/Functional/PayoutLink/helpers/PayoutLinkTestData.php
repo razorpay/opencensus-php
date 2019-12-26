@@ -13,6 +13,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'name'       => 'cskdsds',
                     'email'      => 'dsknlds@gmail.com',
@@ -44,6 +45,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'id' => '1000010contact',
                 ],
@@ -74,6 +76,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'id' => '1000010contact',
                 ],
@@ -95,6 +98,7 @@ return [
                 'amount'         => 1000,
                 'currency'       => 'INR',
                 'description'    => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'        => [
                     'name'    => 'cskdsdssdklifnjs',
                     'email'   => '@@',
@@ -127,6 +131,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'name'       => 'cskdsdssdklifnjs'
                 ],
@@ -157,6 +162,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'id'    => 'id_for_a_contact_without_both_phone_and_email'
                 ],
@@ -187,6 +193,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'contact'     => [
                     'id' => '1000010contact',
                 ],
@@ -212,6 +219,7 @@ return [
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
                 'description' => 'This is a test payout',
+                'purpose'     => 'refund',
                 'receipt'     => 'Test Payout Receipt',
                 'notes'       => [
                     'hi' => 'hello'
