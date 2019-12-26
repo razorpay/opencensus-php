@@ -92,9 +92,25 @@ trait SettlementTrait
 
         $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
 
+        if ($this->skipSpecificMerchants($merchant) === true)
+        {
+            return [
+                false,
+                [
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Settlements skipped based on merchant preference',
+                ]
+            ];
+        }
+
         $destinationMerchantId = $this->settlementToPartner($merchant->getId());
 
         $isAggregateSettlement = (bool) $destinationMerchantId;
+
+        if($isAggregateSettlement === true)
+        {
+            return [true, []];
+        }
 
         if (isset($merchantSettleToPartner[$merchant->getId()]) === true)
         {
@@ -108,8 +124,7 @@ trait SettlementTrait
         }
 
         // Do not proceed if merchant does not have active bank account and the merchant is not settling to the partner.
-        if (($bankAccount === null) and
-            ($isAggregateSettlement === false))
+        if ($bankAccount === null)
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
@@ -122,17 +137,6 @@ trait SettlementTrait
                 [
                     'caption' => 'Settlement will be skipped',
                     'reason'  => 'Merchant doesnt have a active bank account registered',
-                ]
-            ];
-        }
-
-        if ($this->skipSpecificMerchants($merchant) === true)
-        {
-            return [
-                false,
-                [
-                    'caption' => 'Settlement will be skipped',
-                    'reason'  => 'Settlements skipped based on merchant preference',
                 ]
             ];
         }
