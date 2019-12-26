@@ -116,6 +116,7 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
+        self::PARENT_CONFIG_INHERITANCE,
     ];
 
     /**
@@ -250,7 +251,6 @@ class Type
         self::PRICING_RULE,
         self::PARTNER_SUBMERCHANTS,
         self::OAUTH_MIGRATION_TOKEN,
-        self::PARENT_CONFIG_INHERITANCE,
     ];
 
     /**
