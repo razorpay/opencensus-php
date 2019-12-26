@@ -276,12 +276,13 @@ class Core extends Base\Core
         );
 
         $input = [
-            DetailConstant::SIGNED_URL => $signedUrl
+            DetailConstant::SIGNED_URL => $signedUrl,
+            Entity::DOCUMENT_TYPE      => $document->getDocumentType(),
         ];
 
         try
         {
-            $verifier = FactoryVerifier::getPoaVerifier($input);
+            $verifier = FactoryVerifier::getPoaVerifier($input, $this->merchant);
 
             return $verifier->verifyDetails();
         }
