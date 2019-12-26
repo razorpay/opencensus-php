@@ -73,6 +73,8 @@ class CreatePayoutLinksTable extends Migration
             $table->text(Entity::NOTES)
                   ->nullable();
 
+            $table->string(Payout::PURPOSE, 255);
+
             $table->char(Entity::DESCRIPTION, 255)
                   ->nullable();
 
