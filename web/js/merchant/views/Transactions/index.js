@@ -107,19 +107,20 @@ export default class TransactionsContainer extends Component {
                 value={this.props.settlement_amount.data.next_settlement_time}
                 format={'DD MMM YYYY, hh:mm:ss a'}
               />{' '}
-              <React.Fragment>
-                <div style={{ display: 'inline' }}>
-                  <i class="i i-info-circle" />
-                  <Popover theme="dark" align="left">
-                    <PopoverBody>
-                      <div>
-                        If you’ve already received the customer’s NACH form, you
-                        can upload it after the registration link is created.
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </div>
-              </React.Fragment>
+              {this.props.settlement_amount.data.reason_for_delay && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>
+                          {this.props.settlement_amount.data.reason_for_delay}
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
               <span
                 class="btn-link"
                 style={{ marginLeft: '5px' }}
