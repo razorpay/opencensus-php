@@ -14,6 +14,7 @@ export default class SettlementDetail extends Component {
 
   render() {
     const isOnHold = !this.props.settlementAmount.next_settlement_time;
+    const onHoldReason = this.props.settlementAmount.no_settlement;
 
     return (
       <div>
@@ -62,8 +63,15 @@ export default class SettlementDetail extends Component {
               <hr />
               {isOnHold ? (
                 <p class="grey">
-                  Because of some risk issues with your payments or with your
-                  razorpay account, Your settlements have been put on hold.
+                  {onHoldReason && onHoldReason.reason ? (
+                    <>{onHoldReason.reason}</>
+                  ) : (
+                    <>
+                      Because of some risk issues with your payments or with
+                      your razorpay account, Your settlements have been put on
+                      hold.
+                    </>
+                  )}
                 </p>
               ) : (
                 <p class="grey">

@@ -192,16 +192,6 @@ class AnalyticsDesktop extends Component {
                   'current_balance'
                 ) && (
                   <GroupItem>
-                    {/* <span className="balance-amount">
-                      Current Balance:{' '}
-                      {!current_balance.loading && (
-                        <Amount
-                          value={current_balance.data.balance}
-                          currency={'INR'}
-                        />
-                      )}
-                    </span> */}
-                    {/* hard code */}
                     <div style={{ textAlign: 'right' }}>
                       <span class="settlement-balance-amount">
                         Current Balance:{' '}
