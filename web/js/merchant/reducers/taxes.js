@@ -3,7 +3,7 @@ import Tax from 'merchant/models/Tax';
 
 export const TAXES_FETCH = 'TAXES_FETCH';
 export const TAX_CREATE = 'TAX_CREATE';
-const GST_FETCH = 'GST_FETCH';
+const GST_TAX_FETCH = 'GST_TAX_FETCH';
 
 /**
  * Fetches all the taxes.
@@ -37,7 +37,7 @@ export const saveTax = params => {
  */
 export const fetchGSTTaxes = () => {
   return {
-    type: GST_FETCH,
+    type: GST_TAX_FETCH,
     payload: Tax.fetchGSTTaxes(),
   };
 };
@@ -69,16 +69,16 @@ export default function(state = initialState, action) {
     case `${TAX_CREATE}::SUCCESS`:
       return set(state, 'taxes', unshift(state.taxes, action.payload));
 
-    case `${GST_FETCH}::PENDING`:
+    case `${GST_TAX_FETCH}::PENDING`:
       return set(state, 'loading', true);
 
-    case `${GST_FETCH}::SUCCESS`:
+    case `${GST_TAX_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
         gst_taxes: action.payload.data,
       });
 
-    case `${GST_FETCH}::ERROR`:
+    case `${GST_TAX_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.error,
