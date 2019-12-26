@@ -25,6 +25,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::DESCRIPTION          => 'required|string|max:255',
+        Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
         Entity::RECEIPT              => 'sometimes|string|max:40'
     ];
 
@@ -34,6 +35,7 @@ class Validator extends Base\Validator
         Entity::NOTES        => 'sometimes|notes',
         self::ACCOUNT_NUMBER => 'required|alpha_num|between:5,40',
         Entity::DESCRIPTION  => 'required|string|max:255',
+        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash_space',
         Entity::RECEIPT      => 'sometimes|string|max:40',
         'contact'            => 'required|array',
         'contact.id'         => 'required_without:contact.name|nullable|string|size:14'
