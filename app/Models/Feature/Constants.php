@@ -135,6 +135,7 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
 
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
@@ -457,6 +458,7 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::ENACH_INTERMEDIATE              => true,
         self::SAVE_VPA                        => true,
     ];
 
