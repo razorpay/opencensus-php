@@ -1147,6 +1147,39 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function inheritanceParent()
+    {
+        // TODO this should be hasOneThrough instead, but getting undefined method for that
+        // toSql() of below return statement:-
+        // select * from `merchants` inner join `merchant_inheritance_map` on `merchant_inheritance_map`.`parent_merchant_id` = `merchants`.`id` 
+        // where `merchant_inheritance_map`.`deleted_at` is null and `merchant_inheritance_map`.`merchant_id` = ?
+
+        return $this->hasManyThrough('RZP\Models\Merchant\Entity', 'RZP\Models\Merchant\InheritanceMap\Entity',
+                                    'merchant_id',
+                                    'id',
+                                    'id',
+                                    'parent_merchant_id');
+    }
+
+    public function inheritanceChildren()
+    {
+        // toSql() of below return statement:-
+        // select * from `merchants` inner join `merchant_inheritance_map` on `merchant_inheritance_map`.`merchant_id` = `merchants`.`id` 
+        // where `merchant_inheritance_map`.`deleted_at` is null and `merchant_inheritance_map`.`parent_merchant_id` = ?
+
+        return $this->hasManyThrough('RZP\Models\Merchant\Entity', 'RZP\Models\Merchant\InheritanceMap\Entity',
+                                    'parent_merchant_id',
+                                    'id',
+                                    'id',
+                                    'merchant_id');
+
+    }
+
+    public function merchantInheritanceMap()
+    {
+        return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);

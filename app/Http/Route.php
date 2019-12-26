@@ -1383,10 +1383,16 @@ final class Route
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                     ],
 
         //route to add additional website through admin dashboard
-        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+
+        // merchant config inheritance
+        'inheritance_parent_fetch'                => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                   ],
+        'inheritance_parent_set'                  => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                  ],
+        'inheritance_parent_set_bulk'             => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBatch'             ],
+        'inheritance_parent_delete'               => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'                ],
 
         // Route for Success Rate Global Configurations
         'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
@@ -1707,6 +1713,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'inheritance_parent_set_bulk',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -2664,6 +2671,10 @@ final class Route
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
 
+        'inheritance_parent_fetch',
+        'inheritance_parent_set',
+        'inheritance_parent_delete',
+        
         // SuccessRate Config Routes
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
@@ -3210,6 +3221,11 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
+        'inheritance_parent_fetch'                  =>  '*',
+        'inheritance_parent_set'                    =>  '*',
+        'inheritance_parent_set_bulk'               =>  '*',
+        'inheritance_parent_delete'                 =>  '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
@@ -3615,6 +3631,7 @@ final class Route
             'pricing_add_plan_rule_bulk',
             'virtual_account_create',
             'oauth_token_create',
+            'inheritance_parent_set_bulk',
         ],
 
         'stork' => [

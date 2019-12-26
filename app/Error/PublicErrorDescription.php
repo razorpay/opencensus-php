@@ -774,6 +774,10 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                   = 'Partner cannot add himself as a submerchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
+
+    // Inheritance
+    const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
+
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
