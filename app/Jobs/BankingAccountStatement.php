@@ -66,9 +66,10 @@ class BankingAccountStatement extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED,
-                ['params' => $this->params]
-            );
+                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, [
+                'channel'       => $this->params['channel'],
+                'accountNumber' => $this->params['accountNumber']
+            ]);
 
             $this->checkRetry();
         }
