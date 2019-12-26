@@ -26,10 +26,10 @@ class CustomerOtp extends Mailable
 
     public function __construct(string $customerEmail,
                                 string $otp,
-                                string $merchantDisplayName,
-                                string $purpose,
-                                string $logoUrl,
-                                string $primaryColor)
+                                string $merchantDisplayName = null,
+                                string $purpose = null,
+                                string $logoUrl = null,
+                                string $primaryColor = null)
     {
         parent::__construct();
 
