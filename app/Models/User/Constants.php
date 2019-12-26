@@ -8,6 +8,10 @@ class Constants
 
     const WEBSITE       = 'website';
 
+    const FC_SOURCE     = 'fc_source';
+
+    const LC_SOURCE     = 'lc_source';
+
     const UTM_SOURCE    = "utm_source";
 
     const UTM_CAMPAIGN  = "utm_campaign";

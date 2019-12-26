@@ -36,6 +36,16 @@ class Entity extends Base\Entity
         self::SECONDARY_ID,
     ];
 
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTH_CODE);
+    }
+
+    public function getGatewayUtr()
+    {
+        return $this->getAttribute(self::GATEWAY_UTR);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::TXN_AMOUNT, $amount);

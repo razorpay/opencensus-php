@@ -441,6 +441,7 @@ class Merchant
      *
      * @param int|null $initiateAt
      * @param array $merchantSettleToPartner
+     * @return FundTransferAttempt\Entity
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
@@ -464,6 +465,10 @@ class Merchant
         {
             $this->updateMockResponse($fta);
         }
+
+        (new Destination\Core)->register($this->setl, $fta);
+
+        return $fta;
     }
 
     /**

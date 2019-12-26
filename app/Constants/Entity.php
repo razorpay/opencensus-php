@@ -121,6 +121,7 @@ class Entity
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const SETTLEMENT_DESTINATION     = 'settlement_destination';
     const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
@@ -449,6 +450,7 @@ class Entity
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
+        self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,

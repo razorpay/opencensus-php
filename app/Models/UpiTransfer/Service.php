@@ -4,6 +4,7 @@ namespace RZP\Models\UpiTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -36,6 +37,8 @@ class Service extends Base\Service
 
         try
         {
+            $this->determineAndSetMode();
+
             $this->terminals = $this->getTerminal($input);
 
             $gatewayClass = $this->getGatewayClass($input, Payment\Gateway::UPI_MINDGATE);
@@ -140,5 +143,15 @@ class Service extends Base\Service
         $response[Entity::VIRTUAL_ACCOUNT] = $upiTransfer->virtualAccount->toArrayPublic();
 
         return $response;
+    }
+
+    protected function determineAndSetMode()
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }

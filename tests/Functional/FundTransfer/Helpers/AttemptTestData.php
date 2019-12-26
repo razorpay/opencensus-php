@@ -28,6 +28,17 @@ return [
         'amount'            => 1952600,
         'fees'              => 47200,
         'tax'               => 7200,
+        'processed_amount'  => 1952600,
+        'processed_count'   => 1,
+        'total_count'       => 1,
+        'transaction_count' => 4,
+        'type'              => 'settlement',
+    ],
+
+    'testFileCreationSettlementApiFailure' => [
+        'amount'            => 1952600,
+        'fees'              => 47200,
+        'tax'               => 7200,
         'processed_amount'  => 0,
         'processed_count'   => 0,
         'total_count'       => 1,
@@ -71,7 +82,7 @@ return [
     'matchAttemptForReconSuccessKotak' => [
         'version'           => 'V3',
         'bank_status_code'  => 'P',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'remarks'           => '',
         'failure_reason'    => null,
     ],
@@ -79,70 +90,70 @@ return [
     'matchAttemptForReconSuccessIcici' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Paid',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconFlipStatusIcici' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Cancelled',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconFlipStatusAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'REJECTED',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessHdfc' => [
         'version'           => 'V3',
         'bank_status_code'  => 'E',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessAxis' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Settled',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconSuccessRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
     'matchAttemptForReconFailureRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Failure',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessYesbank' => [
         'version'           => 'V3',
         'bank_status_code'  => YesbankStatus::COMPLETED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconFailureYesbank' => [
         'version'           => 'V3',
         'bank_status_code'  => 'FAILED',
-        'status'            => AttemptStatus::INITIATED,
-        'failure_reason'    => null,
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => 'Reconciliation',
     ],
 
     'matchAttemptForReconSuccessYesbankVpa' => [
@@ -158,7 +169,7 @@ return [
         'bank_status_code'   => 'F',
         'bank_response_code' => 'FAILED',
         'status'             => AttemptStatus::FAILED,
-        'failure_reason'     => null,
+        'failure_reason'     => 'Reconciliation',
     ],
 
     'matchSummaryForReconFile' => [
@@ -169,8 +180,8 @@ return [
     'matchAttemptForReconFailureKotak' => [
         'channel'           => Channel::KOTAK,
         'version'           => 'V3',
-        'bank_status_code'  => KotakStatus::PROCESSED,
-        'status'            => AttemptStatus::INITIATED,
+        'bank_status_code'  => KotakStatus::CANCELLED,
+        'status'            => AttemptStatus::FAILED,
         'remarks'           => 'Some failure.',
     ],
 
@@ -178,21 +189,21 @@ return [
         'channel'           => Channel::ICICI,
         'version'           => 'V3',
         'bank_status_code'  => IciciStatus::CANCELLED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'matchAttemptForReconFailureHdfc' => [
         'channel'           => Channel::HDFC,
         'version'           => 'V3',
         'bank_status_code'  => HdfcStatus::CANCELLED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'matchAttemptForReconFailureAxis' => [
         'channel'           => Channel::AXIS,
         'version'           => 'V3',
         'bank_status_code'  => AxisStatus::REJECTED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
     ],
 
     'fetchAndMatchReconSuccessForPayout' => [
