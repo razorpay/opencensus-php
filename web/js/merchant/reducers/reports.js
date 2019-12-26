@@ -123,7 +123,7 @@ export const generateReportV2 = (
           return (
             timeElapsed > timeout ||
             resp.error ||
-            resp.data.status !== 'created'
+            ['processed', 'failed'].includes(resp.data.status)
           );
         },
         getNextCallWaitime: () => {
