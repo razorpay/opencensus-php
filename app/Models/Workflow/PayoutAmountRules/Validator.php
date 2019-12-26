@@ -22,19 +22,20 @@ class Validator extends Base\Validator
             return $a[Entity::MIN_AMOUNT] <=> $b[Entity::MIN_AMOUNT];
         });
 
-        $presentAmount = 0;
+        $currentMinAmount = 0;
 
         for ($index = 0; $index < count($rules); $index++)
         {
             $rule = $rules[$index];
 
-            if ($rule[Entity::MIN_AMOUNT] != $presentAmount)
+            if ($rule[Entity::MIN_AMOUNT] != $currentMinAmount)
             {
                 break;
             }
+
             if (empty($rule[Entity::MAX_AMOUNT]) === false)
             {
-                $presentAmount = $rule[Entity::MAX_AMOUNT];
+                $currentMinAmount = $rule[Entity::MAX_AMOUNT];
             }
             else
             {
@@ -51,10 +52,16 @@ class Validator extends Base\Validator
         }
     }
 
-    // Ensure that every workflow payout amount range is attached to only one workflow
+    /**
+     * Ensure that every workflow payout amount range is attached to only one workflow
+     *
+     * @param $rules
+     */
     public function ensureDistinctWorkflowIds($rules)
     {
-        if ( count($rules) != count(array_unique(array_column($rules, 'workflow_id'))))
+        $uniqueWorkflowIds = array_unique(array_column($rules, Entity::WORKFLOW_ID));
+
+        if (count($rules) != count($uniqueWorkflowIds))
         {
             throw new BadRequestValidationFailureException(
                 'Each workflow can have only one amount range'

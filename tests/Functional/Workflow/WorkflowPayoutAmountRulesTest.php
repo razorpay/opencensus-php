@@ -28,7 +28,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         parent::setUp();
 
-        $this->org = $this->fixtures->create('org');
+        $this->org = $this->getDbEntity('org', ['id' => '100000razorpay']);
 
         // Create a merchant different from that provided from setup to test features involving multiple merchants
         $customMerchant = $this->fixtures->create('merchant');

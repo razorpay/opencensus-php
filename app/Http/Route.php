@@ -2172,8 +2172,6 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
-        'workflow_permission_merchants_get',
-        'workflow_payout_amount_rules_create',
         'add_additional_website',
         'reminder_admin',
         'merchant_document_admin_fetch',
@@ -2247,6 +2245,8 @@ final class Route
         'workflow_update',
         'workflow_delete',
         'workflow_payout_amount_rules_get',
+        'workflow_permission_merchants_get',
+        'workflow_payout_amount_rules_create',
         'action_checker_create',
         'action_diff_get',
         'action_request_execute',

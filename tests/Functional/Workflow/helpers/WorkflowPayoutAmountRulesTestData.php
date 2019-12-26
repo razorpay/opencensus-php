@@ -10,6 +10,9 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/workflows/rules/payout_amount',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
             'content' => [
                     'rules' => [
                     [

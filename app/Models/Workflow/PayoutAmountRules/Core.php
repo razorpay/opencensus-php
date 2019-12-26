@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Models\Base;
+use RZP\Models\Workflow;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
@@ -57,16 +58,18 @@ class Core extends Base\Core
         return $evaluatedRule;
     }
 
-    public function create($rules, $merchantId): array
+    public function create(array $rules, Merchant\Entity $merchant): array
     {
         // Insert all rules together into database
-        $insertedPayoutAmountRules = $this->repo->transaction( function() use ($rules, $merchantId){
-
+        $insertedPayoutAmountRules = $this->repo->transaction( function() use ($rules, $merchant)
+        {
             $insertedPayoutAmountRules = new Base\PublicCollection();
 
-            foreach($rules as $rule)
+            foreach ($rules as $rule)
             {
-                $rule[Entity::MERCHANT_ID] = $merchantId;
+                Workflow\Entity::verifyIdAndStripSign($rule[Entity::WORKFLOW_ID]);
+
+                $rule[Entity::MERCHANT_ID] = $merchant->getId();
 
                 $payoutAmountRules = new Entity();
 
@@ -80,13 +83,13 @@ class Core extends Base\Core
             return $insertedPayoutAmountRules;
         });
 
-        return $insertedPayoutAmountRules->toArrayWithItems();
+        return $insertedPayoutAmountRules;
     }
 
-    public function getWorkflowRules($merchantId = null)
+    public function getWorkflowRules($merchantId)
     {
         // If merchant id is passed through proxyAuth and not url
-        if ($this->merchant)
+        if ($merchantId === null)
         {
             $merchantId = $this->merchant->getId();
         }
