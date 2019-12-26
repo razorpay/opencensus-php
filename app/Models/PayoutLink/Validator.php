@@ -23,6 +23,7 @@ class Validator extends Base\Validator
     protected static $generateOtpRules = [
         Entity::CONTEXT => 'sometimes|string|min:5|max:10'
     ];
+
     protected static $createRules = [
         Entity::CONTACT_NAME         => 'required|string|max:50',
         Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
