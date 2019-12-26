@@ -285,11 +285,11 @@ class DopplerProcessor implements ProcessorInterface
 
     protected function shouldHitDowntimeDatabase()
     {
-//        if (($this->env !== Environment::PRODUCTION) or
-//            ($this->mode !== Mode::LIVE))
-//        {
-//            return true;
-//        }
+        if (($this->env !== Environment::PRODUCTION) or
+            ($this->mode !== Mode::LIVE))
+        {
+            return true;
+        }
 
         $response = $this->app->razorx->getTreatment(
             $this->app['request']->getId(),
