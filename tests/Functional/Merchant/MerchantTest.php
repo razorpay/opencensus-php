@@ -5345,12 +5345,12 @@ class MerchantTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $submerchant = $this->fixtures->create('merchant');
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
 
         // set inheritance parent
         $request = [
             'method'  => 'post',
-            'url'     => '/merchants/' . $submerchant['id'] . '/inheritance_parent',
+            'url'     => '/merchants/' . $subMerchantId. '/inheritance_parent',
             'content' => [
                 'id'  => '10000000000000'
             ]
@@ -5358,11 +5358,11 @@ class MerchantTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
 
         $a = $this->startTest();
         
-        $this->assertEquals($a['merchant_id'], $submerchant['id']);
+        $this->assertEquals($a['merchant_id'], $subMerchantId);
 
         $this->assertEquals($a['parent_merchant_id'], '10000000000000');     
     }
