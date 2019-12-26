@@ -1,13 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
-import { fetchGST } from 'merchant/reducers/profile';
 import { openModal } from 'merchant_common/reducers/modals';
-import AddGST from 'merchant/views/Account/Profile/components/AddGST';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import Group, { GroupItem } from 'common/ui/Group';
 import Amount from 'common/ui/Amount';
+import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import {
+  fetchSchedule,
+  fetchHolidayList,
+} from 'merchant/reducers/settlements/details';
 
 @connect(
   state => ({
@@ -17,22 +16,31 @@ import Amount from 'common/ui/Amount';
   }),
   {
     openModal,
+    fetchHolidayList,
+    fetchSchedule,
   }
 )
 export default class SettlementDetails extends Component {
-  openAddGSTModal = () => {
-    this.props.openModal({
-      size: 'small',
-      component: <AddGST />,
-    });
-  };
+  componentDidMount() {
+    this.props.fetchSchedule();
+    this.props.fetchHolidayList();
+  }
 
   viewSettlementSchedule = () => {
-    console.log('Hi');
+    this.props.openModal({
+      size: 'regular',
+      component: <SettlementSchedule />,
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlement UI Revamp',
+      eventAction: 'View Settlement Cycle - Profile Page',
+    });
   };
 
   render() {
     let { current_balance } = this.props;
+
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
