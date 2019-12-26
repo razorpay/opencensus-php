@@ -173,11 +173,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
-    public function getBank()
-    {
-        return $this->getAttribute(self::BANK);
-    }
-
     public function getBankPaymentId()
     {
         return $this->getAttribute(self::BANK_PAYMENT_ID);
@@ -261,11 +256,6 @@ class Entity extends Base\Entity
     public function getSIMessage()
     {
         return $this->getAttribute(self::SI_MSG);
-    }
-
-    public function getCustomerName()
-    {
-        $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     public function getDate()

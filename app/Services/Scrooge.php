@@ -365,7 +365,7 @@ class Scrooge
      * @param array $params
      * @return array
      */
-    public function callDecisioningHelper(array $params): array
+    public function instantRefundsDecisioningHelper(array $params): array
     {
         $scroogeResponse = $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['decisioning-helper'], Requests::POST, $params);
 

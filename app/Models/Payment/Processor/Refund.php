@@ -32,7 +32,6 @@ use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -2612,15 +2611,6 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
-        // Currently, we dont get IFSC code or beneficiary name in recon files
-        // which is mandatory for NEFT transfers. So, disabling NEFT as mode for netbanking
-        // method of instant refunds. Adding the amount check here as sanity
-        // This Should be removed once we support NEFT for netbanking gateways
-        if ($refund->getAmount() > FtsConstants::IMPS_CUTOFF_AMOUNT)
-        {
-            return false;
-        }
-
         //
         // Check if any FTA to bank account already exists, not allowing fta to
         // bank account if any previous bank account fta exists. This is just a sanity check
@@ -2822,9 +2812,9 @@ trait Refund
     protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
         //
-        // Calling Scrooge to decide speed decisioning fetch mode for a refund.
-        // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
-        // with support for modes from FTA/FTS
+        // Calling Scrooge for speed decisioning and mode selection
+        // Scrooge calculates the mode based on the mode configuration defined by
+        // product/merchant in consultation with support for modes from FTA/FTS
         //
 
         $queryParams = [
@@ -2855,10 +2845,11 @@ trait Refund
             }
         }
 
-        $response = $this->app['scrooge']->callDecisioningHelper($queryParams);
+        $response = $this->app['scrooge']->instantRefundsDecisioningHelper($queryParams);
 
         // If the mode is empty we are decisioning the speed to normal
-        (empty($response['mode']) === false) ? $refund->setModeRequested($response['mode']) :
+        (empty($response[RefundConstants::MODE]) === false) ?
+            $refund->setModeRequested($response[RefundConstants::MODE]) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 
@@ -2879,6 +2870,7 @@ trait Refund
             return [];
         }
 
+        // Todo: Confirm source of customer_name if it is same as bene name and send to scrooge. Needed for NEFT
         return [
             BankAccount\Entity::IFSC_CODE => $ifscCode,
             BankAccount\Entity::ACCOUNT_NUMBER => $accountNo
