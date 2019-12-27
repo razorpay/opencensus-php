@@ -2145,6 +2145,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
     }
 
+    public function isSaveVpaEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SAVE_VPA);
+    }
+
+    public function shouldSaveVpa()
+    {
+        return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
+    }
+
     public static function hascustomerTransactionHistoryEnabled($merchantId)
     {
         return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);

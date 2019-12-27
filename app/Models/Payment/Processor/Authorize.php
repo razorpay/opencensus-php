@@ -60,7 +60,8 @@ use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
-
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway;
 
 trait Authorize
 {
@@ -4716,6 +4717,8 @@ trait Authorize
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
 
+        $returnData = $this->addEmandateDisplayDetailsIfApplicable($returnData, $payment);
+
         return $returnData;
     }
 
@@ -6474,5 +6477,55 @@ trait Authorize
         }
 
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+    }
+
+    /**
+     * Enach through NPCI has mandated that additional information has to be displayed
+     * when rendering the response page to the user.
+     * emandate_details contains this additional information. In this flow
+     * we open a different view based on the requirements set by NPCI after callback
+     *
+     * @param array $returnData
+     * @param array $gatewayData
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function addEmandateDisplayDetailsIfApplicable($returnData, Payment\Entity $payment): array
+    {
+        if ($payment->getGateway() !== Payment\Gateway::ENACH_NPCI_NETBANKING)
+        {
+            return $returnData;
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ENACH_INTERMEDIATE) === false)
+        {
+            return $returnData;
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $terminal = $payment->terminal;
+
+        $config = $this->app['config']->get('gateway.enach_npci_netbanking');
+
+        $payment = $payment->toArray();
+
+        $mode = $this->mode;
+
+        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
+
+        $returnData['emandate_details'] = Gateway::fetchEmandateDisplayDetails(
+                                                                               $payment,
+                                                                               $token,
+                                                                               $terminal,
+                                                                               $merchant,
+                                                                               $config,
+                                                                               $mode,
+                                                                               $gatewayPayment
+                                                                              );
+
+        return $returnData;
     }
 }

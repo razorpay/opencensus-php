@@ -135,6 +135,10 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
+    const SAVE_VPA                        = 'save_vpa';
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -286,6 +290,7 @@ class Constants
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
+        self::SAVE_VPA,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -457,6 +462,8 @@ class Constants
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
         self::BLOCK_OFFER_CREATION            => true,
+        self::ENACH_INTERMEDIATE              => true,
+        self::SAVE_VPA                        => true,
     ];
 
     // Entity type constants

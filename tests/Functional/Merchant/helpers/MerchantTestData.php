@@ -1849,6 +1849,23 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForSaveVpaEnabledMerchant' => [
+        'request'   => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content'   => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'save_vpa' => true
+                ]
+            ]
+        ]
+    ],
+
     'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
         'request'  => [
             'url'    => '/preferences',

@@ -1778,6 +1778,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesForSaveVpaEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['save_vpa']);
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesForMagicDisabledMerchant()
     {
         $this->markTestSkipped();
