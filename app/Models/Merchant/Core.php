@@ -2379,6 +2379,7 @@ class Core extends Base\Core
             $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
 
             $merchant->edit($merchantInput);
+
         }
     }
 
