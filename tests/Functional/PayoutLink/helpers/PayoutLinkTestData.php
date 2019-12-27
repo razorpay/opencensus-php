@@ -393,7 +393,7 @@ return [
     'testPayoutLinkCancelApiSuccess' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+            'url'    => '',
         ],
         'response' => [
             'content' => [
@@ -424,7 +424,7 @@ return [
    'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '',
         ],
         'response'  => [
             'content'     => [
@@ -444,7 +444,7 @@ return [
     'testCancelIdempotencyByCallingTheCancelApiTwice' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/cancel',
+            'url'    => '',
         ],
         'response' => [
             'content' => [
@@ -456,7 +456,7 @@ return [
     'testGetFundAccountWithValidTokenReturnsFundAccountArray' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/fund-accounts',
+            'url'     => '',
             'content' => ['token' => 'some-random-token']
         ],
         'response' => [
@@ -474,7 +474,7 @@ return [
     'testGetFundAccountWithInvalidTokenRaisesException' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/fund-accounts',
+            'url'     => '',
             'content' => ['token' => 'some-random-token']
         ],
         'response' => [

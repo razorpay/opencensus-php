@@ -51,7 +51,11 @@ class PayoutLinkTest extends TestCase
         'name'    => 'test user'
     ];
 
-    const FIXTURE_ENTITY = 'payout_link';
+    const FIXTURE_ENTITY        = 'payout_link';
+    const GENERATE_CUSTOMER_OTP = 'generate-customer-otp';
+    const VERIFY_CUSTOMER_OTP   = 'verify-customer-otp';
+    const CANCEL                = 'cancel';
+    const FUND_ACCOUNTS         = 'fund-accounts';
 
     public function setUp()
     {
@@ -117,7 +121,7 @@ class PayoutLinkTest extends TestCase
 
         $url = $this->testData['testGetPayoutLinkById']['request']['url'];
 
-        $this->setUrl(__FUNCTION__, '/payout-links/' . $payoutLink->getPublicId());
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId());
 
         $this->startTest();
 
@@ -312,7 +316,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact->getEmail()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
 
@@ -338,7 +342,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact->getEmail()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
 
@@ -349,7 +353,7 @@ class PayoutLinkTest extends TestCase
     {
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/verify-customer-otp');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::VERIFY_CUSTOMER_OTP);
 
         $response = $this->startTest();
 
@@ -362,7 +366,7 @@ class PayoutLinkTest extends TestCase
     {
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/verify-customer-otp');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::VERIFY_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -385,7 +389,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact->getEmail()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -416,7 +420,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact->getEmail()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -449,7 +453,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact->getEmail()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -461,7 +465,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_id' => $this->contact->getId()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -473,7 +477,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_id' => $this->contact->getId()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/verify-customer-otp');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::VERIFY_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -495,7 +499,7 @@ class PayoutLinkTest extends TestCase
                                                   'contact_id' => $this->contact->getId()
                                               ]);
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/generate-customer-otp');
+        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
 
         $this->startTest();
     }
@@ -504,7 +508,7 @@ class PayoutLinkTest extends TestCase
     {
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/cancel');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::CANCEL);
 
         $this->ba->privateAuth();
 
@@ -515,7 +519,7 @@ class PayoutLinkTest extends TestCase
     {
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/cancel');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::CANCEL);
 
         $payoutLink->setStatus(Status::PROCESSING);
 
@@ -537,7 +541,7 @@ class PayoutLinkTest extends TestCase
     {
         $payoutLink = $this->fixtures->create('payout_link');
 
-        $this->setUrl(__FUNCTION__ , '/payout-links/'. $payoutLink->getPublicId() .'/cancel');
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::CANCEL);
 
         $this->ba->privateAuth();
 
@@ -563,6 +567,8 @@ class PayoutLinkTest extends TestCase
                                                   'contact_id' => $this->contact->getId()
                                               ]);
 
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::FUND_ACCOUNTS);
+
         $this->startTest();
     }
 
@@ -585,6 +591,8 @@ class PayoutLinkTest extends TestCase
                                               [
                                                   'contact_id' => $this->contact->getId()
                                               ]);
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::FUND_ACCOUNTS);
+
         $this->startTest();
     }
 
@@ -594,9 +602,9 @@ class PayoutLinkTest extends TestCase
             $this->virtualAccount->bankAccount->getAccountNumber();
     }
 
-    protected function setUrl($funcName, $url)
+    protected function setUrl($funcName, $payoutLinkId, $path = '')
     {
-        $this->testData[$funcName]['request']['url'] = $url;
+        $this->testData[$funcName]['request']['url'] = '/payout-links/' . $payoutLinkId . '/' . $path;
     }
 
 }
