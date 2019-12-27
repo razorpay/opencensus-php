@@ -298,8 +298,10 @@ trait PartnerTrait
 
     public function markMerchantAsNonPurePlatformPartner(string $merchantId, string $partnerType)
     {
-        $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId);
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId);
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+
+        return $client;
     }
 }

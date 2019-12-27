@@ -5,8 +5,10 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\BadRequestException;
 use RZP\Models\FileStore\Core as FileStoreCore;
 use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
@@ -32,13 +34,23 @@ class Core extends Base\Core
 
     /**
      * this function creates or edit a new document with params documentType and fileStoreId
+     *
      * @param Merchant\Entity $merchant
      * @param array           $params
-     * @param Entity|null     $document
+     * @param Entity|null     $inputDocument
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $document = null)
+    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null)
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
+
+        //
+        // Ideally inputDocument should be not null only if params contain only one document data
+        //
+        if (count($params) > 1 and $inputDocument !== null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NOT_SUPPORTED_FEATURE);
+        }
 
         foreach ($params as $documentType => $fileStoreId)
         {
@@ -47,7 +59,7 @@ class Core extends Base\Core
                 Entity::DOCUMENT_TYPE => $documentType,
             ];
 
-            $document = $document ?? (new Entity)->generateId();
+            $document = $inputDocument ?? (new Entity)->generateId();
 
             $document->edit($input);
 
@@ -264,12 +276,13 @@ class Core extends Base\Core
         );
 
         $input = [
-            DetailConstant::SIGNED_URL => $signedUrl
+            DetailConstant::SIGNED_URL => $signedUrl,
+            Entity::DOCUMENT_TYPE      => $document->getDocumentType(),
         ];
 
         try
         {
-            $verifier = FactoryVerifier::getPoaVerifier($input);
+            $verifier = FactoryVerifier::getPoaVerifier($input, $this->merchant);
 
             return $verifier->verifyDetails();
         }

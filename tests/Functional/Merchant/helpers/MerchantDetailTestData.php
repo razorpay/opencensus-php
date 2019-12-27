@@ -253,6 +253,12 @@ return [
                         RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
                     ],
                 ],
+                RejectionReasons::PROHIBITED_BUSINESSES => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::IMPROPER_DOCUMENTATION,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::IMPROPER_DOCUMENTATION_DESCRIPTION,
+                    ],
+                ],
             ],
         ],
     ],
@@ -1351,6 +1357,21 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+    'testStoreCaseInsensitiveDomain' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://EXAMPLE.CoM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://EXAMPLE.CoM',
             ],
         ],
     ],

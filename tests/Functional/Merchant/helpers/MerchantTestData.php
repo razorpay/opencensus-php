@@ -1849,6 +1849,23 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForSaveVpaEnabledMerchant' => [
+        'request'   => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content'   => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'save_vpa' => true
+                ]
+            ]
+        ]
+    ],
+
     'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
         'request'  => [
             'url'    => '/preferences',
@@ -2019,28 +2036,6 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Shared olamoney offer',
-                    ]
-                ]
-            ],
-        ],
-    ],
-
-    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
-        'request' => [
-            'url'    => '/preferences',
-            'method' => 'get',
-            'content' => [
-                'currency' => 'INR'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'wallet',
-                        'issuer'          => 'olamoney',
-                        'display_text'    => 'Merchant specific offer',
                     ]
                 ]
             ],

@@ -88,10 +88,12 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ((empty($dbGatewayRefundId) === false) and
             ($dbGatewayRefundId !== $gatewayRefundId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'amount'                    => $this->refund->getBaseAmount(),

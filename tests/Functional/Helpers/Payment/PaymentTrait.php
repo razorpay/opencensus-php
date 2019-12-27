@@ -1070,6 +1070,11 @@ trait PaymentTrait
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
                     break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
+                    break;
             }
 
             if ($event !== '')

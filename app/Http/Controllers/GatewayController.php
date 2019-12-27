@@ -503,7 +503,7 @@ class GatewayController extends Controller
 
     public function processGetSimplCallback($input)
     {
-        if($input['token'] === "null")
+        if((isset($input['token']) === false) or ($input['token'] === "null"))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -542,7 +542,15 @@ class GatewayController extends Controller
 
         $input['payment'] = $payment;
 
-        return (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+
+        if ($this->app['rzp.mode'] === 'test')
+        {
+            return $data;
+        }
+        assertTrue ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function callbackYesbank()

@@ -854,6 +854,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
     ];
 
     protected static $netbankingCsbEditTerminalRules = [
@@ -861,6 +864,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];

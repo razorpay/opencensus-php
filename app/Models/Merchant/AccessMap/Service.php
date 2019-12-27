@@ -17,6 +17,8 @@ class Service extends Base\Service
      */
     public function getConnectedApplications(string $merchantId): array
     {
+        $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['merchant_id' => $merchantId]);
+
         return $this->repo
                     ->merchant_access_map
                     ->fetchMerchantAccessMapsOnEntityType($merchantId, 'application')

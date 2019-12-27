@@ -83,8 +83,7 @@ trait SettlementTrait
                 false,
                 [
                     'caption' => 'Settlements are on hold',
-                    'reason'  => 'Merchant funds are on hold with reason \"'
-                        . ($merchant->getHoldFundsReason() ?? 'unknown') . '\"',
+                    'reason'  => $merchant->getHoldFundsReason(),
                 ]
             ];
         }

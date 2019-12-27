@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
         Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
-        'failed_response'       => 'sometimes|int',
+        'failed_response'       => 'sometimes|string',
         'ignore_time_limit'     => 'sometimes|string',
     ];
 

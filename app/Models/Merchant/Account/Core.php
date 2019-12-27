@@ -20,6 +20,7 @@ class Core extends Merchant\Core
      * @param Merchant\Entity $parentMerchant
      *
      * @return Entity
+     * @throws \Throwable
      */
     public function createLinkedAccount(array $input, Merchant\Entity $parentMerchant): Entity
     {
@@ -112,8 +113,6 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
-
-        (new Stork)->invalidateCacheForBothModeWithoutFail($account->getId());
 
         return $account;
     }

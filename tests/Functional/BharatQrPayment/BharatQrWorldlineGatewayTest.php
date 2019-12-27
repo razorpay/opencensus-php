@@ -46,27 +46,8 @@ class BharatQrWorldlineGatewayTest extends TestCase
         return $bankAccount;
     }
 
-    public function testWorldlinePaymentFail()
-    {
-        //
-        // There are certain issues with the APIs of the worldline gateway, till then we are throwing not supported
-        // action exception for payments
-
-        $request = $this->testData['testQrPaymentProcess'];
-
-        $this->ba->directAuth();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request'] = $request;
-
-        $this->startTest($testData);
-    }
-
     public function testQrPaymentProcess()
     {
-        $this->markTestSkipped();
-
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();
@@ -77,7 +58,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(Status::SUCCESS, $response['body']['status']);
+        $this->assertEquals(Status::SUCCESS, $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -106,8 +87,6 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testUpiQrPaymentProcess()
     {
-        $this->markTestSkipped();
-
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();
@@ -118,7 +97,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(Status::SUCCESS, $response['body']['status']);
+        $this->assertEquals(Status::SUCCESS, $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -147,6 +126,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testVerifyQrPayment()
     {
+        // skipping because we don't verify worldline callback currently
         $this->markTestSkipped();
 
         $request = $this->testData['testQrPaymentProcess'];
@@ -159,7 +139,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(Status::SUCCESS, $response['body']['status']);
+        $this->assertEquals(Status::SUCCESS, $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -203,7 +183,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(Status::SUCCESS, $response['body']['status']);
+        $this->assertEquals(Status::SUCCESS, $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -278,7 +258,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('Failure', $response['body']['status']);
+        $this->assertEquals('Failure', $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
         $payment = $this->getLastEntity('payment', true);
@@ -303,7 +283,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(Status::SUCCESS, $response['body']['status']);
+        $this->assertEquals(Status::SUCCESS, $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -335,8 +315,6 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testDuplicateNotification()
     {
-        $this->markTestSkipped();
-
         $qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
@@ -349,7 +327,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $duplicateResponse = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($duplicateResponse['body'][Fields::STATUS], Status::SUCCESS);
+        $this->assertEquals($duplicateResponse[Fields::STATUS], Status::SUCCESS);
 
         $bharatQr = $this->getDbEntities('bharat_qr', []);
 
@@ -581,7 +559,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('Failure', $response['body']['status']);
+        $this->assertEquals('Failure', $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
         $payment = $this->getLastEntity('payment', true);
@@ -616,7 +594,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('Failure', $response['body']['status']);
+        $this->assertEquals('Failure', $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
         $payment = $this->getLastEntity('payment', true);
@@ -651,7 +629,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('Failure', $response['body']['status']);
+        $this->assertEquals('Failure', $response['status']);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
         $payment = $this->getLastEntity('payment', true);
