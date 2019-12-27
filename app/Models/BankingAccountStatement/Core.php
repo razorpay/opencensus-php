@@ -62,6 +62,8 @@ class Core extends Base\Core
 
         $bankingAccount->setLastStatementAttemptAt();
 
+        $bankingAccount->saveOrFail();
+
         $merchant = $bankingAccount->merchant;
 
         $processor = $this->getProcessor($channel, $accountNumber);
@@ -579,17 +581,22 @@ class Core extends Base\Core
 
         foreach ($accountNumbers as $accountNumber)
         {
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
-                [
-                    'channel'        => $channel,
-                    'accountNumber'  => $accountNumber,
-                ]);
-
-            BankingAccountStatementJob::dispatch($this->mode,
-                [ 'channel' => $channel, 'accountNumber' => $accountNumber]);
+            $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
         }
 
         return $accountNumbers;
+    }
+
+    public function dispatchBankingAccountStatementJob(string $channel, string $accountNumber)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
+            [
+                'channel'        => $channel,
+                'accountNumber'  => $accountNumber,
+            ]);
+
+        BankingAccountStatementJob::dispatch($this->mode,
+            [ 'channel' => $channel, 'accountNumber' => $accountNumber]);
     }
 }

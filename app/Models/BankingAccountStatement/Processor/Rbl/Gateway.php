@@ -13,6 +13,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Category;
+use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
@@ -31,6 +32,8 @@ class Gateway extends BaseProcessor
         $this->setSource(Source::FETCH_API);
 
         parent::__construct($channel, $accountNumber);
+
+        $this->core = new BankingAccountStatementCore;
     }
 
     protected function sendRequestAndGetResponse(array $input)
@@ -104,6 +107,11 @@ class Gateway extends BaseProcessor
 
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < 3));
+
+        if(($this->hasMoreData($bankResponse) === true))
+        {
+            $this->core->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+        }
 
         return $finalFormattedResponse;
     }
