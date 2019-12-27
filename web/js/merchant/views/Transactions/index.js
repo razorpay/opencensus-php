@@ -102,7 +102,7 @@ export default class TransactionsContainer extends Component {
                   currency={'INR'}
                 />
               </strong>{' '}
-              will be settled by
+              will be settled by{' '}
               <Time
                 value={this.props.settlement_amount.data.next_settlement_time}
                 format={'DD MMM YYYY, hh:mm:ss a'}

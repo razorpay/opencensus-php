@@ -199,7 +199,7 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
-                      {settlement_ux_revamp && !nextSettlement ? (
+                      {!nextSettlement ? (
                         <div class="text-right" style={{ width: '100%' }}>
                           <strong>
                             <Amount
@@ -207,7 +207,7 @@ class AnalyticsDesktop extends Component {
                               currency={'INR'}
                             />
                           </strong>{' '}
-                          will be settled by
+                          will be settled by{' '}
                           <Time
                             value={settlement_amount.data.next_settlement_time}
                             format={'DD MMM YYYY, hh:mm:ss a'}
