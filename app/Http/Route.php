@@ -803,7 +803,7 @@ final class Route
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_payout_amount_rules_get'         => ['get',      'workflows/rules/payout_amount/merchant/{id}',    'WorkflowController@getWorkflowRulesForMerchant'                    ],
-        'workflow_merchants_create_payout_get'     => ['get',      'workflows/create_payout/merchants',              'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
+        'workflow_merchants_create_payout_get'     => ['get',      'workflows/permissions/create_payout/merchants',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
