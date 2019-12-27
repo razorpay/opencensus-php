@@ -26,7 +26,7 @@ class Status
     const STATUS_TO_WEBHOOK_EVENT = [
         self::ISSUED     => 'api.payout_link.issued',
         self::PROCESSING => 'api.payout_link.processing',
-        self::ATTEMPTED  => 'api.payout_link.issued',
+        self::ATTEMPTED  => 'api.payout_link.attempted',
         self::PROCESSED  => 'api.payout_link.processed',
         self::CANCELLED  => 'api.payout_link.cancelled',
     ];

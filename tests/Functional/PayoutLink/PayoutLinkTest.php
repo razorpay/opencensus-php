@@ -492,6 +492,10 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkCancelApiSuccess()
     {
+        $this->createWebhook(['events' => ['payout_link.cancelled' => '1']]);
+
+        $this->setInfernoExpectations(['PayoutLinkCancelledWebHook']);
+
         $this->fixtures->create('payout_link');
 
         $this->ba->privateAuth();
@@ -707,19 +711,17 @@ class PayoutLinkTest extends TestCase
                                     'merchant_id' => $this->contact->merchant->getId()
                                 ]);
 
+        $this->createWebhook(['events' => ['payout_link.processing' => '1']]);
+
+        $this->setInfernoExpectations(['PayoutLinkProcessingWebHook']);
+
+        $this->ba->noAuth();
+
         $this->startTest();
 
         $payoutLink->refresh();
 
-        $payout = $payoutLink->payouts()->first();
-
-        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'created',
-        ]);
-
         $this->assertEquals(Status::PROCESSING, $payoutLink->getStatus());
-
-        $this->assertEquals(Payout\Status::CREATED, $payout->getStatus());
     }
 
     public function testPayoutStatusReversedMakesLinkStatusAttempted()
@@ -743,6 +745,10 @@ class PayoutLinkTest extends TestCase
 
         $payout = $payoutLink->payouts()->first();
 
+        $this->createWebhook(['events' => ['payout_link.attempted' => '1']]);
+
+        $this->setInfernoExpectations(['PayoutLinkAttemptedWebHook']);
+
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'        => 'failed',
             'failure_reason'    => 'This is a test failure',
@@ -755,7 +761,7 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals($payout->getStatus() , Payout\Status::REVERSED);
     }
 
-    public function testPayoutStatusProcessedMakesLinkStatusPaid()
+    public function testPayoutStatusProcessedMakesLinkStatusProcessed()
     {
         $this->mockRedisSuccess();
 
@@ -773,6 +779,10 @@ class PayoutLinkTest extends TestCase
                                 ]);
 
         $this->startTest();
+
+        $this->createWebhook(['events' => ['payout_link.processed' => '1']]);
+
+        $this->setInfernoExpectations(['PayoutLinkProcessedWebHook']);
 
         $payout = $payoutLink->payouts()->first();
 
@@ -909,28 +919,26 @@ class PayoutLinkTest extends TestCase
         $this->assertEquals(Payout\Mode::NEFT, $payoutLink->payouts()->first()->getMode());
     }
 
-//    public function testPayoutLinkIssuedWebhookTriggered()
-//    {
-//        $this->setupMockDns();
-//
-//        $this->createWebhook(['events' => ['payout_link.issued' => '1']]);
-//
-//        $this->setInfernoExpectations(['PayoutLinkIssuedWebHook']);
-//
-//        $this->fixtures->create('fund_account:bank_account',
-//                                [
-//                                    'id'          => '100000000003fa',
-//                                    'source_type' => 'contact',
-//                                    'source_id'   => $this->contact->getId(),
-//                                    'merchant_id' => $this->contact->merchant->getId()
-//                                ]);
-//
-//        $this->addAccountNumberParameter(__FUNCTION__);
-//
-//        $this->ba->privateAuth();
-//
-//        $this->startTest();
-//    }
+    public function testPayoutLinkIssuedWebhookTriggered()
+    {
+        $this->createWebhook(['events' => ['payout_link.issued' => '1']]);
+
+        $this->setInfernoExpectations(['PayoutLinkIssuedWebHook']);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => '100000000003fa',
+                                    'source_type' => 'contact',
+                                    'source_id'   => $this->contact->getId(),
+                                    'merchant_id' => $this->contact->merchant->getId()
+                                ]);
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 
     protected function mockInfernoFire(Closure $closure)
     {
