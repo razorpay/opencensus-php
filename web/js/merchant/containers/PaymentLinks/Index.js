@@ -67,7 +67,7 @@ export default class PaymentLinksContainer extends React.Component {
       invoices: props.invoices,
     };
 
-    const isPaymentLinksEnabled = getIsPaymentLinksEnabled(data);
+    const isPaymentLinksEnabled = getIsPaymentLinksEnabled(data.invoices);
 
     let showOnboarding = !isPaymentLinksEnabled;
 
