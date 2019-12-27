@@ -63,7 +63,7 @@ class Service extends Base\Service
 
         $validator = new Validator();
 
-        $validator->validateInput('fetchMerchantId', $input);
+        $validator->validateInput('fetch_merchant_id', $input);
 
         $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForCreatePayoutWorkflowPermission($orgId,
                                                                                                               $input);

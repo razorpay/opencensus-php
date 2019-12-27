@@ -20,7 +20,7 @@ class Core extends Base\Core
         $permissions = $input[Entity::PERMISSIONS];
         $levels      = $input[Entity::LEVELS];
 
-        if(empty($input[Entity::MERCHANT_ID]) === false)
+        if (isset($input[Entity::MERCHANT_ID]) === true)
         {
             $merchantId = $input[Entity::MERCHANT_ID];
 
@@ -231,7 +231,7 @@ class Core extends Base\Core
         return (empty($actions) === true);
     }
 
-    public function requestHasCreatePayoutPermission(array $permissions, string $orgId): bool
+    protected function requestHasCreatePayoutPermission(array $permissions, string $orgId): bool
     {
         $createPayoutPerm = $this->repo
                                  ->permission

@@ -177,7 +177,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function getMerchantIdsForCreatePayoutWorkflowPermission()
+    public function testGetMerchantIdsForCreatePayoutWorkflowPermission()
     {
         $this->ba->adminAuth();
 
@@ -234,6 +234,41 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         // This is used for testing whether steps field is given properly
         $entries[$index]['workflow_id'] = 'workflowId1000';
         $this->fixtures->create('workflow_payout_amount_rules', $entries[$index]);
+
+        $this->startTest();
+    }
+
+    // Old api returrns workflow rules for a merchant through proxy auth
+    public function testGetMerchantWorkflowPayoutAmountRulesProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        // These entries have to be made and inserted here and not setup() because otherwise the create workflow rules
+        // test above will fail, stating that the workflow payout rules have already been created.
+        $entries = [
+            [
+                'id'          => 1,
+                'min_amount'  => 0,
+                'max_amount'  => 100
+            ],
+            [
+                'id'          => 2,
+                'min_amount'  => 100,
+                'max_amount'  => 1000
+            ],
+            [
+                'id'          => 3,
+                'min_amount'  => 1000,
+                'max_amount'  => null,
+            ]
+        ];
+
+        for ($index = 0; $index < 3; $index++)
+        {
+            $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index];
+            $entries[$index]['workflow_id'] = $this->workflowIds[$index];
+            $this->fixtures->create('workflow_payout_amount_rules', $entries[$index]);
+        }
 
         $this->startTest();
     }

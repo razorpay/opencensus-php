@@ -33,8 +33,6 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    // TODO: make changes here
-
     /**
      * Returns merchant ids of merchants who have workflow/s with create_payout permission
      *
