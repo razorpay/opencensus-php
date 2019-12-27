@@ -10,10 +10,13 @@ import {
   rupeesToPaise,
   paiseToRupees,
   titleCase,
+  classList,
 } from 'common/utils/rzp-utils';
+
+import { validateVABankAccount } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/notifications';
 
-@connect(state => ({}), {
+@connect(state => ({ config: state.config.config }), {
   closeModal,
   ...NotificationsActions,
 })
@@ -50,8 +53,18 @@ export default class EnableTransferMode extends React.Component {
   };
 
   render() {
-    const { isForBankAccount, isForUPIAddress } = this.props;
-    let formTitle, buttonLabel, field;
+    const { isForBankAccount, isForUPIAddress, config } = this.props;
+    let formTitle, buttonLabel, field, descriptorLimit;
+
+    const isAutoCreateBankAccount = isForBankAccount && !config.handle;
+
+    if (isForBankAccount && config.handle) {
+      if (config.handle.length === 3) {
+        descriptorLimit = 10;
+      } else if (config.handle.length === 4) {
+        descriptorLimit = 9;
+      }
+    }
 
     if (isForUPIAddress) {
       buttonLabel = formTitle = 'Enable UPI Transfer';
@@ -67,14 +80,38 @@ export default class EnableTransferMode extends React.Component {
     } else if (isForBankAccount) {
       buttonLabel = formTitle = 'Enable Account Transfer';
 
-      field = (
-        <Input
-          class="Input--vTop no-margin"
-          label="Account Number"
-          name="descriptor"
-          description="If left blank, an account number will be auto generated"
-        />
-      );
+      if (isAutoCreateBankAccount) {
+        buttonLabel = 'Yes, Enable';
+
+        field = (
+          <div>
+            An account number will be auto generated. Are you sure you want to
+            proceed?
+          </div>
+        );
+      } else {
+        field = (
+          <Input
+            class="Input--vTop no-margin"
+            label="Account Number"
+            name="descriptor"
+            placeholder={`Alphanumberic, upto ${descriptorLimit} characters`}
+            description="If left blank, an account number will be auto generated"
+            validator={val => {
+              if (!validateVABankAccount(val, descriptorLimit)) {
+                return `Enter only Alphanumberic, upto ${descriptorLimit} characters`;
+              }
+            }}
+            onChange={e => {
+              let val = e.target.value;
+
+              if (validateVABankAccount(val, descriptorLimit)) {
+                e.target.value = val.toUpperCase();
+              }
+            }}
+          />
+        );
+      }
     }
 
     return (
@@ -85,7 +122,24 @@ export default class EnableTransferMode extends React.Component {
             {field}
             <br />
             <div class="Modal__actions">
-              <button class="btn btn-primary btn-block">{buttonLabel}</button>
+              {isAutoCreateBankAccount && (
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  onClick={this.props.closeModal}
+                >
+                  No, Cancel
+                </button>
+              )}
+
+              <button
+                class={classList(
+                  'btn btn-primary',
+                  isAutoCreateBankAccount ? 'pull-right' : 'btn-block'
+                )}
+              >
+                {buttonLabel}
+              </button>
             </div>
           </Form>
         </div>
