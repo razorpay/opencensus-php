@@ -1,9 +1,14 @@
 import { combineReducers } from 'redux';
 
-import { logListReducer } from './logs';
-import { configListReducer } from './configs';
+import { merchantLogListReducer, partnerLogListReducer } from './logs';
+import { merchantConfigListReducer, partnerConfigListReducer } from './configs';
 
-export default combineReducers({
-  logs: logListReducer,
-  configs: configListReducer,
+export const merchantReportsReducer = combineReducers({
+  logs: merchantLogListReducer,
+  configs: merchantConfigListReducer,
+});
+
+export const partnerReportsReducer = combineReducers({
+  logs: partnerLogListReducer,
+  configs: partnerConfigListReducer,
 });
