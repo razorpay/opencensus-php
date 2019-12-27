@@ -200,8 +200,8 @@ class Shield
 
         $shieldMetadata = $payment->getMetadata('shield');
 
-        if ((is_array($shieldMetadata) === false) && (isset($shieldMetadata['fhash']) === true)) {
-            $payloadDetails[ShieldConstants::FHASH] = $shieldMetadata['fhash'];
+        if ((is_array($shieldMetadata) === true) && (isset($shieldMetadata['fhash']) === true)) {
+            $payloadDetails[ShieldConstants::FRONTEND_FP_HASH] = $shieldMetadata['fhash'];
         }
 
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
