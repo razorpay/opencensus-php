@@ -203,3 +203,9 @@ export function validateSlug(val) {
 
   return slugRegex.test(val);
 }
+
+export function validateVABankAccount(value, maxLength) {
+  let regex = new RegExp(`^[a-z0-9]{0,${maxLength}}$`, 'i');
+
+  return regex.test(value);
+}
