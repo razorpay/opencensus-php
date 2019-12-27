@@ -82,12 +82,32 @@ export default class SettlementDetail extends Component {
                 </p>
               )}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-evenly',
+                flexDirection: 'row',
+              }}
+            >
               <a href="http://razorpay.com/settlement" target="_blank">
                 <button style={{ marginTop: '15px' }} class="btn btn-primary">
                   Settlement Guide <i class="i i-arrow-right" />
                 </button>
               </a>
+              {isOnHold && (
+                <>
+                  <div style={{ marginTop: '17px' }}>OR</div>
+                  <button
+                    style={{
+                      marginTop: '15px',
+                      border: '0px',
+                      background: 'transparent',
+                    }}
+                  >
+                    Contact Support
+                  </button>
+                </>
+              )}
             </div>
           </Fragment>
         </div>
