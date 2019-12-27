@@ -15,6 +15,7 @@ class Entity extends Base\Entity
     const CHECKER_ID   = 'checker_id';
     const STEP_ID      = 'step_id';
     const APPROVED     = 'approved';
+    const COMMENT      = 'comment';
 
     // APPROVED column values
     const APPROVED_ENUM = [
@@ -46,6 +47,7 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,
+        self::COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
