@@ -7,17 +7,15 @@ import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
 import Group, { GroupItem } from 'common/ui/Group';
-import DateRangePicker, { customRangeText } from 'common/ui/DateRangePicker';
-import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
+import DateRangePicker from 'common/ui/DateRangePicker';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'common/utils/localStorage';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
@@ -27,15 +25,10 @@ import OndemandModal from 'merchant/views/Settlements/components/Modals/Ondemand
 import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
-import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
+import OnHoldBanner from 'common/ui/OnHoldBanner';
+import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 
-import {
-  trackPresetChange,
-  trackSettlementsClick,
-  trackPlatformAnalyticsHidden,
-  trackViewTour,
-  trackSettleNow,
-} from './ga';
+import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import Time from 'common/ui/Time';
 
 @withRouter
@@ -45,8 +38,6 @@ import Time from 'common/ui/Time';
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
-
-    const { isAdmin, mode } = props;
 
     this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
       this
@@ -118,8 +109,13 @@ class AnalyticsDesktop extends Component {
       trafficSectionTitle,
     } = this.props;
 
+    const { settlement_ux_revamp } = config.config;
+
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
+
+    const nextSettlement = !settlement_amount.data.next_settlement_time;
+
     return (
       <div className="home-analytics-desktop">
         <div
@@ -203,6 +199,57 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
+                      {settlement_ux_revamp && !nextSettlement ? (
+                        <div class="text-right" style={{ width: '100%' }}>
+                          <strong>
+                            <Amount
+                              value={settlement_amount.data.settlement_amount}
+                              currency={'INR'}
+                            />
+                          </strong>{' '}
+                          will be settled by
+                          <Time
+                            value={settlement_amount.data.next_settlement_time}
+                            format={'DD MMM YYYY, hh:mm:ss a'}
+                          />{' '}
+                          {settlement_amount.data.reason_for_delay && (
+                            <React.Fragment>
+                              <div style={{ display: 'inline' }}>
+                                <i class="i i-info-circle" />
+                                <Popover theme="dark" align="left">
+                                  <PopoverBody>
+                                    <div>
+                                      {settlement_amount.data.reason_for_delay}
+                                    </div>
+                                  </PopoverBody>
+                                </Popover>
+                              </div>
+                            </React.Fragment>
+                          )}
+                          <span
+                            class="btn-link"
+                            style={{ marginLeft: '5px' }}
+                            onClick={() => {
+                              this.props.openModal({
+                                size: 'regular',
+                                component: (
+                                  <SettlementDetail
+                                    settlementAmount={settlement_amount.data}
+                                  />
+                                ),
+                              });
+
+                              window.rzpAnalytics({
+                                eventCategory:
+                                  'Dashboard - Settlement UI Revamp',
+                                eventAction: 'Click Know More',
+                              });
+                            }}
+                          >
+                            Know more
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
                   </GroupItem>
                 )}
@@ -235,7 +282,23 @@ class AnalyticsDesktop extends Component {
             </div>
           </Header>
         </Sticky>
+        {settlement_ux_revamp && nextSettlement ? (
+          <OnHoldBanner
+            ctaOnClick={() => {
+              this.props.openModal({
+                size: 'regular',
+                component: (
+                  <SettlementDetail settlementAmount={settlement_amount.data} />
+                ),
+              });
 
+              window.rzpAnalytics({
+                eventCategory: 'Dashboard - Settlement UI Revamp',
+                eventAction: 'Click Know More(On Hold)',
+              });
+            }}
+          />
+        ) : null}
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
