@@ -4,14 +4,17 @@ import {
   getActionName as getFetchActionName,
   makeActionCollectionReducer,
   fetchAll,
-  getActionName,
 } from 'merchant/reducers/collection';
 
 const PARTNER_LOGS = 'PARTNER_LOGS';
 const MERCHANT_LOGS = 'MERCHANT_LOGS';
 
+const getLoadMoreActionName = entity => entity + '_LOAD_MORE';
+
 const partnerLogFetchAction = getFetchActionName(PARTNER_LOGS);
 const merchantLogFetchAction = getFetchActionName(MERCHANT_LOGS);
+
+const merchantLogLoadMoreAction = getLoadMoreActionName(MERCHANT_LOGS);
 
 const filterSameObjects = (state, action) => {
   const existingIds = state.items.map(({ id }) => id);
@@ -35,6 +38,11 @@ const handleFetchLogsSuccess = (state, action) => {
     : filterSameObjects(state, action);
 };
 
+const handleLoadMoreLogsSuccess = (state, action) => ({
+  ...state,
+  items: [...state.items, ...action.payload.data.items],
+});
+
 export const fetchPartnerReportLogs = params =>
   fetchAll(params, Log, PARTNER_LOGS);
 export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
@@ -49,8 +57,13 @@ export const merchantLogListReducer = makeActionCollectionReducer(
   {
     [`${merchantLogFetchAction}::PENDING`]: handleFetchLogsPending,
     [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
+    [`${merchantLogLoadMoreAction}::SUCCESS`]: handleLoadMoreLogsSuccess,
   }
 );
+export const loadMoreMerchantLogs = params => ({
+  type: getLoadMoreActionName(MERCHANT_LOGS),
+  payload: new Log().fetchAll(params),
+});
 
 const createLog = reportType => {
   const actionName = `${reportType.toUpperCase()}_LOG_CREATE`;

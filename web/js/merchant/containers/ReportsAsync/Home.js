@@ -5,6 +5,7 @@ import { pickProps } from 'common/utils/rzp-utils';
 import {
   fetchMerchantReportLogs as fetchLogs,
   createMerchantReportLog as createLog,
+  loadMoreMerchantLogs as loadMore,
 } from 'merchant/reducers/reports/logs';
 import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 
@@ -13,6 +14,9 @@ const mapStateToProps = state => ({
   user: pickProps(state.session.user, ['current']),
 });
 
-export default connect(mapStateToProps, { fetchLogs, fetchConfigs, createLog })(
-  Reports
-);
+export default connect(mapStateToProps, {
+  fetchLogs,
+  fetchConfigs,
+  createLog,
+  loadMore,
+})(Reports);
