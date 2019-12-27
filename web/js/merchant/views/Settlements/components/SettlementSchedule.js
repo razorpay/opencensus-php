@@ -178,6 +178,8 @@ export default class SettlementSchedule extends Component {
               </p>
               {this.state.showExample ? (
                 <Fragment>
+                  <h5>Following is an example for T+4 Days</h5>
+
                   <div class="box settlement-holiday-example">
                     <div class="box-heading">
                       <h5 style={{ textAlign: 'left' }}>
