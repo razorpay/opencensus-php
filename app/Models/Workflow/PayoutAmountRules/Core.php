@@ -58,7 +58,12 @@ class Core extends Base\Core
         return $evaluatedRule;
     }
 
-    public function create(array $rules, Merchant\Entity $merchant): array
+    /**
+     * @param array $rules
+     * @param Merchant\Entity $merchant
+     * @return Base\PublicCollection
+     */
+    public function create(array $rules, Merchant\Entity $merchant)
     {
         // Insert all rules together into database
         $insertedPayoutAmountRules = $this->repo->transaction( function() use ($rules, $merchant)
@@ -84,29 +89,5 @@ class Core extends Base\Core
         });
 
         return $insertedPayoutAmountRules;
-    }
-
-    public function getWorkflowRules($merchantId)
-    {
-        // If merchant id is passed through proxyAuth and not url
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->getId();
-        }
-
-        $amountRules = $this->repo
-                            ->workflow_payout_amount_rules
-                            ->fetchWorkflowRulesForMerchant($merchantId);
-
-        if ($this->app['basicauth']->isProxyAuth())
-        {
-            // An existing api returns in this format for proxyAuth which is maintained
-            return $amountRules->toArrayPublic();
-        }
-        elseif ($this->app['basicauth']->isAdminAuth())
-        {
-            // Returns in a format including containing more fields like id in database useful for admin
-            return $amountRules->toArrayWithItems();
-        }
     }
 }

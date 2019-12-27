@@ -23,21 +23,12 @@ class Repository extends Base\Repository
      * @param string $merchantId
      * @return array
      */
-    public function fetchWorkflowRulesForMerchant(string $merchantId)
+    public function fetchWorkflowRulesForMerchant(string $merchantId, array $relations = [])
     {
-        $query =  $this->newQuery();
-
-        // If adminAuth is used pass retrieve additional infomration such as steps and roles in the workflow
-        if ($this->app['basicauth']->isAdminAuth())
-        {
-            $query = $query->with('steps','steps.role');
-        }
-
-        $query->merchantId($merchantId);
-
-        $results = $query->get();
-
-        return $results;
+        return $this->newQuery()
+                    ->with($relations)
+                    ->merchantId($merchantId)
+                    ->get();
     }
 
     /**

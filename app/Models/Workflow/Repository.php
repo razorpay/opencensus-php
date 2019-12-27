@@ -6,6 +6,7 @@ use RZP\Models\Admin;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -18,8 +19,30 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
+    public function addQueryParamPermissionId($query, $permissionId)
+    {
+        if (empty($permissionId) === false)
+        {
+            $query->whereIn(Entity::ID, function ($q) use ($permissionId) {
+                $q->select(Step\Entity::WORKFLOW_ID)
+                    ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
+                    ->where(Entity::PERMISSION_ID, $permissionId);
+            });
+        }
+
+        return $query;
+    }
+
     // TODO: make changes here
-    public function findByOrgId(string $orgId, $params)
+
+    /**
+     * Returns merchant ids of merchants who have workflow/s with create_payout permission
+     *
+     * @param string $orgId
+     * @param array $params
+     * @return PublicCollection
+     */
+    public function findByOrgIdAndPermissionName(string $orgId, array $params)
     {
         $limit = $params[self::COUNT] ?? self::DEFAULT_FETCH_LIMIT;
 
@@ -27,26 +50,14 @@ class Repository extends Base\Repository
 
         $permissionName = $params[Entity::PERMISSIONS] ?? null;
 
-        $query = $this->repo->permission->newQuery()
-                                        ->where(Admin\Permission\Entity::NAME, $permissionName);
-
-        $permission = $query->pluck(Entity::ID)->toArray();
-
-        if (empty($permission) === false)
-        {
-            $permissionId = $permission[0];
-        }
-
         $query = $this->newQuery()
                       ->where(Entity::ORG_ID, '=', $orgId);
 
-        if (empty($permission) === false)
+        if (empty($permissionName) === false)
         {
-            $query->whereIn(Entity::ID, function ($q) use ($permissionId) {
-                                      $q->select(Step\Entity::WORKFLOW_ID)
-                                        ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
-                                        ->where(Entity::PERMISSION_ID, $permissionId);
-                                  });
+            $permissionId = $this->repo->permission->retrieveIdsByNamesAndOrg($permissionName, $orgId);
+
+            $query = $this->addQueryParamPermissionId($query, $permissionId);
         }
 
         $results = $query->skip($offset)

@@ -58,7 +58,7 @@ class Service extends Base\Service
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $workflows = $this->repo->workflow->findByOrgId($orgId, $input);
+        $workflows = $this->repo->workflow->findByOrgIdAndPermissionName($orgId, $input);
 
         return $workflows->toArrayPublic();
     }
