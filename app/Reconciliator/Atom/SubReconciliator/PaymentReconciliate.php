@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -30,7 +31,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getGatewayPayment($paymentId)
     {
-        return $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        $gatewayPayment = null;
+
+        try
+        {
+            $gatewayPayment = $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code'     => Base\InfoCode::GATEWAY_PAYMENT_ABSENT,
+                    'payment_id'    => $this->payment->getId(),
+                    'gateway'       => $this->gateway,
+                ]
+            );
+        }
+
+        return $gatewayPayment;
     }
 
     protected function getReconPaymentAmount(array $row)
