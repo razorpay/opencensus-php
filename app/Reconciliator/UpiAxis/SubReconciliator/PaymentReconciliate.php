@@ -173,9 +173,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->trace->info(TraceCode::RECON_INFO_ALERT, [
                 'message'           => 'Npci Reference id is not same as in recon',
-                'info_code'         => Base\InfoCode::DATA_MISMATCH,
+                'info_code'         => $infoCode,
                 'payment_id'        => $this->payment->getId(),
                 'amount'            => $this->payment->getBaseAmount(),
                 'payment_status'    => $this->payment->getStatus(),
@@ -250,10 +252,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getBaseAmount(),
