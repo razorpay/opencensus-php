@@ -57,6 +57,7 @@ final class Shield
     const CREATED_AT                   = 'created_at';
     const DEFAULT_EMAIL                = 'void@razorpay.com';
     const DEFAULT_ACCEPT_LANGUAGE      = 'en-US';
+    const CHECKOUT_ID                  = 'checkout_id';
 
     // Response constants
     const ACTION_KEY              = 'action';

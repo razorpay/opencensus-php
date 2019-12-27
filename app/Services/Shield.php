@@ -198,6 +198,11 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
+        $checkoutId = $payment->getMetadata('checkout_id');
+        if (is_null($checkoutId) === false) {
+            $payloadDetails[ShieldConstants::CHECKOUT_ID] = $checkoutId;
+        }
+
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
