@@ -158,7 +158,7 @@ class Checker extends Base\Core
 
         $result = ($offerPaymentMethod === $paymentMethod);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_METHOD_NOT_AVAILABLE);
         }
@@ -188,7 +188,7 @@ class Checker extends Base\Core
             'payment_card_type' => $card->getType()
         ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_TYPE_DOES_NOT_MATCH);
         }
@@ -217,7 +217,7 @@ class Checker extends Base\Core
             'payment_card_network' => $card->getNetworkCode()
         ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_NETWORK_NOT_AVAILABLE);
         }
@@ -272,7 +272,7 @@ class Checker extends Base\Core
                         'payment_method'           => $paymentMethod,
                     ]);
         }
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_APPLICABLE_ON_ISSUER);
         }
@@ -293,7 +293,7 @@ class Checker extends Base\Core
 
         $result = (in_array($emiDuration, $emiDurations, true) === true);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_EMI_DURATION_NOT_SAME);
         }
@@ -321,7 +321,7 @@ class Checker extends Base\Core
             'international'     => $card->isInternational(),
         ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_INTERNATIONAL);
         }
@@ -358,7 +358,7 @@ class Checker extends Base\Core
             'card_iin'   => $card->getIin()
         ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_IINS_DOES_NOT_MATCH);
         }
@@ -385,7 +385,7 @@ class Checker extends Base\Core
             'payment_wallet' => $this->payment->getWallet()
         ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_WALLET_NOT_SAME);
         }
@@ -403,7 +403,7 @@ class Checker extends Base\Core
                 'result' => $result,
             ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PERIOD_NOT_ACTIVE);
         }
@@ -476,7 +476,7 @@ class Checker extends Base\Core
                     // has been made against the offer before current payment
                     $result = $paymentCount < $maxPaymentCount;
 
-                    if(!$result)
+                    if($result === false)
                     {
                         $this->offer
                              ->setErrorMessage(PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED);
@@ -514,7 +514,7 @@ class Checker extends Base\Core
                     'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                 ]);
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_MAX_OFFER_LIMIT_EXCEEDED);
         }
@@ -550,7 +550,7 @@ class Checker extends Base\Core
 
         $result = $this->order->getAmount() >= $this->offer->getMinAmount();
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
         }
@@ -567,7 +567,7 @@ class Checker extends Base\Core
 
         $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
 
-        if(!$result)
+        if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT);
         }
