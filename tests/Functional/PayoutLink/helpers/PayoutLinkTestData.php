@@ -405,7 +405,7 @@ return [
     'testCancellingPayoutLinkFromProcessingStatusShouldThrowException' => [
         'request'  => [
             'method' => 'POST',
-            'url'    => '/payout-links/pyol_DnhDjMDHlQEjgM/cancel',
+            'url'    => '',
         ],
         'response' => [
             'content'     => [
@@ -495,7 +495,7 @@ return [
     'testInitiateApiBankAccountRequiredWhenTypeIsBankAccount' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'account_type' => 'bank_account',
                 'token'        => 'random token string',
@@ -519,7 +519,7 @@ return [
     'testInitiateApiVpaRequiredWhenTypeIsVpa' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'account_type' => 'vpa'
@@ -543,7 +543,7 @@ return [
     'testInitiateApiWithInvalidAccountTypeRaisesException' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'account_type' => 'invalid bank account type'
@@ -567,7 +567,7 @@ return [
     'testInitiateApiWhenTokenIsAbsent' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'account_type' => 'vpa'
             ]
@@ -590,7 +590,7 @@ return [
     'testInitiateApiWithInvalidTokenRaiseException' => [
         'request'   => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'account_type' => 'vpa',
@@ -617,7 +617,7 @@ return [
     'testInitiateApiWithInvalidFundAccountIdThrowException' => [
         'request'   => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'fund_account_id' => 'invalid_id_123'
@@ -641,7 +641,7 @@ return [
     'testInitiateApiSuccessWhenValidBankAccountPassed' => [
         'request'   => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'fund_account_id' => '100000000003fa'
@@ -655,7 +655,7 @@ return [
     'testInitiateApiSuccessWhenValidVpaPassed' => [
         'request'   => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'fund_account_id' => '100000000003fa'
@@ -670,7 +670,7 @@ return [
     'testInitiateApiFailsWhenFundAccountIdPassedBelongsToAnotherContact' => [
         'request'   => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'token'        => 'random token string',
                 'fund_account_id' => '100000000003fa'
