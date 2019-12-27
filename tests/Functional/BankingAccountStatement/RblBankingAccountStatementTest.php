@@ -19,6 +19,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -26,6 +27,8 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
+use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
+
 
 class RblBankingAccountStatementTest extends TestCase
 {
@@ -93,6 +96,27 @@ class RblBankingAccountStatementTest extends TestCase
         Mail::assertQueued(StatementMail::class);
     }
 
+    protected function setupForRblAccountStatement($channel = Channel::RBL)
+    {
+        $this->ba->cronAuth();
+
+        $content = [
+            'channel'  => 'rbl',
+        ];
+
+        $request = [
+            'url'       => '/banking_account_statement/processChannel',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        Queue::fake();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(BankingAccountStatementJob::class, 1);
+    }
+
     /**
      * Case where the response from RBL is success
      */
@@ -102,7 +126,13 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertEquals($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT], null);
+
         $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
 
         $this->startTest();
 
@@ -121,6 +151,10 @@ class RblBankingAccountStatementTest extends TestCase
         $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basExpected = [
             BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
