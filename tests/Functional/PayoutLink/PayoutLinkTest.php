@@ -74,6 +74,10 @@ class PayoutLinkTest extends TestCase
         $this->createFundAccount();
 
         $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $this->bankAccount->setIfsc('YESBB000000');
+
+        $this->bankAccount->saveOrFail();
     }
 
     /**
