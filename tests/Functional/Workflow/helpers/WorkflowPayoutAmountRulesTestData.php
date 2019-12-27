@@ -263,7 +263,7 @@ return [
     'getMerchantIdsForCreatePayoutWorkflowPermission' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => 'workflows/create_payout/merchants',
+            'url'     => 'workflows/permissions/create_payout/merchants',
             'content' => [],
         ],
         'response' => [
