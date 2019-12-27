@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID      => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
         Entity::LEVELS      => 'present|array',
-        Entity::MERCHANT_ID => 'sometimes|string|size:14',
+        Entity::MERCHANT_ID => 'sometimes|string|size:14|unsigned_id',
     ];
 
     protected static $editRules = [
@@ -71,14 +71,17 @@ class Validator extends Base\Validator
 
     public function checkForValidNumberOfLevels($levels, $permissions, $orgId)
     {
-        if((new Core())->requestHasCreatePayoutPermission($permissions, $orgId) === false)
+        $createPayoutPerm = (new Permission\Repository)
+                            ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                            ->first();
+
+        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
+
+        if ($hasCreatePayoutPermission === false and empty($levels) === true)
         {
-            if(empty($levels) === true)
-            {
-                throw new BadRequestValidationFailureException(
+            throw new BadRequestValidationFailureException(
                     'Atleast one level required with this permission'
                 );
-            }
         }
     }
 }

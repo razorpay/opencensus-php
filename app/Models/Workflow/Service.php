@@ -23,9 +23,16 @@ class Service extends Base\Service
         $permissions = $input[Entity::PERMISSIONS];
 
         // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
-        if ($this->core()->requestHasCreatePayoutPermission($permissions, $orgId) == true)
+        $createPayoutPerm = $this->repo
+                                 ->permission
+                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                                 ->first();
+
+        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
+
+        if ($hasCreatePayoutPermission === true)
         {
-            if (isset($input[Entity::MERCHANT_ID]) === false)
+            if (isset($input[Entity::MERCHANT_ID]) === false or empty($input[Entity::MERCHANT_ID]) === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);

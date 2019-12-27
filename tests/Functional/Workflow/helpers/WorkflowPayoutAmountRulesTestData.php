@@ -192,7 +192,6 @@ return [
         ],
     ],
 
-
     'testCreateRulesWithDuplicateWorkflowIds' => [
         'request' => [
             'method'  => 'POST',
@@ -260,10 +259,10 @@ return [
         ],
     ],
 
-    'getMerchantIdsForCreatePayoutWorkflowPermission' => [
+    'testGetMerchantIdsForCreatePayoutWorkflowPermission' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => 'workflows/permissions/create_payout/merchants',
+            'url'     => '/workflows/permissions/create_payout/merchants',
             'content' => [],
         ],
         'response' => [
@@ -355,6 +354,35 @@ return [
                     ]
                 ]
 
+            ],
+        ]
+    ],
+
+    'testGetMerchantWorkflowPayoutAmountRulesProxyAuth' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+
+                "entity"    =>  "collection",
+                'count'     =>  3,
+                'items'     =>  [
+                    [
+                        'min_amount'    =>  0,
+                        'max_amount'    =>  100,
+                    ],
+                    [
+                        'min_amount'    =>  100,
+                        'max_amount'    =>  1000,
+                    ],
+                    [
+                        'min_amount'    =>  1000,
+                        'max_amount'    =>  null,
+                    ]
+                ]
             ],
         ]
     ],
