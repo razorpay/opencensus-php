@@ -2411,7 +2411,8 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+    WHERE gateway_payment_id IS NULL AND created_at 
+    = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
 # Useful for analytics queries
@@ -5545,6 +5546,9 @@ ALTER TABLE external
 ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
 
+ALTER TABLE gateway_downtimes
+    Add COLUMN psp VARCHAR(255) DEFAULT NULL AFTER method;
+
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
 
@@ -5564,5 +5568,4 @@ ALTER TABLE offers
     ADD COLUMN default_offer bool DEFAULT 0,
     ADD COLUMN max_order_amount int(11) DEFAULT NULL,
     MODIFY type VARCHAR(20);
-
 
