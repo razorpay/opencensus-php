@@ -17,8 +17,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchMerchantIdRules = [
-        'count'                 => 'required|integer|min:0',
-        'skip'                  => 'required|integer|min:0',
+        'count'                 => 'sometimes|integer|min:0',
+        'skip'                  => 'sometimes|integer|min:0',
         Entity::MERCHANT_ID     => 'sometimes|string|size:14',
     ];
 
