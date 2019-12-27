@@ -105,7 +105,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithRangesLeavingGaps()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Attach rules to first three workflows with merchant id '1000000000000' with ranges leaving gaps
         for ($index = 0; $index < 3; $index++) {
@@ -117,7 +117,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithExtraRanges()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Attach rules to first three workflows with merchant id '1000000000000' with ranges leaving gaps
         for ($index = 0; $index < 3; $index++) {
@@ -127,16 +127,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateRulesWithWrongWorkflowId()
-    {
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
     public function testCreateRulesWithDuplicateWorkflowIds()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Attach three rules to the first workflow hence repeating the first workflow id three times
         for ($index = 0; $index < 3; $index++) {
@@ -146,9 +139,16 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateRulesWithWrongWorkflowId()
+    {
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateWorkflowPayoutAmountRules()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Attach rules to first three workflows with merchant id '1000000000000'
         // This should attach the rules by passing all validations
@@ -162,7 +162,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testEditWorkflowPayoutAmountRules()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Attach a rule to the first workflow which we have created
         $this->fixtures->create('workflow_payout_amount_rules',[
@@ -177,11 +177,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMerchantIdsWithPermission()
+    public function getMerchantIdsForCreatePayoutWorkflowPermission()
     {
-        $this->authToken = $this->getAuthTokenForOrg($this->org);
-
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+        $this->ba->adminAuth();
 
         // We have created one custom merchant and one through the parent setup function both of which have workflows
         // with 'create_payout' permission and should be returned
@@ -242,7 +240,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateWorkflowRulesWithWrongPermission()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // Fetch permissionId of 'edit_admin' permission and store it in local permissionId variable
         $permissionId = DB::table('permissions')->where('name','=','edit_admin')->value('id');
@@ -264,19 +262,6 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         );
 
         $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$workflow->getId();
-
-        $this->startTest();
-    }
-
-    public function testCreateRulesWithMultipleMerchants()
-    {
-        $this->ba->adminAuth();
-
-        // Workflow with merchant id '10000000000000'
-        $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
-
-        // Workflow with custom merchant id which we created in setup function
-        $this->testData[__FUNCTION__]['request']['content']['rules'][1]['workflow_id'] = 'workflow_'.$this->workflowIds[3];
 
         $this->startTest();
     }

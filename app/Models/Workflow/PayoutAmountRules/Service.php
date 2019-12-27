@@ -20,7 +20,33 @@ class Service extends Base\Service
      */
     public function getWorkflowRules($merchantId = null): array
     {
-        return $this->core()->getWorkflowRules($merchantId);
+        // If merchant id is passed through proxyAuth and not url
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        $relations = [];
+
+        // If adminAuth is used retrieve additional information such as steps and roles in the workflow
+        if ($this->app['basicauth']->isAdminAuth())
+        {
+            $relations = ['steps','steps.role'];
+        }
+
+        $amountRules =  $this->repo
+                             ->workflow_payout_amount_rules
+                             ->fetchWorkflowRulesForMerchant($merchantId, $relations);
+
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            // Returns in a format including containing more fields like id in database useful for admin
+            return $amountRules->toArrayWithItems();
+
+        }
+
+        // An existing api returns in this format for proxyAuth which is maintained
+        return $amountRules->toArrayPublic();
     }
 
     /**
@@ -29,11 +55,15 @@ class Service extends Base\Service
      * @param string $merchantId
      * @return array
      */
-    public function getMerchantIdsForWorkflowPermission($input)
+    public function getMerchantIdsForCreatePayoutWorkflowPermission($input)
     {
         $orgId = $this->auth->getOrgId();
 
         Org\Entity::verifyIdAndStripSign($orgId);
+
+        $validator = new Validator();
+
+        $validator->validateInput('fetchMerchantId', $input);
 
         $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForCreatePayoutWorkflowPermission($orgId,
                                                                                                               $input);

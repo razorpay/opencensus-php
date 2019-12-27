@@ -16,6 +16,12 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT      => 'sometimes|integer|nullable',
     ];
 
+    protected static $fetchMerchantIdRules = [
+        'count'                 => 'required_only_if:merchant_id,null',
+        'skip'                  => 'required_only_if:merchant_id,null',
+        Entity::MERCHANT_ID     => 'sometimes|string|size:14',
+    ];
+
     public function checkForValidAmountRanges($rules)
     {
         usort($rules, function($a, $b) {

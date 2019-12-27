@@ -10,9 +10,6 @@ return [
         'request' => [
             'method'  => 'POST',
             'url'     => '/workflows/rules/payout_amount',
-            'server'  => [
-                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
-            ],
             'content' => [
                     'rules' => [
                     [
@@ -174,62 +171,27 @@ return [
                 'rules' => [
                     [
                         'workflow_id'   =>  'workflow_1000000wrongId',
-                        'min_amount'	=>	0,
-                        'max_amount'	=>	null
+                        'min_amount'   =>      0,
+                        'max_amount'   =>      null
                     ]
                 ]
             ],
         ],
         'response' => [
             'content' => [
-
                 'error' => [
-                    'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'=> 'The id provided does not exist'
-                ]
-
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
-        ],
-    ],
-
-    'testCreateRulesWithMultipleMerchants' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/workflows/rules/payout_amount',
-            'content' => [
-                'rules' => [
-                    [
-                        'min_amount'	=>	0,
-                        'max_amount'	=>	100
-                    ],
-                    [
-                        'min_amount'	=>	100,
-                        'max_amount'	=>	null
+                        'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description'=> 'Workflow does not have create_payout permission'
                     ]
-                ]
-            ],
-        ],
-        'response' => [
-            'content' => [
-
-                'error' => [
-                    'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'=> 'Workflow does not belong to one merchant'
-                ]
-
-            ],
+                ],
             'status_code' => 400,
-        ],
+            ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
         ],
     ],
+
 
     'testCreateRulesWithDuplicateWorkflowIds' => [
         'request' => [
@@ -298,43 +260,10 @@ return [
         ],
     ],
 
-    'testGetAllPayoutAmountRules' => [
-        'request' => [
-            'method'  => 'get',
-            'url'     => '/workflows/rules/payout_amount/all?count=2&skip=0',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'entity'            => 'collection',
-                'count'             => 2,
-                'items'    =>  [
-                    [
-                        'merchant_id'   => '10000000000000',
-                        'rules'         => [
-                            [
-                                'merchant_id'   =>  '10000000000000',
-                                'condition'     =>  null,
-                                'min_amount'    =>  0,
-                                'max_amount'    =>  100,
-                            ],
-                            [
-                                'merchant_id'   =>  '10000000000000',
-                                'condition'     =>  null,
-                                'min_amount'    =>  100,
-                                'max_amount'    =>  null,
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testGetMerchantIdsWithPermission' => [
+    'getMerchantIdsForCreatePayoutWorkflowPermission' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/workflows/rules/payout_amount/merchants',
+            'url'     => 'workflows/create_payout/merchants',
             'content' => [],
         ],
         'response' => [
@@ -353,7 +282,7 @@ return [
     'testGetMerchantWorkflowPayoutAmountRules' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/workflows/rules/payout_amount/10000000000000',
+            'url'     => '/workflows/rules/payout_amount/merchant/10000000000000',
             'content' => [],
         ],
         'response' => [

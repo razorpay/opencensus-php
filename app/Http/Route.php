@@ -802,8 +802,8 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
-        'workflow_payout_amount_rules_get'         => ['get',      'workflows/rules/payout_amount/{id}',             'WorkflowController@getWorkflowRulesForMerchant'                    ],
-        'workflow_permission_merchants_get'        => ['get',      'workflows/rules/payout_amount/merchants',        'WorkflowController@getMerchantIdsForWorkflowPermission'            ],
+        'workflow_payout_amount_rules_get'         => ['get',      'workflows/rules/payout_amount/merchant/{id}',    'WorkflowController@getWorkflowRulesForMerchant'                    ],
+        'workflow_merchants_create_payout_get'     => ['get',      'workflows/create_payout/merchants',              'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -2245,7 +2245,7 @@ final class Route
         'workflow_update',
         'workflow_delete',
         'workflow_payout_amount_rules_get',
-        'workflow_permission_merchants_get',
+        'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
         'action_diff_get',
@@ -2728,7 +2728,7 @@ final class Route
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get'         => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
-        'workflow_permission_merchants_get'        => Permission::VIEW_ALL_WORKFLOW,
+        'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => '*',
