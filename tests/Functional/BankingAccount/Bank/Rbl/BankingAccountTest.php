@@ -43,6 +43,8 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
 
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
         Mail::assertQueued(XProActivation::class);
     }
 

@@ -569,7 +569,8 @@ class Core extends Base\Core
         // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
         //
         // Create and dispatch jobs to pull data for those MIDs
-        // Return some info for the route response
+        // Return accountNumbers dispatched for processing for the route response
+        //
         $channel = array_pull($input, Entity::CHANNEL);
 
         $limit = 2;
