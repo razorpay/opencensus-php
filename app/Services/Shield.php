@@ -171,6 +171,13 @@ class Shield
             case Payment\Method::UPI:
                 $payloadDetails[ShieldConstants::VPA] = $payment->getVpa();
 
+                $flow = $payment->getMetadata('flow');
+
+                if (is_null($flow) === false)
+                {
+                    $payloadDetails[ShieldConstants::UPI_TYPE] = $flow;
+                }
+
                 break;
 
             case Payment\Method::CARD:
