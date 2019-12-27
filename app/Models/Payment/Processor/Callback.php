@@ -372,8 +372,7 @@ trait Callback
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp') and
-            $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE)
+            ($input['gateway']['type'] === 'otp'))
         {
             $this->validateCallbackInputIfApplicable($input);
 
@@ -418,8 +417,7 @@ trait Callback
         }
 
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) and
-            ($payment->getCpsRoute() !== Payment\Entity::CARD_PAYMENT_SERVICE))
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }

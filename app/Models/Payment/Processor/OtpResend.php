@@ -72,17 +72,7 @@ trait OtpResend
         if (($payment->isMethodCardOrEmi() === true) and
             ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
         {
-            if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
-            {
-                $request = $this->callCpsAction($payment,
-                    $payment->getGateway(),
-                    Payment\Action::OTP_RESEND,
-                    $gatewayInput);
-            }
-            else
-            {
-                $request = $this->resendHeadlessOtp($payment, $gatewayInput);
-            }
+            $request = $this->resendHeadlessOtp($payment, $gatewayInput);
 
             return $this->getOtpPaymentCreatedResponse($request, $payment);
         }

@@ -9,7 +9,6 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
 use RZP\Models\VirtualAccount\Provider;
@@ -128,7 +127,7 @@ class TerminalProcessor extends Base\Core
                 catch(\Throwable $ex)
                 {
                     $this->trace->traceException(
-                        $ex,
+                        $e,
                         Trace::CRITICAL,
                         TraceCode::AUTH_SELECTION_FAILURE_V2,
                         ['payment_id' => $payment->getId()]
