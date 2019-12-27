@@ -24,9 +24,9 @@ class Repository extends Base\Repository
         if (empty($permissionId) === false)
         {
             $query->whereIn(Entity::ID, function ($q) use ($permissionId) {
-                $q->select(Step\Entity::WORKFLOW_ID)
-                    ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
-                    ->where(Entity::PERMISSION_ID, $permissionId);
+                                            $q->select(Step\Entity::WORKFLOW_ID)
+                                              ->from(Admin\Org\Entity::WORKFLOW_PERMISSIONS)
+                                              ->where(Entity::PERMISSION_ID, $permissionId);
             });
         }
 
