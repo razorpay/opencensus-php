@@ -2411,7 +2411,8 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+    WHERE gateway_payment_id IS NULL AND created_at 
+    = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
 # Useful for analytics queries
@@ -5562,3 +5563,9 @@ ALTER TABLE `terminals`
 
 ALTER TABLE worldline
 	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
+
+ALTER TABLE offers
+    ADD COLUMN default_offer bool DEFAULT 0,
+    ADD COLUMN max_order_amount int(11) DEFAULT NULL,
+    MODIFY type VARCHAR(20);
+

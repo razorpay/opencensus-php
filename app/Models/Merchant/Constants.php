@@ -183,4 +183,9 @@ final class Constants
         Entity::CATEGORY2,
         Entity::BILLING_LABEL,
     ];
+
+    const INSURANCE_CATEGORIES = [
+        '6211',
+        '6300',
+    ];
 }

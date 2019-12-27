@@ -3383,8 +3383,8 @@ class Terminal extends Base
                 Type::NON_RECURRING => '1',
                 Type::UPI_TRANSFER  => '1',
             ],
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'test.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'test000000',
             'virtual_upi_handle'          => 'hdfcbank',
         ];
 
@@ -3401,8 +3401,8 @@ class Terminal extends Base
                 Type::NON_RECURRING => '1',
                 Type::UPI_TRANSFER  => '1',
             ],
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
             'virtual_upi_handle'          => 'hdfcbank',
         ];
 

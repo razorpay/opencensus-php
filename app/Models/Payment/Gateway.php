@@ -2281,6 +2281,25 @@ class Gateway
         return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
+    /**
+     * Enach through NPCI has mandated that additional information has to be displayed
+     * when rendering the response page to the user.
+     * emandate_details contains this additional information. In this flow
+     * we open a different view based on the requirements set by NPCI after callback
+     *
+     * @param $input
+     * @return bool
+     */
+    public static function isNachNbResponseFlow($input)
+    {
+        if ((empty($input) === false) and (isset($input['emandate_details']) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function isAutoDebitPowerWalletSupported($payment)
     {
         $gateway = $payment->getGateway();

@@ -264,7 +264,9 @@ abstract class AbstractVerifier
         $body = json_decode($response->body, true);
 
         $statusCode = $body['data']['content']['response']['status-code'] ??
-                      ($body['data']['content']['response']['statusCode'] ?? $response->status_code);
+                      ($body['data']['content']['response']['statusCode'] ??
+                       ($body['data']['content']['response']['status'] ??
+                        $response->status_code));
 
         return $statusCode;
     }

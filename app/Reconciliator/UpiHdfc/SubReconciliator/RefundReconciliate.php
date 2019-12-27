@@ -202,17 +202,21 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
-            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
-                'info_code'                 => Base\InfoCode::DATA_MISMATCH,
-                'message'                   => 'Reference number in db is not same as in recon',
-                'refund_id'                 => $this->refund->getId(),
-                'amount'                    => $this->refund->getBaseAmount(),
-                'payment_id'                => $this->payment->getId(),
-                'payment_amount'            => $this->payment->getBaseAmount(),
-                'db_reference_number'       => $npciRefId,
-                'recon_reference_number'    => $referenceNumber,
-                'gateway'                   => $this->gateway
-            ]);
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'                 => $infoCode,
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getBaseAmount(),
+                    'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getBaseAmount(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
 
             return;
         }
