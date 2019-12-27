@@ -214,7 +214,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'poutlk_DnhDjMDHlQEjgM',
                 'amount'      => 1000,
                 'contact_id'  => '1000010contact',
                 'currency'    => 'INR',
@@ -251,7 +250,7 @@ return [
     'testGenerateOtpForOnlyPhoneContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '',
 
         ],
         'response' => [
@@ -262,7 +261,7 @@ return [
     'testGenerateOtpForOnlyEmailContact' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '',
 
         ],
         'response' => [
@@ -273,7 +272,7 @@ return [
     'testOtpVerificationWithContext' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '',
             'content' => [
                 'context' => '1576208561',
                 'otp'     => '0007'
@@ -289,7 +288,7 @@ return [
     'testOtpGenerationWithContext' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'     => '',
             'content' => [
                 'context' => '1576208561'
             ]
@@ -302,7 +301,7 @@ return [
     'testVerifyOtpSuccessful' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '',
             'content' => ['otp' => '0007']
         ],
         'response' => [
@@ -313,7 +312,7 @@ return [
     'testVerifyOtpFailedByInvalidOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/verify-customer-otp',
+            'url'     => '',
             'content' => ['otp' => '1234']
         ],
         'response' => [
@@ -334,7 +333,7 @@ return [
     'testExceptionWhenOtpGeneratedWithoutEmailAndPhoneNumber' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '',
         ],
         'response'  => [
             'content'     => [
@@ -354,7 +353,7 @@ return [
     'testExceptionWhenOnlyPhoneIsPresentAndSmsFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '',
         ],
         'response'  => [
             'content'     => [
@@ -374,7 +373,7 @@ return [
     'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
         'request'   => [
             'method' => 'POST',
-            'url'    => '/payout-links/poutlk_DnhDjMDHlQEjgM/generate-customer-otp',
+            'url'    => '',
         ],
         'response'  => [
             'content'     => [
@@ -398,7 +397,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'DnhDjMDHlQEjgM',
                 'status'      => 'cancelled',
             ]
         ]
@@ -450,7 +448,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => 'DnhDjMDHlQEjgM',
                 'status'      => 'cancelled',
             ]
         ]
