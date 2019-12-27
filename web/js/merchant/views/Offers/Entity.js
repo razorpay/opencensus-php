@@ -89,6 +89,7 @@ const OfferDetails = props => {
           label="Bank Name"
           value={ISSUERS[offer.issuer] || '--'}
         />
+        <EntityDetailRow label="Offer Type" value={offer.type || '--'} />
       </React.Fragment>
     );
   };
