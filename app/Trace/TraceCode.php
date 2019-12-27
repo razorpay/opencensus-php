@@ -1538,6 +1538,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_INTERNATIONAL_CHECK                        = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                                = 'OFFER_CARD_USAGE_CHECK';
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
+    const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
+    const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
 
     // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                          = 'ADD_GATEWAY_PRIORITY_REQUEST';

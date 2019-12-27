@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -383,6 +385,12 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            return;
+        }
+
         if ($payment->hasCard() === false)
         {
             return;

@@ -23,6 +23,7 @@ use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Offer;
 
 trait Capture
 {
@@ -393,7 +394,12 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        if($payment->getOffer() === null)
+        {
+            return;
+        }
+
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -1163,8 +1169,7 @@ trait Capture
     {
         $discount = 0;
 
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null))
+        if($payment->discount !== null)
         {
             $discount = $payment->discount->getAmount();
         }

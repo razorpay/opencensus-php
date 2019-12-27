@@ -711,6 +711,14 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
+    public function isInsuranceCategory()
+    {
+        $insuranceCategories = Constants::INSURANCE_CATEGORIES;
+
+        return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
+    }
+
+
     public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
@@ -2135,6 +2143,16 @@ class Entity extends Base\PublicEntity
     public function isPhoneOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public function isSaveVpaEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SAVE_VPA);
+    }
+
+    public function shouldSaveVpa()
+    {
+        return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
     }
 
     public static function hascustomerTransactionHistoryEnabled($merchantId)
