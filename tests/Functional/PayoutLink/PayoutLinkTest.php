@@ -17,6 +17,7 @@ use RZP\Models\PayoutLink\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PayoutLink\TokenService;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
@@ -54,7 +55,7 @@ class PayoutLinkTest extends TestCase
         'status'       => 'issued',
         'created_at'   => 1575367399,
         'cancelled_at' => null
-        ];
+    ];
 
     const TEST_CONTACT = [
         'id'      => '1000010contact',
@@ -166,7 +167,7 @@ class PayoutLinkTest extends TestCase
             $testPayload['id'] = $id;
 
             $payoutLink = $this->fixtures->create(self::FIXTURE_ENTITY,
-                                                   $testPayload);
+                                                  $testPayload);
 
             array_push($testPayoutLinkIds, $payoutLink->getPublicId());
 
@@ -263,18 +264,14 @@ class PayoutLinkTest extends TestCase
         $payoutLinkId = $response['id'];
 
         $expectedTargetUrl = sprintf($urlFormat,
-                             $this->app['config']['url.api.production'],
-                             $payoutLinkId);
+                                     $this->app['config']['url.api.production'],
+                                     $payoutLinkId);
 
         // asserting that the short_url is same as the full target url, because elfin failed
         $this->assertEquals($response['short_url'], $expectedTargetUrl);
 
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testPayoutLinkFailedDueToContactCreationFailure()
     {
         $this->ba->privateAuth();
@@ -400,37 +397,6 @@ class PayoutLinkTest extends TestCase
                                                'name'    => 'test user'
                                            ]);
 
-        $payoutLink = $this->fixtures->create('payout_link',
-                                              [
-                                                  'contact_id'           => $contact->getId(),
-                                                  'contact_name'         => $contact->getName(),
-                                                  'contact_phone_number' => $contact->getContact(),
-                                                  'contact_email'        => $contact->getEmail()
-                                              ]);
-
-        $this->setUrl(__FUNCTION__ , $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
-
-        $this->startTest();
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails()
-    {
-        $mail = Mockery::mock('overload:Mail');
-
-        $mail->shouldReceive('queue')
-             ->andThrow(new Exception('I failed for the sake of testing'));
-
-        $contact = $this->fixtures->create('contact',
-                                           [
-                                               'id'      => '1000011contact',
-                                               'email'   => 'test@razorpay.com',
-                                               'contact' => '',
-                                               'name'    => 'test user'
-                                           ]);
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id'           => $contact->getId(),
@@ -576,14 +542,14 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithValidTokenReturnsFundAccountArray()
     {
-        $this->mockRedisSuccess();
-
         // call fund-account, assuming OTP verification will pass as redis is mocked to return non-null value,
         // which signifies OTP is present
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id' => $this->contact->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::FUND_ACCOUNTS);
 
@@ -592,8 +558,6 @@ class PayoutLinkTest extends TestCase
 
     public function testGetFundAccountWithInvalidTokenRaisesException()
     {
-        $this->mockRedisFail();
-
         // call fund-account, assuming OTP verification will pass as redis is mocked to return Null,
         // which means token is not found
         $payoutLink = $this->fixtures->create('payout_link',
@@ -607,9 +571,9 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiBankAccountRequiredWhenTypeIsBankAccount()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -618,9 +582,9 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiVpaRequiredWhenTypeIsVpa()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -651,16 +615,14 @@ class PayoutLinkTest extends TestCase
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
-        $this->mockRedisFail();
-
         $this->startTest();
     }
 
     public function testInitiateApiWithInvalidFundAccountIdThrowException()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link');
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -669,12 +631,12 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidVpaPassed()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -691,12 +653,12 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidBankAccountPassed()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -727,16 +689,14 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiFailsWhenFundAccountIdPassedBelongsToAnotherContact()
     {
-        $this->mockRedisSuccess();
-
         $contact1 = $this->contact;
 
         $contact2 = $this->fixtures->create('contact',
-                                           [
-                                               'name'    => 'Test Contact 2',
-                                               'email'   => 'test2@rzp.com',
-                                               'contact' => '9876543210'
-                                           ]);
+                                            [
+                                                'name'    => 'Test Contact 2',
+                                                'email'   => 'test2@rzp.com',
+                                                'contact' => '9876543210'
+                                            ]);
         // create the payoutlink that is associated with the first contact
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
@@ -746,28 +706,30 @@ class PayoutLinkTest extends TestCase
                                                   'contact_email'        => $contact1->getEmail()
                                               ]);
 
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
+
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         // create a fund account that belongs to the second contact
         $fundAccount = $this->fixtures->create('fund_account:bank_account',
-                                      [
-                                          'id'          => '100000000003fa',
-                                          'source_type' => 'contact',
-                                          'source_id'   => $contact2->getId(),
-                                          'merchant_id' => $contact2->merchant->getId()
-                                      ]);
+                                               [
+                                                   'id'          => '100000000003fa',
+                                                   'source_type' => 'contact',
+                                                   'source_id'   => $contact2->getId(),
+                                                   'merchant_id' => $contact2->merchant->getId()
+                                               ]);
 
         $this->startTest();
     }
 
     public function testPayoutStatusCreatedMakesLinkStatusProcessing()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->fixtures->create('fund_account:bank_account',
                                 [
@@ -795,12 +757,12 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutStatusReversedMakesLinkStatusAttempted()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -835,14 +797,12 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutStatusProcessedMakesLinkStatusProcessed()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
 
-        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->fixtures->create('fund_account:bank_account',
                                 [
@@ -851,6 +811,8 @@ class PayoutLinkTest extends TestCase
                                     'source_id'   => $this->contact->getId(),
                                     'merchant_id' => $this->contact->merchant->getId()
                                 ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         $this->startTest();
 
@@ -908,12 +870,13 @@ class PayoutLinkTest extends TestCase
 
     public function testUpiPayoutModeWhenVpaFundAccountAdded()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
+
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         $merchant = $this->contact->merchant;
@@ -932,13 +895,13 @@ class PayoutLinkTest extends TestCase
 
     public function testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId(),
                                                   'amount'     => '100000'
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -966,8 +929,6 @@ class PayoutLinkTest extends TestCase
 
     public function testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs()
     {
-        $this->mockRedisSuccess();
-
         $this->bankingBalance->balance = '300000000';
 
         $this->bankingBalance->save();
@@ -977,6 +938,8 @@ class PayoutLinkTest extends TestCase
                                                   'balance_id' => $this->bankingBalance->getId(),
                                                   'amount'     => 30000000
                                               ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -1041,12 +1004,11 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
     {
-        $this->mockRedisSuccess();
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
 
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
@@ -1057,36 +1019,12 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockRedisSuccess()
+    protected function mockRedisSuccess($funcName, $payoutLinkId)
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])
-                          ->getMock();
+        $token = (new TokenService())->generate($payoutLinkId);
 
-        Redis::shouldReceive('zadd')->andReturn($redisMock);
-
-        Redis::shouldReceive('connection')->andReturn($redisMock);
-
-        $redisMock->method('del')
-                  ->will($this->returnValue(1));
-
-        $redisMock->method('get')
-                  ->will($this->returnValue('Token valid as a non-null value is being returned'));
+        $this->testData[$funcName]['request']['content']['token'] = $token;
     }
-
-    protected function mockRedisFail()
-    {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'del'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')->andReturn($redisMock);
-
-        $redisMock->method('get')
-                  ->will($this->returnValue(null));
-
-        $redisMock->method('del')
-                  ->will($this->returnValue(1));
-    }
-
 
     protected function addAccountNumberParameter($funcName)
     {
