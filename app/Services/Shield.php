@@ -198,6 +198,12 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
+        $shieldMetadata = $payment->getMetadata('shield');
+
+        if ((is_array($shieldMetadata) === false) && (isset($shieldMetadata['fhash']) === true)) {
+            $payloadDetails[ShieldConstants::FHASH] = $shieldMetadata['fhash'];
+        }
+
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
