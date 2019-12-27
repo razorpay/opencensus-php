@@ -790,7 +790,7 @@ return [
     'testUpiPayoutModeWhenVpaFundAccountAdded' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'account_type' => 'vpa',
                 'vpa'          => [
@@ -807,7 +807,7 @@ return [
     'testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'account_type'    => 'bank_account',
                 'fund_account_id' => '100000000003fa',
@@ -822,7 +822,7 @@ return [
     'testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payout-links/poutlk_DnhDjMDHlQEjgM/initiate',
+            'url'     => '',
             'content' => [
                 'account_type'    => 'bank_account',
                 'fund_account_id' => '100000000003fa',

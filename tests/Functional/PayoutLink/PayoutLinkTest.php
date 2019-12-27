@@ -881,6 +881,8 @@ class PayoutLinkTest extends TestCase
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+
         $merchant = $this->contact->merchant;
 
         //enable UPI
@@ -904,6 +906,9 @@ class PayoutLinkTest extends TestCase
                                                   'balance_id' => $this->bankingBalance->getId(),
                                                   'amount'     => '100000'
                                               ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+
         $merchant = $this->contact->merchant;
 
         //enable IMPS
@@ -939,6 +944,9 @@ class PayoutLinkTest extends TestCase
                                                   'balance_id' => $this->bankingBalance->getId(),
                                                   'amount'     => 30000000
                                               ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+
         $merchant = $this->contact->merchant;
 
         //enable IMPS
@@ -971,6 +979,8 @@ class PayoutLinkTest extends TestCase
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
                                               ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         $payoutLink->setStatus(Status::PROCESSING);
 
