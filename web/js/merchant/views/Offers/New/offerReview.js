@@ -1,4 +1,7 @@
-import { PAYMENT_NETWORK_MAP } from '../Entity';
+import {
+  OFFER_TYPE_MAP,
+  PAYMENT_NETWORK_MAP,
+} from 'merchant/views/Offers/Entity';
 
 const TERMS_CONDITIONS_STRING =
   'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';
@@ -35,12 +38,6 @@ const progressionList = progression => {
       ))}
     </ul>
   );
-};
-
-const OFFER_TYPE_MAP = {
-  instant: 'Instant',
-  deferred: 'Deferred',
-  already_discounted: 'Already Discounted',
 };
 
 const BANK_MAP = {

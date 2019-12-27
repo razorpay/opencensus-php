@@ -20,6 +20,12 @@ export const PAYMENT_NETWORK_MAP = {
   AMEX: 'American Express',
 };
 
+export const OFFER_TYPE_MAP = {
+  instant: 'Instant',
+  deferred: 'Deferred',
+  already_discounted: 'Already Discounted',
+};
+
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
 
@@ -89,7 +95,10 @@ const OfferDetails = props => {
           label="Bank Name"
           value={ISSUERS[offer.issuer] || '--'}
         />
-        <EntityDetailRow label="Offer Type" value={offer.type || '--'} />
+        <EntityDetailRow
+          label="Offer Type"
+          value={OFFER_TYPE_MAP[offer.type] || '--'}
+        />
       </React.Fragment>
     );
   };
