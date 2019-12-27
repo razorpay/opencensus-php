@@ -133,7 +133,7 @@ return [
                 'description' => 'This is a test payout',
                 'purpose'     => 'refund',
                 'contact'     => [
-                    'name'       => 'cskdsdssdklifnjs'
+                    'name'       => 'Test Name'
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
