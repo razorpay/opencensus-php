@@ -1210,7 +1210,8 @@ final class FactoryData
             'short_url'            => 'http=>//76594130.ngrok.io/i/mGs4ehe',
             'status'               => 'issued',
             'created_at'           => 1575367399,
-            'cancelled_at'         => null
+            'cancelled_at'         => null,
+            'purpose'              => 'refund',
         ]);
     }
 }

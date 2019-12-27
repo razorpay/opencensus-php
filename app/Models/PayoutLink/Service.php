@@ -32,7 +32,9 @@ class Service extends Base\Service
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
     {
-        return $this->core->getFundAccountsOfContact($payoutLinkId, $input);
+        $fundAccounts = $this->core->getFundAccountsOfContact($payoutLinkId, $input);
+
+        return $fundAccounts->toArrayPublic();
     }
 
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input)

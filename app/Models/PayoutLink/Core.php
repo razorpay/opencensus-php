@@ -34,7 +34,6 @@ class Core extends Base\Core
     const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
-    const ACTIVE                  = 'active';
     const MUTEX_TIMEOUT           = 60;
 
     protected $elfin;
@@ -48,6 +47,7 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
@@ -61,23 +61,16 @@ class Core extends Base\Core
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
     {
-        $validator = (new Entity())->getValidator();
+        (new Validator)->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
 
-        $validator->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
-
-        (new TokenService())->verify($input[Entity::TOKEN]);
+        $this->tokenService->verify($input[Entity::TOKEN]);
 
         $fundAccounts = $this->repo
                              ->payout_link
-                             ->getFundAccountByPayoutLinkIdAdnMerchant($payoutLinkId, $this->merchant);
+                             ->getActiveFundAccountsByPayoutLinkIdAndMerchant($payoutLinkId, $this->merchant);
 
-        return $this->filterOutInActiveFundAccounts($fundAccounts);
-    }
+        return $fundAccounts;
 
-    // todo, pl this looks like a  repo funtionality, but unsure how to push it there. #reviewer ?
-    public function filterOutInActiveFundAccounts(PublicCollection $fundAccounts)
-    {
-        return $fundAccounts->where(self::ACTIVE, '=' , '1');
     }
 
     public function cancel(string $payoutLinkId): Entity
@@ -135,6 +128,8 @@ class Core extends Base\Core
 
         $input[Entity::CONTACT_PHONE_NUMBER] = $contact->getContact();
 
+        $user = $this->app['basicauth']->getUser();
+
         $payoutLink = (new Entity)->build($input);
 
         // Doing this because we need the Id for generating short URL
@@ -150,8 +145,7 @@ class Core extends Base\Core
 
         $payoutLink->balance()->associate($balance);
 
-        // todo: pl , unsure how to get the user entity from the request in core
-//         $payoutLink->user()->associate($this->app['basicauth']->getUser());
+        $payoutLink->user()->associate($user);
 
         $payoutLink->setStatus(Status::ISSUED);
 
@@ -205,8 +199,7 @@ class Core extends Base\Core
 
     public function verifyCustomerOtp($payoutLinkId, $input): array
     {
-        (new Entity())->getValidator()
-                      ->validateInput(Validator::VERIFY_OTP, $input);
+        (new Validator)->validateInput(Validator::VERIFY_OTP, $input);
 
         $payoutLink = $this->repo
                            ->payout_link
