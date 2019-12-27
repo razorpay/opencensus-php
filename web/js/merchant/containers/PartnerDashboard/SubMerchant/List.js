@@ -435,7 +435,7 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
     <div style={{ padding: '14px' }}>
       <p>
         You <strong>get 0.1% commission for every transaction</strong> done by
-        merchant who signs up with this link. merchants.
+        merchant who signs up with this link.
       </p>
       <div class="input-group" style={{ marginTop: '20px' }}>
         <CustomClipboard value={referralUrl}>
