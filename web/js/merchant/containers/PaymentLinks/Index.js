@@ -72,7 +72,7 @@ export default class PaymentLinksContainer extends React.Component {
     let showOnboarding = !isPaymentLinksEnabled;
 
     if (isPaymentLinksEnabled) {
-      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(data);
+      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(data.invoices);
     }
 
     const paymentLinksProductOnBoarding = {
