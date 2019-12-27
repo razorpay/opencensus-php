@@ -106,6 +106,11 @@ class Core extends Base\Core
 
     protected function associateOffers(Entity $order, array $input)
     {
+        if(($order->isOfferForced()) === null or ($order->isOfferForced() === false))
+        {
+            $this->associateDefaultOffers( $order);
+        }
+
         if (isset($input[Entity::OFFERS]) === false)
         {
             return;
@@ -121,13 +126,36 @@ class Core extends Base\Core
     {
         $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
 
+        if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+        {
+            $this->associateOffer($order, $offer);
+        }
+    }
+
+    protected function associateDefaultOffers(Entity $order)
+    {
+        $defaultOffers = (new Offer\Core)->fetchDefaultOffers();
+
+        foreach($defaultOffers as $offer)
+        {
+            $offer = (new Offer\Core)->validateDefaultOfferForOrder($order, $offer);
+
+            if($offer !== null)
+            {
+                $this->associateOffer($order, $offer);
+            }
+        }
+    }
+
+    protected function associateOffer(Entity $order,  offer\Entity $offer)
+    {
         // Creates row in entity_offers table
         $order->associateOffer($offer);
 
         $this->trace->info(
             TraceCode::OFFER_APPLIED_ON_ORDER,
             [
-                'offer_id' => $offerId,
+                'offer_id' => $offer->getId(),
                 'order_id' => $order->getId()
             ]);
     }

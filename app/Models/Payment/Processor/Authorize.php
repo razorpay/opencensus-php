@@ -4179,14 +4179,14 @@ trait Authorize
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        $this->offer = $payment->getOffer();
+
+        if($payment->getOffer() === null)
         {
             return;
         }
 
-        $this->offer = $payment->getOffer();
-
-        if ($this->offer === null)
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }

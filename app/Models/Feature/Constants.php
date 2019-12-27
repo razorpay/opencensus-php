@@ -135,6 +135,7 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
 
@@ -263,6 +264,8 @@ class Constants
     const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
+
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
@@ -458,6 +461,7 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::BLOCK_OFFER_CREATION            => true,
         self::ENACH_INTERMEDIATE              => true,
         self::SAVE_VPA                        => true,
     ];
