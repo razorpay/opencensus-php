@@ -40,8 +40,10 @@
             return;
         }
 
-        window.analytics.init(['la'], {
-            la: '96df432a283745908a06f711acd9e5eb'
+        window.analytics.init(['ga', 'lj'], {
+            lj: data.is_test_mode
+                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667'
+                : '96df432a283745908a06f711acd9e5eb'
         });
 
         if (window.analytics.createQ) {
@@ -50,12 +52,17 @@
 
         window.rzpQ.defineEventModifiers({
             'authLink':[
-                { propertyName:'event_type',
+                {
+                    propertyName:'event_type',
                     value:'charge_at_will'
                 },
                 {
                     propertyName:'event_group',
                     value:'charge_at_will_hosted_page'
+                },
+                {
+                    propertyName: 'page_id',
+                    value: data.invoice.id
                 }
             ]
         });
