@@ -75,10 +75,9 @@ export default class SettlementDetail extends Component {
                 </p>
               ) : (
                 <p class="grey">
-                  This is an estimate of the settlement amount and may vary from
-                  the actual amount settled to your bank account. For example,
-                  any refunds initiated from your account will reduce the
-                  settlement amount by that refunded amount.
+                  This is an estimate of the settlement amount and the actual
+                  settled amount may vary based on the latest transactions in
+                  your account.
                 </p>
               )}
             </div>
