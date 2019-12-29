@@ -215,7 +215,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle',
+      eventAction: 'View Settlement Cycle - Settlements Page',
     });
   };
 
@@ -262,7 +262,7 @@ export default class SettlementsListContainer extends ListContainer {
 
                 window.rzpAnalytics({
                   eventCategory: 'Dashboard - Settlement UI Revamp',
-                  eventAction: 'Click Know More(On Hold)',
+                  eventAction: 'Click Know More(On Hold) - Settlements Page',
                 });
               }}
             />
@@ -379,7 +379,8 @@ export default class SettlementsListContainer extends ListContainer {
                                   window.rzpAnalytics({
                                     eventCategory:
                                       'Dashboard - Settlement UI Revamp',
-                                    eventAction: 'Click Know More',
+                                    eventAction:
+                                      'Click Know More - Settlements Page',
                                   });
                                 }}
                                 class="btn-link pointer"

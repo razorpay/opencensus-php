@@ -242,7 +242,7 @@ class AnalyticsDesktop extends Component {
                               window.rzpAnalytics({
                                 eventCategory:
                                   'Dashboard - Settlement UI Revamp',
-                                eventAction: 'Click Know More',
+                                eventAction: 'Click Know More - Home Page',
                               });
                             }}
                           >
@@ -294,7 +294,7 @@ class AnalyticsDesktop extends Component {
 
               window.rzpAnalytics({
                 eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold)',
+                eventAction: 'Click Know More(On Hold) - Home Page',
               });
             }}
           />

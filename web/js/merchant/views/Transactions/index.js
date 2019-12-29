@@ -136,7 +136,7 @@ export default class TransactionsContainer extends Component {
 
                   window.rzpAnalytics({
                     eventCategory: 'Dashboard - Settlement UI Revamp',
-                    eventAction: 'Click Know More',
+                    eventAction: 'Click Know More - Transactions Page',
                   });
                 }}
               >
@@ -164,7 +164,7 @@ export default class TransactionsContainer extends Component {
 
               window.rzpAnalytics({
                 eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold)',
+                eventAction: 'Click Know More(On Hold) - Transactions Page',
               });
             }}
           />
