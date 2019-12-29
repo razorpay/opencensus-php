@@ -42,7 +42,7 @@
 
         window.analytics.init(['ga', 'lj'], {
             lj: data.is_test_mode
-                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667'
+                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667' Please add this key when data analytics issue fixed
                 : '96df432a283745908a06f711acd9e5eb'
         });
 
