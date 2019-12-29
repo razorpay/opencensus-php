@@ -5,7 +5,7 @@
       window.rzpQ
       .now()
       .paymentLink()
-      .success(event, event_options)
+      .interaction(event, event_options)
     );
   }
 
