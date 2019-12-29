@@ -1,6 +1,7 @@
-import Input from 'common/new-ui/Input';
-
-import { PAYMENT_NETWORK_MAP } from '../Entity';
+import {
+  OFFER_TYPE_MAP,
+  PAYMENT_NETWORK_MAP,
+} from 'merchant/views/Offers/Entity';
 
 const TERMS_CONDITIONS_STRING =
   'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';
@@ -138,6 +139,7 @@ export default ({
     percent_rate,
     max_cashback,
     creation_terms_accepted,
+    type,
   },
   currencySymbol,
   getFormOnChangeHandler,
@@ -151,6 +153,7 @@ export default ({
               <strong>Description:</strong>
             </p>
             {getDualColumnTable('Display Text', display_text)}
+            {getDualColumnTable('Offer Type', OFFER_TYPE_MAP[type])}
             {getDualColumnTable('Offer Terms', terms)}
           </div>,
           <div>
