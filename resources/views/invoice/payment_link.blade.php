@@ -54,6 +54,8 @@ $view_preferences               = $data['view_preferences'];
 
     <script>
 
+        var is_test_mode = {{ $data['is_test_mode'] }};
+
         function noop() {}
 
         // Empty Interface for rzpQ
@@ -80,9 +82,11 @@ $view_preferences               = $data['view_preferences'];
                 return;
             }
 
-            analytics.init(['ga', 'hotjar', 'la'], {
-                la: '96df432a283745908a06f711acd9e5eb'
-            };
+            analytics.init(['ga', 'hotjar', 'lj'], {
+                lj: is_test_mode
+                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667' Please add this key when data analytics issue fixed
+                : '96df432a283745908a06f711acd9e5eb'
+            });
 
             analytics.track('ga', 'pageview');
 
