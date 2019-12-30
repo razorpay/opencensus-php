@@ -255,8 +255,24 @@ class GatewayProcessor extends BaseGatewayProcessor
 
             $terminalOnboardingDetail->save();
         }
-        else
+
+        // If error description is "Duplicate Merchant code, it means first type of request (onboard merchant was sent twice - maybe in race condition),
+        // in this case, we should keep the status to created only, so that this terminal will get picked up again by next cron and will be sent
+        // as additional tid request
+        else if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and 
+                  ($response[Constants::DATA][Constants::DESCRIPTION] === Constants::DUPLICATE_MERCHANT_CODE))
         {
+
+            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::CREATED);
+
+            $terminal->setStatus(Terminal\Status::CREATED);
+
+            $terminal->save();
+
+            $terminalOnboardingDetail->save();
+        }
+        else
+        {           
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR, null, $response);
         }
