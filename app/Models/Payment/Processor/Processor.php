@@ -1193,7 +1193,7 @@ class Processor
             $featureFlag .= '_' .$payment->getAuthenticationGateway();
         }
 
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
+        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
 
         $traceData = [
             'payment_id'             => $payment->getId(),
@@ -1252,7 +1252,7 @@ class Processor
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if (($this->offer !== null) and
-            ($order->isDiscountApplicable() === true))
+            ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
             $orderAmount = $order->getAmount();
 

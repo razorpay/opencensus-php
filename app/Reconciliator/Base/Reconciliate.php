@@ -69,6 +69,7 @@ class Reconciliate extends Base\Core
     const GATEWAY_SERVICE_TAX    = 'gateway_service_tax';
     const GATEWAY_FEE            = 'gateway_fee';
     const GATEWAY_SETTLED_AT     = 'gateway_settled_at';
+    const GATEWAY_AMOUNT         = 'gateway_amount';
     const ISSUER                 = 'issuer';
     const REFERENCE_NUMBER       = 'reference_number';
     const CUSTOMER_DETAILS       = 'customer_details';
@@ -76,6 +77,7 @@ class Reconciliate extends Base\Core
     const CUSTOMER_NAME          = 'customer_name';
     const GATEWAY_PAYMENT_DATE   = 'gateway_payment_date';
     const ARN                    = 'arn';
+    const GATEWAY_UTR            = 'gateway_utr';
     const ACCOUNT_DETAILS        = 'account_details';
     const ACCOUNT_NUMBER         = 'account_number';
     const ACCOUNT_TYPE           = 'account_type';

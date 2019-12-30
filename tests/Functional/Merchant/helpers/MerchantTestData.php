@@ -1849,6 +1849,23 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForSaveVpaEnabledMerchant' => [
+        'request'   => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content'   => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'save_vpa' => true
+                ]
+            ]
+        ]
+    ],
+
     'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
         'request'  => [
             'url'    => '/preferences',
@@ -2019,28 +2036,6 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Shared olamoney offer',
-                    ]
-                ]
-            ],
-        ],
-    ],
-
-    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
-        'request' => [
-            'url'    => '/preferences',
-            'method' => 'get',
-            'content' => [
-                'currency' => 'INR'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'wallet',
-                        'issuer'          => 'olamoney',
-                        'display_text'    => 'Merchant specific offer',
                     ]
                 ]
             ],
@@ -5355,6 +5350,143 @@ return [
                 'partner_intent'    => '1',
             ],
             'status_code'           => 200,
+        ],
+    ],
+
+    'testSetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+
+    'testSetInheritanceParentBatch'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/inheritance_parent/bulk',
+            'content'   => 
+                [
+                    [
+                        'idempotency_key'    =>  '12345',
+                        'merchant_id'        =>  'submerchant_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ],
+                    [
+                        'idempotency_key'    => '12346',
+                        'merchant_id'        =>  'submerchant2_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ]
+                ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testSetNonPartnerInheritanceParent'    =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Inheritance parent should be aggregator or fully-managed partner of the submerchant',
+            ],
+            'status_code'   => 400,
+            ],
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT,
+            ],
+        ],
+    ],
+
+    'testGetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testGetBalances' => [
+        'request' => [
+            'url' => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                    'count' => 2,
+                    'items' => [
+                        '0' => [
+                            'id'                => '100def000def00',
+                            'merchant_id'       => '100ghi000ghi00',
+                            'type'              => 'primary',
+                            'currency'          => null,
+                            'name'              => null,
+                            'balance'           => 100000,
+                        ],
+                        '1' => [
+                            'id'                => '100abc000abc00',
+                            'merchant_id'       => '100ghi000ghi00',
+                            'type'              => 'banking',
+                            'currency'          => 'INR',
+                            'name'              => null,
+                            'balance'           => 0,
+                        ]
+                    ]
+            ],
+        ],
+    ],
+
+    'testGetBalancesByType' => [
+        'request' => [
+            'url' => '/balance?type=primary',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'id'                => '100def000def00',
+                'merchant_id'       => '100ghi000ghi00',
+                'type'              => 'primary',
+                'currency'          => null,
+                'name'              => null,
+                'balance'           => 100000,
+            ],
         ],
     ],
 ];

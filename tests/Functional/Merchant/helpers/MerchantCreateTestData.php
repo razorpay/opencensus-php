@@ -63,7 +63,7 @@ return [
                 'email' => 'test@localhost.com',
             ],
             'url'     => '/merchants',
-            'method'  => 'POST'
+            'method'  => 'POST',
         ],
         'response' => [
             'content' => [
@@ -1037,4 +1037,22 @@ return [
         ],
     ],
 
+    'testBalanceConfigInTestAfterCreatedMerchant' => [
+        'request'  => [
+            'url'    => '/balance_configs',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    '0' => [
+                        'type'                          => 'primary',
+                        'negative_limit_auto'          => 0,
+                        'negative_limit_manual'        => 0,
+                        'negative_transaction_flows'   => ['payment']
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

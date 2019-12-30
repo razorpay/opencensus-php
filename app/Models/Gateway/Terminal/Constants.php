@@ -40,6 +40,7 @@ class Constants
     const GATEWAY_ERROR_CODE                      =   'gateway_error_code';
     const GATEWAY_ERROR_DESCRIPTION               =   'gateway_error_description';
     const GATEWAY_FAILURE_ERROR_CODE              =   '05';
+    const DUPLICATE_MERCHANT_CODE                 =   'Duplicate Merchant code';
 
     const TERMINAL_ACTIVATION_SUCCESSFULL         =   'terminal_activation_successful';
     const TERMINAL_ACTIVATION_FAILED              =   'terminal_activation_failed';

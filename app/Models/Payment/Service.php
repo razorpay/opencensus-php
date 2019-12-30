@@ -319,7 +319,7 @@ class Service extends Base\Service
 
     protected function getResponseDataFromCache($payment)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }
@@ -340,7 +340,7 @@ class Service extends Base\Service
 
     protected function cacheResponseData($payment, $data)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }
@@ -963,28 +963,7 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
-        $this->getOfferIdsForPayments($payments);
-
         return $payments->toArrayPublic();
-    }
-
-    protected function getOfferIdsForPayments($payments)
-    {
-        $paymentIds = $payments->pluck('id');
-
-        $entityOffer = $this->repo
-                            ->entity_offer
-                            ->getOfferIdLinkedWithPayment($paymentIds);
-
-        $plucked = $entityOffer->pluck('offer_id', 'entity_id');
-
-        foreach($payments as $payment)
-        {
-            if($plucked->has($payment->getId()))
-            {
-                $payment->setOfferId($plucked->get($payment->getId()));
-            }
-        }
     }
 
     public function fetch(string $id, array $input = []): array
@@ -1003,18 +982,6 @@ class Service extends Base\Service
             // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
             // the partner merchant of that submerchant
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
-        }
-
-        $paymentIds = explode(', ', $payment->getId());
-
-        $entityOffer = $this->repo
-                            ->entity_offer
-                            ->getOfferIdLinkedWithPayment($paymentIds)
-                            ->first();
-
-        if($entityOffer !== null)
-        {
-            $payment->setOfferId($entityOffer->getOfferId());
         }
 
         $entity = $payment->toArrayPublicWithExpand();

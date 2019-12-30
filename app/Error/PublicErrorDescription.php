@@ -795,6 +795,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
+    // Merchant Config Inheritance
+    const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
+
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED                   = 'Only terminals in activated state can be enabled';
@@ -925,8 +928,20 @@ class PublicErrorDescription
 
 
     //Offer
-    const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
-    const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
+    const OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED                                       = 'Offer Maximum Card Usage limit exceeded';
+    const OFFER_MAX_OFFER_LIMIT_EXCEEDED                                            = 'Offer Maximum Usage limit exceeded';
+    const OFFER_PAYMENT_METHOD_NOT_AVAILABLE                                        = 'Payment Method is not available for this Offer';
+    const OFFER_CARD_TYPE_DOES_NOT_MATCH                                            = 'Card type entered does not match the Offers parameters';
+    const OFFER_PAYMENT_NETWORK_NOT_AVAILABLE                                       = 'Offer Payment Method Network is not same as Selected Payment Method Network';
+    const OFFER_EMI_DURATION_NOT_SAME                                               = 'Offer Emi duration is not same as Selected Emi duration';
+    const OFFER_CARD_INTERNATIONAL                                                  = 'Selected Card is not international but offer applied requires international card';
+    const OFFER_IINS_DOES_NOT_MATCH                                                 = 'Selected card does not belong to offer iins';
+    const OFFER_WALLET_NOT_SAME                                                     = 'Offer Wallet does not match with payment wallet';
+    const OFFER_PERIOD_NOT_ACTIVE                                                   = 'Offer Applied is not active for this time period';
+    const OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT                                  = 'Order Amount is less than Offer Minimum amount';
+    const OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT                               = 'Order Amount is greater than Offer Maximum amount';
+    const OFFER_NOT_ACTIVE                                                          = 'Offer is inactive';
+    const OFFER_NOT_APPLICABLE_ON_ISSUER                                            = 'Offer not applicable on selected issuer';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';

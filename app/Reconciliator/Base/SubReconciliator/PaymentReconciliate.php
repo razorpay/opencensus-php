@@ -63,6 +63,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_BOB_V2,
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
+        RequestProcessor\Base::GETSIMPL,
     ];
 
     /**
@@ -307,6 +308,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
+
+        $this->persistGatewayAmount($this->payment, $rowDetails);
 
         if ($this->payment->isRoutedThroughCardPayments() === true)
         {
@@ -806,6 +809,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
+        $this->persistGatewayAmount($this->payment, $rowDetails);
+
         return $recordSuccess;
     }
 
@@ -867,6 +872,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
+        $gatewayAmount = $this->getGatewayAmount($row);
+
         $customerDetails = $this->getCustomerDetails($row);
 
         $accountDetails = $this->getAccountDetails($row);
@@ -875,17 +882,21 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $arn = $this->getArn($row);
 
+        $gatewayUtr = $this->getGatewayUtr($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID             => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
             BaseReconciliate::GATEWAY_FEE            => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::GATEWAY_AMOUNT         => $gatewayAmount,
             BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
             BaseReconciliate::GATEWAY_PAYMENT_ID     => trim($gatewayPaymentId),
             BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
             BaseReconciliate::GATEWAY_PAYMENT_DATE   => trim($gatewayPaymentDate),
             BaseReconciliate::AUTH_CODE              => trim($authCode),
             BaseReconciliate::ARN                    => trim($arn),
+            BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -959,11 +970,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            $paymentId = $this->revalidatePaymentId($row, $paymentId);
+            $validatedPaymentId = $this->revalidatePaymentId($row, $paymentId);
 
-            if (empty($paymentId) === false)
+            if (empty($validatedPaymentId) === false)
             {
-                return $this->setPaymentAndTransaction($row, $paymentId);
+                return $this->setPaymentAndTransaction($row, $validatedPaymentId);
             }
 
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ABSENT);
@@ -1159,6 +1170,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewayTransactionId($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentId($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayUtr($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
@@ -1582,10 +1595,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ($dbReference1 !== $reference1) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_ARN) === false))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference1 is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),
@@ -1625,10 +1640,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             (strtolower($dbReference2) !== strtolower($reference2)) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference2 is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),
@@ -2269,10 +2286,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ($dbReferenceNumber !== 'null') and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),
@@ -2304,10 +2323,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Gateway Transaction ID in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),
@@ -2339,10 +2360,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbGatewayPaymentId) === false) and
             ($dbGatewayPaymentId !== $gatewayPaymentId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Gateway Payment Id in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),

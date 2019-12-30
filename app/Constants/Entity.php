@@ -43,6 +43,7 @@ class Entity
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
+    const BALANCE_CONFIG            = 'balance_config';
     const CREDITS                   = 'credits';
     const FEATURE                   = 'feature';
     const INVOICE                   = 'invoice';
@@ -121,6 +122,7 @@ class Entity
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const SETTLEMENT_DESTINATION     = 'settlement_destination';
     const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
@@ -128,6 +130,8 @@ class Entity
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
+    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
+
 
     const OPTIONS                    = 'options';
 
@@ -401,6 +405,7 @@ class Entity
         self::REFUND                    => \RZP\Models\Payment\Refund::class,
         self::REPORT                    => \RZP\Models\Report::class,
         self::BALANCE                   => \RZP\Models\Merchant\Balance::class,
+        self::BALANCE_CONFIG            => \RZP\Models\Merchant\Balance\BalanceConfig::class,
         self::CREDITS                   => \RZP\Models\Merchant\Credits::class,
         self::METHODS                   => \RZP\Models\Merchant\Methods::class,
         self::PRICING                   => \RZP\Models\Pricing::class,
@@ -449,8 +454,10 @@ class Entity
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
+        self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
+        self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,

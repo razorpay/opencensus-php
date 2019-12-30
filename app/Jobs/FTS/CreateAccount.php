@@ -81,6 +81,19 @@ class CreateAccount extends Job
 
             $accountService->initialize($this->id, $this->type, $this->product, $this->status);
 
+            if (empty($accountService->getAccount()) === true)
+            {
+                $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_INVALID_ID,
+                    [
+                        'id'      => $this->id,
+                        'type'    => $this->type,
+                    ]);
+
+                $this->delete();
+
+                return;
+            }
+
             $createFundAccount = $accountService->isAccountCreatedInFts();
 
             if ($createFundAccount === false)

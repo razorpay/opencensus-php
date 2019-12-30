@@ -855,6 +855,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
     }
 
+    public function setKycClarificationReasons(array $reasons)
+    {
+        return $this->setAttribute(self::KYC_CLARIFICATION_REASONS, $reasons);
+    }
+
     public function getBusinessCategory()
     {
         return $this->getAttribute(self::BUSINESS_CATEGORY);

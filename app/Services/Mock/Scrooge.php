@@ -192,9 +192,11 @@ class Scrooge extends BaseScrooge
             }');
     }
 
-    public function getInstantRefundsMode(string $merchantId, array $params): string
+    public function instantRefundsDecisioningHelper(array $params): array
     {
-        return 'IMPS';
+        return json_decode('{
+            "mode": "IMPS"
+        }', true);
     }
 
     public function getFileBasedRefunds(array $input): array

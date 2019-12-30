@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -30,7 +31,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getGatewayPayment($paymentId)
     {
-        return $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        $gatewayPayment = null;
+
+        try
+        {
+            $gatewayPayment = $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code'     => Base\InfoCode::GATEWAY_PAYMENT_ABSENT,
+                    'payment_id'    => $this->payment->getId(),
+                    'gateway'       => $this->gateway,
+                ]
+            );
+        }
+
+        return $gatewayPayment;
     }
 
     protected function getReconPaymentAmount(array $row)
@@ -162,10 +180,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getBaseAmount(),
