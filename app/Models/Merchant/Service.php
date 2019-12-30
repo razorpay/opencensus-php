@@ -53,6 +53,7 @@ use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 
 class Service extends Base\Service
 {
@@ -559,6 +560,13 @@ class Service extends Base\Service
             $balanceCollection->add($balance);
 
             return $balanceCollection->toArrayPublic();
+        }
+
+        if (array_key_exists('type', $input) === true)
+        {
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $input['type']);
+
+            return $balance;
         }
 
         $balance = $this->repo->balance->fetch($input, $merchantId);
@@ -2328,6 +2336,8 @@ class Service extends Base\Service
 
             // Merchant confirmed details
             $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            $data['balance_configs'] = (new BalanceConfigService)->getMerchantBalanceConfigs();
 
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();

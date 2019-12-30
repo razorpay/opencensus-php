@@ -680,9 +680,9 @@ return [
         'receivers'   => [
             [
                 "entity"   => "vpa",
-                "username" => "rzp.test.testvpa",
+                "username" => "rzpy.test000000virtualvpa",
                 "handle"   => "hdfcbank",
-                "address"  => "rzp.test.testvpa@hdfcbank"
+                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
             ],
         ],
     ],
@@ -700,9 +700,9 @@ return [
             ],
             [
                 "entity"   => "vpa",
-                "username" => "rzp.test.testvpa",
+                "username" => "rzpy.test000000virtualvpa",
                 "handle"   => "hdfcbank",
-                "address"  => "rzp.test.testvpa@hdfcbank"
+                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
             ],
         ],
     ],
@@ -728,9 +728,9 @@ return [
                         'receivers'   => [
                             [
                                 "entity"   => "vpa",
-                                "username" => "rzp.test.testvpa",
+                                "username" => "rzpy.test000000virtualvpa",
                                 "handle"   => "hdfcbank",
-                                "address"  => "rzp.test.testvpa@hdfcbank"
+                                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
                             ],
                         ],
                         "close_by"    => null,

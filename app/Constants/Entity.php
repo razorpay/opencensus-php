@@ -43,6 +43,7 @@ class Entity
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
+    const BALANCE_CONFIG            = 'balance_config';
     const CREDITS                   = 'credits';
     const FEATURE                   = 'feature';
     const INVOICE                   = 'invoice';
@@ -402,6 +403,7 @@ class Entity
         self::REFUND                    => \RZP\Models\Payment\Refund::class,
         self::REPORT                    => \RZP\Models\Report::class,
         self::BALANCE                   => \RZP\Models\Merchant\Balance::class,
+        self::BALANCE_CONFIG            => \RZP\Models\Merchant\Balance\BalanceConfig::class,
         self::CREDITS                   => \RZP\Models\Merchant\Credits::class,
         self::METHODS                   => \RZP\Models\Merchant\Methods::class,
         self::PRICING                   => \RZP\Models\Pricing::class,

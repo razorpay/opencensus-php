@@ -750,6 +750,45 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($updatedTerminalOnboardingDetail['error_description'], 'Duplicate MVISAPAN');
     }
 
+    /**
+     * If two create terminal request comes simultaneously, then we would get duplicate merchant code error for one terminal, 
+     * instead of failing the terminal, we change its status to created so that it can get picked by cron again and sent as addtional tid request
+     */
+    public function testTerminalOnboardingCreationCronCase6()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->app['config']->set('worldline_terminal_onboarding_creation.case', "6");
+
+        $this->ba->cronAuth();
+
+        list($terminal, $terminalOnboardingDetail) = $this->setUpTerminalOnboardingFailureCases();
+
+        $url = '/terminals/onboard/creation';
+
+        $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreationCron'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $onboardedTerminals = $this->startTest();
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_fetched']), 1);
+
+        $this->assertEquals(count($onboardedTerminals['terminal_ids_queued']), 1);
+        
+        $terminalOnboardingDetail->reload();
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal->getStatus(), 'created');
+    }
+
     public function testUpdateTerminalOnboardingStatus()
     {
         $this->ba->adminAuth();

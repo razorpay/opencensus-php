@@ -1078,6 +1078,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR              = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
     const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD                = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE                        = 'MERCHANT_BALANCE_DEBIT_FAILURE';
+    const MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 = 'MERCHANT_REFUND_CREDITS_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION                 = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION                 = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION                  = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
@@ -2424,6 +2425,21 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    //Balance Config
+    const BALANCE_CONFIG_CREATE_REQUEST                         = 'BALANCE_CONFIG_CREATE_REQUEST';
+    const BALANCE_CONFIG_CREATE_SUCCESSFUL                      = 'BALANCE_CONFIG_CREATE_SUCCESSFUL';
+    const BALANCE_CONFIG_EDIT_REQUEST                           = 'BALANCE_CONFIG_EDIT_REQUEST';
+    const BALANCE_CONFIG_EDIT_SUCCESSFUL                        = 'BALANCE_CONFIG_EDIT_SUCCESSFUL';
+    const BALANCE_CONFIG_FETCH_REQUEST                          = 'BALANCE_CONFIG_FETCH_REQUEST';
+    const BALANCE_CONFIG_FETCH_SUCCESSFUL                       = 'BALANCE_CONFIG_FETCH_SUCCESSFUL';
+
+    //Negative Balance
+    const NEGATIVE_BALANCE_THRESHOLD_ALERT                       = 'NEGATIVE_BALANCE_THRESHOLD_ALERT';
+    const NEGATIVE_BALANCE_BREACHED                               = 'NEGATIVE_BALANCE_BREACHED';
+    //Reserve Balance Trace Codes
+    const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
+    const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -2575,7 +2591,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY                => 'Payout already exist with same idempotency key',
         self::MERCHANT_MTU_UPDATE_SUCCESS                           => 'Updating live by transaction is successful for merchant ',
         self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
-    ];
+        self::MERCHANT_BALANCE_DEBIT_FAILURE                        => 'Not enough balance',
+        self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
+        self::NEGATIVE_BALANCE_BREACHED                              => 'Negative Balance has crossed the negative limit threshold',
+        ];
 
     /**
      * Translate event code to message
