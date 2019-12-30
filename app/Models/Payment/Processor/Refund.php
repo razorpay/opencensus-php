@@ -2863,9 +2863,11 @@ trait Refund
         }
 
         $accountNo = $netbankingEntity->getAccountNumber();
+        $trimmedAccountNo = trim($accountNo);
+
         $ifscCode  = BankCodes::getIfscForBankCode($payment->getBank());
 
-        if ((empty($accountNo) === true) or (empty($ifscCode) === true))
+        if ((empty($trimmedAccountNo) === true) or (empty($ifscCode) === true))
         {
             return [];
         }
@@ -2873,7 +2875,7 @@ trait Refund
         // Todo: Confirm source of customer_name if it is same as bene name and send to scrooge. Needed for NEFT
         return [
             BankAccount\Entity::IFSC_CODE => $ifscCode,
-            BankAccount\Entity::ACCOUNT_NUMBER => $accountNo
+            BankAccount\Entity::ACCOUNT_NUMBER => $trimmedAccountNo,
         ];
     }
 }

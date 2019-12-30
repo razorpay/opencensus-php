@@ -3219,7 +3219,6 @@ class RefundTest extends TestCase
         $this->retryFailedRefund($refund['id'], $refund['payment_id'], $bankAccountData, $refundData);
 
         $refund = $this->getLastEntity('refund', true);
-
         $this->assertEquals(true, $refund['gateway_refunded']);
         $this->assertEquals('optimum', $refund['speed_requested']);
         $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
