@@ -169,14 +169,8 @@ class Shield
                 break;
 
             case Payment\Method::UPI:
-                $payloadDetails[ShieldConstants::VPA] = $payment->getVpa();
-
-                $flow = $payment->getMetadata('flow');
-
-                if (is_null($flow) === false)
-                {
-                    $payloadDetails[ShieldConstants::UPI_TYPE] = $flow;
-                }
+                $payloadDetails[ShieldConstants::VPA]      = $payment->getVpa();
+                $payloadDetails[ShieldConstants::UPI_TYPE] = $payment->getMetadata('flow') ?? 'collect';
 
                 break;
 
