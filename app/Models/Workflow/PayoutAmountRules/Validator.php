@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::MERCHANT_ID     => 'sometimes|string|size:14',
-        Entity::WORKFLOW_ID     => 'required|string|size:14',
+        Entity::WORKFLOW_ID     => 'required|string|size:14|nullable',
         Entity::MIN_AMOUNT      => 'required|integer|min:0',
         Entity::MAX_AMOUNT      => 'sometimes|integer|nullable',
     ];
@@ -65,9 +65,13 @@ class Validator extends Base\Validator
      */
     public function ensureDistinctWorkflowIds($rules)
     {
-        $uniqueWorkflowIds = array_unique(array_column($rules, Entity::WORKFLOW_ID));
+//        $uniqueWorkflowIds = array_unique(array_column($rules, Entity::WORKFLOW_ID));
 
-        if (count($rules) != count($uniqueWorkflowIds))
+//        if (count($rules) != count($uniqueWorkflowIds))
+
+        $workflowIds = array_filter(array_column($rules, Entity::WORKFLOW_ID));
+
+        if (count($workflowIds) != count(array_unique($workflowIds)))
         {
             throw new BadRequestValidationFailureException(
                 'Each workflow can have only one amount range'
