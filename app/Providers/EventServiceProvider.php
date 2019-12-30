@@ -83,7 +83,9 @@ class EventServiceProvider extends ServiceProvider
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,
         ],
-
+        P2p\VpaCreated::class        => [
+            Listeners\P2pWebhookListener::class,
+        ],
     ];
 
     public function boot()
