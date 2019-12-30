@@ -36,6 +36,7 @@ class Service
     const DATA        = 'data';
     const ACQUIRER    = 'acquirer';
     const ERROR       = 'error';
+    const RESPONSE    = 'response';
 
     // Supported Actions
     const AUTHORIZE        = 'authorize';
@@ -149,11 +150,23 @@ class Service
 
         $response = $this->sendRawRequest($request);
 
-        $response = $this->processResponse($response, $method);
+        list($response, $code) = $this->processResponse($response, $method);
 
-        $this->traceResponse($response);
+        $this->checkForErrors($response, $code);
 
-        return $response;
+        $this->traceResponse($response['response']);
+
+        if ($this->action === self::AUTHORIZE)
+        {
+            return $response[Response::RESPONSE]['data']['next']['redirect'];
+        }
+
+        if ($this->action === self::CALLBACK)
+        {
+            return $this->getCallbackResponseData($response['response']);
+        }
+
+        return $response[Response::RESPONSE][self::DATA];
     }
 
     protected function traceRequest(array $request)
@@ -277,29 +290,43 @@ class Service
 
     // ----------------------- Error ---------------------------------------------
 
-    public function checkForErrors($response)
+    public function checkForErrors($response, $code)
     {
-        if (empty($response[self::ERROR]) === true)
+        if (empty($response) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        if ($code === 200)
         {
             return;
         }
 
-        $errorCode = $response[self::ERROR]['internal_error_code'];
+        $error = $response[self::ERROR];
+
+        if ($error[Error::CODE] !== Error::GATEWAY)
+        {
+            $this->handleInternalServerErrors($response[self::ERROR]);
+        }
+
+        $errorCode = $response[self::ERROR]['cause'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response[self::ERROR]);
+                $this->handleGatewayErrors($errorCode);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response[self::ERROR]);
+                $this->handleBadRequestErrors($errorCode);
                 break;
 
             case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($response[self::ERROR]);
+                $this->handleInternalServerErrors($errorCode);
                 break;
 
             default:
@@ -322,14 +349,8 @@ class Service
         return $class;
     }
 
-    protected function handleGatewayErrors(array $error)
+    protected function handleGatewayErrors(array $errorCode)
     {
-        $errorCode = $error['internal_error_code'];
-
-        $gatewayErrorCode = $error['gateway_error_code'] ?? null;
-
-        $gatewayErrorDesc = $error['gateway_error_description'] ?? null;
-
         switch ($errorCode)
         {
             case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
@@ -339,19 +360,12 @@ class Service
                 throw new Exception\GatewayTimeoutException($errorCode);
 
             default:
-                throw new Exception\GatewayErrorException($errorCode,
-                    $gatewayErrorCode,
-                    $gatewayErrorDesc);
+                throw new Exception\GatewayErrorException($errorCode);
         }
     }
 
-    protected function handleBadRequestErrors(array $error)
+    protected function handleBadRequestErrors(array $errorCode)
     {
-        $errorCode = $error['internal_error_code'];
-
-        $data = $error['data'] ?? null;
-
-        $description = $error['description'] ?? null;
 
         if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
         {
@@ -359,31 +373,13 @@ class Service
                 ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
         }
 
-        if (empty($error['gateway_error_code']) === false)
-        {
-            $this->handleGatewayErrors($error);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                $description,
-                $errorCode,
-                $data);
-        }
+        $this->handleGatewayErrors($errorCode);
     }
 
-    protected function handleInternalServerErrors(array $error)
+    protected function handleInternalServerErrors(array $code)
     {
-        $code = $error['internal_error_code'];
 
-        $data = $error['data'] ?? null;
-
-        $description = $error['description'] ?? 'nb plus service request failed';
-
-        throw new Exception\LogicException(
-            $description,
-            $code,
-            $data);
+        throw new Exception\LogicException(null, $code);
     }
 
     protected function throwServiceErrorException(\Throwable $e)

@@ -180,7 +180,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($cpsMock === true)
             {
-                return new Mock\NbPlusPaymentService();
+                //TODO change to generic mock
+                return new Mock\NbPlus\Netbanking();
             }
 
             return new NbPlus\Service();

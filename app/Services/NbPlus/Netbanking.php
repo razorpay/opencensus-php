@@ -75,7 +75,7 @@ class Netbanking extends Service
             return $this->processVerifyResponse($responseBody);
         }
 
-        return $responseBody;
+        return [$responseBody, $code];
     }
 
     // ----------------------- Verify ---------------------------------------------
@@ -143,4 +143,23 @@ class Netbanking extends Service
 
         return $input;
     }
+
+    protected function getAcquirerData($response)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $response['data']['gateway_reference_number']
+            ]
+        ];
+    }
+
+    protected function getCallbackResponseData($response)
+    {
+        $callbackResponseData = $this->getAcquirerData($response);
+
+        $callbackResponseData[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
+
+        return $callbackResponseData;
+    }
+
 }
