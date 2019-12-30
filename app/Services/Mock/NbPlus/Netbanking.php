@@ -27,40 +27,47 @@ class Netbanking extends NetbankingBase
     protected function authorize($input)
     {
         return [
-            'data' => [
-                'url'     => $this->app['api.route']
-                                  ->getPublicCallbackUrlWithHash(
-                                                        $input['input']['payment']['public_id'],
-                                                        'rzp_test_TheTestAuthKey',
-                                                        'payment_callback_post'
-                                                       ),
-                'method'  => 'post',
-                'content' => []
-            ]
+            'response' => [
+                'data' => [
+                    'next' => [
+                        'redirect' => [
+                            'url'     => $this->app['api.route']->getPublicCallbackUrlWithHash(
+                                $input['input']['payment']['public_id'],
+                                'rzp_test_TheTestAuthKey',
+                                'payment_callback_post'
+                            ),
+                            'method'  => 'post',
+                            'content' => []
+                        ]
+                    ]
+                ]
+            ],
+            'error' => null
         ];
     }
 
     protected function callback($input)
     {
         return [
-            'data' => [
-                'acquirer' => [
-                    'reference1' => '1234'
-                ],
-                'two_factor_auth' => 'unavailable'
-            ]
+            'response' => [
+                'data' => [
+                    'gateway_reference_number' => '1234'
+                ]
+            ],
+            'error' => null
         ];
     }
 
     protected function verify($input)
     {
         return [
-            'data' => [
-                'gateway_success' => true,
-                'acquirer' => [
-                    'reference1' => '1234'
-                ],
-            ]
+            'response' => [
+                'data' => [
+                    'gateway_status'           => true,
+                    'gateway_reference_number' => '1234'
+                ]
+            ],
+            'error' => null
         ];
     }
 

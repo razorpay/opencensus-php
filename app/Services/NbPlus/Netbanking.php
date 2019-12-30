@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Verify;
@@ -13,6 +14,11 @@ use RZP\Models\Base\PublicEntity;
 
 class Netbanking extends Service
 {
+    const RETAIL = 'retail';
+    const TPV    = 'TPV';
+
+    protected $transactionType = self::RETAIL;
+
     public function action(string $gateway, string $action, array $input)
     {
         $this->action = $action;
@@ -23,7 +29,7 @@ class Netbanking extends Service
 
         if ($this->action === self::AUTHORIZE)
         {
-            $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+            $input[Request::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
 
         if ($this->action === self::AUTHORIZE_FAILED)
@@ -33,6 +39,7 @@ class Netbanking extends Service
 
         if (empty($input[Entity::TERMINAL]) === false)
         {
+            $this->transactionType   = self::TPV;
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
         }
 
@@ -47,9 +54,9 @@ class Netbanking extends Service
         $input = $this->addTransactionType($input);
 
         $content = [
-            self::ACTION  => $action,
-            self::GATEWAY => $gateway,
-            self::INPUT   => $input
+            Request::ACTION  => $action,
+            Request::GATEWAY => $gateway,
+            Request::INPUT   => $input
         ];
 
         $method = $input[Entity::PAYMENT][Payment\Entity::METHOD];
@@ -59,23 +66,34 @@ class Netbanking extends Service
         return $response;
     }
 
-    protected function processResponse($response, $method)
+    protected function processResponse($response)
     {
-        $code = $response->status_code;
-
-        $responseBody = $this->jsonToArray($response->body);
-
-        if ($this->action === self::AUTHORIZE_FAILED)
+        switch ($this->action)
         {
-            return $this->processAuthorizeFailedFlow($responseBody);
+            case self::AUTHORIZE:
+                $returnData = $response[Response::RESPONSE][Response::DATA][Response::NEXT][Response::REDIRECT];
+                break;
+
+            case self::CALLBACK:
+                $returnData = $this->getCallbackResponseData($response[Response::RESPONSE]);
+                break;
+
+            case self::VERIFY:
+                $returnData = $this->processVerifyResponse($response[Response::RESPONSE]);
+                break;
+
+            case self::AUTHORIZE_FAILED:
+                $returnData = $this->processAuthorizeFailedFlow($response[Response::RESPONSE]);
+                break;
+
+            default:
+                throw new Exception\InvalidArgumentException(
+                                                     'Not a valid action',
+                                                              ['action' => $this->action]
+                                                            );
         }
 
-        if ($this->isSuccessResponse($code, $responseBody) and ($this->action === self::VERIFY))
-        {
-            return $this->processVerifyResponse($responseBody);
-        }
-
-        return [$responseBody, $code];
+        return $returnData;
     }
 
     // ----------------------- Verify ---------------------------------------------
@@ -101,7 +119,7 @@ class Netbanking extends Service
 
     protected function checkGatewaySuccess(Verify &$verify)
     {
-        $verify->gatewaySuccess = $verify->verifyResponseContent['gateway_success'];
+        $verify->gatewaySuccess = $verify->verifyResponseContent[Response::GATEWAY_STATUS];
     }
 
     // ----------------------- Authorize Failed ---------------------------------------------
@@ -133,13 +151,12 @@ class Netbanking extends Service
                 $this->input[Entity::PAYMENT]);
         }
 
-        return $response;
+        return $this->getAcquirerData($response);
     }
 
-    // TODO Add more logic for this
     protected function addTransactionType($input)
     {
-        $input[self::METHOD_DATA] = ['transaction_type' => 'retail'];
+        $input[Request::METHOD_DATA] = [Request::TRANSACTION_TYPE => $this->transactionType];
 
         return $input;
     }
@@ -148,7 +165,7 @@ class Netbanking extends Service
     {
         return [
             'acquirer' => [
-                Payment\Entity::REFERENCE1 => $response['data']['gateway_reference_number']
+                Payment\Entity::REFERENCE1 => $response[Response::DATA][Response::GATEWAY_REFERENCE_NUMBER]
             ]
         ];
     }
@@ -162,4 +179,15 @@ class Netbanking extends Service
         return $callbackResponseData;
     }
 
+    protected function traceRequest(array $request)
+    {
+        unset($request['options']['auth']);
+        unset($request['content'][Request::INPUT]['gateway_config']);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
+    }
 }

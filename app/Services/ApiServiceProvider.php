@@ -177,12 +177,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('nbplus.payments', function($app)
         {
-            $cpsMock = $app['config']->get('applications.nbplus_payment_service.mock');
+            $nbPlusMock = $app['config']->get('applications.nbplus_payment_service.mock');
 
-            if ($cpsMock === true)
+            if ($nbPlusMock === true)
             {
-                //TODO change to generic mock
-                return new Mock\NbPlus\Netbanking();
+                return new Mock\NbPlus\Service();
             }
 
             return new NbPlus\Service();

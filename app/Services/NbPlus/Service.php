@@ -9,8 +9,6 @@ use Requests_Session;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
-use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -27,16 +25,6 @@ class Service
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
-
-    // request and response fields
-    const GATEWAY     = 'gateway';
-    const ACTION      = 'action';
-    const INPUT       = 'input';
-    const METHOD_DATA = 'method_data';
-    const DATA        = 'data';
-    const ACQUIRER    = 'acquirer';
-    const ERROR       = 'error';
-    const RESPONSE    = 'response';
 
     // Supported Actions
     const AUTHORIZE        = 'authorize';
@@ -99,7 +87,6 @@ class Service
 
         $url = $this->config['url'][$mode];
 
-        // TODO how to determine versioning? Defaulted to v1 for now
         return $url . 'v1/';
     }
 
@@ -150,35 +137,13 @@ class Service
 
         $response = $this->sendRawRequest($request);
 
-        list($response, $code) = $this->processResponse($response, $method);
+        list($response, $code) = $this->parseResponse($response);
 
         $this->checkForErrors($response, $code);
 
         $this->traceResponse($response['response']);
 
-        if ($this->action === self::AUTHORIZE)
-        {
-            return $response[Response::RESPONSE]['data']['next']['redirect'];
-        }
-
-        if ($this->action === self::CALLBACK)
-        {
-            return $this->getCallbackResponseData($response['response']);
-        }
-
-        return $response[Response::RESPONSE][self::DATA];
-    }
-
-    protected function traceRequest(array $request)
-    {
-        unset($request['options']['auth']);
-        unset($request['content'][self::INPUT]['gateway_config']);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
-
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
+        return $this->processResponse($response);
     }
 
     protected function sendRawRequest($request)
@@ -211,6 +176,7 @@ class Service
 
     protected function traceResponse($response)
     {
+        // TODO : should this be redacted?
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 
@@ -256,7 +222,7 @@ class Service
     {
         $verify = new Verify($this->gateway, []);
 
-        $verify->verifyResponseContent = $response[self::DATA];
+        $verify->verifyResponseContent = $response[Response::DATA];
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -304,14 +270,15 @@ class Service
             return;
         }
 
-        $error = $response[self::ERROR];
+        $error = $response[Response::ERROR];
 
         if ($error[Error::CODE] !== Error::GATEWAY)
         {
-            $this->handleInternalServerErrors($response[self::ERROR]);
+            sd($error);
+            $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
         }
 
-        $errorCode = $response[self::ERROR]['cause'];
+        $errorCode = $error[Error::CAUSE];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 
@@ -349,7 +316,7 @@ class Service
         return $class;
     }
 
-    protected function handleGatewayErrors(array $errorCode)
+    protected function handleGatewayErrors($errorCode)
     {
         switch ($errorCode)
         {
@@ -364,7 +331,7 @@ class Service
         }
     }
 
-    protected function handleBadRequestErrors(array $errorCode)
+    protected function handleBadRequestErrors($errorCode)
     {
 
         if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
@@ -376,9 +343,8 @@ class Service
         $this->handleGatewayErrors($errorCode);
     }
 
-    protected function handleInternalServerErrors(array $code)
+    protected function handleInternalServerErrors($code)
     {
-
         throw new Exception\LogicException(null, $code);
     }
 
@@ -409,5 +375,14 @@ class Service
         }
 
         return $class;
+    }
+
+    protected function parseResponse($response)
+    {
+        $code = $response->status_code;
+
+        $responseBody = $this->jsonToArray($response->body);
+
+        return [$responseBody, $code];
     }
 }
