@@ -419,4 +419,63 @@ class FraudDetectionTest extends TestCase
     {
         $this->runPlatformTest('xyz', 'others');
     }
+
+    protected function runPayloadTest($payment, $comparatorFunc)
+    {
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing($comparatorFunc);
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testFraudDetectionForUpiFlowIntent()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['_'] = ['flow' => 'intent'];
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'intent') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    public function testFraudDetectionForUpiFlowCollect()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'collect') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
+    }
 }
