@@ -31,6 +31,8 @@ class Gateway extends Base\Gateway
 
     const MIGRATION_TIMESTAMP = 1575912600;
 
+    protected $secureCacheDriver;
+
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
     protected $gatewayPayment = null;
@@ -75,6 +77,8 @@ class Gateway extends Base\Gateway
         {
             $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
         }
+
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     /**
