@@ -76,9 +76,17 @@ class Initiator extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
-        $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
+        // Default timeout to be used for file based channels.
+        $mutexTimeout = self::REQUEST_TIMEOUT;
 
-        $mutexTimeout = $limit * self::REQUEST_TIMEOUT;
+        $apiChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $apiChannels, true) === true)
+        {
+            $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
+
+            $mutexTimeout = $limit * self::REQUEST_TIMEOUT;
+        }
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
@@ -204,16 +212,18 @@ class Initiator extends Base\Core
         {
             $allowedChannels = Channel::getApiBasedChannels();
 
+            $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+            $attemptInitiator = new $class($purpose);
+
             if (in_array($channel, $allowedChannels, true) === true)
             {
                 list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
                     $attempts,
-                    function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
+                    function(PublicCollection $collection) use ($purpose, $channel, $forceFlag, $attemptInitiator)
                     {
-                        $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
-
                         return [
-                            (new $class($purpose))->initiateTransfer($collection, $forceFlag),
+                            $attemptInitiator->initiateTransfer($collection, $forceFlag),
                             $collection
                         ];
                     });
@@ -222,9 +232,10 @@ class Initiator extends Base\Core
             }
             else
             {
-                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+                // File based channels to use a timeout of 30 sec
+                $response = $attemptInitiator->initiateTransfer($attempts, $forceFlag);
 
-                (new $class($purpose))->initiateTransfer($attempts, $forceFlag);
+                $attemptedFTAs = $attempts;
             }
 
             $data += $response;
