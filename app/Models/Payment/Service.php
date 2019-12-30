@@ -319,7 +319,7 @@ class Service extends Base\Service
 
     protected function getResponseDataFromCache($payment)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }
@@ -340,7 +340,7 @@ class Service extends Base\Service
 
     protected function cacheResponseData($payment, $data)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }

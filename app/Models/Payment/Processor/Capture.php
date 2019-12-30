@@ -525,6 +525,8 @@ trait Capture
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
             case Payment\Gateway::HITACHI:
                 return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;

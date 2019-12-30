@@ -331,6 +331,7 @@ class Gateway
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::PAYSECURE,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -665,6 +666,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
+        Payment\Gateway::PAYSECURE,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -908,7 +910,10 @@ class Gateway
      * @var array
      */
     public static $gatewayNetworkPurchaseSupport = [
-        self::HITACHI               => [
+        self::HITACHI                 => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
+        self::PAYSECURE             => [
             self::NOT_SUPPORTED     => [Network::RUPAY]
         ],
     ];
@@ -994,6 +999,9 @@ class Gateway
             Network::MC,
             Network::VISA,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     /**
@@ -1073,6 +1081,9 @@ class Gateway
             Network::VISA,
             Network::AMEX,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -1080,6 +1091,9 @@ class Gateway
         self::HITACHI => [
             Network::VISA,
             Network::MC,
+            Network::RUPAY,
+        ],
+        self::PAYSECURE => [
             Network::RUPAY,
         ],
         self::ISG => [

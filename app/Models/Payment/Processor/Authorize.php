@@ -43,11 +43,13 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Constants\Environment;
+use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
@@ -61,7 +63,6 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Enach\Npci\Netbanking\Gateway;
 
 trait Authorize
 {
@@ -303,6 +304,11 @@ trait Authorize
         {
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
+            // Using Hitachi terminals for paysecure until we create new ones for paysecure.
+            if ($this->shouldCreatePaysecurePayment($payment, $input, $currentTerminal))
+            {
+                $currentTerminal[Terminal\Entity::GATEWAY] = Gateway::PAYSECURE;
+            }
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
@@ -6477,6 +6483,14 @@ trait Authorize
         }
 
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+    }
+
+    protected function shouldCreatePaysecurePayment(Payment\Entity $payment, array $input, $currentTerminal)
+    {
+        return (!is_null($currentTerminal) and
+            ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
+            ($payment->card['network_code'] === Network::RUPAY) and
+            ($this->app->razorx->getTreatment($payment->getId(), 'enable_paysecure_gateway', $this->mode) === 'on'));
     }
 
     /**
