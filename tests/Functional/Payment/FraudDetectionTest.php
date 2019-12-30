@@ -447,7 +447,7 @@ class FraudDetectionTest extends TestCase
 
         $comparatorFunc = function ($payload) {
             return [
-                "action" => (($payload['input']['flow'] === 'intent') ? 'allow': 'block'),
+                "action" => (($payload['input']['upi_type'] === 'intent') ? 'allow': 'block'),
                 "max_rule_weight" => 0,
                 "maxmind_score" => null,
                 "triggered_rule_weight" => 0,
@@ -467,7 +467,7 @@ class FraudDetectionTest extends TestCase
 
         $comparatorFunc = function ($payload) {
             return [
-                "action" => (($payload['input']['flow'] === 'collect') ? 'allow': 'block'),
+                "action" => (($payload['input']['upi_type'] === 'collect') ? 'allow': 'block'),
                 "max_rule_weight" => 0,
                 "maxmind_score" => null,
                 "triggered_rule_weight" => 0,
