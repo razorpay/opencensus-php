@@ -2496,4 +2496,38 @@ trait PaymentTrait
         $this->app->scrooge->method('getFileBasedRefunds')
                            ->willReturn($scroogeResponse);
     }
+
+    protected function callFTAPatchRoute($content = [])
+    {
+        $this->ba->adminAuth();
+
+        $request = array(
+            'method'    => 'PATCH',
+            'url'       => '/fund_transfer_attempts',
+            'content'   => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function markProcessedInstantRefundFailed($refund, $fta)
+    {
+        $strippedFtaId = substr($fta['id'], 4);
+
+        $ftaUpdateContent = [];
+        $ftaUpdateContent[$strippedFtaId]['status'] = 'failed';
+        $ftaUpdateContent[$strippedFtaId]['remarks'] = 'transaction got reversed';
+        $ftaUpdateContent[$strippedFtaId]['failure_reason'] = '[manual] transaction got reversed';
+
+        $this->callFTAPatchRoute($ftaUpdateContent);
+
+        $event = 'fee_only_reversal_event';
+        $this->scroogeUpdateRefundStatus($refund, $event);
+
+        $event = 'processed_to_file_init_event';
+        $status = 'file_init';
+        $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
 }
