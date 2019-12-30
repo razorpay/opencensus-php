@@ -202,23 +202,29 @@ class Initiator extends Base\Core
 
         try
         {
-            list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
-                $attempts,
-                function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
-                {
-                    $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
-
-                    return [
-                        (new $class($purpose))->initiateTransfer($collection, $forceFlag),
-                        $collection
-                    ];
-                });
-
             $allowedChannels = Channel::getApiBasedChannels();
 
             if (in_array($channel, $allowedChannels, true) === true)
             {
+                list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+                    $attempts,
+                    function(PublicCollection $collection) use ($purpose, $channel, $forceFlag)
+                    {
+                        $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+                        return [
+                            (new $class($purpose))->initiateTransfer($collection, $forceFlag),
+                            $collection
+                        ];
+                    });
+
                 $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            }
+            else
+            {
+                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+                (new $class($purpose))->initiateTransfer($attempts, $forceFlag);
             }
 
             $data += $response;
