@@ -441,7 +441,9 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->merchant->enableUpi();
 
-        $payment = $this->getDefaultUpiPaymentArray();
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
 
         $payment['_'] = ['flow' => 'intent'];
 
