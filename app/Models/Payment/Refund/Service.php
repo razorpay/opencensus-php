@@ -474,6 +474,14 @@ class Service extends Base\Service
                                 foreach ($values as $value)
                                 {
                                     $map[$value] = $entity[$value];
+
+                                    $getter = 'get' . studly_case($value);
+
+                                    if ((empty($map[$value]) === true) and
+                                        (method_exists($entity, $getter) === true))
+                                    {
+                                        $map[$value] = $entity->{$getter}();
+                                    }
                                 }
 
                                 $response[RefundConstants::ENTITIES][$key] = $map;
