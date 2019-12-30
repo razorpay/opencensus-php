@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:150',
         Entity::ORG_ID      => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
-        Entity::LEVELS      => 'present|array',
+        Entity::LEVELS      => 'required|array',
         Entity::MERCHANT_ID => 'sometimes|string|size:14|unsigned_id',
     ];
 
@@ -66,22 +66,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
                         null, $diffPerms);
-        }
-    }
-
-    public function checkForValidNumberOfLevels($levels, $permissions, $orgId)
-    {
-        $createPayoutPerm = (new Permission\Repository)
-                            ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
-                            ->first();
-
-        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
-
-        if ($hasCreatePayoutPermission === false and empty($levels) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                    'Atleast one level required with this permission'
-                );
         }
     }
 }

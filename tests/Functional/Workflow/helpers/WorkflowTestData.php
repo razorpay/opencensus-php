@@ -173,27 +173,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED,
         ],
     ],
-
-    'testCreateWorkflowWithoutCreatePayoutPermissionAndNoLevels' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/workflows',
-            'content' => [
-                'name' => 'Test workflow',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Atleast one level required with this permission',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ]
 ];
