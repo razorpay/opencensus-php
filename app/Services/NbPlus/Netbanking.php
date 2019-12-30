@@ -27,14 +27,14 @@ class Netbanking extends Service
 
         $this->input = $input;
 
-        if ($this->action === self::AUTHORIZE)
+        if ($this->action === Action::AUTHORIZE)
         {
             $input[Request::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
         }
 
-        if ($this->action === self::AUTHORIZE_FAILED)
+        if ($this->action === Action::AUTHORIZE_FAILED)
         {
-            $action = self::VERIFY;
+            $action = Action::VERIFY;
         }
 
         if (empty($input[Entity::TERMINAL]) === false)
@@ -70,19 +70,19 @@ class Netbanking extends Service
     {
         switch ($this->action)
         {
-            case self::AUTHORIZE:
+            case Action::AUTHORIZE:
                 $returnData = $response[Response::RESPONSE][Response::DATA][Response::NEXT][Response::REDIRECT];
                 break;
 
-            case self::CALLBACK:
+            case Action::CALLBACK:
                 $returnData = $this->getCallbackResponseData($response[Response::RESPONSE]);
                 break;
 
-            case self::VERIFY:
+            case Action::VERIFY:
                 $returnData = $this->processVerifyResponse($response[Response::RESPONSE]);
                 break;
 
-            case self::AUTHORIZE_FAILED:
+            case Action::AUTHORIZE_FAILED:
                 $returnData = $this->processAuthorizeFailedFlow($response[Response::RESPONSE]);
                 break;
 

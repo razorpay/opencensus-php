@@ -45,9 +45,9 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
-use RZP\Services\NbPlus\Service as NbPlusPaymentService;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Transfer\Core as TransferCore;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -2196,7 +2196,7 @@ class Processor
         if ((is_array($input) === true) and
             (isset($input[E::PAYMENT]) === true) and
             ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE) and
-            (in_array($action, NbPlusPaymentService::SUPPORTED_ACTIONS) === true))
+            (in_array($action, NbPlusPaymentService\Action::SUPPORTED_ACTIONS) === true))
         {
             return true;
         }

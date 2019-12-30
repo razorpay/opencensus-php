@@ -26,19 +26,6 @@ class Service
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
 
-    // Supported Actions
-    const AUTHORIZE        = 'authorize';
-    const CALLBACK         = 'callback';
-    const VERIFY           = 'verify';
-    const AUTHORIZE_FAILED = 'authorize_failed';
-
-    const SUPPORTED_ACTIONS = [
-        self::AUTHORIZE,
-        self::CALLBACK,
-        self::VERIFY,
-        self::AUTHORIZE_FAILED
-    ];
-
     const GATEWAY_TO_METHOD_MAP = [
       Payment\Gateway::ATOM => Payment\Method::NETBANKING
     ];
@@ -206,16 +193,6 @@ class Service
         }
     }
 
-    protected function isSuccessResponse($code, $responseBody)
-    {
-        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     // ----------------------- Verify ---------------------------------------------
 
     protected function verifyPayment($response)
@@ -265,7 +242,7 @@ class Service
             );
         }
 
-        if ($code === 200)
+        if (($code === 200) and (empty($response[Response::ERROR]) === true))
         {
             return;
         }
@@ -274,7 +251,6 @@ class Service
 
         if ($error[Error::CODE] !== Error::GATEWAY)
         {
-            sd($error);
             $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
         }
 
