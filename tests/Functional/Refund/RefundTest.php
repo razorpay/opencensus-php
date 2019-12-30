@@ -1649,7 +1649,7 @@ class RefundTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
 
         $payment = $this->doAuthPayment($payment);
 
@@ -1680,7 +1680,7 @@ class RefundTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
 
         $payment = $this->doAuthPayment($payment);
 
@@ -2828,7 +2828,6 @@ class RefundTest extends TestCase
                 'type'  => 'refund',
                 'value' => 3670
             ]);
-
         $this->fixtures->merchant->editRefundCredits('3670', '10000000000000');
 
         $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
@@ -3031,5 +3030,199 @@ class RefundTest extends TestCase
         $this->assertEquals('instant', $refund['speed_processed']);
         $this->assertEquals(118, $refund['fee']);
         $this->assertEquals(18, $refund['tax']);
+    }
+
+    public function createNetbankingPayment($issuer = null)
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($issuer);
+
+        $this->gateway = 'netbanking_hdfc';
+
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        return $payment;
+    }
+
+    public function testNetbankingInstantRefundSuccessful()
+    {
+        $netbankingPayment = $this->createNetbankingPayment('HDFC');
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $netbankingPayment['id'],
+            3471,
+            [
+                'speed' => 'optimum',
+                'is_fta' => true,
+                'fta_data' => [
+                    'bank_account' => [
+                        'account_number' => '987654321234567',
+                        'beneficiary_name' => 'Not Availabe',
+                        'ifsc_code' => 'RATN0000999',
+                    ]
+                ]
+            ]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3471, $transaction['amount']);
+        $this->assertEquals(118, $transaction['fee']);
+        $this->assertEquals(18, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(100, $feesBreakup[0]['amount']);
+        $this->assertEquals(18, $feesBreakup[1]['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3471, $payment['amount_refunded']);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('instant', $refund['speed_processed']);
+        $this->assertEquals(118, $refund['fee']);
+        $this->assertEquals(18, $refund['tax']);
+    }
+
+    public function testRetryViaBankAccountOnFailedInstantRefunds()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $this->markProcessedInstantRefundFailed($refund, $fta);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals( 'failed', $fta['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+        $this->assertEquals(RefundSpeed::OPTIMUM, $refund['speed_decisioned']);
+        $this->assertEquals(0, $refund['fee']);
+        $this->assertEquals(0, $refund['tax']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals('refund', $reversal['entity_type']);
+        $this->assertEquals($refund['id'], 'rfnd_' . $reversal['entity_id']);
+        $this->assertEquals(0, $reversal['amount']);
+        $this->assertEquals(118, $reversal['fee']);
+        $this->assertEquals(18, $reversal['tax']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($reversal['id'], 6)])->last();
+        $this->assertEquals(0, $transaction['amount']);
+        $this->assertEquals(-118, $transaction['fee']);
+        $this->assertEquals(-18, $transaction['tax']);
+        $this->assertEquals(0, $transaction['debit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals(-100, $feesBreakup[0]['amount']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(-18, $feesBreakup[1]['amount']);
+
+        $bankAccountData =
+            [
+                'bank_account' => [
+                    'ifsc_code'         => '12345678911',
+                    'account_number'    => '123456789',
+                    'beneficiary_name'  => 'test'
+                ]
+            ];
+
+        $refundData['amount'] = 3471;
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], $bankAccountData, $refundData);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
 }
