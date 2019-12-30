@@ -60,7 +60,9 @@ class Core extends Base\Core
 
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
 
-        $bankingAccount->setLastStatementAttemptAt();
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $bankingAccount->setLastStatementAttemptAt($currentTime);
 
         $bankingAccount->saveOrFail();
 
@@ -575,6 +577,9 @@ class Core extends Base\Core
         //
         $channel = array_pull($input, Entity::CHANNEL);
 
+        //TODO: Need to move the limit number into config
+        //Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
+        //to process total 10 accounts per hour
         $limit = 2;
 
         $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);

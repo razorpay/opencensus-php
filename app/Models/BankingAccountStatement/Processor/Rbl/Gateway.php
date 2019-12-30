@@ -108,7 +108,9 @@ class Gateway extends BaseProcessor
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < 3));
 
-        if(($this->hasMoreData($bankResponse) === true))
+        //TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
+        //But not sure if this logic is generic for all bank as of now
+        if (($this->hasMoreData($bankResponse) === true))
         {
             $this->core->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
         }

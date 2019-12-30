@@ -10,6 +10,7 @@ use RZP\Models\BankingAccountStatement as BAS;
 
 class BankingAccountStatement extends Job
 {
+    //TODO: Move these constants to config
     const MAX_RETRY_ATTEMPT = 3;
 
     const MAX_RETRY_DELAY = 60;
@@ -17,6 +18,7 @@ class BankingAccountStatement extends Job
     /**
      * @var string
      */
+    //TODO: set queueConfigKey using channel name in a constructor
     protected $queueConfigKey = 'banking_account_statement';
 
     /**
@@ -98,6 +100,7 @@ class BankingAccountStatement extends Job
 
             $operation = 'banking account statement fetch job failed';
 
+            //TODO: Need to decide on channel name for slack alert and run book
             (new SlackNotification)->send($operation, $this->params, null, 1, 'channel_name_to_decide');
 
             $this->delete();

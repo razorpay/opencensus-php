@@ -83,7 +83,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
-                    ->orderBy(Entity::LAST_STATEMENT_ATTEMPT_AT, 'desc')
+                    ->orderBy(Entity::LAST_STATEMENT_ATTEMPT_AT, 'asc')
                     ->limit($limit)
                     ->get(['ACCOUNT_NUMBER']);
     }

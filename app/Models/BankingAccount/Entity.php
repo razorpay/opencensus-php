@@ -278,10 +278,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PASSWORD, $password);
     }
 
-    public function setLastStatementAttemptAt()
+    public function setLastStatementAttemptAt(int $currentTime)
     {
-        $currentTime = Carbon::now()->getTimestamp();
-
         $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $currentTime);
     }
 
