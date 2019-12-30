@@ -390,9 +390,9 @@ return [
         'test'       => env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
         'live'       => env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
     ],
-    'banking_account_statement' => [
-        'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_LIVE_QUEUE'),
+    'rbl_banking_account_statement' => [
+        'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

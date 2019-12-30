@@ -19,7 +19,7 @@ class BankingAccountStatement extends Job
      * @var string
      */
     //TODO: set queueConfigKey using channel name in a constructor
-    protected $queueConfigKey = 'banking_account_statement';
+    protected $queueConfigKey = 'rbl_banking_account_statement';
 
     /**
      * @var array
