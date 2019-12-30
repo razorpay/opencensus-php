@@ -30,6 +30,7 @@ class Table
     const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
+    const BALANCE_CONFIG        = 'balance_config';
     const PRICING               = 'pricing';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';

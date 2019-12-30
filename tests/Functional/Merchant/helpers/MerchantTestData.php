@@ -5352,4 +5352,53 @@ return [
             'status_code'           => 200,
         ],
     ],
+
+    'testGetBalances' => [
+        'request' => [
+            'url' => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                    'count' => 2,
+                    'items' => [
+                        '0' => [
+                            'id'                => '100def000def00',
+                            'merchant_id'       => '100ghi000ghi00',
+                            'type'              => 'primary',
+                            'currency'          => null,
+                            'name'              => null,
+                            'balance'           => 100000,
+                        ],
+                        '1' => [
+                            'id'                => '100abc000abc00',
+                            'merchant_id'       => '100ghi000ghi00',
+                            'type'              => 'banking',
+                            'currency'          => 'INR',
+                            'name'              => null,
+                            'balance'           => 0,
+                        ]
+                    ]
+            ],
+        ],
+    ],
+
+    'testGetBalancesByType' => [
+        'request' => [
+            'url' => '/balance?type=primary',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'id'                => '100def000def00',
+                'merchant_id'       => '100ghi000ghi00',
+                'type'              => 'primary',
+                'currency'          => null,
+                'name'              => null,
+                'balance'           => 100000,
+            ],
+        ],
+    ],
 ];

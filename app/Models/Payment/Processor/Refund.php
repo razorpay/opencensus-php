@@ -1871,41 +1871,15 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
-        if (($merchant->getRefundSource() === RefundSource::CREDITS) and
-            ($balance->getRefundCredits() < $refund->getNetAmount()))
+        if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
-                null,
-                $traceData);
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
+                                                            Transaction\Type::REFUND);
         }
 
-        if (($merchant->getRefundSource() === RefundSource::BALANCE) and
-            ($balance->getBalance() < $refund->getNetAmount()))
+        if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            if ($type === 'refund')
-            {
-                $this->app['segment']->trackPayment(
-                    $refund->payment,
-                    TraceCode::PAYMENT_REFUND_FAILURE,
-                    $traceData);
-
-                $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
-            }
-            else if ($type === 'reversal')
-            {
-                $error = ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Invalid type for refund validate balance - ' . $type,
-                    null,
-                    $traceData
-                );
-            }
-
-            throw new Exception\BadRequestException($error, null, $traceData);
+            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData);
         }
     }
 
@@ -2787,4 +2761,51 @@ trait Refund
         (empty($mode) === false) ? $refund->setModeRequested($mode) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
+
+    private function checkMerchantBalance(Merchant\Entity $merchant,
+                                          RefundEntity $refund,
+                                          string $type,
+                                          array $traceData)
+    {
+        try
+        {
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
+                                                        Transaction\Type::REFUND);
+        }
+        catch (\Exception $e)
+        {
+            if ($type === 'refund')
+            {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED)
+                {
+                    $error = ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED;
+                }
+                else
+                {
+                    $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+                }
+
+                $this->app['segment']->trackPayment(
+                    $refund->payment,
+                    TraceCode::PAYMENT_REFUND_FAILURE,
+                    $traceData);
+            }
+            else if ($type === 'reversal')
+            {
+                $error = ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Invalid type for refund validate balance - ' . $type,
+                    null,
+                    $traceData
+                );
+            }
+            throw new Exception\BadRequestException($error, null, $traceData);
+        }
+
+        return;
+    }
+
 }
