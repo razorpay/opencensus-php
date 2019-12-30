@@ -1392,7 +1392,13 @@ final class Route
         'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'                        ],
 
         //route to add additional website through admin dashboard
-        'add_additional_website'                   => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+
+        // merchant config inheritance
+        'merchant_inheritance_parent_fetch'       => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                  ],
+        'merchant_inheritance_parent_set'         => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                 ],
+        'merchant_inheritance_parent_set_bulk'    => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'             ],
+        'merchant_inheritance_parent_delete'      => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'               ],
 
         // Route for Success Rate Global Configurations
         'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
@@ -1713,6 +1719,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_inheritance_parent_set_bulk',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -2674,6 +2681,10 @@ final class Route
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
 
+        'merchant_inheritance_parent_fetch',
+        'merchant_inheritance_parent_set',
+        'merchant_inheritance_parent_delete',
+        
         'add_merchant_balance_config',
         'edit_merchant_balance_config',
 
@@ -3223,6 +3234,11 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
+        'merchant_inheritance_parent_fetch'                  =>  '*',
+        'merchant_inheritance_parent_set'                    =>  '*',
+        'merchant_inheritance_parent_set_bulk'               =>  '*',
+        'merchant_inheritance_parent_delete'                 =>  '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
@@ -3632,6 +3648,7 @@ final class Route
             'pricing_add_plan_rule_bulk',
             'virtual_account_create',
             'oauth_token_create',
+            'merchant_inheritance_parent_set_bulk',
         ],
 
         'stork' => [

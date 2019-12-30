@@ -2248,6 +2248,21 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_INHERITANCE_MAP => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'parent_merchant_id' => [
+                    Fetch::LABEL => 'Parent Merchant Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'created_at' =>  [
+                    Fetch::LABEL  => 'Created At',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ]
+            ],
+            
             Entity::PARTNER_CONFIG => [
                 Config\Entity::ENTITY_TYPE => [
                     Fetch::LABEL  => 'Entity Type',

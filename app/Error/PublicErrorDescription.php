@@ -795,6 +795,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
+    // Merchant Config Inheritance
+    const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
+
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED                   = 'Only terminals in activated state can be enabled';

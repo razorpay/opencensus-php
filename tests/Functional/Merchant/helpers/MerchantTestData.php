@@ -5353,6 +5353,94 @@ return [
         ],
     ],
 
+    'testSetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+
+    'testSetInheritanceParentBatch'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/inheritance_parent/bulk',
+            'content'   => 
+                [
+                    [
+                        'idempotency_key'    =>  '12345',
+                        'merchant_id'        =>  'submerchant_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ],
+                    [
+                        'idempotency_key'    => '12346',
+                        'merchant_id'        =>  'submerchant2_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ]
+                ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testSetNonPartnerInheritanceParent'    =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Inheritance parent should be aggregator or fully-managed partner of the submerchant',
+            ],
+            'status_code'   => 400,
+            ],
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT,
+            ],
+        ],
+    ],
+
+    'testGetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
     'testGetBalances' => [
         'request' => [
             'url' => '/balances',
