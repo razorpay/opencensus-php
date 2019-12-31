@@ -96,15 +96,17 @@ export default class SettlementDetail extends Component {
               {isOnHold && (
                 <>
                   <div style={{ marginTop: '17px' }}>OR</div>
-                  <button
-                    style={{
-                      marginTop: '15px',
-                      border: '0px',
-                      background: 'transparent',
-                    }}
-                  >
-                    Contact Support
-                  </button>
+                  <a href="https://razorpay.com/support/" target="_blank">
+                    <button
+                      class="btn btn-primary"
+                      style={{
+                        marginTop: '15px',
+                        border: '0px',
+                      }}
+                    >
+                      Contact Support
+                    </button>
+                  </a>
                 </>
               )}
             </div>
