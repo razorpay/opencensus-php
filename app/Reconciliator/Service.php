@@ -40,10 +40,6 @@ class Service extends Base\Service
         Reconciliate::AUTH_CODE,
     ];
 
-    // TODO
-    const NB_PLUS_PARAMS = [
-    ];
-
     /**
      * This limit is being used as default while fetching the cancelled billdesk
      * payments and corresponding refunds. The route get hit via cron.
@@ -281,13 +277,15 @@ class Service extends Base\Service
     {
         $paymentId = $input['payment_id'];
 
-        $misParams = $input['params'];
+        $misParams = $input['recon_params'];
+
+        $gatewayParams = $input['gateway_params'];
 
         $pushData = [];
 
         if (empty($response[$paymentId]) === false)
         {
-            foreach (self::NB_PLUS_PARAMS as $field)
+            foreach ($gatewayParams as $field)
             {
                 if (empty($misParams[$field]) === true)
                 {
@@ -303,7 +301,7 @@ class Service extends Base\Service
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'                => TraceCode::RECON_MISMATCH,
-                            'info_code'                 => InfoCode::NB_PLUS_DATA_MISMATCH,
+                            'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,
                             'db_reference_number'       => $response[$paymentId][$field],
@@ -322,7 +320,7 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'info_code'     => InfoCode::NB_PLUS_DATA_ABSENT,
+                    'info_code'     => InfoCode::NBPLUS_DATA_ABSENT,
                     'payment_id'    => $paymentId,
                     'gateway'       => $input['gateway'],
                     'batch_id'      => $input['batch_id'],
@@ -345,7 +343,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'info_code' => InfoCode::RECON_NB_PLUS_QUEUE_DISPATCH,
+                'info_code' => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
                 'queue'     => $queueName,
                 'payload'   => json_encode($pushData),
             ]

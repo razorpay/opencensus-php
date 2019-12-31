@@ -1,15 +1,16 @@
 <?php
 
-namespace RZP\Jobs;
+namespace RZP\Jobs\NbPlusRecon;
 
 use App;
 
+use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
 
-class NbPlusPaymentRecon extends Job
+class NetbankingRecon extends Job
 {
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
@@ -30,12 +31,12 @@ class NbPlusPaymentRecon extends Job
         parent::handle();
 
         $request = [
-            'fields'        => Service::NB_PLUS_PARAMS,
+            'fields'        => $this->data['gateway_params'],
             'payment_ids'   => [$this->data['payment_id']],
         ];
 
         $this->trace->info(
-            TraceCode::PAYMENT_RECON_QUEUE_NB_PLUS_REQUEST,
+            TraceCode::PAYMENT_RECON_QUEUE_NBPLUS_REQUEST,
             $request
         );
 
@@ -45,10 +46,11 @@ class NbPlusPaymentRecon extends Job
         {
             $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
 
+            // TODO: look at redaction?
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
-                    'info_code'     => InfoCode::NB_PLUS_RESPONSE_DATA,
+                    'info_code'     => InfoCode::NBPLUS_RESPONSE_DATA,
                     'response'      => $response,
                 ]);
 
@@ -58,7 +60,7 @@ class NbPlusPaymentRecon extends Job
             }
 
             $this->trace->info(
-                TraceCode::PAYMENT_RECON_QUEUE_NB_PLUS_SUCCESS,
+                TraceCode::PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS,
                 $this->data
             );
 
@@ -73,7 +75,7 @@ class NbPlusPaymentRecon extends Job
                 Trace::ERROR,
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'info_code' => InfoCode::PAYMENT_RECON_NB_PLUS_JOB_FAILURE_EXCEPTION,
+                    'info_code' => InfoCode::PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION,
                     'request'   => $request,
                     'input'     => $this->data,
                 ]);
@@ -87,7 +89,7 @@ class NbPlusPaymentRecon extends Job
         if ($this->attempts() > self::MAX_JOB_ATTEMPTS)
         {
             $this->trace->error(
-                TraceCode::PAYMENT_RECON_NB_PLUS_QUEUE_DELETE,
+                TraceCode::PAYMENT_RECON_NBPLUS_QUEUE_DELETE,
                 [
                     'data'         => $this->data,
                     'batch_id'     => $batchId,
