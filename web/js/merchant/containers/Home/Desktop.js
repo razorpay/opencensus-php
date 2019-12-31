@@ -199,7 +199,7 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
-                      {!nextSettlement ? (
+                      {!nextSettlement && settlement_ux_revamp ? (
                         <div class="text-right" style={{ width: '100%' }}>
                           <strong>
                             <Amount
