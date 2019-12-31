@@ -286,10 +286,14 @@ class Core extends Base\Core
 
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
+                $isDirty = $payoutLink->isDirty();
+
                 $this->repo->saveOrFail($payoutLink);
 
-                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus],
-                                         [$payoutLink]);
+                if($isDirty === true)
+                {
+                    $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus], [$payoutLink]);
+                }
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
