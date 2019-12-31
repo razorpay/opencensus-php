@@ -30,6 +30,16 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
+    public function updateSettings(string $merchantId, array $input)
+    {
+        return $this->core->updateSettings($merchantId, $input);
+    }
+
+    public function getSettings(string $merchantId)
+    {
+        return $this->core->getSettings($merchantId);
+    }
+
     public function initiate(string $payoutLinkId, array $input)
     {
         return $this->core->initiate($payoutLinkId, $input);
@@ -52,6 +62,11 @@ class Service extends Base\Service
     public function cancel(string $payoutLinkId): Entity
     {
         return $this->core->cancel($payoutLinkId);
+    }
+
+    public function viewHostedPage($payoutLinkId)
+    {
+        return $this->core->viewHostedPage($payoutLinkId);
     }
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array

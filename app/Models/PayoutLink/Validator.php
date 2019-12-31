@@ -3,6 +3,7 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Base;
+use RZP\Models\Payout\Mode;
 
 class Validator extends Base\Validator
 {
@@ -19,6 +20,12 @@ class Validator extends Base\Validator
     const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
     const GENERATE_OTP                     = 'generate_otp';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
+    const SETTINGS_RULE                    = 'settings';
+
+    protected static $settingsRules = [
+        Mode::UPI  => 'sometimes|boolean|filled',
+        Mode::IMPS => 'sometimes|boolean|filled',
+    ];
 
     protected static $addFundAccountRules = [
         Entity::FUND_ACCOUNT_ID => 'nullable|string|size:14',
@@ -33,7 +40,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $generateOtpRules = [
-        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
+        Entity::CONTEXT => 'sometimes|string|min:5|max:15'
     ];
 
     protected static $createRules = [
@@ -63,6 +70,6 @@ class Validator extends Base\Validator
 
     protected static $verifyOtpRules = [
         Entity::OTP     => 'required|string|min:4|max:6',
-        Entity::CONTEXT => 'sometimes|string|min:5|max:10'
+        Entity::CONTEXT => 'sometimes|string|min:5|max:15'
     ];
 }
