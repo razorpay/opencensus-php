@@ -37,7 +37,7 @@
 
             var q = [].concat(_rzpAQ_fbq);
             _rzpAQ_fbq = [];
-            clearQueue(_rzpAQ_fbq);
+            clearQueue(q);
         }
 
         function checkGa(data) {
