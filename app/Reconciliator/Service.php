@@ -313,7 +313,7 @@ class Service extends Base\Service
                         ]
                     );
 
-                    continue;
+                    $pushData[$field] = $misParams[$field];
                 }
             }
         }
