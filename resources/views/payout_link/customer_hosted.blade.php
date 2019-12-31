@@ -19,6 +19,7 @@
             receipt: '{{ $receipt }}',
             apiHost: '{{ $api_host }}' + '/v1/',
             payoutLinkId: '{{ $payout_link_id }}',
+            status: '{{ $payout_link_status }}'
         };
 
     </script>
