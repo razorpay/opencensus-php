@@ -144,6 +144,25 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::CONTACT_ID,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_PHONE_NUMBER,
+        self::FUND_ACCOUNT_ID,
+        self::STATUS,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::RECEIPT,
+        self::NOTES,
+        self::SHORT_URL,
+        self::CREATED_AT,
+        self::CANCELLED_AT
+    ];
+
     protected $defaults = [
         self::CONTACT_ID           => null,
         self::CONTACT_NAME         => '',
@@ -160,7 +179,6 @@ class Entity extends Base\PublicEntity
         self::NOTES                => [],
         self::CANCELLED_AT         => null,
     ];
-
 
     // -------------------------------------- Relations -------------------------------
 
