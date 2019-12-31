@@ -440,6 +440,8 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($payout);
 
+                    (new SourceUpdater($payout))->update();
+
                     return $payout;
                 },
                 self::PAYOUT_MUTEX_LOCK_TIMEOUT,

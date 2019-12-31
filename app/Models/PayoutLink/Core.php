@@ -250,13 +250,13 @@ class Core extends Base\Core
      * @param string $payoutLinkId
      * @param string $payoutStatus
      */
-    public function payoutUpdateListener(string $payoutLinkId, string $payoutStatus)
+    public function payoutUpdateListener(Entity $payoutLink, string $payoutStatus)
     {
         if (isset(Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus]) === false)
         {
             $this->trace->warning(TraceCode::PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS,
                                   [
-                                      'payout_link_id' => $payoutLinkId,
+                                      'payout_link_id' => $payoutLink->getPublicId(),
                                       'payout_status'  => $payoutStatus,
                                   ]);
             return;
@@ -267,19 +267,15 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
             [
-                'payout_link_id'          => $payoutLinkId,
+                'payout_link_id'          => $payoutLink->getPublicId(),
                 'payout_status'           => $payoutStatus,
                 'next_payout_link_status' => $nextPayoutLinkStatus
             ]);
 
         $this->mutex->acquireAndRelease(
-            $payoutLinkId,
-            function () use ($payoutLinkId, $payoutStatus, $nextPayoutLinkStatus)
+            $payoutLink->getPublicId(),
+            function () use ($payoutLink, $payoutStatus, $nextPayoutLinkStatus)
             {
-                $payoutLink = $this->repo
-                                   ->payout_link
-                                   ->findByIdAndMerchant($payoutLinkId, $this->merchant);
-
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
                 $isDirty = $payoutLink->isDirty();

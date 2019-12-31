@@ -33,8 +33,7 @@ class SourceUpdater
 
         if ($payoutLink !== null)
         {
-            (new PayoutLinkCore())->payoutUpdateListener($payoutLink->getId(), $this->payout->getStatus());
+            (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $this->payout->getStatus());
         }
-
     }
 }
