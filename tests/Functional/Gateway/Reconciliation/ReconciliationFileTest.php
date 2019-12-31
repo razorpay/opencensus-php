@@ -2749,10 +2749,9 @@ class ReconciliationFileTest extends TestCase
         //Test We update payment reference2 from recon
         $paymentEnity = $this->getDbLastEntity('payment');
         $this->assertNotNull($paymentEnity['reference2']);
-        $this->assertNotNull($paymentEnity['reference1']);
 
         $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MTS_MSF_FIXFEE']));
-        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['VAT_AMT']));
 
         // Test that the gateway fee and tax sum is as expected
         $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
@@ -3144,7 +3143,13 @@ class ReconciliationFileTest extends TestCase
 
         $facade['PRCHS_ MERCHANT_TXNNO'] = $entityId;
 
+        $facade['MERCHANT_TXNNO'] = $entityId;
+
         $facade['APPROVE_CODE'] = $gatewayPayment['auth'];
+
+        $facade['VAT_AMT'] = '0.00';
+        $facade['MTS_MSF_FIXFEE'] = '0.00';
+        $facade['MTS_TOTL_CSF_AMT'] = '0.00';
 
         return $facade;
     }
