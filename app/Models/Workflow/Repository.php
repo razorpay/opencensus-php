@@ -112,4 +112,33 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::DELETED_AT)
                     ->pluck(Entity::ID);
     }
+
+    public function getWorkflowsForPermissionNameAndCategory($permissionName, $orgId, $merchantId, $permissionCategory)
+    {
+        $pid = $this->repo->permission->dbColumn(Admin\Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        $permissionIdCollection =  $this->repo->permission->newQuery()
+            ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+            ->where($pmTable . '.entity_id', '=', $orgId)
+            ->where($pmTable . '.entity_type', '=', 'org')
+            ->where(Admin\Permission\Entity::NAME, $permissionName)
+            ->where(Admin\Permission\Entity::CATEGORY, $permissionCategory)
+            ->pluck('id');
+
+        $permissionId = $permissionIdCollection->toArray()[0];
+
+        $permissionId = $permissionId ?: '';
+
+        // Implicit check for workflow in the organisation against permission ids.
+        $workflows = $this->repo
+            ->workflow
+            ->fetchWorkflowsByPermissionsOrgAndMerchant(
+                $permissionId,
+                $orgId,
+                $merchantId);
+
+        return $workflows;
+    }
 }

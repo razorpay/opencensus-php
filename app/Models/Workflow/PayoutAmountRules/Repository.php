@@ -50,7 +50,8 @@ class Repository extends Base\Repository
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
         $query = $this->repo->permission->newQuery()
-                                        ->where(Admin\Permission\Entity::NAME, Admin\Permission\Name::CREATE_PAYOUT);
+                                        ->where(Admin\Permission\Entity::NAME, Admin\Permission\Name::CREATE_PAYOUT)
+                                        ->where(Admin\Permission\Entity::CATEGORY, Admin\Permission\Category::PAYOUTS);
 
         $permissionIdArray = $query->pluck(Entity::ID)->toArray();
 

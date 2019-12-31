@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name;
+use RZP\Models\Admin\Permission\Category;
 
 class Service extends Base\Service
 {
@@ -115,9 +116,10 @@ class Service extends Base\Service
         $workflowIdsFromInput = array_column($rules, Entity::WORKFLOW_ID);
 
         // Fetch workflows with create_payout permission
-        $workflows = (new Workflow\Action\Core)->getWorkflowsForPermission(Name::CREATE_PAYOUT,
+        $workflows = $this->repo->workflow->getWorkflowsForPermissionNameAndCategory(Name::CREATE_PAYOUT,
                                                                            $orgId,
-                                                                           $merchantId);
+                                                                           $merchantId,
+                                                                           Category::PAYOUTS );
 
         $workflowIds = $workflows->pluck(Entity::ID)->toArray();
 

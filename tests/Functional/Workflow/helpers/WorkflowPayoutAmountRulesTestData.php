@@ -414,4 +414,50 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT,
         ],
     ],
+
+    'testCreateWorkflowPayoutAmountRulesWithNoWorkflowId' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows/rules/payout_amount',
+            'content' => [
+                'rules' => [
+                    [
+                        'min_amount'	=>	0,
+                        'max_amount'	=>	100000
+                    ],
+                    [
+                        'min_amount'	=>	100000,
+                        'max_amount'	=>	1000000
+                    ],
+                    [
+                        'min_amount'	=>	1000000,
+                        'max_amount'	=>	null
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 3,
+                'items'     => [
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'min_amount'    =>  0,
+                        'max_amount'    =>  100000
+                    ],
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'min_amount'    =>  100000,
+                        'max_amount'    =>  1000000
+                    ],
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'min_amount'    => 1000000,
+                        'max_amount'    => null
+                    ]
+                ]
+            ]
+        ],
+    ],
 ];
