@@ -111,6 +111,20 @@ class Service
         return $driver->action($gateway, $action, $input);
     }
 
+    public function fetchMultiple(string $entityName, array $input)
+    {
+        $path = self::ADMIN_PATH . $entityName;
+
+        return $this->sendRequest('GET', $path, $input);
+    }
+
+    public function fetch(string $entityName, string $id, $input)
+    {
+        $path = self::ADMIN_PATH . $entityName . '/' . $id;
+
+        return $this->sendRequest('GET', $path, $input);
+    }
+
     public function sendRequest(string $method, string $url, array $data = [])
     {
         $request = [
