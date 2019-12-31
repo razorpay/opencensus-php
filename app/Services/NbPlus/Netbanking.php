@@ -63,7 +63,7 @@ class Netbanking extends Service
 
         $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 
-        return $response;
+        return $this->processResponse($response);
     }
 
     protected function processResponse($response)
@@ -71,19 +71,19 @@ class Netbanking extends Service
         switch ($this->action)
         {
             case Action::AUTHORIZE:
-                $returnData = $response[Response::RESPONSE][Response::DATA][Response::NEXT][Response::REDIRECT];
+                $returnData = $response[Response::DATA][Response::NEXT][Response::REDIRECT];
                 break;
 
             case Action::CALLBACK:
-                $returnData = $this->getCallbackResponseData($response[Response::RESPONSE]);
+                $returnData = $this->getCallbackResponseData($response);
                 break;
 
             case Action::VERIFY:
-                $returnData = $this->processVerifyResponse($response[Response::RESPONSE]);
+                $returnData = $this->processVerifyResponse($response);
                 break;
 
             case Action::AUTHORIZE_FAILED:
-                $returnData = $this->processAuthorizeFailedFlow($response[Response::RESPONSE]);
+                $returnData = $this->processAuthorizeFailedFlow($response);
                 break;
 
             default:

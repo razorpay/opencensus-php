@@ -26,6 +26,9 @@ class Service
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
 
+    // admin path
+    const ADMIN_PATH = 'admin/entities/';
+
     const GATEWAY_TO_METHOD_MAP = [
       Payment\Gateway::ATOM => Payment\Method::NETBANKING
     ];
@@ -130,7 +133,7 @@ class Service
 
         $this->traceResponse($response['response']);
 
-        return $this->processResponse($response);
+        return $response[Response::RESPONSE];
     }
 
     protected function sendRawRequest($request)
