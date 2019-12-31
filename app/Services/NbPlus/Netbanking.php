@@ -27,9 +27,9 @@ class Netbanking extends Service
 
         $this->input = $input;
 
-        if ($this->action === Action::AUTHORIZE)
+        if (($this->action === Action::AUTHORIZE) and ($input[Entity::MERCHANT]->isTPVRequired() === true))
         {
-            $input[Request::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+            $this->transactionType = self::TPV;
         }
 
         if ($this->action === Action::AUTHORIZE_FAILED)
@@ -39,7 +39,6 @@ class Netbanking extends Service
 
         if (empty($input[Entity::TERMINAL]) === false)
         {
-            $this->transactionType   = self::TPV;
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
         }
 
