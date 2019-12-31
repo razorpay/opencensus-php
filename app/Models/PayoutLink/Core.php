@@ -402,6 +402,14 @@ class Core extends Base\Core
         return $data;
     }
 
+    /**
+     * Masks the customer email as follows
+     * Input: test_email@gmail.com
+     * Output: tes*****l@g****.com
+     *
+     * @param ContactEntity $contact
+     * @return mixed|string
+     */
     protected function getMaskedEmail(ContactEntity $contact)
     {
         $email = $contact->getEmail();
@@ -417,31 +425,32 @@ class Core extends Base\Core
         {
             // assuming that if this is filled, then its a valid email
 
-            $email = explode('@', $email);
+            $email = explode('@', $email); // ex: test_email@gmail.com
 
-            $emailName = $email[0];
+            $emailName = $email[0]; // test_email
 
-            $emailDomain = $email[1];
+            $emailDomain = $email[1]; // gmail.com
 
             $emailDomain = explode('.', $emailDomain);
 
-            $domain = $emailDomain[0];
+            $domain = $emailDomain[0]; // gmail
 
-            $topLevelDomain = $emailDomain[1];
+            $topLevelDomain = $emailDomain[1]; // .com
 
             // replace the name except first 3 characters with *
             $maskedEmailName = substr($emailName, 0, 3) .
-                           str_repeat('*', strlen($emailName) - 3);
+                               str_repeat('*', strlen($emailName) - 3);
 
+            // replace the domain with *, except the first and the last character
             $maskedDomain = $domain[0] .
                             str_repeat('*', strlen($domain) - 2) .
                             $domain[strlen($domain) - 1];
 
-            $maskedEmail = sprintf('%s@%s.%s',$maskedEmailName, $maskedDomain, $topLevelDomain);
+            $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
         }
         catch(\Exception $e)
         {
-            // I do not want the page load to fail because the email was incorrect
+            // Do not want the page load to fail because the email was incorrect
             $this->trace->traceException($e,
                                          Trace::ERROR,
                                          TraceCode::INVALID_EMAIL_CANNOT_MASK,
@@ -459,14 +468,14 @@ class Core extends Base\Core
     {
         $phone = $contact->getContact();
 
-        if ((empty($phone) === true))
+        if (empty($phone) === true)
         {
             return '';
         }
 
         $phoneLen = strlen($phone);
 
-        return substr($phoneLen, 0,2) .
+        return substr($phoneLen, 0, 2) .
                str_repeat('*', $phoneLen - 4) .
                substr($phone, $phoneLen - 2, $phoneLen - 1);
 
