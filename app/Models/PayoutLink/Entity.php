@@ -47,6 +47,9 @@ class Entity extends Base\PublicEntity
     const CONTEXT              = 'context';
     const OTP                  = 'otp';
     const TOKEN                = 'token';
+    const IMPS                 = 'IMPS';
+    const NEFT                 = 'NEFT';
+    const UPI                  = 'UPI';
 
     protected $generateIdOnCreate = true;
 
@@ -114,6 +117,11 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT
     ];
 
+    protected $publicSetters = [
+        self::STATUS,
+        self::ID
+    ];
+
     protected $hosted = [
         self::ID,
         self::STATUS,
@@ -136,6 +144,25 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::CONTACT_ID,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_PHONE_NUMBER,
+        self::FUND_ACCOUNT_ID,
+        self::STATUS,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::RECEIPT,
+        self::NOTES,
+        self::SHORT_URL,
+        self::CREATED_AT,
+        self::CANCELLED_AT
+    ];
+
     protected $defaults = [
         self::CONTACT_ID           => null,
         self::CONTACT_NAME         => '',
@@ -152,7 +179,6 @@ class Entity extends Base\PublicEntity
         self::NOTES                => [],
         self::CANCELLED_AT         => null,
     ];
-
 
     // -------------------------------------- Relations -------------------------------
 
@@ -185,6 +211,26 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
@@ -193,6 +239,11 @@ class Entity extends Base\PublicEntity
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
     }
 
     public function getStatus()
@@ -219,6 +270,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CONTACT_EMAIL);
     }
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -230,7 +290,14 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($newStatus)
     {
-        Status::validateStatusUpdate($newStatus, $this->getStatus(), $this->getId());
+        $currentStatus = $this->getStatus();
+
+        if ($currentStatus === $newStatus)
+        {
+            return;
+        }
+
+        Status::validateStatusUpdate($newStatus, $currentStatus, $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
     }
