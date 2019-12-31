@@ -41,7 +41,6 @@ class Core extends Base\Core
     const ACTIVE                  = 'active';
     const MUTEX_TIMEOUT           = 60;
 
-
     protected $elfin;
 
     protected $raven;
@@ -70,7 +69,7 @@ class Core extends Base\Core
 
         $settingsAccessor = $this->getSettingsAccessor($merchant);
 
-        return $settingsAccessor->all();
+        return $settingsAccessor->all()->toArray();
     }
 
     /**
@@ -82,12 +81,13 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
-            $input
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $input
+            ]
         );
 
-        $validator = (new Entity())->getValidator();
-
-        $validator->validateInput(Validator::SETTINGS_RULE, $input);
+        (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -100,7 +100,6 @@ class Core extends Base\Core
 
     protected function getSettingsAccessor($merchant)
     {
-
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
@@ -235,9 +234,6 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-
-
-
     /**
      * This function will listen to payout updates, and update the corresponding payoutlink
      * This will be inside a mutex. Transaction is not required, because its just a status update
@@ -298,9 +294,9 @@ class Core extends Base\Core
         switch ($fundAccount->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                $isImpsEnabled = $settingsAccessor->get(Entity::IMPS);
+                $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
 
-                if (($isImpsEnabled === '1') and
+                if (($isImpsEnabled === true) and
                     ($amount < self::TWO_LACS))
                 {
                     return Mode::IMPS;

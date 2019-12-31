@@ -26,23 +26,27 @@ class PayoutLinkController extends Controller
     }
 
     /**
-     * Route for update the merchant level\ settings for payout links
+     * Route to update the merchant level settings for payout links
+     * @param $merchantId
+     * @return
      */
     public function updateSettings($merchantId)
     {
         $response = $this->service()->updateSettings($merchantId, $this->input);
 
-        return $response;
+        return ApiResponse::json($response);
     }
 
     /**
-     * Route for update the merchant level\ settings for payout links
+     * Route to get the merchant level settings for payout links
+     * @param $merchantId
+     * @return
      */
     public function getSettings($merchantId)
     {
         $response = $this->service()->getSettings($merchantId, $this->input);
 
-        return $response;
+        return ApiResponse::json($response);
     }
 
     /**
