@@ -33,7 +33,6 @@ class NbPlusPaymentServiceTest extends TestCase
         'cps_route',
         'merchant_detail',
         'gateway_config',
-        'gateway',
         'method_data',
     ];
 

@@ -279,6 +279,7 @@ class AdminFetch
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
             Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
 
+            Entity::PAYMENTS_NBPLUS_NETBANKING => [],
 
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [

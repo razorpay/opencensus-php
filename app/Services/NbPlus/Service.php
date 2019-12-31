@@ -114,18 +114,32 @@ class Service
     public function fetchNetbankingData(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . 'entities/netbanking',
-            'method'  => 'POST',
+            'url' => $this->getBaseUrl() . 'entities/netbanking',
+            'method' => 'POST',
             'content' => $input,
             'headers' => [
-                'task_id'       => $this->app['request']->getTaskId(),
-                'request_id'    => $this->app['request']->getId(),
+                'task_id'    => $this->app['request']->getTaskId(),
+                'request_id' => $this->app['request']->getId(),
             ],
         ];
 
         $response = $this->sendRawRequest($request);
 
         return $this->jsonToArray($response->body);
+    }
+
+    public function fetchMultiple(string $entityName, array $input)
+    {
+        $path = self::ADMIN_PATH . $entityName;
+
+        return $this->sendRequest('GET', $path, $input);
+    }
+
+    public function fetch(string $entityName, string $id, $input)
+    {
+        $path = self::ADMIN_PATH . $entityName . '/' . $id;
+
+        return $this->sendRequest('GET', $path, $input);
     }
 
     public function sendRequest(string $method, string $url, array $data = [])
