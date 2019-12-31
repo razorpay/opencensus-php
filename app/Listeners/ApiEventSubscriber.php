@@ -981,26 +981,9 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutLinkPayload(PayoutLinkEntity $payoutLink): array
     {
-        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
-            $this->mode
-        );
-
-        if (strtolower($variant) === 'on')
-        {
-            return [
-                Constants\Entity::PAYOUT_LINK => [
-                    'entity' => $payoutLink->toArrayPublic(),
-                ],
-            ];
-        }
-
         return [
             Constants\Entity::PAYOUT_LINK => [
-                'entity' => $payoutLink->toArrayWebhook(),
+                'entity' => $payoutLink->toArrayPublic(),
             ],
         ];
     }

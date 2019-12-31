@@ -42,7 +42,7 @@ class Service extends Base\Service
 
     public function initiate(string $payoutLinkId, array $input)
     {
-        return $this->core->initiate($payoutLinkId, $input);
+        return $this->core->initiate($payoutLinkId, $input)->toArrayPublic();
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -61,9 +61,9 @@ class Service extends Base\Service
         return $this->core->generateAndSendCustomerOtp($payoutLinkId, $input);
     }
 
-    public function cancel(string $payoutLinkId): Entity
+    public function cancel(string $payoutLinkId): array
     {
-        return $this->core->cancel($payoutLinkId);
+        return $this->core->cancel($payoutLinkId)->toArrayPublic();
     }
 
     public function viewHostedPage($payoutLinkId)

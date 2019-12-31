@@ -156,7 +156,7 @@ class Core extends Base\Core
      * @param array $input
      * @return array
      */
-    public function initiate(string $payoutLinkId, array $input)
+    public function initiate(string $payoutLinkId, array $input): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
