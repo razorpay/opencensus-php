@@ -22,7 +22,7 @@ class PayoutLinkController extends Controller
     {
         $response = $this->service()->getFundAccountsOfContact($payoutLinkId, $this->input);
 
-        return $response;
+        return ApiResponse::json($response);
     }
 
     /**
@@ -66,7 +66,6 @@ class PayoutLinkController extends Controller
         $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);
 
         return ApiResponse::json($response);
-
     }
 
     public function verifyCustomerOtp(string $payoutLinkId)

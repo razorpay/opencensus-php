@@ -441,12 +441,14 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'merchant_id'  => '10000000000000',
-                    'source_type'  => 'contact',
-                    'source_id'    => '1000010contact',
-                    'account_type' => 'bank_account',
-                ]
+                'items' =>
+                      [
+                          [
+                              'bank_account' => [
+                                  'name' => 'test'
+                              ]
+                          ]
+                    ]
             ],
         ]
     ],
