@@ -77,6 +77,13 @@ class PayoutLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function viewHostedPage($payoutLinkId)
+    {
+        $response = $this->service()->viewHostedPage($payoutLinkId);
+
+        return $response;
+    }
+
     public function cancel(string $payoutLinkId)
     {
         $data = $this->service()->cancel($payoutLinkId);

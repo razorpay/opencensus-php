@@ -2,9 +2,11 @@
 
 namespace RZP\Models\PayoutLink;
 
+use View;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
@@ -24,7 +26,7 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
+    const LONG_URL_FORMAT         = '%s/v1/payout-links/%s/view';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
     const TEMPLATE                = 'template';
@@ -52,6 +54,7 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
@@ -151,6 +154,9 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
+                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::CANCELLED],
+                                         [$payoutLink]);
+
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
@@ -219,6 +225,9 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($payoutLink);
 
+                        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::PROCESSING],
+                                                 [$payoutLink]);
+
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
                                                'payout_link_id'     => $payoutLinkId,
@@ -273,7 +282,14 @@ class Core extends Base\Core
 
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
+                $isDirty = $payoutLink->isDirty();
+
                 $this->repo->saveOrFail($payoutLink);
+
+                if($isDirty === true)
+                {
+                    $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus], [$payoutLink]);
+                }
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
@@ -354,7 +370,128 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payoutLink);
 
+        $this->app['events']->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
+                                   [$payoutLink]);
+
         return $payoutLink;
+    }
+
+    public function viewHostedPage($payoutLinkId)
+    {
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $hostedPageData = $this->getDataForHostedPage($payoutLink);
+
+        return View::make('payout_link.customer_hosted', $hostedPageData);
+    }
+
+    protected function getDataForHostedPage(Entity $payoutLink): array
+    {
+        $contact = $payoutLink->contact;
+
+        $maskedEmail = $this->getMaskedEmail($contact);
+
+        $maskedPhone = $this->getMaskedPhone($contact);
+
+        $data = [
+            'api_host'                => $this->config['url.api.production'],
+            'payout_link_id'          => $payoutLink->getPublicId(),
+            'payout_link_status'      => $payoutLink->getStatus(),
+            'amount'                  => $payoutLink->getAmount(),
+            'currency'                => $payoutLink->getCurrency(),
+            'user_name'               => $contact->getName(),
+            'description'             => $payoutLink->getDescription(),
+            'user_email'              => $maskedEmail,
+            'user_phone'              => $maskedPhone,
+            'receipt'                 => $payoutLink->getReceipt(),
+            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'payout_link_description' => $payoutLink->getDescription(),
+            'primary_color'           => $this->merchant->getBrandColor(),
+            'merchant_name'           => $this->merchant->getName()
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Masks the customer email as follows
+     * Input: test_email@gmail.com
+     * Output: tes*****l@g****.com
+     *
+     * @param ContactEntity $contact
+     * @return mixed|string
+     */
+    protected function getMaskedEmail(ContactEntity $contact)
+    {
+        $email = $contact->getEmail();
+
+        $maskedEmail = $email;
+
+        if (empty($email) === true)
+        {
+            return '';
+        }
+
+        try
+        {
+            // assuming that if this is filled, then its a valid email
+
+            $email = explode('@', $email); // ex: test_email@gmail.com
+
+            $emailName = $email[0]; // test_email
+
+            $emailDomain = $email[1]; // gmail.com
+
+            $emailDomain = explode('.', $emailDomain);
+
+            $domain = $emailDomain[0]; // gmail
+
+            $topLevelDomain = $emailDomain[1]; // .com
+
+            // replace the name except first 3 characters with *
+            $maskedEmailName = substr($emailName, 0, 3) .
+                               str_repeat('*', strlen($emailName) - 3);
+
+            // replace the domain with *, except the first and the last character
+            $maskedDomain = $domain[0] .
+                            str_repeat('*', strlen($domain) - 2) .
+                            $domain[strlen($domain) - 1];
+
+            $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
+        }
+        catch(\Exception $e)
+        {
+            // Do not want the page load to fail because the email was incorrect
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::INVALID_EMAIL_CANNOT_MASK,
+                                         [
+                                             'email'      => $email,
+                                             'contact_id' => $contact->getId()
+                                         ]
+            );
+        }
+
+        return $maskedEmail;
+    }
+
+    public function getMaskedPhone(ContactEntity $contact)
+    {
+        $phone = $contact->getContact();
+
+        if (empty($phone) === true)
+        {
+            return '';
+        }
+
+        $phoneLen = strlen($phone);
+
+        return substr($phoneLen, 0, 2) .
+               str_repeat('*', $phoneLen - 4) .
+               substr($phone, $phoneLen - 2, $phoneLen - 1);
+
     }
 
     protected function getBalance(array $input)

@@ -297,6 +297,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST          = 'DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
+    const INVALID_EMAIL_CANNOT_MASK                             = 'INVALID_EMAIL_CANNOT_MASK';
 
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
     const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
