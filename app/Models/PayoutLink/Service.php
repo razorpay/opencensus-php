@@ -30,7 +30,29 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
-    public function generateAndSendCustomerOtp($payoutLinkId, $input)
+    public function updateSettings(string $merchantId, array $input)
+    {
+        return $this->core->updateSettings($merchantId, $input);
+    }
+
+    public function getSettings(string $merchantId)
+    {
+        return $this->core->getSettings($merchantId);
+    }
+
+    public function initiate(string $payoutLinkId, array $input)
+    {
+        return $this->core->initiate($payoutLinkId, $input);
+    }
+
+    public function getFundAccountsOfContact(string $payoutLinkId, array $input)
+    {
+        $fundAccounts = $this->core->getFundAccountsOfContact($payoutLinkId, $input);
+
+        return $fundAccounts->toArrayPublic();
+    }
+
+    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input)
     {
         $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
                            $input
@@ -39,12 +61,17 @@ class Service extends Base\Service
         return $this->core->generateAndSendCustomerOtp($payoutLinkId, $input);
     }
 
-    public function cancel(string $payoutLinkId)
+    public function cancel(string $payoutLinkId): Entity
     {
         return $this->core->cancel($payoutLinkId);
     }
 
-    public function verifyCustomerOtp($payoutLinkId, $input)
+    public function viewHostedPage($payoutLinkId)
+    {
+        return $this->core->viewHostedPage($payoutLinkId);
+    }
+
+    public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
         return $this->core->verifyCustomerOtp($payoutLinkId, $input);
     }

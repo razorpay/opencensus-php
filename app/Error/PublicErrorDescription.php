@@ -68,6 +68,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
     const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given method / mode cannot be used for the payout amount specified';
     const BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED                   = 'Cannot add contact when both email and phone number are missing.';
+    const BAD_REQUEST_INVALID_FUND_ACCOUNT_ID                                   = 'Fund Account passed does not belong to intended contact';
     const BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH                                  = 'Given mode cannot be used for the amount given';
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT                                  = 'Payout retry is not allowed only for payment payouts';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                              = 'Payout retry is allowed only for reversed payouts';
@@ -437,6 +438,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE                            = 'The subscription is in a terminal state';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE                = 'The subscription should be in either active or halted state to charge an on_hold invoice';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_PENDING_STATE                         = 'The subscription is not in pending state, and cannot be retried.';
+    const BAD_REQUEST_FUND_ACCOUNT_DOESNT_BELONG_TO_INTENDED_CONTACT            = 'Passed fund account id belongs to another contact.';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE                             = 'This operation is not allowed in live mode.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE                          = 'The subscription is not test chargeable.';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
@@ -799,9 +801,12 @@ class PublicErrorDescription
     // payout links
     const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Attached contact neither has email or phone number';
     const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/EMAIL delivery for OTP';
+    const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'Otp generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid payout link status passed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION                    = 'The following state transition is not allowed for this payout link';
+    const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot allow initiate request on payout link at this state';
+    const BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
 
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';

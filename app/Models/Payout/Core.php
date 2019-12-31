@@ -69,10 +69,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -316,6 +316,11 @@ class Core extends Base\Core
                     TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
                     $ftaData);
         }
+
+        // todo: A temporary push of information to Payout Links App. This should be replaced by a Pub-Sub architecture,
+        // or atleast by a webhook flow, where the source registers the webhook, where update events should be pushed.
+        // Right now, just making a direct function call
+        (new SourceUpdater($payout))->update();
     }
 
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
@@ -434,6 +439,8 @@ class Core extends Base\Core
                     $payout->setStatus(Status::CANCELLED);
 
                     $this->repo->saveOrFail($payout);
+
+                    (new SourceUpdater($payout))->update();
 
                     return $payout;
                 },
@@ -572,8 +579,8 @@ class Core extends Base\Core
 
             $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
 
-            $dispatchedCount += 1;
-         }
+            $dispatchedCount++;
+        }
 
          return [
              'balance_remaining'        => $totalBalance,

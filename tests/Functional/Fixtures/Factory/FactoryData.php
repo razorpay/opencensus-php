@@ -1205,12 +1205,15 @@ final class FactoryData
             'user_id'              => null,
             'currency'             => 'INR',
             'description'          => 'This is a test payout',
+            'purpose'              => 'refund',
+            'purpose'              => 'refund',
             'receipt'              => 'Test Payout Receipt',
             'notes'                => null,
             'short_url'            => 'http=>//76594130.ngrok.io/i/mGs4ehe',
             'status'               => 'issued',
             'created_at'           => 1575367399,
-            'cancelled_at'         => null
+            'cancelled_at'         => null,
+            'purpose'              => 'refund',
         ]);
     }
 }
