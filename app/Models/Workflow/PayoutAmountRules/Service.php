@@ -121,7 +121,9 @@ class Service extends Base\Service
 
         $workflowIds = $workflows->pluck(Entity::ID)->toArray();
 
-        Workflow\Entity::verifyIdAndStripSignMultiple($workflowIdsFromInput);
+        $workflowIdsFromInput = array_filter($workflowIdsFromInput);
+
+        Workflow\Entity::verifyIdAndSilentlyStripSignMultiple($workflowIdsFromInput);
 
         $diff = array_diff($workflowIdsFromInput, $workflowIds);
 
