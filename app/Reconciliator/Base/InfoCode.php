@@ -58,6 +58,8 @@ class InfoCode
 
     const UNEXPECTED_PAYMENT                            = 'UNEXPECTED_PAYMENT';
 
+    const UNEXPECTED_REFUND                             = 'UNEXPECTED_REFUND';
+
     const VPA_MISMATCH                                  = 'VPA_MISMATCH';
 
     const RECON_UNEXPECTED_REFUND                       = 'RECON_UNEXPECTED_REFUND';

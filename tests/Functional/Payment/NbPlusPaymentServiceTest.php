@@ -13,9 +13,9 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Services\NbPlus\Service as NbPlusPaymentService;
 
 class NbPlusPaymentServiceTest extends TestCase
 {
@@ -34,6 +34,7 @@ class NbPlusPaymentServiceTest extends TestCase
         'merchant_detail',
         'gateway_config',
         'gateway',
+        'method_data',
     ];
 
     const CALLBACK_ACTION_INPUT = [
@@ -44,6 +45,7 @@ class NbPlusPaymentServiceTest extends TestCase
         'cps_route',
         'merchant_detail',
         'gateway_config',
+        'method_data'
     ];
 
     public function setUp()
@@ -73,6 +75,7 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->enableNbPlusConfig();
 
+        // This may be made generic when there are more than just netbanking methods migrated to new service
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
@@ -84,15 +87,15 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->mockServerRequestFunction(function (&$content, $action = null)
         {
-            $this->assertEquals(Payment\Gateway::ATOM, $content[NbPlusPaymentService::GATEWAY]);
+            $this->assertEquals(Payment\Gateway::ATOM, $content[NbPlusPaymentService\Request::GATEWAY]);
 
             switch ($action)
             {
-                case NbPlusPaymentService::AUTHORIZE:
-                    $this->assertArrayKeysExist($content[NbPlusPaymentService::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($content[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
                     break;
-                case NbPlusPaymentService::CALLBACK:
-                    $this->assertArrayKeysExist($content[NbPlusPaymentService::INPUT], self::CALLBACK_ACTION_INPUT);
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($content[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
             }
         });
 
@@ -134,15 +137,13 @@ class NbPlusPaymentServiceTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === NbPlusPaymentService::AUTHORIZE)
+            if ($action === NbPlusPaymentService\Action::AUTHORIZE)
             {
                 $content = [
-                    NbPlusPaymentService::DATA  => null,
-                    NbPlusPaymentService::ERROR => [
-                        'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                    NbPlusPaymentService\Response::RESPONSE  => null,
+                    NbPlusPaymentService\Response::ERROR     => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
                     ],
                 ];
             }
@@ -177,15 +178,13 @@ class NbPlusPaymentServiceTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === NbPlusPaymentService::AUTHORIZE)
+            if ($action === NbPlusPaymentService\Action::AUTHORIZE)
             {
                 $content = [
-                    NbPlusPaymentService::DATA  => null,
-                    NbPlusPaymentService::ERROR => [
-                        'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
-                        'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                    NbPlusPaymentService\Response::RESPONSE  => null,
+                    NbPlusPaymentService\Response::ERROR => [
+                        NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                        NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
                     ],
                 ];
             }
@@ -226,12 +225,10 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content = [
-                NbPlusPaymentService::DATA  => null,
-                NbPlusPaymentService::ERROR => [
-                    'internal_error_code'       => 'BAD_REQUEST_PAYMENT_FAILED',
-                    'gateway_error_code'        => 'BAD_REQUEST_PAYMENT_FAILED',
-                    'gateway_error_description' => 'BAD_REQUEST_PAYMENT_FAILED',
-                    'description'               => 'BAD_REQUEST_PAYMENT_FAILED',
+                NbPlusPaymentService\Response::RESPONSE  => null,
+                NbPlusPaymentService\Response::ERROR     => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
                 ],
             ];
         });
@@ -261,12 +258,10 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content = [
-                NbPlusPaymentService::DATA  => null,
-                NbPlusPaymentService::ERROR => [
-                    'internal_error_code'       => 'SERVER_ERROR',
-                    'gateway_error_code'        => 'SERVER_ERROR',
-                    'gateway_error_description' => 'SERVER_ERROR',
-                    'description'               => 'SERVER_ERROR',
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR    => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => 'SERVER_ERROR'
                 ],
             ];
         });
@@ -298,12 +293,10 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content = [
-                NbPlusPaymentService::DATA  => null,
-                NbPlusPaymentService::ERROR => [
-                    'internal_error_code'       => 'GATEWAY_ERROR_UNKNOWN_ERROR',
-                    'gateway_error_code'        => 'GATEWAY_ERROR_UNKNOWN_ERROR',
-                    'gateway_error_description' => 'GATEWAY_ERROR_UNKNOWN_ERROR',
-                    'description'               => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => 'GATEWAY_ERROR_UNKNOWN_ERROR'
                 ],
             ];
         });

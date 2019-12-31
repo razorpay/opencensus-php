@@ -9,8 +9,6 @@ use Requests_Session;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
-use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -28,26 +26,8 @@ class Service
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
 
-    // request and response fields
-    const GATEWAY   = 'gateway';
-    const ACTION    = 'action';
-    const INPUT     = 'input';
-    const DATA      = 'data';
-    const ACQUIRER  = 'acquirer';
-    const ERROR     = 'error';
-
-    // Supported Actions
-    const AUTHORIZE        = 'authorize';
-    const CALLBACK         = 'callback';
-    const VERIFY           = 'verify';
-    const AUTHORIZE_FAILED = 'authorize_failed';
-
-    const SUPPORTED_ACTIONS = [
-        self::AUTHORIZE,
-        self::CALLBACK,
-        self::VERIFY,
-        self::AUTHORIZE_FAILED
-    ];
+    // admin path
+    const ADMIN_PATH = 'admin/entities/';
 
     const GATEWAY_TO_METHOD_MAP = [
       Payment\Gateway::ATOM => Payment\Method::NETBANKING
@@ -97,7 +77,7 @@ class Service
 
         $url = $this->config['url'][$mode];
 
-        return $url;
+        return $url . 'v1/';
     }
 
     protected function getDefaultOptions(): array
@@ -164,23 +144,13 @@ class Service
 
         $response = $this->sendRawRequest($request);
 
-        $response = $this->processResponse($response, $method);
+        list($response, $code) = $this->parseResponse($response);
 
-        $this->traceResponse($response);
+        $this->checkForErrors($response, $code);
 
-        return $response;
-    }
+        $this->traceResponse($response['response']);
 
-    protected function traceRequest(array $request)
-    {
-        unset($request['options']['auth']);
-        unset($request['content'][self::INPUT]['gateway_config']);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
-
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
+        return $response[Response::RESPONSE];
     }
 
     protected function sendRawRequest($request)
@@ -193,7 +163,6 @@ class Service
             {
                 $content = json_encode($request['content']);
             }
-            sd($request);
 
             $response = $this->request->request(
                 $request['url'],
@@ -214,6 +183,7 @@ class Service
 
     protected function traceResponse($response)
     {
+        // TODO : should this be redacted?
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 
@@ -243,23 +213,13 @@ class Service
         }
     }
 
-    protected function isSuccessResponse($code, $responseBody)
-    {
-        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     // ----------------------- Verify ---------------------------------------------
 
     protected function verifyPayment($response)
     {
         $verify = new Verify($this->gateway, []);
 
-        $verify->verifyResponseContent = $response[self::DATA];
+        $verify->verifyResponseContent = $response[Response::DATA];
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -293,29 +253,43 @@ class Service
 
     // ----------------------- Error ---------------------------------------------
 
-    public function checkForErrors($response)
+    public function checkForErrors($response, $code)
     {
-        if (empty($response[self::ERROR]) === true)
+        if (empty($response) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        if (($code === 200) and (empty($response[Response::ERROR]) === true))
         {
             return;
         }
 
-        $errorCode = $response[self::ERROR]['internal_error_code'];
+        $error = $response[Response::ERROR];
+
+        if ($error[Error::CODE] !== Error::GATEWAY)
+        {
+            $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
+        }
+
+        $errorCode = $error[Error::CAUSE];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response[self::ERROR]);
+                $this->handleGatewayErrors($errorCode);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response[self::ERROR]);
+                $this->handleBadRequestErrors($errorCode);
                 break;
 
             case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($response[self::ERROR]);
+                $this->handleInternalServerErrors($errorCode);
                 break;
 
             default:
@@ -338,14 +312,8 @@ class Service
         return $class;
     }
 
-    protected function handleGatewayErrors(array $error)
+    protected function handleGatewayErrors($errorCode)
     {
-        $errorCode = $error['internal_error_code'];
-
-        $gatewayErrorCode = $error['gateway_error_code'] ?? null;
-
-        $gatewayErrorDesc = $error['gateway_error_description'] ?? null;
-
         switch ($errorCode)
         {
             case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
@@ -355,19 +323,12 @@ class Service
                 throw new Exception\GatewayTimeoutException($errorCode);
 
             default:
-                throw new Exception\GatewayErrorException($errorCode,
-                    $gatewayErrorCode,
-                    $gatewayErrorDesc);
+                throw new Exception\GatewayErrorException($errorCode);
         }
     }
 
-    protected function handleBadRequestErrors(array $error)
+    protected function handleBadRequestErrors($errorCode)
     {
-        $errorCode = $error['internal_error_code'];
-
-        $data = $error['data'] ?? null;
-
-        $description = $error['description'] ?? null;
 
         if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
         {
@@ -375,31 +336,12 @@ class Service
                 ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
         }
 
-        if (empty($error['gateway_error_code']) === false)
-        {
-            $this->handleGatewayErrors($error);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                $description,
-                $errorCode,
-                $data);
-        }
+        $this->handleGatewayErrors($errorCode);
     }
 
-    protected function handleInternalServerErrors(array $error)
+    protected function handleInternalServerErrors($code)
     {
-        $code = $error['internal_error_code'];
-
-        $data = $error['data'] ?? null;
-
-        $description = $error['description'] ?? 'nb plus service request failed';
-
-        throw new Exception\LogicException(
-            $description,
-            $code,
-            $data);
+        throw new Exception\LogicException(null, $code);
     }
 
     protected function throwServiceErrorException(\Throwable $e)
@@ -429,5 +371,14 @@ class Service
         }
 
         return $class;
+    }
+
+    protected function parseResponse($response)
+    {
+        $code = $response->status_code;
+
+        $responseBody = $this->jsonToArray($response->body);
+
+        return [$responseBody, $code];
     }
 }

@@ -108,6 +108,7 @@ class ConfigKey
         self::FTS_PAYOUT_CARD,
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
+        self::NB_PLUS_SERVICE_ENABLED,
         self::CITI_CHANNEL_PAYOUT_MIDS,
         self::ICICI_CHANNEL_PAYOUT_MIDS,
         self::LOW_BALANCE_RX_EMAIL

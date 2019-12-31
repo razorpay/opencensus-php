@@ -344,7 +344,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
-        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -386,7 +385,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::OFFER_ID,
     ];
 
     /**
@@ -449,7 +447,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
-        self::OFFER_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1308,13 +1305,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setSubscriptionId(string $subscriptionId)
     {
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
-    }
-
-
-    public function setOfferId(string $offerId)
-    {
-        $this->setAttribute(self::OFFER_ID, $offerId);
-
     }
 
     public function setFeeBearer($feeBearer)
@@ -2646,15 +2636,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
-    public function setPublicOfferIdAttribute(array & $array)
-    {
-        if (isset($array[self::OFFER_ID]))
-        {
-            $array[self::OFFER_ID] =
-                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
-        }
-    }
-
     public function setPublicCustomerIdAttribute(array & $array)
     {
         if (isset($array[self::CUSTOMER_ID]))
@@ -3089,7 +3070,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function dissociateOffer(Offer\Entity $offer)
     {
-        $this->offers()->detach($offer);
+        $this->offers()->detach($offer->getId());
     }
 
     /**
@@ -3098,8 +3079,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
-        return $this->offers->first();
+        return $this->offers()->first();
     }
+
 
 // --------------- Relation to other entity section ends -----------------------
 

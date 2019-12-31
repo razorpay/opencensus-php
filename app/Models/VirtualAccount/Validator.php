@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
+        Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -43,7 +44,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $vpaReceiverOptionRules = [
-        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:30',
+        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:20',
     ];
 
     protected static $createValidators = [

@@ -86,6 +86,8 @@ class BulkRecon extends Base\Core
                 return $this->initiateBulkReconProcess($collection);
             });
 
+        $this->notifyCriticalErrors();
+
         $this->fireSettlementWebhook();
     }
 

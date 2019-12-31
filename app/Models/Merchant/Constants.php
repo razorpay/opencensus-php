@@ -71,6 +71,7 @@ final class Constants
     const REASON_CODE            = 'reason_code';
     const CUSTOM_REASON_TYPE     = 'custom';
     const PREDEFINED_REASON_TYPE = 'predefined';
+    const DOCUMENT               = 'document';
 
     /**
      * Partner types that are allowed to view and manage
@@ -181,5 +182,10 @@ final class Constants
         Entity::CATEGORY,
         Entity::CATEGORY2,
         Entity::BILLING_LABEL,
+    ];
+
+    const INSURANCE_CATEGORIES = [
+        '6211',
+        '6300',
     ];
 }

@@ -541,6 +541,14 @@ class AttemptTest extends TestCase
 
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
+        //state transition has been added for fta update where initiated to reversed state transition is not allowed.
+        //first it will be changed to processed and then into reversed state.
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
         $this->updateFta(
             $attempt['fts_transfer_id'],
             $attempt['source'],

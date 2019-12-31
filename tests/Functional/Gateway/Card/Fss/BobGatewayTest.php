@@ -57,6 +57,15 @@ class BobGatewayTest extends TestCase
 
     public function testPaymentAuthAndCapture()
     {
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize_decrypted' and $this->acquirer === 'barb')
+            {
+                $this->assertNotNull($content[Fields::UDF6]);
+                $this->assertNotNull($content[Fields::UDF12]);
+            }
+        }, $this->gateway);
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);

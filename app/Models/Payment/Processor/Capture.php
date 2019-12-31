@@ -17,12 +17,14 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Offer;
 
 trait Capture
 {
@@ -393,7 +395,12 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        if($payment->getOffer() === null)
+        {
+            return;
+        }
+
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -518,6 +525,8 @@ trait Capture
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
             case Payment\Gateway::HITACHI:
                 return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;
@@ -1163,8 +1172,7 @@ trait Capture
     {
         $discount = 0;
 
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null))
+        if($payment->discount !== null)
         {
             $discount = $payment->discount->getAmount();
         }

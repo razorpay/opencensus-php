@@ -242,7 +242,9 @@ class Core extends Base\Core
 
     protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $this->createBalance($merchant, Mode::TEST);
+        $merchantBalance = $this->createBalance($merchant, Mode::TEST);
+
+        $this->createBalanceConfig($merchantBalance, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
@@ -252,12 +254,23 @@ class Core extends Base\Core
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
+        $this->setDefaultFeatureForMerchant($merchant);
+    }
+
+    protected function setDefaultFeatureForMerchant(Entity $merchant)
+    {
         // Removing this feature is complicated, but
         // blindly assigning the feature to everybody is not
         (new Feature\Core)->create([
             Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+        ], $shouldSync = true);
+
+        (new Feature\Core)->create([
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+            Feature\Entity::ENTITY_ID       => $merchant->getId(),
+            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
         ], $shouldSync = true);
     }
 
@@ -528,7 +541,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
                                [
-                                   "balance_id" => $merchantBalance->getId()
+                                   'balance_id' => $merchantBalance->getId()
                                ]);
 
             return $merchantBalance;
@@ -541,6 +554,17 @@ class Core extends Base\Core
         $this->repo->balance->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    public function createBalanceConfig($merchantBalance, $mode)
+    {
+        $balanceConfig = Merchant\Balance\BalanceConfig\Entity::buildFromBalance($merchantBalance);
+
+        $balanceConfig->setConnection($mode);
+
+        $this->repo->balance_config->createBalanceConfig($balanceConfig);
+
+        return $balanceConfig;
     }
 
     public function getUsers(Entity $merchant, string $product = Product::PRIMARY)
@@ -626,14 +650,17 @@ class Core extends Base\Core
 
         $function = camel_case($action);
 
-        $merchant->$function();
-
-        if ($useWorkflows === true)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $function, $useWorkflows, $originalMerchant, $action)
         {
-            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
-        }
+            $merchant->$function();
 
-        $this->repo->saveOrFail($merchant);
+            if ($useWorkflows === true)
+            {
+                $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+            }
+
+            $this->repo->saveOrFail($merchant);
+        });
 
         if($action === Merchant\Action::RELEASE_FUNDS)
         {
@@ -673,7 +700,7 @@ class Core extends Base\Core
         //
         $partner = $partners->filter(function(Entity $partner)
         {
-            return (in_array($partner->getPartnerType(), PartnerConstants::$settlementPartnerTypes, true) === true) ;
+            return (in_array($partner->getPartnerType(), PartnerConstants::$settlementPartnerTypes, true) === true);
 
         })->first();
 
@@ -2365,6 +2392,7 @@ class Core extends Base\Core
             $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
 
             $merchant->edit($merchantInput);
+
         }
     }
 
@@ -2446,7 +2474,7 @@ class Core extends Base\Core
             return null;
         }
 
-        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+        return (int) ($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
     }
 
 
@@ -2523,7 +2551,16 @@ class Core extends Base\Core
                 'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        try
+        {
+            return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
     }
 
     protected function getTranslateWebhookGateway(Entity $partner)
@@ -2860,7 +2897,7 @@ class Core extends Base\Core
 
         $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
 
-        $merchantEmailList = [] ;
+        $merchantEmailList = [];
 
         foreach ($transactionReportEmails as $transactionReportEmail)
         {
