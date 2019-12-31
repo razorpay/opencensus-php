@@ -52,39 +52,20 @@ class Holidays
         ],
 
         2020 => [
-            2  => [
-                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
-                21 => 'Mahashivratri',
-            ],
-            3  => [
-                10 => 'Holi',
-                25 => 'Gudhi Padwa',
-            ],
             4  => [
                 1  => 'Annual closing of banks',
-                2  => 'Ram Navami',
-                6  => 'Mahavir Jayanti',
                 10 => 'Good Friday',
-                14 => 'Dr. Babasaheb Ambedkar Jayanti/Bengali New Year’s Day',
             ],
             5  => [
-                1  => 'Maharashtra Din/May Day (Labour Day)',
-                7  => 'Buddha Pournima',
                 25 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
             ],
             8  => [
                 1  => 'Bakri ID (Id-Ul-Zuha)',
                 15 => 'Independence Day',
-                22 => 'Ganesh Chaturthi',
             ],
             10 => [
                 2  => 'Mahatma Gandhi Jayanti',
                 30 => 'Id-E-Milad (Milad-un-Nabi)/Baravafat/Lakshmi Puja',
-            ],
-            11 => [
-                14 => 'Diwali Amavasaya (Laxmi Pujan)/Kali Puja',
-                16 => 'Diwali (Balipratipada)/Bhaidooj/Chitragupt Jayanti',
-                30 => 'Guru Nanak Jayanti/Kartika Purnima',
             ],
             12 => [
                 25 => 'Christmas',
