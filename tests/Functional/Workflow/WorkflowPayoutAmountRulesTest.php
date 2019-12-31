@@ -36,8 +36,19 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         // Storing the merchant id of the one created above and store it a global variable for later use
         $this->customMid = $customMerchant->getId();
 
+        // Creating a another create_payout permission with a different category as permission name is not unique
+        $this->fixtures->create('permission',
+            [
+                'name'      => 'create_payout',
+                'category'  => 'merchant_detail'
+            ]
+        );
+
         // Fetch permissionId for 'create_payout' permission which will be useful later
-        $permissionId = DB::table('permissions')->where('name','=','create_payout')->value('id');
+        // We pick the create_payout permission belonging to payouts category
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')
+                                                ->where('category','=','payouts')
+                                                ->value('id');
 
         // Creating three workflows other than default workflow and storing its ids in $this->workflowIds
         // These three workflows will belong to the merchant with merchant id '10000000000000'
@@ -298,6 +309,24 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$workflow->getId();
 
+        $this->startTest();
+    }
+
+    public function testCreateWorkflowPayoutAmountRulesWithNoWorkflowId()
+    {
+        $this->ba->adminProxyAuth();
+
+        // Attach first two rules to workflows
+        for ($index = 0; $index < 2; $index++) {
+            $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = 'workflow_'.$this->workflowIds[$index];
+            $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index];
+        }
+
+        // Pass null value for workflow id in third rule
+        $this->testData[__FUNCTION__]['request']['content']['rules'][$index]['workflow_id'] = null;
+        $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = null;
+
+        // This should attach the rules by passing all validations
         $this->startTest();
     }
 }
