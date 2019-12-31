@@ -72,7 +72,10 @@ class Core extends Base\Core
 
             foreach ($rules as $rule)
             {
-                Workflow\Entity::verifyIdAndStripSign($rule[Entity::WORKFLOW_ID]);
+                if(empty($rule[Entity::WORKFLOW_ID]) === false)
+                {
+                    Workflow\Entity::verifyIdAndStripSign($rule[Entity::WORKFLOW_ID]);
+                }
 
                 $rule[Entity::MERCHANT_ID] = $merchant->getId();
 
