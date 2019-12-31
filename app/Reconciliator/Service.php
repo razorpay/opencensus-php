@@ -283,7 +283,9 @@ class Service extends Base\Service
 
         $pushData = [];
 
-        if (empty($response[$paymentId]) === false)
+        $responseData = $response['items'];
+
+        if (empty($responseData[$paymentId]) === false)
         {
             foreach ($gatewayParams as $field)
             {
@@ -292,11 +294,11 @@ class Service extends Base\Service
                     continue;
                 }
 
-                if (empty($response[$paymentId][$field]) === true)
+                if (empty($responseData[$paymentId][$field]) === true)
                 {
                     $pushData[$field] = $misParams[$field];
                 }
-                else if (trim($response[$paymentId][$field]) !== $misParams[$field])
+                else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
                 {
                     $this->messenger->raiseReconAlert(
                         [
@@ -304,7 +306,7 @@ class Service extends Base\Service
                             'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,
-                            'db_reference_number'       => $response[$paymentId][$field],
+                            'db_reference_number'       => $responseData[$paymentId][$field],
                             'recon_reference_number'    => $misParams[$field],
                             'gateway'                   => $input['gateway'],
                             'batch_id'                  => $input['batch_id'],

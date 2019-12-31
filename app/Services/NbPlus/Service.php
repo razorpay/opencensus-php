@@ -113,7 +113,7 @@ class Service
 
     public function fetchNetbankingData(array $input)
     {
-        return $this->sendRequest('POST', 'entities\netbanking', $input);
+        return $this->sendRequest('POST', 'entities/netbanking', $input);
     }
 
     public function fetchMultiple(string $entityName, array $input)
@@ -142,15 +142,11 @@ class Service
             ],
         ];
 
-        $this->traceRequest($request);
-
         $response = $this->sendRawRequest($request);
 
         list($response, $code) = $this->parseResponse($response);
 
         $this->checkForErrors($response, $code);
-
-        $this->traceResponse($response['response']);
 
         return $response[Response::RESPONSE];
     }
