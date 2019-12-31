@@ -1173,19 +1173,11 @@ class Processor
 
     protected function isNbPlusServiceConfigEnabled(): bool
     {
-        //return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
-        // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
-        return true;
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
     {
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            // TODO: TEMPORARY CHANGE FOR TESTING MUST REVERT !!
-            return 'nbplusps';
-        }
-
         $featureFlag = $prefix. '_' .$payment->getGateway();
 
         if (empty($payment->getAuthenticationGateway()) === false)
