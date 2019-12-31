@@ -18,7 +18,8 @@ use RZP\Exception\BadRequestException;
 class TokenService
 {
     const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes
-    const EX                       = 'ex';
+
+    const REDIS_EXPIRY_PARAM       = 'ex';
 
     protected $redis;
 
@@ -40,7 +41,7 @@ class TokenService
 
         $token = $context . '.' . $timestamp;
 
-        $this->redis->set($token, '', self::EX, self::TOKEN_EXPIRES_IN_SECONDS);
+        $this->redis->set($token, '', self::REDIS_EXPIRY_PARAM, self::TOKEN_EXPIRES_IN_SECONDS);
 
         return $token;
     }

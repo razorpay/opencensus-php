@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
     use HasBalance;
     use SoftDeletes;
 
-    protected $table  = Table::PAYOUT_LINK;
+    protected $table = Table::PAYOUT_LINK;
 
     const ID                   = 'id';
     const CONTACT_ID           = 'contact_id';
@@ -50,6 +50,12 @@ class Entity extends Base\PublicEntity
     const IMPS                 = 'IMPS';
     const NEFT                 = 'NEFT';
     const UPI                  = 'UPI';
+    const ACCOUNT_TYPE         = 'account_type';
+    const VPA                  = 'vpa';
+    const BANK_ACCOUNT         = 'bank_account';
+    const ACCOUNT_NUMBER       = 'account_number';
+    const CONTACT              = 'contact';
+
 
     protected $generateIdOnCreate = true;
 
