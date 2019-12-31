@@ -414,6 +414,8 @@ class Base extends BaseCore
 
         $this->runInputValidations($payout, $input);
 
+        $this->processPayoutLinkId($payout, $input);
+
         $payout->merchant()->associate($this->merchant);
 
         $payout->customer()->associate($this->customer);
@@ -453,6 +455,18 @@ class Base extends BaseCore
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
+    }
+
+    protected function processPayoutLinkId(&$payout, &$input)
+    {
+        $payoutLinkId = array_pull($input , Payout\Entity::PAYOUT_LINK_ID);
+
+        if ($payoutLinkId !== null)
+        {
+            $payoutLink = $this->repo->payout_link->findByIdAndMerchant($payoutLinkId, $this->merchant);
+
+            $payout->payoutLink()->associate($payoutLink);
+        }
     }
 
     protected function preValidations()

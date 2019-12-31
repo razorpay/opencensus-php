@@ -2,16 +2,23 @@
 
 namespace RZP\Models\PayoutLink;
 
+use View;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Mode;
+use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Models\PayoutLink\External\FundAccount;
+use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
@@ -19,7 +26,7 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT         = '%s/payout-links/%s/view';
+    const LONG_URL_FORMAT         = '%s/v1/payout-links/%s/view';
     const PARAMS                  = 'params';
     const CUSTOMER_NAME           = 'customer_name';
     const TEMPLATE                = 'template';
@@ -30,9 +37,7 @@ class Core extends Base\Core
     const API_POUT_LNK_SCR        = 'api.pout_l';
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
-
-
-    const TOKEN_EXPIRE_IN_SECONDS = 900; // 15 minutes
+    const TWO_LACS                =  20000000;
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
     const ACTIVE                  = 'active';
@@ -49,6 +54,7 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
         $this->elfin = $this->app['elfin'];
 
         $this->raven = $this->app['raven'];
@@ -58,6 +64,46 @@ class Core extends Base\Core
         $this->redis = $this->app['redis']->connection();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    public function getSettings($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        return $settingsAccessor->all()->toArray();
+    }
+
+    /**
+     * Updates settings for payoutlinks on merchant level
+     * @param $input
+     * @return array
+     */
+    public function updateSettings($merchantId, $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $input
+            ]
+        );
+
+        (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        $settingsAccessor->upsert($input)->save();
+
+        return [self::SUCCESS => self::OK];
+    }
+
+    protected function getSettingsAccessor($merchant)
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -108,17 +154,19 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
+                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::CANCELLED],
+                                         [$payoutLink]);
+
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
      * @param string $payoutLinkId
      * @param array $input
      * @return array
-     * @throws BadRequestException
      */
     public function initiate(string $payoutLinkId, array $input)
     {
@@ -133,35 +181,145 @@ class Core extends Base\Core
             function() use ($payoutLinkId, $input)
             {
                 return $this->repo->transaction(
-                        function() use ($payoutLinkId, $input)
+                    function() use ($payoutLinkId, $input)
+                    {
+                        $tokenService = new TokenService();
+
+                        $validator = (new Entity())->getValidator();
+
+                        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+
+                        $token = array_pull($input, Entity::TOKEN);
+
+                        $tokenService->verify($token);
+
+                        $payoutLink = $this->repo
+                                           ->payout_link
+                                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+                        if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
                         {
-                            $validator = (new Entity())->getValidator();
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
+                                [
+                                    self::PAYOUT_LINK_ID => $payoutLinkId,
+                                    'status'             => $payoutLink->getStatus()
+                                ]);
+                        }
 
-                            $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+                        // Code to create/fetch fund account and associate it with the payoutlink
+                        $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
+                                                                                          $this->merchant,
+                                                                                          $payoutLink->contact);
+                        $payoutLink->fundAccount()->associate($fundAccount);
 
-                            $token = array_pull($input, Entity::TOKEN);
+                        // pushing this to DB layer, before going to payout create flow
+                        $this->repo->saveOrFail($payoutLink);
 
-                            (new TokenService())->verify($token);
+                        // code to create a payout as this payout-link as the source
+                        $mode = $this->getPayoutMode($payoutLink);
 
-                            $payoutLink = $this->repo
-                                ->payout_link
-                                ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                        (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
 
-                            $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
-                                                                                              $this->merchant,
-                                                                                              $payoutLink->contact);
-                            $payoutLink->fundAccount()->associate($fundAccount);
+                        $payoutLink->setStatus(Status::PROCESSING);
 
-                            $this->repo->saveOrFail($payoutLink);
+                        $this->repo->saveOrFail($payoutLink);
 
-                            return $payoutLink;
-                        });
+                        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::PROCESSING],
+                                                 [$payoutLink]);
+
+                        $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
+                                           [
+                                               'payout_link_id'     => $payoutLinkId,
+                                               'payout_link_status' => $payoutLink->getStatus()
+                                           ]);
+
+                        $tokenService->invalidate($token);
+
+                        return $payoutLink;
+                    });
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYMENT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
 
-        // associate it with the payout-link entity
-        // trigger the flow for initiating the payout
+    /**
+     * This function will listen to payout updates, and update the corresponding payoutlink
+     * This will be inside a mutex. Transaction is not required, because its just a status update
+     *
+     * @param string $payoutLinkId
+     * @param string $payoutStatus
+     */
+    public function payoutUpdateListener(Entity $payoutLink, string $payoutStatus)
+    {
+        if (isset(Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus]) === false)
+        {
+            $this->trace->warning(TraceCode::PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS,
+                                  [
+                                      'payout_link_id' => $payoutLink->getPublicId(),
+                                      'payout_status'  => $payoutStatus,
+                                  ]);
+            return;
+        }
+
+        $nextPayoutLinkStatus = Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
+            [
+                'payout_link_id'          => $payoutLink->getPublicId(),
+                'payout_status'           => $payoutStatus,
+                'next_payout_link_status' => $nextPayoutLinkStatus
+            ]);
+
+        $this->mutex->acquireAndRelease(
+            $payoutLink->getPublicId(),
+            function () use ($payoutLink, $payoutStatus, $nextPayoutLinkStatus)
+            {
+                $payoutLink->setStatus($nextPayoutLinkStatus);
+
+                $isDirty = $payoutLink->isDirty();
+
+                $this->repo->saveOrFail($payoutLink);
+
+                if($isDirty === true)
+                {
+                    $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus], [$payoutLink]);
+                }
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * @param Entity $payoutLink
+     * @return string
+     */
+    protected function getPayoutMode(Entity $payoutLink)
+    {
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+
+        $amount = $payoutLink->getAmount();
+
+        $fundAccount = $payoutLink->fundAccount;
+
+        switch ($fundAccount->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
+
+                if (($isImpsEnabled === true) and
+                    ($amount < self::TWO_LACS))
+                {
+                    return Mode::IMPS;
+                }
+                else
+                {
+                    return Mode::NEFT;
+                }
+            case Type::VPA:
+                return Mode::UPI;
+        }
     }
 
     public function create(array $input): Entity
@@ -208,7 +366,128 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payoutLink);
 
+        $this->app['events']->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
+                                   [$payoutLink]);
+
         return $payoutLink;
+    }
+
+    public function viewHostedPage($payoutLinkId)
+    {
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $hostedPageData = $this->getDataForHostedPage($payoutLink);
+
+        return View::make('payout_link.customer_hosted', $hostedPageData);
+    }
+
+    protected function getDataForHostedPage(Entity $payoutLink): array
+    {
+        $contact = $payoutLink->contact;
+
+        $maskedEmail = $this->getMaskedEmail($contact);
+
+        $maskedPhone = $this->getMaskedPhone($contact);
+
+        $data = [
+            'api_host'                => $this->config['url.api.production'],
+            'payout_link_id'          => $payoutLink->getPublicId(),
+            'payout_link_status'      => $payoutLink->getStatus(),
+            'amount'                  => $payoutLink->getAmount(),
+            'currency'                => $payoutLink->getCurrency(),
+            'user_name'               => $contact->getName(),
+            'description'             => $payoutLink->getDescription(),
+            'user_email'              => $maskedEmail,
+            'user_phone'              => $maskedPhone,
+            'receipt'                 => $payoutLink->getReceipt(),
+            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'payout_link_description' => $payoutLink->getDescription(),
+            'primary_color'           => $this->merchant->getBrandColor(),
+            'merchant_name'           => $this->merchant->getName()
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Masks the customer email as follows
+     * Input: test_email@gmail.com
+     * Output: tes*****l@g****.com
+     *
+     * @param ContactEntity $contact
+     * @return mixed|string
+     */
+    protected function getMaskedEmail(ContactEntity $contact)
+    {
+        $email = $contact->getEmail();
+
+        $maskedEmail = $email;
+
+        if (empty($email) === true)
+        {
+            return '';
+        }
+
+        try
+        {
+            // assuming that if this is filled, then its a valid email
+
+            $email = explode('@', $email); // ex: test_email@gmail.com
+
+            $emailName = $email[0]; // test_email
+
+            $emailDomain = $email[1]; // gmail.com
+
+            $emailDomain = explode('.', $emailDomain);
+
+            $domain = $emailDomain[0]; // gmail
+
+            $topLevelDomain = $emailDomain[1]; // .com
+
+            // replace the name except first 3 characters with *
+            $maskedEmailName = substr($emailName, 0, 3) .
+                               str_repeat('*', strlen($emailName) - 3);
+
+            // replace the domain with *, except the first and the last character
+            $maskedDomain = $domain[0] .
+                            str_repeat('*', strlen($domain) - 2) .
+                            $domain[strlen($domain) - 1];
+
+            $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
+        }
+        catch(\Exception $e)
+        {
+            // Do not want the page load to fail because the email was incorrect
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::INVALID_EMAIL_CANNOT_MASK,
+                                         [
+                                             'email'      => $email,
+                                             'contact_id' => $contact->getId()
+                                         ]
+            );
+        }
+
+        return $maskedEmail;
+    }
+
+    public function getMaskedPhone(ContactEntity $contact)
+    {
+        $phone = $contact->getContact();
+
+        if (empty($phone) === true)
+        {
+            return '';
+        }
+
+        $phoneLen = strlen($phone);
+
+        return substr($phoneLen, 0, 2) .
+               str_repeat('*', $phoneLen - 4) .
+               substr($phone, $phoneLen - 2, $phoneLen - 1);
+
     }
 
     protected function getBalance(array $input)
