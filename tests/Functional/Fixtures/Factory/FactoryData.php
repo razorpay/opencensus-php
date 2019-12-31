@@ -1205,6 +1205,8 @@ final class FactoryData
             'user_id'              => null,
             'currency'             => 'INR',
             'description'          => 'This is a test payout',
+            'purpose'              => 'refund',
+            'purpose'              => 'refund',
             'receipt'              => 'Test Payout Receipt',
             'notes'                => null,
             'short_url'            => 'http=>//76594130.ngrok.io/i/mGs4ehe',

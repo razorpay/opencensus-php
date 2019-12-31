@@ -95,17 +95,17 @@ return [
             'method'  => 'POST',
             'url'     => '/payout-links',
             'content' => [
-                'amount'         => 1000,
-                'currency'       => 'INR',
-                'description'    => 'This is a test payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
                 'purpose'     => 'refund',
-                'contact'        => [
+                'contact'     => [
                     'name'    => 'cskdsdssdklifnjs',
-                    'email'   => '@@',
+                    'email'   => 'this_is_invalid@com',
                     'contact' => '1231231231'
                 ],
-                'notes'          => ['hi' => 'hello'],
-                'receipt'        => 'Test Payout Receipt'
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
             ]
         ],
         'response' => [
@@ -133,7 +133,7 @@ return [
                 'description' => 'This is a test payout',
                 'purpose'     => 'refund',
                 'contact'     => [
-                    'name'       => 'cskdsdssdklifnjs'
+                    'name'       => 'Test Name'
                 ],
                 'notes'       => ['hi' => 'hello'],
                 'receipt'     => 'Test Payout Receipt'
@@ -370,26 +370,6 @@ return [
         ]
     ],
 
-    'testExceptionWhenOnlyEmailIsPresentAndEmailSendingFails' => [
-        'request'   => [
-            'method' => 'POST',
-            'url'    => '',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED,
-        ]
-    ],
-
     'testPayoutLinkCancelApiSuccess' => [
         'request'  => [
             'method' => 'POST',
@@ -421,7 +401,7 @@ return [
         ]
     ],
 
-   'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
+    'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
         'request'   => [
             'method' => 'POST',
             'url'    => '',
@@ -650,7 +630,7 @@ return [
         'response'  => [
             'content'     => [
             ]
-    ]],
+        ]],
 
     'testInitiateApiSuccessWhenValidVpaPassed' => [
         'request'   => [
@@ -705,7 +685,7 @@ return [
             ]
         ]],
 
-    'testPayoutStatusProcessedMakesLinkStatusPaid' => [
+    'testPayoutStatusProcessedMakesLinkStatusProcessed' => [
         'request'   => [
             'method'  => 'POST',
             'url'     => '',
@@ -755,7 +735,7 @@ return [
             'content' => [
                 'UPI'  => 1,
                 'IMPS' => 1,
-        ]],
+            ]],
         'response'  => [
             'content'     => [
                 'success' => 'OK'
@@ -768,7 +748,7 @@ return [
             'method'  => 'POST',
             'url'     => '',
             'content' => [
-                'token'           => 'random token string',
+                'token'           => 'test_otp_auth_token',
                 'fund_account_id' => '100000000003fa'
             ]
         ],
@@ -802,7 +782,7 @@ return [
         'response' => [
             'content' => [
             ]
-    ]],
+        ]],
 
     'testImpsPayoutModeWhenBankFundAccountAndAmountLessThanTwoLacs' => [
         'request'  => [
@@ -832,5 +812,153 @@ return [
         'response' => [
             'content' => [
             ]
-        ]]
+        ]
+    ],
+
+    'testPayoutLinkIssuedWebhookTriggered' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'    => 'Test Contact Name',
+                    'email'   => 'testemail@test.com',
+                    'contact' => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'receipt'     => 'Test Payout Receipt',
+                'notes'       => [
+                    'hi' => 'hello'
+                ],
+                'status'      => 'issued',
+            ]
+        ]
+    ],
+
+    'PayoutLinkIssuedWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payout_link.issued',
+        'contains' => [
+            'payout_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => 'Test Contact Name',
+                    'contact_email'        => 'testemail@test.com',
+                    'contact_phone_number' => '1231231231',
+                    'fund_account_id'      => null,
+                    'status'               => 'issued',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'Test Payout Receipt',
+                ],
+            ],
+        ],
+    ],
+
+    'PayoutLinkAttemptedWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payout_link.attempted',
+        'contains' => [
+            'payout_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => '1000010contact',
+                    'contact_email'        => 'test@rzp.com',
+                    'contact_phone_number' => '1231231231',
+                    'fund_account_id'      => '100000000003fa',
+                    'status'               => 'issued',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'Test Payout Receipt',
+                ],
+            ],
+        ],
+    ],
+
+    'PayoutLinkProcessedWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payout_link.processed',
+        'contains' => [
+            'payout_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => '1000010contact',
+                    'contact_email'        => 'test@rzp.com',
+                    'contact_phone_number' => '1231231231',
+                    'fund_account_id'      => '100000000003fa',
+                    'status'               => 'processed',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'Test Payout Receipt',
+                ],
+            ],
+        ],
+    ],
+
+    'PayoutLinkProcessingWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payout_link.processing',
+        'contains' => [
+            'payout_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => '1000010contact',
+                    'contact_email'        => 'test@rzp.com',
+                    'contact_phone_number' => '1231231231',
+                    'fund_account_id'      => '100000000003fa',
+                    'status'               => 'processing',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'Test Payout Receipt',
+                ],
+            ],
+        ],
+    ],
+
+    'PayoutLinkCancelledWebHook' => [
+        'entity'   => 'event',
+        'event'    => 'payout_link.cancelled',
+        'contains' => [
+            'payout_link',
+        ],
+        'payload'  => [
+            'payout_link' => [
+                'entity' => [
+                    'contact_name'         => '1000010contact',
+                    'contact_email'        => 'test@rzp.com',
+                    'contact_phone_number' => '1231231231',
+                    'fund_account_id'      => null,
+                    'status'               => 'cancelled',
+                    'amount'               => 1000,
+                    'currency'             => 'INR',
+                    'description'          => 'This is a test payout',
+                    'receipt'              => 'Test Payout Receipt',
+                ],
+            ],
+        ],
+    ],
 ];
