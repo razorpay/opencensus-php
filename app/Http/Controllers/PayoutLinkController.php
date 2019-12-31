@@ -56,7 +56,6 @@ class PayoutLinkController extends Controller
      */
     public function initiate(string $payoutLinkId)
     {
-        array_pull($this->input , 'XDEBUG_SESSION_START');
         $response = $this->service()->initiate($payoutLinkId, $this->input);
 
         return ApiResponse::json($response);

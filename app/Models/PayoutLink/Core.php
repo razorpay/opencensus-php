@@ -4,9 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use View;
 use Mail;
-use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
@@ -61,8 +59,6 @@ class Core extends Base\Core
 
         $this->tokenService = new TokenService();
 
-        $this->redis = $this->app['redis']->connection();
-
         $this->mutex = $this->app['api.mutex'];
     }
 
@@ -112,7 +108,7 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
 
-        (new TokenService())->verify($input[Entity::TOKEN]);
+        $this->tokenService->verify($input[Entity::TOKEN]);
 
         $fundAccounts = $this->repo
                              ->payout_link
@@ -175,6 +171,11 @@ class Core extends Base\Core
             $input);
 
         // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
+        // So by flow, if two calls to add a fund-account-id + initiate payout come in, and the first one is successful,
+        // then the next call waiting for the mutex should fail in token verification itself.
+        // If we do move the token auth outside the mutex, then its possible for two fund-accounts to be added,
+        // because the token verification was already successful and as soon as the mutex is acquired Fund Account
+        // will be added and a payout created.
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         return $this->mutex->acquireAndRelease(
             $payoutLinkId,
@@ -183,15 +184,11 @@ class Core extends Base\Core
                 return $this->repo->transaction(
                     function() use ($payoutLinkId, $input)
                     {
-                        $tokenService = new TokenService();
-
-                        $validator = (new Entity())->getValidator();
-
-                        $validator->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+                        (new Validator())->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
 
                         $token = array_pull($input, Entity::TOKEN);
 
-                        $tokenService->verify($token);
+                        $this->tokenService->verify($token);
 
                         $payoutLink = $this->repo
                                            ->payout_link
@@ -234,7 +231,7 @@ class Core extends Base\Core
                                                'payout_link_status' => $payoutLink->getStatus()
                                            ]);
 
-                        $tokenService->invalidate($token);
+                        $this->tokenService->invalidate($token);
 
                         return $payoutLink;
                     });

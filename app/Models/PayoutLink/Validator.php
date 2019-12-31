@@ -28,7 +28,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addFundAccountRules = [
-        Entity::FUND_ACCOUNT_ID => 'nullable|string|size:14',
+        Entity::FUND_ACCOUNT_ID => 'filled|string|size:14',
         self::ACCOUNT_TYPE      => 'required_if:fund_account_id,null|string|in:bank_account,vpa',
         self::VPA               => 'required_if:type,vpa|array',
         self::BANK_ACCOUNT      => 'required_if:type,bank_account|array',

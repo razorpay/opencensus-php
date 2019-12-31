@@ -5,6 +5,7 @@ namespace RZP\Models\PayoutLink\External;
 use App;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\PayoutLink\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -28,19 +29,20 @@ class FundAccount
 
     public function __construct()
     {
-        $this->trace = App::getFacadeRoot()['trace'];
+        $app = App::getFacadeRoot();
+        $this->trace = $app['trace'];
 
-        $this->repo = App::getFacadeRoot()['repo'];
+        $this->repo = $app['repo'];
     }
 
     public function processFundAccountInput(array $input,
                                             MerchantEntity $merchant,
                                             ContactEntity $contact): FundAccountEntity
     {
-        $fundAccountId = array_pull($input, 'fund_account_id');
-
-        if ($fundAccountId !== null)
+        if (array_key_exists(Entity::FUND_ACCOUNT_ID, $input))
         {
+            $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
+
             $fundAccount = $this->repo->fund_account->findByIdAndMerchant($fundAccountId, $merchant);
 
             // verifying that the fund_account_id sent is same as the one associated with the payout-link
@@ -51,8 +53,8 @@ class FundAccount
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_ACCOUNT_DOESNT_BELONG_TO_INTENDED_CONTACT,
                                               null,
                                               [
-                                                  'fund_account_id' => $fundAccountId,
-                                                  'contact_id'      => $contact->getId()
+                                                  Entity::FUND_ACCOUNT_ID => $fundAccountId,
+                                                  Entity::CONTACT_ID      => $contact->getId()
                                               ]);
             }
         }
@@ -62,10 +64,8 @@ class FundAccount
                                $input);
 
             $fundAccount = (new FundAccountCore())->create($input, $merchant, $contact);
-
         }
 
         return $fundAccount;
     }
-
 }
