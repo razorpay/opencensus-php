@@ -45,6 +45,8 @@ class Status
         PayoutStatus::PROCESSING => self::PROCESSING,
         PayoutStatus::QUEUED     => self::PROCESSING,
         PayoutStatus::PROCESSED  => self::PROCESSED,
+        PayoutStatus::REJECTED   => self::ATTEMPTED,
+        PayoutStatus::PENDING    => self::PROCESSING,
     ];
 
     const INTERNAL_TO_PUBLIC_STATUS = [

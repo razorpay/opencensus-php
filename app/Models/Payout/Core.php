@@ -1360,6 +1360,8 @@ class Core extends Base\Core
 
                 $this->dispatchFtaInitiate($payout);
 
+                (new SourceUpdater($payout))->update();
+
                 return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -1385,6 +1387,8 @@ class Core extends Base\Core
                 $payout->setStatus(Status::REJECTED);
 
                 $this->repo->saveOrFail($payout);
+
+                (new SourceUpdater($payout))->update();
 
                 return $payout;
             },
