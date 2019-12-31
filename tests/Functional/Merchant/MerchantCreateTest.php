@@ -93,6 +93,8 @@ class MerchantCreateTest extends TestCase
 
         $this->checkBalances();
 
+        $this->checkBalanceConfigs();
+
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
@@ -138,6 +140,16 @@ class MerchantCreateTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
+
+    protected function checkBalanceConfigs()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $this->runRequestResponseFlow($this->testData['testBalanceConfigInTestAfterCreatedMerchant']);
+    }
+
 
     protected function checkNetbankingBanks()
     {

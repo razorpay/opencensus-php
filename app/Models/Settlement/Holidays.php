@@ -203,6 +203,46 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2020 => [
+            2  => [
+                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
+                21 => 'Mahashivratri',
+            ],
+            3  => [
+                10 => 'Holi',
+                25 => 'Gudhi Padwa',
+            ],
+            4  => [
+                1  => 'Annual closing of banks',
+                2  => 'Ram Navami',
+                6  => 'Mahavir Jayanti',
+                10 => 'Good Friday',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Bengali New Year’s Day',
+            ],
+            5  => [
+                1  => 'Maharashtra Din/May Day (Labour Day)',
+                7  => 'Buddha Pournima',
+                25 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
+            ],
+            8  => [
+                1  => 'Bakri ID (Id-Ul-Zuha)',
+                15 => 'Independence Day',
+                22 => 'Ganesh Chaturthi',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                30 => 'Id-E-Milad (Milad-un-Nabi)/Baravafat/Lakshmi Puja',
+            ],
+            11 => [
+                14 => 'Diwali Amavasaya (Laxmi Pujan)/Kali Puja',
+                16 => 'Diwali (Balipratipada)/Bhaidooj/Chitragupt Jayanti',
+                30 => 'Guru Nanak Jayanti/Kartika Purnima',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**
@@ -309,19 +349,164 @@ class Holidays
             return false;
         }
 
+        return (self::isWeekend($date) === false);
+    }
+
+    /**
+     * returns true if the the given date falls under banks nonworking weekend
+     * which includes sundays and non working saturdays
+     *
+     * @param Carbon $date
+     *
+     * @return bool
+     */
+    public static function isWeekend(Carbon $date): bool
+    {
         if ($date->dayOfWeek === Carbon::SUNDAY)
         {
-            return false;
+            return true;
         }
 
         // If it's a saturday, then check if it's a working saturday
         if (($date->dayOfWeek === Carbon::SATURDAY) and
             (self::isWorkingSaturday($date) === false))
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    /**
+     * give the list of days which are bank non working weekends between given dates
+     *
+     * @param Carbon $start
+     * @param Carbon $end
+     *
+     * @return array
+     */
+    public static function getListOfWeekendsBetweenDates(Carbon $start, Carbon $end): array
+    {
+        $listOfWeekends = [];
+
+        //
+        // diff in days also consider time and it wont return the right result
+        // so, we are resetting the dates to start and end time
+        //
+        $start->startOfDay();
+
+        $end->endOfDay();
+
+        $days = $start->diffInDays($end);
+
+        $date = $start->copy();
+
+        while ($days !== 0)
+        {
+            if (self::isWeekend($date) === true)
+            {
+                $listOfWeekends[] = $date->copy();
+            }
+
+            $date->addDay();
+
+            $days--;
+        }
+
+        return $listOfWeekends;
+    }
+
+    /**
+     * give the list of days which are bank holidays between given dates
+     *
+     * @param Carbon $start
+     * @param Carbon $end
+     *
+     * @return array
+     */
+    public static function getListOfHolidaysBetweenDates(Carbon $start, Carbon $end): array
+    {
+        $listOfHolidays = [];
+
+        //
+        // diff in days also consider time and it wont return the right result
+        // so, we are resetting the dates to start and end time
+        //
+        $start->startOfDay();
+
+        $end->endOfDay();
+
+        $days = $start->diffInDays($end);
+
+        $date = $start->copy();
+
+        while ($days !== 0)
+        {
+            if (self::isSpecifiedBankHoliday($date) === true)
+            {
+                $listOfHolidays[] = $date->copy();
+            }
+
+            $date->addDay();
+
+            $days--;
+        }
+
+        return $listOfHolidays;
+    }
+
+    /**
+     * constructs the holidays detail message given the settlement time
+     * this will find all the holidays between current timestamp and settlement time
+     * then construct the message will all the details acquired
+     *
+     * @param Carbon $settlementTime
+     *
+     * @return string|null
+     */
+    public static function constructDetailsMessage(Carbon $settlementTime)
+    {
+        $response = '';
+
+        $currentTimestamp = Carbon::now(Timezone::IST);
+
+        $weekendList = self::getListOfWeekendsBetweenDates($currentTimestamp, $settlementTime);
+
+        if (empty($weekendList) === false)
+        {
+            $response .= (count($weekendList) > 2) ?
+                'Saturday and Sunday are weekends' :
+                'Sunday is weekend';
+        }
+
+        $holidayList = self::getListOfHolidaysBetweenDates($currentTimestamp, $settlementTime);
+
+        if (empty($holidayList) === false)
+        {
+            $holidayReasons = array_map(function($date)
+            {
+                return self::getReasonForBankHoliday($date);
+            }, $holidayList);
+
+            $holidayDateFormatted = array_map(function($date)
+            {
+                return $date->format('M d');
+            }, $holidayList);
+
+            $response .= ((empty($response) === true) ? 'Bank' : ' and bank')
+                        . ' holiday [' . implode(',', $holidayReasons)
+                        . '] on ' . implode(',', $holidayDateFormatted);
+        }
+
+        if (empty($response) === true)
+        {
+            return null;
+        }
+
+        $response .= '. So, the next settlement will happen on '
+                     . $settlementTime->format('M d, hA');
+
+        return $response;
     }
 
     /**
@@ -331,6 +516,7 @@ class Holidays
      * @param Carbon $toDate
      *
      * @return array $holidays - All holidays between days
+     * @throws Exception\AssertionException
      */
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate): array
     {

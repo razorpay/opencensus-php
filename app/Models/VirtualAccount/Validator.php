@@ -44,7 +44,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $vpaReceiverOptionRules = [
-        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:30',
+        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:20',
     ];
 
     protected static $createValidators = [

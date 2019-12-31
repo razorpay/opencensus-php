@@ -751,6 +751,18 @@ class Pricing extends Base
                 'amount_range_max'    => 50000,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE3CYqf1zbyCC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);

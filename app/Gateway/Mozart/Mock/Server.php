@@ -580,6 +580,28 @@ class Server extends Base\Mock\Server
                     "success" => false
                 ];
                 break;
+            case "6":
+                $responseBody = [
+                    "data" => [
+                    "_raw" => "{\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999000000000069\",\"TID\":\"12380309\",\"REQRRN\":\"DrZX1T3gRojN470\",\"RESDTTM\":\"13122019104436\",\"RESCODE\":\"05\",\"RESDESC\":\"Duplicate Merchant code\"}",
+                    "description" => "Duplicate Merchant code",
+                    "res_code" => "05",
+                    "retry" => "false",
+                    "status" => "terminal_creation_failed"
+                    ],
+                    "error" =>  [
+                    "description" => "",
+                    "gateway_error_code" => "05",
+                    "gateway_error_description" => "(No error description was mapped for this error code)",
+                    "gateway_status_code" => 200,
+                    "internal_error_code" => "GATEWAY_ERROR_UNKNOWN_ERROR"
+                    ],
+                    "next" => [],
+                    "success" => false
+                ];
+                break;
+
+
         }
 
         $response = \Response::make($responseBody);

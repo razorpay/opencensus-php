@@ -715,6 +715,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_RECURRING_AUTH_REQUEST                        = 'GATEWAY_RECURRING_AUTH_REQUEST';
     const GATEWAY_MOTO_AUTH_RESPONSE                            = 'GATEWAY_MOTO_AUTH_RESPONSE';
     const GATEWAY_PAYSECURE_AUTH_RESPONSE                       = 'GATEWAY_PAYSECURE_AUTH_RESPONSE';
+    const GATEWAY_PAYSECURE_CAPTURE_INITIATED                   = 'GATEWAY_PAYSECURE_CAPTURE_INITIATED';
+    const GATEWAY_PAYSECURE_REFUND_INITIATED                    = 'GATEWAY_PAYSECURE_REFUND_INITIATED';
+    const GATEWAY_PAYSECURE_VERIFY_REFUND_INITIATED             = 'GATEWAY_PAYSECURE_VERIFY_REFUND_INITIATED';
     const GATEWAY_RECURRING_AUTH_RESPONSE                       = 'GATEWAY_RECURRING_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_ERROR                          = 'GATEWAY_RECURRING_AUTH_ERROR';
     const GATEWAY_VALIDATE_AUTH_REQUEST                         = 'GATEWAY_VALIDATE_AUTH_REQUEST';
@@ -1078,6 +1081,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR              = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
     const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD                = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE                        = 'MERCHANT_BALANCE_DEBIT_FAILURE';
+    const MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 = 'MERCHANT_REFUND_CREDITS_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION                 = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION                 = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION                  = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
@@ -1485,6 +1489,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS                 = 'GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS';
     const GATEWAY_DOWNTIME_VAJRA_CREATE                         = 'GATEWAY_DOWNTIME_VAJRA_CREATE';
     const GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE                = 'GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE';
+    const GATEWAY_DOWNTIME_DOPPLER_INVALID_STATUS               = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_STATUS';
+    const GATEWAY_DOWNTIME_DOPPLER_INVALID_MESSAGE              = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_MESSAGE';
+    const GATEWAY_DOWNTIME_DOPPLER_INVALID_REASONCODE           = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_REASONCODE';
+    const GATEWAY_DOWNTIME_DOPPLER_CREATE                       = 'GATEWAY_DOWNTIME_DOPPLER_CREATE';
+    const GATEWAY_DOWNTIME_DOPPLER_EDIT                         = 'GATEWAY_DOWNTIME_DOPPLER_EDIT';
+    const GATEWAY_DOWNTIME_DOPPLER_RESOLVE                      = 'GATEWAY_DOWNTIME_DOPPLER_RESOLVE';
+    const GATEWAY_DOWNTIME_DOPPLER_REQUEST                      = 'GATEWAY_DOWNTIME_DOPPLER_REQUEST';
     const VAJRA_CPS_ROUTING_REQUEST                             = 'VAJRA_CPS_ROUTING_REQUEST';
     const VAJRA_CPS_START_DISABLE_ROUTING                       = 'VAJRA_CPS_START_DISABLE_ROUTING';
     const VAJRA_CPS_DISABLE_ROUTING_SUCCESS                     = 'VAJRA_CPS_DISABLE_ROUTING_SUCCESS';
@@ -1531,6 +1542,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_CARD_INTERNATIONAL_CHECK                        = 'OFFER_CARD_INTERNATIONAL_CHECK';
     const OFFER_CARD_USAGE_CHECK                                = 'OFFER_CARD_USAGE_CHECK';
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
+    const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
+    const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
 
     // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                          = 'ADD_GATEWAY_PRIORITY_REQUEST';
@@ -1927,6 +1940,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_TRANSACTIONS_SKIPPED                       = 'SETTLEMENT_TRANSACTIONS_SKIPPED';
     const SETTLEMENT_JOB_INIT_FOR_MERCHANT                      = 'SETTLEMENT_JOB_INIT_FOR_MERCHANT';
     const SETTLEMENT_INITIATE_JOB                               = 'SETTLEMENT_INITIATE_JOB';
+    const SETTLEMENT_DESTINATION                                = 'SETTLEMENT_DESTINATION';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_FAILED               = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_FAILED';
     const MERCHANT_DISPATCHED_FOR_SETTLEMENT                    = 'MERCHANT_DISPATCHED_FOR_SETTLEMENT';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT           = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT';
@@ -2331,6 +2345,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE           = 'TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE';
     const TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE               = 'TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE';
 
+    const SET_MERCHANT_INHERITANCE_PARENT_FAILED                   = 'SET_MERCHANT_INHERITANCE_PARENT_FAILED';
+
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
@@ -2341,6 +2357,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Doppler service
     const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
+    const DOPPLER_SERVICE_BAD_REQUEST_ERROR                     = 'DOPPLER_SERVICE_BAD_REQUEST_ERROR';
+    const DOPPLER_SERVICE_ERROR                                 = 'DOPPLER_SERVICE_ERROR';
+    const DOPPLER_SERVICE_SUCCESS_RATE_REQUEST                  = 'DOPPLER_SERVICE_SUCCESS_RATE_REQUEST';
+    const DOPPLER_SERVICE_SUCCESS_RATE_RESPONSE                 = 'DOPPLER_SERVICE_SUCCESS_RATE_RESPONSE';
+    const DOPPLER_SERVICE_RETRY                                 = 'DOPPLER_SERVICE_RETRY';
+    const DOPPLER_IN_CONTROLLER                                 = 'DOPPLER_IN_CONTROLLER';
+    const DOPPLER_IN_CONTROLLER_RESPONSE                        = 'DOPPLER_IN_CONTROLLER_RESPONSE';
 
     /*
      * Trace codes for PowerWallet
@@ -2409,6 +2432,21 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for workflow rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+
+    //Balance Config
+    const BALANCE_CONFIG_CREATE_REQUEST                         = 'BALANCE_CONFIG_CREATE_REQUEST';
+    const BALANCE_CONFIG_CREATE_SUCCESSFUL                      = 'BALANCE_CONFIG_CREATE_SUCCESSFUL';
+    const BALANCE_CONFIG_EDIT_REQUEST                           = 'BALANCE_CONFIG_EDIT_REQUEST';
+    const BALANCE_CONFIG_EDIT_SUCCESSFUL                        = 'BALANCE_CONFIG_EDIT_SUCCESSFUL';
+    const BALANCE_CONFIG_FETCH_REQUEST                          = 'BALANCE_CONFIG_FETCH_REQUEST';
+    const BALANCE_CONFIG_FETCH_SUCCESSFUL                       = 'BALANCE_CONFIG_FETCH_SUCCESSFUL';
+
+    //Negative Balance
+    const NEGATIVE_BALANCE_THRESHOLD_ALERT                       = 'NEGATIVE_BALANCE_THRESHOLD_ALERT';
+    const NEGATIVE_BALANCE_BREACHED                               = 'NEGATIVE_BALANCE_BREACHED';
+    //Reserve Balance Trace Codes
+    const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
+    const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
@@ -2562,7 +2600,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_MTU_UPDATE_SUCCESS                           => 'Updating live by transaction is successful for merchant ',
         self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
         self::WORKFLOW_PAYOUT_RULES_ATTACHMENT                      => 'Attaching payout amount rules to workflow',
-    ];
+        self::MERCHANT_BALANCE_DEBIT_FAILURE                        => 'Not enough balance',
+        self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
+        self::NEGATIVE_BALANCE_BREACHED                              => 'Negative Balance has crossed the negative limit threshold',
+        ];
 
     /**
      * Translate event code to message

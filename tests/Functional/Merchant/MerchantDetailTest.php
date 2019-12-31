@@ -1254,4 +1254,76 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->assertEmpty($referredSubMerchant->tagNames());
     }
+
+    public function testGetMerchantDetailsWithBalanceConfigs()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => null,
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            =>  '100yz000yz00yz',
+                'balance_id'                    =>  '100def000def00',
+                'type'                          =>  'primary',
+                'negative_transaction_flows'   =>  ['refund'],
+                'negative_limit_auto'           =>  5000000,
+                'negative_limit_manual'         =>  5000000
+            ]
+        );
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            =>  '100ab000ab00ab',
+                'balance_id'                    =>  '100abc000abc00',
+                'type'                          =>  'banking',
+                'negative_transaction_flows'   =>  ['payout'],
+                'negative_limit_auto'           =>  5000000,
+                'negative_limit_manual'         =>  5000000
+            ]
+        );
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
 }

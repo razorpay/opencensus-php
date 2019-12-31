@@ -35,6 +35,7 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
@@ -639,6 +640,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
+            'fund_transfer_attempt'     => FundTransfer\Attempt\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
             'external'                  => External\Entity::class,
 
