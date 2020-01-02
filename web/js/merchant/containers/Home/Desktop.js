@@ -207,7 +207,7 @@ class AnalyticsDesktop extends Component {
                               currency={'INR'}
                             />
                           </strong>{' '}
-                          will be settled by{' '}
+                          will be settled on{' '}
                           <Time
                             value={settlement_amount.data.next_settlement_time}
                             format={'DD MMM YYYY, hh:mm:ss a'}

@@ -44,7 +44,7 @@ export default class SettlementsExample extends Component {
             <div class="s-start" />
             T
             <br />
-            <span style={{ fontSize: '13px' }}>Transaction Date</span>
+            <span style={{ fontSize: '13px' }}>Transaction Capture Date</span>
             <hr />
           </div>
           {this.getRemainingValues()}

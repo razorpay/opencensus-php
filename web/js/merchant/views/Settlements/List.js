@@ -339,7 +339,7 @@ export default class SettlementsListContainer extends ListContainer {
                                   currency={'INR'}
                                 />
                               </strong>{' '}
-                              will be settled by{' '}
+                              will be settled on{' '}
                               <Time
                                 value={
                                   this.props.settlement_amount.data
