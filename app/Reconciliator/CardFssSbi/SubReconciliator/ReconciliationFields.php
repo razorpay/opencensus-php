@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Reconciliator\CardFssSbi\SubReconciliator;
-
 
 class ReconciliationFields
 {
