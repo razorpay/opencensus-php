@@ -15,6 +15,8 @@ class NetbankingRecon extends Job
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
 
+    const ENTITY = 'netbanking';
+
     protected $data;
 
     protected $queueConfigKey = 'reconciliation_batch';
@@ -56,7 +58,7 @@ class NetbankingRecon extends Job
 
             if (empty($response) === false)
             {
-                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data);
+                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data, self::ENTITY);
             }
 
             $this->trace->info(

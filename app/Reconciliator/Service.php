@@ -273,7 +273,7 @@ class Service extends Base\Service
         );
     }
 
-    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input)
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity)
     {
         $paymentId = $input['payment_id'];
 
@@ -281,7 +281,7 @@ class Service extends Base\Service
 
         $gatewayParams = $input['gateway_params'];
 
-        $pushData = [];
+        $dataToUpdate = [];
 
         $responseData = $response['items'];
 
@@ -296,7 +296,7 @@ class Service extends Base\Service
 
                 if (empty($responseData[$paymentId][$field]) === true)
                 {
-                    $pushData[$field] = $misParams[$field];
+                    $dataToUpdate[$field] = $misParams[$field];
                 }
                 else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
                 {
@@ -313,7 +313,7 @@ class Service extends Base\Service
                         ]
                     );
 
-                    $pushData[$field] = $misParams[$field];
+                    $dataToUpdate[$field] = $misParams[$field];
                 }
             }
         }
@@ -331,12 +331,16 @@ class Service extends Base\Service
             return;
         }
 
-        if (empty($pushData) === true)
+        if (empty($dataToUpdate) === true)
         {
             return;
         }
 
-        $pushData['payment_id'] = $paymentId;
+        $dataToUpdate['payment_id'] = $paymentId;
+
+        // Final Payload
+        $pushData['entity_name'] = $entity;
+        $pushData['recon_data']  = $dataToUpdate;
 
         $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 
