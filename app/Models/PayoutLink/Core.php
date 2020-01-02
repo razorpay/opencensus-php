@@ -106,7 +106,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
 
-        $this->tokenService->verify($input[Entity::TOKEN]);
+        $this->tokenService->verify($input[Entity::TOKEN], $payoutLinkId);
 
         $fundAccounts = $this->repo
                              ->payout_link
@@ -200,7 +200,7 @@ class Core extends Base\Core
 
                         $token = array_pull($input, Entity::TOKEN);
 
-                        $this->tokenService->verify($token);
+                        $this->tokenService->verify($token, $payoutLinkId);
 
                         $payoutLink = $this->repo
                                            ->payout_link
