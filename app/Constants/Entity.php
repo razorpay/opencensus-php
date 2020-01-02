@@ -131,6 +131,7 @@ class Entity
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
+    const COMMISSION_INVOICE         = 'commission_invoice';
 
 
     const OPTIONS                    = 'options';
@@ -603,6 +604,7 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+        self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
     ];
