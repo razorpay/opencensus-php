@@ -65,10 +65,6 @@ class Validator extends Base\Validator
      */
     public function ensureDistinctWorkflowIds($rules)
     {
-//        $uniqueWorkflowIds = array_unique(array_column($rules, Entity::WORKFLOW_ID));
-
-//        if (count($rules) != count($uniqueWorkflowIds))
-
         $workflowIds = array_filter(array_column($rules, Entity::WORKFLOW_ID));
 
         if (count($workflowIds) != count(array_unique($workflowIds)))
