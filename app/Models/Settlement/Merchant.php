@@ -42,6 +42,7 @@ class Merchant
     protected $mode;
     protected $env;
     protected $merchantSettleToPartner;
+    protected $isAggregateSettlement;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -54,7 +55,8 @@ class Merchant
                                 $channel,
                                 $repo = null,
                                 $logging = false,
-                                array $merchantSettleToPartner = [])
+                                array $merchantSettleToPartner = [],
+                                bool $isAggregateSettlement = false)
     {
         $this->app = App::getFacadeRoot();
 
@@ -69,6 +71,8 @@ class Merchant
         $this->trace = $this->app['trace'];
 
         $this->merchantSettleToPartner = $merchantSettleToPartner;
+
+        $this->isAggregateSettlement = $isAggregateSettlement;
 
         // Get settlement bank account
         $this->attachSettlementBankAccount();
@@ -635,7 +639,9 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if (($ba === null) and (isset($this->merchantSettleToPartner[$mid]) === false))
+            if (($ba === null) and
+                (isset($this->merchantSettleToPartner[$mid]) === false) and
+                ($this->isAggregateSettlement === false))
             {
                 throw new Exception\LogicException(
                     'Settling bank account not found');
