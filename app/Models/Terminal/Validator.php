@@ -360,6 +360,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
     protected static $amexEditTerminalRules = [
