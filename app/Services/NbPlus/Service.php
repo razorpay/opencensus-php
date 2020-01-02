@@ -142,9 +142,13 @@ class Service
             ],
         ];
 
+        $this->traceRequest($request);
+
         $response = $this->sendRawRequest($request);
 
         list($response, $code) = $this->parseResponse($response);
+
+        $this->traceResponse($response);
 
         $this->checkForErrors($response, $code);
 
