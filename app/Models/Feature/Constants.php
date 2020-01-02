@@ -142,6 +142,12 @@ class Constants
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
+
+    /**
      * When adding submerchant, whether to set international activation flow to greylist
      * irrespective of merchant category and subcategory
      */
@@ -461,6 +467,7 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
         self::BLOCK_OFFER_CREATION            => true,
         self::ENACH_INTERMEDIATE              => true,
         self::SAVE_VPA                        => true,

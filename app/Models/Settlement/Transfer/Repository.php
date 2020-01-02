@@ -1,0 +1,11 @@
+<?php
+
+namespace RZP\Models\Settlement\Transfer;
+
+use RZP\Models\Base;
+use RZP\Constants\Entity as EntityConstant;
+
+class Repository extends Base\Repository
+{
+    protected $entity = EntityConstant::SETTLEMENT_TRANSFER;
+}

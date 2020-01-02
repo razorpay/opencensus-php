@@ -29,6 +29,7 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Models\Transaction\Processor\SettlementTransfer;
 
 class SettlementTest extends TestCase
 {
@@ -2039,6 +2040,27 @@ class SettlementTest extends TestCase
         return $schedule;
     }
 
+    protected function createAndAssignSettlementTransferSchedule($input, $merchantId)
+    {
+        $schedule = $this->createSchedule($input);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/merchants/'. $merchantId. '/schedules',
+            'content' => [
+                'schedule_id' => $schedule['id'],
+                'method'      => 'settlement_transfer',
+                'type'        => 'Settlement',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        return $schedule;
+    }
+
     public function testMerchantSettlementV2DspDelayedSettlement()
     {
         $channel = Channel::AXIS;
@@ -2397,5 +2419,53 @@ class SettlementTest extends TestCase
         $this->assertEquals($destinationType, $content['destination_type']);
 
         $this->assertEquals($destinationId, $destinationPrefix . $content['destination_id']);
+    }
+
+    public function testSettlementTransferWithScheduleAssign()
+    {
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2019, 12, 6, 9, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('ZmReTNPu1KFKBn');
+
+        $input = [
+            'name'        => 'Hourly Early Settlement',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'hour'        => 0,
+            'delay'       => 4,
+        ];
+
+        $this->createAndAssignSettlementTransferSchedule($input,'ZmReTNPu1KFKBn');
+
+        $settlementTransfer= $this->fixtures->create('settlement_transfer');
+
+        $settlementTransfer = new SettlementTransfer($settlementTransfer);
+
+        $returnTIme = $settlementTransfer->getSettledAtTimestampForSettlementTransfer('ZmReTNPu1KFKBn');
+
+        $this->assertEquals(1575617400, $returnTIme);
+    }
+
+    public function testSettlementTransferWithoutScheduleAssign()
+    {
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2019, 12, 6, 9, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('ZmReTNPu1KFKBn');
+
+        $settlementTransfer= $this->fixtures->create('settlement_transfer');
+
+        $settlementTransfer = new SettlementTransfer($settlementTransfer);
+
+        $returnTIme = $settlementTransfer->getSettledAtTimestampForSettlementTransfer('ZmReTNPu1KFKBn');
+
+        $this->assertEquals(1575628200, $returnTIme);
     }
 }
