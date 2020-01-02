@@ -4,6 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use View;
 use Mail;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
@@ -155,6 +156,10 @@ class Core extends Base\Core
             {
                 $payoutLink->setStatus(Status::CANCELLED);
 
+                $currentTime = Carbon::now()->getTimestamp();
+
+                $payoutLink->setCancelledAt($currentTime);
+
                 $this->repo->saveOrFail($payoutLink);
 
                 $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::CANCELLED],
@@ -205,6 +210,7 @@ class Core extends Base\Core
                         {
                             throw new BadRequestException(
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
+                                null,
                                 [
                                     self::PAYOUT_LINK_ID => $payoutLinkId,
                                     'status'             => $payoutLink->getStatus()
@@ -531,6 +537,18 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
+        if ($payoutLink->getStatus() !== Status::ISSUED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
+                null,
+                [
+                    Entity::ID     => $payoutLinkId,
+                    Entity::STATUS => $payoutLink->getStatus()
+                ]
+            );
+        }
+
         $otp = $this->generateOtp($payoutLink, $context);
 
         $this->deliverOtp($payoutLink, $otp);
@@ -545,6 +563,18 @@ class Core extends Base\Core
         $payoutLink = $this->repo
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        if ($payoutLink->getStatus() !== Status::ISSUED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
+                null,
+                [
+                    Entity::ID     => $payoutLinkId,
+                    Entity::STATUS => $payoutLink->getStatus()
+                ]
+            );
+        }
 
         $context = array_pull($input, Entity::CONTEXT);
 
@@ -603,6 +633,7 @@ class Core extends Base\Core
         if ((empty($phoneNumber) === true) and (empty($email) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                                          null,
                                           [
                                               ContactEntity::ID      => $payoutLink->getContactId(),
                                               ContactEntity::NAME    => $payoutLink->getContactName(),
@@ -754,6 +785,7 @@ class Core extends Base\Core
         if (key_exists(Entity::OTP, $response) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                                          null,
                                           [
                                               'request'  => $payload,
                                               'response' => $response,

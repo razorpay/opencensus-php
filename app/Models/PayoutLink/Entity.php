@@ -294,6 +294,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
     }
 
+    public function setCancelledAt(string $timestamp)
+    {
+        $this->setAttribute(ENTITY::CANCELLED_AT, $timestamp);
+    }
+
     public function setStatus($newStatus)
     {
         $currentStatus = $this->getStatus();

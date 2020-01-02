@@ -402,6 +402,53 @@ return [
         ]
     ],
 
+    'testGenerateOtpOnCancelledLinkThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'context' => '1234'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
+        ]
+    ],
+
+    'testVerifyOtpOnCancelledLinkThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'context' => '12345',
+                'otp'     => '0007'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
+        ]
+    ],
+
     'testWhenRavenFailsWhileOtpGenerationExceptionIsThrown' => [
         'request'   => [
             'method' => 'POST',

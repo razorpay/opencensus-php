@@ -502,7 +502,9 @@ class PayoutLinkTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['cancelled_at']);
     }
 
     public function testCancellingPayoutLinkFromProcessingStatusShouldThrowException()
@@ -1010,6 +1012,38 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testGenerateOtpOnCancelledLinkThrowsException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::CANCELLED);
+
+        $payoutLink->saveOrFail();
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
+
+        $this->startTest();
+    }
+
+    public function testVerifyOtpOnCancelledLinkThrowsException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::CANCELLED);
+
+        $payoutLink->saveOrFail();
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::VERIFY_CUSTOMER_OTP);
+
+        $this->startTest();
+    }
+
     protected function mockInfernoFire(Closure $closure)
     {
         $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
@@ -1040,5 +1074,4 @@ class PayoutLinkTest extends TestCase
     {
         $this->testData[$funcName]['request']['url'] = '/payout-links/' . $payoutLinkId . '/' . $path;
     }
-
 }
