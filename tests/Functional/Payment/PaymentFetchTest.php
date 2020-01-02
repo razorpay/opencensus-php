@@ -451,4 +451,21 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals(Currency::INR, $paymentFetchResponse['base_currency']);
 
     }
+
+    public function testAdminPaymentFetchINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($paymentArray);
+
+        $paymentId = $response['id'];
+
+        $paymentFromAdminFetch = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertArrayHasKey('base_amount', $paymentFromAdminFetch);
+
+        $this->assertArrayNotHasKey('base_currency', $paymentFromAdminFetch);
+    }
 }
