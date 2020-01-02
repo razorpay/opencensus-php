@@ -39,6 +39,7 @@ export default class ReportHome extends React.PureComponent {
               <GenerateReportPanel
                 configs={configs}
                 onGenerateReport={this.onGenerateReport}
+                emailReportOptions={this.props.emailReportOptions}
               />
               <LogList
                 currentMerchantId={user.current}

@@ -3,10 +3,12 @@ import { connect } from 'react-redux';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
+import { isPresent } from 'common/utils/rzp-utils';
 
 import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
 import SelectFormat from './SelectFormat';
+import EmailReport from './EmailReport';
 
 export default class GenerateReportPanel extends React.PureComponent {
   state = {
@@ -33,10 +35,13 @@ export default class GenerateReportPanel extends React.PureComponent {
 
   onGenerateReport = () => {
     const [startTime, endTime] = this.selectPeriod.getDateRange();
+    const emails = this.emailReport.getWrappedInstance().getValue();
+
     const payload = {
       config_id: this.state.values.selectedConfigId,
       start_time: startTime,
       end_time: endTime,
+      emails: isPresent(emails) ? emails : undefined,
       ...this.selectFormat.getValue(),
     };
 
@@ -66,6 +71,11 @@ export default class GenerateReportPanel extends React.PureComponent {
               selectedConfigId={values.selectedConfigId}
               allConfigs={configs.items}
               ref={ref => (this.selectFormat = ref)}
+            />
+
+            <EmailReport
+              ref={ref => (this.emailReport = ref)}
+              emails={this.props.emailReportOptions}
             />
           </div>
         </Input.Group>
