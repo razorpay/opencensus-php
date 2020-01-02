@@ -63,6 +63,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
 {
@@ -6530,7 +6531,7 @@ trait Authorize
 
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
 
-        $returnData['emandate_details'] = Gateway::fetchEmandateDisplayDetails(
+        $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
                                                                                $payment,
                                                                                $token,
                                                                                $terminal,
