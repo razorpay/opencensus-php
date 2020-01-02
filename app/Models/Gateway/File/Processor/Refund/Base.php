@@ -421,7 +421,7 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE,
                 [
-                    'id'        => $this->gatewayFile->getId(),
+                    'id' => $this->gatewayFile->getId(),
                 ]);
         }
 

@@ -43,11 +43,13 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Constants\Environment;
+use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
@@ -60,7 +62,8 @@ use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
-
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
 {
@@ -302,6 +305,11 @@ trait Authorize
         {
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
+            // Using Hitachi terminals for paysecure until we create new ones for paysecure.
+            if ($this->shouldCreatePaysecurePayment($payment, $input, $currentTerminal))
+            {
+                $currentTerminal[Terminal\Entity::GATEWAY] = Gateway::PAYSECURE;
+            }
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
@@ -4178,14 +4186,14 @@ trait Authorize
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        $this->offer = $payment->getOffer();
+
+        if($payment->getOffer() === null)
         {
             return;
         }
 
-        $this->offer = $payment->getOffer();
-
-        if ($this->offer === null)
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -4715,6 +4723,8 @@ trait Authorize
         }
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
+
+        $returnData = $this->addEmandateDisplayDetailsIfApplicable($returnData, $payment);
 
         return $returnData;
     }
@@ -6474,5 +6484,63 @@ trait Authorize
         }
 
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+    }
+
+    protected function shouldCreatePaysecurePayment(Payment\Entity $payment, array $input, $currentTerminal)
+    {
+        return (!is_null($currentTerminal) and
+            ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
+            ($payment->card['network_code'] === Network::RUPAY) and
+            ($this->app->razorx->getTreatment($payment->getId(), 'enable_paysecure_gateway', $this->mode) === 'on'));
+    }
+
+    /**
+     * Enach through NPCI has mandated that additional information has to be displayed
+     * when rendering the response page to the user.
+     * emandate_details contains this additional information. In this flow
+     * we open a different view based on the requirements set by NPCI after callback
+     *
+     * @param array $returnData
+     * @param array $gatewayData
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function addEmandateDisplayDetailsIfApplicable($returnData, Payment\Entity $payment): array
+    {
+        if ($payment->getGateway() !== Payment\Gateway::ENACH_NPCI_NETBANKING)
+        {
+            return $returnData;
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ENACH_INTERMEDIATE) === false)
+        {
+            return $returnData;
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $terminal = $payment->terminal;
+
+        $config = $this->app['config']->get('gateway.enach_npci_netbanking');
+
+        $payment = $payment->toArray();
+
+        $mode = $this->mode;
+
+        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
+
+        $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
+                                                                               $payment,
+                                                                               $token,
+                                                                               $terminal,
+                                                                               $merchant,
+                                                                               $config,
+                                                                               $mode,
+                                                                               $gatewayPayment
+                                                                              );
+
+        return $returnData;
     }
 }

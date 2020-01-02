@@ -1665,7 +1665,7 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithVpa()
     {
-        $response = $this->createVirtualAccount([], false, null, null, true,'testvpa');
+        $response = $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -1676,7 +1676,7 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $response = $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+        $response = $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'virtualVpa']);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -1689,9 +1689,9 @@ class VirtualAccountTest extends TestCase
 
         $this->runRequestResponseFlow($expectedResponse, function() {
 
-            $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'testvpa');
+            $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
 
-            $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+            $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'virtualVpa']);
         });
     }
 
@@ -1717,6 +1717,6 @@ class VirtualAccountTest extends TestCase
             return true;
         });
 
-        $this->createVirtualAccount([], false, null, null, true,'testvpa');
+        $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
     }
 }

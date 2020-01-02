@@ -30,6 +30,7 @@ class Table
     const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
+    const BALANCE_CONFIG        = 'balance_config';
     const PRICING               = 'pricing';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
@@ -117,6 +118,7 @@ class Table
     const MERCHANT_DOCUMENT          = 'merchant_documents';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
     const REFERRALS                  = 'referrals';
+    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';

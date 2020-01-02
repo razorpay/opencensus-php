@@ -136,6 +136,9 @@ class Constants
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
 
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
+    const SAVE_VPA                        = 'save_vpa';
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     /**
@@ -268,6 +271,8 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -291,6 +296,7 @@ class Constants
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
+        self::SAVE_VPA,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -462,6 +468,9 @@ class Constants
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
         self::AGGREGATE_SETTLEMENT            => true,
+        self::BLOCK_OFFER_CREATION            => true,
+        self::ENACH_INTERMEDIATE              => true,
+        self::SAVE_VPA                        => true,
     ];
 
     // Entity type constants

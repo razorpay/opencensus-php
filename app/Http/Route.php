@@ -1383,10 +1383,26 @@ final class Route
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                      => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+
+        //balance configs apis
+        'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'                    ],
+        'get_merchant_balance_config'              => ['get',      'balance_configs/{id}',                                      'BalanceConfigController@getBalanceConfigById'                      ],
+        'add_merchant_balance_config'              => ['post',     'balance_configs/{merchant_id}',                             'BalanceConfigController@addBalanceConfig'                        ],
+        'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'                        ],
 
         //route to add additional website through admin dashboard
-        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+
+        // merchant config inheritance
+        'merchant_inheritance_parent_fetch'       => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                  ],
+        'merchant_inheritance_parent_set'         => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                 ],
+        'merchant_inheritance_parent_set_bulk'    => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'             ],
+        'merchant_inheritance_parent_delete'      => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'               ],
+
+        // Route for Success Rate Global Configurations
+        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
     ];
 
     public static $public = [
@@ -1703,6 +1719,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_inheritance_parent_set_bulk',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -2162,7 +2179,11 @@ final class Route
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
-        ];
+
+        //balance configs
+        'fetch_merchant_balance_configs',
+        'get_merchant_balance_config',
+    ];
 
     //
     // These will run on internal auth with the assurance
@@ -2659,6 +2680,17 @@ final class Route
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
+
+        'merchant_inheritance_parent_fetch',
+        'merchant_inheritance_parent_set',
+        'merchant_inheritance_parent_delete',
+        
+        'add_merchant_balance_config',
+        'edit_merchant_balance_config',
+
+        // SuccessRate Config Routes
+        'update_sr_level_global_config',
+        'get_all_sr_level_global_config',
     ];
 
     public static $routePermission = [
@@ -3194,6 +3226,7 @@ final class Route
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
+
         'setl_holidays'                             => '*',
 
         'create_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
@@ -3201,8 +3234,24 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
+        'merchant_inheritance_parent_fetch'                  =>  '*',
+        'merchant_inheritance_parent_set'                    =>  '*',
+        'merchant_inheritance_parent_set_bulk'               =>  '*',
+        'merchant_inheritance_parent_delete'                 =>  '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        'fetch_merchant_balance_configs'            => '*',
+        'get_merchant_balance_config'               => '*',
+        'add_merchant_balance_config'               => '*',
+        'edit_merchant_balance_config'              => '*',
+
+        //Todo update permission later
+        //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
+        'update_sr_level_global_config'             => '*',
+        //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
+        'get_all_sr_level_global_config'            => '*',
     ];
 
     public static $direct = [
@@ -3599,6 +3648,7 @@ final class Route
             'pricing_add_plan_rule_bulk',
             'virtual_account_create',
             'oauth_token_create',
+            'merchant_inheritance_parent_set_bulk',
         ],
 
         'stork' => [

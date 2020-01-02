@@ -242,7 +242,9 @@ class Core extends Base\Core
 
     protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $this->createBalance($merchant, Mode::TEST);
+        $merchantBalance = $this->createBalance($merchant, Mode::TEST);
+
+        $this->createBalanceConfig($merchantBalance, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
@@ -552,6 +554,17 @@ class Core extends Base\Core
         $this->repo->balance->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    public function createBalanceConfig($merchantBalance, $mode)
+    {
+        $balanceConfig = Merchant\Balance\BalanceConfig\Entity::buildFromBalance($merchantBalance);
+
+        $balanceConfig->setConnection($mode);
+
+        $this->repo->balance_config->createBalanceConfig($balanceConfig);
+
+        return $balanceConfig;
     }
 
     public function getUsers(Entity $merchant, string $product = Product::PRIMARY)
@@ -2379,6 +2392,7 @@ class Core extends Base\Core
             $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
 
             $merchant->edit($merchantInput);
+
         }
     }
 
