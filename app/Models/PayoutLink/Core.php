@@ -221,6 +221,24 @@ class Core extends Base\Core
                         $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                           $this->merchant,
                                                                                           $payoutLink->contact);
+
+                        // in case a fund-account-id send if not of type bank_account / vpa,
+                        // then exception should be thrown
+                        $fundAccountType = $fundAccount->getAccountType();
+
+                        if (($fundAccountType !== Type::VPA) and
+                            ($fundAccountType !== Type::BANK_ACCOUNT))
+                        {
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+                                null,
+                                [
+                                    Entity::ID              => $payoutLink->getId(),
+                                    Entity::FUND_ACCOUNT_ID => $fundAccount->getId(),
+                                ]
+                            );
+                        }
+
                         $payoutLink->fundAccount()->associate($fundAccount);
 
                         // pushing this to DB layer, before going to payout create flow

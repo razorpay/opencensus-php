@@ -817,6 +817,30 @@ return [
         ]
     ],
 
+    'testInitiateApiWithInvalidFundAccountTypeThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'token'           => '1234',
+                'fund_account_id' => '100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+        ]
+    ],
+
     'testUpiPayoutModeWhenVpaFundAccountAdded' => [
         'request'  => [
             'method'  => 'POST',

@@ -803,6 +803,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/EMAIL delivery for OTP';
     const BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION                         = 'Cannot generate OTP for payoulink in this state';
     const BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION                       = 'Cannot verify OTP for payoulink in this state';
+    const BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED                      = 'Only VPA and Bank Accounts supported by Payout Links';
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'Otp generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid payout link status passed';
