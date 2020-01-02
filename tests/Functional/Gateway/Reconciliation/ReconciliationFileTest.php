@@ -2665,7 +2665,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testFssBobPaymentReconFile()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -2763,7 +2765,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testFssBobNewFormatPaymentReconFile()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -2913,7 +2917,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testFssBobRefundRecon()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

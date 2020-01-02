@@ -428,7 +428,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedFssTerminal(array $attributes = [], $acquirer = 'barb')
+    public function createSharedFssTerminal(array $attributes = [], $acquirer)
     {
         $termId = \RZP\Models\Terminal\Shared::FSS_RAZORPAY_TERMINAL;
 

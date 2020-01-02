@@ -69,7 +69,8 @@ class PaymentReconciliate extends CardFssBob\SubReconciliator\PaymentReconciliat
             $this->reportMissingColumn($row, ReconciliationFields::GST_AMT);
         }
 
-        $csfTax = (isset($row[ReconciliationFields::MTS_TOTL_CSF_AMT]) === true) ? abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT] ?? 0) : 0;
+        $csfTax = (isset($row[ReconciliationFields::MTS_TOTL_CSF_AMT]) === true) ?
+            (abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT] ?? 0)) : 0;
 
         $gstTax = abs($row[ReconciliationFields::GST_AMT]);
 
@@ -78,7 +79,6 @@ class PaymentReconciliate extends CardFssBob\SubReconciliator\PaymentReconciliat
         return Helper::getIntegerFormattedAmount($tax);
     }
 
-    // todo: Add this based on the calculations
     protected function getGatewayFee($row)
     {
         $msfAmount = Helper::getIntegerFormattedAmount($row[ReconciliationFields::MTS_MSF_FIXFEE]);
