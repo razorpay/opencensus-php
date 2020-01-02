@@ -514,6 +514,10 @@ class PayoutLinkTest extends TestCase
         $payoutLink->setStatus(Status::PROCESSING);
 
         $payoutLink->saveOrFail();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testSettingPayoutLinkToInvalidStatusShouldThrowException()
@@ -989,19 +993,6 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
     public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
     {
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1017,6 +1008,19 @@ class PayoutLinkTest extends TestCase
         $payoutLink->saveOrFail();
 
         $this->startTest();
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 
     protected function mockRedisSuccess($funcName, $payoutLinkId)

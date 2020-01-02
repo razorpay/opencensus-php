@@ -128,6 +128,21 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
+        // on code level, we are not going to allow cancel operation when payout-link is in processing
+        // not adding this check in Status.php, because payoutlink can move from
+        // Processing -> Cancelled, when the underlying payout is cancelled
+        if ($payoutLink->getStatus() === Status::PROCESSING)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION,
+                null,
+                [
+                    self::PAYOUT_LINK_ID => $payoutLinkId,
+                    'current_status'     => $payoutLink->getStatus(),
+                    'next_status'        => Status::CANCELLED
+                ]);
+        }
+
         //   If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
