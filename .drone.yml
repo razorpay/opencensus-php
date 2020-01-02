@@ -42,7 +42,7 @@ steps:
           - tag
           - pull_request
 
-  - name: validate_php_7_2_syntax
+  - name: validate_php_syntax
     pull: default
     image: php:7.2-cli-alpine
     commands:
@@ -439,7 +439,7 @@ steps:
       SLACK_WEBHOOK:
         from_secret: slack_webhook
     depends_on:
-      - validate_php_7_2_syntax
+      - validate_php_syntax
       - application_test_suite
       - features_test_suite
       - feature_2_test_suite
