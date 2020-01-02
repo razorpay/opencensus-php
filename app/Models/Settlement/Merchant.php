@@ -623,7 +623,7 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachSettlementBankAccount(): BankAccount\Entity
+    protected function attachSettlementBankAccount()
     {
         $mode = $this->ba->getMode();
 
@@ -661,8 +661,13 @@ class Merchant
         return $ba;
     }
 
-    protected function attachTestBank($merchant): BankAccount\Entity
+    protected function attachTestBank($merchant)
     {
+        if ($this->isAggregateSettlement === true)
+        {
+            return null;
+        }
+
         $attributes = array(
             'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => random_string_special_chars(5),
