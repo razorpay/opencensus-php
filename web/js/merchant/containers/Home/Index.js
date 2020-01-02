@@ -118,6 +118,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showPANStatus: state.home.instantActivations.showPANStatus,
       showKYCStatus: state.home.instantActivations.showKYCStatus,
       kycStatusModalType: state.home.kycStatusModalType,
+      settlement_amount: state.home.settlement_amount,
     };
   },
   {
@@ -506,6 +507,8 @@ export default class HomeContainer extends Component {
   }
 
   componentDidMount() {
+    this.props.fetchSettlementAmount();
+
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
@@ -651,6 +654,7 @@ export default class HomeContainer extends Component {
       showPANStatus,
       showKYCStatus,
       kycStatusModalType,
+      settlement_amount,
     } = this.props;
 
     const { activation_flow } = user;
@@ -713,6 +717,7 @@ export default class HomeContainer extends Component {
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
+      settlement_amount,
     };
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;

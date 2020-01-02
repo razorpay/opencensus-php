@@ -1,8 +1,11 @@
 import Settlement from 'merchant/models/Settlement';
 import { set, merge } from 'common/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
+const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
+const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 
 export const fetchItem = id => {
   let settlement = new Settlement();
@@ -10,6 +13,14 @@ export const fetchItem = id => {
   return {
     type: SETTLEMENT_FETCH,
     payload: settlement.fetch(id),
+  };
+};
+
+export const fetchSchedule = () => {
+  let settlement = new Settlement();
+  return {
+    type: SETTLEMENT_SCHEDULE_FETCH,
+    payload: settlement.fetchSettlementSchedule(),
   };
 };
 
@@ -21,6 +32,13 @@ export const fetchBreakupDetails = params => {
   };
 };
 
+export const fetchHolidayList = () => {
+  return {
+    type: HOLIDAY_LIST_FETCH,
+    payload: merchantFetch('settlement/holidays'),
+  };
+};
+
 let initialState = {
   loading: true,
   settlement: {},
@@ -28,6 +46,16 @@ let initialState = {
   breakupDetails: {
     loading: false,
     items: [],
+    error: null,
+  },
+  schedule: {
+    loading: false,
+    data: [],
+    error: null,
+  },
+  holidayList: {
+    loading: true,
+    data: {},
     error: null,
   },
 };
@@ -69,6 +97,34 @@ export default function(state = initialState, action) {
       return set(state, 'breakupDetails', {
         loading: false,
         items: [],
+        error: action.payload.errors,
+      });
+
+    case `${SETTLEMENT_SCHEDULE_FETCH}::SUCCESS`:
+      return set(state, 'schedule', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+
+    case `${SETTLEMENT_SCHEDULE_FETCH}::ERROR`:
+      return set(state, 'schedule', {
+        loading: false,
+        data: [],
+        error: action.payload.errors,
+      });
+
+    case `${HOLIDAY_LIST_FETCH}::SUCCESS`:
+      return set(state, 'holidayList', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+
+    case `${HOLIDAY_LIST_FETCH}::ERROR`:
+      return set(state, 'holidayList', {
+        loading: false,
+        data: {},
         error: action.payload.errors,
       });
 

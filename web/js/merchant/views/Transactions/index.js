@@ -12,23 +12,47 @@ import BatchUpload from 'merchant/views/Transactions/Refunds/BatchUpload';
 import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
-
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
+import OnHoldBanner from 'common/ui/OnHoldBanner';
+import { fetchSettlementAmount } from 'merchant/reducers/home';
+import Amount from 'common/ui/Amount';
+import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
+import { openModal } from 'merchant_common/reducers/modals';
+import Time from 'common/ui/Time';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
-@connect(state => state.session)
+@connect(
+  state => {
+    return {
+      ...state.session,
+      settlement_amount: state.home.settlement_amount,
+      config: state.config.config,
+    };
+  },
+  { fetchSettlementAmount, openModal }
+)
 export default class TransactionsContainer extends Component {
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
+    this.props.fetchSettlementAmount();
   }
 
   render() {
     const { user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
 
+    const nextSettlement = !this.props.settlement_amount.data
+      .next_settlement_time;
+
+    const { settlement_ux_revamp } = this.props.config;
+
     return (
       <tabbed-container>
-        <header id="transactions-header">
+        <header id="transactions-header" class="flex">
           <NavLink to="/payments" exact>
             Payments
           </NavLink>
@@ -70,12 +94,82 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
+          {settlement_ux_revamp && !nextSettlement ? (
+            <div class="text-right" style={{ width: '100%' }}>
+              <strong>
+                <Amount
+                  value={this.props.settlement_amount.data.settlement_amount}
+                  currency={'INR'}
+                />
+              </strong>{' '}
+              will be settled by{' '}
+              <Time
+                value={this.props.settlement_amount.data.next_settlement_time}
+                format={'DD MMM YYYY, hh:mm:ss a'}
+              />{' '}
+              {this.props.settlement_amount.data.reason_for_delay && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>
+                          {this.props.settlement_amount.data.reason_for_delay}
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
+              <span
+                class="btn-link"
+                style={{ marginLeft: '5px' }}
+                onClick={() => {
+                  this.props.openModal({
+                    size: 'regular',
+                    component: (
+                      <SettlementDetail
+                        settlementAmount={this.props.settlement_amount.data}
+                      />
+                    ),
+                  });
+
+                  window.rzpAnalytics({
+                    eventCategory: 'Dashboard - Settlement UI Revamp',
+                    eventAction: 'Click Know More - Transactions Page',
+                  });
+                }}
+              >
+                Know more
+              </span>
+            </div>
+          ) : null}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
           <EnableSettlementsBanner />
         ) : (
           <TestModeBanner />
         )}
+        {settlement_ux_revamp && nextSettlement ? (
+          <OnHoldBanner
+            ctaOnClick={() => {
+              this.props.openModal({
+                size: 'regular',
+                component: (
+                  <SettlementDetail
+                    settlementAmount={this.props.settlement_amount.data}
+                  />
+                ),
+              });
+
+              window.rzpAnalytics({
+                eventCategory: 'Dashboard - Settlement UI Revamp',
+                eventAction: 'Click Know More(On Hold) - Transactions Page',
+              });
+            }}
+          />
+        ) : null}
+
         <content>
           <Switch>
             <Route path="/refunds/batchupload" component={BatchUpload} />
