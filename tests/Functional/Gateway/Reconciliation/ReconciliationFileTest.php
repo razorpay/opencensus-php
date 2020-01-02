@@ -2734,7 +2734,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
 
-        $entries[] = $this->createFssSbiReconRow($gatewayPayment1, $gatewayPayment1['payment_id']);
+        $entries[] = $this->overrideFssSbiRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
 
         $file = $this->writeToCsvFile($entries, 'IPAYMIS_MID_Date');
 
@@ -3139,7 +3139,7 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function createFssSbiReconRow(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
+    private function overrideFssSbiRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
     {
         $facade = $this->testData['facades']['testFssSbiRecon'];
 
