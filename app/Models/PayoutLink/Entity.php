@@ -55,6 +55,9 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT         = 'bank_account';
     const ACCOUNT_NUMBER       = 'account_number';
     const CONTACT              = 'contact';
+    const NAME                 = 'name';
+    const EMAIL                = 'email';
+    const PHONE_NUMBER         = 'contact';
 
 
     protected $generateIdOnCreate = true;
@@ -107,9 +110,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CONTACT_ID,
-        self::CONTACT_NAME,
-        self::CONTACT_EMAIL,
-        self::CONTACT_PHONE_NUMBER,
+        self::CONTACT,
         self::FUND_ACCOUNT_ID,
         self::PURPOSE,
         self::STATUS,
@@ -125,7 +126,10 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::STATUS,
-        self::ID
+        self::ID,
+        self::CONTACT_ID,
+        self::FUND_ACCOUNT_ID,
+        self::CONTACT
     ];
 
     protected $hosted = [
@@ -148,25 +152,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT => 'int',
-    ];
-
-    protected $webhook = [
-        self::ID,
-        self::ENTITY,
-        self::CONTACT_ID,
-        self::CONTACT_NAME,
-        self::CONTACT_EMAIL,
-        self::CONTACT_PHONE_NUMBER,
-        self::FUND_ACCOUNT_ID,
-        self::STATUS,
-        self::AMOUNT,
-        self::CURRENCY,
-        self::DESCRIPTION,
-        self::RECEIPT,
-        self::NOTES,
-        self::SHORT_URL,
-        self::CREATED_AT,
-        self::CANCELLED_AT
     ];
 
     protected $defaults = [
@@ -306,6 +291,25 @@ class Entity extends Base\PublicEntity
         Status::validateStatusUpdate($newStatus, $currentStatus, $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
+    }
+
+    public function setPublicContactIdAttribute(array & $attributes)
+    {
+        $attributes[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($attributes[self::CONTACT_ID]);
+    }
+
+    public function setPublicFundAccountIdAttribute(array & $attributes)
+    {
+        $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($attributes[self::FUND_ACCOUNT_ID]);
+    }
+
+    public function setPublicContactAttribute(array & $attributes)
+    {
+        $attributes[self::CONTACT] = [
+            self::NAME         => $this->getContactName(),
+            self::EMAIL        => $this->getContactEmail(),
+            self::PHONE_NUMBER => $this->getContactPhoneNumber(),
+        ];
     }
 
     // -------------------------------------- End Setters -----------------------------

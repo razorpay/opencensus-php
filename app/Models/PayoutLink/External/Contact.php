@@ -45,7 +45,7 @@ class Contact
 
         if ($contactId !== null)
         {
-            $contact = $this->repo->contact->findByIdAndMerchant($contactId, $merchant);
+            $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $merchant);
 
             if ((empty($contact->getEmail()) === true) and
                 (empty($contact->getContact()) === true))

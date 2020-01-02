@@ -67,7 +67,7 @@
 <link
         rel="stylesheet"
         type="text/css"
-        href="http://x.razorpay.in/dist/payoutlinks.css"
+        href="{{ $banking_url }}/dist/payoutlinks.css"
 />
 <!-- <link rel="stylesheet" type="text/css" href="fonts/i.css" /> -->
 <script>
@@ -86,12 +86,13 @@
         apiHost: '{{ $api_host }}' + '/v1/',
         payoutLinkId: '{{ $payout_link_id }}',
         status: '{{ $payout_link_status }}',
-        allowUpi : true
+        allowUpi : '{{ $allow_upi }}'
     };
 </script>
-<script src="http://x.razorpay.in/dist/payoutlinks.js"></script>
-<!-- add PROD check here -->
-<!--error logger on raven-->
-<!-- END PROD CHECK /> -->
+<script src="{{ $banking_url }}/dist/payoutlinks.js"></script>
+
+@if($is_production)
+    <script src="{{ $banking_url }}/dist/raven.js" defer></script>
+@endif
 </body>
 </html>

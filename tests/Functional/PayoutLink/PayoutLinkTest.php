@@ -301,7 +301,7 @@ class PayoutLinkTest extends TestCase
 
         $testData = $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'];
 
-        $testData['request']['content']['contact']['id'] = $contact->getId();
+        $testData['request']['content']['contact']['id'] = $contact->getPublicId();
 
         $this->testData['testPayoutLinkCreationFailsWhenContactIdIsMissingBothEmailAndPhone'] = $testData;
 

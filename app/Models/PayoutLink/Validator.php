@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addFundAccountRules = [
-        Entity::FUND_ACCOUNT_ID => 'filled|string|size:14',
+        Entity::FUND_ACCOUNT_ID => 'filled|string|public_id',
         Entity::ACCOUNT_TYPE    => 'required_if:fund_account_id,null|string|in:bank_account,vpa',
         Entity::VPA             => 'required_if:type,vpa|array',
         Entity::BANK_ACCOUNT    => 'required_if:type,bank_account|array',
@@ -59,8 +59,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION    => 'required|string|max:255',
         Entity::PURPOSE        => 'required|filled|string|max:30|alpha_dash_space',
         Entity::RECEIPT        => 'sometimes|string|max:40',
-        Entity::CONTACT          => 'required|array',
-        self::CONTACT_ID       => 'required_without:contact.name|nullable|string|size:14'
+        Entity::CONTACT        => 'required|array',
+        self::CONTACT_ID       => 'required_without:contact.name|nullable|string|public_id'
     ];
 
     protected static $verifyOtpRules = [

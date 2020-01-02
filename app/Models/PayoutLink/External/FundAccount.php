@@ -43,7 +43,7 @@ class FundAccount
         {
             $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
 
-            $fundAccount = $this->repo->fund_account->findByIdAndMerchant($fundAccountId, $merchant);
+            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $merchant);
 
             // verifying that the fund_account_id sent is same as the one associated with the payout-link
             // there is a possibility, that after token verification, one changes the fund_account_id just before add
