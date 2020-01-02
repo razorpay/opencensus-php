@@ -44,6 +44,8 @@ class Service extends Base\Service
 
         $this->modifyRequestFromOldFormat($input);
 
+        (new Validator)->validateDefaultCloseBy($input);
+
         $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
 
         $this->trace->info(
@@ -94,7 +96,7 @@ class Service extends Base\Service
                     ],
                 ];
 
-                if(isset($input[Entity::CLOSE_BY]) === true)
+                if (isset($input[Entity::CLOSE_BY]) === true)
                 {
                     $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
                 }

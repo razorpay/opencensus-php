@@ -14,7 +14,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     // close by while creating a va should be atleast 15 mins ahead of current time
-    const MIN_CLOSE_BY_DIFF = 900;
+    const MIN_CLOSE_BY_DIFF = 120;
+
+    const DEFAULT_CLOSE_BY_DIFF = 900;
 
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
@@ -191,4 +193,27 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException($message);
         }
     }
+
+    public function validateDefaultCloseBy($input)
+    {
+        if (isset($input[Entity::CLOSE_BY]) === false)
+        {
+            return;
+        }
+
+        $closeBy = $input[Entity::CLOSE_BY];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $minCloseBy = $now->copy()->addSeconds(self::DEFAULT_CLOSE_BY_DIFF);
+
+        if ($closeBy < $minCloseBy->getTimestamp())
+        {
+            $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+
 }
