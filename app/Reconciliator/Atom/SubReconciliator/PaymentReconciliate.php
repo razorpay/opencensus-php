@@ -11,6 +11,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Jobs\NbPlusRecon\NetbankingRecon;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -207,8 +208,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $data = [
             'payment_id' => $this->payment->getId(),
             'recon_params'     => [
-                NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[self::COLUMN_ATOM_TRANSACTION_ID] ?? null,
-                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[self::COLUMN_BANK_REFERENCE_NO] ?? null
+                NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
+                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null
             ],
             'gateway_params' => [
                 NetbankingService::GATEWAY_TRANSACTION_ID,
