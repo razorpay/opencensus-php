@@ -6,14 +6,14 @@ use View;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
+use RZP\Constants\Environment;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
-use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
@@ -420,6 +420,12 @@ class Core extends Base\Core
 
         $maskedPhone = $this->getMaskedPhone($contact);
 
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+
+        $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
+
+        $isProduction = $this->app->environment() === Environment::PRODUCTION;
+
         $data = [
             'api_host'                => $this->config['url.api.production'],
             'payout_link_id'          => $payoutLink->getPublicId(),
@@ -434,7 +440,10 @@ class Core extends Base\Core
             'merchant_logo_url'       => $this->merchant->getLogoUrl(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->merchant->getName()
+            'merchant_name'           => $this->merchant->getName(),
+            'allow_upi'               => $isUpiEnabled,
+            'banking_url'             => $this->config['applications.banking_service_url'],
+            'is_production'           => $isProduction
         ];
 
         return $data;
