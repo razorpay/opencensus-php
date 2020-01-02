@@ -312,8 +312,6 @@ class Service extends Base\Service
                             'batch_id'                  => $input['batch_id'],
                         ]
                     );
-
-                    $dataToUpdate[$field] = $misParams[$field];
                 }
             }
         }
