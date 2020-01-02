@@ -7,8 +7,10 @@ use RZP\Exception;
 use Requests_Session;
 
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -178,9 +180,20 @@ class Service
         return $response;
     }
 
+    protected function traceRequest(array $request)
+    {
+        unset($request['options']['auth']);
+        unset($request['content'][Request::INPUT]['gateway_config']);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
+    }
+
     protected function traceResponse($response)
     {
-        // TODO : should this be redacted?
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 

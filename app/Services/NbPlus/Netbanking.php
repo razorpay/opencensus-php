@@ -6,7 +6,6 @@ use App;
 use RZP\Exception;
 
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Verify;
@@ -176,17 +175,5 @@ class Netbanking extends Service
         $callbackResponseData[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
 
         return $callbackResponseData;
-    }
-
-    protected function traceRequest(array $request)
-    {
-        unset($request['options']['auth']);
-        unset($request['content'][Request::INPUT]['gateway_config']);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
-
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
     }
 }
